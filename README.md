@@ -125,7 +125,7 @@ La documentación completa está en la carpeta `docs/`:
 
 ## Contribuidores
 
-- **[Sebastian Lude](https://github.com/sebastianlude)** ([@sebastianlude](https://github.com/sebastianlude))
+- **[Sebastian Ludeña](https://github.com/sebastianlude)** ([@sebastianlude](https://github.com/sebastianlude))
 
 ## Licencia Licencia
 
