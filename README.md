@@ -121,7 +121,11 @@ La documentación completa está en la carpeta `docs/`:
 
 ## Equipo
 
-**Jhonatan Jara** - Estudiante de Computación, UTPL, Ecuador
+**[Jhonatan Jara](https://github.com/jhonatanJJ2006)** - Estudiante de Computación, UTPL, Ecuador
+
+## Contribuidores
+
+- **[Sebastian Ludeña](https://github.com/sebastianlude)** ([@sebastianlude](https://github.com/sebastianlude))
 
 ## Licencia Licencia
 
