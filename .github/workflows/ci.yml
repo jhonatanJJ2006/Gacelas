@@ -47,8 +47,11 @@ jobs:
       - name: Check formatting
         run: pnpm format
 
-      - name: Lint
+      - name: Lint code
         run: pnpm lint
+
+      - name: Lint documentation
+        run: pnpm lint:docs
 
   test:
     name: Test

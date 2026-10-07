@@ -1,10 +1,10 @@
-# Gacelas 🦌
+# Gacelas
 
 **Aplicación de running con seguimiento en tiempo real para runners ecuatorianos**
 
 Gacelas es una plataforma integral para corredores que permite grabar rutas, compartir actividades, unirse a eventos, y seguir a otros corredores en tiempo real usando GPS y Google Maps.
 
-## 🎯 Características Principales
+## Características Principales
 
 - **Rutas**: Graba, dibuja, guarda y comparte tus rutas de running
 - **Comunidad**: Feed social, sigue a otros corredores, únete a clubes y grupos
@@ -12,7 +12,7 @@ Gacelas es una plataforma integral para corredores que permite grabar rutas, com
 - **Perfil**: Estadísticas personales, historial de actividades
 - **Seguimiento en Vivo**: Comparte tu ubicación en tiempo real con streaming eficiente
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 gacelas/
@@ -38,7 +38,7 @@ gacelas/
     └── workflows/    # CI/CD
 ```
 
-## 🚀 Inicio Rápido
+## Inicio Rápido
 
 ### Prerequisitos
 
@@ -95,7 +95,7 @@ gacelas/
 
 Ver [SYSTEM.md](docs/SYSTEM.md) para instrucciones detalladas de configuración de Supabase.
 
-## 📚 Documentación
+## Documentación
 
 La documentación completa está en la carpeta `docs/`:
 
@@ -110,7 +110,7 @@ La documentación completa está en la carpeta `docs/`:
 - **[CONTRIBUTING.md](docs/CONTRIBUTING.md)**: Guía de contribución
 - **[adr/](docs/adr/)**: Decisiones arquitectónicas
 
-## 🛠️ Stack Tecnológico
+## Stack Tecnológico
 
 - **Frontend Web**: React 18, TypeScript, Tailwind CSS, Vite
 - **Mobile**: Kotlin, Jetpack Compose, Android SDK 24+
@@ -119,15 +119,15 @@ La documentación completa está en la carpeta `docs/`:
 - **Real-time**: Supabase Realtime + Broadcast Channels
 - **Autenticación**: Supabase Auth
 
-## 👥 Equipo
+## Equipo
 
 **Jhonatan Jara** - Estudiante de Computación, UTPL, Ecuador
 
-## 📄 Licencia
+## Licencia Licencia
 
 [Definir licencia]
 
-## 🔗 Enlaces Útiles
+## Enlaces Útiles
 
 - [Documentación de Supabase](https://supabase.com/docs)
 - [Google Maps Platform](https://developers.google.com/maps)

@@ -12,7 +12,7 @@ Aplicación móvil nativa para Android construida con Kotlin y Jetpack Compose.
 ## Configuración
 
 1. **Abrir en Android Studio**:
-   - File → Open → Seleccionar carpeta `apps/android`
+   - File - Open - Seleccionar carpeta `apps/android`
 
 2. **Configurar local.properties**:
 
@@ -32,7 +32,7 @@ Aplicación móvil nativa para Android construida con Kotlin y Jetpack Compose.
    - Esperar a que Gradle descargue dependencias
 
 4. **Ejecutar**:
-   - Run → Run 'app'
+   - Run - Run 'app'
    - Seleccionar dispositivo o emulador
 
 ## Arquitectura

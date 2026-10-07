@@ -190,6 +190,16 @@ Ver sección [Pull Requests](#pull-requests) más abajo.
 - **Trailing commas**: Siempre en objetos/arrays multi-línea
 - **Quotes**: Single quotes `'` en JavaScript/TypeScript
 
+### Documentación (Markdown)
+
+- **No usar iconos ni emojis**: La documentación (.md, READMEs, ADRs, descripciones de PR) no debe contener emojis, iconos ni símbolos Unicode decorativos. Esto mejora la legibilidad, facilita la búsqueda de texto y mantiene la consistencia.
+- **Reemplazo**: Usar texto descriptivo en lugar de emojis (ej: "Completado" en vez de checkmark, "Pendiente" en vez de cruz).
+- **Verificación**: El script `pnpm lint:docs` valida esta regla automáticamente en CI.
+
+### Créditos y Autoría
+
+- **No agregar agentes de IA como coautores**: No agregar al agente de Cursor (ni a ningún agente de IA) como coautor en commits (trailers `Co-authored-by`), en archivos CONTRIBUTORS, en la sección de equipo del README, ni en descripciones de PR. Los agentes son herramientas; el crédito pertenece al desarrollador humano.
+
 ### TypeScript/JavaScript (Web)
 
 **Estilo**: Seguir guía de [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript)
@@ -212,8 +222,8 @@ type ActivityType = 'run' | 'walk'
 function ActivityCard() {}
 
 // Archivos: kebab-case para archivos, PascalCase para componentes
-// ✅ activity-card.tsx (archivo), ActivityCard (componente)
-// ❌ ActivityCard.tsx (evitar)
+// activity-card.tsx (archivo), ActivityCard (componente)
+// ActivityCard.tsx (evitar)
 ```
 
 **Imports**: Ordenar por categorías
@@ -240,12 +250,12 @@ import { calculateDistance } from './utils'
 **Functions**: Preferir arrow functions
 
 ```typescript
-// ✅ Preferido
+// Preferido
 const calculatePace = (distance: number, duration: number): number => {
   return duration / distance
 }
 
-// ❌ Evitar
+// Evitar
 function calculatePace(distance: number, duration: number): number {
   return duration / distance
 }
@@ -272,7 +282,7 @@ type OptionalUser = User | null
 **Async/Await**: Preferir sobre Promises
 
 ```typescript
-// ✅ Preferido
+// Preferido
 async function fetchActivity(id: string) {
   try {
     const { data, error } = await supabase.from('activities').select('*').eq('id', id).single()
@@ -285,7 +295,7 @@ async function fetchActivity(id: string) {
   }
 }
 
-// ❌ Evitar
+// Evitar
 function fetchActivity(id: string) {
   return supabase
     .from('activities')
@@ -329,18 +339,18 @@ package com.gacelas.feature.recording
 **Null Safety**: Aprovechar sistema de tipos de Kotlin
 
 ```kotlin
-// ✅ Preferido: Usar tipos nullable con safe calls
+// Preferido: Usar tipos nullable con safe calls
 val userName: String? = user?.profile?.username
 
-// ✅ Elvis operator para defaults
+// Elvis operator para defaults
 val displayName = userName ?: "Usuario Anónimo"
 
-// ✅ Null checks con let
+// Null checks con let
 user?.let {
     updateProfile(it)
 }
 
-// ❌ Evitar !! (force unwrap) a menos que estés 100% seguro
+// Evitar !! (force unwrap) a menos que estés 100% seguro
 val userName = user!!.username  // Puede crashear
 ```
 
@@ -524,12 +534,12 @@ class ActivityRepositoryTest {
 
 ### Antes de Crear PR
 
-1. ✅ Tu código compila sin errores
-2. ✅ Todos los tests pasan
-3. ✅ Has probado manualmente los cambios
-4. ✅ El código sigue las convenciones de estilo
-5. ✅ Has actualizado documentación si es necesario
-6. ✅ Commit messages son descriptivos
+1. Tu código compila sin errores
+2. Todos los tests pasan
+3. Has probado manualmente los cambios
+4. El código sigue las convenciones de estilo
+5. Has actualizado documentación si es necesario
+6. Commit messages son descriptivos
 
 ### Crear PR
 
@@ -660,6 +670,6 @@ Al contribuir, aceptas que tus contribuciones serán licenciadas bajo la misma l
 
 ---
 
-## ¡Gracias por Contribuir! 🙌
+## ¡Gracias por Contribuir!
 
-Tu tiempo y esfuerzo son muy apreciados. Juntos estamos construyendo la mejor app de running para Ecuador. 🏃‍♀️🏃‍♂️
+Tu tiempo y esfuerzo son muy apreciados. Juntos estamos construyendo la mejor app de running para Ecuador.

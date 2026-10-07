@@ -465,7 +465,7 @@ if (!allowed) {
 
 ### SQL Injection
 
-✅ **Protegido por Supabase**: Todos los queries usan prepared statements.
+**Protegido por Supabase**: Todos los queries usan prepared statements.
 
 ```typescript
 // SEGURO: Supabase maneja escaping automáticamente
@@ -502,7 +502,7 @@ function sanitizeContent(content: string): string {
 
 ### CSRF (Cross-Site Request Forgery)
 
-✅ **Protegido por Supabase Auth**: JWT tokens en Authorization header, no cookies.
+**Protegido por Supabase Auth**: JWT tokens en Authorization header, no cookies.
 
 ### DDoS
 
@@ -516,7 +516,7 @@ function sanitizeContent(content: string): string {
 
 ### Contraseñas
 
-✅ **Supabase Auth**: Usa bcrypt con salt automáticamente.
+**Supabase Auth**: Usa bcrypt con salt automáticamente.
 
 ### Tokens
 

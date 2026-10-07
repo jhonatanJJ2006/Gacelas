@@ -4,10 +4,10 @@
 
 Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y escalando features según feedback de usuarios reales.
 
-## Fase 0: Arquitectura e Infraestructura ✅ (ACTUAL)
+## Fase 0: Arquitectura e Infraestructura (ACTUAL)
 
 **Duración estimada**: Setup inicial  
-**Estado**: ✅ Completado
+**Estado**: Completado
 
 ### Objetivos
 
@@ -27,7 +27,7 @@ Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y 
 
 ---
 
-## Fase 1: MVP - Funcionalidad Core 🎯 (SIGUIENTE)
+## Fase 1: MVP - Funcionalidad Core (SIGUIENTE)
 
 **Objetivo**: Aplicación funcional mínima para grabar actividades y verlas en mapa.
 
@@ -118,7 +118,7 @@ Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y 
 
 ---
 
-## Fase 2: Social y Comunidad 👥
+## Fase 2: Social y Comunidad
 
 **Objetivo**: Transformar la app en una plataforma social para runners.
 
@@ -166,7 +166,7 @@ Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y 
 
 ---
 
-## Fase 3: Live Tracking en Tiempo Real 📡
+## Fase 3: Live Tracking en Tiempo Real
 
 **Objetivo**: Compartir ubicación en vivo durante actividades.
 
@@ -208,7 +208,7 @@ Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y 
 
 ---
 
-## Fase 4: Rutas y Exploración 🗺️
+## Fase 4: Rutas y Exploración
 
 **Objetivo**: Descubrir y compartir rutas populares.
 
@@ -251,7 +251,7 @@ Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y 
 
 ---
 
-## Fase 5: Eventos y Clubes 🏃‍♀️🏃‍♂️
+## Fase 5: Eventos y Clubes
 
 **Objetivo**: Facilitar carreras grupales y comunidades organizadas.
 
@@ -302,7 +302,7 @@ Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y 
 
 ---
 
-## Fase 6: Análisis y Estadísticas 📊
+## Fase 6: Análisis y Estadísticas
 
 **Objetivo**: Insights profundos sobre performance.
 
@@ -341,7 +341,7 @@ Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y 
 
 ---
 
-## Fase 7: Gamificación y Motivación 🏆
+## Fase 7: Gamificación y Motivación
 
 **Objetivo**: Motivar a usuarios con logros y desafíos.
 
@@ -387,7 +387,7 @@ Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y 
 
 ---
 
-## Fase 8: Monetización (Opcional, Post-MVP) 💰
+## Fase 8: Monetización (Opcional, Post-MVP)
 
 **Objetivo**: Sostener el proyecto con ingresos.
 
@@ -423,7 +423,7 @@ Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y 
 
 ---
 
-## Fase 9: Escalabilidad y Optimización ⚡
+## Fase 9: Escalabilidad y Optimización
 
 **Objetivo**: Preparar la app para escalar a miles de usuarios.
 
@@ -456,7 +456,7 @@ Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y 
 
 ---
 
-## Fase 10: Expansión Regional 🌎
+## Fase 10: Expansión Regional
 
 **Objetivo**: Adaptar la app para múltiples países.
 
@@ -485,12 +485,12 @@ Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y 
 
 ### Must-Have para MVP (Fase 1-2)
 
-1. ✅ Grabar actividades con GPS
-2. ✅ Ver actividades en mapa
-3. ✅ Autenticación
-4. ✅ Perfil básico
-5. ⚠️ Feed social
-6. ⚠️ Follows
+1. Grabar actividades con GPS
+2. Ver actividades en mapa
+3. Autenticación
+4. Perfil básico
+5. Feed social
+6. Follows
 
 ### Should-Have para Beta (Fase 3-4)
 
@@ -543,17 +543,17 @@ Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y 
 
 ## Cronograma Tentativo
 
-| Fase    | Features Principales            | Duración Estimada      | Estado       |
-| ------- | ------------------------------- | ---------------------- | ------------ |
-| Fase 0  | Arquitectura e infraestructura  | Setup inicial          | ✅ Completo  |
-| Fase 1  | MVP - Grabación y visualización | Implementación         | 🎯 Siguiente |
-| Fase 2  | Feed social y follows           | Desarrollo incremental | ⏳ Pendiente |
-| Fase 3  | Live tracking                   | Desarrollo incremental | ⏳ Pendiente |
-| Fase 4  | Rutas y exploración             | Desarrollo incremental | ⏳ Pendiente |
-| Fase 5  | Eventos y clubes                | Desarrollo incremental | ⏳ Pendiente |
-| Fase 6  | Análisis avanzados              | Desarrollo incremental | ⏳ Pendiente |
-| Fase 7  | Gamificación                    | Desarrollo incremental | ⏳ Pendiente |
-| Fase 8+ | Monetización y escala           | Futuro                 | 💡 Ideas     |
+| Fase    | Features Principales            | Duración Estimada      | Estado              |
+| ------- | ------------------------------- | ---------------------- | ------------------- |
+| Fase 0  | Arquitectura e infraestructura  | Setup inicial          | Completo            |
+| Fase 1  | MVP - Grabación y visualización | Implementación         | Siguiente           |
+| Fase 2  | Feed social y follows           | Desarrollo incremental | Pendiente Pendiente |
+| Fase 3  | Live tracking                   | Desarrollo incremental | Pendiente Pendiente |
+| Fase 4  | Rutas y exploración             | Desarrollo incremental | Pendiente Pendiente |
+| Fase 5  | Eventos y clubes                | Desarrollo incremental | Pendiente Pendiente |
+| Fase 6  | Análisis avanzados              | Desarrollo incremental | Pendiente Pendiente |
+| Fase 7  | Gamificación                    | Desarrollo incremental | Pendiente Pendiente |
+| Fase 8+ | Monetización y escala           | Futuro                 | Ideas futuras       |
 
 **Nota**: La implementación es iterativa. Las fases pueden superponerse o reordenarse según feedback de usuarios reales.
 
@@ -561,6 +561,6 @@ Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y 
 
 ## Siguiente Paso Inmediato
 
-**👉 Comenzar Fase 1.1**: Configurar proyecto en Supabase y ejecutar migraciones.
+**Siguiente paso**: Comenzar Fase 1.1: Configurar proyecto en Supabase y ejecutar migraciones.
 
 Ver [CONTRIBUTING.md](CONTRIBUTING.md) para comenzar a contribuir al desarrollo.

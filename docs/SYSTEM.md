@@ -279,14 +279,14 @@ await liveChannel.send({
 
 **Ventajas:**
 
-- ✅ Sin cargo de escrituras/lecturas de DB
-- ✅ Latencia <500ms
-- ✅ Escala a 100+ espectadores sin costo adicional
-- ✅ Limpieza automática al desconectar
+- Sin cargo de escrituras/lecturas de DB
+- Latencia <500ms
+- Escala a 100+ espectadores sin costo adicional
+- Limpieza automática al desconectar
 
 **Desventajas:**
 
-- ❌ Si pierdes conexión, pierdes datos (aceptable para live)
+- Si pierdes conexión, pierdes datos (aceptable para live)
 
 #### 2. **Batch Inserts** para Track Persistido
 
@@ -356,10 +356,10 @@ class SyncTrackPointsWorker(context: Context, params: WorkerParameters)
 
 ```mermaid
 sequenceDiagram
-    participant Runner as 🏃 Runner App
+    participant Runner as  Runner App
     participant Supabase as Supabase Realtime
-    participant Viewer1 as 👁️ Viewer App 1
-    participant Viewer2 as 👁️ Viewer App 2
+    participant Viewer1 as  Viewer App 1
+    participant Viewer2 as  Viewer App 2
     participant DB as PostgreSQL
 
     Runner->>Supabase: subscribe('live:activity:123')
