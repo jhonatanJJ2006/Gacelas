@@ -42,7 +42,7 @@ Supabase Free Tier **NO tiene límites duros** en:
 - **1 actividad (1 hora)**: 1,200 puntos × 50 bytes = **60 KB**
 - **100 actividades completas**: 6 MB
 - **1,000 actividades completas**: 60 MB
-- **8,000 actividades completas**: 480 MB ✅ Cabe en 500 MB
+- **8,000 actividades completas**: 480 MB Cabe en 500 MB
 
 **Conclusión**: Podemos almacenar ~8,000 actividades completas en el tier gratuito.
 
@@ -54,7 +54,7 @@ Supabase Free Tier **NO tiene límites duros** en:
 
 - 100 usuarios testeando
 - 500 actividades totales
-- 30 MB de track_points + 5 MB de metadata = **35 MB** ✅ Muy por debajo del límite
+- 30 MB de track_points + 5 MB de metadata = **35 MB** Muy por debajo del límite
 
 ### 2. Bandwidth (5 GB/mes = ~166 MB/día)
 
@@ -81,7 +81,7 @@ Total: ~6 KB por carga de feed
 ##### Live tracking position (Broadcast):
 
 ```
-Realtime Broadcast NO consume bandwidth de DB ✅
+Realtime Broadcast NO consume bandwidth de DB (ventaja clave)
 Solo consume conexión Realtime (límite: 200 concurrentes)
 ```
 
@@ -92,7 +92,7 @@ Solo consume conexión Realtime (límite: 200 concurrentes)
 ```
 10 usuarios × 20 cargas de feed/día × 6 KB = 1.2 MB
 10 usuarios × 2 actividades descargadas completas/día × 60 KB = 1.2 MB
-Total: ~2.4 MB/día = 72 MB/mes ✅ Muy por debajo de 5 GB
+Total: ~2.4 MB/día = 72 MB/mes Muy por debajo de 5 GB
 ```
 
 **Uso intenso** (100 usuarios activos/día):
@@ -100,7 +100,7 @@ Total: ~2.4 MB/día = 72 MB/mes ✅ Muy por debajo de 5 GB
 ```
 100 usuarios × 20 cargas de feed/día × 6 KB = 12 MB
 100 usuarios × 5 actividades descargadas/día × 60 KB = 30 MB
-Total: ~42 MB/día = 1.26 GB/mes ✅ Aún dentro del límite
+Total: ~42 MB/día = 1.26 GB/mes Aún dentro del límite
 ```
 
 **Uso extremo** (200 usuarios muy activos):
@@ -108,7 +108,7 @@ Total: ~42 MB/día = 1.26 GB/mes ✅ Aún dentro del límite
 ```
 200 usuarios × 30 cargas de feed/día × 6 KB = 36 MB
 200 usuarios × 8 actividades descargadas/día × 60 KB = 96 MB
-Total: ~132 MB/día = 3.96 GB/mes ✅ Justo dentro del límite
+Total: ~132 MB/día = 3.96 GB/mes Justo dentro del límite
 ```
 
 **Conclusión**: El bandwidth NO será un problema en fase de prototipo. Solo sería problema con 500+ usuarios muy activos.
@@ -143,7 +143,7 @@ Total: ~132 MB/día = 3.96 GB/mes ✅ Justo dentro del límite
 3. **compress-track-points** (job diario):
    - 1 invocation/día
 
-**Total estimado**: 251 invocations/día = **~7,500/mes** ✅ Muy por debajo de 500k
+**Total estimado**: 251 invocations/día = **~7,500/mes** Muy por debajo de 500k
 
 ### 5. Realtime Connections (200 concurrentes)
 
@@ -152,13 +152,13 @@ Total: ~132 MB/día = 3.96 GB/mes ✅ Justo dentro del límite
 ##### Live tracking:
 
 - 1 corredor compartiendo + 10 espectadores = 11 conexiones
-- 10 corredores simultáneos con 10 espectadores c/u = 110 conexiones ✅
+- 10 corredores simultáneos con 10 espectadores c/u = 110 conexiones (suficiente)
 
 ##### Feed en tiempo real:
 
 - 50 usuarios viendo feed simultáneamente = 50 conexiones
 
-**Total concurrente en hora pico**: ~160 conexiones ✅ Dentro del límite
+**Total concurrente en hora pico**: ~160 conexiones Dentro del límite
 
 **Conclusión**: 200 conexiones concurrentes es suficiente para prototipo.
 
@@ -298,7 +298,7 @@ Configurar alertas (email o Slack webhook) cuando:
    - Ofrecer opción de "exportar datos" antes de comprimir
 
 3. **Mediano plazo** (mes 1-3):
-   - Evaluar upgrade a Supabase Pro ($25/mes) → 8 GB database
+   - Evaluar upgrade a Supabase Pro ($25/mes) - 8 GB database
    - O migrar a self-hosted PostgreSQL
 
 ### Si se Acerca al Límite de Bandwidth (5 GB/mes)
@@ -355,7 +355,7 @@ jobs:
 
 **Total por sesión**: ~300 KB
 
-**100 sesiones de testing**: 30 MB ✅ Muy manejable
+**100 sesiones de testing**: 30 MB Muy manejable
 
 ### Sesión Intensiva (Stress Testing)
 
@@ -366,19 +366,19 @@ jobs:
 
 **Total**: ~4.6 MB por usuario en stress test
 
-**20 usuarios en stress test**: 92 MB/día ✅ Aún dentro del límite diario
+**20 usuarios en stress test**: 92 MB/día Aún dentro del límite diario
 
 ## Recomendaciones Finales
 
 ### Para Mantener en Free Tier el Mayor Tiempo Posible:
 
-1. ✅ **Implementar lazy loading** de track_points desde día 1
-2. ✅ **Usar Realtime Broadcast** para live tracking (no persiste)
-3. ✅ **Comprimir imágenes** antes de subir (client-side)
-4. ✅ **Paginar todo**: feeds, listas, comentarios
-5. ✅ **Cachear datos** que no cambian frecuentemente
-6. ✅ **Health check** cada 6 días para evitar pausa
-7. ✅ **Monitorear uso** en dashboard semanalmente
+1. **Implementar lazy loading** de track_points desde día 1
+2. **Usar Realtime Broadcast** para live tracking (no persiste)
+3. **Comprimir imágenes** antes de subir (client-side)
+4. **Paginar todo**: feeds, listas, comentarios
+5. **Cachear datos** que no cambian frecuentemente
+6. **Health check** cada 6 días para evitar pausa
+7. **Monitorear uso** en dashboard semanalmente
 
 ### Cuándo Considerar Upgrade:
 

@@ -34,14 +34,14 @@ Gacelas requiere un backend que soporte:
 - **Spark Plan muy limitado**:
   - Firestore: 50k lecturas/día, 20k escrituras/día, 1GB almacenamiento
   - Realtime DB: 100 conexiones simultáneas, 1GB almacenamiento, 10GB descarga/mes
-- Una actividad de 1 hora = ~1,200 escrituras → solo 16 actividades/día en free tier
+- Una actividad de 1 hora = ~1,200 escrituras - solo 16 actividades/día en free tier
 - Costos escalan rápido: $0.06 por 100k lecturas, $0.18 por 100k escrituras
 - Vendor lock-in: migrar fuera de Firebase es muy costoso
 
 **Cálculos para tier gratuito:**
 
-- 10 usuarios testeando 1 actividad/día de 1 hora = 12,000 escrituras/día → **excede límite**
-- Live tracking con 5 espectadores = +30 lecturas/segundo → límite en minutos
+- 10 usuarios testeando 1 actividad/día de 1 hora = 12,000 escrituras/día - **excede límite**
+- Live tracking con 5 espectadores = +30 lecturas/segundo - límite en minutos
 
 ### Opción 2: Convex
 
@@ -59,14 +59,14 @@ Gacelas requiere un backend que soporte:
 - **Sin SDK oficial para Kotlin**: requiere cliente HTTP custom o usar JavaScript en WebView
 - Relativamente nuevo, menos maduro que alternativas
 - Comunidad pequeña, menos recursos para troubleshooting
-- 1M llamadas/mes = ~33k/día → ~16 actividades de 1 hora con 1,200 puntos c/u
+- 1M llamadas/mes = ~33k/día - ~16 actividades de 1 hora con 1,200 puntos c/u
 
 **Cálculos:**
 
 - Geoespacial requeriría calcular distancias en aplicación (ineficiente)
 - Android requiere wrapper HTTP custom, perdiendo ventajas de reactivity
 
-### Opción 3: Supabase (PostgreSQL + PostGIS + Realtime) ✅
+### Opción 3: Supabase (PostgreSQL + PostGIS + Realtime) - SELECCIONADA
 
 **Pros:**
 
@@ -101,7 +101,7 @@ Gacelas requiere un backend que soporte:
 - **Actividades persistidas**: 1 actividad = 1,200 puntos × 50 bytes = 60 KB
   - 500 MB / 60 KB = **~8,300 actividades** almacenables
 - **Bandwidth**: 5 GB/mes = 166 MB/día
-  - 1 actividad descargada = 60 KB → **~2,700 descargas/día**
+  - 1 actividad descargada = 60 KB - **~2,700 descargas/día**
 - **Live tracking con Broadcast**: ¡Sin cargo de bandwidth! Los mensajes no se persisten
   - Solo consume CPU/conexiones (200 concurrentes = suficiente para prototipo)
 - **Rutas con PostGIS**: Búsqueda por radio `ST_DWithin(location, ST_MakePoint(lon, lat), radius)`

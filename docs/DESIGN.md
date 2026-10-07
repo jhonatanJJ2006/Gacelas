@@ -40,7 +40,7 @@ Gacelas es una plataforma social para runners ecuatorianos que transforma el run
 El usuario debe poder iniciar una carrera en **máximo 2 taps** desde abrir la app:
 
 ```
-Open App → [START RUN] → Running
+Open App - [START RUN] - Running
 ```
 
 Sin menús, sin configuración obligatoria, sin distracciones.
@@ -190,10 +190,10 @@ Sistema base-8:
 
 ```
 ┌─────────────────────────────────┐
-│ 👤 Juan Pérez • hace 2h        │
+│  Juan Pérez • hace 2h        │
 │                                  │
-│ 🏃 Carrera Matutina             │
-│ 📍 Parque La Carolina, Quito   │
+│  Carrera Matutina             │
+│  Parque La Carolina, Quito   │
 │                                  │
 │ ┌─────────────────────────────┐ │
 │ │  [Mapa miniatura]           │ │
@@ -201,7 +201,7 @@ Sistema base-8:
 │                                  │
 │ 5.2 km  •  28:34  •  5:30/km   │
 │                                  │
-│ ❤️ 23  💬 5  🔁 2              │
+│  23   5   2              │
 └─────────────────────────────────┘
 ```
 
@@ -218,10 +218,10 @@ Sistema base-8:
 
 ```
 ┌─────────────────┐
-│   5.23 km      │  ← Número grande
-│   Distancia     │  ← Label pequeño
+│   5.23 km      │ Número grande
+│   Distancia     │ Label pequeño
 ├─────────────────┤
-│ 28:34  • 5:28/km│  ← Métricas secundarias
+│ 28:34  • 5:28/km│ Métricas secundarias
 └─────────────────┘
 ```
 
@@ -229,7 +229,7 @@ Sistema base-8:
 
 ```
 ┌────────────────────────────────┐
-│ 🔴 Maria López                 │  ← Punto rojo = corriendo ahora
+│  Maria López                 │ Punto rojo = corriendo ahora
 │    Corriendo: 2.3 km          │
 │    [Ver en vivo] [Perfil]    │
 ├────────────────────────────────┤
@@ -262,45 +262,45 @@ Estilos JSON para Google Maps disponibles en: `apps/web/src/assets/map-styles/`
 ### Flujo 1: Iniciar y Grabar Carrera
 
 ```
-Home → [Comenzar Carrera] → Pedir permisos GPS →
-Pantalla de Carrera en Vivo (mapa + métricas) →
-[Opciones: Pausar | Compartir en vivo | Terminar] →
-Resumen de Actividad → [Guardar | Descartar]
+Home - [Comenzar Carrera] - Pedir permisos GPS  -
+Pantalla de Carrera en Vivo (mapa + métricas)  -
+[Opciones: Pausar | Compartir en vivo | Terminar]  -
+Resumen de Actividad - [Guardar | Descartar]
 ```
 
 ### Flujo 2: Compartir Ubicación en Vivo
 
 ```
-Durante carrera → [Compartir en vivo] →
-Modal: "¿Con quién?" → [Todos los seguidores | Grupo específico] →
-Confirmación → Broadcasting... (indicador visible) →
+Durante carrera - [Compartir en vivo]  -
+Modal: "¿Con quién?" - [Todos los seguidores | Grupo específico]  -
+Confirmación - Broadcasting... (indicador visible)  -
 [Detener compartir] cuando termine
 ```
 
 ### Flujo 3: Seguir a un Corredor en Vivo
 
 ```
-Feed → Ver post "🔴 Juan está corriendo" →
-[Ver en vivo] → Mapa fullscreen con posición de Juan →
+Feed - Ver post " Juan está corriendo"  -
+[Ver en vivo] - Mapa fullscreen con posición de Juan  -
 Métricas en tiempo real (distancia, ritmo, tiempo)
 ```
 
 ### Flujo 4: Explorar Rutas Populares
 
 ```
-Tab Rutas → Mapa con clusters de rutas →
-[Filtros: Distancia, Dificultad, Tipo] →
-Tap en ruta → Detalle (mapa, stats, reviews) →
+Tab Rutas - Mapa con clusters de rutas  -
+[Filtros: Distancia, Dificultad, Tipo]  -
+Tap en ruta - Detalle (mapa, stats, reviews)  -
 [Guardar | Correr esta ruta | Compartir]
 ```
 
 ### Flujo 5: Unirse a Evento
 
 ```
-Tab Eventos → Lista de eventos cercanos →
-Tap evento → Detalle (fecha, lugar, participantes) →
-[Inscribirse] → Confirmación →
-El día del evento: Notificación → [Ver tracking en vivo de todos]
+Tab Eventos - Lista de eventos cercanos  -
+Tap evento - Detalle (fecha, lugar, participantes)  -
+[Inscribirse] - Confirmación  -
+El día del evento: Notificación - [Ver tracking en vivo de todos]
 ```
 
 ## Consideraciones de Accesibilidad
@@ -352,15 +352,15 @@ animation: countUp 500ms ease-out;
 
 Usar **Heroicons** (outline para navegación, solid para estados activos):
 
-- 🏠 Inicio: `HomeIcon`
-- 🗺️ Rutas: `MapIcon`
-- 👥 Comunidad: `UsersIcon`
-- 📅 Eventos: `CalendarIcon`
-- 👤 Perfil: `UserIcon`
-- ▶️ Iniciar: `PlayIcon`
-- ⏸️ Pausar: `PauseIcon`
-- 📍 Ubicación: `MapPinIcon`
-- 📡 Live: `SignalIcon`
+- Inicio: `HomeIcon`
+- Rutas: `MapIcon`
+- Comunidad: `UsersIcon`
+- Eventos: `CalendarIcon`
+- Perfil: `UserIcon`
+- Iniciar: `PlayIcon`
+- Pausar: `PauseIcon`
+- Ubicación: `MapPinIcon`
+- Live: `SignalIcon`
 
 ## Estados de Carga y Vacíos
 
@@ -374,30 +374,30 @@ Usar **Heroicons** (outline para navegación, solid para estados activos):
 
 - Ilustración simple + mensaje motivacional
 - CTA claro para siguiente acción
-- Ejemplo: "¡Tu primera carrera te espera! 🏃"
+- Ejemplo: "¡Tu primera carrera te espera! "
 
 ## Notificaciones y Toasts
 
 ```
 ┌────────────────────────────────┐
-│ ✅ Carrera guardada exitosamente│
+│ Carrera guardada exitosamente│
 └────────────────────────────────┘
-  ↑ Toast: 3s duración, auto-dismiss
+  (arriba) Toast: 3s duración, auto-dismiss
 
 ┌────────────────────────────────┐
-│ 🔴 Juan López está corriendo   │
+│  Juan López está corriendo   │
 │    [Ver en vivo] [Ignorar]    │
 └────────────────────────────────┘
-  ↑ Notificación persistente hasta acción
+  (arriba) Notificación persistente hasta acción
 ```
 
 ## Micro-interacciones
 
 1. **Pull to refresh**: Lista de actividades con indicador de carga
-2. **Swipe actions**: Deslizar actividad → [Editar | Eliminar]
-3. **Long press**: Mantener en mapa → Crear punto de interés
-4. **Double tap**: Mapa → Dar like rápido a actividad
-5. **Shake phone**: Durante carrera → Marcar punto de interés
+2. **Swipe actions**: Deslizar actividad - [Editar | Eliminar]
+3. **Long press**: Mantener en mapa - Crear punto de interés
+4. **Double tap**: Mapa - Dar like rápido a actividad
+5. **Shake phone**: Durante carrera - Marcar punto de interés
 
 ## Próximos Pasos
 

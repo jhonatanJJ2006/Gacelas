@@ -478,14 +478,14 @@ SI evento.start_time - NOW() <= 1 hora:
 
 ```
 Usuario eliminado:
-  → Eliminar profile (CASCADE)
-  → Eliminar actividades (CASCADE)
-    → Eliminar track_points (CASCADE)
-    → Eliminar likes/comentarios (CASCADE)
-  → Eliminar rutas (SET creator TO null, mantener route_points)
-  → Eliminar follows (CASCADE)
-  → Eliminar club_members (CASCADE)
-  → Eliminar notificaciones (CASCADE)
+  - Eliminar profile (CASCADE)
+  - Eliminar actividades (CASCADE)
+    - Eliminar track_points (CASCADE)
+    - Eliminar likes/comentarios (CASCADE)
+  - Eliminar rutas (SET creator TO null, mantener route_points)
+  - Eliminar follows (CASCADE)
+  - Eliminar club_members (CASCADE)
+  - Eliminar notificaciones (CASCADE)
 ```
 
 ### 11.2 Consistencia de Contadores

@@ -13,7 +13,7 @@ Configuración de Supabase y migraciones SQL.
 
 2. **Ejecutar migraciones**:
    - Opción 1: Usar SQL Editor en dashboard de Supabase
-     - SQL Editor → New Query
+     - SQL Editor - New Query
      - Copiar contenido de `migrations/001_initial_schema.sql`
      - Run
 
@@ -23,8 +23,8 @@ Configuración de Supabase y migraciones SQL.
      ```
 
 3. **Verificar**:
-   - Table Editor → Ver tablas creadas
-   - Database → Extensions → Verificar PostGIS habilitado
+   - Table Editor - Ver tablas creadas
+   - Database - Extensions - Verificar PostGIS habilitado
 
 ## Estructura de Migraciones
 
@@ -55,7 +55,7 @@ SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-**⚠️ Importante**: `SERVICE_ROLE_KEY` tiene permisos totales. NUNCA exponerlo en cliente.
+**Importante**: `SERVICE_ROLE_KEY` tiene permisos totales. NUNCA exponerlo en cliente.
 
 ## Edge Functions
 
