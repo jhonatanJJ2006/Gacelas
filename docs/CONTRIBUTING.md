@@ -26,32 +26,36 @@ Gracias por tu interés en contribuir a Gacelas. Este documento contiene las gu�
 ### Setup Inicial
 
 1. **Clonar el repositorio**
+
    ```bash
    git clone https://github.com/[usuario]/gacelas.git
    cd gacelas
    ```
 
 2. **Instalar dependencias**
+
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Configurar variables de entorno**
-   
+
    Copiar archivos de ejemplo:
+
    ```bash
    cp apps/web/.env.example apps/web/.env.local
    cp apps/android/local.properties.example apps/android/local.properties
    cp backend/.env.example backend/.env
    ```
-   
+
    Completar con tus keys:
    - **Supabase**: Obtener de https://app.supabase.com
    - **Google Maps**: Obtener de https://console.cloud.google.com
 
 4. **Iniciar aplicación web**
+
    ```bash
-   npm run dev:web
+   pnpm dev
    ```
 
 5. **Abrir aplicación Android**
@@ -118,6 +122,7 @@ git checkout -b docs/update-readme
 Seguimos **Conventional Commits**: https://www.conventionalcommits.org/
 
 **Formato**:
+
 ```
 <type>(<scope>): <description>
 
@@ -127,6 +132,7 @@ Seguimos **Conventional Commits**: https://www.conventionalcommits.org/
 ```
 
 **Types**:
+
 - `feat`: Nueva feature
 - `fix`: Corrección de bug
 - `docs`: Cambios en documentación
@@ -161,6 +167,7 @@ Closes #42"
 ```
 
 **Scopes comunes**:
+
 - `web`: Aplicación web
 - `android`: Aplicación Android
 - `backend`: Backend/base de datos
@@ -188,20 +195,21 @@ Ver sección [Pull Requests](#pull-requests) más abajo.
 **Estilo**: Seguir guía de [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript)
 
 **Naming Conventions**:
+
 ```typescript
 // Variables y funciones: camelCase
 const userName = 'Juan'
-function getUserProfile() { }
+function getUserProfile() {}
 
 // Constantes: UPPER_SNAKE_CASE
 const MAX_RETRY_COUNT = 3
 
 // Interfaces y Types: PascalCase
-interface UserProfile { }
+interface UserProfile {}
 type ActivityType = 'run' | 'walk'
 
 // Componentes React: PascalCase
-function ActivityCard() { }
+function ActivityCard() {}
 
 // Archivos: kebab-case para archivos, PascalCase para componentes
 // ✅ activity-card.tsx (archivo), ActivityCard (componente)
@@ -209,6 +217,7 @@ function ActivityCard() { }
 ```
 
 **Imports**: Ordenar por categorías
+
 ```typescript
 // 1. External libraries
 import React from 'react'
@@ -229,6 +238,7 @@ import { calculateDistance } from './utils'
 ```
 
 **Functions**: Preferir arrow functions
+
 ```typescript
 // ✅ Preferido
 const calculatePace = (distance: number, duration: number): number => {
@@ -241,11 +251,12 @@ function calculatePace(distance: number, duration: number): number {
 }
 
 // Excepción: Componentes React (ambos estilos OK)
-export function ActivityCard() { }
-export const ActivityCard = () => { }
+export function ActivityCard() {}
+export const ActivityCard = () => {}
 ```
 
 **Types vs Interfaces**:
+
 ```typescript
 // Preferir `interface` para objetos y contracts
 interface UserProfile {
@@ -259,16 +270,13 @@ type OptionalUser = User | null
 ```
 
 **Async/Await**: Preferir sobre Promises
+
 ```typescript
 // ✅ Preferido
 async function fetchActivity(id: string) {
   try {
-    const { data, error } = await supabase
-      .from('activities')
-      .select('*')
-      .eq('id', id)
-      .single()
-    
+    const { data, error } = await supabase.from('activities').select('*').eq('id', id).single()
+
     if (error) throw error
     return data
   } catch (error) {
@@ -296,6 +304,7 @@ function fetchActivity(id: string) {
 **Estilo**: Seguir [Kotlin Coding Conventions](https://kotlinlang.org/docs/coding-conventions.html)
 
 **Naming Conventions**:
+
 ```kotlin
 // Variables y funciones: camelCase
 val userName = "Juan"
@@ -318,6 +327,7 @@ package com.gacelas.feature.recording
 ```
 
 **Null Safety**: Aprovechar sistema de tipos de Kotlin
+
 ```kotlin
 // ✅ Preferido: Usar tipos nullable con safe calls
 val userName: String? = user?.profile?.username
@@ -326,7 +336,7 @@ val userName: String? = user?.profile?.username
 val displayName = userName ?: "Usuario Anónimo"
 
 // ✅ Null checks con let
-user?.let { 
+user?.let {
     updateProfile(it)
 }
 
@@ -335,6 +345,7 @@ val userName = user!!.username  // Puede crashear
 ```
 
 **Data Classes**: Para models simples
+
 ```kotlin
 data class Activity(
     val id: String,
@@ -346,6 +357,7 @@ data class Activity(
 ```
 
 **Coroutines**: Para operaciones async
+
 ```kotlin
 // ViewModel
 viewModelScope.launch {
@@ -371,6 +383,7 @@ suspend fun getActivity(id: String): Activity {
 ### SQL (Migrations)
 
 **Naming Conventions**:
+
 ```sql
 -- Tablas: plural, snake_case
 CREATE TABLE activities ( );
@@ -393,6 +406,7 @@ USING (user_id = auth.uid());
 ```
 
 **Orden de statements**:
+
 ```sql
 -- 1. CREATE TABLE
 -- 2. ALTER TABLE (constraints, defaults)
@@ -408,6 +422,7 @@ USING (user_id = auth.uid());
 **Framework**: Vitest + React Testing Library
 
 **Ubicación**: `__tests__` junto al archivo testeado
+
 ```
 components/
 ├── activity-card.tsx
@@ -418,6 +433,7 @@ components/
 **Naming**: `<archivo>.test.tsx`
 
 **Ejemplo**:
+
 ```typescript
 import { render, screen } from '@testing-library/react'
 import { ActivityCard } from '../activity-card'
@@ -430,12 +446,12 @@ describe('ActivityCard', () => {
       distanceMeters: 5000,
       durationSeconds: 1800
     }
-    
+
     render(<ActivityCard activity={activity} />)
-    
+
     expect(screen.getByText('Morning Run')).toBeInTheDocument()
   })
-  
+
   it('should display distance in km', () => {
     const activity = {
       id: '1',
@@ -443,19 +459,19 @@ describe('ActivityCard', () => {
       distanceMeters: 5000,
       durationSeconds: 1800
     }
-    
+
     render(<ActivityCard activity={activity} />)
-    
+
     expect(screen.getByText('5.0 km')).toBeInTheDocument()
   })
 })
 ```
 
 **Ejecutar tests**:
+
 ```bash
-npm run test          # Todos los tests
-npm run test:watch    # Watch mode
-npm run test:coverage # Coverage report
+pnpm test:unit  # Tests unitarios
+pnpm test:watch # Watch mode con Vitest
 ```
 
 ### Android (Kotlin)
@@ -467,27 +483,28 @@ npm run test:coverage # Coverage report
 **Naming**: `<Clase>Test.kt`
 
 **Ejemplo**:
+
 ```kotlin
 class ActivityRepositoryTest {
-    
+
     @Test
     fun `getActivity returns activity when found`() = runTest {
         // Given
         val activityId = "test-id"
         val expected = Activity(id = activityId, title = "Test Run")
-        
+
         // When
         val result = repository.getActivity(activityId)
-        
+
         // Then
         assertEquals(expected, result)
     }
-    
+
     @Test
     fun `getActivity throws exception when not found`() = runTest {
         // Given
         val activityId = "non-existent"
-        
+
         // When & Then
         assertThrows<NotFoundException> {
             repository.getActivity(activityId)
@@ -497,6 +514,7 @@ class ActivityRepositoryTest {
 ```
 
 **Ejecutar tests**:
+
 ```bash
 ./gradlew test                    # Unit tests
 ./gradlew connectedAndroidTest    # UI tests (requiere emulador)
@@ -516,6 +534,7 @@ class ActivityRepositoryTest {
 ### Crear PR
 
 1. Push tu branch:
+
    ```bash
    git push origin feature/live-tracking
    ```
@@ -525,18 +544,22 @@ class ActivityRepositoryTest {
 3. **Template de PR**:
    ```markdown
    ## Descripción
+
    Breve descripción de qué hace este PR.
-   
+
    ## Tipo de Cambio
+
    - [ ] Bug fix
    - [ ] Nueva feature
    - [ ] Breaking change
    - [ ] Documentación
-   
+
    ## ¿Cómo se ha testeado?
+
    Describe los tests que ejecutaste.
-   
+
    ## Checklist
+
    - [ ] Mi código sigue las guías de estilo
    - [ ] He realizado self-review
    - [ ] He comentado código complejo
@@ -544,19 +567,22 @@ class ActivityRepositoryTest {
    - [ ] Mis cambios no generan warnings
    - [ ] He agregado tests
    - [ ] Tests nuevos y existentes pasan
-   
+
    ## Screenshots (si aplica)
+
    ![Screenshot](url)
    ```
 
 ### Code Review
 
 **Como autor**:
+
 - Responde a comentarios de forma constructiva
 - Haz los cambios solicitados en commits separados
 - Resuelve conversaciones cuando estén completadas
 
 **Como reviewer**:
+
 - Sé respetuoso y constructivo
 - Explica el "por qué" de tus sugerencias
 - Aprueba cuando estés satisfecho
@@ -575,39 +601,50 @@ class ActivityRepositoryTest {
 **Crear issue**: https://github.com/[usuario]/gacelas/issues/new
 
 **Template de Bug**:
+
 ```markdown
 ## Descripción del Bug
+
 Descripción clara del problema.
 
 ## Pasos para Reproducir
+
 1. Ir a '...'
 2. Click en '...'
 3. Ver error
 
 ## Comportamiento Esperado
+
 Qué debería pasar.
 
 ## Screenshots
+
 ![Screenshot](url)
 
 ## Entorno
+
 - OS: [e.g. Android 13, macOS 14]
 - Navegador: [e.g. Chrome 120]
 - Versión de la app: [e.g. 0.1.0]
 ```
 
 **Template de Feature Request**:
+
 ```markdown
 ## Feature Solicitada
+
 Descripción clara de la feature.
 
 ## Caso de Uso
+
 ¿Por qué es necesaria? ¿Qué problema resuelve?
 
 ## Solución Propuesta
+
 ¿Cómo se vería la implementación?
 
 ## Alternativas Consideradas
+
 ¿Hay otras formas de resolver esto?
 ```
 

@@ -30,6 +30,7 @@ apps/web/src/
 ### Componentes UI Base (`components/ui/`)
 
 #### `Button.tsx`
+
 ```typescript
 interface ButtonProps {
   variant: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
@@ -46,6 +47,7 @@ interface ButtonProps {
 **Responsabilidad**: Botón reutilizable con estados de carga, variantes de estilo.
 
 #### `Card.tsx`
+
 ```typescript
 interface CardProps {
   padding?: 'none' | 'small' | 'medium' | 'large'
@@ -58,10 +60,11 @@ interface CardProps {
 **Responsabilidad**: Contenedor con sombra y bordes redondeados.
 
 #### `Avatar.tsx`
+
 ```typescript
 interface AvatarProps {
   src?: string
-  fallback: string  // Iniciales
+  fallback: string // Iniciales
   size: 'small' | 'medium' | 'large'
   status?: 'online' | 'offline' | 'running'
 }
@@ -70,6 +73,7 @@ interface AvatarProps {
 **Responsabilidad**: Avatar de usuario con indicador de estado.
 
 #### `Badge.tsx`
+
 ```typescript
 interface BadgeProps {
   variant: 'default' | 'success' | 'warning' | 'danger'
@@ -81,6 +85,7 @@ interface BadgeProps {
 **Responsabilidad**: Badge para etiquetas, estados, notificaciones.
 
 #### `Modal.tsx`
+
 ```typescript
 interface ModalProps {
   isOpen: boolean
@@ -96,6 +101,7 @@ interface ModalProps {
 ### Componentes de Mapa (`components/map/`)
 
 #### `MapView.tsx`
+
 ```typescript
 interface MapViewProps {
   center: { lat: number; lng: number }
@@ -110,11 +116,13 @@ interface MapViewProps {
 **Responsabilidad**: Wrapper de Google Maps con estilos custom, gestión de controles.
 
 **Hooks utilizados**:
+
 - `useGoogleMaps()`: Inicializa Google Maps API
 - `useMapMarkers()`: Gestiona marcadores dinámicos
 - `useMapPolylines()`: Dibuja rutas
 
 #### `LiveTrackerMap.tsx`
+
 ```typescript
 interface LiveTrackerMapProps {
   activityId: string
@@ -125,10 +133,12 @@ interface LiveTrackerMapProps {
 **Responsabilidad**: Mapa en tiempo real que escucha Supabase Broadcast y actualiza posición del corredor.
 
 **Hooks utilizados**:
+
 - `useLivePosition(activityId)`: Suscripción a Realtime Broadcast
 - `useMapAnimation()`: Anima transición de marcador
 
 #### `RouteDrawer.tsx`
+
 ```typescript
 interface RouteDrawerProps {
   mode: 'view' | 'edit' | 'draw'
@@ -142,6 +152,7 @@ interface RouteDrawerProps {
 ### Componentes de Actividad (`components/activity/`)
 
 #### `ActivityCard.tsx`
+
 ```typescript
 interface ActivityCardProps {
   activity: Activity
@@ -153,11 +164,13 @@ interface ActivityCardProps {
 **Responsabilidad**: Tarjeta que muestra resumen de actividad (distancia, tiempo, mapa miniatura).
 
 **Subcomponentes**:
+
 - `ActivityStats`: Métricas (km, tiempo, pace)
 - `ActivityMap`: Mapa miniatura de la ruta
 - `ActivityActions`: Botones (like, comentar, compartir)
 
 #### `ActivityDetail.tsx`
+
 ```typescript
 interface ActivityDetailProps {
   activityId: string
@@ -167,10 +180,12 @@ interface ActivityDetailProps {
 **Responsabilidad**: Vista completa de actividad con mapa grande, gráficos, comentarios.
 
 **Hooks utilizados**:
+
 - `useActivity(id)`: Carga actividad y track points
 - `useActivityComments(id)`: Carga comentarios
 
 #### `ActivityRecorder.tsx`
+
 ```typescript
 interface ActivityRecorderProps {
   onActivitySaved: (activity: Activity) => void
@@ -180,16 +195,19 @@ interface ActivityRecorderProps {
 **Responsabilidad**: Pantalla principal durante la grabación de actividad.
 
 **Estado interno**:
+
 - Tiempo transcurrido
 - Distancia acumulada
 - Ritmo actual
 - Estado de grabación (running, paused, stopped)
 
 **Hooks utilizados**:
+
 - `useGeolocation()`: Acceso a ubicación del navegador
 - `useActivityRecording()`: Lógica de grabación y batch upload
 
 #### `LiveShareControls.tsx`
+
 ```typescript
 interface LiveShareControlsProps {
   activityId: string
@@ -203,6 +221,7 @@ interface LiveShareControlsProps {
 ### Componentes Sociales (`components/social/`)
 
 #### `FeedItem.tsx`
+
 ```typescript
 interface FeedItemProps {
   post: Post
@@ -214,6 +233,7 @@ interface FeedItemProps {
 **Responsabilidad**: Item del feed (puede ser actividad, evento, post de club).
 
 #### `UserProfile.tsx`
+
 ```typescript
 interface UserProfileProps {
   userId: string
@@ -224,11 +244,13 @@ interface UserProfileProps {
 **Responsabilidad**: Perfil de usuario con stats, actividades recientes, botón seguir/dejar de seguir.
 
 **Hooks utilizados**:
+
 - `useUser(userId)`: Datos del usuario
 - `useUserStats(userId)`: Estadísticas agregadas
 - `useFollowStatus(userId)`: Estado de seguimiento
 
 #### `FollowersList.tsx`
+
 ```typescript
 interface FollowersListProps {
   userId: string
@@ -243,11 +265,13 @@ interface FollowersListProps {
 #### `features/routes/`
 
 **Componentes principales**:
+
 - `RoutesExplorer`: Mapa con rutas públicas, filtros
 - `RouteDetail`: Detalle de ruta con reviews, fotos
 - `RouteCreator`: Creador de rutas (desde track o dibujando)
 
 **Hooks**:
+
 - `useNearbyRoutes(location, radius)`: Rutas cercanas
 - `useRoute(id)`: Detalle de ruta
 - `useSaveRoute(activityId)`: Guardar actividad como ruta
@@ -255,22 +279,26 @@ interface FollowersListProps {
 #### `features/community/`
 
 **Componentes principales**:
+
 - `CommunityFeed`: Feed de actividades de seguidos
 - `ClubList`: Lista de clubes
 - `ClubDetail`: Página de club con miembros, eventos, feed
 
 **Hooks**:
+
 - `useFeed(filter)`: Feed con paginación
 - `useClubs(location)`: Clubes cercanos
 
 #### `features/events/`
 
 **Componentes principales**:
+
 - `EventList`: Lista de eventos próximos
 - `EventDetail`: Detalle de evento con inscripción
 - `EventLiveTracker`: Mapa en vivo durante evento con todos los participantes
 
 **Hooks**:
+
 - `useEvents(filters)`: Eventos con filtros
 - `useEventParticipants(eventId)`: Participantes inscritos
 - `useLiveEventPositions(eventId)`: Posiciones en vivo de todos
@@ -278,6 +306,7 @@ interface FollowersListProps {
 #### `features/profile/`
 
 **Componentes principales**:
+
 - `ProfileView`: Vista principal de perfil
 - `StatsOverview`: Resumen de estadísticas (total km, actividades, racha)
 - `ActivityHistory`: Historial de actividades con filtros
@@ -286,6 +315,7 @@ interface FollowersListProps {
 ### Hooks Personalizados (`hooks/`)
 
 #### `useGeolocation()`
+
 ```typescript
 interface UseGeolocationOptions {
   enableHighAccuracy: boolean
@@ -302,44 +332,56 @@ function useGeolocation(options?: UseGeolocationOptions) {
 ```
 
 #### `useLivePosition(activityId: string)`
+
 ```typescript
 function useLivePosition(activityId: string) {
   const [position, setPosition] = useState<LivePosition | null>(null)
-  
+
   useEffect(() => {
     const channel = supabase.channel(`live:activity:${activityId}`)
     channel.on('broadcast', { event: 'position_update' }, (payload) => {
       setPosition(payload)
     })
     channel.subscribe()
-    
-    return () => { channel.unsubscribe() }
+
+    return () => {
+      channel.unsubscribe()
+    }
   }, [activityId])
-  
+
   return position
 }
 ```
 
 #### `useActivityRecording()`
+
 ```typescript
 function useActivityRecording() {
   const [isRecording, setIsRecording] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
   const [trackPoints, setTrackPoints] = useState<TrackPoint[]>([])
-  
-  const startRecording = () => { /* ... */ }
-  const pauseRecording = () => { /* ... */ }
-  const resumeRecording = () => { /* ... */ }
-  const stopRecording = async () => { /* ... */ }
-  
-  return { 
-    isRecording, 
-    isPaused, 
-    trackPoints, 
-    startRecording, 
-    pauseRecording, 
-    resumeRecording, 
-    stopRecording 
+
+  const startRecording = () => {
+    /* ... */
+  }
+  const pauseRecording = () => {
+    /* ... */
+  }
+  const resumeRecording = () => {
+    /* ... */
+  }
+  const stopRecording = async () => {
+    /* ... */
+  }
+
+  return {
+    isRecording,
+    isPaused,
+    trackPoints,
+    startRecording,
+    pauseRecording,
+    resumeRecording,
+    stopRecording,
   }
 }
 ```
@@ -347,6 +389,7 @@ function useActivityRecording() {
 ### Stores (Zustand) (`stores/`)
 
 #### `authStore.ts`
+
 ```typescript
 interface AuthState {
   user: User | null
@@ -357,10 +400,11 @@ interface AuthState {
   updateProfile: (updates: Partial<Profile>) => Promise<void>
 }
 
-const useAuthStore = create<AuthState>((set) => ({ /* ... */ }))
+const useAuthStore = create<AuthState>((set) => ({/* ... */}))
 ```
 
 #### `mapStore.ts`
+
 ```typescript
 interface MapState {
   center: { lat: number; lng: number }
@@ -371,7 +415,7 @@ interface MapState {
   toggleDarkMode: () => void
 }
 
-const useMapStore = create<MapState>((set) => ({ /* ... */ }))
+const useMapStore = create<MapState>((set) => ({/* ... */}))
 ```
 
 ---
@@ -405,33 +449,34 @@ apps/android/app/src/main/java/com/gacelas/
 #### `core/location/`
 
 ##### `LocationService.kt`
+
 ```kotlin
 @AndroidEntryPoint
 class LocationService : Service() {
     @Inject lateinit var locationClient: FusedLocationProviderClient
     @Inject lateinit var repository: ActivityRepository
-    
+
     private val pointsBuffer = mutableListOf<TrackPoint>()
-    
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground(NOTIFICATION_ID, createNotification())
         startLocationUpdates()
         return START_STICKY
     }
-    
+
     private fun startLocationUpdates() {
         val locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY, 
+            Priority.PRIORITY_HIGH_ACCURACY,
             3000  // 3 segundos
         ).build()
-        
+
         locationClient.requestLocationUpdates(
             locationRequest,
             locationCallback,
             Looper.getMainLooper()
         )
     }
-    
+
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
             result.lastLocation?.let { location ->
@@ -439,7 +484,7 @@ class LocationService : Service() {
             }
         }
     }
-    
+
     private fun handleNewLocation(location: Location) {
         val point = TrackPoint(
             lat = location.latitude,
@@ -450,25 +495,25 @@ class LocationService : Service() {
             speed = location.speed,
             bearing = location.bearing
         )
-        
+
         pointsBuffer.add(point)
-        
+
         // Broadcast a espectadores (cada punto)
         broadcastLivePosition(point)
-        
+
         // Flush a DB cada 50 puntos
         if (pointsBuffer.size >= 50) {
             flushPointsToDatabase()
         }
     }
-    
+
     private suspend fun broadcastLivePosition(point: TrackPoint) {
         realtimeChannel?.broadcast(
             event = "position_update",
             payload = point
         )
     }
-    
+
     private suspend fun flushPointsToDatabase() {
         repository.insertTrackPoints(currentActivityId, pointsBuffer)
         pointsBuffer.clear()
@@ -479,6 +524,7 @@ class LocationService : Service() {
 **Responsabilidad**: Servicio en foreground para recolección de ubicación GPS con alta frecuencia.
 
 ##### `LocationManager.kt`
+
 ```kotlin
 @Singleton
 class LocationManager @Inject constructor(
@@ -487,16 +533,16 @@ class LocationManager @Inject constructor(
 ) {
     fun checkPermissions(): Boolean { /* ... */ }
     fun requestPermissions(activity: Activity) { /* ... */ }
-    
+
     suspend fun getCurrentLocation(): Location? { /* ... */ }
-    
+
     fun startTracking(activityId: String) {
         val intent = Intent(context, LocationService::class.java).apply {
             putExtra("ACTIVITY_ID", activityId)
         }
         context.startForegroundService(intent)
     }
-    
+
     fun stopTracking() {
         context.stopService(Intent(context, LocationService::class.java))
     }
@@ -508,6 +554,7 @@ class LocationManager @Inject constructor(
 #### `core/data/`
 
 ##### `SupabaseClient.kt`
+
 ```kotlin
 @Singleton
 class SupabaseClient @Inject constructor() {
@@ -524,6 +571,7 @@ class SupabaseClient @Inject constructor() {
 ```
 
 ##### `ActivityRepository.kt`
+
 ```kotlin
 @Singleton
 class ActivityRepository @Inject constructor(
@@ -536,18 +584,18 @@ class ActivityRepository @Inject constructor(
             .decodeSingle<Activity>()
             .id
     }
-    
+
     suspend fun insertTrackPoints(
-        activityId: String, 
+        activityId: String,
         points: List<TrackPoint>
     ) {
         supabase.client.from("track_points").insert(points)
     }
-    
+
     suspend fun getActivityWithTrackPoints(id: String): ActivityDetail {
         // Consulta con join o dos queries
     }
-    
+
     fun observeActivitiesByUser(userId: String): Flow<List<Activity>> {
         return supabase.client.from("activities")
             .select()
@@ -558,6 +606,7 @@ class ActivityRepository @Inject constructor(
 ```
 
 ##### `RoomDatabase.kt` (Caché offline)
+
 ```kotlin
 @Database(
     entities = [
@@ -579,6 +628,7 @@ abstract class GacelasDatabase : RoomDatabase() {
 #### `core/domain/usecases/`
 
 ##### `StartActivityRecordingUseCase.kt`
+
 ```kotlin
 @Singleton
 class StartActivityRecordingUseCase @Inject constructor(
@@ -588,9 +638,9 @@ class StartActivityRecordingUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(title: String): Result<String> {
         return try {
-            val userId = authRepository.getCurrentUserId() 
+            val userId = authRepository.getCurrentUserId()
                 ?: return Result.failure(Exception("Not authenticated"))
-            
+
             val activity = Activity(
                 id = UUID.randomUUID().toString(),
                 userId = userId,
@@ -598,10 +648,10 @@ class StartActivityRecordingUseCase @Inject constructor(
                 startTime = Instant.now(),
                 isPublic = false
             )
-            
+
             val activityId = repository.createActivity(activity)
             locationManager.startTracking(activityId)
-            
+
             Result.success(activityId)
         } catch (e: Exception) {
             Result.failure(e)
@@ -611,6 +661,7 @@ class StartActivityRecordingUseCase @Inject constructor(
 ```
 
 ##### `StopActivityRecordingUseCase.kt`
+
 ```kotlin
 @Singleton
 class StopActivityRecordingUseCase @Inject constructor(
@@ -619,10 +670,10 @@ class StopActivityRecordingUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(activityId: String): Result<ActivitySummary> {
         locationManager.stopTracking()
-        
+
         // Calcular estadísticas finales
         val summary = repository.calculateActivityStats(activityId)
-        
+
         // Actualizar actividad en DB
         repository.updateActivity(
             activityId,
@@ -631,7 +682,7 @@ class StopActivityRecordingUseCase @Inject constructor(
             duration = summary.duration,
             avgPace = summary.avgPace
         )
-        
+
         return Result.success(summary)
     }
 }
@@ -642,6 +693,7 @@ class StopActivityRecordingUseCase @Inject constructor(
 #### `feature/recording/`
 
 ##### `RecordingScreen.kt`
+
 ```kotlin
 @Composable
 fun RecordingScreen(
@@ -649,7 +701,7 @@ fun RecordingScreen(
     onFinish: (ActivitySummary) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+
     Scaffold(
         topBar = {
             RecordingTopBar(
@@ -674,7 +726,7 @@ fun RecordingScreen(
                     .fillMaxWidth()
                     .weight(1f)
             )
-            
+
             // Panel de métricas
             MetricsPanel(
                 distance = uiState.distance,
@@ -682,7 +734,7 @@ fun RecordingScreen(
                 avgPace = uiState.avgPace,
                 elevation = uiState.elevationGain
             )
-            
+
             // Controles de compartir en vivo
             if (uiState.isRecording) {
                 LiveSharingControls(
@@ -696,6 +748,7 @@ fun RecordingScreen(
 ```
 
 ##### `RecordingViewModel.kt`
+
 ```kotlin
 @HiltViewModel
 class RecordingViewModel @Inject constructor(
@@ -703,29 +756,29 @@ class RecordingViewModel @Inject constructor(
     private val stopRecordingUseCase: StopActivityRecordingUseCase,
     private val locationManager: LocationManager
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(RecordingUiState())
     val uiState: StateFlow<RecordingUiState> = _uiState.asStateFlow()
-    
+
     init {
         observeLocationUpdates()
         startElapsedTimeCounter()
     }
-    
+
     fun startRecording(title: String) {
         viewModelScope.launch {
             startRecordingUseCase(title)
                 .onSuccess { activityId ->
-                    _uiState.update { 
+                    _uiState.update {
                         it.copy(
                             activityId = activityId,
                             isRecording = true
-                        ) 
+                        )
                     }
                 }
         }
     }
-    
+
     fun stopRecording() {
         viewModelScope.launch {
             stopRecordingUseCase(uiState.value.activityId)
@@ -734,7 +787,7 @@ class RecordingViewModel @Inject constructor(
                 }
         }
     }
-    
+
     private fun observeLocationUpdates() {
         // Observar updates de Location Service
     }
@@ -744,20 +797,21 @@ class RecordingViewModel @Inject constructor(
 #### `feature/routes/`
 
 ##### `RoutesExplorerScreen.kt`
+
 ```kotlin
 @Composable
 fun RoutesExplorerScreen(
     viewModel: RoutesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+
     Box {
         // Mapa de fondo con rutas
         MapView(
             routes = uiState.routes,
             onRouteClick = viewModel::selectRoute
         )
-        
+
         // Panel inferior deslizable
         BottomSheet {
             LazyColumn {
@@ -769,7 +823,7 @@ fun RoutesExplorerScreen(
                 }
             }
         }
-        
+
         // Filtros flotantes
         FilterChips(
             filters = uiState.filters,
@@ -782,6 +836,7 @@ fun RoutesExplorerScreen(
 ### UI Components (`ui/components/`)
 
 #### `MapView.kt`
+
 ```kotlin
 @Composable
 fun MapView(
@@ -795,7 +850,7 @@ fun MapView(
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(center, zoom)
     }
-    
+
     GoogleMap(
         modifier = modifier,
         cameraPositionState = cameraPositionState,
@@ -811,7 +866,7 @@ fun MapView(
                 title = markerData.title
             )
         }
-        
+
         polylines.forEach { polylineData ->
             Polyline(
                 points = polylineData.points,
@@ -824,6 +879,7 @@ fun MapView(
 ```
 
 #### `StatsCard.kt`
+
 ```kotlin
 @Composable
 fun StatsCard(
@@ -862,6 +918,7 @@ fun StatsCard(
 ### Navigation
 
 #### `Navigation.kt`
+
 ```kotlin
 @Composable
 fun GacelasNavigation(
@@ -877,8 +934,8 @@ fun GacelasNavigation(
         composable("events") { EventsListScreen() }
         composable("profile") { ProfileScreen() }
         composable("recording") { RecordingScreen() }
-        composable("route/{routeId}") { 
-            RouteDetailScreen(routeId = it.arguments?.getString("routeId")!!) 
+        composable("route/{routeId}") {
+            RouteDetailScreen(routeId = it.arguments?.getString("routeId")!!)
         }
     }
 }
@@ -887,18 +944,21 @@ fun GacelasNavigation(
 ## Resumen de Responsabilidades
 
 ### Web
+
 - **UI/UX** principal para desktop y tablet
 - Exploración de rutas en pantalla grande
 - Gestión de perfil y configuración
 - Visualización de estadísticas con gráficos
 
 ### Android
+
 - **Grabación de actividades** con GPS de alta precisión
 - Location Service en foreground
 - Notificaciones locales
 - Optimización de batería
 
 ### Backend (Supabase)
+
 - **Almacenamiento persistente** de actividades y rutas
 - **Streaming en tiempo real** vía Realtime Broadcast
 - **Autenticación y autorización** con RLS

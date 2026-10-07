@@ -2,9 +2,7 @@ export function Routes() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-          Rutas 🗺️
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Rutas 🗺️</h1>
         <p className="text-gray-600 dark:text-gray-300 mb-6">
           Explora, crea y comparte rutas de running.
         </p>

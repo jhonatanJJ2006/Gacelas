@@ -14,24 +14,24 @@ erDiagram
     users ||--o{ posts : creates
     users ||--o{ comments : writes
     users ||--o{ notifications : receives
-    
+
     activities ||--o{ track_points : contains
     activities ||--o{ activity_likes : receives
     activities ||--o{ comments : has
     activities }o--o| routes : "can_become"
-    
+
     routes ||--o{ route_points : defines
     routes ||--o{ route_likes : receives
     routes ||--o{ route_reviews : has
     routes ||--o{ saved_routes : "saved_by_users"
-    
+
     clubs ||--o{ club_members : has
     clubs ||--o{ club_posts : contains
     clubs ||--o{ events : organizes
-    
+
     events ||--o{ event_participants : has
     events ||--o{ event_comments : receives
-    
+
     posts ||--o{ post_likes : receives
     posts ||--o{ comments : has
 ```
@@ -54,6 +54,7 @@ CREATE TABLE auth.users (
 **Descripción**: Usuario base del sistema, gestionado por Supabase Auth.
 
 **Índices**:
+
 - `PRIMARY KEY (id)`
 - `UNIQUE (email)`
 
@@ -86,10 +87,12 @@ CREATE INDEX profiles_location_idx ON profiles USING GIST(home_location);
 **Descripción**: Perfil público/privado del usuario con configuraciones de privacidad.
 
 **Campos importantes**:
+
 - `home_location`: Ubicación de casa para ocultar inicio/fin de rutas
 - `privacy_level`: Controla quién puede ver actividades
 
 **Relaciones**:
+
 - 1:1 con `users`
 
 ---
@@ -103,11 +106,11 @@ CREATE TABLE activities (
     title TEXT NOT NULL,
     description TEXT,
     activity_type TEXT DEFAULT 'run' CHECK (activity_type IN ('run', 'walk', 'hike', 'bike', 'other')),
-    
+
     -- Timestamps
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time TIMESTAMP WITH TIME ZONE,
-    
+
     -- Métricas calculadas
     distance_meters INTEGER,
     duration_seconds INTEGER,
@@ -117,20 +120,20 @@ CREATE TABLE activities (
     elevation_gain_meters INTEGER,
     elevation_loss_meters INTEGER,
     calories INTEGER,
-    
+
     -- Ubicaciones (con fuzzing)
     started_location GEOGRAPHY(Point, 4326),
     ended_location GEOGRAPHY(Point, 4326),
-    
+
     -- Metadata
     is_public BOOLEAN DEFAULT false,
     is_live_shared BOOLEAN DEFAULT false,  -- Está compartiendo en vivo actualmente
     route_id UUID REFERENCES routes(id) ON DELETE SET NULL,  -- Si se guardó como ruta
-    
+
     -- Stats sociales (desnormalizado para performance)
     likes_count INTEGER DEFAULT 0,
     comments_count INTEGER DEFAULT 0,
-    
+
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -144,12 +147,14 @@ CREATE INDEX activities_started_location_idx ON activities USING GIST(started_lo
 **Descripción**: Actividad individual grabada por un usuario.
 
 **Métricas**:
+
 - `distance_meters`: Distancia total en metros
 - `duration_seconds`: Duración en segundos
 - `avg_pace_seconds_per_km`: Ritmo promedio (seg/km)
 - `elevation_gain_meters`: Ascenso acumulado
 
 **Relaciones**:
+
 - N:1 con `users`
 - 1:N con `track_points`
 - N:1 opcional con `routes` (si se guardó como ruta)
@@ -162,14 +167,14 @@ CREATE INDEX activities_started_location_idx ON activities USING GIST(started_lo
 CREATE TABLE track_points (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     activity_id UUID NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
-    
+
     location GEOGRAPHY(Point, 4326) NOT NULL,  -- PostGIS: (lon, lat)
     elevation_meters FLOAT,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
     accuracy_meters FLOAT,
     speed_mps FLOAT,  -- m/s
     bearing_degrees FLOAT,  -- 0-360
-    
+
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -183,14 +188,17 @@ CREATE INDEX track_points_location_idx ON track_points USING GIST(location);
 **Frecuencia**: 1 punto cada 3-5 segundos durante la actividad.
 
 **Volumen estimado**:
+
 - 1 hora de running = ~1,200 puntos
 - Tamaño por punto: ~50 bytes
 - 1 actividad = ~60 KB
 
 **Relaciones**:
+
 - N:1 con `activities`
 
 **Optimización**:
+
 - Índice GIST para consultas espaciales rápidas
 - Particionado por `activity_id` si el volumen crece mucho
 
@@ -202,35 +210,35 @@ CREATE INDEX track_points_location_idx ON track_points USING GIST(location);
 CREATE TABLE routes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    
+
     name TEXT NOT NULL,
     description TEXT,
-    
+
     -- Métricas
     distance_meters INTEGER NOT NULL,
     elevation_gain_meters INTEGER,
     difficulty TEXT CHECK (difficulty IN ('easy', 'moderate', 'hard', 'extreme')),
     route_type TEXT CHECK (route_type IN ('loop', 'out_and_back', 'point_to_point')),
     surface TEXT CHECK (surface IN ('road', 'trail', 'mixed', 'track')),
-    
+
     -- Geoespacial
     start_location GEOGRAPHY(Point, 4326) NOT NULL,
     end_location GEOGRAPHY(Point, 4326),
     bounding_box GEOGRAPHY(Polygon, 4326),  -- Para búsquedas rápidas
-    
+
     -- Metadata
     is_public BOOLEAN DEFAULT true,
     is_verified BOOLEAN DEFAULT false,  -- Verificada por moderadores
     tags TEXT[],  -- ['scenic', 'flat', 'urban', etc.]
-    
+
     -- Stats (desnormalizadas)
     likes_count INTEGER DEFAULT 0,
     times_completed INTEGER DEFAULT 0,
     avg_rating FLOAT,
-    
+
     -- Origen
     created_from_activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,
-    
+
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -246,6 +254,7 @@ CREATE INDEX routes_tags_idx ON routes USING GIN(tags);
 **Descripción**: Ruta guardada y compartible, creada desde una actividad o dibujada manualmente.
 
 **Relaciones**:
+
 - N:1 con `users`
 - 1:N con `route_points`
 - 1:N con `route_reviews`
@@ -258,17 +267,17 @@ CREATE INDEX routes_tags_idx ON routes USING GIN(tags);
 CREATE TABLE route_points (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     route_id UUID NOT NULL REFERENCES routes(id) ON DELETE CASCADE,
-    
+
     location GEOGRAPHY(Point, 4326) NOT NULL,
     sequence INTEGER NOT NULL,  -- Orden de los puntos (1, 2, 3...)
     elevation_meters FLOAT,
-    
+
     -- Puntos de interés opcionales
     poi_type TEXT,  -- 'water_fountain', 'rest_area', 'scenic_view', 'parking'
     poi_description TEXT,
-    
+
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     UNIQUE(route_id, sequence)
 );
 
@@ -279,6 +288,7 @@ CREATE INDEX route_points_location_idx ON route_points USING GIST(location);
 **Descripción**: Puntos que definen el trazado de una ruta. Similar a `track_points` pero más simplificado.
 
 **Optimización**:
+
 - Algoritmo Douglas-Peucker para reducir número de puntos sin perder forma
 
 ---
@@ -290,12 +300,12 @@ CREATE TABLE follows (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     follower_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     followed_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    
+
     status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected')),
-    
+
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     UNIQUE(follower_id, followed_id),
     CHECK(follower_id != followed_id)  -- No te puedes seguir a ti mismo
 );
@@ -308,11 +318,13 @@ CREATE INDEX follows_status_idx ON follows(status);
 **Descripción**: Relación de seguimiento entre usuarios.
 
 **Estados**:
+
 - `pending`: Solicitud enviada pero no aceptada (para cuentas privadas)
 - `accepted`: Seguimiento activo
 - `rejected`: Solicitud rechazada
 
 **Relaciones**:
+
 - N:1 con `users` (follower)
 - N:1 con `users` (followed)
 
@@ -326,18 +338,18 @@ CREATE TABLE clubs (
     name TEXT NOT NULL,
     slug TEXT UNIQUE NOT NULL,  -- Para URLs amigables
     description TEXT,
-    
+
     location TEXT,  -- Ciudad o región
     location_point GEOGRAPHY(Point, 4326),
-    
+
     avatar_url TEXT,
     cover_url TEXT,
-    
+
     is_public BOOLEAN DEFAULT true,  -- Cualquiera puede unirse o requiere invitación
-    
+
     -- Stats
     members_count INTEGER DEFAULT 0,
-    
+
     created_by UUID NOT NULL REFERENCES auth.users(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -359,10 +371,10 @@ CREATE TABLE club_members (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     club_id UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    
+
     role TEXT DEFAULT 'member' CHECK (role IN ('owner', 'admin', 'member')),
     joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     UNIQUE(club_id, user_id)
 );
 
@@ -380,26 +392,26 @@ CREATE INDEX club_members_user_id_idx ON club_members(user_id);
 CREATE TABLE events (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     club_id UUID REFERENCES clubs(id) ON DELETE CASCADE,  -- Puede ser null para eventos independientes
-    
+
     title TEXT NOT NULL,
     description TEXT,
     event_type TEXT CHECK (event_type IN ('group_run', 'race', 'training', 'social')),
-    
+
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     duration_minutes INTEGER,
-    
+
     meeting_point GEOGRAPHY(Point, 4326) NOT NULL,
     meeting_address TEXT,
-    
+
     planned_distance_meters INTEGER,
     planned_route_id UUID REFERENCES routes(id) ON DELETE SET NULL,
-    
+
     max_participants INTEGER,  -- Null = ilimitado
     is_public BOOLEAN DEFAULT true,
-    
+
     -- Stats
     participants_count INTEGER DEFAULT 0,
-    
+
     created_by UUID NOT NULL REFERENCES auth.users(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -422,12 +434,12 @@ CREATE TABLE event_participants (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    
+
     status TEXT DEFAULT 'registered' CHECK (status IN ('registered', 'confirmed', 'cancelled', 'attended')),
     activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,  -- Su actividad durante el evento
-    
+
     registered_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     UNIQUE(event_id, user_id)
 );
 
@@ -444,17 +456,17 @@ CREATE TABLE posts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     club_id UUID REFERENCES clubs(id) ON DELETE CASCADE,  -- Null = post personal
-    
+
     content TEXT NOT NULL,
     image_urls TEXT[],
-    
+
     -- Referencia a actividad compartida
     shared_activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,
-    
+
     -- Stats
     likes_count INTEGER DEFAULT 0,
     comments_count INTEGER DEFAULT 0,
-    
+
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -474,16 +486,16 @@ CREATE INDEX posts_created_at_idx ON posts(created_at DESC);
 CREATE TABLE comments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    
+
     -- Polimórfico: puede comentar en actividad, ruta, post, evento
     commentable_type TEXT NOT NULL CHECK (commentable_type IN ('activity', 'route', 'post', 'event')),
     commentable_id UUID NOT NULL,
-    
+
     content TEXT NOT NULL,
-    
+
     -- Para hilos de comentarios
     parent_comment_id UUID REFERENCES comments(id) ON DELETE CASCADE,
-    
+
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -503,7 +515,7 @@ CREATE INDEX comments_parent_comment_id_idx ON comments(parent_comment_id);
 CREATE TABLE notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    
+
     type TEXT NOT NULL CHECK (type IN (
         'follow_request',
         'follow_accepted',
@@ -513,16 +525,16 @@ CREATE TABLE notifications (
         'club_invite',
         'live_tracking_started'
     )),
-    
+
     title TEXT NOT NULL,
     body TEXT,
-    
+
     -- Referencia genérica al objeto relacionado
     related_entity_type TEXT,
     related_entity_id UUID,
-    
+
     is_read BOOLEAN DEFAULT false,
-    
+
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -571,11 +583,11 @@ CREATE TABLE saved_routes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     route_id UUID NOT NULL REFERENCES routes(id) ON DELETE CASCADE,
-    
+
     notes TEXT,  -- Notas personales sobre la ruta
-    
+
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
+
     UNIQUE(user_id, route_id)
 );
 
@@ -591,7 +603,7 @@ CREATE INDEX saved_routes_user_id_idx ON saved_routes(user_id);
 ### 1. Feed de Actividades de Seguidos
 
 ```sql
-SELECT 
+SELECT
     a.*,
     p.username,
     p.avatar_url,
@@ -599,12 +611,12 @@ SELECT
     (SELECT COUNT(*) FROM comments WHERE commentable_type = 'activity' AND commentable_id = a.id) as comments_count
 FROM activities a
 JOIN profiles p ON a.user_id = p.id
-WHERE 
+WHERE
     a.is_public = true
     AND a.user_id IN (
-        SELECT followed_id 
-        FROM follows 
-        WHERE follower_id = :current_user_id 
+        SELECT followed_id
+        FROM follows
+        WHERE follower_id = :current_user_id
         AND status = 'accepted'
     )
 ORDER BY a.start_time DESC
@@ -614,16 +626,16 @@ LIMIT 20;
 ### 2. Rutas Cerca de Mi Ubicación
 
 ```sql
-SELECT 
+SELECT
     r.*,
     p.username as creator_name,
     ST_Distance(
-        r.start_location, 
+        r.start_location,
         ST_SetSRID(ST_MakePoint(:my_lon, :my_lat), 4326)::geography
     ) as distance_meters
 FROM routes r
 JOIN profiles p ON r.user_id = p.id
-WHERE 
+WHERE
     r.is_public = true
     AND ST_DWithin(
         r.start_location,
@@ -637,14 +649,14 @@ LIMIT 20;
 ### 3. Estadísticas de Usuario
 
 ```sql
-SELECT 
+SELECT
     COUNT(*) as total_activities,
     SUM(distance_meters) as total_distance_meters,
     SUM(duration_seconds) as total_duration_seconds,
     SUM(elevation_gain_meters) as total_elevation_meters,
     AVG(avg_pace_seconds_per_km) as avg_pace
 FROM activities
-WHERE 
+WHERE
     user_id = :user_id
     AND start_time >= NOW() - INTERVAL '1 year';
 ```

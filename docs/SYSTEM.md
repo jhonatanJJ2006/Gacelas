@@ -11,39 +11,40 @@ graph TB
         A --> C[Supabase Client]
         B --> D[Fused Location Provider]
     end
-    
+
     subgraph "Cliente Web (React)"
         E[React App] --> F[Supabase Client]
         E --> G[Google Maps SDK]
     end
-    
+
     subgraph "Backend (Supabase)"
-        H[PostgreSQL + PostGIS] 
+        H[PostgreSQL + PostGIS]
         I[Realtime Server]
         J[Auth Service]
         K[Storage]
         L[Edge Functions]
     end
-    
+
     C --> I
     C --> H
     C --> J
     C --> K
-    
+
     F --> I
     F --> H
     F --> J
-    
+
     B -.Posición cada 5s.-> C
     I -.WebSocket.-> F
     I -.WebSocket.-> C
-    
+
     G --> M[Google Maps API]
 ```
 
 ## Stack Tecnológico Completo
 
 ### Frontend Web
+
 - **Framework**: React 18.2+ con TypeScript 5.0+
 - **Build tool**: Vite 5.0+
 - **Styling**: Tailwind CSS 3.4+
@@ -55,6 +56,7 @@ graph TB
 - **HTTP**: Fetch API (nativo)
 
 ### Mobile Android
+
 - **Lenguaje**: Kotlin 1.9+
 - **UI**: Jetpack Compose
 - **Arquitectura**: Clean Architecture (MVVM + Use Cases)
@@ -67,6 +69,7 @@ graph TB
 - **Navigation**: Compose Navigation
 
 ### Backend (Supabase)
+
 - **Base de datos**: PostgreSQL 15+ con extensión PostGIS
 - **Realtime**: Supabase Realtime (Phoenix Channels)
 - **Auth**: Supabase Auth (JWT + RLS)
@@ -84,20 +87,20 @@ erDiagram
     users ||--o{ activities : creates
     users ||--o{ follows : "follows/followed_by"
     users ||--o{ club_members : joins
-    
+
     profiles ||--o{ posts : creates
-    
+
     activities ||--o{ track_points : contains
     activities ||--o{ activity_likes : receives
     activities ||--o{ comments : receives
     activities }o--o| routes : "becomes"
-    
+
     routes ||--o{ route_likes : receives
     routes }o--|| users : "created_by"
-    
+
     clubs ||--o{ club_members : has
     clubs ||--o{ events : organizes
-    
+
     events ||--o{ event_participants : has
     events ||--o{ live_event_positions : "tracks during"
 ```
@@ -105,6 +108,7 @@ erDiagram
 ### Tablas Principales
 
 #### `users` (Supabase Auth)
+
 ```sql
 -- Tabla gestionada por Supabase Auth
 id: uuid (PK)
@@ -113,6 +117,7 @@ created_at: timestamp
 ```
 
 #### `profiles`
+
 ```sql
 id: uuid (PK, FK -> users.id)
 username: text (unique)
@@ -126,6 +131,7 @@ updated_at: timestamp
 ```
 
 #### `activities`
+
 ```sql
 id: uuid (PK)
 user_id: uuid (FK -> users.id)
@@ -147,6 +153,7 @@ created_at: timestamp
 ```
 
 #### `track_points`
+
 ```sql
 id: uuid (PK)
 activity_id: uuid (FK -> activities.id)
@@ -159,13 +166,15 @@ bearing_degrees: float
 ```
 
 Índice espacial:
+
 ```sql
-CREATE INDEX track_points_location_idx 
-ON track_points 
+CREATE INDEX track_points_location_idx
+ON track_points
 USING GIST (location);
 ```
 
 #### `routes` (Rutas guardadas y compartibles)
+
 ```sql
 id: uuid (PK)
 user_id: uuid (FK -> users.id)
@@ -182,6 +191,7 @@ created_at: timestamp
 ```
 
 #### `route_points`
+
 ```sql
 id: uuid (PK)
 route_id: uuid (FK -> routes.id)
@@ -191,6 +201,7 @@ elevation_meters: float
 ```
 
 #### `follows`
+
 ```sql
 id: uuid (PK)
 follower_id: uuid (FK -> users.id)
@@ -202,6 +213,7 @@ UNIQUE(follower_id, followed_id)
 ```
 
 #### `clubs`
+
 ```sql
 id: uuid (PK)
 name: text
@@ -214,6 +226,7 @@ created_at: timestamp
 ```
 
 #### `events`
+
 ```sql
 id: uuid (PK)
 club_id: uuid (FK -> clubs.id, nullable)
@@ -234,6 +247,7 @@ created_at: timestamp
 ### Problema a Resolver
 
 Un corredor genera ~1,200 puntos GPS en una hora (1 punto cada 3 segundos). Si 10 personas lo siguen en vivo, eso es:
+
 - **12,000 escrituras/hora** si persiste cada punto
 - **120,000 lecturas/hora** si cada seguidor consulta polling
 - **$$$** en tier de pago, o **excede límite** en tier gratuito
@@ -256,20 +270,22 @@ await liveChannel.send({
     userId: currentUser.id,
     lat: 0.315653,
     lon: -78.550341,
-    speed: 3.2,  // m/s
+    speed: 3.2, // m/s
     bearing: 145,
-    timestamp: Date.now()
-  }
+    timestamp: Date.now(),
+  },
 })
 ```
 
 **Ventajas:**
+
 - ✅ Sin cargo de escrituras/lecturas de DB
 - ✅ Latencia <500ms
 - ✅ Escala a 100+ espectadores sin costo adicional
 - ✅ Limpieza automática al desconectar
 
 **Desventajas:**
+
 - ❌ Si pierdes conexión, pierdes datos (aceptable para live)
 
 #### 2. **Batch Inserts** para Track Persistido
@@ -287,21 +303,21 @@ locationSubscription.on('location', (location) => {
     timestamp: location.timestamp,
     accuracy: location.accuracy,
     speed: location.speed,
-    bearing: location.bearing
+    bearing: location.bearing,
   })
 })
 
 // Cada 30 segundos O cada 50 puntos: flush a DB
 if (pointsBuffer.length >= 50 || lastFlush > 30_000) {
   await supabase.from('track_points').insert(
-    pointsBuffer.map(p => ({
+    pointsBuffer.map((p) => ({
       activity_id: currentActivityId,
       location: `POINT(${p.lon} ${p.lat})`,
       elevation_meters: p.elevation,
       timestamp: p.timestamp,
       accuracy_meters: p.accuracy,
       speed_mps: p.speed,
-      bearing_degrees: p.bearing
+      bearing_degrees: p.bearing,
     }))
   )
   pointsBuffer = []
@@ -309,6 +325,7 @@ if (pointsBuffer.length >= 50 || lastFlush > 30_000) {
 ```
 
 **Resultado:**
+
 - 1 hora de carrera (1,200 puntos) = **40 batch inserts** en lugar de 1,200 individuales
 - Reduce escrituras en 97%
 - Al terminar, la ruta completa está guardada para replay
@@ -317,12 +334,12 @@ if (pointsBuffer.length >= 50 || lastFlush > 30_000) {
 
 ```kotlin
 // Android: WorkManager para retry automático
-class SyncTrackPointsWorker(context: Context, params: WorkerParameters) 
+class SyncTrackPointsWorker(context: Context, params: WorkerParameters)
     : CoroutineWorker(context, params) {
-    
+
     override suspend fun doWork(): Result {
         val pendingPoints = localDatabase.getPendingTrackPoints()
-        
+
         return try {
             supabase.from("track_points").insert(pendingPoints)
             localDatabase.markAsSynced(pendingPoints)
@@ -348,18 +365,18 @@ sequenceDiagram
     Runner->>Supabase: subscribe('live:activity:123')
     Viewer1->>Supabase: subscribe('live:activity:123')
     Viewer2->>Supabase: subscribe('live:activity:123')
-    
+
     Note over Runner: Cada 5 segundos
     Runner->>Supabase: broadcast({ lat, lon, speed })
-    
+
     Supabase-->>Viewer1: position_update
     Supabase-->>Viewer2: position_update
-    
+
     Note over Viewer1,Viewer2: Actualizan mapa instantáneamente
-    
+
     Note over Runner: Cada 30 segundos (batch)
     Runner->>DB: INSERT track_points (50 puntos)
-    
+
     Note over Runner: Al terminar
     Runner->>Supabase: broadcast({ event: 'activity_ended' })
     Runner->>DB: UPDATE activities SET end_time, distance, etc.
@@ -394,6 +411,7 @@ fun adjustLocationFrequency(speed: Float) {
 ```
 
 **Ahorro estimado:**
+
 - 1 hora de carrera activa: ~1,200 puntos (3s cada uno)
 - 1 hora de caminata lenta: ~720 puntos (5s cada uno)
 - 1 hora pausa: ~360 puntos (10s cada uno)
@@ -421,7 +439,7 @@ CREATE TYPE privacy_level AS ENUM (
 ### Reglas de Live Sharing
 
 1. **Opt-in explícito**: Live sharing OFF por defecto
-2. **Control granular**: 
+2. **Control granular**:
    - Compartir con todos los seguidores
    - Compartir con un grupo/evento específico
    - Compartir con link temporal
@@ -437,13 +455,13 @@ function fuzzLocation(
   fuzzyRadius: number = 300 // metros
 ): { lat: number; lon: number } {
   const distance = calculateDistance(point, homeLocation)
-  
+
   if (distance < fuzzyRadius) {
     // Desplazar punto al borde del círculo de privacidad
     const bearing = calculateBearing(homeLocation, point)
     return movePoint(homeLocation, fuzzyRadius, bearing)
   }
-  
+
   return point
 }
 ```
@@ -453,13 +471,13 @@ function fuzzLocation(
 ### Buscar Rutas Cercanas
 
 ```sql
-SELECT 
+SELECT
     r.id,
     r.name,
     r.distance_meters,
     ST_Distance(r.start_location, ST_MakePoint(-78.550341, 0.315653)::geography) as distance_meters
 FROM routes r
-WHERE 
+WHERE
     r.is_public = true
     AND ST_DWithin(
         r.start_location,
@@ -474,7 +492,7 @@ LIMIT 20;
 
 ```sql
 -- Usando tabla temporal live_positions (Realtime Presence)
-SELECT 
+SELECT
     p.user_id,
     prof.username,
     ST_Distance(
@@ -483,7 +501,7 @@ SELECT
     ) as distance_meters
 FROM live_positions p
 JOIN profiles prof ON p.user_id = prof.id
-WHERE 
+WHERE
     p.last_updated > NOW() - INTERVAL '30 seconds'  -- Activo recientemente
     AND ST_DWithin(
         ST_MakePoint(p.lon, p.lat)::geography,
@@ -496,19 +514,19 @@ ORDER BY distance_meters;
 ### Calcular Elevación Total de Ruta
 
 ```sql
-SELECT 
+SELECT
     r.id,
     r.name,
     SUM(
-        CASE 
-            WHEN rp2.elevation_meters > rp1.elevation_meters 
-            THEN rp2.elevation_meters - rp1.elevation_meters 
-            ELSE 0 
+        CASE
+            WHEN rp2.elevation_meters > rp1.elevation_meters
+            THEN rp2.elevation_meters - rp1.elevation_meters
+            ELSE 0
         END
     ) as total_elevation_gain
 FROM routes r
 JOIN route_points rp1 ON r.id = rp1.route_id
-JOIN route_points rp2 ON r.id = rp2.route_id 
+JOIN route_points rp2 ON r.id = rp2.route_id
     AND rp2.sequence = rp1.sequence + 1
 WHERE r.id = 'route-uuid-here'
 GROUP BY r.id, r.name;
@@ -523,13 +541,13 @@ GROUP BY r.id, r.name;
 CREATE POLICY "Users can view own private activities"
 ON activities FOR SELECT
 USING (
-    user_id = auth.uid() 
+    user_id = auth.uid()
     OR is_public = true
     OR (
-        is_public = false 
+        is_public = false
         AND user_id IN (
-            SELECT followed_id FROM follows 
-            WHERE follower_id = auth.uid() 
+            SELECT followed_id FROM follows
+            WHERE follower_id = auth.uid()
             AND status = 'accepted'
         )
     )
@@ -549,8 +567,8 @@ CREATE POLICY "View track points of accessible activities"
 ON track_points FOR SELECT
 USING (
     activity_id IN (
-        SELECT id FROM activities 
-        WHERE user_id = auth.uid() 
+        SELECT id FROM activities
+        WHERE user_id = auth.uid()
            OR is_public = true
     )
 );
@@ -568,27 +586,27 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 serve(async (req) => {
   const { activityId } = await req.json()
   const supabase = createClient(...)
-  
+
   // Obtener todos los track points
   const { data: points } = await supabase
     .from('track_points')
     .select('*')
     .eq('activity_id', activityId)
     .order('timestamp', { ascending: true })
-  
+
   // Calcular métricas
   let totalDistance = 0
   let elevationGain = 0
-  
+
   for (let i = 1; i < points.length; i++) {
     totalDistance += calculateDistance(points[i-1], points[i])
     const elevDiff = points[i].elevation_meters - points[i-1].elevation_meters
     if (elevDiff > 0) elevationGain += elevDiff
   }
-  
+
   const duration = points[points.length-1].timestamp - points[0].timestamp
   const avgPace = (duration / 1000) / (totalDistance / 1000)  // seg/km
-  
+
   // Actualizar actividad
   await supabase.from('activities').update({
     distance_meters: Math.round(totalDistance),
@@ -596,7 +614,7 @@ serve(async (req) => {
     avg_pace_seconds_per_km: Math.round(avgPace),
     elevation_gain_meters: Math.round(elevationGain)
   }).eq('id', activityId)
-  
+
   return new Response(JSON.stringify({ success: true }))
 })
 ```
@@ -631,6 +649,7 @@ Ver [FREE_TIER_BUDGET.md](FREE_TIER_BUDGET.md) para análisis detallado.
 ### Dashboard Supabase
 
 Revisar diariamente:
+
 - Database size (mantener <450 MB)
 - Bandwidth usage (mantener <4.5 GB/mes)
 - Query performance (identificar queries lentos)

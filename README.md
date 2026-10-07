@@ -42,7 +42,7 @@ gacelas/
 
 ### Prerequisitos
 
-- Node.js 18+ y npm/pnpm
+- Node.js 20+ y pnpm
 - Android Studio (para desarrollo móvil)
 - JDK 17+
 - Cuenta de Supabase (gratis)
@@ -51,19 +51,22 @@ gacelas/
 ### Configuración
 
 1. **Clonar el repositorio**
+
    ```bash
    git clone <repo-url>
    cd gacelas
    ```
 
 2. **Instalar dependencias**
+
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Configurar variables de entorno**
-   
+
    Copiar los archivos de ejemplo y completar con tus keys:
+
    ```bash
    cp apps/web/.env.example apps/web/.env.local
    cp apps/android/local.properties.example apps/android/local.properties
@@ -71,9 +74,16 @@ gacelas/
    ```
 
 4. **Iniciar aplicación web**
+
    ```bash
    cd apps/web
-   npm run dev
+   pnpm dev
+   ```
+
+   O desde la raíz:
+
+   ```bash
+   pnpm dev
    ```
 
 5. **Abrir aplicación Android**

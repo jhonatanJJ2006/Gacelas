@@ -5,16 +5,19 @@ Aplicación web construida con React, TypeScript, Tailwind CSS y Vite.
 ## Inicio Rápido
 
 1. **Instalar dependencias** (desde la raíz del monorepo):
+
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. **Configurar variables de entorno**:
+
    ```bash
    cp .env.example .env.local
    ```
-   
+
    Editar `.env.local` con tus keys:
+
    ```
    VITE_SUPABASE_URL=https://your-project.supabase.co
    VITE_SUPABASE_ANON_KEY=your-anon-key
@@ -22,13 +25,15 @@ Aplicación web construida con React, TypeScript, Tailwind CSS y Vite.
    ```
 
 3. **Iniciar servidor de desarrollo**:
+
    ```bash
-   npm run dev:web
+   pnpm dev
    ```
-   
+
    O desde esta carpeta:
+
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
 4. **Abrir en navegador**:
@@ -37,11 +42,12 @@ Aplicación web construida con React, TypeScript, Tailwind CSS y Vite.
 ## Scripts Disponibles
 
 ```bash
-npm run dev        # Servidor de desarrollo
-npm run build      # Build para producción
-npm run preview    # Preview del build
-npm run lint       # Lint con ESLint
-npm run type-check # Verificar tipos TypeScript
+pnpm dev        # Servidor de desarrollo
+pnpm build      # Build para producción
+pnpm preview    # Preview del build
+pnpm lint       # Lint con ESLint
+pnpm type-check # Verificar tipos TypeScript
+pnpm test:unit  # Tests unitarios con Vitest
 ```
 
 ## Estructura
@@ -99,14 +105,14 @@ Este es el scaffold inicial con placeholders para cada ruta. Las funcionalidades
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
    - `VITE_GOOGLE_MAPS_API_KEY`
-3. Build command: `npm run build`
+3. Build command: `pnpm build`
 4. Output directory: `dist`
 
 ### Netlify
 
 1. Conectar repo
 2. Build settings:
-   - Build command: `npm run build`
+   - Build command: `pnpm build`
    - Publish directory: `apps/web/dist`
 3. Environment variables (igual que Vercel)
 

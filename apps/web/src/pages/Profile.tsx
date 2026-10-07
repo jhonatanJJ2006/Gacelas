@@ -2,9 +2,7 @@ export function Profile() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-          Perfil 👤
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Perfil 👤</h1>
         <p className="text-gray-600 dark:text-gray-300 mb-6">
           Tus estadísticas, historial y configuración.
         </p>
@@ -38,9 +36,7 @@ export function Profile() {
         </div>
 
         <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-            Features de Perfil:
-          </h4>
+          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Features de Perfil:</h4>
           <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
             <li>✓ Estadísticas agregadas (km, tiempo, elevación)</li>
             <li>✓ Historial de actividades</li>

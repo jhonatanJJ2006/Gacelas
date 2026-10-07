@@ -15,11 +15,9 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-2">
             <span className="text-2xl">🦌</span>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">
-              Gacelas
-            </span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">Gacelas</span>
           </div>
-          
+
           <div className="flex space-x-8">
             {navItems.map((item) => (
               <NavLink

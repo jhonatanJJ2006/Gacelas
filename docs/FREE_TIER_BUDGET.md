@@ -6,19 +6,20 @@ Documentación oficial: https://supabase.com/pricing
 
 ### Límites Absolutos
 
-| Recurso | Límite Free Tier | Notas |
-|---------|------------------|-------|
-| **Database** | 500 MB | PostgreSQL + PostGIS |
-| **Bandwidth** | 5 GB/mes | Transferencia de datos salientes |
-| **Storage** | 2 GB | Imágenes, avatares, fotos |
-| **Auth Users** | 50,000 MAU | Usuarios activos por mes |
-| **Realtime** | 200 conexiones concurrentes | WebSocket |
-| **Edge Functions** | 500,000 invocations/mes | ~16,600/día |
-| **Compute** | Shared CPU | Proyecto se pausa tras 1 semana inactivo |
+| Recurso            | Límite Free Tier            | Notas                                    |
+| ------------------ | --------------------------- | ---------------------------------------- |
+| **Database**       | 500 MB                      | PostgreSQL + PostGIS                     |
+| **Bandwidth**      | 5 GB/mes                    | Transferencia de datos salientes         |
+| **Storage**        | 2 GB                        | Imágenes, avatares, fotos                |
+| **Auth Users**     | 50,000 MAU                  | Usuarios activos por mes                 |
+| **Realtime**       | 200 conexiones concurrentes | WebSocket                                |
+| **Edge Functions** | 500,000 invocations/mes     | ~16,600/día                              |
+| **Compute**        | Shared CPU                  | Proyecto se pausa tras 1 semana inactivo |
 
 ### Límites Soft (CPU/Memoria)
 
 Supabase Free Tier **NO tiene límites duros** en:
+
 - Número de queries
 - Lecturas/escrituras por segundo
 - Número de tablas o filas
@@ -30,11 +31,13 @@ Supabase Free Tier **NO tiene límites duros** en:
 ### 1. Database Storage (500 MB)
 
 #### Tabla: `activities`
+
 - **Tamaño por fila**: ~200 bytes
 - **1,000 actividades**: 200 KB
 - **10,000 actividades**: 2 MB
 
 #### Tabla: `track_points`
+
 - **Tamaño por punto**: ~50 bytes (lat, lon, elevation, timestamp, speed, bearing)
 - **1 actividad (1 hora)**: 1,200 puntos × 50 bytes = **60 KB**
 - **100 actividades completas**: 6 MB
@@ -44,9 +47,11 @@ Supabase Free Tier **NO tiene límites duros** en:
 **Conclusión**: Podemos almacenar ~8,000 actividades completas en el tier gratuito.
 
 #### Otras tablas (profiles, routes, comments, etc.)
+
 - **Estimado**: 20 MB para 1,000 usuarios con datos sociales
 
 **Total estimado para prototipo**:
+
 - 100 usuarios testeando
 - 500 actividades totales
 - 30 MB de track_points + 5 MB de metadata = **35 MB** ✅ Muy por debajo del límite
@@ -56,6 +61,7 @@ Supabase Free Tier **NO tiene límites duros** en:
 #### Escenarios de Consumo
 
 ##### Descargar 1 actividad completa con track_points:
+
 ```
 Query:
   - 1 fila de activities: 200 bytes
@@ -64,6 +70,7 @@ Total: ~60 KB por actividad
 ```
 
 ##### Feed con 20 actividades (solo metadata, sin track_points):
+
 ```
 Query:
   - 20 filas de activities: 4 KB
@@ -72,6 +79,7 @@ Total: ~6 KB por carga de feed
 ```
 
 ##### Live tracking position (Broadcast):
+
 ```
 Realtime Broadcast NO consume bandwidth de DB ✅
 Solo consume conexión Realtime (límite: 200 concurrentes)
@@ -80,6 +88,7 @@ Solo consume conexión Realtime (límite: 200 concurrentes)
 #### Cálculos Diarios
 
 **Uso ligero** (10 usuarios activos/día):
+
 ```
 10 usuarios × 20 cargas de feed/día × 6 KB = 1.2 MB
 10 usuarios × 2 actividades descargadas completas/día × 60 KB = 1.2 MB
@@ -87,6 +96,7 @@ Total: ~2.4 MB/día = 72 MB/mes ✅ Muy por debajo de 5 GB
 ```
 
 **Uso intenso** (100 usuarios activos/día):
+
 ```
 100 usuarios × 20 cargas de feed/día × 6 KB = 12 MB
 100 usuarios × 5 actividades descargadas/día × 60 KB = 30 MB
@@ -94,6 +104,7 @@ Total: ~42 MB/día = 1.26 GB/mes ✅ Aún dentro del límite
 ```
 
 **Uso extremo** (200 usuarios muy activos):
+
 ```
 200 usuarios × 30 cargas de feed/día × 6 KB = 36 MB
 200 usuarios × 8 actividades descargadas/día × 60 KB = 96 MB
@@ -107,10 +118,12 @@ Total: ~132 MB/día = 3.96 GB/mes ✅ Justo dentro del límite
 #### Uso Estimado
 
 ##### Avatar de usuario:
+
 - Tamaño optimizado: 50 KB (200×200 px, comprimido)
 - 1,000 usuarios: 50 MB
 
 ##### Foto de actividad:
+
 - Tamaño optimizado: 200 KB (1024×768 px, comprimido)
 - 10 fotos por actividad (promedio alto)
 - 500 actividades con fotos: 1 GB
@@ -137,10 +150,12 @@ Total: ~132 MB/día = 3.96 GB/mes ✅ Justo dentro del límite
 #### Escenarios
 
 ##### Live tracking:
+
 - 1 corredor compartiendo + 10 espectadores = 11 conexiones
 - 10 corredores simultáneos con 10 espectadores c/u = 110 conexiones ✅
 
 ##### Feed en tiempo real:
+
 - 50 usuarios viendo feed simultáneamente = 50 conexiones
 
 **Total concurrente en hora pico**: ~160 conexiones ✅ Dentro del límite
@@ -156,7 +171,7 @@ El algoritmo Douglas-Peucker reduce el número de puntos en una polilínea mante
 ```typescript
 function simplifyTrackPoints(
   points: TrackPoint[],
-  tolerance: number = 0.0001  // ~11 metros
+  tolerance: number = 0.0001 // ~11 metros
 ): TrackPoint[] {
   // Implementación de Douglas-Peucker
   // Reduce 1,200 puntos a ~300 puntos sin perder forma visual
@@ -166,7 +181,8 @@ function simplifyTrackPoints(
 
 **Beneficio**: Reducir 75% de storage sin afectar visualización en mapa.
 
-**Aplicación**: 
+**Aplicación**:
+
 - Después de 6 meses de antigüedad
 - O cuando DB supere 400 MB (80% del límite)
 
@@ -176,7 +192,7 @@ function simplifyTrackPoints(
 // NO cargar track_points por defecto
 const { data: activity } = await supabase
   .from('activities')
-  .select('id, title, distance_meters, duration_seconds, ...')  // SIN track_points
+  .select('id, title, distance_meters, duration_seconds, ...') // SIN track_points
   .eq('id', activityId)
   .single()
 
@@ -204,6 +220,7 @@ const { data } = await supabase
 ### 4. Cache en Cliente
 
 **Web**: LocalStorage para datos no sensibles
+
 ```typescript
 // Cachear rutas populares por 24h
 const cachedRoutes = localStorage.getItem('routes_cache')
@@ -213,6 +230,7 @@ if (cachedRoutes && !isExpired(cachedRoutes.timestamp)) {
 ```
 
 **Android**: Room Database
+
 ```kotlin
 // Cachear actividades descargadas
 @Entity
@@ -226,6 +244,7 @@ data class CachedActivity(
 ### 5. Limpieza de Datos Viejos
 
 **Job mensual** (puede ser manual en MVP):
+
 ```sql
 -- Eliminar notificaciones mayores a 90 días
 DELETE FROM notifications
@@ -259,6 +278,7 @@ Revisar diariamente en `https://app.supabase.com/project/[PROJECT_ID]`:
 ### Alertas Recomendadas
 
 Configurar alertas (email o Slack webhook) cuando:
+
 - Database size > 450 MB (90%)
 - Bandwidth mensual > 4.5 GB (90%)
 - Realtime connections > 180 (90%)
@@ -301,6 +321,7 @@ Configurar alertas (email o Slack webhook) cuando:
 **Problema**: Supabase pausa proyectos tras 1 semana sin actividad.
 
 **Solución**: Health check automático cada 6 días
+
 ```typescript
 // GitHub Actions Workflow: .github/workflows/keep-alive.yml
 name: Supabase Keep Alive
@@ -367,6 +388,7 @@ jobs:
 - **Necesitas mejor performance** (CPU dedicado)
 
 **Costo de Upgrade**: Supabase Pro $25/mes
+
 - 8 GB database
 - 50 GB bandwidth
 - Conexiones dedicadas
@@ -374,13 +396,13 @@ jobs:
 
 ## Proyección de Crecimiento
 
-| Métrica | Semana 1 | Mes 1 | Mes 3 | Mes 6 | Límite |
-|---------|----------|-------|-------|-------|--------|
-| Usuarios totales | 10 | 50 | 200 | 500 | 50k MAU |
-| Actividades totales | 50 | 300 | 1,500 | 4,000 | ~8k |
-| Database size | 5 MB | 25 MB | 120 MB | 320 MB | 500 MB |
-| Bandwidth/mes | 100 MB | 500 MB | 2 GB | 4.5 GB | 5 GB |
-| Storage | 50 MB | 200 MB | 800 MB | 1.8 GB | 2 GB |
+| Métrica             | Semana 1 | Mes 1  | Mes 3  | Mes 6  | Límite  |
+| ------------------- | -------- | ------ | ------ | ------ | ------- |
+| Usuarios totales    | 10       | 50     | 200    | 500    | 50k MAU |
+| Actividades totales | 50       | 300    | 1,500  | 4,000  | ~8k     |
+| Database size       | 5 MB     | 25 MB  | 120 MB | 320 MB | 500 MB  |
+| Bandwidth/mes       | 100 MB   | 500 MB | 2 GB   | 4.5 GB | 5 GB    |
+| Storage             | 50 MB    | 200 MB | 800 MB | 1.8 GB | 2 GB    |
 
 **Conclusión**: El free tier es suficiente para **6 meses de crecimiento orgánico** con hasta 500 usuarios.
 

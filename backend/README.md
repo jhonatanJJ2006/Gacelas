@@ -16,7 +16,7 @@ Configuración de Supabase y migraciones SQL.
      - SQL Editor → New Query
      - Copiar contenido de `migrations/001_initial_schema.sql`
      - Run
-   
+
    - Opción 2: Usar Supabase CLI (recomendado para producción)
      ```bash
      supabase db push
@@ -48,6 +48,7 @@ cp .env.example .env
 ```
 
 Completar con valores de tu proyecto Supabase:
+
 ```
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-anon-key
@@ -68,6 +69,7 @@ functions/
 ```
 
 Deployment:
+
 ```bash
 supabase functions deploy function-name
 ```
@@ -75,15 +77,16 @@ supabase functions deploy function-name
 ## Queries Útiles
 
 ### Buscar actividades cercanas
+
 ```sql
-SELECT 
+SELECT
     a.*,
     ST_Distance(
         a.started_location,
         ST_MakePoint(-78.550341, 0.315653)::geography
     ) as distance_meters
 FROM activities a
-WHERE 
+WHERE
     a.is_public = true
     AND ST_DWithin(
         a.started_location,
@@ -95,8 +98,9 @@ LIMIT 20;
 ```
 
 ### Estadísticas de usuario
+
 ```sql
-SELECT 
+SELECT
     COUNT(*) as total_activities,
     SUM(distance_meters) / 1000.0 as total_km,
     SUM(duration_seconds) / 3600.0 as total_hours

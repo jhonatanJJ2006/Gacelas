@@ -15,11 +15,13 @@ Aplicación móvil nativa para Android construida con Kotlin y Jetpack Compose.
    - File → Open → Seleccionar carpeta `apps/android`
 
 2. **Configurar local.properties**:
+
    ```bash
    cp local.properties.example local.properties
    ```
-   
+
    Editar `local.properties` con tus keys:
+
    ```properties
    GOOGLE_MAPS_API_KEY=tu-api-key-aqui
    SUPABASE_URL=https://tu-proyecto.supabase.co
@@ -72,6 +74,7 @@ app/src/main/java/com/gacelas/
 Este es el scaffold inicial. Las funcionalidades se implementarán según [../../docs/ROADMAP.md](../../docs/ROADMAP.md).
 
 ### Fase 1 (MVP)
+
 - [ ] Autenticación con Supabase
 - [ ] Location Service para grabación GPS
 - [ ] Pantalla de grabación con mapa
@@ -79,11 +82,13 @@ Este es el scaffold inicial. Las funcionalidades se implementarán según [../..
 - [ ] Pantalla de resumen post-actividad
 
 ### Fase 2 (Social)
+
 - [ ] Feed de actividades
 - [ ] Perfil de usuario
 - [ ] Follows
 
 ### Fase 3 (Live Tracking)
+
 - [ ] Broadcast de posición en tiempo real
 - [ ] Ver corredores en vivo
 

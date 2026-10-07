@@ -22,9 +22,12 @@ android {
             useSupportLibrary = true
         }
 
-        // Load API keys from local.properties
-        val properties = org.jetbrains.kotlin.konan.properties.Properties()
-        properties.load(project.rootProject.file("local.properties").inputStream())
+        // Load API keys from local.properties (if exists)
+        val properties = java.util.Properties()
+        val localPropertiesFile = project.rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            properties.load(localPropertiesFile.inputStream())
+        }
         
         buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"${properties.getProperty("GOOGLE_MAPS_API_KEY", "")}\"")
         buildConfigField("String", "SUPABASE_URL", "\"${properties.getProperty("SUPABASE_URL", "")}\"")

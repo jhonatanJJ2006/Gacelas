@@ -5,17 +5,20 @@
 ### 1.1 Niveles de Privacidad de Perfil
 
 #### `public` (Público)
+
 - Cualquier usuario puede ver el perfil y actividades públicas
 - Las solicitudes de seguimiento se aceptan automáticamente
 - Las actividades públicas aparecen en búsquedas y feeds globales
 
 #### `followers` (Seguidores)
+
 - Solo seguidores aceptados pueden ver actividades privadas
 - Las solicitudes de seguimiento requieren aprobación manual
 - El perfil básico (nombre, avatar) es visible para todos
 - Las estadísticas agregadas son visibles solo para seguidores
 
 #### `private` (Privado)
+
 - Solo el usuario puede ver sus propias actividades
 - Las solicitudes de seguimiento requieren aprobación
 - El perfil aparece en búsquedas pero sin detalles
@@ -43,11 +46,13 @@ SI actividad.is_public = false:
 **Objetivo**: Proteger la ubicación exacta de casa/trabajo del usuario.
 
 **Regla**:
+
 1. El usuario define su `home_location` y `home_radius_meters` (default: 300m)
 2. Cualquier punto GPS dentro del radio de casa se desplaza al borde del círculo
 3. El desplazamiento mantiene la dirección original pero oculta la ubicación exacta
 
 **Implementación**:
+
 ```
 SI distance(track_point, home_location) < home_radius_meters:
     bearing = calculate_bearing(home_location, track_point)
@@ -55,6 +60,7 @@ SI distance(track_point, home_location) < home_radius_meters:
 ```
 
 **Aplicación**:
+
 - Primeros 300m de cualquier actividad
 - Últimos 300m de cualquier actividad
 - Aplica tanto a actividades públicas como privadas
@@ -73,6 +79,7 @@ Condiciones para iniciar live tracking:
 ```
 
 **Opciones de compartición**:
+
 - **Todos los seguidores**: Cualquier seguidor aceptado puede ver
 - **Seguidores seleccionados**: Solo usuarios específicos
 - **Club/Evento específico**: Solo miembros del club o participantes del evento
@@ -112,6 +119,7 @@ Condiciones para iniciar live tracking:
 ```
 
 **Actividades inválidas**:
+
 - Se marcan como `draft` (borrador)
 - Solo visibles para el usuario
 - Pueden ser editadas o eliminadas sin restricción
@@ -147,6 +155,7 @@ Condiciones para iniciar live tracking:
 **Regla**: Una ruta puede ser creada de dos formas:
 
 #### Desde una actividad completada:
+
 ```
 Condiciones:
 1. La actividad debe estar completada (end_time != null)
@@ -160,6 +169,7 @@ Proceso:
 ```
 
 #### Dibujada manualmente:
+
 ```
 Condiciones:
 1. Mínimo 10 puntos
@@ -192,12 +202,14 @@ SI route.is_public = false:
 **Regla**: Una ruta puede ser "verificada" por moderadores.
 
 **Criterios de verificación**:
+
 1. La ruta ha sido completada por al menos 5 usuarios diferentes
 2. No hay reportes de problemas (ruta peligrosa, no transitable)
 3. La ruta tiene descripción detallada y fotos
 4. La información de superficie y dificultad es precisa
 
 **Beneficios**:
+
 - Badge de "Ruta Verificada"
 - Mayor visibilidad en búsquedas
 - Prioridad en recomendaciones
@@ -245,24 +257,28 @@ Proceso:
 **Regla**: Cualquier usuario puede crear un club.
 
 **Límites**:
+
 - Máximo **3 clubes** por usuario
 - El creador automáticamente tiene rol `owner`
 
 ### 6.2 Roles en Clubes
 
 #### `owner` (Dueño)
+
 - Puede editar información del club
 - Puede promover/degradar admins
 - Puede eliminar el club
 - Puede expulsar miembros
 
 #### `admin` (Administrador)
+
 - Puede aprobar solicitudes de membresía
 - Puede crear eventos
 - Puede publicar en el feed del club
 - Puede expulsar miembros (no admins)
 
 #### `member` (Miembro)
+
 - Puede ver contenido del club
 - Puede participar en eventos
 - Puede comentar posts
@@ -285,6 +301,7 @@ SI club.is_public = false:
 **Regla**: Solo el `owner` puede eliminar un club.
 
 **Proceso**:
+
 ```
 1. Verificar que no hay eventos futuros (o cancelarlos)
 2. Eliminar todos los posts del club (o reasignar a personal)
@@ -299,10 +316,12 @@ SI club.is_public = false:
 ### 7.1 Creación de Eventos
 
 **Regla**: Eventos pueden ser creados por:
+
 - Cualquier usuario (evento independiente)
 - Admin/Owner de un club (evento del club)
 
 **Validaciones**:
+
 ```
 1. start_time > NOW() (eventos futuros solamente)
 2. start_time < NOW() + 90 días (máximo 3 meses adelante)
@@ -323,6 +342,7 @@ SI evento.is_public = false:
 ```
 
 **Límite de participantes**:
+
 ```
 SI evento.max_participants != null:
     SI evento.participants_count >= evento.max_participants:
@@ -363,6 +383,7 @@ SI evento.start_time - NOW() <= 1 hora:
 - Usuarios (comportamiento inapropiado)
 
 **Proceso**:
+
 ```
 1. Usuario envía reporte con categoría y descripción
 2. Sistema marca contenido como "under review"
@@ -408,6 +429,7 @@ SI evento.start_time - NOW() <= 1 hora:
 - **Comentarios**: Se mantienen indefinidamente
 
 **Advertencia**: Si el usuario se acerca a límites de almacenamiento, se le notifica y puede:
+
 1. Eliminar actividades antiguas manualmente
 2. Aceptar compresión adicional de track points
 3. Upgrade a plan de pago (futuro)
@@ -435,6 +457,7 @@ SI evento.start_time - NOW() <= 1 hora:
 - **In-app notifications**: Siempre ON
 
 **Frecuencia de agrupación**:
+
 - Likes: agrupar cada 10 o cada 6 horas
 - Comentarios: uno por uno
 - Follows: uno por uno
