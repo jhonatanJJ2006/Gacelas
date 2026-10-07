@@ -1,0 +1,7 @@
+# Android local configuration
+# DO NOT commit this file to version control
+# Copy from local.properties.example and fill with your keys
+
+GOOGLE_MAPS_API_KEY=your-google-maps-api-key-here
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key-here

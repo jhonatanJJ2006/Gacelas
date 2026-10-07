@@ -1,0 +1,29 @@
+{
+  "name": "gacelas-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Gacelas - Aplicación de running con seguimiento en tiempo real",
+  "packageManager": "pnpm@10.33.3",
+  "scripts": {
+    "dev": "pnpm --filter @gacelas/web dev",
+    "build": "pnpm --filter @gacelas/web build",
+    "lint": "pnpm --filter @gacelas/web lint",
+    "format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "format:fix": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "test:unit": "pnpm --filter @gacelas/web test:unit",
+    "type-check": "pnpm --filter @gacelas/web type-check"
+  },
+  "devDependencies": {
+    "prettier": "^3.1.0",
+    "@types/node": "^20.10.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "author": "Jhonatan Jara",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/[usuario]/gacelas"
+  }
+}
