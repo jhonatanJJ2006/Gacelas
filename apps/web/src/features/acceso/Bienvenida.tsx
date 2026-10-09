@@ -1,7 +1,7 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 
 export function Bienvenida() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col justify-between overflow-hidden relative">
@@ -35,9 +35,20 @@ export function Bienvenida() {
         <div className="absolute w-52 h-52 rounded-full bg-secondary-600/15 blur-2xl top-20 pointer-events-none"></div>
 
         <div className="absolute inset-x-0 bottom-6 h-48 pointer-events-none opacity-40">
-          <svg className="w-full h-full" fill="none" preserveAspectRatio="none" viewBox="0 0 400 200">
-            <path d="M0,200 L0,120 L80,70 L150,110 L230,45 L320,105 L400,60 L400,200 Z" fill="#141b2b" />
-            <path d="M0,200 L0,150 L60,110 L130,135 L200,90 L280,140 L360,100 L400,130 L400,200 Z" fill="#1F2937" />
+          <svg
+            className="w-full h-full"
+            fill="none"
+            preserveAspectRatio="none"
+            viewBox="0 0 400 200"
+          >
+            <path
+              d="M0,200 L0,120 L80,70 L150,110 L230,45 L320,105 L400,60 L400,200 Z"
+              fill="#141b2b"
+            />
+            <path
+              d="M0,200 L0,150 L60,110 L130,135 L200,90 L280,140 L360,100 L400,130 L400,200 Z"
+              fill="#1F2937"
+            />
             <path
               d="M0,150 L60,110 L130,135 L200,90 L280,140 L360,100 L400,130"
               stroke="#F59E0B"
@@ -54,17 +65,24 @@ export function Bienvenida() {
         <div className="relative z-10 w-full max-w-[280px] aspect-[4/5] max-h-[280px] rounded-2xl overflow-hidden border border-border-subtle/80 bg-surface-container-low/60 shadow-lg flex items-center justify-center backdrop-blur-sm">
           <div className="absolute top-3 left-3 bg-surface/90 border border-border-subtle backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-md">
             <span className="w-2 h-2 rounded-full bg-secondary-500 animate-pulse"></span>
-            <span className="text-[11px] font-semibold text-text-primary tracking-wide">2,100 msnm</span>
+            <span className="text-[11px] font-semibold text-text-primary tracking-wide">
+              2,100 msnm
+            </span>
           </div>
           <div className="absolute bottom-3 right-3 bg-surface/90 border border-border-subtle backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-md">
-            <span className="material-symbols-outlined text-primary-400 text-[14px]">wb_twilight</span>
+            <span className="material-symbols-outlined text-primary-400 text-[14px]">
+              wb_twilight
+            </span>
             <span className="text-[11px] font-medium text-on-surface">14°C Fresco</span>
           </div>
         </div>
       </section>
 
       <div className="w-full z-20 px-6 pb-4 pt-1 flex flex-col justify-end bg-gradient-to-t from-surface via-surface/95 to-transparent">
-        <div aria-label="Progreso de introducción: Paso 1 de 3" className="flex items-center justify-center gap-2 mb-3.5">
+        <div
+          aria-label="Progreso de introducción: Paso 1 de 3"
+          className="flex items-center justify-center gap-2 mb-3.5"
+        >
           <div className="h-2 w-8 rounded-full bg-primary-600 shadow-[0_0_10px_rgba(217,119,6,0.6)]"></div>
           <div className="h-2 w-2 rounded-full bg-border-subtle"></div>
           <div className="h-2 w-2 rounded-full bg-border-subtle"></div>
@@ -84,7 +102,9 @@ export function Bienvenida() {
             <span className="font-medium text-[11px]">Jipiro y Zamora</span>
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container border border-border-subtle text-xs text-on-surface">
-            <span className="material-symbols-outlined text-secondary-500 text-[14px]">sensors</span>
+            <span className="material-symbols-outlined text-secondary-500 text-[14px]">
+              sensors
+            </span>
             <span className="font-medium text-[11px]">GPS en vivo</span>
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container border border-border-subtle text-xs text-on-surface">
@@ -117,5 +137,5 @@ export function Bienvenida() {
         </div>
       </div>
     </div>
-  );
+  )
 }

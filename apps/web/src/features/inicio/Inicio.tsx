@@ -1,7 +1,9 @@
-import { lazy, Suspense } from 'react';
-import { Link } from 'react-router-dom';
+import { lazy, Suspense } from 'react'
+import { Link } from 'react-router-dom'
 
-const Runner3D = lazy(() => import('../../components/Runner3D').then(m => ({ default: m.Runner3D })));
+const Runner3D = lazy(() =>
+  import('../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
+)
 
 export function Inicio() {
   return (
@@ -18,7 +20,9 @@ export function Inicio() {
             </h2>
           </div>
           <div className="bg-surface-container px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm text-text-secondary">
-            <span className="material-symbols-outlined text-[18px] text-primary-400">wb_twilight</span>
+            <span className="material-symbols-outlined text-[18px] text-primary-400">
+              wb_twilight
+            </span>
             <span className="font-label-md text-label-md text-on-surface">14°C Fresco</span>
           </div>
         </div>
@@ -28,7 +32,9 @@ export function Inicio() {
         <div className="absolute top-3 inset-x-3 z-20 flex items-center justify-between pointer-events-none">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-bg-secondary/90 backdrop-blur-md text-primary border border-primary/20 shadow-md">
             <span className="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
-            <span className="font-label-md text-label-md font-bold tracking-wide">AUTOPILOT ACTIVO</span>
+            <span className="font-label-md text-label-md font-bold tracking-wide">
+              AUTOPILOT ACTIVO
+            </span>
           </div>
           <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-highest/90 backdrop-blur-md text-text-primary shadow-sm border border-white/5">
             <span className="text-xs">🔥</span>
@@ -37,14 +43,16 @@ export function Inicio() {
         </div>
 
         <div className="relative w-full h-[430px] bg-surface-container-lowest">
-          <Suspense fallback={
-            <div className="w-full h-full flex items-center justify-center text-text-secondary">
-              <div className="flex flex-col items-center gap-2">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-                <span className="text-sm">Cargando escena 3D...</span>
+          <Suspense
+            fallback={
+              <div className="w-full h-full flex items-center justify-center text-text-secondary">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                  <span className="text-sm">Cargando escena 3D...</span>
+                </div>
               </div>
-            </div>
-          }>
+            }
+          >
             <Runner3D animation="Idle" autoRotate cameraPosition={[0, 1.5, 4]} />
           </Suspense>
         </div>
@@ -52,15 +60,25 @@ export function Inicio() {
         <div className="absolute bottom-4 inset-x-4 z-20 grid grid-cols-3 gap-2">
           <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
             <span className="font-metric-huge text-metric-huge text-primary leading-none">8</span>
-            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">Días</span>
+            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
+              Días
+            </span>
           </div>
           <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
-            <span className="font-metric-huge text-metric-huge text-secondary leading-none">42</span>
-            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">km</span>
+            <span className="font-metric-huge text-metric-huge text-secondary leading-none">
+              42
+            </span>
+            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
+              km
+            </span>
           </div>
           <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
-            <span className="font-metric-huge text-metric-huge text-text-primary leading-none">5:20</span>
-            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">/km</span>
+            <span className="font-metric-huge text-metric-huge text-text-primary leading-none">
+              5:20
+            </span>
+            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
+              /km
+            </span>
           </div>
         </div>
       </section>
@@ -83,7 +101,9 @@ export function Inicio() {
             </span>
           </div>
           <div className="w-14 h-14 rounded-full bg-bg-primary/20 flex items-center justify-center">
-            <span className="material-symbols-outlined text-[32px] text-bg-primary">play_arrow</span>
+            <span className="material-symbols-outlined text-[32px] text-bg-primary">
+              play_arrow
+            </span>
           </div>
         </Link>
       </section>
@@ -129,7 +149,9 @@ export function Inicio() {
           </div>
           <div className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <span className="material-symbols-outlined text-[16px] text-primary-500">calendar_today</span>
+              <span className="material-symbols-outlined text-[16px] text-primary-500">
+                calendar_today
+              </span>
               <span className="font-label-md text-label-md text-text-secondary">
                 Sábado 11 de Octubre, 6:00 AM
               </span>
@@ -143,7 +165,10 @@ export function Inicio() {
             <div className="flex items-center gap-2">
               <div className="flex -space-x-2">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="w-8 h-8 rounded-full bg-surface-variant border-2 border-surface-container"></div>
+                  <div
+                    key={i}
+                    className="w-8 h-8 rounded-full bg-surface-variant border-2 border-surface-container"
+                  ></div>
                 ))}
               </div>
               <span className="font-label-md text-label-md text-text-secondary">
@@ -154,5 +179,5 @@ export function Inicio() {
         </div>
       </section>
     </div>
-  );
+  )
 }

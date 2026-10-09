@@ -1,9 +1,9 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom'
 
 export function AppLayout() {
-  const location = useLocation();
+  const location = useLocation()
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => location.pathname === path
 
   const navItems = [
     { path: '/inicio', label: 'Inicio', icon: 'home' },
@@ -11,7 +11,7 @@ export function AppLayout() {
     { path: '/correr', label: '', icon: 'play_circle', isMain: true },
     { path: '/comunidad', label: 'Comunidad', icon: 'groups' },
     { path: '/perfil', label: 'Perfil', icon: 'person' },
-  ];
+  ]
 
   return (
     <div className="min-h-screen flex flex-col bg-bg-primary text-text-primary">
@@ -46,7 +46,7 @@ export function AppLayout() {
 
       <nav className="fixed bottom-0 inset-x-0 z-40 bg-bg-secondary/95 backdrop-blur-xl border-t border-border-subtle pb-safe">
         <div className="flex items-center justify-around h-20 px-2">
-          {navItems.map((item) => (
+          {navItems.map((item) =>
             item.isMain ? (
               <Link
                 key={item.path}
@@ -71,9 +71,9 @@ export function AppLayout() {
                 <span className="font-label-md text-label-md">{item.label}</span>
               </Link>
             )
-          ))}
+          )}
         </div>
       </nav>
     </div>
-  );
+  )
 }

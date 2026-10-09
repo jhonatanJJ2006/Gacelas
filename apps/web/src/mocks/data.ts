@@ -1,46 +1,46 @@
 export interface Usuario {
-  id: string;
-  nombre: string;
-  username: string;
-  avatar?: string;
+  id: string
+  nombre: string
+  username: string
+  avatar?: string
 }
 
 export interface Actividad {
-  id: string;
-  usuarioId: string;
-  titulo: string;
-  distanciaKm: number;
-  duracionSegundos: number;
-  ritmo: string;
-  fecha: string;
-  likes: number;
-  comentarios: number;
+  id: string
+  usuarioId: string
+  titulo: string
+  distanciaKm: number
+  duracionSegundos: number
+  ritmo: string
+  fecha: string
+  likes: number
+  comentarios: number
 }
 
 export interface Ruta {
-  id: string;
-  nombre: string;
-  distanciaKm: number;
-  dificultad: 'Fácil' | 'Moderado' | 'Difícil';
-  elevacionM: number;
-  descripcion: string;
+  id: string
+  nombre: string
+  distanciaKm: number
+  dificultad: 'Fácil' | 'Moderado' | 'Difícil'
+  elevacionM: number
+  descripcion: string
 }
 
 export interface Evento {
-  id: string;
-  titulo: string;
-  descripcion: string;
-  fecha: string;
-  hora: string;
-  ubicacion: string;
-  participantes: number;
+  id: string
+  titulo: string
+  descripcion: string
+  fecha: string
+  hora: string
+  ubicacion: string
+  participantes: number
 }
 
 export const usuariosMock: Usuario[] = [
   { id: '1', nombre: 'María López', username: 'maria_runs' },
   { id: '2', nombre: 'Carlos Ruiz', username: 'carlos_runner' },
   { id: '3', nombre: 'Ana Martínez', username: 'ana_trails' },
-];
+]
 
 export const actividadesMock: Actividad[] = [
   {
@@ -65,7 +65,7 @@ export const actividadesMock: Actividad[] = [
     likes: 18,
     comentarios: 3,
   },
-];
+]
 
 export const rutasMock: Ruta[] = [
   {
@@ -92,7 +92,7 @@ export const rutasMock: Ruta[] = [
     elevacionM: 380,
     descripcion: 'Ruta de montaña desafiante con vistas espectaculares de Loja.',
   },
-];
+]
 
 export const eventosMock: Evento[] = [
   {
@@ -113,4 +113,4 @@ export const eventosMock: Evento[] = [
     ubicacion: 'Entrada Cajanuma',
     participantes: 8,
   },
-];
+]

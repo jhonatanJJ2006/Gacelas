@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export function RecuperarContrasena() {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+  const [submitted, setSubmitted] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
+    e.preventDefault()
+    setSubmitted(true)
+  }
 
   if (submitted) {
     return (
@@ -26,14 +26,17 @@ export function RecuperarContrasena() {
         <main className="flex-1 px-6 pb-8 flex flex-col">
           <div className="flex-1 flex flex-col justify-center items-center max-w-md mx-auto w-full text-center">
             <div className="w-16 h-16 rounded-full bg-secondary-600/20 flex items-center justify-center mb-6">
-              <span className="material-symbols-outlined text-[32px] text-secondary-500">mark_email_read</span>
+              <span className="material-symbols-outlined text-[32px] text-secondary-500">
+                mark_email_read
+              </span>
             </div>
 
             <h1 className="text-text-primary font-headline-lg text-2xl font-bold mb-3">
               Revisa tu correo
             </h1>
             <p className="text-text-secondary text-sm mb-8">
-              Te hemos enviado un enlace para restablecer tu contraseña a <span className="text-text-primary font-medium">{email}</span>
+              Te hemos enviado un enlace para restablecer tu contraseña a{' '}
+              <span className="text-text-primary font-medium">{email}</span>
             </p>
 
             <button
@@ -45,7 +48,7 @@ export function RecuperarContrasena() {
           </div>
         </main>
       </div>
-    );
+    )
   }
 
   return (
@@ -63,7 +66,9 @@ export function RecuperarContrasena() {
         <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
           <div className="mb-8">
             <div className="w-12 h-12 rounded-full bg-primary-600/20 flex items-center justify-center mb-6">
-              <span className="material-symbols-outlined text-[24px] text-primary-500">lock_reset</span>
+              <span className="material-symbols-outlined text-[24px] text-primary-500">
+                lock_reset
+              </span>
             </div>
 
             <h1 className="text-text-primary font-headline-lg text-3xl font-bold mb-2">
@@ -101,5 +106,5 @@ export function RecuperarContrasena() {
         </div>
       </main>
     </div>
-  );
+  )
 }

@@ -112,22 +112,33 @@ El modelo se carga de forma lazy y se usa en:
 
 **Total: 23 rutas implementadas**
 
-## Tabla de pantallas
+## Tabla completa de pantallas (23 rutas)
 
-| Sección | Pantalla | Ruta | ID Stitch |
-|---------|----------|------|-----------|
-| Acceso | Bienvenida | /bienvenida | b61edc1cb0ac4f79bd27f40a92624e8e |
-| Acceso | Inicio de sesión | /inicio-sesion | 889e64826d154d7ab885855f489a2814 |
-| Acceso | Registro | /registro | c7a11b43c2ad4877a6bff9cc902f8e41 |
-| Acceso | Recuperar contraseña | /recuperar-contrasena | 677928b62b2d49a38cca263c8641fa5f |
-| Inicio | Inicio | /inicio | 3cda309d10e040d1bf07f99558aa001c |
-| Correr | Carrera en curso | /correr/en-curso | 7525f3ca1f474ca78ab04628d314879f |
-| Correr | Resumen post-carrera | /correr/resumen | 2e0b3dcc47ac4e9997f174bdaedeff34 |
-| Rutas | Lista de rutas | /rutas | 0c202fc9cfe74c1994ce1ece0010cf00 |
-| Comunidad | Feed | /comunidad | 673a5ce87e3a497bb1afdbece8d1d114 |
-| Perfil | Perfil | /perfil | 4c002bb50db14d36a0aae56adde917f7 |
-| Ajustes | Ajustes y preferencias | /ajustes | c8e26916e4bf48399016e6ed751d025d |
-| Ajustes | Permisos de ubicación | /permisos-ubicacion | 31b3ed996ba749d88231fd674b8e9f24 |
+| Sección        | Pantalla                     | Ruta                    | ID Stitch                        |
+| -------------- | ---------------------------- | ----------------------- | -------------------------------- |
+| Acceso         | Bienvenida                   | /bienvenida             | b61edc1cb0ac4f79bd27f40a92624e8e |
+| Acceso         | Inicio de sesión             | /inicio-sesion          | 889e64826d154d7ab885855f489a2814 |
+| Acceso         | Registro                     | /registro               | c7a11b43c2ad4877a6bff9cc902f8e41 |
+| Acceso         | Recuperar contraseña         | /recuperar-contrasena   | 677928b62b2d49a38cca263c8641fa5f |
+| Acceso         | Permisos de ubicación        | /permisos-ubicacion     | 31b3ed996ba749d88231fd674b8e9f24 |
+| Inicio         | Inicio con Runner 3D         | /inicio                 | 3cda309d10e040d1bf07f99558aa001c |
+| Correr         | Preparación                  | /correr                 | -                                |
+| Correr         | Carrera en curso             | /correr/en-curso        | 7525f3ca1f474ca78ab04628d314879f |
+| Correr         | Cronómetro ampliado          | /correr/cronometro      | 441fa480937c401499997b738aa65cd3 |
+| Correr         | Resumen post-carrera         | /correr/resumen         | 2e0b3dcc47ac4e9997f174bdaedeff34 |
+| Rutas          | Lista de rutas               | /rutas                  | 0c202fc9cfe74c1994ce1ece0010cf00 |
+| Rutas          | Buscador estilo Uber         | /rutas/buscar           | 70441a3c2dbc4eb7a8aa75c321d60bb2 |
+| Rutas          | Navegación 3D                | /rutas/navegacion       | 1f20f211c8b547209350ae8d8f384bfa |
+| Comunidad      | Feed social                  | /comunidad              | 673a5ce87e3a497bb1afdbece8d1d114 |
+| Comunidad      | Eventos                      | /comunidad/eventos      | 3ac8ac9d8ef245ec92f72566b8681c03 |
+| Comunidad      | Detalle de evento            | /comunidad/eventos/:id  | 40e6040a070c41a7889fb349e89a226e |
+| Perfil         | Perfil                       | /perfil                 | 4c002bb50db14d36a0aae56adde917f7 |
+| Perfil         | Editar perfil                | /perfil/editar          | 75bd965b782646f889f62747a0715b72 |
+| Perfil         | Personalizar avatar 3D       | /perfil/avatar          | df69e2fc40494da7901024d901382056 |
+| Ajustes        | Ajustes y preferencias       | /ajustes                | c8e26916e4bf48399016e6ed751d025d |
+| Ajustes        | Privacidad y ubicación       | /ajustes/privacidad     | 1cfbd65e8a9e43398d84c1954f3cc230 |
+| Ajustes        | Configuración notificaciones | /ajustes/notificaciones | 085a47e52df74e26bb6bceb746c138fb |
+| Notificaciones | Bandeja de notificaciones    | /notificaciones         | -                                |
 
 ## Pantallas no portadas
 

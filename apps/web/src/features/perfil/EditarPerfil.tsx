@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export function EditarPerfil() {
-  const navigate = useNavigate();
-  const [nombre, setNombre] = useState('Jhonatan Runner');
-  const [username, setUsername] = useState('jhonatan_runs');
-  const [bio, setBio] = useState('Corredor de Loja. Me encanta trail running.');
-  const [ubicacion, setUbicacion] = useState('Loja, Ecuador');
+  const navigate = useNavigate()
+  const [nombre, setNombre] = useState('Jhonatan Runner')
+  const [username, setUsername] = useState('jhonatan_runs')
+  const [bio, setBio] = useState('Corredor de Loja. Me encanta trail running.')
+  const [ubicacion, setUbicacion] = useState('Loja, Ecuador')
 
   const handleGuardar = () => {
-    navigate('/perfil');
-  };
+    navigate('/perfil')
+  }
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -22,9 +22,7 @@ export function EditarPerfil() {
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
-          <h1 className="font-headline-md text-headline-md text-text-primary">
-            Editar perfil
-          </h1>
+          <h1 className="font-headline-md text-headline-md text-text-primary">Editar perfil</h1>
           <button
             onClick={handleGuardar}
             className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-bg-primary font-label-lg text-label-lg rounded-lg transition-colors"
@@ -104,9 +102,7 @@ export function EditarPerfil() {
               className="w-full px-4 py-3 bg-surface-container border border-border-subtle rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent resize-none"
               placeholder="Cuéntanos sobre ti..."
             />
-            <p className="text-xs text-text-secondary mt-1">
-              {bio.length}/150 caracteres
-            </p>
+            <p className="text-xs text-text-secondary mt-1">{bio.length}/150 caracteres</p>
           </div>
         </div>
 
@@ -116,9 +112,7 @@ export function EditarPerfil() {
           </h2>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="font-body-md text-body-md text-text-primary">
-                Edad
-              </span>
+              <span className="font-body-md text-body-md text-text-primary">Edad</span>
               <input
                 type="number"
                 placeholder="25"
@@ -126,9 +120,7 @@ export function EditarPerfil() {
               />
             </div>
             <div className="flex items-center justify-between">
-              <span className="font-body-md text-body-md text-text-primary">
-                Género
-              </span>
+              <span className="font-body-md text-body-md text-text-primary">Género</span>
               <select className="w-32 h-10 px-3 bg-surface-container-high border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-600">
                 <option>Masculino</option>
                 <option>Femenino</option>
@@ -140,5 +132,5 @@ export function EditarPerfil() {
         </div>
       </main>
     </div>
-  );
+  )
 }

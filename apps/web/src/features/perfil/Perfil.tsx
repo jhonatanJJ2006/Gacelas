@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 
 export function Perfil() {
   return (
@@ -11,9 +11,7 @@ export function Perfil() {
               <h1 className="font-headline-md text-headline-md text-text-primary mb-1">
                 Jhonatan Runner
               </h1>
-              <p className="font-body-md text-body-md text-text-secondary">
-                @jhonatan_runs
-              </p>
+              <p className="font-body-md text-body-md text-text-secondary">@jhonatan_runs</p>
             </div>
           </div>
           <Link
@@ -110,12 +108,13 @@ export function Perfil() {
       </div>
 
       <div className="px-margin pb-space-3xl">
-        <h2 className="font-title-md text-title-md text-text-primary mb-4">
-          Actividad reciente
-        </h2>
+        <h2 className="font-title-md text-title-md text-text-primary mb-4">Actividad reciente</h2>
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-surface-container rounded-xl p-4 border border-border-subtle">
+            <div
+              key={i}
+              className="bg-surface-container rounded-xl p-4 border border-border-subtle"
+            >
               <div className="flex items-center justify-between mb-2">
                 <span className="font-body-md text-body-md text-text-primary font-semibold">
                   Carrera matutina
@@ -134,5 +133,5 @@ export function Perfil() {
         </div>
       </div>
     </div>
-  );
+  )
 }

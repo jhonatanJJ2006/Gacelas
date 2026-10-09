@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export function BuscadorRutas() {
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRoute, setSelectedRoute] = useState<'primary' | 'alt' | null>('primary');
+  const navigate = useNavigate()
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedRoute, setSelectedRoute] = useState<'primary' | 'alt' | null>('primary')
 
   const routes = [
     {
@@ -23,7 +23,7 @@ export function BuscadorRutas() {
       elevation: 85,
       color: 'secondary',
     },
-  ];
+  ]
 
   return (
     <div className="w-full min-h-screen bg-[#070b13] flex flex-col relative">
@@ -186,5 +186,5 @@ export function BuscadorRutas() {
         </div>
       </div>
     </div>
-  );
+  )
 }

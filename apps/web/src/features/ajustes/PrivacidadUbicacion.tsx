@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export function PrivacidadUbicacion() {
-  const navigate = useNavigate();
-  const [privacidadPerfil, setPrivacidadPerfil] = useState('followers');
-  const [ubicacionPrecisa, setUbicacionPrecisa] = useState(true);
-  const [homeFuzzing, setHomeFuzzing] = useState(true);
-  const [radioMetros, setRadioMetros] = useState(300);
+  const navigate = useNavigate()
+  const [privacidadPerfil, setPrivacidadPerfil] = useState('followers')
+  const [ubicacionPrecisa, setUbicacionPrecisa] = useState(true)
+  const [homeFuzzing, setHomeFuzzing] = useState(true)
+  const [radioMetros, setRadioMetros] = useState(300)
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -123,9 +123,7 @@ export function PrivacidadUbicacion() {
         </section>
 
         <section>
-          <h2 className="font-title-md text-title-md text-text-primary mb-3">
-            Ubicación GPS
-          </h2>
+          <h2 className="font-title-md text-title-md text-text-primary mb-3">Ubicación GPS</h2>
           <div className="space-y-2">
             <div className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl">
               <div>
@@ -203,9 +201,7 @@ export function PrivacidadUbicacion() {
         </section>
 
         <section>
-          <h2 className="font-title-md text-title-md text-text-primary mb-3">
-            Compartir en vivo
-          </h2>
+          <h2 className="font-title-md text-title-md text-text-primary mb-3">Compartir en vivo</h2>
           <div className="bg-surface-container rounded-xl p-4">
             <p className="font-body-sm text-body-sm text-text-secondary mb-3">
               Cuando compartes tu ubicación en vivo, solo las personas que elijas pueden verte.
@@ -213,13 +209,11 @@ export function PrivacidadUbicacion() {
             </p>
             <div className="flex items-center gap-2 text-secondary-500">
               <span className="material-symbols-outlined text-[18px]">shield</span>
-              <span className="font-label-md text-label-md">
-                Tu privacidad está protegida
-              </span>
+              <span className="font-label-md text-label-md">Tu privacidad está protegida</span>
             </div>
           </div>
         </section>
       </main>
     </div>
-  );
+  )
 }

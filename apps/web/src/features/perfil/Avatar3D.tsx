@@ -1,10 +1,12 @@
-import { lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-const Runner3D = lazy(() => import('../../components/Runner3D').then(m => ({ default: m.Runner3D })));
+const Runner3D = lazy(() =>
+  import('../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
+)
 
 export function Avatar3D() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -46,9 +48,7 @@ export function Avatar3D() {
                 <span className="material-symbols-outlined text-[20px] text-primary-500">
                   palette
                 </span>
-                <span className="font-title-md text-title-md text-text-primary">
-                  Equipación
-                </span>
+                <span className="font-title-md text-title-md text-text-primary">Equipación</span>
               </div>
               <div className="grid grid-cols-4 gap-2">
                 <button className="aspect-square rounded-lg bg-primary-600 border-2 border-primary-600 shadow-lg"></button>
@@ -72,25 +72,19 @@ export function Avatar3D() {
                 <span className="material-symbols-outlined text-[24px] text-primary-500">
                   directions_run
                 </span>
-                <span className="font-label-md text-label-md text-text-primary">
-                  Dinámico
-                </span>
+                <span className="font-label-md text-label-md text-text-primary">Dinámico</span>
               </button>
               <button className="px-4 py-3 bg-surface-container border-2 border-transparent hover:border-border-subtle rounded-xl flex flex-col items-center gap-1">
                 <span className="material-symbols-outlined text-[24px] text-text-secondary">
                   self_improvement
                 </span>
-                <span className="font-label-md text-label-md text-text-secondary">
-                  Relajado
-                </span>
+                <span className="font-label-md text-label-md text-text-secondary">Relajado</span>
               </button>
               <button className="px-4 py-3 bg-surface-container border-2 border-transparent hover:border-border-subtle rounded-xl flex flex-col items-center gap-1">
                 <span className="material-symbols-outlined text-[24px] text-text-secondary">
                   bolt
                 </span>
-                <span className="font-label-md text-label-md text-text-secondary">
-                  Veloz
-                </span>
+                <span className="font-label-md text-label-md text-text-secondary">Veloz</span>
               </button>
             </div>
           </div>
@@ -122,9 +116,7 @@ export function Avatar3D() {
                   <span className="material-symbols-outlined text-[20px] text-text-secondary">
                     watch
                   </span>
-                  <span className="font-body-md text-body-md text-text-primary">
-                    Reloj GPS
-                  </span>
+                  <span className="font-body-md text-body-md text-text-primary">Reloj GPS</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" defaultChecked />
@@ -137,9 +129,7 @@ export function Avatar3D() {
                   <span className="material-symbols-outlined text-[20px] text-text-secondary">
                     headphones
                   </span>
-                  <span className="font-body-md text-body-md text-text-primary">
-                    Audífonos
-                  </span>
+                  <span className="font-body-md text-body-md text-text-primary">Audífonos</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" defaultChecked />
@@ -151,5 +141,5 @@ export function Avatar3D() {
         </div>
       </main>
     </div>
-  );
+  )
 }

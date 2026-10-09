@@ -1,16 +1,16 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 
 interface Notificacion {
-  id: string;
-  tipo: 'like' | 'comment' | 'follow' | 'event' | 'live';
-  usuario: string;
-  mensaje: string;
-  tiempo: string;
-  leida: boolean;
+  id: string
+  tipo: 'like' | 'comment' | 'follow' | 'event' | 'live'
+  usuario: string
+  mensaje: string
+  tiempo: string
+  leida: boolean
 }
 
 export function Notificaciones() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const notificaciones: Notificacion[] = [
     {
@@ -53,24 +53,24 @@ export function Notificaciones() {
       tiempo: 'hace 1d',
       leida: true,
     },
-  ];
+  ]
 
   const getIcono = (tipo: string) => {
     switch (tipo) {
       case 'like':
-        return { icon: 'favorite', color: 'text-danger' };
+        return { icon: 'favorite', color: 'text-danger' }
       case 'comment':
-        return { icon: 'chat_bubble', color: 'text-primary-500' };
+        return { icon: 'chat_bubble', color: 'text-primary-500' }
       case 'follow':
-        return { icon: 'person_add', color: 'text-secondary-500' };
+        return { icon: 'person_add', color: 'text-secondary-500' }
       case 'event':
-        return { icon: 'event', color: 'text-tertiary' };
+        return { icon: 'event', color: 'text-tertiary' }
       case 'live':
-        return { icon: 'sensors', color: 'text-secondary-500' };
+        return { icon: 'sensors', color: 'text-secondary-500' }
       default:
-        return { icon: 'notifications', color: 'text-text-secondary' };
+        return { icon: 'notifications', color: 'text-text-secondary' }
     }
-  };
+  }
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -83,9 +83,7 @@ export function Notificaciones() {
             >
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
-            <h1 className="font-headline-md text-headline-md text-text-primary">
-              Notificaciones
-            </h1>
+            <h1 className="font-headline-md text-headline-md text-text-primary">Notificaciones</h1>
           </div>
           <button className="text-primary-500 font-label-lg text-label-lg hover:text-primary-400">
             Marcar todas leídas
@@ -110,7 +108,7 @@ export function Notificaciones() {
 
         <div className="divide-y divide-border-subtle">
           {notificaciones.map((notif) => {
-            const { icon, color } = getIcono(notif.tipo);
+            const { icon, color } = getIcono(notif.tipo)
             return (
               <button
                 key={notif.id}
@@ -118,7 +116,9 @@ export function Notificaciones() {
                   !notif.leida ? 'bg-surface-container/50' : ''
                 }`}
               >
-                <div className={`w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0 ${color}`}>
+                <div
+                  className={`w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0 ${color}`}
+                >
                   <span className="material-symbols-outlined text-[20px]">{icon}</span>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -129,19 +129,15 @@ export function Notificaciones() {
                     <span className="font-body-sm text-body-sm text-text-secondary">
                       {notif.tiempo}
                     </span>
-                    {!notif.leida && (
-                      <span className="w-2 h-2 rounded-full bg-primary-600"></span>
-                    )}
+                    {!notif.leida && <span className="w-2 h-2 rounded-full bg-primary-600"></span>}
                   </div>
                 </div>
-                <span className="material-symbols-outlined text-text-secondary">
-                  chevron_right
-                </span>
+                <span className="material-symbols-outlined text-text-secondary">chevron_right</span>
               </button>
-            );
+            )
           })}
         </div>
       </main>
     </div>
-  );
+  )
 }

@@ -1,11 +1,11 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 
 export function Correr() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const handleStart = () => {
-    navigate('/correr/en-curso');
-  };
+    navigate('/correr/en-curso')
+  }
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -21,7 +21,9 @@ export function Correr() {
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-24">
         <div className="text-center mb-12">
           <div className="w-24 h-24 rounded-full bg-primary-600/20 flex items-center justify-center mx-auto mb-6">
-            <span className="material-symbols-outlined text-[64px] text-primary-500">directions_run</span>
+            <span className="material-symbols-outlined text-[64px] text-primary-500">
+              directions_run
+            </span>
           </div>
           <h1 className="font-headline-lg text-headline-lg text-text-primary mb-3">
             ¿Listo para correr?
@@ -35,15 +37,15 @@ export function Correr() {
           <div className="bg-surface-container rounded-2xl border border-border-subtle p-6">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-12 h-12 rounded-full bg-secondary-600/20 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[24px] text-secondary-500">location_on</span>
+                <span className="material-symbols-outlined text-[24px] text-secondary-500">
+                  location_on
+                </span>
               </div>
               <div className="flex-1">
                 <p className="font-body-md text-body-md text-text-primary font-semibold mb-1">
                   GPS Activado
                 </p>
-                <p className="font-body-sm text-body-sm text-text-secondary">
-                  Señal fuerte
-                </p>
+                <p className="font-body-sm text-body-sm text-text-secondary">Señal fuerte</p>
               </div>
               <span className="material-symbols-outlined text-secondary-500">check_circle</span>
             </div>
@@ -58,17 +60,13 @@ export function Correr() {
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="font-body-md text-body-md text-text-secondary">
-                  Ubicación
-                </span>
+                <span className="font-body-md text-body-md text-text-secondary">Ubicación</span>
                 <span className="font-body-md text-body-md text-text-primary font-medium">
                   Loja, Ecuador
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="font-body-md text-body-md text-text-secondary">
-                  Temperatura
-                </span>
+                <span className="font-body-md text-body-md text-text-secondary">Temperatura</span>
                 <span className="font-body-md text-body-md text-text-primary font-medium">
                   14°C
                 </span>
@@ -84,10 +82,8 @@ export function Correr() {
           <span className="material-symbols-outlined text-[48px] text-bg-primary">play_arrow</span>
         </button>
 
-        <p className="font-label-lg text-label-lg text-text-secondary mt-6">
-          Toca para comenzar
-        </p>
+        <p className="font-label-lg text-label-lg text-text-secondary mt-6">Toca para comenzar</p>
       </main>
     </div>
-  );
+  )
 }
