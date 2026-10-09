@@ -1,0 +1,14 @@
+Animation source for gacelas-runner-animated.glb
+
+Motion data retargeted from "Universal Animation Library" (Standard/free version) by Quaternius
+https://quaternius.itch.io/universal-animation-library
+License: CC0 1.0 Universal (public domain dedication)
+Copy used: https://github.com/J-Ponzo/gltf-universal-animation-library (commit e24c23cf2a1323488a3faa226ea7ea21f644b73e, CC0 LICENSE included)
+
+Clip mapping:
+  Idle <- Idle_Loop (played twice, 5.0 s, plus additive head look-around and breathing)
+  Jog  <- Jog_Fwd_Loop (0.917 s)
+  Run  <- Sprint_Loop (0.667 s)
+Modifications: retargeted to the Gacelas mesh skeleton (same bone names/hierarchy as the UAL rig, DEF-*),
+fingers overridden to a closed fist in every clip, upper-arm twist/adduction and +12 deg elbow flex in Jog/Run,
+loop-closure correction, root motion removed (in place).
