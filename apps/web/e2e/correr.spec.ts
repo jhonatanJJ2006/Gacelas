@@ -8,6 +8,7 @@ test.describe('Funcionalidad de Correr', () => {
     await page.getByRole('button', { name: /iniciar sesión/i }).click()
     await expect(page).toHaveURL(/\/inicio/, { timeout: 10000 })
     await page.waitForLoadState('networkidle')
+    await page.waitForSelector('nav', { timeout: 10000 })
   })
 
   test('iniciar carrera -> cronometro -> detener', async ({ page }) => {
@@ -15,10 +16,7 @@ test.describe('Funcionalidad de Correr', () => {
 
     await expect(page.getByText(/listo para correr/i)).toBeVisible()
 
-    await page
-      .getByRole('button')
-      .filter({ has: page.locator('text=play_arrow') })
-      .click()
+    await page.locator('button').filter({ hasText: 'play_arrow' }).click()
 
     await expect(page).toHaveURL(/\/correr\/en-curso/)
 

@@ -8,13 +8,11 @@ test.describe('Ajustes y Configuración', () => {
     await page.getByRole('button', { name: /iniciar sesión/i }).click()
     await expect(page).toHaveURL(/\/inicio/, { timeout: 10000 })
     await page.waitForLoadState('networkidle')
+    await page.waitForSelector('nav', { timeout: 10000 })
   })
 
   test('acceder a ajustes', async ({ page }) => {
-    await page
-      .getByRole('link', { name: /perfil/i })
-      .first()
-      .click()
+    await page.locator('nav a[href="/perfil"]').click()
     await page.getByText(/ajustes y preferencias/i).click()
 
     await expect(page).toHaveURL(/\/ajustes/)
@@ -23,23 +21,17 @@ test.describe('Ajustes y Configuración', () => {
 
   test('configurar privacidad', async ({ page }) => {
     await page.goto('/ajustes')
-    await page
-      .getByText(/privacidad y ubicación/i)
-      .first()
-      .click()
+    await page.getByText(/privacidad y ubicación/i).first().click()
 
     await expect(page).toHaveURL(/\/ajustes\/privacidad/)
   })
 
   test('configurar notificaciones', async ({ page }) => {
     await page.goto('/ajustes')
-    await page
-      .getByText(/notificaciones/i)
-      .first()
-      .click()
+    await page.getByText(/notificaciones/i).first().click()
 
     await expect(page).toHaveURL(/\/ajustes\/notificaciones/)
-    await expect(page.getByText(/notificaciones/i)).toBeVisible()
+    await expect(page.getByRole('heading', { name: /notificaciones/i }).first()).toBeVisible()
 
     const toggles = page.locator('input[type="checkbox"]')
     const count = await toggles.count()

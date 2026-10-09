@@ -8,13 +8,11 @@ test.describe('Perfil de Usuario', () => {
     await page.getByRole('button', { name: /iniciar sesión/i }).click()
     await expect(page).toHaveURL(/\/inicio/, { timeout: 10000 })
     await page.waitForLoadState('networkidle')
+    await page.waitForSelector('nav', { timeout: 10000 })
   })
 
   test('editar perfil', async ({ page }) => {
-    await page
-      .getByRole('link', { name: /perfil/i })
-      .first()
-      .click()
+    await page.locator('nav a[href="/perfil"]').click()
     await page.getByRole('link', { name: /edit/i }).first().click()
 
     await expect(page).toHaveURL(/\/perfil\/editar/)
@@ -27,10 +25,7 @@ test.describe('Perfil de Usuario', () => {
   })
 
   test('personalizar avatar 3D', async ({ page }) => {
-    await page
-      .getByRole('link', { name: /perfil/i })
-      .first()
-      .click()
+    await page.locator('nav a[href="/perfil"]').click()
     await page.getByText(/personalizar avatar/i).click()
 
     await expect(page).toHaveURL(/\/perfil\/avatar/)

@@ -8,43 +8,29 @@ test.describe('Navegación', () => {
     await page.getByRole('button', { name: /iniciar sesión/i }).click()
     await expect(page).toHaveURL(/\/inicio/, { timeout: 10000 })
     await page.waitForLoadState('networkidle')
+    await page.waitForSelector('nav', { timeout: 10000 })
   })
 
   test('navegación por bottom nav', async ({ page }) => {
-    await page.getByRole('link', { name: /rutas/i }).first().click()
+    await page.locator('nav a[href="/rutas"]').click()
     await expect(page).toHaveURL(/\/rutas/)
     await expect(page.getByText(/rutas de loja/i)).toBeVisible()
 
-    await page
-      .getByRole('link', { name: /comunidad/i })
-      .first()
-      .click()
+    await page.locator('nav a[href="/comunidad"]').click()
     await expect(page).toHaveURL(/\/comunidad/)
     await expect(page.getByText(/comunidad/i)).toBeVisible()
 
-    await page
-      .getByRole('link', { name: /perfil/i })
-      .first()
-      .click()
+    await page.locator('nav a[href="/perfil"]').click()
     await expect(page).toHaveURL(/\/perfil/)
     await expect(page.getByText(/jhonatan runner/i)).toBeVisible()
 
-    await page
-      .getByRole('link', { name: /inicio/i })
-      .first()
-      .click()
+    await page.locator('nav a[href="/inicio"]').click()
     await expect(page).toHaveURL(/\/inicio/)
   })
 
   test('navegación a eventos', async ({ page }) => {
-    await page
-      .getByRole('link', { name: /comunidad/i })
-      .first()
-      .click()
-    await page
-      .getByText(/eventos/i)
-      .first()
-      .click()
+    await page.locator('nav a[href="/comunidad"]').click()
+    await page.getByText(/eventos/i).first().click()
 
     await expect(page).toHaveURL(/\/comunidad\/eventos/)
     await expect(page.getByText(/carrera parque jipiro/i)).toBeVisible()
@@ -52,10 +38,7 @@ test.describe('Navegación', () => {
 
   test('detalle de evento', async ({ page }) => {
     await page.goto('/comunidad/eventos')
-    await page
-      .getByText(/carrera parque jipiro/i)
-      .first()
-      .click()
+    await page.getByText(/carrera parque jipiro/i).first().click()
 
     await expect(page).toHaveURL(/\/comunidad\/eventos\//)
     await expect(page.getByText(/inscribir/i)).toBeVisible()

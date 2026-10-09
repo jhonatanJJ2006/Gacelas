@@ -7,14 +7,14 @@
 # Test info
 
 - Name: routes.spec.ts >> Rutas y Búsqueda >> buscar rutas
-- Location: e2e/routes.spec.ts:13:3
+- Location: e2e/routes.spec.ts:14:3
 
 # Error details
 
 ```
-TimeoutError: locator.click: Timeout 15000ms exceeded.
+TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
 Call log:
-  - waiting for getByRole('link', { name: /rutas/i }).first()
+  - waiting for locator('nav') to be visible
 
 ```
 
@@ -22,7 +22,7 @@ Call log:
 
 ```ts
   1  | import { test, expect } from '@playwright/test'
-  2  |
+  2  | 
   3  | test.describe('Rutas y Búsqueda', () => {
   4  |   test.beforeEach(async ({ page }) => {
   5  |     await page.goto('/inicio-sesion')
@@ -31,23 +31,24 @@ Call log:
   8  |     await page.getByRole('button', { name: /iniciar sesión/i }).click()
   9  |     await expect(page).toHaveURL(/\/inicio/, { timeout: 10000 })
   10 |     await page.waitForLoadState('networkidle')
-  11 |   })
-  12 |
-  13 |   test('buscar rutas', async ({ page }) => {
-> 14 |     await page.getByRole('link', { name: /rutas/i }).first().click()
-     |                                                              ^ TimeoutError: locator.click: Timeout 15000ms exceeded.
-  15 |     await page.getByPlaceholder(/buscar rutas/i).click()
-  16 |
-  17 |     await expect(page).toHaveURL(/\/rutas\/buscar/)
-  18 |     await expect(page.getByPlaceholder(/a dónde quieres correr/i)).toBeVisible()
-  19 |   })
-  20 |
-  21 |   test('explorar rutas disponibles', async ({ page }) => {
-  22 |     await page.getByRole('link', { name: /rutas/i }).first().click()
-  23 |
-  24 |     await expect(page.getByText(/parque jipiro/i)).toBeVisible()
-  25 |     await expect(page.getByText(/río zamora/i)).toBeVisible()
-  26 |   })
-  27 | })
-  28 |
+> 11 |     await page.waitForSelector('nav', { timeout: 10000 })
+     |                ^ TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
+  12 |   })
+  13 | 
+  14 |   test('buscar rutas', async ({ page }) => {
+  15 |     await page.locator('nav a[href="/rutas"]').click()
+  16 |     await page.getByPlaceholder(/buscar rutas/i).click()
+  17 | 
+  18 |     await expect(page).toHaveURL(/\/rutas\/buscar/)
+  19 |     await expect(page.getByPlaceholder(/a dónde quieres correr/i)).toBeVisible()
+  20 |   })
+  21 | 
+  22 |   test('explorar rutas disponibles', async ({ page }) => {
+  23 |     await page.locator('nav a[href="/rutas"]').click()
+  24 | 
+  25 |     await expect(page.getByText(/parque jipiro/i)).toBeVisible()
+  26 |     await expect(page.getByText(/río zamora/i)).toBeVisible()
+  27 |   })
+  28 | })
+  29 | 
 ```
