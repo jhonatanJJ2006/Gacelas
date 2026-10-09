@@ -63,30 +63,54 @@ El modelo se carga de forma lazy y se usa en:
 
 ## Rutas de la aplicación
 
-### Acceso (sin layout)
+### Acceso (sin layout) - 5 rutas
 
-- `/bienvenida` - Bienvenida
-- `/inicio-sesion` - InicioSesion
-- `/registro` - Registro
-- `/recuperar-contrasena` - RecuperarContrasena
-- `/permisos-ubicacion` - PermisosUbicacion
+- `/bienvenida` - Bienvenida (ID: b61edc1cb0ac4f79bd27f40a92624e8e)
+- `/inicio-sesion` - InicioSesion (ID: 889e64826d154d7ab885855f489a2814)
+- `/registro` - Registro (ID: c7a11b43c2ad4877a6bff9cc902f8e41)
+- `/recuperar-contrasena` - RecuperarContrasena (ID: 677928b62b2d49a38cca263c8641fa5f)
+- `/permisos-ubicacion` - PermisosUbicacion (ID: 31b3ed996ba749d88231fd674b8e9f24)
 
-### Principales (con layout: header + bottom nav)
+### Principales (con layout: header + bottom nav) - 5 rutas
 
-- `/inicio` - Inicio (ID Stitch: 3cda309d10e040d1bf07f99558aa001c)
+- `/inicio` - Inicio con Runner 3D (ID: 3cda309d10e040d1bf07f99558aa001c)
 - `/rutas` - ListaRutas (ID: 0c202fc9cfe74c1994ce1ece0010cf00)
-- `/comunidad` - Feed (ID: 673a5ce87e3a497bb1afdbece8d1d114)
+- `/comunidad` - Feed social (ID: 673a5ce87e3a497bb1afdbece8d1d114)
+- `/comunidad/eventos` - Eventos (ID: 3ac8ac9d8ef245ec92f72566b8681c03)
 - `/perfil` - Perfil (ID: 4c002bb50db14d36a0aae56adde917f7)
 
-### Correr (sin layout)
+### Correr (sin layout) - 4 rutas
 
-- `/correr` - Correr (pantalla de preparación)
+- `/correr` - Preparación de carrera
 - `/correr/en-curso` - CarreraEnCurso (ID: 7525f3ca1f474ca78ab04628d314879f)
+- `/correr/cronometro` - Cronómetro ampliado (ID: 441fa480937c401499997b738aa65cd3)
 - `/correr/resumen` - ResumenPostCarrera (ID: 2e0b3dcc47ac4e9997f174bdaedeff34)
 
-### Ajustes (sin layout)
+### Rutas (sin layout) - 2 rutas
+
+- `/rutas/buscar` - Buscador estilo Uber (ID: 70441a3c2dbc4eb7a8aa75c321d60bb2)
+- `/rutas/navegacion` - Navegación 3D con Runner (ID: 1f20f211c8b547209350ae8d8f384bfa)
+
+### Comunidad (sin layout) - 1 ruta
+
+- `/comunidad/eventos/:id` - DetalleEvento (ID: 40e6040a070c41a7889fb349e89a226e)
+
+### Perfil (sin layout) - 2 rutas
+
+- `/perfil/editar` - EditarPerfil (ID: 75bd965b782646f889f62747a0715b72)
+- `/perfil/avatar` - Avatar3D (ID: df69e2fc40494da7901024d901382056)
+
+### Ajustes (sin layout) - 3 rutas
 
 - `/ajustes` - AjustesPreferencias (ID: c8e26916e4bf48399016e6ed751d025d)
+- `/ajustes/privacidad` - PrivacidadUbicacion (ID: 1cfbd65e8a9e43398d84c1954f3cc230)
+- `/ajustes/notificaciones` - ConfiguracionNotificaciones (ID: 085a47e52df74e26bb6bceb746c138fb)
+
+### Notificaciones (sin layout) - 1 ruta
+
+- `/notificaciones` - Notificaciones (bandeja)
+
+**Total: 23 rutas implementadas**
 
 ## Tabla de pantallas
 
