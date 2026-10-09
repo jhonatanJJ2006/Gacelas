@@ -9,8 +9,12 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
-    "test:unit": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
@@ -26,11 +30,14 @@
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "@playwright/test": "^1.64.0",
+    "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^14.1.2",
+    "@testing-library/user-event": "^14.6.7",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@types/three": "^0.186.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "1.6.1",
     "@vitest/ui": "^1.0.4",
     "autoprefixer": "^10.4.16",
     "eslint": "^9.13.0",

@@ -129,31 +129,48 @@ El modelo se carga de forma lazy y se usa en:
 | Ajustes | Ajustes y preferencias | /ajustes | c8e26916e4bf48399016e6ed751d025d |
 | Ajustes | Permisos de ubicación | /permisos-ubicacion | 31b3ed996ba749d88231fd674b8e9f24 |
 
-## Pantallas no portadas
-
-Las siguientes pantallas de Stitch no fueron implementadas en esta primera versión:
-
-- Cronómetro ampliado (441fa480937c401499997b738aa65cd3)
-- Modal de cronómetro (ce3a57477b9d4f298539c8bb1e36ee28)
-- Buscador de rutas (70441a3c2dbc4eb7a8aa75c321d60bb2)
-- Navegación 3D (1f20f211c8b547209350ae8d8f384bfa)
-- Eventos (3ac8ac9d8ef245ec92f72566b8681c03)
-- Detalle de evento (40e6040a070c41a7889fb349e89a226e)
-- Editar perfil (75bd965b782646f889f62747a0715b72)
-- Avatar 3D (df69e2fc40494da7901024d901382056)
-- Privacidad y ubicación (1cfbd65e8a9e43398d84c1954f3cc230)
-- Notificaciones (085a47e52df74e26bb6bceb746c138fb)
-
 ## Pendientes
 
 - Integración con Supabase (autenticación y base de datos)
 - Integración con Google Maps para rutas y navegación
 - Implementación completa del tracking GPS
 - Conexión de datos mock con API real
-- Pantallas adicionales (cronómetro ampliado, navegación 3D, eventos, etc.)
-- Tests unitarios y de integración
 - Optimización de carga del modelo 3D
 - PWA para instalación en dispositivos móviles
+
+## Pruebas
+
+El proyecto cuenta con pruebas unitarias y end-to-end completas. Ver documentación detallada en [/docs/TESTING.md](/docs/TESTING.md).
+
+### Pruebas Unitarias
+
+```bash
+# Ejecutar pruebas
+pnpm test
+
+# Modo watch
+pnpm test:watch
+
+# Con cobertura
+pnpm test:coverage
+```
+
+Cobertura actual: 59 tests unitarios, cobertura de líneas mayor al 70%.
+
+### Pruebas E2E
+
+```bash
+# Ejecutar pruebas end-to-end
+pnpm test:e2e
+
+# Con UI
+pnpm test:e2e:ui
+
+# Headed mode
+pnpm test:e2e:headed
+```
+
+Las pruebas E2E cubren todos los flujos principales de la aplicación.
 
 ## Notas sobre diseño
 
