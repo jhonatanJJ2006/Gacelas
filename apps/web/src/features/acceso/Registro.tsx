@@ -1,0 +1,132 @@
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+
+export function Registro() {
+  const navigate = useNavigate()
+  const [nombre, setNombre] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    navigate('/permisos-ubicacion')
+  }
+
+  return (
+    <div className="w-full min-h-screen bg-surface flex flex-col">
+      <header className="w-full z-20 px-margin py-4">
+        <button
+          onClick={() => navigate('/bienvenida')}
+          className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+        >
+          <span className="material-symbols-outlined">arrow_back</span>
+        </button>
+      </header>
+
+      <main className="flex-1 px-6 pb-8 flex flex-col">
+        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
+          <div className="mb-8">
+            <div className="flex items-center gap-2.5 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-primary-600/15 border border-primary-600/30 flex items-center justify-center text-primary-500 shadow-sm">
+                <span className="material-symbols-outlined text-[24px]">sprint</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-headline-md text-text-primary text-lg font-extrabold tracking-wider leading-none">
+                  GACELAS
+                </span>
+                <span className="text-xs font-semibold text-primary-400 tracking-widest">
+                  LOJA, ECUADOR
+                </span>
+              </div>
+            </div>
+
+            <h1 className="text-text-primary font-headline-lg text-3xl font-bold mb-2">
+              Únete a la manada
+            </h1>
+            <p className="text-text-secondary text-sm">
+              Crea tu cuenta y empieza a correr con la comunidad
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="nombre" className="block text-sm font-medium text-text-primary mb-2">
+                Nombre completo
+              </label>
+              <input
+                type="text"
+                id="nombre"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                className="w-full h-12 px-4 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+                placeholder="Tu nombre"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-2">
+                Correo electrónico
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full h-12 px-4 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+                placeholder="tu@email.com"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-text-primary mb-2"
+              >
+                Contraseña
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full h-12 px-4 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+                placeholder="Mínimo 8 caracteres"
+                required
+                minLength={8}
+              />
+              <p className="text-xs text-text-secondary mt-1">
+                Usa mínimo 8 caracteres con letras y números
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all cursor-pointer mt-6"
+            >
+              <span>Crear cuenta</span>
+              <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+            </button>
+
+            <p className="text-xs text-text-secondary text-center pt-2">
+              Al crear una cuenta, aceptas nuestros Términos de Servicio y Política de Privacidad
+            </p>
+
+            <div className="text-center pt-4">
+              <span className="text-text-secondary text-sm">
+                ¿Ya tienes cuenta?{' '}
+                <Link
+                  to="/inicio-sesion"
+                  className="text-primary-500 hover:text-primary-400 font-medium"
+                >
+                  Iniciar sesión
+                </Link>
+              </span>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+  )
+}
