@@ -32,16 +32,17 @@ export function ListaRutas() {
           ))}
         </div>
 
-        <div className="relative">
+        <Link to="/rutas/buscar" className="relative block">
           <input
             type="text"
             placeholder="Buscar rutas..."
             className="w-full h-12 pl-12 pr-4 bg-surface-container border border-border-subtle rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+            readOnly
           />
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">
             search
           </span>
-        </div>
+        </Link>
       </div>
 
       <div className="px-margin space-y-4 pb-space-3xl">

@@ -1,44 +1,88 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppLayout } from './components/AppLayout';
-import { Bienvenida } from './features/acceso/Bienvenida';
-import { InicioSesion } from './features/acceso/InicioSesion';
-import { Registro } from './features/acceso/Registro';
-import { RecuperarContrasena } from './features/acceso/RecuperarContrasena';
-import { PermisosUbicacion } from './features/ajustes/PermisosUbicacion';
-import { Inicio } from './features/inicio/Inicio';
-import { Correr } from './features/correr/Correr';
-import { CarreraEnCurso } from './features/correr/CarreraEnCurso';
-import { ResumenPostCarrera } from './features/correr/ResumenPostCarrera';
-import { ListaRutas } from './features/rutas/ListaRutas';
-import { Feed } from './features/comunidad/Feed';
-import { Perfil } from './features/perfil/Perfil';
-import { AjustesPreferencias } from './features/ajustes/AjustesPreferencias';
+
+const Bienvenida = lazy(() => import('./features/acceso/Bienvenida').then(m => ({ default: m.Bienvenida })));
+const InicioSesion = lazy(() => import('./features/acceso/InicioSesion').then(m => ({ default: m.InicioSesion })));
+const Registro = lazy(() => import('./features/acceso/Registro').then(m => ({ default: m.Registro })));
+const RecuperarContrasena = lazy(() => import('./features/acceso/RecuperarContrasena').then(m => ({ default: m.RecuperarContrasena })));
+const PermisosUbicacion = lazy(() => import('./features/ajustes/PermisosUbicacion').then(m => ({ default: m.PermisosUbicacion })));
+
+const Inicio = lazy(() => import('./features/inicio/Inicio').then(m => ({ default: m.Inicio })));
+const Correr = lazy(() => import('./features/correr/Correr').then(m => ({ default: m.Correr })));
+const CarreraEnCurso = lazy(() => import('./features/correr/CarreraEnCurso').then(m => ({ default: m.CarreraEnCurso })));
+const Cronometro = lazy(() => import('./features/correr/Cronometro').then(m => ({ default: m.Cronometro })));
+const ResumenPostCarrera = lazy(() => import('./features/correr/ResumenPostCarrera').then(m => ({ default: m.ResumenPostCarrera })));
+
+const ListaRutas = lazy(() => import('./features/rutas/ListaRutas').then(m => ({ default: m.ListaRutas })));
+const BuscadorRutas = lazy(() => import('./features/rutas/BuscadorRutas').then(m => ({ default: m.BuscadorRutas })));
+const NavegacionRuta = lazy(() => import('./features/rutas/NavegacionRuta').then(m => ({ default: m.NavegacionRuta })));
+
+const Feed = lazy(() => import('./features/comunidad/Feed').then(m => ({ default: m.Feed })));
+const Eventos = lazy(() => import('./features/comunidad/Eventos').then(m => ({ default: m.Eventos })));
+const DetalleEvento = lazy(() => import('./features/comunidad/DetalleEvento').then(m => ({ default: m.DetalleEvento })));
+
+const Perfil = lazy(() => import('./features/perfil/Perfil').then(m => ({ default: m.Perfil })));
+const EditarPerfil = lazy(() => import('./features/perfil/EditarPerfil').then(m => ({ default: m.EditarPerfil })));
+const Avatar3D = lazy(() => import('./features/perfil/Avatar3D').then(m => ({ default: m.Avatar3D })));
+
+const AjustesPreferencias = lazy(() => import('./features/ajustes/AjustesPreferencias').then(m => ({ default: m.AjustesPreferencias })));
+const PrivacidadUbicacion = lazy(() => import('./features/ajustes/PrivacidadUbicacion').then(m => ({ default: m.PrivacidadUbicacion })));
+const ConfiguracionNotificaciones = lazy(() => import('./features/ajustes/ConfiguracionNotificaciones').then(m => ({ default: m.ConfiguracionNotificaciones })));
+const Notificaciones = lazy(() => import('./features/notificaciones/Notificaciones').then(m => ({ default: m.Notificaciones })));
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-surface flex items-center justify-center">
+      <div className="flex flex-col items-center gap-2">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <span className="text-sm text-text-secondary">Cargando...</span>
+      </div>
+    </div>
+  );
+}
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/bienvenida" element={<Bienvenida />} />
-        <Route path="/inicio-sesion" element={<InicioSesion />} />
-        <Route path="/registro" element={<Registro />} />
-        <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
-        <Route path="/permisos-ubicacion" element={<PermisosUbicacion />} />
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          <Route path="/bienvenida" element={<Bienvenida />} />
+          <Route path="/inicio-sesion" element={<InicioSesion />} />
+          <Route path="/registro" element={<Registro />} />
+          <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
+          <Route path="/permisos-ubicacion" element={<PermisosUbicacion />} />
 
-        <Route path="/" element={<AppLayout />}>
-          <Route index element={<Navigate to="/inicio" replace />} />
-          <Route path="inicio" element={<Inicio />} />
-          <Route path="rutas" element={<ListaRutas />} />
-          <Route path="comunidad" element={<Feed />} />
-          <Route path="perfil" element={<Perfil />} />
-        </Route>
+          <Route path="/" element={<AppLayout />}>
+            <Route index element={<Navigate to="/inicio" replace />} />
+            <Route path="inicio" element={<Inicio />} />
+            <Route path="rutas" element={<ListaRutas />} />
+            <Route path="comunidad" element={<Feed />} />
+            <Route path="comunidad/eventos" element={<Eventos />} />
+            <Route path="perfil" element={<Perfil />} />
+          </Route>
 
-        <Route path="/correr" element={<Correr />} />
-        <Route path="/correr/en-curso" element={<CarreraEnCurso />} />
-        <Route path="/correr/resumen" element={<ResumenPostCarrera />} />
-        <Route path="/ajustes" element={<AjustesPreferencias />} />
+          <Route path="/correr" element={<Correr />} />
+          <Route path="/correr/en-curso" element={<CarreraEnCurso />} />
+          <Route path="/correr/cronometro" element={<Cronometro />} />
+          <Route path="/correr/resumen" element={<ResumenPostCarrera />} />
 
-        <Route path="*" element={<Navigate to="/bienvenida" replace />} />
-      </Routes>
+          <Route path="/rutas/buscar" element={<BuscadorRutas />} />
+          <Route path="/rutas/navegacion" element={<NavegacionRuta />} />
+
+          <Route path="/comunidad/eventos/:id" element={<DetalleEvento />} />
+
+          <Route path="/perfil/editar" element={<EditarPerfil />} />
+          <Route path="/perfil/avatar" element={<Avatar3D />} />
+
+          <Route path="/ajustes" element={<AjustesPreferencias />} />
+          <Route path="/ajustes/privacidad" element={<PrivacidadUbicacion />} />
+          <Route path="/ajustes/notificaciones" element={<ConfiguracionNotificaciones />} />
+          <Route path="/notificaciones" element={<Notificaciones />} />
+
+          <Route path="*" element={<Navigate to="/bienvenida" replace />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

@@ -119,7 +119,7 @@ export function Inicio() {
         <div className="flex items-center justify-between">
           <h3 className="font-title-md text-title-md text-text-primary">Próximo encuentro</h3>
           <Link to="/comunidad/eventos" className="font-label-md text-label-md text-primary">
-            Ver todo
+            Ver todos
           </Link>
         </div>
 

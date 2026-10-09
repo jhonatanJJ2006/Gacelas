@@ -28,13 +28,14 @@ export function AppLayout() {
             </div>
           </div>
           <div className="flex items-center gap-space-xs">
-            <button
+            <Link
+              to="/notificaciones"
               aria-label="Notificaciones"
               className="relative w-12 h-12 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-container active:scale-95 transition-all"
             >
               <span className="material-symbols-outlined text-[24px]">notifications</span>
               <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary-container ring-2 ring-bg-secondary"></span>
-            </button>
+            </Link>
           </div>
         </div>
       </header>
