@@ -2,7 +2,7 @@ name: Web Tests
 
 on:
   push:
-    branches: [cursor/**]
+    branches: [main, cursor/**]
   pull_request:
     branches: [main, develop]
     paths:
@@ -12,6 +12,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code

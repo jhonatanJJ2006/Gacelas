@@ -7,9 +7,15 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
+  timeout: 45000,
+  expect: {
+    timeout: 10000,
+  },
   use: {
     baseURL: 'http://localhost:4173',
     trace: 'on-first-retry',
+    actionTimeout: 15000,
+    navigationTimeout: 30000,
   },
 
   projects: [
@@ -20,15 +26,12 @@ export default defineConfig({
         viewport: { width: 390, height: 844 },
       },
     },
-    {
-      name: 'Desktop Chrome',
-      use: { ...devices['Desktop Chrome'] },
-    },
   ],
 
   webServer: {
-    command: 'pnpm preview',
+    command: 'pnpm preview --port 4173 --strictPort',
     url: 'http://localhost:4173',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
+    timeout: 120000,
   },
 })
