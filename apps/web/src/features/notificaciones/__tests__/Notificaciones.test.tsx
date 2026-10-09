@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { Notificaciones } from '../Notificaciones';
+import { describe, it, expect } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { Notificaciones } from '../Notificaciones'
 
 describe('Notificaciones', () => {
   it('renderiza sin errores', () => {
@@ -9,8 +9,8 @@ describe('Notificaciones', () => {
       <MemoryRouter>
         <Notificaciones />
       </MemoryRouter>
-    );
+    )
 
-    expect(screen.getByText(/notificaciones/i)).toBeInTheDocument();
-  });
-});
+    expect(screen.getByText(/notificaciones/i)).toBeInTheDocument()
+  })
+})

@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export function ConfiguracionNotificaciones() {
-  const navigate = useNavigate();
-  const [notifLikes, setNotifLikes] = useState(true);
-  const [notifComentarios, setNotifComentarios] = useState(true);
-  const [notifSeguidores, setNotifSeguidores] = useState(true);
-  const [notifLive, setNotifLive] = useState(true);
-  const [notifEventos, setNotifEventos] = useState(true);
-  const [notifEmail, setNotifEmail] = useState(false);
+  const navigate = useNavigate()
+  const [notifLikes, setNotifLikes] = useState(true)
+  const [notifComentarios, setNotifComentarios] = useState(true)
+  const [notifSeguidores, setNotifSeguidores] = useState(true)
+  const [notifLive, setNotifLive] = useState(true)
+  const [notifEventos, setNotifEventos] = useState(true)
+  const [notifEmail, setNotifEmail] = useState(false)
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -20,9 +20,7 @@ export function ConfiguracionNotificaciones() {
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
-          <h1 className="font-headline-md text-headline-md text-text-primary">
-            Notificaciones
-          </h1>
+          <h1 className="font-headline-md text-headline-md text-text-primary">Notificaciones</h1>
         </div>
       </header>
 
@@ -34,9 +32,7 @@ export function ConfiguracionNotificaciones() {
           <div className="space-y-2">
             <div className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl">
               <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-[20px] text-danger">
-                  favorite
-                </span>
+                <span className="material-symbols-outlined text-[20px] text-danger">favorite</span>
                 <div>
                   <div className="font-body-md text-body-md text-text-primary font-semibold">
                     Likes
@@ -134,9 +130,7 @@ export function ConfiguracionNotificaciones() {
 
             <div className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl">
               <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-[20px] text-tertiary">
-                  event
-                </span>
+                <span className="material-symbols-outlined text-[20px] text-tertiary">event</span>
                 <div>
                   <div className="font-body-md text-body-md text-text-primary font-semibold">
                     Eventos
@@ -192,22 +186,18 @@ export function ConfiguracionNotificaciones() {
         </section>
 
         <section>
-          <h2 className="font-title-md text-title-md text-text-primary mb-3">
-            Frecuencia
-          </h2>
+          <h2 className="font-title-md text-title-md text-text-primary mb-3">Frecuencia</h2>
           <div className="bg-surface-container rounded-xl p-4">
             <p className="font-body-sm text-body-sm text-text-secondary mb-3">
               Los likes se agrupan cada 10 o cada 6 horas para evitar notificaciones excesivas.
             </p>
             <div className="flex items-center gap-2 text-primary-500">
               <span className="material-symbols-outlined text-[18px]">info</span>
-              <span className="font-label-md text-label-md">
-                Configuración optimizada
-              </span>
+              <span className="font-label-md text-label-md">Configuración optimizada</span>
             </div>
           </div>
         </section>
       </main>
     </div>
-  );
+  )
 }

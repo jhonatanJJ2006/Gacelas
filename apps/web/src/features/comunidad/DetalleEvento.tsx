@@ -1,7 +1,7 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 
 export function DetalleEvento() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -19,7 +19,9 @@ export function DetalleEvento() {
 
         <div className="absolute bottom-4 left-4 right-4">
           <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full inline-flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-primary-400">directions_run</span>
+            <span className="material-symbols-outlined text-[16px] text-primary-400">
+              directions_run
+            </span>
             <span className="text-white font-label-md text-label-md">10 km</span>
           </div>
         </div>
@@ -33,21 +35,23 @@ export function DetalleEvento() {
         <div className="space-y-3 mb-6">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[20px] text-primary-500">calendar_today</span>
+              <span className="material-symbols-outlined text-[20px] text-primary-500">
+                calendar_today
+              </span>
             </div>
             <div>
               <div className="font-body-md text-body-md text-text-primary font-semibold">
                 Sábado 11 de Octubre, 2026
               </div>
-              <div className="font-body-sm text-body-sm text-text-secondary">
-                6:00 AM - 8:00 AM
-              </div>
+              <div className="font-body-sm text-body-sm text-text-secondary">6:00 AM - 8:00 AM</div>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[20px] text-secondary-500">location_on</span>
+              <span className="material-symbols-outlined text-[20px] text-secondary-500">
+                location_on
+              </span>
             </div>
             <div>
               <div className="font-body-md text-body-md text-text-primary font-semibold">
@@ -61,22 +65,22 @@ export function DetalleEvento() {
         </div>
 
         <div className="bg-surface-container rounded-2xl p-4 mb-6">
-          <h2 className="font-title-md text-title-md text-text-primary mb-3">
-            Descripción
-          </h2>
+          <h2 className="font-title-md text-title-md text-text-primary mb-3">Descripción</h2>
           <p className="font-body-md text-body-md text-text-secondary leading-relaxed">
-            Carrera grupal de 10km por el Parque Jipiro. Recorrido panorámico alrededor del parque con
-            vistas espectaculares. Todos los niveles son bienvenidos. Habrá hidratación en los km 3, 5 y 7.
+            Carrera grupal de 10km por el Parque Jipiro. Recorrido panorámico alrededor del parque
+            con vistas espectaculares. Todos los niveles son bienvenidos. Habrá hidratación en los
+            km 3, 5 y 7.
           </p>
         </div>
 
         <div className="bg-surface-container rounded-2xl p-4 mb-6">
-          <h2 className="font-title-md text-title-md text-text-primary mb-3">
-            Participantes (15)
-          </h2>
+          <h2 className="font-title-md text-title-md text-text-primary mb-3">Participantes (15)</h2>
           <div className="flex flex-wrap gap-2">
             {[...Array(15)].map((_, i) => (
-              <div key={i} className="w-12 h-12 rounded-full bg-surface-variant border-2 border-border-subtle"></div>
+              <div
+                key={i}
+                className="w-12 h-12 rounded-full bg-surface-variant border-2 border-border-subtle"
+              ></div>
             ))}
           </div>
         </div>
@@ -107,5 +111,5 @@ export function DetalleEvento() {
         </button>
       </div>
     </div>
-  );
+  )
 }

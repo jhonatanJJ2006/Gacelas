@@ -20,15 +20,13 @@ export function Feed() {
       likes: 18,
       comments: 3,
     },
-  ];
+  ]
 
   return (
     <div className="flex flex-col w-full">
       <div className="px-margin pt-space-md pb-space-sm">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="font-headline-md text-headline-md text-text-primary">
-            Comunidad
-          </h1>
+          <h1 className="font-headline-md text-headline-md text-text-primary">Comunidad</h1>
           <button className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors">
             <span className="material-symbols-outlined">filter_list</span>
           </button>
@@ -56,9 +54,7 @@ export function Feed() {
                 <p className="font-body-md text-body-md text-text-primary font-semibold">
                   {post.user}
                 </p>
-                <p className="font-body-sm text-body-sm text-text-secondary">
-                  {post.time}
-                </p>
+                <p className="font-body-sm text-body-sm text-text-secondary">{post.time}</p>
               </div>
               <button className="text-text-secondary hover:text-text-primary">
                 <span className="material-symbols-outlined">more_vert</span>
@@ -109,5 +105,5 @@ export function Feed() {
         ))}
       </div>
     </div>
-  );
+  )
 }

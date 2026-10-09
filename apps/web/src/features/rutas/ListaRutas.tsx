@@ -1,21 +1,19 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 
 export function ListaRutas() {
-  const tabs = ['Explorar', 'Mis Rutas', 'Guardadas'];
-  const activeTab = 'Explorar';
+  const tabs = ['Explorar', 'Mis Rutas', 'Guardadas']
+  const activeTab = 'Explorar'
 
   const routes = [
     { id: 1, name: 'Parque Jipiro', distance: 5.2, difficulty: 'Fácil', elevation: 45 },
     { id: 2, name: 'Río Zamora', distance: 8.5, difficulty: 'Moderado', elevation: 120 },
     { id: 3, name: 'Cerro Villonaco', distance: 12.3, difficulty: 'Difícil', elevation: 380 },
-  ];
+  ]
 
   return (
     <div className="flex flex-col w-full">
       <div className="px-margin pt-space-md pb-space-sm">
-        <h1 className="font-headline-md text-headline-md text-text-primary mb-4">
-          Rutas de Loja
-        </h1>
+        <h1 className="font-headline-md text-headline-md text-text-primary mb-4">Rutas de Loja</h1>
 
         <div className="flex gap-2 mb-4">
           {tabs.map((tab) => (
@@ -56,9 +54,7 @@ export function ListaRutas() {
               <span className="material-symbols-outlined text-[64px] text-primary">route</span>
             </div>
             <div className="p-4">
-              <h3 className="font-title-md text-title-md text-text-primary mb-2">
-                {route.name}
-              </h3>
+              <h3 className="font-title-md text-title-md text-text-primary mb-2">{route.name}</h3>
               <div className="flex items-center gap-4 text-text-secondary">
                 <span className="font-label-md text-label-md flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px]">straighten</span>
@@ -68,13 +64,15 @@ export function ListaRutas() {
                   <span className="material-symbols-outlined text-[16px]">trending_up</span>
                   {route.elevation}m
                 </span>
-                <span className={`font-label-md text-label-md px-2 py-0.5 rounded-full ${
-                  route.difficulty === 'Fácil'
-                    ? 'bg-secondary-600/20 text-secondary-500'
-                    : route.difficulty === 'Moderado'
-                    ? 'bg-primary-600/20 text-primary-500'
-                    : 'bg-danger/20 text-danger'
-                }`}>
+                <span
+                  className={`font-label-md text-label-md px-2 py-0.5 rounded-full ${
+                    route.difficulty === 'Fácil'
+                      ? 'bg-secondary-600/20 text-secondary-500'
+                      : route.difficulty === 'Moderado'
+                        ? 'bg-primary-600/20 text-primary-500'
+                        : 'bg-danger/20 text-danger'
+                  }`}
+                >
                   {route.difficulty}
                 </span>
               </div>
@@ -83,5 +81,5 @@ export function ListaRutas() {
         ))}
       </div>
     </div>
-  );
+  )
 }

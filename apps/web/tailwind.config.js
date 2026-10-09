@@ -124,12 +124,30 @@ export default {
         'label-lg': ['14px', { lineHeight: '20px', letterSpacing: '0.01em', fontWeight: '600' }],
         'title-md': ['18px', { lineHeight: '24px', fontWeight: '600' }],
         'headline-sm': ['20px', { lineHeight: '28px', fontWeight: '600' }],
-        'headline-md': ['24px', { lineHeight: '32px', letterSpacing: '-0.01em', fontWeight: '600' }],
-        'headline-lg': ['30px', { lineHeight: '38px', letterSpacing: '-0.01em', fontWeight: '700' }],
-        'headline-xl': ['36px', { lineHeight: '44px', letterSpacing: '-0.02em', fontWeight: '700' }],
-        'headline-lg-mobile': ['30px', { lineHeight: '36px', letterSpacing: '-0.01em', fontWeight: '700' }],
-        'headline-xl-mobile': ['36px', { lineHeight: '40px', letterSpacing: '-0.02em', fontWeight: '700' }],
-        'metric-huge': ['48px', { lineHeight: '52px', letterSpacing: '-0.03em', fontWeight: '700' }],
+        'headline-md': [
+          '24px',
+          { lineHeight: '32px', letterSpacing: '-0.01em', fontWeight: '600' },
+        ],
+        'headline-lg': [
+          '30px',
+          { lineHeight: '38px', letterSpacing: '-0.01em', fontWeight: '700' },
+        ],
+        'headline-xl': [
+          '36px',
+          { lineHeight: '44px', letterSpacing: '-0.02em', fontWeight: '700' },
+        ],
+        'headline-lg-mobile': [
+          '30px',
+          { lineHeight: '36px', letterSpacing: '-0.01em', fontWeight: '700' },
+        ],
+        'headline-xl-mobile': [
+          '36px',
+          { lineHeight: '40px', letterSpacing: '-0.02em', fontWeight: '700' },
+        ],
+        'metric-huge': [
+          '48px',
+          { lineHeight: '52px', letterSpacing: '-0.03em', fontWeight: '700' },
+        ],
       },
       borderRadius: {
         DEFAULT: '0.25rem',

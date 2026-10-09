@@ -114,20 +114,20 @@ El modelo se carga de forma lazy y se usa en:
 
 ## Tabla de pantallas
 
-| Sección | Pantalla | Ruta | ID Stitch |
-|---------|----------|------|-----------|
-| Acceso | Bienvenida | /bienvenida | b61edc1cb0ac4f79bd27f40a92624e8e |
-| Acceso | Inicio de sesión | /inicio-sesion | 889e64826d154d7ab885855f489a2814 |
-| Acceso | Registro | /registro | c7a11b43c2ad4877a6bff9cc902f8e41 |
-| Acceso | Recuperar contraseña | /recuperar-contrasena | 677928b62b2d49a38cca263c8641fa5f |
-| Inicio | Inicio | /inicio | 3cda309d10e040d1bf07f99558aa001c |
-| Correr | Carrera en curso | /correr/en-curso | 7525f3ca1f474ca78ab04628d314879f |
-| Correr | Resumen post-carrera | /correr/resumen | 2e0b3dcc47ac4e9997f174bdaedeff34 |
-| Rutas | Lista de rutas | /rutas | 0c202fc9cfe74c1994ce1ece0010cf00 |
-| Comunidad | Feed | /comunidad | 673a5ce87e3a497bb1afdbece8d1d114 |
-| Perfil | Perfil | /perfil | 4c002bb50db14d36a0aae56adde917f7 |
-| Ajustes | Ajustes y preferencias | /ajustes | c8e26916e4bf48399016e6ed751d025d |
-| Ajustes | Permisos de ubicación | /permisos-ubicacion | 31b3ed996ba749d88231fd674b8e9f24 |
+| Sección   | Pantalla               | Ruta                  | ID Stitch                        |
+| --------- | ---------------------- | --------------------- | -------------------------------- |
+| Acceso    | Bienvenida             | /bienvenida           | b61edc1cb0ac4f79bd27f40a92624e8e |
+| Acceso    | Inicio de sesión       | /inicio-sesion        | 889e64826d154d7ab885855f489a2814 |
+| Acceso    | Registro               | /registro             | c7a11b43c2ad4877a6bff9cc902f8e41 |
+| Acceso    | Recuperar contraseña   | /recuperar-contrasena | 677928b62b2d49a38cca263c8641fa5f |
+| Inicio    | Inicio                 | /inicio               | 3cda309d10e040d1bf07f99558aa001c |
+| Correr    | Carrera en curso       | /correr/en-curso      | 7525f3ca1f474ca78ab04628d314879f |
+| Correr    | Resumen post-carrera   | /correr/resumen       | 2e0b3dcc47ac4e9997f174bdaedeff34 |
+| Rutas     | Lista de rutas         | /rutas                | 0c202fc9cfe74c1994ce1ece0010cf00 |
+| Comunidad | Feed                   | /comunidad            | 673a5ce87e3a497bb1afdbece8d1d114 |
+| Perfil    | Perfil                 | /perfil               | 4c002bb50db14d36a0aae56adde917f7 |
+| Ajustes   | Ajustes y preferencias | /ajustes              | c8e26916e4bf48399016e6ed751d025d |
+| Ajustes   | Permisos de ubicación  | /permisos-ubicacion   | 31b3ed996ba749d88231fd674b8e9f24 |
 
 ## Pendientes
 

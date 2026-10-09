@@ -1,7 +1,7 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'
 
 export function AjustesPreferencias() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -13,17 +13,13 @@ export function AjustesPreferencias() {
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
-          <h1 className="font-headline-md text-headline-md text-text-primary">
-            Ajustes
-          </h1>
+          <h1 className="font-headline-md text-headline-md text-text-primary">Ajustes</h1>
         </div>
       </header>
 
       <main className="flex-1 px-margin py-6 space-y-6 pb-24">
         <section>
-          <h2 className="font-title-md text-title-md text-text-primary mb-3">
-            Cuenta
-          </h2>
+          <h2 className="font-title-md text-title-md text-text-primary mb-3">Cuenta</h2>
           <div className="space-y-2">
             <Link
               to="/perfil/editar"
@@ -31,9 +27,7 @@ export function AjustesPreferencias() {
             >
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-text-secondary">person</span>
-                <span className="font-body-md text-body-md text-text-primary">
-                  Editar perfil
-                </span>
+                <span className="font-body-md text-body-md text-text-primary">Editar perfil</span>
               </div>
               <span className="material-symbols-outlined text-text-secondary">chevron_right</span>
             </Link>
@@ -41,9 +35,7 @@ export function AjustesPreferencias() {
         </section>
 
         <section>
-          <h2 className="font-title-md text-title-md text-text-primary mb-3">
-            Privacidad
-          </h2>
+          <h2 className="font-title-md text-title-md text-text-primary mb-3">Privacidad</h2>
           <div className="space-y-2">
             <Link
               to="/ajustes/privacidad"
@@ -64,9 +56,7 @@ export function AjustesPreferencias() {
             >
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-text-secondary">notifications</span>
-                <span className="font-body-md text-body-md text-text-primary">
-                  Notificaciones
-                </span>
+                <span className="font-body-md text-body-md text-text-primary">Notificaciones</span>
               </div>
               <span className="material-symbols-outlined text-text-secondary">chevron_right</span>
             </Link>
@@ -74,16 +64,12 @@ export function AjustesPreferencias() {
         </section>
 
         <section>
-          <h2 className="font-title-md text-title-md text-text-primary mb-3">
-            General
-          </h2>
+          <h2 className="font-title-md text-title-md text-text-primary mb-3">General</h2>
           <div className="space-y-2">
             <div className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-text-secondary">dark_mode</span>
-                <span className="font-body-md text-body-md text-text-primary">
-                  Modo oscuro
-                </span>
+                <span className="font-body-md text-body-md text-text-primary">Modo oscuro</span>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" defaultChecked />
@@ -107,16 +93,12 @@ export function AjustesPreferencias() {
         </section>
 
         <section>
-          <h2 className="font-title-md text-title-md text-text-primary mb-3">
-            Información
-          </h2>
+          <h2 className="font-title-md text-title-md text-text-primary mb-3">Información</h2>
           <div className="space-y-2">
             <button className="w-full flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl hover:bg-surface-container-high transition-colors">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-text-secondary">info</span>
-                <span className="font-body-md text-body-md text-text-primary">
-                  Acerca de
-                </span>
+                <span className="font-body-md text-body-md text-text-primary">Acerca de</span>
               </div>
               <span className="material-symbols-outlined text-text-secondary">chevron_right</span>
             </button>
@@ -124,9 +106,7 @@ export function AjustesPreferencias() {
             <button className="w-full flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl hover:bg-surface-container-high transition-colors">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-text-secondary">help</span>
-                <span className="font-body-md text-body-md text-text-primary">
-                  Ayuda y soporte
-                </span>
+                <span className="font-body-md text-body-md text-text-primary">Ayuda y soporte</span>
               </div>
               <span className="material-symbols-outlined text-text-secondary">chevron_right</span>
             </button>
@@ -139,12 +119,10 @@ export function AjustesPreferencias() {
             className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-danger/20 text-danger rounded-xl hover:bg-danger/30 transition-colors"
           >
             <span className="material-symbols-outlined">logout</span>
-            <span className="font-body-md text-body-md font-medium">
-              Cerrar sesión
-            </span>
+            <span className="font-body-md text-body-md font-medium">Cerrar sesión</span>
           </button>
         </section>
       </main>
     </div>
-  );
+  )
 }

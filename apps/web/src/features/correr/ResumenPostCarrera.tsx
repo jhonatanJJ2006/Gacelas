@@ -1,7 +1,7 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 
 export function ResumenPostCarrera() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -17,7 +17,9 @@ export function ResumenPostCarrera() {
       <main className="flex-1 px-6 pb-8 overflow-auto">
         <div className="text-center mb-8">
           <div className="w-20 h-20 rounded-full bg-secondary-600/20 flex items-center justify-center mx-auto mb-4">
-            <span className="material-symbols-outlined text-[48px] text-secondary-500">check_circle</span>
+            <span className="material-symbols-outlined text-[48px] text-secondary-500">
+              check_circle
+            </span>
           </div>
           <h1 className="font-headline-lg text-headline-lg text-text-primary mb-2">
             Carrera completada
@@ -33,9 +35,7 @@ export function ResumenPostCarrera() {
               <div className="font-metric-huge text-metric-huge text-primary leading-none mb-1">
                 5.2
               </div>
-              <div className="font-label-md text-label-md text-text-secondary uppercase">
-                km
-              </div>
+              <div className="font-label-md text-label-md text-text-secondary uppercase">km</div>
             </div>
             <div className="text-center">
               <div className="font-metric-huge text-metric-huge text-text-primary leading-none mb-1">
@@ -49,9 +49,7 @@ export function ResumenPostCarrera() {
               <div className="font-metric-huge text-metric-huge text-secondary leading-none mb-1">
                 5:30
               </div>
-              <div className="font-label-md text-label-md text-text-secondary uppercase">
-                /km
-              </div>
+              <div className="font-label-md text-label-md text-text-secondary uppercase">/km</div>
             </div>
           </div>
 
@@ -70,7 +68,9 @@ export function ResumenPostCarrera() {
             </div>
             <div>
               <div className="font-headline-sm text-headline-sm text-text-primary">45m</div>
-              <div className="font-label-md text-label-md text-text-secondary text-[10px]">Elev</div>
+              <div className="font-label-md text-label-md text-text-secondary text-[10px]">
+                Elev
+              </div>
             </div>
           </div>
         </div>
@@ -89,9 +89,7 @@ export function ResumenPostCarrera() {
           />
 
           <div className="flex items-center justify-between px-4 py-3 bg-surface-container border border-border-subtle rounded-xl">
-            <span className="font-body-md text-body-md text-text-primary">
-              Hacer pública
-            </span>
+            <span className="font-body-md text-body-md text-text-primary">Hacer pública</span>
             <label className="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" className="sr-only peer" defaultChecked />
               <div className="w-11 h-6 bg-surface-container-high peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
@@ -117,5 +115,5 @@ export function ResumenPostCarrera() {
         </div>
       </main>
     </div>
-  );
+  )
 }

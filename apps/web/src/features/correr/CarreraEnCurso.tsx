@@ -1,40 +1,40 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export function CarreraEnCurso() {
-  const navigate = useNavigate();
-  const [isPaused, setIsPaused] = useState(false);
-  const [time, setTime] = useState(0);
-  const [distance, setDistance] = useState(0);
+  const navigate = useNavigate()
+  const [isPaused, setIsPaused] = useState(false)
+  const [time, setTime] = useState(0)
+  const [distance, setDistance] = useState(0)
 
   useEffect(() => {
     if (!isPaused) {
       const interval = setInterval(() => {
-        setTime((t) => t + 1);
-        setDistance((d) => d + (Math.random() * 0.01));
-      }, 1000);
-      return () => clearInterval(interval);
+        setTime((t) => t + 1)
+        setDistance((d) => d + Math.random() * 0.01)
+      }, 1000)
+      return () => clearInterval(interval)
     }
-  }, [isPaused]);
+  }, [isPaused])
 
   const formatTime = (seconds: number) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+    const hrs = Math.floor(seconds / 3600)
+    const mins = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
 
-  const pace = distance > 0 ? Math.floor(time / distance / 60) : 0;
+  const pace = distance > 0 ? Math.floor(time / distance / 60) : 0
 
   const handleFinish = () => {
-    navigate('/correr/resumen');
-  };
+    navigate('/correr/resumen')
+  }
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
       <div className="relative flex-1 bg-surface-container-low">
         <div className="absolute inset-0 bg-gradient-to-b from-surface-container-low via-surface to-surface"></div>
-        
+
         <div className="absolute top-4 inset-x-4 z-10">
           <button
             onClick={() => navigate('/inicio')}
@@ -118,5 +118,5 @@ export function CarreraEnCurso() {
         </div>
       </div>
     </div>
-  );
+  )
 }

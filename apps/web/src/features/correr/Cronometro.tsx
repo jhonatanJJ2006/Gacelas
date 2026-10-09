@@ -1,46 +1,53 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 interface Split {
-  id: number;
-  distance: number;
-  pace: string;
-  time: string;
-  label: string;
-  isCurrent?: boolean;
+  id: number
+  distance: number
+  pace: string
+  time: string
+  label: string
+  isCurrent?: boolean
 }
 
 export function Cronometro() {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'splits' | 'intervals' | 'metronome'>('splits');
-  const [time, setTime] = useState(1753);
-  const [distance] = useState(5.42);
-  const [isPaused, setIsPaused] = useState(false);
+  const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState<'splits' | 'intervals' | 'metronome'>('splits')
+  const [time, setTime] = useState(1753)
+  const [distance] = useState(5.42)
+  const [isPaused, setIsPaused] = useState(false)
 
   const splits: Split[] = [
-    { id: 5, distance: 5.42, pace: '4:52', time: '02:18', label: 'En curso actual', isCurrent: true },
+    {
+      id: 5,
+      distance: 5.42,
+      pace: '4:52',
+      time: '02:18',
+      label: 'En curso actual',
+      isCurrent: true,
+    },
     { id: 4, distance: 1.0, pace: '5:12', time: '05:12', label: 'Subida San Cayetano' },
     { id: 3, distance: 1.0, pace: '4:48', time: '04:48', label: 'Mejor vuelta' },
     { id: 2, distance: 1.0, pace: '5:20', time: '05:20', label: 'Av. Universitaria' },
     { id: 1, distance: 1.0, pace: '5:08', time: '05:08', label: 'Inicio Jipiro' },
-  ];
+  ]
 
   useEffect(() => {
     if (!isPaused) {
       const interval = setInterval(() => {
-        setTime((t) => t + 1);
-      }, 1000);
-      return () => clearInterval(interval);
+        setTime((t) => t + 1)
+      }, 1000)
+      return () => clearInterval(interval)
     }
-  }, [isPaused]);
+  }, [isPaused])
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
 
-  const progress = (time / 3600) * 100;
+  const progress = (time / 3600) * 100
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -142,7 +149,9 @@ export function Cronometro() {
 
               <div className="mt-1 flex items-center gap-1 text-label-md font-label-md text-text-secondary bg-surface-container/60 px-3 py-1 rounded-full">
                 <span className="material-symbols-outlined text-[15px] text-primary-500">flag</span>
-                <span>Km 6 en curso: <strong className="text-on-surface">2:18</strong></span>
+                <span>
+                  Km 6 en curso: <strong className="text-on-surface">2:18</strong>
+                </span>
               </div>
             </div>
           </div>
@@ -155,9 +164,12 @@ export function Cronometro() {
                 <span className="material-symbols-outlined text-[22px]">distance</span>
               </div>
               <div className="min-w-0 flex flex-col">
-                <span className="text-label-md font-label-md text-text-secondary">Distancia Total</span>
+                <span className="text-label-md font-label-md text-text-secondary">
+                  Distancia Total
+                </span>
                 <span className="text-headline-sm font-headline-sm text-on-surface tabular-nums truncate">
-                  {distance.toFixed(2)} <span className="text-label-lg font-label-lg text-text-secondary">km</span>
+                  {distance.toFixed(2)}{' '}
+                  <span className="text-label-lg font-label-lg text-text-secondary">km</span>
                 </span>
               </div>
             </div>
@@ -167,7 +179,9 @@ export function Cronometro() {
                 <span className="material-symbols-outlined text-[22px]">pace</span>
               </div>
               <div className="min-w-0 flex flex-col">
-                <span className="text-label-md font-label-md text-text-secondary">Ritmo Actual</span>
+                <span className="text-label-md font-label-md text-text-secondary">
+                  Ritmo Actual
+                </span>
                 <span className="text-headline-sm font-headline-sm text-on-surface tabular-nums truncate">
                   4:52 <span className="text-label-lg font-label-lg text-text-secondary">/km</span>
                 </span>
@@ -179,7 +193,9 @@ export function Cronometro() {
                 <span className="material-symbols-outlined text-[22px]">trending_up</span>
               </div>
               <div className="min-w-0 flex flex-col">
-                <span className="text-label-md font-label-md text-text-secondary">Ritmo Promedio</span>
+                <span className="text-label-md font-label-md text-text-secondary">
+                  Ritmo Promedio
+                </span>
                 <span className="text-headline-sm font-headline-sm text-on-surface tabular-nums truncate">
                   5:08 <span className="text-label-lg font-label-lg text-text-secondary">/km</span>
                 </span>
@@ -237,7 +253,9 @@ export function Cronometro() {
             <button
               onClick={() => setActiveTab('splits')}
               className={`flex-1 py-1.5 rounded-lg text-label-md font-label-md transition-colors flex items-center justify-center gap-1 ${
-                activeTab === 'splits' ? 'bg-surface-container text-on-surface font-semibold shadow-sm' : 'text-text-secondary'
+                activeTab === 'splits'
+                  ? 'bg-surface-container text-on-surface font-semibold shadow-sm'
+                  : 'text-text-secondary'
               }`}
             >
               <span className="material-symbols-outlined text-[16px]">list_alt</span>
@@ -246,7 +264,9 @@ export function Cronometro() {
             <button
               onClick={() => setActiveTab('intervals')}
               className={`flex-1 py-1.5 rounded-lg text-label-md font-label-md transition-colors flex items-center justify-center gap-1 ${
-                activeTab === 'intervals' ? 'bg-surface-container text-on-surface font-semibold shadow-sm' : 'text-text-secondary'
+                activeTab === 'intervals'
+                  ? 'bg-surface-container text-on-surface font-semibold shadow-sm'
+                  : 'text-text-secondary'
               }`}
             >
               <span className="material-symbols-outlined text-[16px]">repeat</span>
@@ -255,7 +275,9 @@ export function Cronometro() {
             <button
               onClick={() => setActiveTab('metronome')}
               className={`flex-1 py-1.5 rounded-lg text-label-md font-label-md transition-colors flex items-center justify-center gap-1 ${
-                activeTab === 'metronome' ? 'bg-surface-container text-on-surface font-semibold shadow-sm' : 'text-text-secondary'
+                activeTab === 'metronome'
+                  ? 'bg-surface-container text-on-surface font-semibold shadow-sm'
+                  : 'text-text-secondary'
               }`}
             >
               <span className="material-symbols-outlined text-[16px]">graphic_eq</span>
@@ -288,8 +310,8 @@ export function Cronometro() {
                         split.isCurrent
                           ? 'bg-secondary-container/20 text-secondary-500'
                           : split.id === 3
-                          ? 'bg-primary-container text-on-primary-container'
-                          : 'bg-surface-container-high text-on-surface'
+                            ? 'bg-primary-container text-on-primary-container'
+                            : 'bg-surface-container-high text-on-surface'
                       }`}
                     >
                       {split.id}
@@ -298,11 +320,15 @@ export function Cronometro() {
                       <div className="text-body-md font-body-md text-on-surface font-medium">
                         {split.isCurrent ? `Km ${split.distance}` : `${split.distance} km`}
                       </div>
-                      <div className="text-body-sm font-body-sm text-text-secondary">{split.label}</div>
+                      <div className="text-body-sm font-body-sm text-text-secondary">
+                        {split.label}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-6 text-right">
-                    <span className="text-label-lg font-label-lg text-on-surface tabular-nums">{split.pace}</span>
+                    <span className="text-label-lg font-label-lg text-on-surface tabular-nums">
+                      {split.pace}
+                    </span>
                     <span
                       className={`text-label-lg font-label-lg tabular-nums ${
                         split.isCurrent ? 'text-primary-400' : 'text-text-secondary'
@@ -318,5 +344,5 @@ export function Cronometro() {
         )}
       </main>
     </div>
-  );
+  )
 }

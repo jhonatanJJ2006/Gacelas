@@ -1,21 +1,23 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 
 export function PermisosUbicacion() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const handleAllow = () => {
-    navigate('/inicio');
-  };
+    navigate('/inicio')
+  }
 
   const handleSkip = () => {
-    navigate('/inicio');
-  };
+    navigate('/inicio')
+  }
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col justify-between">
       <main className="flex-1 px-6 pb-8 flex flex-col justify-center items-center max-w-md mx-auto w-full text-center">
         <div className="w-24 h-24 rounded-full bg-primary-600/20 flex items-center justify-center mb-8">
-          <span className="material-symbols-outlined text-[48px] text-primary-500">location_on</span>
+          <span className="material-symbols-outlined text-[48px] text-primary-500">
+            location_on
+          </span>
         </div>
 
         <h1 className="text-text-primary font-headline-lg text-3xl font-bold mb-4">
@@ -28,7 +30,9 @@ export function PermisosUbicacion() {
         <div className="w-full space-y-3 mb-6">
           <div className="flex items-start gap-3 text-left">
             <div className="w-6 h-6 rounded-full bg-secondary-600/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="material-symbols-outlined text-[16px] text-secondary-500">check</span>
+              <span className="material-symbols-outlined text-[16px] text-secondary-500">
+                check
+              </span>
             </div>
             <div>
               <p className="text-text-primary font-medium text-sm">Graba tus rutas con precisión</p>
@@ -38,21 +42,29 @@ export function PermisosUbicacion() {
 
           <div className="flex items-start gap-3 text-left">
             <div className="w-6 h-6 rounded-full bg-secondary-600/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="material-symbols-outlined text-[16px] text-secondary-500">check</span>
+              <span className="material-symbols-outlined text-[16px] text-secondary-500">
+                check
+              </span>
             </div>
             <div>
               <p className="text-text-primary font-medium text-sm">Descubre rutas cercanas</p>
-              <p className="text-text-secondary text-xs mt-0.5">Encuentra las mejores rutas de Loja</p>
+              <p className="text-text-secondary text-xs mt-0.5">
+                Encuentra las mejores rutas de Loja
+              </p>
             </div>
           </div>
 
           <div className="flex items-start gap-3 text-left">
             <div className="w-6 h-6 rounded-full bg-secondary-600/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="material-symbols-outlined text-[16px] text-secondary-500">check</span>
+              <span className="material-symbols-outlined text-[16px] text-secondary-500">
+                check
+              </span>
             </div>
             <div>
               <p className="text-text-primary font-medium text-sm">Tu privacidad está protegida</p>
-              <p className="text-text-secondary text-xs mt-0.5">Controlas qué compartes y con quién</p>
+              <p className="text-text-secondary text-xs mt-0.5">
+                Controlas qué compartes y con quién
+              </p>
             </div>
           </div>
         </div>
@@ -77,5 +89,5 @@ export function PermisosUbicacion() {
         <div className="w-32 h-1 rounded-full bg-border-subtle/70"></div>
       </div>
     </div>
-  );
+  )
 }

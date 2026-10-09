@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 
 export function InicioSesion() {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    navigate('/inicio');
-  };
+    e.preventDefault()
+    navigate('/inicio')
+  }
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -64,7 +64,10 @@ export function InicioSesion() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-text-primary mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-text-primary mb-2"
+              >
                 Contraseña
               </label>
               <input
@@ -98,7 +101,10 @@ export function InicioSesion() {
             <div className="text-center pt-4">
               <span className="text-text-secondary text-sm">
                 ¿No tienes cuenta?{' '}
-                <Link to="/registro" className="text-primary-500 hover:text-primary-400 font-medium">
+                <Link
+                  to="/registro"
+                  className="text-primary-500 hover:text-primary-400 font-medium"
+                >
                   Crear cuenta
                 </Link>
               </span>
@@ -107,5 +113,5 @@ export function InicioSesion() {
         </div>
       </main>
     </div>
-  );
+  )
 }

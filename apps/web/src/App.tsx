@@ -1,35 +1,75 @@
-import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AppLayout } from './components/AppLayout';
+import { lazy, Suspense } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AppLayout } from './components/AppLayout'
 
-const Bienvenida = lazy(() => import('./features/acceso/Bienvenida').then(m => ({ default: m.Bienvenida })));
-const InicioSesion = lazy(() => import('./features/acceso/InicioSesion').then(m => ({ default: m.InicioSesion })));
-const Registro = lazy(() => import('./features/acceso/Registro').then(m => ({ default: m.Registro })));
-const RecuperarContrasena = lazy(() => import('./features/acceso/RecuperarContrasena').then(m => ({ default: m.RecuperarContrasena })));
-const PermisosUbicacion = lazy(() => import('./features/ajustes/PermisosUbicacion').then(m => ({ default: m.PermisosUbicacion })));
+const Bienvenida = lazy(() =>
+  import('./features/acceso/Bienvenida').then((m) => ({ default: m.Bienvenida }))
+)
+const InicioSesion = lazy(() =>
+  import('./features/acceso/InicioSesion').then((m) => ({ default: m.InicioSesion }))
+)
+const Registro = lazy(() =>
+  import('./features/acceso/Registro').then((m) => ({ default: m.Registro }))
+)
+const RecuperarContrasena = lazy(() =>
+  import('./features/acceso/RecuperarContrasena').then((m) => ({ default: m.RecuperarContrasena }))
+)
+const PermisosUbicacion = lazy(() =>
+  import('./features/ajustes/PermisosUbicacion').then((m) => ({ default: m.PermisosUbicacion }))
+)
 
-const Inicio = lazy(() => import('./features/inicio/Inicio').then(m => ({ default: m.Inicio })));
-const Correr = lazy(() => import('./features/correr/Correr').then(m => ({ default: m.Correr })));
-const CarreraEnCurso = lazy(() => import('./features/correr/CarreraEnCurso').then(m => ({ default: m.CarreraEnCurso })));
-const Cronometro = lazy(() => import('./features/correr/Cronometro').then(m => ({ default: m.Cronometro })));
-const ResumenPostCarrera = lazy(() => import('./features/correr/ResumenPostCarrera').then(m => ({ default: m.ResumenPostCarrera })));
+const Inicio = lazy(() => import('./features/inicio/Inicio').then((m) => ({ default: m.Inicio })))
+const Correr = lazy(() => import('./features/correr/Correr').then((m) => ({ default: m.Correr })))
+const CarreraEnCurso = lazy(() =>
+  import('./features/correr/CarreraEnCurso').then((m) => ({ default: m.CarreraEnCurso }))
+)
+const Cronometro = lazy(() =>
+  import('./features/correr/Cronometro').then((m) => ({ default: m.Cronometro }))
+)
+const ResumenPostCarrera = lazy(() =>
+  import('./features/correr/ResumenPostCarrera').then((m) => ({ default: m.ResumenPostCarrera }))
+)
 
-const ListaRutas = lazy(() => import('./features/rutas/ListaRutas').then(m => ({ default: m.ListaRutas })));
-const BuscadorRutas = lazy(() => import('./features/rutas/BuscadorRutas').then(m => ({ default: m.BuscadorRutas })));
-const NavegacionRuta = lazy(() => import('./features/rutas/NavegacionRuta').then(m => ({ default: m.NavegacionRuta })));
+const ListaRutas = lazy(() =>
+  import('./features/rutas/ListaRutas').then((m) => ({ default: m.ListaRutas }))
+)
+const BuscadorRutas = lazy(() =>
+  import('./features/rutas/BuscadorRutas').then((m) => ({ default: m.BuscadorRutas }))
+)
+const NavegacionRuta = lazy(() =>
+  import('./features/rutas/NavegacionRuta').then((m) => ({ default: m.NavegacionRuta }))
+)
 
-const Feed = lazy(() => import('./features/comunidad/Feed').then(m => ({ default: m.Feed })));
-const Eventos = lazy(() => import('./features/comunidad/Eventos').then(m => ({ default: m.Eventos })));
-const DetalleEvento = lazy(() => import('./features/comunidad/DetalleEvento').then(m => ({ default: m.DetalleEvento })));
+const Feed = lazy(() => import('./features/comunidad/Feed').then((m) => ({ default: m.Feed })))
+const Eventos = lazy(() =>
+  import('./features/comunidad/Eventos').then((m) => ({ default: m.Eventos }))
+)
+const DetalleEvento = lazy(() =>
+  import('./features/comunidad/DetalleEvento').then((m) => ({ default: m.DetalleEvento }))
+)
 
-const Perfil = lazy(() => import('./features/perfil/Perfil').then(m => ({ default: m.Perfil })));
-const EditarPerfil = lazy(() => import('./features/perfil/EditarPerfil').then(m => ({ default: m.EditarPerfil })));
-const Avatar3D = lazy(() => import('./features/perfil/Avatar3D').then(m => ({ default: m.Avatar3D })));
+const Perfil = lazy(() => import('./features/perfil/Perfil').then((m) => ({ default: m.Perfil })))
+const EditarPerfil = lazy(() =>
+  import('./features/perfil/EditarPerfil').then((m) => ({ default: m.EditarPerfil }))
+)
+const Avatar3D = lazy(() =>
+  import('./features/perfil/Avatar3D').then((m) => ({ default: m.Avatar3D }))
+)
 
-const AjustesPreferencias = lazy(() => import('./features/ajustes/AjustesPreferencias').then(m => ({ default: m.AjustesPreferencias })));
-const PrivacidadUbicacion = lazy(() => import('./features/ajustes/PrivacidadUbicacion').then(m => ({ default: m.PrivacidadUbicacion })));
-const ConfiguracionNotificaciones = lazy(() => import('./features/ajustes/ConfiguracionNotificaciones').then(m => ({ default: m.ConfiguracionNotificaciones })));
-const Notificaciones = lazy(() => import('./features/notificaciones/Notificaciones').then(m => ({ default: m.Notificaciones })));
+const AjustesPreferencias = lazy(() =>
+  import('./features/ajustes/AjustesPreferencias').then((m) => ({ default: m.AjustesPreferencias }))
+)
+const PrivacidadUbicacion = lazy(() =>
+  import('./features/ajustes/PrivacidadUbicacion').then((m) => ({ default: m.PrivacidadUbicacion }))
+)
+const ConfiguracionNotificaciones = lazy(() =>
+  import('./features/ajustes/ConfiguracionNotificaciones').then((m) => ({
+    default: m.ConfiguracionNotificaciones,
+  }))
+)
+const Notificaciones = lazy(() =>
+  import('./features/notificaciones/Notificaciones').then((m) => ({ default: m.Notificaciones }))
+)
 
 function LoadingFallback() {
   return (
@@ -39,7 +79,7 @@ function LoadingFallback() {
         <span className="text-sm text-text-secondary">Cargando...</span>
       </div>
     </div>
-  );
+  )
 }
 
 function App() {
@@ -84,7 +124,7 @@ function App() {
         </Routes>
       </Suspense>
     </BrowserRouter>
-  );
+  )
 }
 
-export default App;
+export default App

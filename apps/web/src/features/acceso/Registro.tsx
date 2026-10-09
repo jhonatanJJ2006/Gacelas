@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 
 export function Registro() {
-  const navigate = useNavigate();
-  const [nombre, setNombre] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate = useNavigate()
+  const [nombre, setNombre] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    navigate('/permisos-ubicacion');
-  };
+    e.preventDefault()
+    navigate('/permisos-ubicacion')
+  }
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -80,7 +80,10 @@ export function Registro() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-text-primary mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-text-primary mb-2"
+              >
                 Contraseña
               </label>
               <input
@@ -113,7 +116,10 @@ export function Registro() {
             <div className="text-center pt-4">
               <span className="text-text-secondary text-sm">
                 ¿Ya tienes cuenta?{' '}
-                <Link to="/inicio-sesion" className="text-primary-500 hover:text-primary-400 font-medium">
+                <Link
+                  to="/inicio-sesion"
+                  className="text-primary-500 hover:text-primary-400 font-medium"
+                >
                   Iniciar sesión
                 </Link>
               </span>
@@ -122,5 +128,5 @@ export function Registro() {
         </div>
       </main>
     </div>
-  );
+  )
 }

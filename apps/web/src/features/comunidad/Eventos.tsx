@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 
 export function Eventos() {
   const eventos = [
@@ -29,15 +29,13 @@ export function Eventos() {
       participantes: 12,
       distancia: 8,
     },
-  ];
+  ]
 
   return (
     <div className="flex flex-col w-full">
       <div className="px-margin pt-space-md pb-space-sm">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="font-headline-md text-headline-md text-text-primary">
-            Eventos
-          </h1>
+          <h1 className="font-headline-md text-headline-md text-text-primary">Eventos</h1>
           <button className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-bg-primary hover:bg-primary-700 transition-colors shadow-lg">
             <span className="material-symbols-outlined">add</span>
           </button>
@@ -81,16 +79,18 @@ export function Eventos() {
 
               <div className="space-y-2 mb-3">
                 <div className="flex items-center gap-2 text-text-secondary">
-                  <span className="material-symbols-outlined text-[18px] text-primary-500">calendar_today</span>
+                  <span className="material-symbols-outlined text-[18px] text-primary-500">
+                    calendar_today
+                  </span>
                   <span className="font-body-sm text-body-sm">
                     {evento.fecha}, {evento.hora}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-text-secondary">
-                  <span className="material-symbols-outlined text-[18px] text-secondary-500">location_on</span>
-                  <span className="font-body-sm text-body-sm">
-                    {evento.ubicacion}
+                  <span className="material-symbols-outlined text-[18px] text-secondary-500">
+                    location_on
                   </span>
+                  <span className="font-body-sm text-body-sm">{evento.ubicacion}</span>
                 </div>
               </div>
 
@@ -98,11 +98,17 @@ export function Eventos() {
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
                     {[...Array(Math.min(3, evento.participantes))].map((_, i) => (
-                      <div key={i} className="w-8 h-8 rounded-full bg-surface-variant border-2 border-surface-container"></div>
+                      <div
+                        key={i}
+                        className="w-8 h-8 rounded-full bg-surface-variant border-2 border-surface-container"
+                      ></div>
                     ))}
                   </div>
                   <span className="font-label-md text-label-md text-text-secondary">
-                    {evento.participantes > 3 ? `+${evento.participantes - 3}` : evento.participantes} participantes
+                    {evento.participantes > 3
+                      ? `+${evento.participantes - 3}`
+                      : evento.participantes}{' '}
+                    participantes
                   </span>
                 </div>
                 <button className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-bg-primary font-label-lg text-label-lg rounded-lg transition-colors">
@@ -114,5 +120,5 @@ export function Eventos() {
         ))}
       </div>
     </div>
-  );
+  )
 }

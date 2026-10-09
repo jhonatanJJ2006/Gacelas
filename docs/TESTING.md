@@ -152,7 +152,7 @@ pnpm test:e2e:headed
 
 ### Configuración
 
-La configuración de Playwright está en `playwright.config.ts`. 
+La configuración de Playwright está en `playwright.config.ts`.
 
 Características:
 
@@ -289,21 +289,21 @@ describe('MiComponente', () => {
 Ejemplo:
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test'
 
 test.describe('Mi Feature', () => {
   test.beforeEach(async ({ page }) => {
     // Setup común
-    await page.goto('/inicio-sesion');
+    await page.goto('/inicio-sesion')
     // ...login
-  });
+  })
 
   test('hace algo importante', async ({ page }) => {
-    await page.getByRole('button', { name: /acción/i }).click();
-    await expect(page).toHaveURL(/esperado/);
-    await expect(page.getByText(/resultado/i)).toBeVisible();
-  });
-});
+    await page.getByRole('button', { name: /acción/i }).click()
+    await expect(page).toHaveURL(/esperado/)
+    await expect(page.getByText(/resultado/i)).toBeVisible()
+  })
+})
 ```
 
 ## Troubleshooting

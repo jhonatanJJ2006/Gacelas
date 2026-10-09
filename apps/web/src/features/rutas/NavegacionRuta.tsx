@@ -1,10 +1,12 @@
-import { lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-const Runner3D = lazy(() => import('../../components/Runner3D').then(m => ({ default: m.Runner3D })));
+const Runner3D = lazy(() =>
+  import('../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
+)
 
 export function NavegacionRuta() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <div className="w-full min-h-screen bg-[#0c1322] relative overflow-hidden">
@@ -43,9 +45,7 @@ export function NavegacionRuta() {
               <div className="text-white text-2xl font-bold">200 metros</div>
             </div>
           </div>
-          <div className="text-slate-300 text-sm">
-            Gira a la derecha en Av. Universitaria
-          </div>
+          <div className="text-slate-300 text-sm">Gira a la derecha en Av. Universitaria</div>
         </div>
       </div>
 
@@ -88,5 +88,5 @@ export function NavegacionRuta() {
         <div className="w-2 h-2 rounded-full bg-primary-600 shadow-lg shadow-primary-600/50"></div>
       </div>
     </div>
-  );
+  )
 }
