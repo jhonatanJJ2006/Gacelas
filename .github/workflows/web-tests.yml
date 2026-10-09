@@ -1,13 +1,17 @@
 name: Web Tests
 
 on:
-  push:
-    branches: [main, cursor/**]
   pull_request:
     branches: [main, develop]
     paths:
       - 'apps/web/**'
       - '.github/workflows/web-tests.yml'
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:

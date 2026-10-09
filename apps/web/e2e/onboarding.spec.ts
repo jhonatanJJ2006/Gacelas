@@ -8,7 +8,7 @@ test.describe('Onboarding y Registro', () => {
 
     await expect(page.getByText(/bienvenid/i)).toBeVisible()
 
-    await page.getByText(/crear cuenta|registr/i).click()
+    await page.getByRole('button', { name: /crear cuenta/i }).click()
 
     await expect(page.getByText(/únete a la manada|crea tu cuenta/i)).toBeVisible()
 

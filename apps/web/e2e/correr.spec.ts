@@ -6,18 +6,19 @@ test.describe('Funcionalidad de Correr', () => {
     await page.fill('input[type="email"]', 'test@example.com')
     await page.fill('input[type="password"]', 'password123')
     await page.getByRole('button', { name: /iniciar sesión/i }).click()
-    await expect(page).toHaveURL(/\/inicio/)
+    await expect(page).toHaveURL(/\/inicio/, { timeout: 10000 })
+    await page.waitForLoadState('networkidle')
   })
 
   test('iniciar carrera -> cronometro -> detener', async ({ page }) => {
-    await page
-      .getByText(/empezar a correr|correr/i)
-      .first()
-      .click()
+    await page.getByRole('link', { name: /empezar a correr/i }).click()
 
     await expect(page.getByText(/listo para correr/i)).toBeVisible()
 
-    await page.getByRole('button', { name: /play_arrow|comenzar/i }).click()
+    await page
+      .getByRole('button')
+      .filter({ has: page.locator('text=play_arrow') })
+      .click()
 
     await expect(page).toHaveURL(/\/correr\/en-curso/)
 

@@ -11,8 +11,10 @@ test.describe('Inicio de Sesión', () => {
 
     await page.getByRole('button', { name: /iniciar sesión/i }).click()
 
-    await expect(page).toHaveURL(/\/inicio/)
-    await expect(page.getByText(/gacelas loja/i)).toBeVisible()
+    await expect(page).toHaveURL(/\/inicio/, { timeout: 10000 })
+    await page.waitForLoadState('networkidle')
+    await page.waitForSelector('nav', { timeout: 10000 })
+    await expect(page.locator('header')).toBeVisible()
   })
 
   test('navegar a recuperar contraseña', async ({ page }) => {

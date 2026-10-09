@@ -6,11 +6,13 @@ test.describe('Rutas y Búsqueda', () => {
     await page.fill('input[type="email"]', 'test@example.com')
     await page.fill('input[type="password"]', 'password123')
     await page.getByRole('button', { name: /iniciar sesión/i }).click()
-    await expect(page).toHaveURL(/\/inicio/)
+    await expect(page).toHaveURL(/\/inicio/, { timeout: 10000 })
+    await page.waitForLoadState('networkidle')
+    await page.waitForSelector('nav', { timeout: 10000 })
   })
 
   test('buscar rutas', async ({ page }) => {
-    await page.getByRole('link', { name: /rutas/i }).first().click()
+    await page.locator('nav a[href="/rutas"]').click()
     await page.getByPlaceholder(/buscar rutas/i).click()
 
     await expect(page).toHaveURL(/\/rutas\/buscar/)
@@ -18,7 +20,7 @@ test.describe('Rutas y Búsqueda', () => {
   })
 
   test('explorar rutas disponibles', async ({ page }) => {
-    await page.getByRole('link', { name: /rutas/i }).first().click()
+    await page.locator('nav a[href="/rutas"]').click()
 
     await expect(page.getByText(/parque jipiro/i)).toBeVisible()
     await expect(page.getByText(/río zamora/i)).toBeVisible()

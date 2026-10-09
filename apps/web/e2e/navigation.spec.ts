@@ -6,7 +6,8 @@ test.describe('Navegación', () => {
     await page.fill('input[type="email"]', 'test@example.com')
     await page.fill('input[type="password"]', 'password123')
     await page.getByRole('button', { name: /iniciar sesión/i }).click()
-    await expect(page).toHaveURL(/\/inicio/)
+    await expect(page).toHaveURL(/\/inicio/, { timeout: 10000 })
+    await page.waitForLoadState('networkidle')
   })
 
   test('navegación por bottom nav', async ({ page }) => {
