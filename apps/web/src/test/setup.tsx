@@ -4,7 +4,9 @@ import '@testing-library/jest-dom';
 import { ReactNode } from 'react';
 
 const mockUseGLTF = vi.fn(() => ({
-  scene: {},
+  scene: {
+    clone: vi.fn(() => ({})),
+  },
   animations: [],
 }));
 
