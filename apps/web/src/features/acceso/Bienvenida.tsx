@@ -21,7 +21,7 @@ export function Bienvenida() {
             </div>
           </div>
           <button
-            onClick={() => navigate('/inicio')}
+            onClick={() => navigate('/inicio-sesion')}
             className="text-text-secondary hover:text-text-primary text-sm font-semibold tracking-wide px-3 py-1.5 rounded-lg active:bg-surface-variant transition-colors min-h-[48px] flex items-center"
             type="button"
           >

@@ -1,128 +1,161 @@
-import { useNavigate, Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { BotonTexto, Dialogo } from '../../components/ui'
+import { descartarCarrera } from '../../store/carrera'
+import { useApp } from '../../store/app'
+import { FilaInterruptor, PantallaAjustes, Seccion } from './Comunes'
+
+export const VERSION_APP = '1.0.0'
+
+function Enlace({ to, icono, texto }: { to: string; icono: string; texto: string }) {
+  return (
+    <Link
+      to={to}
+      className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl hover:bg-surface-container-high transition-colors"
+    >
+      <div className="flex items-center gap-3">
+        <span className="material-symbols-outlined text-text-secondary">{icono}</span>
+        <span className="font-body-md text-body-md text-text-primary">{texto}</span>
+      </div>
+      <span className="material-symbols-outlined text-text-secondary">chevron_right</span>
+    </Link>
+  )
+}
+
+function Boton({
+  onClick,
+  icono,
+  texto,
+  detalle,
+}: {
+  onClick: () => void
+  icono: string
+  texto: string
+  detalle?: string
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl hover:bg-surface-container-high transition-colors"
+    >
+      <div className="flex items-center gap-3">
+        <span className="material-symbols-outlined text-text-secondary">{icono}</span>
+        <span className="font-body-md text-body-md text-text-primary">{texto}</span>
+      </div>
+      <span className="text-body-sm text-text-secondary flex items-center">
+        {detalle}
+        <span className="material-symbols-outlined">chevron_right</span>
+      </span>
+    </button>
+  )
+}
 
 export function AjustesPreferencias() {
   const navigate = useNavigate()
+  const ajustes = useApp((s) => s.ajustes)
+  const actualizar = useApp((s) => s.actualizarAjustes)
+  const cerrarSesion = useApp((s) => s.cerrarSesion)
+  const [dialogo, setDialogo] = useState<'acerca' | 'ayuda' | 'salir' | null>(null)
+  const cerrar = () => setDialogo(null)
 
   return (
-    <div className="w-full min-h-screen bg-surface flex flex-col">
-      <header className="px-margin py-4 border-b border-border-subtle">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate('/perfil')}
-            className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-          </button>
-          <h1 className="font-headline-md text-headline-md text-text-primary">Ajustes</h1>
-        </div>
-      </header>
+    <PantallaAjustes titulo="Ajustes" volverA="/perfil">
+      <Seccion titulo="Cuenta">
+        <Enlace to="/perfil/editar" icono="person" texto="Editar perfil" />
+      </Seccion>
+      <Seccion titulo="Privacidad">
+        <Enlace to="/ajustes/privacidad" icono="lock" texto="Privacidad y ubicación" />
+        <Enlace to="/ajustes/notificaciones" icono="notifications" texto="Notificaciones" />
+      </Seccion>
+      <Seccion titulo="General">
+        <FilaInterruptor
+          icono="dark_mode"
+          titulo="Modo oscuro"
+          descripcion={ajustes.modoOscuro ? 'Activado' : 'Tema claro activo'}
+          activo={ajustes.modoOscuro}
+          onCambiar={(v) => void actualizar({ modoOscuro: v })}
+        />
+        <FilaInterruptor
+          icono="straighten"
+          titulo="Unidades métricas"
+          descripcion={ajustes.unidadesMetricas ? 'Kilómetros y metros' : 'Millas'}
+          activo={ajustes.unidadesMetricas}
+          onCambiar={(v) => void actualizar({ unidadesMetricas: v })}
+        />
+      </Seccion>
+      <Seccion titulo="Información">
+        <Boton
+          onClick={() => setDialogo('acerca')}
+          icono="info"
+          texto="Acerca de"
+          detalle={`v${VERSION_APP}`}
+        />
+        <Boton onClick={() => setDialogo('ayuda')} icono="help" texto="Ayuda y soporte" />
+      </Seccion>
+      <section>
+        <button
+          onClick={() => setDialogo('salir')}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-danger/20 text-danger rounded-xl hover:bg-danger/30 transition-colors"
+        >
+          <span className="material-symbols-outlined">logout</span>
+          <span className="font-body-md text-body-md font-medium">Cerrar sesión</span>
+        </button>
+      </section>
 
-      <main className="flex-1 px-margin py-6 space-y-6 pb-24">
-        <section>
-          <h2 className="font-title-md text-title-md text-text-primary mb-3">Cuenta</h2>
-          <div className="space-y-2">
-            <Link
-              to="/perfil/editar"
-              className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl hover:bg-surface-container-high transition-colors"
+      <Dialogo
+        titulo="Gacelas Loja"
+        abierto={dialogo === 'acerca'}
+        onCerrar={cerrar}
+        acciones={<BotonTexto onClick={cerrar}>Cerrar</BotonTexto>}
+      >
+        <p>
+          Versión {VERSION_APP}. App del grupo de running Gacelas de Loja, Ecuador. Graba tus
+          carreras con GPS, descubre rutas y entrena con la comunidad.
+        </p>
+      </Dialogo>
+      <Dialogo
+        titulo="Ayuda y soporte"
+        abierto={dialogo === 'ayuda'}
+        onCerrar={cerrar}
+        acciones={
+          <>
+            <BotonTexto onClick={cerrar}>Cerrar</BotonTexto>
+            <a
+              href="mailto:soporte@gacelas.app?subject=Ayuda%20con%20Gacelas"
+              className="px-4 h-10 inline-flex items-center rounded-lg text-primary-500 hover:bg-primary-600/10 font-label-lg"
             >
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-text-secondary">person</span>
-                <span className="font-body-md text-body-md text-text-primary">Editar perfil</span>
-              </div>
-              <span className="material-symbols-outlined text-text-secondary">chevron_right</span>
-            </Link>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="font-title-md text-title-md text-text-primary mb-3">Privacidad</h2>
-          <div className="space-y-2">
-            <Link
-              to="/ajustes/privacidad"
-              className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl hover:bg-surface-container-high transition-colors"
+              Escribir a soporte
+            </a>
+          </>
+        }
+      >
+        <p>
+          Para grabar una carrera toca el botón central Correr y permite la ubicación en el
+          navegador. Las carreras se guardan en este navegador y aparecen en Perfil e Inicio.
+        </p>
+      </Dialogo>
+      <Dialogo
+        titulo="¿Cerrar sesión?"
+        abierto={dialogo === 'salir'}
+        onCerrar={cerrar}
+        acciones={
+          <>
+            <BotonTexto onClick={cerrar}>Cancelar</BotonTexto>
+            <BotonTexto
+              peligro
+              onClick={async () => {
+                descartarCarrera()
+                await cerrarSesion()
+                navigate('/bienvenida', { replace: true })
+              }}
             >
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-text-secondary">lock</span>
-                <span className="font-body-md text-body-md text-text-primary">
-                  Privacidad y ubicación
-                </span>
-              </div>
-              <span className="material-symbols-outlined text-text-secondary">chevron_right</span>
-            </Link>
-
-            <Link
-              to="/ajustes/notificaciones"
-              className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl hover:bg-surface-container-high transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-text-secondary">notifications</span>
-                <span className="font-body-md text-body-md text-text-primary">Notificaciones</span>
-              </div>
-              <span className="material-symbols-outlined text-text-secondary">chevron_right</span>
-            </Link>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="font-title-md text-title-md text-text-primary mb-3">General</h2>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-text-secondary">dark_mode</span>
-                <span className="font-body-md text-body-md text-text-primary">Modo oscuro</span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-11 h-6 bg-surface-container-high peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-text-secondary">straighten</span>
-                <span className="font-body-md text-body-md text-text-primary">
-                  Unidades métricas
-                </span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-11 h-6 bg-surface-container-high peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-              </label>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="font-title-md text-title-md text-text-primary mb-3">Información</h2>
-          <div className="space-y-2">
-            <button className="w-full flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl hover:bg-surface-container-high transition-colors">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-text-secondary">info</span>
-                <span className="font-body-md text-body-md text-text-primary">Acerca de</span>
-              </div>
-              <span className="material-symbols-outlined text-text-secondary">chevron_right</span>
-            </button>
-
-            <button className="w-full flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl hover:bg-surface-container-high transition-colors">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-text-secondary">help</span>
-                <span className="font-body-md text-body-md text-text-primary">Ayuda y soporte</span>
-              </div>
-              <span className="material-symbols-outlined text-text-secondary">chevron_right</span>
-            </button>
-          </div>
-        </section>
-
-        <section>
-          <button
-            onClick={() => navigate('/bienvenida')}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-danger/20 text-danger rounded-xl hover:bg-danger/30 transition-colors"
-          >
-            <span className="material-symbols-outlined">logout</span>
-            <span className="font-body-md text-body-md font-medium">Cerrar sesión</span>
-          </button>
-        </section>
-      </main>
-    </div>
+              Cerrar sesión
+            </BotonTexto>
+          </>
+        }
+      >
+        <p>Tus carreras siguen guardadas en este navegador.</p>
+      </Dialogo>
+    </PantallaAjustes>
   )
 }

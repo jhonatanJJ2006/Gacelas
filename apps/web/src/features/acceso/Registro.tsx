@@ -1,15 +1,25 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useApp } from '../../store/app'
+import { BotonTexto, Dialogo, MensajeError } from '../../components/ui'
 
 export function Registro() {
   const navigate = useNavigate()
   const [nombre, setNombre] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [cargando, setCargando] = useState(false)
+  const [legal, setLegal] = useState<'terminos' | 'privacidad' | null>(null)
+  const registrar = useApp((s) => s.registrar)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    navigate('/permisos-ubicacion')
+    setCargando(true)
+    const r = await registrar(nombre, email, password)
+    setCargando(false)
+    if (r.ok) navigate('/permisos-ubicacion', { replace: true })
+    else setError(r.error)
   }
 
   return (
@@ -48,7 +58,7 @@ export function Registro() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div>
               <label htmlFor="nombre" className="block text-sm font-medium text-text-primary mb-2">
                 Nombre completo
@@ -57,7 +67,10 @@ export function Registro() {
                 type="text"
                 id="nombre"
                 value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
+                onChange={(e) => {
+                  setNombre(e.target.value)
+                  setError(null)
+                }}
                 className="w-full h-12 px-4 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 placeholder="Tu nombre"
                 required
@@ -72,7 +85,10 @@ export function Registro() {
                 type="email"
                 id="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  setError(null)
+                }}
                 className="w-full h-12 px-4 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 placeholder="tu@email.com"
                 required
@@ -90,7 +106,10 @@ export function Registro() {
                 type="password"
                 id="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  setError(null)
+                }}
                 className="w-full h-12 px-4 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 placeholder="Mínimo 8 caracteres"
                 required
@@ -101,16 +120,34 @@ export function Registro() {
               </p>
             </div>
 
+            <MensajeError mensaje={error} />
+
             <button
               type="submit"
+              disabled={cargando}
               className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all cursor-pointer mt-6"
             >
-              <span>Crear cuenta</span>
+              <span>{cargando ? 'Creando...' : 'Crear cuenta'}</span>
               <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
             </button>
 
             <p className="text-xs text-text-secondary text-center pt-2">
-              Al crear una cuenta, aceptas nuestros Términos de Servicio y Política de Privacidad
+              Al crear una cuenta, aceptas nuestros{' '}
+              <button
+                type="button"
+                onClick={() => setLegal('terminos')}
+                className="text-primary-500 underline"
+              >
+                Términos de Servicio
+              </button>{' '}
+              y{' '}
+              <button
+                type="button"
+                onClick={() => setLegal('privacidad')}
+                className="text-primary-500 underline"
+              >
+                Política de Privacidad
+              </button>
             </p>
 
             <div className="text-center pt-4">
@@ -127,6 +164,27 @@ export function Registro() {
           </form>
         </div>
       </main>
+
+      <Dialogo
+        titulo={legal === 'terminos' ? 'Términos de Servicio' : 'Política de Privacidad'}
+        abierto={legal != null}
+        onCerrar={() => setLegal(null)}
+        acciones={<BotonTexto onClick={() => setLegal(null)}>Entendido</BotonTexto>}
+      >
+        {legal === 'terminos' ? (
+          <p>
+            Gacelas es una app comunitaria del grupo de running de Loja. Te comprometes a usarla de
+            forma respetuosa, a no publicar contenido ofensivo y a correr bajo tu propia
+            responsabilidad.
+          </p>
+        ) : (
+          <p>
+            Tus carreras, ajustes y perfil se guardan en este navegador. Tu ubicación solo se usa
+            mientras grabas una carrera y puedes ocultar la zona de tu casa en Privacidad y
+            ubicación.
+          </p>
+        )}
+      </Dialogo>
     </div>
   )
 }

@@ -1,39 +1,23 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Unidades } from '../../lib/geo'
+import { useApp } from '../../store/app'
+import { opcionesBuscador } from '../../lib/logica'
 
 export function BuscadorRutas() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const rutaParam = params.get('ruta')
+  const m = useApp((s) => s.ajustes.unidadesMetricas)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedRoute, setSelectedRoute] = useState<'primary' | 'alt' | null>('primary')
-
-  const routes = [
-    {
-      id: 'primary',
-      name: 'Jipiro → Puerta → Zamora Huayco',
-      distance: 8.5,
-      duration: '45',
-      elevation: 120,
-      color: 'primary',
-    },
-    {
-      id: 'alt',
-      name: 'Ruta Universitaria Directa',
-      distance: 6.8,
-      duration: '36',
-      elevation: 85,
-      color: 'secondary',
-    },
-  ]
+  const [selectedRoute, setSelectedRoute] = useState<string | null>(
+    rutaParam ? `ruta-${rutaParam}` : 'primary'
+  )
+  const routes = opcionesBuscador(searchQuery, rutaParam)
+  const seleccionada = routes.find((r) => r.id === selectedRoute) ?? null
 
   return (
     <div className="w-full min-h-screen bg-[#070b13] flex flex-col relative">
-      <div className="absolute top-0 inset-x-0 z-50 flex justify-between items-center px-6 pt-3 pb-2 text-xs font-semibold text-slate-300 pointer-events-none bg-gradient-to-b from-black/80 via-black/40 to-transparent">
-        <span>06:45</span>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px]">98%</span>
-        </div>
-      </div>
-
       <div className="absolute inset-0 z-0 bg-[#0b1220] overflow-hidden">
         <svg className="w-full h-full object-cover scale-110 opacity-90" viewBox="0 0 600 900">
           <defs>
@@ -73,7 +57,7 @@ export function BuscadorRutas() {
             strokeWidth="1"
           />
 
-          {selectedRoute === 'primary' && (
+          {seleccionada?.color === 'primary' && (
             <path
               d="M 330,210 C 310,260 270,320 280,380 C 290,450 270,520 310,570 C 330,590 350,610 380,620"
               fill="none"
@@ -84,7 +68,7 @@ export function BuscadorRutas() {
             />
           )}
 
-          {selectedRoute === 'alt' && (
+          {seleccionada?.color === 'secondary' && (
             <path
               d="M 250,220 C 240,320 220,450 250,560 C 270,610 320,620 370,630"
               fill="none"
@@ -107,6 +91,7 @@ export function BuscadorRutas() {
         <div className="pt-12 px-4">
           <button
             onClick={() => navigate('/rutas')}
+            aria-label="Volver"
             className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white shadow-lg"
           >
             <span className="material-symbols-outlined">arrow_back</span>
@@ -131,11 +116,15 @@ export function BuscadorRutas() {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-[40vh] overflow-y-auto">
+            {routes.length === 0 && (
+              <p className="text-slate-400 text-sm text-center">No hay rutas con ese nombre.</p>
+            )}
             {routes.map((route) => (
               <button
                 key={route.id}
-                onClick={() => setSelectedRoute(route.id as 'primary' | 'alt')}
+                onClick={() => setSelectedRoute(route.id)}
+                aria-pressed={selectedRoute === route.id}
                 className={`w-full p-4 rounded-2xl border-2 transition-all ${
                   selectedRoute === route.id
                     ? route.color === 'primary'
@@ -161,7 +150,7 @@ export function BuscadorRutas() {
                 <div className="flex items-center gap-4 text-sm text-slate-400">
                   <span className="flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px]">straighten</span>
-                    {route.distance} km
+                    {Unidades.texto(route.distance, m, 1)} {Unidades.etiquetaDistancia(m)}
                   </span>
                   <span className="flex items-center gap-1">
                     <span className="material-symbols-outlined text-[16px]">schedule</span>
@@ -177,8 +166,10 @@ export function BuscadorRutas() {
           </div>
 
           <button
-            onClick={() => navigate('/rutas/navegacion')}
-            disabled={!selectedRoute}
+            onClick={() =>
+              seleccionada && navigate('/rutas/navegacion', { state: { ruta: seleccionada.name } })
+            }
+            disabled={!seleccionada}
             className="w-full mt-6 h-14 bg-gradient-to-r from-[#D97706] to-[#F59E0B] hover:from-[#B45309] hover:to-[#D97706] text-white font-bold rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
           >
             Comenzar navegación

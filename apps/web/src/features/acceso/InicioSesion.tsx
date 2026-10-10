@@ -1,14 +1,23 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useApp } from '../../store/app'
+import { MensajeError } from '../../components/ui'
 
 export function InicioSesion() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [cargando, setCargando] = useState(false)
+  const iniciarSesion = useApp((s) => s.iniciarSesion)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    navigate('/inicio')
+    setCargando(true)
+    const r = await iniciarSesion(email, password)
+    setCargando(false)
+    if (r.ok) navigate('/inicio', { replace: true })
+    else setError(r.error)
   }
 
   return (
@@ -47,7 +56,7 @@ export function InicioSesion() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-2">
                 Correo electrónico
@@ -56,7 +65,10 @@ export function InicioSesion() {
                 type="email"
                 id="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  setError(null)
+                }}
                 className="w-full h-12 px-4 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 placeholder="tu@email.com"
                 required
@@ -74,7 +86,10 @@ export function InicioSesion() {
                 type="password"
                 id="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  setError(null)
+                }}
                 className="w-full h-12 px-4 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 placeholder="••••••••"
                 required
@@ -90,11 +105,14 @@ export function InicioSesion() {
               </Link>
             </div>
 
+            <MensajeError mensaje={error} />
+
             <button
               type="submit"
-              className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all cursor-pointer"
+              disabled={cargando}
+              className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all cursor-pointer disabled:opacity-60"
             >
-              <span>Iniciar sesión</span>
+              <span>{cargando ? 'Entrando...' : 'Iniciar sesión'}</span>
               <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
             </button>
 

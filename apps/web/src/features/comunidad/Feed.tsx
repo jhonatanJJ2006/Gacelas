@@ -1,115 +1,270 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { TrazadoRuta } from '../../components/TrazadoRuta'
+import { Aviso, BotonTexto, Dialogo } from '../../components/ui'
+import { compartir, useAviso } from '../../hooks'
+import { formatearMs, formatearRitmo, Unidades } from '../../lib/geo'
+import { useApp } from '../../store/app'
+import { construirFeed, filtrarFeed, type FiltroFeed, type Publicacion } from '../../lib/logica'
 
 export function Feed() {
   const navigate = useNavigate()
-  const posts = [
-    {
-      id: 1,
-      user: 'María López',
-      time: 'hace 2h',
-      distance: 5.2,
-      duration: '28:34',
-      pace: '5:30',
-      likes: 23,
-      comments: 5,
-    },
-    {
-      id: 2,
-      user: 'Carlos Ruiz',
-      time: 'hace 4h',
-      distance: 8.5,
-      duration: '45:20',
-      pace: '5:20',
-      likes: 18,
-      comments: 3,
-    },
-  ]
+  const sesion = useApp((s) => s.sesion)
+  const carreras = useApp((s) => s.carreras)
+  const ajustes = useApp((s) => s.ajustes)
+  const actualizar = useApp((s) => s.actualizarAjustes)
+  const m = ajustes.unidadesMetricas
+  const [filtro, setFiltro] = useState<FiltroFeed>('Todos')
+  const [menuFiltro, setMenuFiltro] = useState(false)
+  const [menuPost, setMenuPost] = useState<string | null>(null)
+  const [comentando, setComentando] = useState<Publicacion | null>(null)
+  const [texto, setTexto] = useState('')
+  const [aviso, mostrarAviso] = useAviso()
+
+  const posts = filtrarFeed(
+    construirFeed(carreras, sesion?.nombre ?? 'Tú', Date.now()),
+    filtro,
+    ajustes.ocultas
+  )
+
+  const alternarLike = (id: string) =>
+    void actualizar((a) => ({
+      likes: a.likes.includes(id) ? a.likes.filter((x) => x !== id) : [...a.likes, id],
+    }))
+
+  const enviarComentario = () => {
+    if (!comentando || !texto.trim()) return
+    const id = comentando.id
+    void actualizar((a) => ({
+      comentarios: { ...a.comentarios, [id]: [...(a.comentarios[id] ?? []), texto.trim()] },
+    }))
+    setTexto('')
+    mostrarAviso('Comentario publicado')
+  }
+
+  const compartirPost = async (p: Publicacion) => {
+    const r = await compartir(
+      p.titulo,
+      `${p.autor} corrió ${Unidades.texto(p.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)} en ${formatearMs(p.segundos)} con Gacelas.`
+    )
+    if (r === 'copiado') mostrarAviso('Enlace copiado')
+    else if (r === 'error') mostrarAviso('No se pudo compartir')
+  }
 
   return (
     <div className="flex flex-col w-full">
       <div className="px-margin pt-space-md pb-space-sm">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 relative">
           <h1 className="font-headline-md text-headline-md text-text-primary">Comunidad</h1>
-          <button className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors">
+          <button
+            onClick={() => setMenuFiltro((v) => !v)}
+            aria-label="Filtrar publicaciones"
+            aria-expanded={menuFiltro}
+            className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+          >
             <span className="material-symbols-outlined">filter_list</span>
           </button>
+          {menuFiltro && (
+            <div
+              role="menu"
+              className="absolute right-0 top-12 z-30 bg-bg-secondary border border-border-subtle rounded-xl shadow-xl overflow-hidden"
+            >
+              {(['Todos', 'Comunidad', 'Mías'] as FiltroFeed[]).map((f) => (
+                <button
+                  key={f}
+                  role="menuitemradio"
+                  aria-checked={filtro === f}
+                  onClick={() => {
+                    setFiltro(f)
+                    setMenuFiltro(false)
+                  }}
+                  className={`block w-full text-left px-4 py-2 text-sm ${filtro === f ? 'text-primary-500' : 'text-text-primary'} hover:bg-surface-container`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="flex gap-2 mb-4">
-          <button className="px-4 py-2 rounded-full font-label-md text-label-md bg-primary-600 text-bg-primary">
+          <span
+            className="px-4 py-2 rounded-full font-label-md text-label-md bg-primary-600 text-bg-primary"
+            aria-current="page"
+          >
             Feed
-          </button>
+          </span>
           <button
             onClick={() => navigate('/comunidad/eventos')}
             className="px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container text-text-secondary hover:text-text-primary"
           >
             Eventos
           </button>
+          {filtro !== 'Todos' && (
+            <span className="px-3 py-2 text-label-md text-text-secondary">Filtro: {filtro}</span>
+          )}
         </div>
       </div>
 
       <div className="px-margin space-y-4 pb-space-3xl">
-        {posts.map((post) => (
-          <div
-            key={post.id}
-            className="bg-surface-container rounded-2xl border border-border-subtle overflow-hidden"
-          >
-            <div className="p-4 flex items-center gap-3 border-b border-border-subtle">
-              <div className="w-10 h-10 rounded-full bg-surface-variant"></div>
-              <div className="flex-1">
-                <p className="font-body-md text-body-md text-text-primary font-semibold">
-                  {post.user}
-                </p>
-                <p className="font-body-sm text-body-sm text-text-secondary">{post.time}</p>
-              </div>
-              <button className="text-text-secondary hover:text-text-primary">
-                <span className="material-symbols-outlined">more_vert</span>
-              </button>
-            </div>
-
-            <div className="h-48 bg-gradient-to-br from-primary-600/20 to-secondary-600/20 flex items-center justify-center">
-              <span className="material-symbols-outlined text-[64px] text-primary">route</span>
-            </div>
-
-            <div className="p-4">
-              <div className="grid grid-cols-3 gap-4 mb-4">
-                <div className="text-center">
-                  <div className="font-headline-sm text-headline-sm text-primary">
-                    {post.distance}
-                  </div>
-                  <div className="font-label-md text-label-md text-text-secondary">km</div>
+        {posts.length === 0 && (
+          <p className="text-center text-text-secondary py-8">
+            {filtro === 'Mías' ? 'Aún no tienes carreras públicas.' : 'No hay publicaciones.'}
+          </p>
+        )}
+        {posts.map((post) => {
+          const meGusta = ajustes.likes.includes(post.id)
+          const misComentarios = ajustes.comentarios[post.id] ?? []
+          return (
+            <article
+              key={post.id}
+              className="bg-surface-container rounded-2xl border border-border-subtle overflow-hidden"
+              data-testid="publicacion"
+            >
+              <div className="p-4 flex items-center gap-3 border-b border-border-subtle relative">
+                <div className="w-10 h-10 rounded-full bg-primary-600/30 flex items-center justify-center text-primary-400 font-bold">
+                  {post.autor.charAt(0)}
                 </div>
-                <div className="text-center">
-                  <div className="font-headline-sm text-headline-sm text-text-primary">
-                    {post.duration}
-                  </div>
-                  <div className="font-label-md text-label-md text-text-secondary">tiempo</div>
+                <div className="flex-1">
+                  <p className="font-body-md text-body-md text-text-primary font-semibold">
+                    {post.autor}
+                  </p>
+                  <p className="font-body-sm text-body-sm text-text-secondary">
+                    {post.titulo} · {post.tiempo}
+                  </p>
                 </div>
-                <div className="text-center">
-                  <div className="font-headline-sm text-headline-sm text-secondary">
-                    {post.pace}
+                <button
+                  onClick={() => setMenuPost(menuPost === post.id ? null : post.id)}
+                  aria-label="Más opciones"
+                  className="text-text-secondary hover:text-text-primary"
+                >
+                  <span className="material-symbols-outlined">more_vert</span>
+                </button>
+                {menuPost === post.id && (
+                  <div
+                    role="menu"
+                    className="absolute right-4 top-14 z-30 bg-bg-secondary border border-border-subtle rounded-xl shadow-xl overflow-hidden"
+                  >
+                    <button
+                      role="menuitem"
+                      onClick={() => {
+                        void actualizar((a) => ({ ocultas: [...a.ocultas, post.id] }))
+                        setMenuPost(null)
+                        mostrarAviso('Publicación oculta')
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-container"
+                    >
+                      Ocultar publicación
+                    </button>
                   </div>
-                  <div className="font-label-md text-label-md text-text-secondary">/km</div>
-                </div>
+                )}
               </div>
 
-              <div className="flex items-center gap-6 pt-3 border-t border-border-subtle">
-                <button className="flex items-center gap-2 text-text-secondary hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined">favorite_border</span>
-                  <span className="font-label-md text-label-md">{post.likes}</span>
-                </button>
-                <button className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors">
-                  <span className="material-symbols-outlined">chat_bubble_outline</span>
-                  <span className="font-label-md text-label-md">{post.comments}</span>
-                </button>
-                <button className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors ml-auto">
-                  <span className="material-symbols-outlined">share</span>
-                </button>
+              <div className="h-48 bg-gradient-to-br from-primary-600/20 to-secondary-600/20 flex items-center justify-center">
+                {post.puntos.length > 1 ? (
+                  <TrazadoRuta puntos={post.puntos} className="w-full h-full p-4" />
+                ) : (
+                  <span className="material-symbols-outlined text-[64px] text-primary">route</span>
+                )}
               </div>
-            </div>
-          </div>
-        ))}
+
+              <div className="p-4">
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="text-center">
+                    <div className="font-headline-sm text-headline-sm text-primary">
+                      {Unidades.texto(post.distanciaKm, m, 1)}
+                    </div>
+                    <div className="font-label-md text-label-md text-text-secondary">
+                      {Unidades.etiquetaDistancia(m)}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-headline-sm text-headline-sm text-text-primary">
+                      {formatearMs(post.segundos)}
+                    </div>
+                    <div className="font-label-md text-label-md text-text-secondary">tiempo</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-headline-sm text-headline-sm text-secondary">
+                      {formatearRitmo(Unidades.ritmo(post.ritmoSegKm, m))}
+                    </div>
+                    <div className="font-label-md text-label-md text-text-secondary">
+                      {Unidades.etiquetaRitmo(m)}
+                    </div>
+                  </div>
+                </div>
+
+                {misComentarios.length > 0 && (
+                  <ul className="mb-3 space-y-1">
+                    {misComentarios.map((c, i) => (
+                      <li key={i} className="text-body-sm text-text-secondary">
+                        <strong className="text-text-primary">Tú:</strong> {c}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <div className="flex items-center gap-6 pt-3 border-t border-border-subtle">
+                  <button
+                    onClick={() => alternarLike(post.id)}
+                    aria-pressed={meGusta}
+                    aria-label={meGusta ? 'Quitar me gusta' : 'Me gusta'}
+                    className={`flex items-center gap-2 transition-colors ${meGusta ? 'text-danger' : 'text-text-secondary hover:text-primary'}`}
+                  >
+                    <span className="material-symbols-outlined">
+                      {meGusta ? 'favorite' : 'favorite_border'}
+                    </span>
+                    <span className="font-label-md text-label-md">
+                      {post.likes + (meGusta ? 1 : 0)}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setComentando(post)}
+                    aria-label="Comentar"
+                    className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors"
+                  >
+                    <span className="material-symbols-outlined">chat_bubble_outline</span>
+                    <span className="font-label-md text-label-md">
+                      {post.comentarios + misComentarios.length}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => void compartirPost(post)}
+                    aria-label="Compartir"
+                    className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors ml-auto"
+                  >
+                    <span className="material-symbols-outlined">share</span>
+                  </button>
+                </div>
+              </div>
+            </article>
+          )
+        })}
       </div>
+
+      <Dialogo
+        titulo={`Comentar: ${comentando?.titulo ?? ''}`}
+        abierto={comentando != null}
+        onCerrar={() => setComentando(null)}
+        acciones={
+          <>
+            <BotonTexto onClick={() => setComentando(null)}>Cerrar</BotonTexto>
+            <BotonTexto onClick={enviarComentario} disabled={!texto.trim()}>
+              Publicar
+            </BotonTexto>
+          </>
+        }
+      >
+        <textarea
+          aria-label="Comentario"
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          rows={3}
+          placeholder="Escribe un comentario..."
+          className="w-full px-3 py-2 bg-surface-container border border-border-subtle rounded-lg text-text-primary resize-none"
+        />
+      </Dialogo>
+      <Aviso mensaje={aviso} />
     </div>
   )
 }

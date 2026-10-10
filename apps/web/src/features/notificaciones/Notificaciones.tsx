@@ -1,59 +1,29 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-interface Notificacion {
-  id: string
-  tipo: 'like' | 'comment' | 'follow' | 'event' | 'live'
-  usuario: string
-  mensaje: string
-  tiempo: string
-  leida: boolean
-}
+import {
+  filtrarNotificaciones,
+  notificacionesVisibles,
+  type FiltroNotificaciones,
+} from '../../lib/filtros'
+import { notificacionesMock, type Notificacion } from '../../mocks/data'
+import { useApp } from '../../store/app'
+import { destinoNotificacion } from '../../lib/logica'
 
 export function Notificaciones() {
   const navigate = useNavigate()
+  const ajustes = useApp((s) => s.ajustes)
+  const actualizar = useApp((s) => s.actualizarAjustes)
+  const [filtro, setFiltro] = useState<FiltroNotificaciones>('Todas')
+  const notificaciones = filtrarNotificaciones(notificacionesVisibles(ajustes), filtro)
 
-  const notificaciones: Notificacion[] = [
-    {
-      id: '1',
-      tipo: 'live',
-      usuario: 'María López',
-      mensaje: 'está corriendo ahora',
-      tiempo: 'hace 5 min',
-      leida: false,
-    },
-    {
-      id: '2',
-      tipo: 'like',
-      usuario: 'Carlos Ruiz',
-      mensaje: 'le dio like a tu carrera matutina',
-      tiempo: 'hace 1h',
-      leida: false,
-    },
-    {
-      id: '3',
-      tipo: 'comment',
-      usuario: 'Ana Martínez',
-      mensaje: 'comentó en tu actividad: "Excelente ritmo"',
-      tiempo: 'hace 2h',
-      leida: true,
-    },
-    {
-      id: '4',
-      tipo: 'follow',
-      usuario: 'Pedro Sánchez',
-      mensaje: 'comenzó a seguirte',
-      tiempo: 'hace 3h',
-      leida: true,
-    },
-    {
-      id: '5',
-      tipo: 'event',
-      usuario: 'Gacelas Loja',
-      mensaje: 'Nuevo evento: Carrera Parque Jipiro',
-      tiempo: 'hace 1d',
-      leida: true,
-    },
-  ]
+  const marcarTodas = () =>
+    void actualizar({ notificacionesLeidas: notificacionesMock.map((n) => n.id) })
+  const abrir = (n: Notificacion) => {
+    void actualizar((a) => ({
+      notificacionesLeidas: Array.from(new Set([...a.notificacionesLeidas, n.id])),
+    }))
+    navigate(destinoNotificacion(n))
+  }
 
   const getIcono = (tipo: string) => {
     switch (tipo) {
@@ -78,14 +48,18 @@ export function Notificaciones() {
         <div className="h-16 px-margin flex items-center justify-between gap-space-sm">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/inicio')}
+              onClick={() => navigate(-1)}
+              aria-label="Volver"
               className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
             >
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
             <h1 className="font-headline-md text-headline-md text-text-primary">Notificaciones</h1>
           </div>
-          <button className="text-primary-500 font-label-lg text-label-lg hover:text-primary-400">
+          <button
+            onClick={marcarTodas}
+            className="text-primary-500 font-label-lg text-label-lg hover:text-primary-400"
+          >
             Marcar todas leídas
           </button>
         </div>
@@ -93,25 +67,32 @@ export function Notificaciones() {
 
       <main className="flex-1 pt-16 pb-24">
         <div className="px-margin pt-space-sm">
-          <div className="flex gap-2 mb-4">
-            <button className="px-4 py-2 rounded-full font-label-md text-label-md bg-primary-600 text-bg-primary">
-              Todas
-            </button>
-            <button className="px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container text-text-secondary hover:text-text-primary">
-              Sin leer
-            </button>
-            <button className="px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container text-text-secondary hover:text-text-primary">
-              En vivo
-            </button>
+          <div className="flex gap-2 mb-4" role="tablist">
+            {(['Todas', 'Sin leer', 'En vivo'] as FiltroNotificaciones[]).map((f) => (
+              <button
+                key={f}
+                role="tab"
+                aria-selected={filtro === f}
+                onClick={() => setFiltro(f)}
+                className={`px-4 py-2 rounded-full font-label-md text-label-md ${filtro === f ? 'bg-primary-600 text-bg-primary' : 'bg-surface-container text-text-secondary hover:text-text-primary'}`}
+              >
+                {f}
+              </button>
+            ))}
           </div>
         </div>
 
         <div className="divide-y divide-border-subtle">
+          {notificaciones.length === 0 && (
+            <p className="px-margin py-8 text-center text-text-secondary">No hay notificaciones.</p>
+          )}
           {notificaciones.map((notif) => {
             const { icon, color } = getIcono(notif.tipo)
             return (
               <button
                 key={notif.id}
+                onClick={() => abrir(notif)}
+                data-testid="notificacion"
                 className={`w-full px-margin py-4 flex items-start gap-3 hover:bg-surface-container transition-colors text-left ${
                   !notif.leida ? 'bg-surface-container/50' : ''
                 }`}

@@ -129,13 +129,22 @@ El modelo se carga de forma lazy y se usa en:
 | Ajustes   | Ajustes y preferencias | /ajustes              | c8e26916e4bf48399016e6ed751d025d |
 | Ajustes   | Permisos de ubicación  | /permisos-ubicacion   | 31b3ed996ba749d88231fd674b8e9f24 |
 
+## Funcionalidades
+
+- Seguimiento GPS real con `navigator.geolocation.watchPosition`: distancia (Haversine), ritmo, tiempo, desnivel, parciales por km y trazado de la ruta. Se filtran puntos imprecisos y saltos imposibles. La pantalla se mantiene encendida con Wake Lock mientras se corre.
+- Resumen post carrera con título, notas y visibilidad; las carreras se guardan y aparecen en Perfil (historial, totales, estadísticas del mes) e Inicio (semana y racha).
+- Cronómetro con vueltas, modos Libre, Fartlek y Pacer (ritmo objetivo ajustable), Intervalos configurables (trabajo, descanso, rondas, sonido y vibración) y Metrónomo con tono audible (Web Audio).
+- Rutas: pestañas Explorar, Mis Rutas y Guardadas, búsqueda, guardar rutas y navegación con indicaciones según la distancia recorrida.
+- Comunidad: feed con tus carreras públicas, likes, comentarios, ocultar y compartir; eventos con inscripción y creación de eventos propios.
+- Ajustes persistidos: modo oscuro o claro, unidades métricas o imperiales, privacidad, ubicación precisa, protección de hogar y tipos de notificación.
+- Autenticación local (registro, inicio de sesión, recuperar contraseña, cerrar sesión) con validación y sesión persistida. Las pantallas protegidas redirigen a `/bienvenida`.
+
+Los datos se guardan en `localStorage` detrás de interfaces de repositorio (`src/data/repositorios.ts`: auth, carreras, rutas, ajustes y eventos), listas para cambiar a Supabase sin tocar las pantallas.
+
 ## Pendientes
 
 - Integración con Supabase (autenticación y base de datos)
-- Integración con Google Maps para rutas y navegación
-- Implementación completa del tracking GPS
-- Conexión de datos mock con API real
-- Optimización de carga del modelo 3D
+- Integración con Google Maps para el mapa de rutas
 - PWA para instalación en dispositivos móviles
 
 ## Pruebas
@@ -155,7 +164,7 @@ pnpm test:watch
 pnpm test:coverage
 ```
 
-Cobertura actual: 59 tests unitarios, cobertura de líneas mayor al 70%.
+Cobertura actual: 79 pruebas unitarias y de integración (lógica, repositorios, store y pantallas), con cobertura de líneas cercana al 95%.
 
 ### Pruebas E2E
 
@@ -170,7 +179,7 @@ pnpm test:e2e:ui
 pnpm test:e2e:headed
 ```
 
-Las pruebas E2E cubren todos los flujos principales de la aplicación.
+Las 10 pruebas E2E cubren acceso, carrera con GPS simulado (`context.setGeolocation`), cronómetro, rutas, comunidad, ajustes y perfil. Cada prueba crea su propia cuenta local.
 
 ## Notas sobre diseño
 

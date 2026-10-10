@@ -32,17 +32,25 @@ export default {
           container: '#0297e8',
         },
         surface: {
-          DEFAULT: '#0c1322',
-          dim: '#0c1322',
-          bright: '#323949',
-          variant: '#2e3545',
-          container: '#191f2f',
-          'container-low': '#141b2b',
-          'container-high': '#232a3a',
-          'container-highest': '#2e3545',
-          'container-lowest': '#070e1d',
+          DEFAULT: 'rgb(var(--c-surface) / <alpha-value>)',
+
+          dim: 'rgb(var(--c-surface-dim) / <alpha-value>)',
+
+          bright: 'rgb(var(--c-surface-bright) / <alpha-value>)',
+
+          variant: 'rgb(var(--c-surface-variant) / <alpha-value>)',
+
+          container: 'rgb(var(--c-surface-container) / <alpha-value>)',
+
+          'container-low': 'rgb(var(--c-surface-container-low) / <alpha-value>)',
+
+          'container-high': 'rgb(var(--c-surface-container-high) / <alpha-value>)',
+
+          'container-highest': 'rgb(var(--c-surface-container-highest) / <alpha-value>)',
+
+          'container-lowest': 'rgb(var(--c-surface-container-lowest) / <alpha-value>)',
         },
-        background: '#0c1322',
+        background: 'rgb(var(--c-background) / <alpha-value>)',
         error: {
           DEFAULT: '#ffb4ab',
           container: '#93000a',
@@ -50,11 +58,11 @@ export default {
         warning: '#F59E0B',
         success: '#059669',
         danger: '#DC2626',
-        'bg-primary': '#111827',
-        'bg-secondary': '#1F2937',
-        'text-primary': '#F9FAFB',
-        'text-secondary': '#9CA3AF',
-        'border-subtle': '#374151',
+        'bg-primary': 'rgb(var(--c-bg-primary) / <alpha-value>)',
+        'bg-secondary': 'rgb(var(--c-bg-secondary) / <alpha-value>)',
+        'text-primary': 'rgb(var(--c-text-primary) / <alpha-value>)',
+        'text-secondary': 'rgb(var(--c-text-secondary) / <alpha-value>)',
+        'border-subtle': 'rgb(var(--c-border-subtle) / <alpha-value>)',
         outline: {
           DEFAULT: '#a38c7c',
           variant: '#554336',
@@ -71,9 +79,9 @@ export default {
         'on-tertiary-container': '#002c48',
         'on-tertiary-fixed': '#001d32',
         'on-tertiary-fixed-variant': '#004a75',
-        'on-surface': '#dce2f7',
+        'on-surface': 'rgb(var(--c-on-surface) / <alpha-value>)',
         'on-surface-variant': '#dbc2b0',
-        'on-background': '#dce2f7',
+        'on-background': 'rgb(var(--c-on-background) / <alpha-value>)',
         'on-error': '#690005',
         'on-error-container': '#ffdad6',
         'inverse-surface': '#dce2f7',

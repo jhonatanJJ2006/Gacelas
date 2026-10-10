@@ -1,5 +1,10 @@
-import { lazy, Suspense } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { formatearMs, formatearRitmo, Unidades } from '../../lib/geo'
+import { estaActiva } from '../../lib/runTracker'
+import { useApp } from '../../store/app'
+import { empezarSeguimiento, finalizarCarrera, tracker, useCarrera } from '../../store/carrera'
+import { indicacion } from '../../lib/logica'
 
 const Runner3D = lazy(() =>
   import('../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
@@ -7,13 +12,46 @@ const Runner3D = lazy(() =>
 
 export function NavegacionRuta() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const nombreRuta = (location.state as { ruta?: string } | null)?.ruta ?? 'Ruta libre'
+  const e = useCarrera()
+  const ajustes = useApp((s) => s.ajustes)
+  const m = ajustes.unidadesMetricas
+  const [errorGps, setErrorGps] = useState<string | null>(null)
+  const [animacion, setAnimacion] = useState<'Jog' | 'Run'>('Jog')
+
+  // La navegacion graba la carrera; si ya habia una en curso, la reutiliza.
+  useEffect(() => {
+    if (!estaActiva(tracker.estado))
+      empezarSeguimiento({ precisa: ajustes.ubicacionPrecisa, onError: setErrorGps })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const paso = indicacion(e.distanciaKm)
+
+  const cerrar = () => {
+    if (estaActiva(tracker.estado) && tracker.estado.segundos > 0) {
+      finalizarCarrera()
+      navigate('/correr/resumen')
+    } else {
+      navigate('/rutas')
+    }
+  }
 
   return (
     <div className="w-full min-h-screen bg-[#0c1322] relative overflow-hidden">
-      <div className="absolute top-0 inset-x-0 z-50 pt-3 px-6 flex justify-between items-center text-xs text-slate-400">
-        <span className="pl-2">06:45 AM</span>
-        <div className="flex items-center space-x-2 pr-1">
-          <span className="text-[10px]">98%</span>
+      <div className="absolute top-3 inset-x-0 z-50 px-6 flex justify-between items-center text-xs text-slate-300">
+        <span className="pl-2 truncate">{nombreRuta}</span>
+        <div className="flex gap-1">
+          {(['Jog', 'Run'] as const).map((a) => (
+            <button
+              key={a}
+              onClick={() => setAnimacion(a)}
+              aria-pressed={animacion === a}
+              className={`px-2 py-0.5 rounded-full ${animacion === a ? 'bg-primary-600 text-white' : 'bg-black/50'}`}
+            >
+              {a === 'Jog' ? 'Trote' : 'Carrera'}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -28,7 +66,7 @@ export function NavegacionRuta() {
             </div>
           }
         >
-          <Runner3D animation="Jog" cameraPosition={[0, 3.8, 6.2]} />
+          <Runner3D animation={animacion} cameraPosition={[0, 3.8, 6.2]} />
         </Suspense>
       </div>
 
@@ -42,10 +80,17 @@ export function NavegacionRuta() {
               <div className="text-primary-400 text-xs font-semibold uppercase tracking-wide">
                 Siguiente giro en
               </div>
-              <div className="text-white text-2xl font-bold">200 metros</div>
+              <div className="text-white text-2xl font-bold" data-testid="giro-metros">
+                {paso.metros} metros
+              </div>
             </div>
           </div>
-          <div className="text-slate-300 text-sm">Gira a la derecha en Av. Universitaria</div>
+          <div className="text-slate-300 text-sm">{paso.texto}</div>
+          {errorGps && (
+            <div role="alert" className="text-danger text-xs mt-2">
+              {errorGps}
+            </div>
+          )}
         </div>
       </div>
 
@@ -53,16 +98,20 @@ export function NavegacionRuta() {
         <div className="bg-gradient-to-t from-[#0c1322] via-[#0c1322]/95 to-transparent p-6 pb-8">
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-black/60 backdrop-blur-md rounded-xl p-3 text-center">
-              <div className="text-primary-400 text-2xl font-bold">2.3</div>
-              <div className="text-slate-400 text-xs">km</div>
+              <div className="text-primary-400 text-2xl font-bold">
+                {Unidades.texto(e.distanciaKm, m)}
+              </div>
+              <div className="text-slate-400 text-xs">{Unidades.etiquetaDistancia(m)}</div>
             </div>
             <div className="bg-black/60 backdrop-blur-md rounded-xl p-3 text-center">
-              <div className="text-secondary-500 text-2xl font-bold">12:15</div>
+              <div className="text-secondary-500 text-2xl font-bold">{formatearMs(e.segundos)}</div>
               <div className="text-slate-400 text-xs">tiempo</div>
             </div>
             <div className="bg-black/60 backdrop-blur-md rounded-xl p-3 text-center">
-              <div className="text-white text-2xl font-bold">5:18</div>
-              <div className="text-slate-400 text-xs">/km</div>
+              <div className="text-white text-2xl font-bold">
+                {formatearRitmo(Unidades.ritmo(e.ritmoActualSegKm, m))}
+              </div>
+              <div className="text-slate-400 text-xs">{Unidades.etiquetaRitmo(m)}</div>
             </div>
           </div>
 
@@ -75,7 +124,8 @@ export function NavegacionRuta() {
               Ver cronómetro
             </button>
             <button
-              onClick={() => navigate('/rutas')}
+              onClick={cerrar}
+              aria-label="Terminar navegación"
               className="w-12 h-12 bg-black/60 backdrop-blur-md hover:bg-black/80 text-white rounded-xl flex items-center justify-center shadow-lg transition-colors active:scale-95"
             >
               <span className="material-symbols-outlined">close</span>

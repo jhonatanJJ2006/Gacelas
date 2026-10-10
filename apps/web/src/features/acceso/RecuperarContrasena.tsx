@@ -1,14 +1,20 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useApp } from '../../store/app'
+import { MensajeError } from '../../components/ui'
 
 export function RecuperarContrasena() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const recuperar = useApp((s) => s.recuperarContrasena)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitted(true)
+    const r = await recuperar(email)
+    if (r.ok) setSubmitted(true)
+    else setError(r.error)
   }
 
   if (submitted) {
@@ -79,7 +85,7 @@ export function RecuperarContrasena() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} noValidate className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-2">
                 Correo electrónico
@@ -88,12 +94,17 @@ export function RecuperarContrasena() {
                 type="email"
                 id="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  setError(null)
+                }}
                 className="w-full h-12 px-4 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
                 placeholder="tu@email.com"
                 required
               />
             </div>
+
+            <MensajeError mensaje={error} />
 
             <button
               type="submit"
