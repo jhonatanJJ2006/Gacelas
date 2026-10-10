@@ -18,7 +18,7 @@ test.describe('Navegación', () => {
 
     await page.locator('nav a[href="/comunidad"]').click()
     await expect(page).toHaveURL(/\/comunidad/)
-    await expect(page.getByText(/comunidad/i)).toBeVisible()
+    await expect(page.getByRole('heading', { name: /comunidad/i })).toBeVisible()
 
     await page.locator('nav a[href="/perfil"]').click()
     await expect(page).toHaveURL(/\/perfil/)
@@ -30,7 +30,7 @@ test.describe('Navegación', () => {
 
   test('navegación a eventos', async ({ page }) => {
     await page.locator('nav a[href="/comunidad"]').click()
-    await page.getByText(/eventos/i).first().click()
+    await page.getByRole('button', { name: /^eventos$/i }).click()
 
     await expect(page).toHaveURL(/\/comunidad\/eventos/)
     await expect(page.getByText(/carrera parque jipiro/i)).toBeVisible()
@@ -38,9 +38,12 @@ test.describe('Navegación', () => {
 
   test('detalle de evento', async ({ page }) => {
     await page.goto('/comunidad/eventos')
-    await page.getByText(/carrera parque jipiro/i).first().click()
+    await page
+      .getByText(/carrera parque jipiro/i)
+      .first()
+      .click()
 
     await expect(page).toHaveURL(/\/comunidad\/eventos\//)
-    await expect(page.getByText(/inscribir/i)).toBeVisible()
+    await expect(page.getByRole('button', { name: /inscribirme al evento/i })).toBeVisible()
   })
 })

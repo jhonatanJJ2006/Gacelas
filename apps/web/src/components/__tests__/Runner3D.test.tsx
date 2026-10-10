@@ -1,6 +1,13 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { Runner3D } from '../Runner3D'
+import { isWebGLAvailable } from '../../lib/webgl'
+
+vi.mock('../../lib/webgl', () => ({ isWebGLAvailable: vi.fn(() => true) }))
+
+beforeEach(() => {
+  vi.mocked(isWebGLAvailable).mockReturnValue(true)
+})
 
 describe('Runner3D', () => {
   it('renderiza el canvas de Three.js', () => {
@@ -34,5 +41,12 @@ describe('Runner3D', () => {
   it('acepta la prop autoRotate', () => {
     render(<Runner3D autoRotate={true} />)
     expect(screen.getByTestId('three-canvas')).toBeInTheDocument()
+  })
+
+  it('muestra un fallback estático cuando no hay WebGL', () => {
+    vi.mocked(isWebGLAvailable).mockReturnValue(false)
+    render(<Runner3D />)
+    expect(screen.getByTestId('runner3d-fallback')).toBeInTheDocument()
+    expect(screen.queryByTestId('three-canvas')).not.toBeInTheDocument()
   })
 })

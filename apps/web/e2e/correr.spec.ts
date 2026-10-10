@@ -20,20 +20,21 @@ test.describe('Funcionalidad de Correr', () => {
 
     await expect(page).toHaveURL(/\/correr\/en-curso/)
 
-    await page.click('text=Cronómetro')
+    await page.getByRole('button', { name: 'pause' }).click()
+    await expect(page.getByRole('button', { name: 'play_arrow' })).toBeVisible()
+    await page.getByRole('button', { name: 'play_arrow' }).click()
+    await expect(page.getByRole('button', { name: 'pause' })).toBeVisible()
 
-    await expect(page).toHaveURL(/\/correr\/cronometro/)
-    await expect(page.getByText(/cronómetro profesional/i)).toBeVisible()
-
-    await page.getByRole('button', { name: /pause/i }).click()
-    await expect(page.getByText(/play_arrow/)).toBeVisible()
-
-    await page.getByRole('button', { name: /play_arrow/i }).click()
-    await expect(page.getByText(/pause/)).toBeVisible()
-
-    const stopButton = page.locator('text=Fin').first()
-    await stopButton.click()
-
+    await page.getByRole('button', { name: 'stop' }).click()
     await expect(page).toHaveURL(/\/correr\/resumen/)
+  })
+
+  test('cronómetro ampliado: pausar y reanudar', async ({ page }) => {
+    await page.goto('/correr/cronometro')
+    await page.getByRole('button', { name: 'pause' }).click()
+    await expect(page.getByRole('button', { name: 'play_arrow' })).toBeVisible()
+    await page.getByRole('button', { name: 'play_arrow' }).click()
+    await expect(page.getByRole('button', { name: 'pause' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /fin/i })).toBeVisible()
   })
 })

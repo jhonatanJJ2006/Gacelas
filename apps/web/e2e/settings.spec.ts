@@ -21,14 +21,20 @@ test.describe('Ajustes y Configuración', () => {
 
   test('configurar privacidad', async ({ page }) => {
     await page.goto('/ajustes')
-    await page.getByText(/privacidad y ubicación/i).first().click()
+    await page
+      .getByText(/privacidad y ubicación/i)
+      .first()
+      .click()
 
     await expect(page).toHaveURL(/\/ajustes\/privacidad/)
   })
 
   test('configurar notificaciones', async ({ page }) => {
     await page.goto('/ajustes')
-    await page.getByText(/notificaciones/i).first().click()
+    await page
+      .getByText(/notificaciones/i)
+      .first()
+      .click()
 
     await expect(page).toHaveURL(/\/ajustes\/notificaciones/)
     await expect(page.getByRole('heading', { name: /notificaciones/i }).first()).toBeVisible()

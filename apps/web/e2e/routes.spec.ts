@@ -22,7 +22,9 @@ test.describe('Rutas y Búsqueda', () => {
   test('explorar rutas disponibles', async ({ page }) => {
     await page.locator('nav a[href="/rutas"]').click()
 
-    await expect(page.getByText(/parque jipiro/i)).toBeVisible()
-    await expect(page.getByText(/río zamora/i)).toBeVisible()
+    await expect(page).toHaveURL(/\/rutas$/)
+    await expect(page.getByRole('heading', { name: /rutas de loja/i })).toBeVisible()
+    await expect(page.getByText('Parque Jipiro', { exact: true })).toBeVisible()
+    await expect(page.getByText('Río Zamora', { exact: true })).toBeVisible()
   })
 })

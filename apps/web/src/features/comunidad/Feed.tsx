@@ -1,4 +1,7 @@
+import { useNavigate } from 'react-router-dom'
+
 export function Feed() {
+  const navigate = useNavigate()
   const posts = [
     {
       id: 1,
@@ -36,7 +39,10 @@ export function Feed() {
           <button className="px-4 py-2 rounded-full font-label-md text-label-md bg-primary-600 text-bg-primary">
             Feed
           </button>
-          <button className="px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container text-text-secondary hover:text-text-primary">
+          <button
+            onClick={() => navigate('/comunidad/eventos')}
+            className="px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container text-text-secondary hover:text-text-primary"
+          >
             Eventos
           </button>
         </div>
