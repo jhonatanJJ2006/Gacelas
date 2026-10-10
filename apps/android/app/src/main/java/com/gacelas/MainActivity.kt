@@ -4,51 +4,56 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.gacelas.data.auth.Perfil
+import com.gacelas.navigation.Destinos
+import com.gacelas.navigation.GacelasNavHost
+import com.gacelas.ui.contenedor
+import com.gacelas.ui.theme.GColors
+import androidx.compose.runtime.SideEffect
+import com.gacelas.ui.ajustesState
 import com.gacelas.ui.theme.GacelasTheme
-import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.map
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            GacelasTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    GacelasApp(
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+            GacelasTheme { GacelasRaiz() }
         }
     }
 }
 
-@Composable
-fun GacelasApp(modifier: Modifier = Modifier) {
-    // TODO: Navigation setup will go here
-    WelcomeScreen(modifier = modifier)
+private sealed interface EstadoSesion {
+    data object Cargando : EstadoSesion
+    data class Lista(val perfil: Perfil?) : EstadoSesion
 }
 
+/** Decide la pantalla inicial segun la sesion guardada y protege las rutas privadas. */
 @Composable
-fun WelcomeScreen(modifier: Modifier = Modifier) {
-    Text(
-        text = "Bienvenido a Gacelas 🦌\n\nApp Android en desarrollo según arquitectura documentada.",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GacelasAppPreview() {
-    GacelasTheme {
-        GacelasApp()
+fun GacelasRaiz() {
+    val c = contenedor()
+    val ajustes by ajustesState()
+    SideEffect { GColors.claro = !ajustes.modoOscuro }
+    val flujo = remember(c) { c.auth.sesion.map { EstadoSesion.Lista(it) } }
+    val estado by flujo.collectAsState(initial = EstadoSesion.Cargando)
+    when (val e = estado) {
+        EstadoSesion.Cargando -> Box(Modifier.fillMaxSize().background(GColors.BgPrimary), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = GColors.Primary)
+        }
+        is EstadoSesion.Lista -> {
+            val inicio = remember { if (e.perfil != null) Destinos.INICIO else Destinos.BIENVENIDA }
+            GacelasNavHost(inicio = inicio, sesionActiva = e.perfil != null)
+        }
     }
 }
