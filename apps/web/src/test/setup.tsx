@@ -1,16 +1,17 @@
 import { afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
-const mockUseGLTF = vi.fn(() => ({
-  scene: {
-    clone: vi.fn(() => ({})),
-  },
-  animations: [],
-}))
-
-mockUseGLTF.preload = vi.fn()
+const mockUseGLTF = Object.assign(
+  vi.fn(() => ({
+    scene: {
+      clone: vi.fn(() => ({})),
+    },
+    animations: [],
+  })),
+  { preload: vi.fn() }
+)
 
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => {
@@ -33,3 +34,8 @@ vi.mock('three', () => ({
 afterEach(() => {
   cleanup()
 })
+
+// jsdom no implementa canvas: sin contexto, la app usa el modo sin WebGL.
+HTMLCanvasElement.prototype.getContext = vi.fn(
+  () => null
+) as unknown as HTMLCanvasElement['getContext']

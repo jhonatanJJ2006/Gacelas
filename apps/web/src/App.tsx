@@ -1,5 +1,6 @@
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom'
+import { useApp } from './store/app'
 import { AppLayout } from './components/AppLayout'
 
 const Bienvenida = lazy(() =>
@@ -82,17 +83,46 @@ function LoadingFallback() {
   )
 }
 
-function App() {
+/** Rutas protegidas: sin sesion se redirige a /bienvenida. */
+export function RutaProtegida() {
+  const sesion = useApp((s) => s.sesion)
+  const location = useLocation()
+  if (!sesion) return <Navigate to="/bienvenida" replace state={{ desde: location.pathname }} />
+  return <Outlet />
+}
+
+/** Pantallas de acceso: con sesion abierta se va directo a Inicio. */
+export function SoloInvitados() {
+  // Se mira la sesion al entrar: tras registrarse, la pantalla navega por su cuenta.
+  const [sesionAlEntrar] = useState(() => useApp.getState().sesion)
+  if (sesionAlEntrar) return <Navigate to="/inicio" replace />
+  return <Outlet />
+}
+
+/** Aplica el tema claro u oscuro de los ajustes al documento. */
+function TemaDocumento() {
+  const modoOscuro = useApp((s) => s.ajustes.modoOscuro)
+  useEffect(() => {
+    document.documentElement.classList.toggle('tema-claro', !modoOscuro)
+    document.documentElement.classList.toggle('dark', modoOscuro)
+  }, [modoOscuro])
+  return null
+}
+
+export function AppRoutes() {
   return (
-    <BrowserRouter>
-      <Suspense fallback={<LoadingFallback />}>
-        <Routes>
+    <Suspense fallback={<LoadingFallback />}>
+      <TemaDocumento />
+      <Routes>
+        <Route element={<SoloInvitados />}>
           <Route path="/bienvenida" element={<Bienvenida />} />
           <Route path="/inicio-sesion" element={<InicioSesion />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
-          <Route path="/permisos-ubicacion" element={<PermisosUbicacion />} />
+        </Route>
 
+        <Route element={<RutaProtegida />}>
+          <Route path="/permisos-ubicacion" element={<PermisosUbicacion />} />
           <Route path="/" element={<AppLayout />}>
             <Route index element={<Navigate to="/inicio" replace />} />
             <Route path="inicio" element={<Inicio />} />
@@ -119,10 +149,24 @@ function App() {
           <Route path="/ajustes/privacidad" element={<PrivacidadUbicacion />} />
           <Route path="/ajustes/notificaciones" element={<ConfiguracionNotificaciones />} />
           <Route path="/notificaciones" element={<Notificaciones />} />
+        </Route>
 
-          <Route path="*" element={<Navigate to="/bienvenida" replace />} />
-        </Routes>
-      </Suspense>
+        <Route path="*" element={<Navigate to="/bienvenida" replace />} />
+      </Routes>
+    </Suspense>
+  )
+}
+
+function App() {
+  const listo = useApp((s) => s.listo)
+  const cargar = useApp((s) => s.cargar)
+  useEffect(() => {
+    void cargar()
+  }, [cargar])
+  if (!listo) return <LoadingFallback />
+  return (
+    <BrowserRouter>
+      <AppRoutes />
     </BrowserRouter>
   )
 }

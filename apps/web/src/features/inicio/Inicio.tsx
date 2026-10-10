@@ -1,11 +1,35 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { filtrarEventos } from '../../lib/filtros'
+import { formatearRitmo, Unidades } from '../../lib/geo'
+import { resumenSemana } from '../../lib/estadisticas'
+import { eventosMock } from '../../mocks/data'
+import { useApp } from '../../store/app'
+import { saludo } from '../../lib/logica'
 
 const Runner3D = lazy(() =>
   import('../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
 )
 
+const META_DIAS = 5
+
 export function Inicio() {
+  const sesion = useApp((s) => s.sesion)
+  const carreras = useApp((s) => s.carreras)
+  const m = useApp((s) => s.ajustes.unidadesMetricas)
+  const creados = useApp((s) => s.eventosCreados)
+  const inscritos = useApp((s) => s.inscritos)
+  const ahora = Date.now()
+  const semana = useMemo(() => resumenSemana(carreras, ahora), [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
+  const hoy = (new Date(ahora).getDay() + 6) % 7
+  const proximo = filtrarEventos([...creados, ...eventosMock], 'Próximos', inscritos)[0]
+  const fecha = new Date(ahora).toLocaleDateString('es-EC', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+  })
+  const nombre = sesion?.nombre.split(' ')[0] ?? 'Corredor'
+
   return (
     <div className="flex flex-col w-full px-margin pb-space-3xl space-y-space-xl">
       <section className="flex flex-col space-y-space-xs pt-space-md">
@@ -16,14 +40,14 @@ export function Inicio() {
               Loja, Ecuador
             </span>
             <h2 className="font-headline-md text-headline-md text-text-primary tracking-tight">
-              Buenos días, Corredor
+              {saludo(new Date(ahora).getHours())}, {nombre}
             </h2>
           </div>
           <div className="bg-surface-container px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm text-text-secondary">
             <span className="material-symbols-outlined text-[18px] text-primary-400">
-              wb_twilight
+              calendar_today
             </span>
-            <span className="font-label-md text-label-md text-on-surface">14°C Fresco</span>
+            <span className="font-label-md text-label-md text-on-surface capitalize">{fecha}</span>
           </div>
         </div>
       </section>
@@ -32,13 +56,20 @@ export function Inicio() {
         <div className="absolute top-3 inset-x-3 z-20 flex items-center justify-between pointer-events-none">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-bg-secondary/90 backdrop-blur-md text-primary border border-primary/20 shadow-md">
             <span className="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
-            <span className="font-label-md text-label-md font-bold tracking-wide">
-              AUTOPILOT ACTIVO
+            <span className="font-label-md text-label-md font-bold tracking-wide uppercase">
+              {semana.carreras} {semana.carreras === 1 ? 'carrera' : 'carreras'} esta semana
             </span>
           </div>
           <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-highest/90 backdrop-blur-md text-text-primary shadow-sm border border-white/5">
-            <span className="text-xs">🔥</span>
-            <span className="font-label-md text-label-md font-semibold text-primary">Racha 5d</span>
+            <span className="material-symbols-outlined text-[14px] text-primary">
+              local_fire_department
+            </span>
+            <span
+              className="font-label-md text-label-md font-semibold text-primary"
+              data-testid="racha"
+            >
+              Racha {semana.racha}d
+            </span>
           </div>
         </div>
 
@@ -59,25 +90,30 @@ export function Inicio() {
 
         <div className="absolute bottom-4 inset-x-4 z-20 grid grid-cols-3 gap-2">
           <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
-            <span className="font-metric-huge text-metric-huge text-primary leading-none">8</span>
+            <span className="font-metric-huge text-metric-huge text-primary leading-none">
+              {semana.diasCorridos.size}
+            </span>
             <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
               Días
             </span>
           </div>
           <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
-            <span className="font-metric-huge text-metric-huge text-secondary leading-none">
-              42
+            <span
+              className="font-metric-huge text-metric-huge text-secondary leading-none"
+              data-testid="km-semana"
+            >
+              {Unidades.texto(semana.km, m, 1)}
             </span>
             <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
-              km
+              {Unidades.etiquetaDistancia(m)}
             </span>
           </div>
           <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
             <span className="font-metric-huge text-metric-huge text-text-primary leading-none">
-              5:20
+              {formatearRitmo(Unidades.ritmo(semana.ritmoSegKm, m))}
             </span>
             <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
-              /km
+              {Unidades.etiquetaRitmo(m)}
             </span>
           </div>
         </div>
@@ -111,21 +147,26 @@ export function Inicio() {
       <section className="space-y-space-md">
         <div className="flex items-center justify-between">
           <h3 className="font-title-md text-title-md text-text-primary">Semana atlética</h3>
-          <span className="font-label-md text-label-md text-text-secondary">3 de 5 días</span>
+          <span className="font-label-md text-label-md text-text-secondary">
+            {semana.diasCorridos.size} de {META_DIAS} días
+          </span>
         </div>
 
         <div className="flex gap-2">
           {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day, index) => (
             <div
               key={day}
+              data-corrido={semana.diasCorridos.has(index)}
               className={`flex-1 aspect-square rounded-xl flex flex-col items-center justify-center ${
-                index < 3
+                semana.diasCorridos.has(index)
                   ? 'bg-secondary-600/20 border-2 border-secondary-600'
-                  : 'bg-surface-container border border-border-subtle'
+                  : index === hoy
+                    ? 'bg-surface-container border-2 border-primary-600'
+                    : 'bg-surface-container border border-border-subtle'
               }`}
             >
               <span className="font-label-md text-label-md text-text-primary">{day}</span>
-              {index < 3 && (
+              {semana.diasCorridos.has(index) && (
                 <span className="material-symbols-outlined text-[16px] text-secondary-500 mt-1">
                   check_circle
                 </span>
@@ -143,40 +184,38 @@ export function Inicio() {
           </Link>
         </div>
 
-        <div className="bg-surface-container rounded-2xl border border-border-subtle overflow-hidden">
-          <div className="h-32 bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
-            <span className="material-symbols-outlined text-[64px] text-white">event</span>
-          </div>
-          <div className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="material-symbols-outlined text-[16px] text-primary-500">
-                calendar_today
-              </span>
-              <span className="font-label-md text-label-md text-text-secondary">
-                Sábado 11 de Octubre, 6:00 AM
-              </span>
+        {proximo ? (
+          <Link
+            to={`/comunidad/eventos/${proximo.id}`}
+            className="block bg-surface-container rounded-2xl border border-border-subtle overflow-hidden"
+          >
+            <div className="h-32 bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
+              <span className="material-symbols-outlined text-[64px] text-white">event</span>
             </div>
-            <h4 className="font-title-md text-title-md text-text-primary mb-1">
-              Carrera Parque Jipiro
-            </h4>
-            <p className="font-body-sm text-body-sm text-text-secondary mb-3">
-              Carrera grupal de 10km por el Parque Jipiro. Todos los niveles bienvenidos.
-            </p>
-            <div className="flex items-center gap-2">
-              <div className="flex -space-x-2">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="w-8 h-8 rounded-full bg-surface-variant border-2 border-surface-container"
-                  ></div>
-                ))}
+            <div className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="material-symbols-outlined text-[16px] text-primary-500">
+                  calendar_today
+                </span>
+                <span className="font-label-md text-label-md text-text-secondary">
+                  {proximo.fecha}, {proximo.hora}
+                </span>
               </div>
+              <h4 className="font-title-md text-title-md text-text-primary mb-1">
+                {proximo.titulo}
+              </h4>
+              <p className="font-body-sm text-body-sm text-text-secondary mb-3">
+                {proximo.descripcion}
+              </p>
               <span className="font-label-md text-label-md text-text-secondary">
-                +12 corredores
+                {proximo.participantes + (inscritos.includes(proximo.id) ? 1 : 0)} corredores
+                {inscritos.includes(proximo.id) ? ' (tú incluido)' : ''}
               </span>
             </div>
-          </div>
-        </div>
+          </Link>
+        ) : (
+          <p className="text-text-secondary">No hay encuentros próximos.</p>
+        )}
       </section>
     </div>
   )

@@ -1,12 +1,33 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Interruptor } from '../../components/ui'
+import type { ConfigAvatar } from '../../data/tipos'
+import { useApp } from '../../store/app'
 
 const Runner3D = lazy(() =>
   import('../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
 )
 
+const EQUIPACIONES = ['bg-primary-600', 'bg-secondary-600', 'bg-danger', 'bg-tertiary']
+const NOMBRES_EQUIPACION = ['Naranja', 'Verde', 'Rojo', 'Celeste']
+const ESTILOS = [
+  { id: 'Dinámico', icono: 'directions_run', animacion: 'Run' },
+  { id: 'Relajado', icono: 'self_improvement', animacion: 'Idle' },
+  { id: 'Veloz', icono: 'bolt', animacion: 'Jog' },
+] as const
+
 export function Avatar3D() {
   const navigate = useNavigate()
+  const guardado = useApp((s) => s.ajustes.avatar)
+  const actualizar = useApp((s) => s.actualizarAjustes)
+  const [avatar, setAvatar] = useState<ConfigAvatar>(guardado)
+  const cambiar = (c: Partial<ConfigAvatar>) => setAvatar((a) => ({ ...a, ...c }))
+  const animacion = ESTILOS.find((e) => e.id === avatar.estilo)?.animacion ?? 'Idle'
+
+  const guardar = async () => {
+    await actualizar({ avatar })
+    navigate('/perfil')
+  }
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -14,6 +35,7 @@ export function Avatar3D() {
         <div className="flex items-center justify-between">
           <button
             onClick={() => navigate('/perfil')}
+            aria-label="Volver"
             className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
           >
             <span className="material-symbols-outlined">arrow_back</span>
@@ -21,7 +43,10 @@ export function Avatar3D() {
           <h1 className="font-headline-md text-headline-md text-text-primary">
             Personalizar Avatar
           </h1>
-          <button className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-bg-primary font-label-lg text-label-lg rounded-lg transition-colors">
+          <button
+            onClick={() => void guardar()}
+            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-bg-primary font-label-lg text-label-lg rounded-lg transition-colors"
+          >
             Guardar
           </button>
         </div>
@@ -39,7 +64,7 @@ export function Avatar3D() {
               </div>
             }
           >
-            <Runner3D animation="Idle" autoRotate cameraPosition={[0, 1.2, 3.5]} />
+            <Runner3D animation={animacion} autoRotate cameraPosition={[0, 1.2, 3.5]} />
           </Suspense>
 
           <div className="absolute bottom-4 left-4 right-4">
@@ -51,10 +76,15 @@ export function Avatar3D() {
                 <span className="font-title-md text-title-md text-text-primary">Equipación</span>
               </div>
               <div className="grid grid-cols-4 gap-2">
-                <button className="aspect-square rounded-lg bg-primary-600 border-2 border-primary-600 shadow-lg"></button>
-                <button className="aspect-square rounded-lg bg-secondary-600 border-2 border-transparent hover:border-border-subtle"></button>
-                <button className="aspect-square rounded-lg bg-danger border-2 border-transparent hover:border-border-subtle"></button>
-                <button className="aspect-square rounded-lg bg-tertiary border-2 border-transparent hover:border-border-subtle"></button>
+                {EQUIPACIONES.map((color, i) => (
+                  <button
+                    key={color}
+                    onClick={() => cambiar({ equipacion: i })}
+                    aria-label={`Equipación ${NOMBRES_EQUIPACION[i]}`}
+                    aria-pressed={avatar.equipacion === i}
+                    className={`aspect-square rounded-lg ${color} border-2 ${avatar.equipacion === i ? 'border-white shadow-lg' : 'border-transparent hover:border-border-subtle'}`}
+                  ></button>
+                ))}
               </div>
             </div>
           </div>
@@ -68,24 +98,28 @@ export function Avatar3D() {
               </label>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              <button className="px-4 py-3 bg-primary-container/20 border-2 border-primary-600 rounded-xl flex flex-col items-center gap-1">
-                <span className="material-symbols-outlined text-[24px] text-primary-500">
-                  directions_run
-                </span>
-                <span className="font-label-md text-label-md text-text-primary">Dinámico</span>
-              </button>
-              <button className="px-4 py-3 bg-surface-container border-2 border-transparent hover:border-border-subtle rounded-xl flex flex-col items-center gap-1">
-                <span className="material-symbols-outlined text-[24px] text-text-secondary">
-                  self_improvement
-                </span>
-                <span className="font-label-md text-label-md text-text-secondary">Relajado</span>
-              </button>
-              <button className="px-4 py-3 bg-surface-container border-2 border-transparent hover:border-border-subtle rounded-xl flex flex-col items-center gap-1">
-                <span className="material-symbols-outlined text-[24px] text-text-secondary">
-                  bolt
-                </span>
-                <span className="font-label-md text-label-md text-text-secondary">Veloz</span>
-              </button>
+              {ESTILOS.map((e) => {
+                const activo = avatar.estilo === e.id
+                return (
+                  <button
+                    key={e.id}
+                    onClick={() => cambiar({ estilo: e.id })}
+                    aria-pressed={activo}
+                    className={`px-4 py-3 border-2 rounded-xl flex flex-col items-center gap-1 ${activo ? 'bg-primary-container/20 border-primary-600' : 'bg-surface-container border-transparent hover:border-border-subtle'}`}
+                  >
+                    <span
+                      className={`material-symbols-outlined text-[24px] ${activo ? 'text-primary-500' : 'text-text-secondary'}`}
+                    >
+                      {e.icono}
+                    </span>
+                    <span
+                      className={`font-label-md text-label-md ${activo ? 'text-text-primary' : 'text-text-secondary'}`}
+                    >
+                      {e.id}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -96,46 +130,30 @@ export function Avatar3D() {
               </label>
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl">
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-[20px] text-text-secondary">
-                    visibility
-                  </span>
-                  <span className="font-body-md text-body-md text-text-primary">
-                    Lentes deportivos
-                  </span>
+              {(
+                [
+                  ['lentes', 'visibility', 'Lentes deportivos'],
+                  ['reloj', 'watch', 'Reloj GPS'],
+                  ['audifonos', 'headphones', 'Audífonos'],
+                ] as const
+              ).map(([clave, icono, etiqueta]) => (
+                <div
+                  key={clave}
+                  className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-[20px] text-text-secondary">
+                      {icono}
+                    </span>
+                    <span className="font-body-md text-body-md text-text-primary">{etiqueta}</span>
+                  </div>
+                  <Interruptor
+                    etiqueta={etiqueta}
+                    activo={avatar[clave]}
+                    onCambiar={(v) => cambiar({ [clave]: v })}
+                  />
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" />
-                  <div className="w-11 h-6 bg-surface-container-high peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                </label>
-              </div>
-
-              <div className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl">
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-[20px] text-text-secondary">
-                    watch
-                  </span>
-                  <span className="font-body-md text-body-md text-text-primary">Reloj GPS</span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="w-11 h-6 bg-surface-container-high peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                </label>
-              </div>
-
-              <div className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl">
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-[20px] text-text-secondary">
-                    headphones
-                  </span>
-                  <span className="font-body-md text-body-md text-text-primary">Audífonos</span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="w-11 h-6 bg-surface-container-high peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                </label>
-              </div>
+              ))}
             </div>
           </div>
         </div>
