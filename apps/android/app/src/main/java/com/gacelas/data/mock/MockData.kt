@@ -1,5 +1,7 @@
 package com.gacelas.data.mock
 
+import kotlinx.serialization.Serializable
+
 /** Datos de prueba tipados, equivalentes a apps/web/src/mocks/data.ts. Se reemplazaran por Supabase. */
 data class Usuario(val id: String, val nombre: String, val username: String)
 
@@ -24,8 +26,10 @@ data class Ruta(
     val dificultad: Dificultad,
     val elevacionM: Int,
     val descripcion: String,
+    val autorId: String = "gacelas",
 )
 
+@Serializable
 data class Evento(
     val id: String,
     val titulo: String,
@@ -35,6 +39,8 @@ data class Evento(
     val ubicacion: String,
     val participantes: Int,
     val distanciaKm: Int,
+    val pasado: Boolean = false,
+    val creadoPorUsuario: Boolean = false,
 )
 
 data class Split(val id: Int, val distancia: Double, val ritmo: String, val tiempo: String, val etiqueta: String, val actual: Boolean = false)
@@ -46,13 +52,16 @@ enum class TipoNotificacion { Like, Comentario, Seguidor, Evento, EnVivo }
 data class Notificacion(val id: String, val tipo: TipoNotificacion, val usuario: String, val mensaje: String, val tiempo: String, val leida: Boolean)
 
 object MockData {
+    /** Identificador del usuario local para rutas propias. */
+    const val ID_USUARIO = "0"
+
     val usuarios = listOf(
         Usuario("1", "María López", "maria_runs"),
         Usuario("2", "Carlos Ruiz", "carlos_runner"),
         Usuario("3", "Ana Martínez", "ana_trails"),
     )
 
-    val usuarioActual = Usuario("0", "Jhonatan Runner", "jhonatan_runs")
+    val usuarioActual = Usuario(ID_USUARIO, "Jhonatan Runner", "jhonatan_runs")
 
     val actividades = listOf(
         Actividad("1", "1", "Carrera matutina", 5.2, 1714, "5:30", "hace 2h", 23, 5),
@@ -63,12 +72,14 @@ object MockData {
         Ruta("1", "Parque Jipiro", 5.2, Dificultad.Facil, 45, "Ruta panorámica alrededor del Parque Jipiro, ideal para principiantes."),
         Ruta("2", "Río Zamora", 8.5, Dificultad.Moderado, 120, "Ruta junto al río con algunas subidas moderadas."),
         Ruta("3", "Cerro Villonaco", 12.3, Dificultad.Dificil, 380, "Ruta de montaña desafiante con vistas espectaculares de Loja."),
+        Ruta("4", "Campus UTPL - San Cayetano", 6.1, Dificultad.Moderado, 150, "Mi ruta de entrenamiento entre el campus y San Cayetano.", autorId = ID_USUARIO),
     )
 
     val eventos = listOf(
         Evento("1", "Carrera Parque Jipiro", "Carrera grupal de 10km por el Parque Jipiro. Todos los niveles bienvenidos.", "Sábado 11 de Octubre", "6:00 AM", "Parque Jipiro, Loja", 15, 10),
         Evento("2", "Trail Running Podocarpus", "Aventura de trail running en el Parque Nacional Podocarpus.", "Domingo 19 de Octubre", "7:00 AM", "Entrada Cajanuma", 8, 15),
         Evento("3", "Entrenamiento Intervalos Villonaco", "Series en la base del Cerro Villonaco.", "Miércoles 15 de Octubre", "6:30 AM", "Base Cerro Villonaco", 12, 8),
+        Evento("4", "Fondo dominical Zamora", "Fondo suave de 12 km junto al río Zamora.", "Domingo 28 de Septiembre", "6:30 AM", "Parque Lineal La Tebaida", 21, 12, pasado = true),
     )
 
     val splits = listOf(

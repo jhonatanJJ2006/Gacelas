@@ -1,6 +1,13 @@
 package com.gacelas.ajustes
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.ui.platform.LocalContext
+import com.gacelas.core.location.LocationService
+import com.gacelas.ui.aviso
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,9 +35,22 @@ import com.gacelas.ui.components.IconoCirculo
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
-/** Permiso de ubicacion. TODO: pedir ACCESS_FINE_LOCATION real con rememberLauncherForActivityResult. */
+/** Permisos que necesita la app para grabar carreras. */
+fun permisosCarrera(): Array<String> = buildList {
+    add(Manifest.permission.ACCESS_FINE_LOCATION)
+    add(Manifest.permission.ACCESS_COARSE_LOCATION)
+    if (Build.VERSION.SDK_INT >= 33) add(Manifest.permission.POST_NOTIFICATIONS)
+}.toTypedArray()
+
+/** Pide el permiso de ubicacion en tiempo de ejecucion y continua al terminar. */
 @Composable
 fun PermisosUbicacionScreen(onPermitir: () -> Unit, onMasTarde: () -> Unit) {
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { r ->
+        val ok = r[Manifest.permission.ACCESS_FINE_LOCATION] == true || r[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        context.aviso(if (ok) "Ubicación activada" else "Puedes activar la ubicación más tarde en Ajustes")
+        onPermitir()
+    }
     Column(
         Modifier.fillMaxSize().background(GColors.BgPrimary).statusBarsPadding().navigationBarsPadding()
             .verticalScroll(rememberScrollState()).padding(24.dp),
@@ -56,7 +76,9 @@ fun PermisosUbicacionScreen(onPermitir: () -> Unit, onMasTarde: () -> Unit) {
                 }
             }
         }
-        BotonPrimario("Permitir ubicación", onPermitir)
+        BotonPrimario("Permitir ubicación", {
+            if (LocationService.tienePermiso(context)) onPermitir() else launcher.launch(permisosCarrera())
+        })
         BotonSecundario("Configurar más tarde", onMasTarde, color = GColors.TextSecondary)
     }
 }

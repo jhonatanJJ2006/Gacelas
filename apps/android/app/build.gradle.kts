@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.roborazzi)
 }
 
@@ -34,7 +35,20 @@ android {
         manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = localProp("GOOGLE_MAPS_API_KEY")
     }
 
+    // APK mas liviano para un solo tipo de CPU: ./gradlew assembleDebug -Pgacelas.abi=arm64-v8a
+    (project.findProperty("gacelas.abi") as String?)?.let { abi ->
+        defaultConfig { ndk { abiFilters += abi.split(",") } }
+    }
+
     buildTypes {
+        // Con -Pgacelas.minify=true el debug tambien pasa por R8 (quita iconos y clases sin uso).
+        debug {
+            if (project.findProperty("gacelas.minify") == "true") {
+                isMinifyEnabled = true
+                isShrinkResources = true
+                proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            }
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -95,9 +109,13 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     implementation(libs.sceneview)
+    implementation(libs.play.services.location)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.test.core)
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.androidx.compose.ui.test.junit4)

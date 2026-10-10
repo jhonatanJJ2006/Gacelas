@@ -1,6 +1,27 @@
 package com.gacelas.rutas
 
 import androidx.compose.foundation.background
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import com.gacelas.core.location.LocationService
+import com.gacelas.correr.MantenerPantallaEncendida
+import com.gacelas.correr.RelojCarrera
+import com.gacelas.correr.descartarCarrera
+import com.gacelas.correr.empezarCarrera
+import com.gacelas.correr.terminarCarrera
+import com.gacelas.data.rutas.PestanaRutas
+import com.gacelas.data.rutas.filtrarRutas
+import com.gacelas.tracking.Unidades
+import com.gacelas.tracking.formatearMs
+import com.gacelas.tracking.formatearRitmo
+import com.gacelas.ui.ajustesState
+import com.gacelas.ui.aviso
+import com.gacelas.ui.contenedor
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -64,30 +85,56 @@ import io.github.sceneview.math.Position
 
 @Composable
 fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit) {
-    var pestana by rememberSaveable { mutableStateOf("Explorar") }
+    val c = contenedor()
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val guardadas by c.rutas.guardadas.collectAsState(initial = emptySet())
+    val ajustes by ajustesState()
+    val m = ajustes.unidadesMetricas
+    var pestana by rememberSaveable { mutableStateOf(PestanaRutas.Explorar) }
+    var consulta by rememberSaveable { mutableStateOf("") }
+    val lista = filtrarRutas(MockData.rutas, pestana, guardadas, MockData.ID_USUARIO, consulta)
     Pantalla {
         Text("Rutas de Loja", style = GType.headlineLg, color = GColors.TextPrimary)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("Explorar", "Mis Rutas", "Guardadas").forEach { Pastilla(it, it == pestana, { pestana = it }) }
+            PestanaRutas.entries.forEach { p -> Pastilla(if (p == PestanaRutas.Guardadas) "${p.etiqueta} (${guardadas.size})" else p.etiqueta, p == pestana, { pestana = p }) }
         }
-        Row(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceContainer)
-                .border(1.dp, GColors.BorderSubtle, RoundedCornerShape(12.dp)).clickable(onClick = onBuscar).padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(Icons.Filled.Search, null, tint = GColors.TextSecondary)
-            Text("  Buscar rutas...", style = GType.bodyLg, color = GColors.TextSecondary)
+        CampoTexto("Buscar", consulta, { consulta = it }, "Buscar rutas...", trailing = {
+            IconButton(onClick = onBuscar) { Icon(Icons.Filled.Search, "Abrir buscador en el mapa", tint = GColors.TextSecondary) }
+        })
+        if (lista.isEmpty()) {
+            Tarjeta {
+                Text(
+                    when (pestana) {
+                        PestanaRutas.Guardadas -> "Aún no guardas rutas. Toca el marcador de una ruta para guardarla."
+                        PestanaRutas.MisRutas -> "Todavía no creaste rutas."
+                        PestanaRutas.Explorar -> "No hay rutas que coincidan con la búsqueda."
+                    },
+                    style = GType.bodyMd, color = GColors.TextSecondary,
+                )
+            }
         }
-        MockData.rutas.forEach { ruta ->
+        lista.forEach { ruta ->
+            val guardada = ruta.id in guardadas
             Tarjeta(padding = 0.dp, onClick = { onRuta(ruta.id) }) {
                 Box(Modifier.fillMaxWidth().height(120.dp).background(Brush.linearGradient(listOf(GColors.MapParks, GColors.SurfaceLow))), contentAlignment = Alignment.Center) {
                     Icon(Icons.Filled.Route, null, tint = GColors.Primary500.copy(alpha = 0.7f), modifier = Modifier.size(56.dp))
+                    IconButton(
+                        onClick = {
+                            scope.launch { c.rutas.alternarGuardada(ruta.id) }
+                            context.aviso(if (guardada) "Ruta quitada de guardadas" else "Ruta guardada")
+                        },
+                        modifier = Modifier.align(Alignment.TopEnd).padding(8.dp).clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.6f)),
+                    ) {
+                        Icon(if (guardada) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, if (guardada) "Quitar de guardadas" else "Guardar ruta", tint = GColors.Primary500)
+                    }
                 }
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(ruta.nombre, style = GType.titleMd, color = GColors.TextPrimary)
+                    Text(ruta.descripcion, style = GType.bodySm, color = GColors.TextSecondary)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Filled.Straighten, null, tint = GColors.TextSecondary, modifier = Modifier.size(16.dp))
-                        Text(" ${ruta.distanciaKm} km   ", style = GType.bodyMd, color = GColors.TextSecondary)
+                        Text(" ${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}   ", style = GType.bodyMd, color = GColors.TextSecondary)
                         Icon(Icons.AutoMirrored.Filled.TrendingUp, null, tint = GColors.TextSecondary, modifier = Modifier.size(16.dp))
                         Text(" ${ruta.elevacionM}m", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
                         EtiquetaDificultad(ruta.dificultad)
@@ -112,6 +159,7 @@ fun EtiquetaDificultad(d: Dificultad) {
 fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
     var consulta by rememberSaveable { mutableStateOf("") }
     var seleccion by rememberSaveable { mutableStateOf("primary") }
+    val sugeridas = MockData.rutasSugeridas.filter { consulta.isBlank() || it.nombre.contains(consulta.trim(), ignoreCase = true) }
     Box(Modifier.fillMaxSize().background(Color(0xFF090F1A))) {
         MapaPlaceholder(rutaPrincipal = seleccion == "primary")
         IconButton(onClick = onAtras, modifier = Modifier.statusBarsPadding().padding(12.dp).clip(CircleShape).background(GColors.BgSecondary)) {
@@ -124,7 +172,8 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
         ) {
             Box(Modifier.align(Alignment.CenterHorizontally).width(40.dp).height(4.dp).clip(CircleShape).background(GColors.BorderSubtle))
             CampoTexto("Destino", consulta, { consulta = it }, "¿A dónde quieres correr?", trailing = { Icon(Icons.Filled.Search, null, tint = GColors.TextSecondary) })
-            MockData.rutasSugeridas.forEach { r ->
+            if (sugeridas.isEmpty()) Text("Sin rutas para \"$consulta\". Prueba con Jipiro o Universitaria.", style = GType.bodyMd, color = GColors.TextSecondary)
+            sugeridas.forEach { r ->
                 val activa = seleccion == r.id
                 val color = if (r.principal) GColors.Primary else GColors.Secondary500
                 Column(
@@ -146,14 +195,29 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
                     }
                 }
             }
-            BotonPrimario("Comenzar navegación", onNavegar, icono = Icons.Filled.Navigation)
+            BotonPrimario("Comenzar navegación", onNavegar, icono = Icons.Filled.Navigation, enabled = sugeridas.any { it.id == seleccion })
         }
     }
 }
 
 @Composable
-fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: () -> Unit) {
+fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: (conCarrera: Boolean) -> Unit) {
+    val context = LocalContext.current
+    val tracker = contenedor().tracker
+    val estado by tracker.estado.collectAsState()
+    val ajustes by ajustesState()
+    val m = ajustes.unidadesMetricas
     var carrera by rememberSaveable { mutableStateOf(false) }
+    // Al entrar a la navegacion se empieza a grabar la carrera con GPS real si hay permiso.
+    LaunchedEffect(Unit) {
+        if (!estado.activa && LocationService.tienePermiso(context)) empezarCarrera(context, tracker)
+    }
+    MantenerPantallaEncendida()
+    RelojCarrera(tracker, estado)
+    // Mientras no haya Google Maps, las indicaciones de giro siguen la ruta de ejemplo segun la distancia recorrida.
+    val indicaciones = listOf("Gira a la derecha en Av. Universitaria", "Continúa recto por Av. Orillas del Zamora", "Gira a la izquierda hacia Parque Jipiro", "Llegaste a tu destino")
+    val tramo = (estado.distanciaKm / 0.5).toInt().coerceAtMost(indicaciones.lastIndex)
+    val faltanM = ((tramo + 1) * 500 - estado.distanciaKm * 1000).toInt().coerceAtLeast(0)
     Box(Modifier.fillMaxSize().background(Color(0xFF090F1A))) {
         MapaPlaceholder(rutaPrincipal = true)
         Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, GColors.BgPrimary.copy(alpha = 0.6f)))))
@@ -167,10 +231,10 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: () -> Unit) {
                     Spacer(Modifier.width(12.dp))
                     Column {
                         Text("Siguiente giro en", style = GType.labelMd, color = GColors.TextPrimary.copy(alpha = 0.8f))
-                        Text("200 metros", style = GType.headlineSm, color = GColors.TextPrimary)
+                        Text(if (tramo == indicaciones.lastIndex) "Destino" else "$faltanM metros", style = GType.headlineSm, color = GColors.TextPrimary)
                     }
                 }
-                Text("Gira a la derecha en Av. Universitaria", style = GType.bodyMd, color = GColors.TextPrimary)
+                Text(indicaciones[tramo], style = GType.bodyMd, color = GColors.TextPrimary)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Pastilla("Trote", !carrera, { carrera = false })
@@ -183,19 +247,22 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                Metrica("2.3", "km", grande = true, color = GColors.Primary500)
-                Metrica("12:15", "tiempo", grande = true)
-                Metrica("5:18", "/km", grande = true, color = GColors.Secondary500)
+                Metrica(Unidades.texto(estado.distanciaKm, m), Unidades.etiquetaDistancia(m), grande = true, color = GColors.Primary500)
+                Metrica(formatearMs(estado.segundos), "tiempo", grande = true)
+                Metrica(formatearRitmo(Unidades.ritmo(estado.ritmoActualSegKm ?: estado.ritmoPromedioSegKm, m)), Unidades.etiquetaRitmo(m), grande = true, color = GColors.Secondary500)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Button(
                     onClick = onCronometro, modifier = Modifier.weight(1f).height(52.dp), shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = GColors.Primary, contentColor = GColors.TextPrimary),
+                    colors = ButtonDefaults.buttonColors(containerColor = GColors.Primary, contentColor = GColors.SobreColor),
                 ) {
                     Icon(Icons.Filled.Timer, null)
                     Text("  Ver cronómetro", style = GType.labelLg)
                 }
-                IconButton(onClick = onCerrar, modifier = Modifier.size(52.dp).clip(CircleShape).background(GColors.Danger)) {
+                IconButton(onClick = {
+                    if (estado.segundos > 0) terminarCarrera(context, tracker) else descartarCarrera(context, tracker)
+                    onCerrar(estado.segundos > 0)
+                }, modifier = Modifier.size(52.dp).clip(CircleShape).background(GColors.Danger)) {
                     Icon(Icons.Filled.Close, "Terminar navegación", tint = GColors.TextPrimary)
                 }
             }

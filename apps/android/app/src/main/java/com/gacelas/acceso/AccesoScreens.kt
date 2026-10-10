@@ -37,6 +37,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import com.gacelas.data.auth.ResultadoAuth
+import com.gacelas.ui.aviso
+import com.gacelas.ui.contenedor
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -143,16 +153,35 @@ private fun EncabezadoFormulario(titulo: String, subtitulo: String) {
 }
 
 @Composable
+private fun MensajeError(texto: String?) {
+    if (texto != null) Text(texto, style = GType.bodyMd, color = GColors.Danger, modifier = Modifier.testTag("error-acceso"))
+}
+
+@Composable
 fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: () -> Unit, onRegistro: () -> Unit) {
+    val auth = contenedor().auth
+    val scope = rememberCoroutineScope()
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
+    var error by rememberSaveable { mutableStateOf<String?>(null) }
+    var cargando by remember { mutableStateOf(false) }
     PantallaAcceso(onAtras) {
         EncabezadoFormulario("Bienvenido de vuelta", "Inicia sesión para continuar con tus carreras")
-        CampoTexto("Correo electrónico", email, { email = it }, "tu@email.com", tipo = KeyboardType.Email)
-        CampoTexto("Contraseña", password, { password = it }, "••••••••", password = true)
+        CampoTexto("Correo electrónico", email, { email = it; error = null }, "tu@email.com", tipo = KeyboardType.Email)
+        CampoTexto("Contraseña", password, { password = it; error = null }, "••••••••", password = true)
+        MensajeError(error)
         Text("¿Olvidaste tu contraseña?", style = GType.labelLg, color = GColors.Primary500,
             modifier = Modifier.align(Alignment.End).clickable(onClick = onRecuperar))
-        BotonPrimario("Iniciar sesión", onEntrar)
+        BotonPrimario(if (cargando) "Ingresando..." else "Iniciar sesión", {
+            cargando = true
+            scope.launch {
+                when (val r = auth.iniciarSesion(email, password)) {
+                    is ResultadoAuth.Ok -> onEntrar()
+                    is ResultadoAuth.Error -> error = r.mensaje
+                }
+                cargando = false
+            }
+        }, enabled = !cargando)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             Text("¿No tienes cuenta? ", style = GType.bodyMd, color = GColors.TextSecondary)
             Text("Crear cuenta", style = GType.labelLg, color = GColors.Primary500, modifier = Modifier.clickable(onClick = onRegistro))
@@ -162,29 +191,58 @@ fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: (
 
 @Composable
 fun RegistroScreen(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: () -> Unit) {
+    val auth = contenedor().auth
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     var nombre by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
+    var error by rememberSaveable { mutableStateOf<String?>(null) }
+    var cargando by remember { mutableStateOf(false) }
+    var verTerminos by remember { mutableStateOf(false) }
     PantallaAcceso(onAtras) {
         EncabezadoFormulario("Únete a la manada", "Crea tu cuenta y empieza a correr con la comunidad")
-        CampoTexto("Nombre completo", nombre, { nombre = it }, "Tu nombre")
-        CampoTexto("Correo electrónico", email, { email = it }, "tu@email.com", tipo = KeyboardType.Email)
-        CampoTexto("Contraseña", password, { password = it }, "Mínimo 8 caracteres", password = true,
+        CampoTexto("Nombre completo", nombre, { nombre = it; error = null }, "Tu nombre")
+        CampoTexto("Correo electrónico", email, { email = it; error = null }, "tu@email.com", tipo = KeyboardType.Email)
+        CampoTexto("Contraseña", password, { password = it; error = null }, "Mínimo 8 caracteres", password = true,
             ayuda = "Usa mínimo 8 caracteres con letras y números")
-        BotonPrimario("Crear cuenta", onCrear)
+        MensajeError(error)
+        BotonPrimario(if (cargando) "Creando cuenta..." else "Crear cuenta", {
+            cargando = true
+            scope.launch {
+                when (val r = auth.registrar(nombre, email, password)) {
+                    is ResultadoAuth.Ok -> { context.aviso("Cuenta creada"); onCrear() }
+                    is ResultadoAuth.Error -> error = r.mensaje
+                }
+                cargando = false
+            }
+        }, enabled = !cargando)
         Text("Al crear una cuenta, aceptas nuestros Términos de Servicio y Política de Privacidad",
-            style = GType.bodySm, color = GColors.TextSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            style = GType.bodySm, color = GColors.Primary500, textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().clickable { verTerminos = true })
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             Text("¿Ya tienes cuenta? ", style = GType.bodyMd, color = GColors.TextSecondary)
             Text("Iniciar sesión", style = GType.labelLg, color = GColors.Primary500, modifier = Modifier.clickable(onClick = onIniciarSesion))
         }
     }
+    if (verTerminos) {
+        AlertDialog(
+            onDismissRequest = { verTerminos = false },
+            confirmButton = { TextButton(onClick = { verTerminos = false }) { Text("Entendido") } },
+            title = { Text("Términos y privacidad") },
+            text = { Text("Tus datos se guardan solo en este dispositivo mientras la app no tenga servidor. Tú decides qué carreras son públicas y puedes ocultar la zona de tu casa en Ajustes.") },
+            containerColor = GColors.BgSecondary,
+        )
+    }
 }
 
 @Composable
 fun RecuperarContrasenaScreen(onAtras: () -> Unit, enviadoInicial: Boolean = false) {
+    val auth = contenedor().auth
+    val scope = rememberCoroutineScope()
     var email by rememberSaveable { mutableStateOf("") }
     var enviado by rememberSaveable { mutableStateOf(enviadoInicial) }
+    var error by rememberSaveable { mutableStateOf<String?>(null) }
     PantallaAcceso(onAtras) {
         if (enviado) {
             Column(Modifier.fillMaxWidth().padding(top = 48.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -200,9 +258,16 @@ fun RecuperarContrasenaScreen(onAtras: () -> Unit, enviadoInicial: Boolean = fal
                 Text("Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña",
                     style = GType.bodyLg, color = GColors.TextSecondary, textAlign = TextAlign.Center)
             }
-            CampoTexto("Correo electrónico", email, { email = it }, "tu@email.com", tipo = KeyboardType.Email)
-            BotonPrimario("Enviar enlace", { enviado = true })
+            CampoTexto("Correo electrónico", email, { email = it; error = null }, "tu@email.com", tipo = KeyboardType.Email)
+            MensajeError(error)
+            BotonPrimario("Enviar enlace", {
+                scope.launch {
+                    when (val r = auth.recuperarContrasena(email)) {
+                        is ResultadoAuth.Ok -> enviado = true
+                        is ResultadoAuth.Error -> error = r.mensaje
+                    }
+                }
+            })
         }
     }
 }
-

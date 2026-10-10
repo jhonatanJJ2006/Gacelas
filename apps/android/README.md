@@ -31,13 +31,14 @@ Las claves se exponen como `BuildConfig.GOOGLE_MAPS_API_KEY`, `BuildConfig.SUPAB
 
 ## Comandos
 
-| Comando                          | Qué hace                                              |
-| -------------------------------- | ----------------------------------------------------- |
-| `./gradlew assembleDebug`        | Genera `app/build/outputs/apk/debug/app-debug.apk`    |
-| `./gradlew installDebug`         | Instala la app en el dispositivo o emulador conectado |
-| `./gradlew testDebugUnitTest`    | Corre las pruebas unitarias (JVM y Robolectric)       |
-| `./gradlew lintDebug`            | Corre Android Lint                                    |
-| `./gradlew recordRoborazziDebug` | Genera capturas PNG de las 23 pantallas               |
+| Comando                                                                 | Qué hace                                              |
+| ----------------------------------------------------------------------- | ----------------------------------------------------- |
+| `./gradlew assembleDebug`                                               | Genera `app/build/outputs/apk/debug/app-debug.apk`    |
+| `./gradlew installDebug`                                                | Instala la app en el dispositivo o emulador conectado |
+| `./gradlew testDebugUnitTest`                                           | Corre las pruebas unitarias (JVM y Robolectric)       |
+| `./gradlew lintDebug`                                                   | Corre Android Lint                                    |
+| `./gradlew assembleDebug -Pgacelas.abi=arm64-v8a -Pgacelas.minify=true` | APK debug solo arm64 con R8 (unos 18 MB)              |
+| `./gradlew recordRoborazziDebug`                                        | Genera capturas PNG de las 23 pantallas               |
 
 Para guardar las capturas en otra carpeta:
 
@@ -109,6 +110,18 @@ Las rutas son las mismas de la web (`apps/web/src/App.tsx`).
 - Si el dispositivo no tiene OpenGL ES 3.0, si la app corre en un preview o en Robolectric, o si el GLB no carga, se muestra `Runner3DFallback`, una imagen de reemplazo con el ícono del corredor. Así la pantalla nunca queda vacía.
 - El GLB no se comprime dentro del APK (`androidResources.noCompress += "glb"`).
 
+## Funcionalidades
+
+- Acceso: registro, inicio de sesión y recuperación con validación (correo, contraseña de 8 caracteres con letras y números). Es una autenticación local detrás de `AuthRepository` (`data/auth`): las cuentas se guardan en DataStore con la contraseña en SHA-256 y la sesión persiste al cerrar la app. Sin sesión, cualquier ruta protegida vuelve a Bienvenida.
+- GPS real: `PermisosUbicacionScreen` pide ubicación y notificaciones en tiempo de ejecución. Al empezar una carrera arranca `LocationService`, un servicio en primer plano con notificación que recibe puntos de `FusedLocationProviderClient` y los pasa a `RunTracker`.
+- `RunTracker` (`tracking/`) calcula distancia con Haversine, tiempo sin contar pausas, ritmo actual (ventana de 30 s), ritmo promedio, desnivel y parciales por kilómetro. Descarta puntos con precisión peor que 35 m, saltos menores a 2 m y velocidades mayores a 12 m/s.
+- Las carreras se guardan en DataStore (`data/carreras`): resumen post-carrera con título, nota y visibilidad, historial en Perfil, semana atlética y racha en Inicio.
+- Cronómetro: Splits con los parciales reales, Intervalos (trabajo, descanso y rondas configurables, con vibración y sonido) y Metrónomo (BPM con tick audible). La configuración se guarda.
+- Rutas: pestañas Explorar, Mis rutas y Guardadas, búsqueda, y guardar o quitar rutas (persistente).
+- Comunidad: feed con tus carreras públicas, likes, comentarios, compartir y ocultar; eventos con pestañas, inscripción y creación de eventos.
+- Ajustes: modo oscuro o claro, unidades métricas o imperiales, visibilidad del perfil, ubicación precisa, protección de hogar y cada tipo de notificación. Todo persiste en DataStore (`data/ajustes`).
+- Perfil: editar nombre, usuario, bio, edad, género y foto (selector de fotos del sistema). El avatar 3D guarda su configuración.
+
 ## Mapas
 
 Las pantallas de Rutas usan `MapaPlaceholder`, un mapa estático dibujado con Canvas que copia la maqueta SVG de la web. Queda pendiente reemplazarlo por Maps Compose con `GOOGLE_MAPS_API_KEY` y el estilo oscuro de `docs/DESIGN.md` (ver los TODO en el código).
@@ -116,8 +129,9 @@ Las pantallas de Rutas usan `MapaPlaceholder`, un mapa estático dibujado con Ca
 ## Pruebas
 
 - `DestinosTest`: hay 23 rutas únicas y coinciden con la web.
-- `NavGraphTest` (Robolectric): el grafo de navegación contiene todas las rutas y "Saltar" lleva a Inicio.
-- `CarreraViewModelTest`: tiempo, distancia, ritmo, pausa y formatos.
+- `NavGraphTest` (Robolectric): el grafo contiene todas las rutas, "Saltar" lleva a Inicio de sesión, las rutas protegidas exigen sesión y Ajustes abre el diálogo de cerrar sesión.
+- `LogicaTest.kt`: `GeoTest` (Haversine, formatos, unidades), `RunTrackerTest` (distancia, filtros de GPS, pausa, parciales, desnivel, guardado), `PlanIntervalosTest`, `ValidacionAuthTest`, `FiltrosTest` (rutas y eventos) y `EstadisticasTest` (semana, racha y mes).
+- `RepositoriosTest`: auth, carreras, rutas, ajustes y eventos sobre un DataStore real en una carpeta temporal.
 - `MockDataTest`: datos de prueba y filtros de notificaciones.
 - `ScreenshotTest` (Roborazzi): una captura por pantalla; solo graba con `recordRoborazziDebug`.
 
@@ -125,7 +139,6 @@ El workflow de Android está en `apps/android/ci/android.yml`. Hay que moverlo a
 
 ## Pendiente
 
-- Conectar Supabase (autenticación, actividades, rutas, eventos) y reemplazar `data/mock`.
-- Google Maps real en Rutas, Buscador y Navegación.
-- GPS real: implementar `LocationService` y pedir el permiso de ubicación en tiempo de ejecución.
+- Conectar Supabase: basta con nuevas implementaciones de `AuthRepository`, `CarrerasRepository`, `RutasRepository`, `EventosRepository` y `AjustesRepository` en `Contenedor` (`GacelasApp.kt`).
+- Google Maps real en Rutas, Buscador y Navegación (el trazado GPS se dibuja hoy con Canvas).
 - Probar el 3D en dispositivos reales y ajustar la cámara de cada pantalla.

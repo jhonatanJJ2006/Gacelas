@@ -11,9 +11,10 @@ import org.junit.Test
 class MockDataTest {
     @Test
     fun datosIgualesALaWeb() {
-        assertEquals(3, MockData.rutas.size)
-        assertEquals(listOf("Parque Jipiro", "Río Zamora", "Cerro Villonaco"), MockData.rutas.map { it.nombre })
-        assertEquals(3, MockData.eventos.size)
+        assertEquals(4, MockData.rutas.size)
+        assertEquals(listOf("Parque Jipiro", "Río Zamora", "Cerro Villonaco", "Campus UTPL - San Cayetano"), MockData.rutas.map { it.nombre })
+        assertEquals(4, MockData.eventos.size)
+        assertEquals(1, MockData.eventos.count { it.pasado })
         assertEquals(5, MockData.notificaciones.size)
         assertEquals(5, MockData.splits.size)
         assertEquals(1, MockData.splits.count { it.actual })

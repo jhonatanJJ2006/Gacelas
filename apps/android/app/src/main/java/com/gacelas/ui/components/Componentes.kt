@@ -121,7 +121,7 @@ fun BotonPrimario(
         enabled = enabled,
         modifier = modifier.fillMaxWidth().height(56.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = color, contentColor = GColors.TextPrimary),
+        colors = ButtonDefaults.buttonColors(containerColor = color, contentColor = GColors.SobreColor),
     ) {
         Text(texto, style = GType.labelLg.copy(fontSize = GType.bodyLg.fontSize))
         if (icono != null) {
@@ -216,7 +216,7 @@ fun Interruptor(checked: Boolean, onChange: (Boolean) -> Unit) {
         onCheckedChange = onChange,
         colors = SwitchDefaults.colors(
             checkedTrackColor = GColors.Primary,
-            checkedThumbColor = GColors.TextPrimary,
+            checkedThumbColor = GColors.SobreColor,
             uncheckedTrackColor = GColors.SurfaceHigh,
             uncheckedBorderColor = GColors.BorderSubtle,
         ),

@@ -41,7 +41,11 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.rememberCoroutineScope
 import com.gacelas.data.mock.MockData
+import com.gacelas.ui.ajustesState
+import com.gacelas.ui.contenedor
+import kotlinx.coroutines.launch
 import com.gacelas.data.mock.Notificacion
 import com.gacelas.data.mock.TipoNotificacion
 import com.gacelas.ui.components.EncabezadoAtras
@@ -57,6 +61,19 @@ fun iconoNotificacion(tipo: TipoNotificacion): Pair<ImageVector, Color> = when (
     TipoNotificacion.EnVivo -> Icons.Filled.Sensors to GColors.Secondary500
 }
 
+/** Notificaciones visibles segun los ajustes de notificaciones y las ya leidas. */
+fun notificacionesVisibles(a: com.gacelas.data.ajustes.Ajustes): List<Notificacion> = MockData.notificaciones
+    .filter {
+        when (it.tipo) {
+            TipoNotificacion.Like -> a.notifLikes
+            TipoNotificacion.Comentario -> a.notifComentarios
+            TipoNotificacion.Seguidor -> a.notifSeguidores
+            TipoNotificacion.Evento -> a.notifEventos
+            TipoNotificacion.EnVivo -> a.notifEnVivo
+        }
+    }
+    .map { if (it.id in a.notificacionesLeidas) it.copy(leida = true) else it }
+
 /** Filtra notificaciones segun la pestana activa. */
 fun filtrarNotificaciones(lista: List<Notificacion>, filtro: String): List<Notificacion> = when (filtro) {
     "Sin leer" -> lista.filter { !it.leida }
@@ -65,22 +82,32 @@ fun filtrarNotificaciones(lista: List<Notificacion>, filtro: String): List<Notif
 }
 
 @Composable
-fun NotificacionesScreen(onAtras: () -> Unit) {
+fun NotificacionesScreen(onAtras: () -> Unit, onAbrir: (Notificacion) -> Unit = {}) {
+    val c = contenedor()
+    val scope = rememberCoroutineScope()
+    val ajustes by ajustesState()
     var filtro by rememberSaveable { mutableStateOf("Todas") }
-    var todasLeidas by rememberSaveable { mutableStateOf(false) }
+    val visibles = notificacionesVisibles(ajustes)
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
         EncabezadoAtras("Notificaciones", onAtras) {
-            Text("Marcar todas leídas", style = GType.labelMd, color = GColors.Primary500, modifier = Modifier.clickable { todasLeidas = true }.padding(12.dp))
+            Text("Marcar todas leídas", style = GType.labelMd, color = GColors.Primary500, modifier = Modifier.clickable {
+                scope.launch { c.ajustes.actualizar { a -> a.copy(notificacionesLeidas = a.notificacionesLeidas + MockData.notificaciones.map { it.id }) } }
+            }.padding(12.dp))
         }
         Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("Todas", "Sin leer", "En vivo").forEach { Pastilla(it, it == filtro, { filtro = it }) }
         }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding()) {
-            filtrarNotificaciones(MockData.notificaciones.map { if (todasLeidas) it.copy(leida = true) else it }, filtro).forEach { n ->
+            val lista = filtrarNotificaciones(visibles, filtro)
+            if (lista.isEmpty()) Text("No hay notificaciones.", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.padding(16.dp))
+            lista.forEach { n ->
                 val (icono, color) = iconoNotificacion(n.tipo)
                 Row(
                     Modifier.fillMaxWidth().background(if (!n.leida) GColors.SurfaceContainer.copy(alpha = 0.5f) else Color.Transparent)
-                        .clickable {}.padding(horizontal = 16.dp, vertical = 14.dp),
+                        .clickable {
+                            scope.launch { c.ajustes.actualizar { a -> a.copy(notificacionesLeidas = a.notificacionesLeidas + n.id) } }
+                            onAbrir(n)
+                        }.padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.Top,
                 ) {
                     Box(Modifier.size(44.dp).clip(CircleShape).background(color.copy(alpha = 0.15f)), contentAlignment = Alignment.Center) {

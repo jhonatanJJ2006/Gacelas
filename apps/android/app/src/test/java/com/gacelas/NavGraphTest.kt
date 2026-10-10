@@ -3,6 +3,7 @@ package com.gacelas
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.gacelas.navigation.Destinos
@@ -38,14 +39,37 @@ class NavGraphTest {
     }
 
     @Test
-    fun saltarLlevaAInicio() {
+    fun saltarLlevaAInicioDeSesion() {
         lateinit var nav: NavHostController
         compose.setContent {
             nav = rememberNavController()
             GacelasTheme { GacelasNavHost(nav) }
         }
         compose.onNodeWithText("Saltar").performClick()
-        compose.runOnIdle { assertEquals(Destinos.INICIO, nav.currentDestination?.route) }
+        compose.runOnIdle { assertEquals(Destinos.INICIO_SESION, nav.currentDestination?.route) }
+    }
+
+    @Test
+    fun sinSesionLasRutasProtegidasVuelvenABienvenida() {
+        lateinit var nav: NavHostController
+        compose.setContent {
+            nav = rememberNavController()
+            GacelasTheme { GacelasNavHost(nav, inicio = Destinos.INICIO, sesionActiva = false) }
+        }
+        compose.runOnIdle { assertEquals(Destinos.BIENVENIDA, nav.currentDestination?.route) }
+    }
+
+    @Test
+    fun conSesionSePuedeAbrirAjustes() {
+        lateinit var nav: NavHostController
+        compose.setContent {
+            nav = rememberNavController()
+            GacelasTheme { GacelasNavHost(nav, inicio = Destinos.INICIO, sesionActiva = true) }
+        }
+        compose.runOnIdle { nav.navigate(Destinos.AJUSTES) }
+        compose.onNodeWithText("Unidades métricas").assertExists()
+        compose.onNodeWithText("Cerrar sesión").performScrollTo().performClick()
+        compose.onNodeWithText("¿Cerrar sesión?").assertExists()
     }
 }
 

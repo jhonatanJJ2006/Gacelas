@@ -36,7 +36,10 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.getValue
 import com.gacelas.navigation.Destinos
+import com.gacelas.notificaciones.notificacionesVisibles
+import com.gacelas.ui.ajustesState
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
@@ -51,12 +54,14 @@ val itemsNav = listOf(
 )
 
 @Composable
-fun BarraSuperior(onNotificaciones: () -> Unit) {
+fun BarraSuperior(onNotificaciones: () -> Unit, onPerfil: () -> Unit = {}) {
+    val ajustes by ajustesState()
+    val sinLeer = notificacionesVisibles(ajustes).count { !it.leida }
     Row(
         Modifier.fillMaxWidth().background(GColors.BgSecondary).statusBarsPadding().height(64.dp).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(32.dp).clip(CircleShape).background(GColors.PrimaryLight), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(32.dp).clip(CircleShape).background(GColors.PrimaryLight).clickable(onClick = onPerfil), contentAlignment = Alignment.Center) {
             Text("GL", style = GType.labelMd, color = GColors.OnPrimary)
         }
         Spacer(Modifier.width(8.dp))
@@ -65,7 +70,7 @@ fun BarraSuperior(onNotificaciones: () -> Unit) {
             IconButton(onClick = onNotificaciones) {
                 Icon(Icons.Filled.Notifications, contentDescription = "Notificaciones", tint = GColors.TextSecondary)
             }
-            Box(Modifier.align(Alignment.TopEnd).offset((-12).dp, 12.dp).size(8.dp).clip(CircleShape).background(GColors.PrimaryContainer))
+            if (sinLeer > 0) Box(Modifier.align(Alignment.TopEnd).offset((-12).dp, 12.dp).size(8.dp).clip(CircleShape).background(GColors.PrimaryContainer))
         }
     }
 }
@@ -106,7 +111,7 @@ fun BarraInferior(rutaActual: String, onNavegar: (String) -> Unit) {
 fun ScaffoldPrincipal(rutaActual: String, onNavegar: (String) -> Unit, content: @Composable () -> Unit) {
     Scaffold(
         containerColor = GColors.BgPrimary,
-        topBar = { BarraSuperior { onNavegar(Destinos.NOTIFICACIONES) } },
+        topBar = { BarraSuperior(onNotificaciones = { onNavegar(Destinos.NOTIFICACIONES) }, onPerfil = { onNavegar(Destinos.PERFIL) }) },
         bottomBar = { BarraInferior(rutaActual, onNavegar) },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) { content() }

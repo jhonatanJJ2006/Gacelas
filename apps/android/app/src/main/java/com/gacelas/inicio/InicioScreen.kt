@@ -33,7 +33,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import com.gacelas.data.carreras.Estadisticas
 import com.gacelas.data.mock.MockData
+import com.gacelas.tracking.Unidades
+import com.gacelas.tracking.formatearRitmo
+import com.gacelas.ui.ajustesState
+import com.gacelas.ui.carrerasState
+import com.gacelas.ui.sesionState
 import com.gacelas.ui.components.AvatarCirculo
 import com.gacelas.ui.components.IconoCirculo
 import com.gacelas.ui.components.Metrica
@@ -47,8 +55,18 @@ import com.gacelas.ui.three.Runner3D
 import io.github.sceneview.math.Position
 
 @Composable
-fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit) {
-    val evento = MockData.eventos.first()
+fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String) -> Unit = { onEventos() }) {
+    val evento = MockData.eventos.first { !it.pasado }
+    val perfil by sesionState()
+    val carreras by carrerasState()
+    val ajustes by ajustesState()
+    val m = ajustes.unidadesMetricas
+    val ahora = remember { System.currentTimeMillis() }
+    val semana = remember(carreras) { Estadisticas.semana(carreras, ahora) }
+    val hoy = remember { Estadisticas.diaSemana(ahora) }
+    val hora = remember { java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY) }
+    val saludo = when (hora) { in 5..11 -> "Buenos días"; in 12..18 -> "Buenas tardes"; else -> "Buenas noches" }
+    val nombre = perfil?.nombre?.substringBefore(' ')?.ifBlank { null } ?: "Corredor"
     Pantalla {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
             Column(Modifier.weight(1f)) {
@@ -56,7 +74,7 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit) {
                     Icon(Icons.Filled.LocationOn, null, tint = GColors.Primary500, modifier = Modifier.size(14.dp))
                     Text(" Loja, Ecuador", style = GType.labelMd, color = GColors.TextSecondary)
                 }
-                Text("Buenos días, Corredor", style = GType.headlineMd, color = GColors.TextPrimary)
+                Text("$saludo, $nombre", style = GType.headlineMd, color = GColors.TextPrimary)
             }
             Row(Modifier.clip(CircleShape).background(GColors.SurfaceContainer).padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.WbTwilight, null, tint = GColors.Primary400, modifier = Modifier.size(16.dp))
@@ -72,13 +90,13 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit) {
                 }
                 Row(Modifier.align(Alignment.TopEnd).padding(12.dp).clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.7f)).padding(horizontal = 10.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Filled.LocalFireDepartment, null, tint = GColors.Primary500, modifier = Modifier.size(16.dp))
-                    Text(" Racha 5d", style = GType.labelMd, color = GColors.TextPrimary)
+                    Text(" Racha ${semana.racha}d", style = GType.labelMd, color = GColors.TextPrimary)
                 }
             }
             Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceAround) {
-                Metrica("8", "Días", color = GColors.TextPrimary)
-                Metrica("42", "km", color = GColors.Primary500)
-                Metrica("5:20", "/km", color = GColors.Secondary500)
+                Metrica("${semana.diasCorridos.size}", "Días", color = GColors.TextPrimary)
+                Metrica(Unidades.texto(semana.km, m, 1), Unidades.etiquetaDistancia(m), color = GColors.Primary500)
+                Metrica(formatearRitmo(Unidades.ritmo(semana.ritmoSegKm, m)), Unidades.etiquetaRitmo(m), color = GColors.Secondary500)
             }
         }
         TituloSeccion("Acción rápida")
@@ -96,15 +114,16 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit) {
         }
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("Semana atlética", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-            Text("3 de 5 días", style = GType.labelMd, color = GColors.Secondary500)
+            Text("${semana.diasCorridos.size} de 5 días", style = GType.labelMd, color = GColors.Secondary500)
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf("L", "M", "X", "J", "V", "S", "D").forEachIndexed { i, dia ->
-                val hecho = i < 3
+                val hecho = i in semana.diasCorridos
+                val esHoy = i == hoy
                 Column(
                     Modifier.weight(1f).aspectRatio(1f).clip(RoundedCornerShape(12.dp))
                         .background(if (hecho) GColors.Secondary.copy(alpha = 0.2f) else GColors.SurfaceContainer)
-                        .border(if (hecho) 2.dp else 1.dp, if (hecho) GColors.Secondary else GColors.BorderSubtle, RoundedCornerShape(12.dp)),
+                        .border(if (hecho || esHoy) 2.dp else 1.dp, if (hecho) GColors.Secondary else if (esHoy) GColors.Primary else GColors.BorderSubtle, RoundedCornerShape(12.dp)),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
@@ -114,7 +133,7 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit) {
             }
         }
         TituloSeccion("Próximo encuentro", accion = "Ver todos", onAccion = onEventos)
-        Tarjeta(onClick = onEventos) {
+        Tarjeta(onClick = { onEvento(evento.id) }) {
             Row(verticalAlignment = Alignment.Top) {
                 IconoCirculo(Icons.Filled.Event, GColors.Primary.copy(alpha = 0.2f), GColors.Primary500, 48.dp)
                 Spacer(Modifier.width(12.dp))

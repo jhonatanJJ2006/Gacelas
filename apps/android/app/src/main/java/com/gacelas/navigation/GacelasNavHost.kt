@@ -2,6 +2,8 @@ package com.gacelas.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -22,6 +24,7 @@ import com.gacelas.correr.CarreraEnCursoScreen
 import com.gacelas.correr.CorrerScreen
 import com.gacelas.correr.CronometroScreen
 import com.gacelas.correr.ResumenPostCarreraScreen
+import com.gacelas.data.mock.TipoNotificacion
 import com.gacelas.inicio.InicioScreen
 import com.gacelas.notificaciones.NotificacionesScreen
 import com.gacelas.perfil.Avatar3DScreen
@@ -54,7 +57,18 @@ fun GacelasNavHost(
     nav: NavHostController = rememberNavController(),
     inicio: String = Destinos.BIENVENIDA,
     rutaInicial: String? = null,
+    sesionActiva: Boolean? = null,
 ) {
+    // Rutas protegidas: sin sesion, cualquier pantalla fuera del acceso vuelve a Bienvenida.
+    if (sesionActiva == false) {
+        val entrada by nav.currentBackStackEntryAsState()
+        val ruta = entrada?.destination?.route
+        LaunchedEffect(ruta) {
+            if (ruta != null && ruta !in Destinos.acceso) {
+                nav.navigate(Destinos.BIENVENIDA) { popUpTo(0) { inclusive = true } }
+            }
+        }
+    }
     if (rutaInicial != null && rutaInicial != inicio) {
         LaunchedEffect(rutaInicial) { nav.navigate(rutaInicial) }
     }
@@ -68,7 +82,7 @@ fun GacelasNavHost(
 private fun NavGraphBuilder.accesoGraph(nav: NavHostController) {
     composable(Destinos.BIENVENIDA) {
         BienvenidaScreen(
-            onSaltar = nav::entrarApp,
+            onSaltar = { nav.navigate(Destinos.INICIO_SESION) },
             onCrearCuenta = { nav.navigate(Destinos.REGISTRO) },
             onIniciarSesion = { nav.navigate(Destinos.INICIO_SESION) },
         )
@@ -102,7 +116,7 @@ private fun NavGraphBuilder.conBarra(nav: NavHostController, ruta: String, conte
 
 private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
     conBarra(nav, Destinos.INICIO) {
-        InicioScreen(onCorrer = { nav.navigate(Destinos.CORRER) }, onEventos = { nav.navigate(Destinos.EVENTOS) })
+        InicioScreen(onCorrer = { nav.navigate(Destinos.CORRER) }, onEventos = { nav.navigate(Destinos.EVENTOS) }, onEvento = { nav.navigate(Destinos.detalleEvento(it)) })
     }
     conBarra(nav, Destinos.RUTAS) {
         ListaRutasScreen(onBuscar = { nav.navigate(Destinos.BUSCADOR_RUTAS) }, onRuta = { nav.navigate(Destinos.BUSCADOR_RUTAS) })
@@ -134,7 +148,7 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
     }
     composable(Destinos.BUSCADOR_RUTAS) { BuscadorRutasScreen(onAtras = { nav.popBackStack() }, onNavegar = { nav.navigate(Destinos.NAVEGACION) }) }
     composable(Destinos.NAVEGACION) {
-        NavegacionRutaScreen(onCronometro = { nav.navigate(Destinos.CRONOMETRO) }, onCerrar = { nav.irAPestana(Destinos.RUTAS) })
+        NavegacionRutaScreen(onCronometro = { nav.navigate(Destinos.CRONOMETRO) }, onCerrar = { conCarrera -> if (conCarrera) nav.navigate(Destinos.RESUMEN) else nav.irAPestana(Destinos.RUTAS) })
     }
     composable(Destinos.DETALLE_EVENTO) { entry ->
         DetalleEventoScreen(id = entry.arguments?.getString("id") ?: "1", onAtras = { nav.popBackStack() })
@@ -147,12 +161,18 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
             onEditarPerfil = { nav.navigate(Destinos.EDITAR_PERFIL) },
             onPrivacidad = { nav.navigate(Destinos.PRIVACIDAD) },
             onNotificaciones = { nav.navigate(Destinos.CONFIG_NOTIFICACIONES) },
-            onCerrarSesion = {
-                nav.navigate(Destinos.BIENVENIDA) { popUpTo(0) { inclusive = true } }
-            },
+            onCerrarSesion = { nav.navigate(Destinos.BIENVENIDA) { popUpTo(0) { inclusive = true } } },
         )
     }
     composable(Destinos.PRIVACIDAD) { PrivacidadUbicacionScreen(onAtras = { nav.popBackStack() }) }
     composable(Destinos.CONFIG_NOTIFICACIONES) { ConfiguracionNotificacionesScreen(onAtras = { nav.popBackStack() }) }
-    composable(Destinos.NOTIFICACIONES) { NotificacionesScreen(onAtras = { nav.popBackStack() }) }
+    composable(Destinos.NOTIFICACIONES) {
+        NotificacionesScreen(onAtras = { nav.popBackStack() }, onAbrir = { n ->
+            when (n.tipo) {
+                TipoNotificacion.Evento -> nav.navigate(Destinos.detalleEvento("1"))
+                TipoNotificacion.EnVivo, TipoNotificacion.Comentario, TipoNotificacion.Like -> nav.irAPestana(Destinos.COMUNIDAD)
+                TipoNotificacion.Seguidor -> nav.irAPestana(Destinos.PERFIL)
+            }
+        })
+    }
 }

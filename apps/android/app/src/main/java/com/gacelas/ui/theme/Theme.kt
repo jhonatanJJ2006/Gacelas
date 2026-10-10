@@ -2,9 +2,10 @@ package com.gacelas.ui.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
-private val GacelasDarkScheme = darkColorScheme(
+private fun gacelasScheme(claro: Boolean) = (if (claro) lightColorScheme() else darkColorScheme()).copy(
     primary = GColors.Primary,
     onPrimary = GColors.TextPrimary,
     primaryContainer = GColors.PrimaryContainer,
@@ -27,8 +28,8 @@ private val GacelasDarkScheme = darkColorScheme(
     error = GColors.Danger,
 )
 
-/** Tema de Gacelas: siempre oscuro, igual que la web. */
+/** Tema de Gacelas: oscuro por defecto (igual que la web) y claro si se desactiva el modo oscuro. */
 @Composable
 fun GacelasTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = GacelasDarkScheme, typography = Typography, content = content)
+    MaterialTheme(colorScheme = gacelasScheme(GColors.claro), typography = Typography, content = content)
 }

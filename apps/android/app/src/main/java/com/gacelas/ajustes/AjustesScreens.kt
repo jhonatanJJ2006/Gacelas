@@ -1,5 +1,7 @@
 package com.gacelas.ajustes
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,29 +34,39 @@ import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Straighten
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.gacelas.BuildConfig
+import com.gacelas.data.ajustes.Ajustes
+import com.gacelas.data.ajustes.Visibilidad
+import com.gacelas.ui.ajustesState
+import com.gacelas.ui.aviso
 import com.gacelas.ui.components.EncabezadoAtras
 import com.gacelas.ui.components.EtiquetaGrupo
 import com.gacelas.ui.components.FilaAjuste
 import com.gacelas.ui.components.FilaInterruptor
 import com.gacelas.ui.components.Pantalla
 import com.gacelas.ui.components.Tarjeta
+import com.gacelas.ui.contenedor
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @Composable
@@ -65,6 +77,14 @@ private fun PantallaConEncabezado(titulo: String, onAtras: () -> Unit, content: 
     }
 }
 
+/** Devuelve una funcion que guarda un cambio de ajustes en DataStore. */
+@Composable
+private fun guardarAjuste(): ((Ajustes) -> Ajustes) -> Unit {
+    val c = contenedor()
+    val scope = rememberCoroutineScope()
+    return { t -> scope.launch { c.ajustes.actualizar(t) } }
+}
+
 @Composable
 fun AjustesPreferenciasScreen(
     onAtras: () -> Unit,
@@ -73,8 +93,12 @@ fun AjustesPreferenciasScreen(
     onNotificaciones: () -> Unit,
     onCerrarSesion: () -> Unit,
 ) {
-    var oscuro by rememberSaveable { mutableStateOf(true) }
-    var metricas by rememberSaveable { mutableStateOf(true) }
+    val context = LocalContext.current
+    val c = contenedor()
+    val scope = rememberCoroutineScope()
+    val a by ajustesState()
+    val guardar = guardarAjuste()
+    var dialogo by remember { mutableStateOf<String?>(null) }
     PantallaConEncabezado("Ajustes", onAtras) {
         EtiquetaGrupo("Cuenta")
         Tarjeta(padding = 0.dp) { FilaAjuste(Icons.Filled.Person, "Editar perfil", onClick = onEditarPerfil) }
@@ -85,58 +109,98 @@ fun AjustesPreferenciasScreen(
         }
         EtiquetaGrupo("General")
         Tarjeta(padding = 0.dp) {
-            FilaInterruptor(Icons.Filled.DarkMode, "Modo oscuro", checked = oscuro, onChange = { oscuro = it })
-            FilaInterruptor(Icons.Filled.Straighten, "Unidades métricas", "Kilómetros y metros", checked = metricas, onChange = { metricas = it })
+            FilaInterruptor(Icons.Filled.DarkMode, "Modo oscuro", if (a.modoOscuro) "Activado" else "Tema claro activo", checked = a.modoOscuro, onChange = { v -> guardar { it.copy(modoOscuro = v) } })
+            FilaInterruptor(Icons.Filled.Straighten, "Unidades métricas", if (a.unidadesMetricas) "Kilómetros y metros" else "Millas", checked = a.unidadesMetricas, onChange = { v -> guardar { it.copy(unidadesMetricas = v) } })
         }
         EtiquetaGrupo("Información")
         Tarjeta(padding = 0.dp) {
-            FilaAjuste(Icons.Filled.Info, "Acerca de", "Versión 0.1.0", onClick = {})
-            FilaAjuste(Icons.AutoMirrored.Filled.Help, "Ayuda y soporte", onClick = {})
+            FilaAjuste(Icons.Filled.Info, "Acerca de", "Versión ${BuildConfig.VERSION_NAME}", onClick = { dialogo = "acerca" })
+            FilaAjuste(Icons.AutoMirrored.Filled.Help, "Ayuda y soporte", onClick = { dialogo = "ayuda" })
         }
         Tarjeta(padding = 0.dp, fondo = GColors.Danger.copy(alpha = 0.1f), borde = GColors.Danger.copy(alpha = 0.4f)) {
-            FilaAjuste(Icons.AutoMirrored.Filled.Logout, "Cerrar sesión", colorIcono = GColors.Danger, onClick = onCerrarSesion, trailing = {})
+            FilaAjuste(Icons.AutoMirrored.Filled.Logout, "Cerrar sesión", colorIcono = GColors.Danger, onClick = { dialogo = "salir" }, trailing = {})
         }
+    }
+    when (dialogo) {
+        "acerca" -> AlertDialog(
+            onDismissRequest = { dialogo = null },
+            confirmButton = { TextButton(onClick = { dialogo = null }) { Text("Cerrar") } },
+            title = { Text("Gacelas Loja") },
+            text = { Text("Versión ${BuildConfig.VERSION_NAME}. App del grupo de running Gacelas de Loja, Ecuador. Graba tus carreras con GPS, descubre rutas y entrena con la comunidad.") },
+            containerColor = GColors.BgSecondary,
+        )
+        "ayuda" -> AlertDialog(
+            onDismissRequest = { dialogo = null },
+            confirmButton = {
+                TextButton(onClick = {
+                    dialogo = null
+                    val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:soporte@gacelas.app")).putExtra(Intent.EXTRA_SUBJECT, "Ayuda con Gacelas")
+                    runCatching { context.startActivity(intent) }.onFailure { context.aviso("No hay app de correo instalada") }
+                }) { Text("Escribir a soporte") }
+            },
+            dismissButton = { TextButton(onClick = { dialogo = null }) { Text("Cerrar") } },
+            title = { Text("Ayuda y soporte") },
+            text = { Text("Para grabar una carrera toca el botón central Correr y da permiso de ubicación. Las carreras se guardan en tu teléfono y aparecen en Perfil e Inicio.") },
+            containerColor = GColors.BgSecondary,
+        )
+        "salir" -> AlertDialog(
+            onDismissRequest = { dialogo = null },
+            confirmButton = {
+                TextButton(onClick = {
+                    dialogo = null
+                    scope.launch {
+                        c.auth.cerrarSesion()
+                        onCerrarSesion()
+                    }
+                }) { Text("Cerrar sesión", color = GColors.Danger) }
+            },
+            dismissButton = { TextButton(onClick = { dialogo = null }) { Text("Cancelar") } },
+            title = { Text("¿Cerrar sesión?") },
+            text = { Text("Tus carreras siguen guardadas en este dispositivo.") },
+            containerColor = GColors.BgSecondary,
+        )
     }
 }
 
-private enum class Visibilidad(val titulo: String, val descripcion: String, val icono: ImageVector) {
-    Publico("Público", "Cualquiera puede ver tu perfil y actividades públicas", Icons.Filled.Public),
-    Seguidores("Solo seguidores", "Solo seguidores aceptados pueden ver tus actividades", Icons.Filled.Group),
-    Privado("Privado", "Solo tú puedes ver tus actividades", Icons.Filled.Lock),
+private fun Visibilidad.titulo() = when (this) { Visibilidad.Publico -> "Público"; Visibilidad.Seguidores -> "Solo seguidores"; Visibilidad.Privado -> "Privado" }
+private fun Visibilidad.descripcion() = when (this) {
+    Visibilidad.Publico -> "Cualquiera puede ver tu perfil y actividades públicas"
+    Visibilidad.Seguidores -> "Solo seguidores aceptados pueden ver tus actividades"
+    Visibilidad.Privado -> "Solo tú puedes ver tus actividades"
 }
+private fun Visibilidad.icono(): ImageVector = when (this) { Visibilidad.Publico -> Icons.Filled.Public; Visibilidad.Seguidores -> Icons.Filled.Group; Visibilidad.Privado -> Icons.Filled.Lock }
 
 @Composable
 fun PrivacidadUbicacionScreen(onAtras: () -> Unit) {
-    var visibilidad by rememberSaveable { mutableStateOf(Visibilidad.Seguidores) }
-    var precisa by rememberSaveable { mutableStateOf(true) }
-    var hogar by rememberSaveable { mutableStateOf(true) }
-    var radio by rememberSaveable { mutableFloatStateOf(300f) }
+    val a by ajustesState()
+    val guardar = guardarAjuste()
+    var radio by remember(a.radioHogarM) { mutableStateOf(a.radioHogarM.toFloat()) }
     PantallaConEncabezado("Privacidad y Ubicación", onAtras) {
         EtiquetaGrupo("Visibilidad del perfil")
         Visibilidad.entries.forEach { v ->
-            val activo = v == visibilidad
+            val activo = v == a.visibilidad
             Column(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
                     .background(if (activo) GColors.PrimaryContainer.copy(alpha = 0.2f) else GColors.SurfaceContainer)
                     .border(2.dp, if (activo) GColors.Primary else GColors.BorderSubtle, RoundedCornerShape(12.dp))
-                    .clickable { visibilidad = v }.padding(16.dp),
+                    .clickable { guardar { it.copy(visibilidad = v) } }.padding(16.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(v.icono, null, tint = GColors.Primary500)
-                    Text("  ${v.titulo}", style = GType.labelLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+                    Icon(v.icono(), null, tint = GColors.Primary500)
+                    Text("  ${v.titulo()}", style = GType.labelLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
                     Icon(if (activo) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked, null, tint = if (activo) GColors.Primary500 else GColors.TextSecondary)
                 }
-                Text(v.descripcion, style = GType.bodySm, color = GColors.TextSecondary, modifier = Modifier.padding(top = 4.dp))
+                Text(v.descripcion(), style = GType.bodySm, color = GColors.TextSecondary, modifier = Modifier.padding(top = 4.dp))
             }
         }
         EtiquetaGrupo("Ubicación GPS")
         Tarjeta(padding = 0.dp) {
-            FilaInterruptor(Icons.Filled.MyLocation, "Ubicación precisa", "Graba tu ubicación exacta durante carreras", precisa, { precisa = it })
+            FilaInterruptor(Icons.Filled.MyLocation, "Ubicación precisa", "Graba tu ubicación exacta durante carreras", a.ubicacionPrecisa, { v -> guardar { it.copy(ubicacionPrecisa = v) } })
         }
         EtiquetaGrupo("Protección de hogar")
         Tarjeta(padding = 0.dp) {
-            FilaInterruptor(Icons.Filled.Home, "Ocultar ubicación de casa", "Difumina los puntos de inicio/fin cerca de tu casa", hogar, { hogar = it })
-            if (hogar) {
+            FilaInterruptor(Icons.Filled.Home, "Ocultar ubicación de casa", "Difumina los puntos de inicio/fin cerca de tu casa", a.ocultarHogar, { v -> guardar { it.copy(ocultarHogar = v) } })
+            if (a.ocultarHogar) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     Row {
                         Text("Radio de protección", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
@@ -144,6 +208,7 @@ fun PrivacidadUbicacionScreen(onAtras: () -> Unit) {
                     }
                     Slider(
                         value = radio, onValueChange = { radio = (it / 50f).roundToInt() * 50f }, valueRange = 100f..500f, steps = 7,
+                        onValueChangeFinished = { guardar { it.copy(radioHogarM = radio.roundToInt()) } },
                         colors = SliderDefaults.colors(thumbColor = GColors.Primary, activeTrackColor = GColors.Primary, inactiveTrackColor = GColors.SurfaceHigh),
                     )
                     Row {
@@ -167,24 +232,20 @@ fun PrivacidadUbicacionScreen(onAtras: () -> Unit) {
 
 @Composable
 fun ConfiguracionNotificacionesScreen(onAtras: () -> Unit) {
-    var likes by rememberSaveable { mutableStateOf(true) }
-    var comentarios by rememberSaveable { mutableStateOf(true) }
-    var seguidores by rememberSaveable { mutableStateOf(true) }
-    var vivo by rememberSaveable { mutableStateOf(true) }
-    var eventos by rememberSaveable { mutableStateOf(true) }
-    var email by rememberSaveable { mutableStateOf(false) }
+    val a by ajustesState()
+    val g = guardarAjuste()
     PantallaConEncabezado("Notificaciones", onAtras) {
         EtiquetaGrupo("Notificaciones push")
         Tarjeta(padding = 0.dp) {
-            FilaInterruptor(Icons.Filled.Favorite, "Likes", "Cuando alguien da like a tu actividad", likes, { likes = it }, GColors.Danger)
-            FilaInterruptor(Icons.AutoMirrored.Filled.Chat, "Comentarios", "Cuando alguien comenta tu actividad", comentarios, { comentarios = it })
-            FilaInterruptor(Icons.Filled.PersonAdd, "Nuevos seguidores", "Cuando alguien te sigue", seguidores, { seguidores = it }, GColors.Secondary500)
-            FilaInterruptor(Icons.Filled.Sensors, "Carreras en vivo", "Cuando alguien inicia seguimiento en vivo", vivo, { vivo = it }, GColors.Secondary500)
-            FilaInterruptor(Icons.Filled.Event, "Eventos", "Recordatorios de eventos y nuevos eventos", eventos, { eventos = it }, GColors.Tertiary)
+            FilaInterruptor(Icons.Filled.Favorite, "Likes", "Cuando alguien da like a tu actividad", a.notifLikes, { v -> g { it.copy(notifLikes = v) } }, GColors.Danger)
+            FilaInterruptor(Icons.AutoMirrored.Filled.Chat, "Comentarios", "Cuando alguien comenta tu actividad", a.notifComentarios, { v -> g { it.copy(notifComentarios = v) } })
+            FilaInterruptor(Icons.Filled.PersonAdd, "Nuevos seguidores", "Cuando alguien te sigue", a.notifSeguidores, { v -> g { it.copy(notifSeguidores = v) } }, GColors.Secondary500)
+            FilaInterruptor(Icons.Filled.Sensors, "Carreras en vivo", "Cuando alguien inicia seguimiento en vivo", a.notifEnVivo, { v -> g { it.copy(notifEnVivo = v) } }, GColors.Secondary500)
+            FilaInterruptor(Icons.Filled.Event, "Eventos", "Recordatorios de eventos y nuevos eventos", a.notifEventos, { v -> g { it.copy(notifEventos = v) } }, GColors.Tertiary)
         }
         EtiquetaGrupo("Notificaciones por email")
         Tarjeta(padding = 0.dp) {
-            FilaInterruptor(Icons.Filled.Mail, "Resumen semanal", "Recibe un resumen de tu actividad cada semana", email, { email = it }, GColors.Info)
+            FilaInterruptor(Icons.Filled.Mail, "Resumen semanal", "Recibe un resumen de tu actividad cada semana", a.notifEmail, { v -> g { it.copy(notifEmail = v) } }, GColors.Info)
         }
         EtiquetaGrupo("Frecuencia")
         Tarjeta {
@@ -196,4 +257,3 @@ fun ConfiguracionNotificacionesScreen(onAtras: () -> Unit) {
         }
     }
 }
-
