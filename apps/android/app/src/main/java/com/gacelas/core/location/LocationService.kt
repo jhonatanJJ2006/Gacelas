@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.gacelas.R
-import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Foreground service for tracking GPS location during activities.
@@ -24,7 +23,6 @@ import dagger.hilt.android.AndroidEntryPoint
  * 
  * See SYSTEM.md for detailed architecture.
  */
-@AndroidEntryPoint
 class LocationService : Service() {
 
     companion object {

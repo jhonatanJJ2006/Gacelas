@@ -1,0 +1,75 @@
+name: Android
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'apps/android/**'
+      - 'apps/web/public/models/**'
+      - '.github/workflows/android.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/android/**'
+      - '.github/workflows/android.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build, tests y lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Verificar modelo 3D (no puntero LFS)
+        run: |
+          size=$(stat -c %s app/src/main/assets/models/gacelas-runner-animated.glb)
+          echo "Tamano del GLB: $size bytes"
+          test "$size" -gt 100000
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Crear local.properties de CI
+        run: cp local.properties.example local.properties
+
+      - name: Compilar APK debug
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Pruebas unitarias
+        run: ./gradlew testDebugUnitTest
+
+      - name: Lint
+        run: ./gradlew lintDebug
+
+      - name: Subir APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: gacelas-debug-apk
+          path: apps/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+      - name: Subir reportes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-reportes
+          path: |
+            apps/android/app/build/reports/
+            apps/android/app/build/test-results/
+          retention-days: 7

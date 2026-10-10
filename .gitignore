@@ -55,3 +55,4 @@ coverage/
 # Playwright
 apps/web/test-results/
 apps/web/playwright-report/
+apps/android/.kotlin/
