@@ -65,3 +65,17 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* Escritorio: los elementos fijos de cada pantalla respetan la barra lateral. */
+@media (min-width: 1024px) {
+  .shell-escritorio .fixed.inset-x-0 {
+    left: 260px;
+  }
+  .shell-escritorio .contenedor-escritorio {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}

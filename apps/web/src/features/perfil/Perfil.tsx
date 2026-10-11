@@ -44,7 +44,7 @@ export function Perfil() {
   const totalKm = carreras.reduce((s, c) => s + c.distanciaKm, 0)
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full contenedor-escritorio lg:max-w-5xl">
       <div className="px-margin pt-space-md pb-space-xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4 min-w-0">

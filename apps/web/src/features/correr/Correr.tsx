@@ -58,7 +58,7 @@ export function Correr() {
         </button>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-24">
+      <main className="lg:w-full lg:max-w-5xl lg:mx-auto flex-1 flex flex-col items-center justify-center px-6 pb-24">
         <div className="text-center mb-12">
           <div className="w-24 h-24 rounded-full bg-primary-600/20 flex items-center justify-center mx-auto mb-6">
             <span className="material-symbols-outlined text-[64px] text-primary-500">

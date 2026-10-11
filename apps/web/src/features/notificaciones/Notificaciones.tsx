@@ -65,7 +65,7 @@ export function Notificaciones() {
         </div>
       </header>
 
-      <main className="flex-1 pt-16 pb-24">
+      <main className="lg:w-full lg:max-w-3xl lg:mx-auto flex-1 pt-16 pb-24">
         <div className="px-margin pt-space-sm">
           <div className="flex gap-2 mb-4" role="tablist">
             {(['Todas', 'Sin leer', 'En vivo'] as FiltroNotificaciones[]).map((f) => (

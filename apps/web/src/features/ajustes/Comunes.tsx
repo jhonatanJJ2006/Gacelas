@@ -15,7 +15,7 @@ export function PantallaAjustes({
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
       <header className="px-margin py-4 border-b border-border-subtle">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 lg:max-w-3xl lg:mx-auto lg:w-full">
           <button
             onClick={() => navigate(volverA)}
             aria-label="Volver"
@@ -26,7 +26,9 @@ export function PantallaAjustes({
           <h1 className="font-headline-md text-headline-md text-text-primary">{titulo}</h1>
         </div>
       </header>
-      <main className="flex-1 px-margin py-6 space-y-6 pb-24">{children}</main>
+      <main className="flex-1 px-margin py-6 space-y-6 pb-24 lg:max-w-3xl lg:mx-auto lg:w-full lg:py-10">
+        {children}
+      </main>
     </div>
   )
 }

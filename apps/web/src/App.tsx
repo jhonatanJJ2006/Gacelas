@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useApp } from './store/app'
 import { AppLayout } from './components/AppLayout'
+import { ShellEscritorio } from './components/ShellEscritorio'
 
 const Bienvenida = lazy(() =>
   import('./features/acceso/Bienvenida').then((m) => ({ default: m.Bienvenida }))
@@ -128,32 +129,34 @@ export function AppRoutes() {
 
         <Route element={<RutaProtegida />}>
           <Route path="/permisos-ubicacion" element={<PermisosUbicacion />} />
-          <Route path="/" element={<AppLayout />}>
-            <Route index element={<Navigate to="/inicio" replace />} />
-            <Route path="inicio" element={<Inicio />} />
-            <Route path="rutas" element={<ListaRutas />} />
-            <Route path="comunidad" element={<Feed />} />
-            <Route path="comunidad/eventos" element={<Eventos />} />
-            <Route path="perfil" element={<Perfil />} />
+          <Route element={<ShellEscritorio />}>
+            <Route path="/" element={<AppLayout />}>
+              <Route index element={<Navigate to="/inicio" replace />} />
+              <Route path="inicio" element={<Inicio />} />
+              <Route path="rutas" element={<ListaRutas />} />
+              <Route path="comunidad" element={<Feed />} />
+              <Route path="comunidad/eventos" element={<Eventos />} />
+              <Route path="perfil" element={<Perfil />} />
+            </Route>
+
+            <Route path="/correr" element={<Correr />} />
+            <Route path="/correr/en-curso" element={<CarreraEnCurso />} />
+            <Route path="/correr/cronometro" element={<Cronometro />} />
+            <Route path="/correr/resumen" element={<ResumenPostCarrera />} />
+
+            <Route path="/rutas/buscar" element={<BuscadorRutas />} />
+            <Route path="/rutas/navegacion" element={<NavegacionRuta />} />
+
+            <Route path="/comunidad/eventos/:id" element={<DetalleEvento />} />
+
+            <Route path="/perfil/editar" element={<EditarPerfil />} />
+            <Route path="/perfil/avatar" element={<Avatar3D />} />
+
+            <Route path="/ajustes" element={<AjustesPreferencias />} />
+            <Route path="/ajustes/privacidad" element={<PrivacidadUbicacion />} />
+            <Route path="/ajustes/notificaciones" element={<ConfiguracionNotificaciones />} />
+            <Route path="/notificaciones" element={<Notificaciones />} />
           </Route>
-
-          <Route path="/correr" element={<Correr />} />
-          <Route path="/correr/en-curso" element={<CarreraEnCurso />} />
-          <Route path="/correr/cronometro" element={<Cronometro />} />
-          <Route path="/correr/resumen" element={<ResumenPostCarrera />} />
-
-          <Route path="/rutas/buscar" element={<BuscadorRutas />} />
-          <Route path="/rutas/navegacion" element={<NavegacionRuta />} />
-
-          <Route path="/comunidad/eventos/:id" element={<DetalleEvento />} />
-
-          <Route path="/perfil/editar" element={<EditarPerfil />} />
-          <Route path="/perfil/avatar" element={<Avatar3D />} />
-
-          <Route path="/ajustes" element={<AjustesPreferencias />} />
-          <Route path="/ajustes/privacidad" element={<PrivacidadUbicacion />} />
-          <Route path="/ajustes/notificaciones" element={<ConfiguracionNotificaciones />} />
-          <Route path="/notificaciones" element={<Notificaciones />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/bienvenida" replace />} />

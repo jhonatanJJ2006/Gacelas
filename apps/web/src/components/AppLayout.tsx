@@ -22,7 +22,7 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-bg-primary text-text-primary">
-      <header className="fixed top-0 inset-x-0 z-50 bg-bg-secondary/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)] pt-safe">
+      <header className="lg:hidden fixed top-0 inset-x-0 z-50 bg-bg-secondary/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)] pt-safe">
         <div className="h-16 px-margin flex items-center justify-between gap-space-sm">
           <div className="flex items-center gap-space-sm min-w-0">
             <Link to="/perfil" aria-label="Ir a mi perfil">
@@ -58,11 +58,11 @@ export function AppLayout() {
         </div>
       </header>
 
-      <main className="flex-1 pt-16 pb-24 overflow-auto">
+      <main className="flex-1 pt-16 pb-24 lg:pt-8 lg:pb-12 overflow-auto">
         <Outlet />
       </main>
 
-      <nav className="fixed bottom-0 inset-x-0 z-40 bg-bg-secondary/95 backdrop-blur-xl border-t border-border-subtle pb-safe">
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-bg-secondary/95 backdrop-blur-xl border-t border-border-subtle pb-safe">
         <div className="flex items-center justify-around h-20 px-2">
           {navItems.map((item) =>
             item.isMain ? (

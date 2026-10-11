@@ -25,7 +25,7 @@ export function Registro() {
 
   return (
     <div className="w-full min-h-[100dvh] bg-surface flex flex-col">
-      <header className="w-full z-20 px-margin py-2 short:py-1 md:absolute md:top-2 md:left-2">
+      <header className="w-full z-20 px-margin py-2 short:py-1 md:absolute md:top-2 md:left-2 md:w-auto">
         <button
           onClick={() => navigate('/bienvenida')}
           className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"

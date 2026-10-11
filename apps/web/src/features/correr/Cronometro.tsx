@@ -322,7 +322,7 @@ export function Cronometro() {
         </div>
       </header>
 
-      <main className="flex-1 pt-16 pb-24 overflow-auto">
+      <main className="lg:w-full lg:max-w-5xl lg:mx-auto flex-1 pt-16 pb-24 overflow-auto">
         <div className="px-margin pt-space-sm pb-space-xs">
           <div className="flex items-center gap-space-xs p-1 bg-surface-container rounded-xl overflow-x-auto">
             {MODOS.map((mo) => (
