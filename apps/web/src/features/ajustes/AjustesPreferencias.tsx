@@ -120,7 +120,7 @@ export function AjustesPreferencias() {
       <section>
         <button
           onClick={() => setDialogo('salir')}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-danger/20 text-danger rounded-xl hover:bg-danger/30 transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-danger/20 text-red-300 rounded-xl hover:bg-danger/30 transition-colors"
         >
           <span className="material-symbols-outlined">logout</span>
           <span className="font-body-md text-body-md font-medium">Cerrar sesión</span>

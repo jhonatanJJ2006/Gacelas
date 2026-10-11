@@ -94,6 +94,7 @@ export function Bienvenida() {
 
         <div className="w-full shrink-0 z-20 px-6 pb-3 pt-1 flex flex-col justify-end md:w-[420px] md:px-0 md:pb-0 md:items-stretch mx-auto">
           <div
+            role="img"
             aria-label="Progreso de introducción: Paso 1 de 3"
             className="flex items-center justify-center md:justify-start gap-2 mb-3 short:mb-2"
           >

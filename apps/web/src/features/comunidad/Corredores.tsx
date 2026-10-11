@@ -71,12 +71,16 @@ export function Corredores() {
                 <li
                   key={c.id}
                   data-testid="corredor"
-                  className="flex items-center gap-3 bg-surface-container border border-border-subtle rounded-2xl p-4"
+                  className="flex items-center gap-3 min-w-0 bg-surface-container border border-border-subtle rounded-2xl p-4"
                 >
                   {c.foto ? (
-                    <img src={c.foto} alt="" className="w-12 h-12 rounded-full object-cover" />
+                    <img
+                      src={c.foto}
+                      alt=""
+                      className="w-12 h-12 shrink-0 rounded-full object-cover"
+                    />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-primary-600/30 flex items-center justify-center text-primary-400 font-bold">
+                    <div className="w-12 h-12 shrink-0 rounded-full bg-primary-600/30 flex items-center justify-center text-primary-400 font-bold">
                       {c.nombre.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -91,7 +95,7 @@ export function Corredores() {
                     onClick={() => void alternarSeguir(c.id)}
                     aria-pressed={sigo}
                     aria-label={`${sigo ? 'Dejar de seguir' : 'Seguir'} a ${c.nombre}`}
-                    className={`h-11 px-4 rounded-full text-sm font-semibold transition-colors ${
+                    className={`h-11 px-4 shrink-0 rounded-full text-sm font-semibold transition-colors ${
                       sigo
                         ? 'bg-surface-container-high text-text-primary border border-border-subtle'
                         : 'bg-primary text-on-primary hover:bg-primary-700'

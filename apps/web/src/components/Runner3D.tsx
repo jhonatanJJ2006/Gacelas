@@ -108,6 +108,12 @@ export function Runner3D({
   target,
 }: Runner3DProps) {
   const [webgl] = useState(isWebGLAvailable)
+  const [menosMovimiento] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
   const [listo, setListo] = useState(false)
   const marcarListo = useCallback(() => setListo(true), [])
   const fallback = <Runner3DFallback className={className} />
@@ -129,7 +135,7 @@ export function Runner3D({
               enableZoom={false}
               enablePan={false}
               target={target}
-              autoRotate={autoRotate}
+              autoRotate={autoRotate && !menosMovimiento}
               autoRotateSpeed={2}
               maxPolarAngle={Math.PI / 2}
               minPolarAngle={Math.PI / 4}

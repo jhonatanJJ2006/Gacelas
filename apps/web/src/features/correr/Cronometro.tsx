@@ -196,7 +196,7 @@ export function PanelIntervalos() {
       <button
         type="button"
         onClick={estado ? () => setTranscurrido(null) : iniciar}
-        className={`h-12 rounded-xl font-bold ${estado ? 'bg-danger/20 text-danger' : 'bg-primary-600 text-bg-primary'}`}
+        className={`h-12 rounded-xl font-bold ${estado ? 'bg-danger/20 text-red-300' : 'bg-primary-600 text-bg-primary'}`}
       >
         {estado ? 'Detener intervalos' : 'Iniciar intervalos'}
       </button>
@@ -270,7 +270,7 @@ export function PanelMetronomo() {
       <button
         type="button"
         onClick={() => setSonando((s) => !s)}
-        className={`w-full h-12 rounded-xl font-bold ${sonando ? 'bg-danger/20 text-danger' : 'bg-primary-600 text-bg-primary'}`}
+        className={`w-full h-12 rounded-xl font-bold ${sonando ? 'bg-danger/20 text-red-300' : 'bg-primary-600 text-bg-primary'}`}
       >
         {sonando ? 'Detener metrónomo' : 'Iniciar metrónomo'}
       </button>

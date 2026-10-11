@@ -129,9 +129,9 @@ export function Eventos() {
                   )}
                 </div>
                 <div className="p-4 pb-0">
-                  <h3 className="font-title-md text-title-md text-text-primary mb-2">
+                  <h2 className="font-title-md text-title-md text-text-primary mb-2">
                     {evento.titulo}
-                  </h3>
+                  </h2>
                   <div className="space-y-2 mb-3">
                     <div className="flex items-center gap-2 text-text-secondary">
                       <span className="material-symbols-outlined text-[18px] text-primary-500">

@@ -53,7 +53,7 @@ export function Avatar3D() {
       </header>
 
       <main className="lg:w-full lg:max-w-6xl lg:mx-auto flex-1 flex flex-col pb-24 lg:flex-row lg:gap-8 lg:p-8 lg:items-start">
-        <div className="relative flex-1 bg-surface-container-low lg:flex-none lg:w-3/5 lg:h-[640px] lg:rounded-2xl lg:overflow-hidden lg:border lg:border-border-subtle">
+        <div className="relative h-[480px] short:h-[400px] bg-surface-container-low lg:flex-none lg:w-3/5 lg:h-[640px] lg:rounded-2xl lg:overflow-hidden lg:border lg:border-border-subtle">
           <Suspense
             fallback={
               <div className="w-full h-full flex items-center justify-center">
@@ -67,8 +67,8 @@ export function Avatar3D() {
             <Runner3D
               animation={animacion}
               autoRotate
-              cameraPosition={[0, 1.2, 4.6]}
-              target={[0, 1, 0]}
+              cameraPosition={[0, 1.2, 5.1]}
+              target={[0, 0.8, 0]}
             />
           </Suspense>
 
