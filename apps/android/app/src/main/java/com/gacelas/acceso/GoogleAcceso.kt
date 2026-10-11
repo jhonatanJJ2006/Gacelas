@@ -34,6 +34,13 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
+import androidx.credentials.GetCredentialResponse
+import androidx.credentials.exceptions.GetCredentialInterruptedException
+import androidx.credentials.exceptions.GetCredentialProviderConfigurationException
+import androidx.credentials.exceptions.GetCredentialUnsupportedException
+import android.util.Log
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.gacelas.BuildConfig
 import com.gacelas.data.auth.ResultadoAuth
 import com.gacelas.ui.contenedor
@@ -66,28 +73,52 @@ object GoogleAcceso {
     suspend fun pedirToken(context: Context, clientId: String = BuildConfig.GOOGLE_WEB_CLIENT_ID): TokenGoogle {
         if (!configurado(clientId)) return TokenGoogle.Error(NO_CONFIGURADO)
         val nonce = UUID.randomUUID().toString()
-        val opcion = GetGoogleIdOption.Builder()
+        val gestor = CredentialManager.create(context)
+        // 1) Hoja de cuentas (todas las cuentas del telefono, sin seleccion automatica).
+        val hoja = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(false)
             .setServerClientId(clientId)
             .setNonce(sha256(nonce))
             .setAutoSelectEnabled(false)
             .build()
+        // 2) Si no hay credenciales para esa hoja, flujo del boton "Sign in with Google".
+        val boton = GetSignInWithGoogleOption.Builder(clientId).setNonce(sha256(nonce)).build()
         return try {
-            val r = CredentialManager.create(context).getCredential(context, GetCredentialRequest.Builder().addCredentialOption(opcion).build())
-            val c = r.credential
-            if (c is CustomCredential && c.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL)
-                TokenGoogle.Ok(GoogleIdTokenCredential.createFrom(c.data).idToken, nonce)
-            else TokenGoogle.Error("Google no devolvió una cuenta válida")
-        } catch (_: GetCredentialCancellationException) {
-            TokenGoogle.Error(null)
-        } catch (_: NoCredentialException) {
-            TokenGoogle.Error("No hay cuentas de Google disponibles en este teléfono")
-        } catch (e: GetCredentialException) {
-            TokenGoogle.Error("No se pudo usar Google: revisa que la app esté registrada en Google Cloud (${e.type})")
+            leer(gestor.getCredential(context, GetCredentialRequest.Builder().addCredentialOption(hoja).build()), nonce)
+        } catch (e: NoCredentialException) {
+            Log.w(TAG, "Hoja de Google sin credenciales (${e.javaClass.simpleName}: ${e.type}); probando Sign in with Google")
+            try {
+                leer(gestor.getCredential(context, GetCredentialRequest.Builder().addCredentialOption(boton).build()), nonce)
+            } catch (e2: Exception) {
+                Log.w(TAG, "Sign in with Google fallo: ${e2.javaClass.simpleName}", e2)
+                TokenGoogle.Error(mensajeError(e2))
+            }
         } catch (e: Exception) {
-            TokenGoogle.Error("No se pudo usar Google en este teléfono")
+            Log.w(TAG, "Google fallo: ${e.javaClass.simpleName}", e)
+            TokenGoogle.Error(mensajeError(e))
         }
     }
+
+    private fun leer(r: GetCredentialResponse, nonce: String): TokenGoogle {
+        val c = r.credential
+        return if (c is CustomCredential && c.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL)
+            TokenGoogle.Ok(GoogleIdTokenCredential.createFrom(c.data).idToken, nonce)
+        else TokenGoogle.Error("Google no devolvió una cuenta válida")
+    }
+
+    /** Mensaje en español segun el tipo de error (null = el usuario cancelo, no se muestra nada). */
+    fun mensajeError(e: Throwable): String? = when (e) {
+        is GetCredentialCancellationException -> null
+        is NoCredentialException -> "Google no aceptó la app (falta registrarla en Google Cloud con su huella SHA-1) o no hay ninguna cuenta de Google en el teléfono"
+        is GetCredentialInterruptedException -> "Se interrumpió el inicio con Google. Inténtalo de nuevo."
+        is GetCredentialProviderConfigurationException -> "Este teléfono necesita actualizar los Servicios de Google Play para iniciar con Google"
+        is GetCredentialUnsupportedException -> "Este teléfono no permite iniciar con Google desde apps"
+        is GoogleIdTokenParsingException -> "Google devolvió una respuesta que no se pudo leer"
+        is GetCredentialException -> "No se pudo usar Google (${e.type}). Revisa la configuración del cliente OAuth de Android."
+        else -> "No se pudo usar Google en este teléfono (${e.javaClass.simpleName})"
+    }
+
+    private const val TAG = "GoogleAcceso"
 }
 
 /** Boton "Continuar con Google": Credential Manager + Supabase signInWith(IDToken). */
