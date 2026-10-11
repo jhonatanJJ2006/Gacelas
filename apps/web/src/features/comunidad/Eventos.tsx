@@ -54,8 +54,8 @@ export function Eventos() {
   }
 
   return (
-    <div className="flex flex-col w-full">
-      <div className="px-margin pt-space-md pb-space-sm">
+    <div className="flex flex-col w-full contenedor-escritorio">
+      <div className="px-margin pt-space-md pb-space-sm lg:px-0 lg:pb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Link
@@ -94,9 +94,9 @@ export function Eventos() {
         </div>
       </div>
 
-      <div className="px-margin space-y-4 pb-space-3xl">
+      <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6 lg:space-y-0">
         {eventos.length === 0 && (
-          <p className="text-center text-text-secondary py-8">
+          <p className="text-center text-text-secondary py-8 lg:col-span-full">
             {pestana === 'Mis eventos'
               ? 'No estás inscrito en eventos. Inscríbete o crea uno con el botón +.'
               : 'No hay eventos.'}

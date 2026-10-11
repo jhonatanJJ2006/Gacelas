@@ -21,10 +21,16 @@ export default defineConfig({
   projects: [
     {
       name: 'Mobile Chrome',
+      testIgnore: /escritorio\.spec\.ts/,
       use: {
         ...devices['Pixel 5'],
         viewport: { width: 390, height: 844 },
       },
+    },
+    {
+      name: 'Desktop Chrome',
+      testMatch: /escritorio\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },
   ],
 

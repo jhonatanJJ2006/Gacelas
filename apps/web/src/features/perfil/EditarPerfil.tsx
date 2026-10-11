@@ -70,7 +70,7 @@ export function EditarPerfil() {
         </div>
       </header>
 
-      <main className="flex-1 px-margin py-6 space-y-6 pb-24">
+      <main className="lg:w-full lg:max-w-3xl lg:mx-auto flex-1 px-margin py-6 space-y-6 pb-24">
         <div className="flex flex-col items-center">
           <div className="relative">
             <FotoPerfil foto={foto} nombre={nombre || sesion.nombre} className="w-24 h-24" />

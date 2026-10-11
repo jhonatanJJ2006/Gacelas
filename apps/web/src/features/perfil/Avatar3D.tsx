@@ -52,7 +52,7 @@ export function Avatar3D() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col pb-24">
+      <main className="lg:w-full lg:max-w-3xl lg:mx-auto flex-1 flex flex-col pb-24">
         <div className="relative flex-1 bg-surface-container-low">
           <Suspense
             fallback={

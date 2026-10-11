@@ -14,8 +14,8 @@ export function ListaRutas() {
   const rutas = filtrarRutas(rutasMock, pestana, guardadas, ID_USUARIO, consulta)
 
   return (
-    <div className="flex flex-col w-full">
-      <div className="px-margin pt-space-md pb-space-sm">
+    <div className="flex flex-col w-full contenedor-escritorio">
+      <div className="px-margin pt-space-md pb-space-sm lg:px-0 lg:pb-6">
         <div className="flex items-center justify-between mb-4">
           <h1 className="font-headline-md text-headline-md text-text-primary">Rutas de Loja</h1>
           <Link
@@ -60,9 +60,12 @@ export function ListaRutas() {
         </div>
       </div>
 
-      <div className="px-margin space-y-4 pb-space-3xl">
+      <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6 lg:space-y-0">
         {rutas.length === 0 && (
-          <p className="text-center text-text-secondary py-8" data-testid="rutas-vacio">
+          <p
+            className="text-center text-text-secondary py-8 lg:col-span-full"
+            data-testid="rutas-vacio"
+          >
             {pestana === 'Guardadas' && !consulta
               ? 'Aún no guardas rutas. Toca el marcador de una ruta para guardarla.'
               : 'No hay rutas que coincidan.'}

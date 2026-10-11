@@ -52,8 +52,8 @@ export function Feed() {
   }
 
   return (
-    <div className="flex flex-col w-full">
-      <div className="px-margin pt-space-md pb-space-sm">
+    <div className="flex flex-col w-full contenedor-escritorio">
+      <div className="px-margin pt-space-md pb-space-sm lg:px-0 lg:pb-6">
         <div className="flex items-center justify-between mb-4 relative">
           <h1 className="font-headline-md text-headline-md text-text-primary">Comunidad</h1>
           <button
@@ -106,9 +106,9 @@ export function Feed() {
         </div>
       </div>
 
-      <div className="px-margin space-y-4 pb-space-3xl">
+      <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0 lg:items-start">
         {posts.length === 0 && (
-          <p className="text-center text-text-secondary py-8">
+          <p className="text-center text-text-secondary py-8 lg:col-span-full">
             {filtro === 'Mías' ? 'Aún no tienes carreras públicas.' : 'No hay publicaciones.'}
           </p>
         )}

@@ -49,7 +49,7 @@ export function ResumenPostCarrera() {
         </button>
       </header>
 
-      <main className="flex-1 px-6 pb-8 overflow-auto">
+      <main className="lg:w-full lg:max-w-5xl lg:mx-auto flex-1 px-6 pb-8 overflow-auto">
         <div className="text-center mb-8">
           <div className="w-20 h-20 rounded-full bg-secondary-600/20 flex items-center justify-center mx-auto mb-4">
             <span className="material-symbols-outlined text-[48px] text-secondary-500">

@@ -28,8 +28,8 @@ export function DetalleEvento() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-surface flex flex-col">
-      <div className="h-64 bg-gradient-to-br from-primary-600 to-secondary-600 relative">
+    <div className="w-full min-h-screen bg-surface flex flex-col lg:max-w-5xl lg:mx-auto lg:px-8 lg:py-8">
+      <div className="h-64 lg:h-80 lg:rounded-3xl lg:overflow-hidden bg-gradient-to-br from-primary-600 to-secondary-600 relative">
         <button
           onClick={() => navigate('/comunidad/eventos')}
           aria-label="Volver"
@@ -57,7 +57,7 @@ export function DetalleEvento() {
         </div>
       </div>
 
-      <div className="flex-1 px-6 py-6 pb-24">
+      <div className="flex-1 px-6 py-6 pb-24 lg:px-0">
         <h1 className="font-headline-lg text-headline-lg text-text-primary mb-4">
           {evento.titulo}
         </h1>

@@ -31,8 +31,8 @@ export function Inicio() {
   const nombre = sesion?.nombre.split(' ')[0] ?? 'Corredor'
 
   return (
-    <div className="flex flex-col w-full px-margin pb-space-3xl space-y-space-xl">
-      <section className="flex flex-col space-y-space-xs pt-space-md">
+    <div className="flex flex-col w-full px-margin pb-space-3xl space-y-space-xl contenedor-escritorio lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-6 lg:space-y-0 lg:items-start">
+      <section className="flex flex-col space-y-space-xs pt-space-md lg:col-span-12 lg:pt-0">
         <div className="flex items-center justify-between">
           <div>
             <span className="font-label-md text-label-md text-primary flex items-center gap-1.5 uppercase tracking-wider">
@@ -52,7 +52,7 @@ export function Inicio() {
         </div>
       </section>
 
-      <section className="relative flex flex-col rounded-3xl overflow-hidden bg-surface-container-high border border-border-subtle shadow-2xl">
+      <section className="lg:col-span-7 lg:row-span-3 relative flex flex-col rounded-3xl overflow-hidden bg-surface-container-high border border-border-subtle shadow-2xl">
         <div className="absolute top-3 inset-x-3 z-20 flex items-center justify-between pointer-events-none">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-bg-secondary/90 backdrop-blur-md text-primary border border-primary/20 shadow-md">
             <span className="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
@@ -73,7 +73,7 @@ export function Inicio() {
           </div>
         </div>
 
-        <div className="relative w-full h-[430px] bg-surface-container-lowest">
+        <div className="relative w-full h-[430px] lg:h-[560px] bg-surface-container-lowest">
           <Suspense
             fallback={
               <div className="w-full h-full flex items-center justify-center text-text-secondary">
@@ -119,7 +119,7 @@ export function Inicio() {
         </div>
       </section>
 
-      <section className="space-y-space-md">
+      <section className="space-y-space-md lg:col-span-5">
         <div className="flex items-center justify-between">
           <h3 className="font-title-md text-title-md text-text-primary">Acción rápida</h3>
         </div>
@@ -144,7 +144,7 @@ export function Inicio() {
         </Link>
       </section>
 
-      <section className="space-y-space-md">
+      <section className="space-y-space-md lg:col-span-5">
         <div className="flex items-center justify-between">
           <h3 className="font-title-md text-title-md text-text-primary">Semana atlética</h3>
           <span className="font-label-md text-label-md text-text-secondary">
@@ -176,7 +176,7 @@ export function Inicio() {
         </div>
       </section>
 
-      <section className="space-y-space-md">
+      <section className="space-y-space-md lg:col-span-5">
         <div className="flex items-center justify-between">
           <h3 className="font-title-md text-title-md text-text-primary">Próximo encuentro</h3>
           <Link to="/comunidad/eventos" className="font-label-md text-label-md text-primary">
