@@ -1,5 +1,6 @@
 package com.gacelas.perfil
 
+import com.gacelas.ui.components.TarjetaRacha
 import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -135,6 +136,7 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
                 Metrica(Unidades.texto(carreras.sumOf { it.distanciaKm }, m, 1), "${Unidades.etiquetaDistancia(m)} totales")
             }
         }
+        TarjetaRacha(com.gacelas.ui.rachaState(), carreras)
         Tarjeta {
             Text("Estadísticas del mes", style = GType.titleMd, color = GColors.TextPrimary)
             FilaEstadistica(Icons.Filled.Straighten, "Distancia total", "${Unidades.texto(mes.km, m, 1)} ${Unidades.etiquetaDistancia(m)}")

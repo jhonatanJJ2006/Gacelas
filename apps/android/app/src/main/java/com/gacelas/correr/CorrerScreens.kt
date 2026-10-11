@@ -639,6 +639,12 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
     var nota by rememberSaveable { mutableStateOf("") }
     var publica by rememberSaveable { mutableStateOf(ajustes.visibilidad != com.gacelas.data.ajustes.Visibilidad.Privado) }
     var guardando by remember { mutableStateOf(false) }
+    val carrerasPrevias by com.gacelas.ui.carrerasState()
+    val rachaAntes = remember(carrerasPrevias, ajustes.metaSemanal) { com.gacelas.data.rachas.Rachas.calcular(carrerasPrevias, System.currentTimeMillis(), ajustes.metaSemanal) }
+    val rachaDespues = remember(carrerasPrevias, ajustes.metaSemanal) {
+        val ahora = System.currentTimeMillis()
+        com.gacelas.data.rachas.Rachas.calcular(carrerasPrevias + com.gacelas.data.carreras.CarreraGuardada(id = "nueva", titulo = "", inicioMs = ahora, segundos = 0, distanciaKm = 0.0), ahora, ajustes.metaSemanal)
+    }
     val salirSinGuardar = {
         descartarCarrera(context, tracker)
         onDescartar()
@@ -653,6 +659,7 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
             Text("Carrera completada", style = GType.headlineLg, color = GColors.TextPrimary)
             Text(if (estado.segundos > 0) "Gran trabajo, has terminado tu carrera" else "No hay datos de carrera para guardar", style = GType.bodyLg, color = GColors.TextSecondary)
         }
+        if (estado.segundos > 0) com.gacelas.ui.components.CelebracionRacha(rachaAntes, rachaDespues)
         Tarjeta {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
                 Metrica(Unidades.texto(estado.distanciaKm, m), Unidades.etiquetaDistancia(m), grande = true, color = GColors.Primary500)

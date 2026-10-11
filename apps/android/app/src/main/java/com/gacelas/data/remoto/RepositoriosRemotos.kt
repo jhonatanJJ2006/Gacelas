@@ -328,6 +328,7 @@ class SupabaseAjustesRepository(
                 ocultarHogar = fila?.logico("hide_home") ?: base.ocultarHogar,
                 radioHogarM = fila?.entero("home_radius_m") ?: base.radioHogarM,
                 ubicacionPrecisa = fila?.logico("precise_location") ?: base.ubicacionPrecisa,
+                metaSemanal = fila?.entero("weekly_goal_runs") ?: base.metaSemanal,
                 likes = likes.mapNotNull { it.texto("post_id") }.toSet(),
                 comentarios = comentarios.groupBy({ it.texto("post_id").orEmpty() }, { it.texto("body").orEmpty() }),
             )
@@ -355,6 +356,7 @@ class SupabaseAjustesRepository(
                 put("hide_home", nuevos.ocultarHogar)
                 put("home_radius_m", nuevos.radioHogarM)
                 put("precise_location", nuevos.ubicacionPrecisa)
+                put("weekly_goal_runs", nuevos.metaSemanal)
                 put("prefs", prefs)
             }), "user_id")
         }

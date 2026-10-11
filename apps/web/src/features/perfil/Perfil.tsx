@@ -6,6 +6,7 @@ import { BotonTexto, Dialogo } from '../../components/ui'
 import { resumenMes } from '../../lib/estadisticas'
 import { formatearHms, formatearMs, formatearRitmo, Unidades } from '../../lib/geo'
 import { usuarioActualMock } from '../../mocks/data'
+import { TarjetaRacha } from '../../components/Racha'
 import { useApp } from '../../store/app'
 
 export function FotoPerfil({
@@ -70,6 +71,8 @@ export function Perfil() {
             <span className="material-symbols-outlined">edit</span>
           </Link>
         </div>
+
+        <TarjetaRacha />
 
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="text-center bg-surface-container rounded-xl p-4">

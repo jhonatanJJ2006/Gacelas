@@ -67,6 +67,8 @@ export interface Ajustes {
   likes: string[]
   comentarios: Record<string, string[]>
   ocultas: string[]
+  /** Carreras por semana para mantener la racha semanal. */
+  metaSemanal: number
 }
 
 export const AJUSTES_POR_DEFECTO: Ajustes = {
@@ -89,4 +91,5 @@ export const AJUSTES_POR_DEFECTO: Ajustes = {
   likes: [],
   comentarios: {},
   ocultas: [],
+  metaSemanal: 3,
 }

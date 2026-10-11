@@ -2,6 +2,7 @@ import { useEsEscritorio } from '../lib/useEsEscritorio'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { notificacionesVisibles } from '../lib/filtros'
 import { useApp } from '../store/app'
+import { InsigniaRacha } from './Racha'
 import { FotoPerfil } from '../features/perfil/Perfil'
 
 const NAV_ESCRITORIO = [
@@ -59,6 +60,9 @@ export function ShellEscritorio() {
               </span>
             </div>
           </Link>
+          <div className="px-6 pb-4">
+            <InsigniaRacha testId="racha-barra" />
+          </div>
           <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
             {NAV_ESCRITORIO.map((item) => {
               const on = activo(item.path, item.exacto)

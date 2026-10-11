@@ -1,5 +1,6 @@
 import type { Evento, Notificacion } from '../mocks/data'
 import { ValidacionAuth } from '../lib/validacion'
+import type { Racha } from '../lib/rachas'
 import {
   AJUSTES_POR_DEFECTO,
   type Ajustes,
@@ -86,6 +87,11 @@ export interface ComunidadRepository {
   alternarSeguir(id: string): Promise<string[]>
 }
 
+export interface RachasRepository {
+  /** Racha calculada en el servidor, o null si no se pudo leer. */
+  leer(): Promise<Racha | null>
+}
+
 export interface Repositorios {
   auth: AuthRepository
   carreras: CarrerasRepository
@@ -95,6 +101,7 @@ export interface Repositorios {
   /** Notificaciones reales; sin este repositorio se usan las de ejemplo. */
   notificaciones?: NotificacionesRepository
   comunidad?: ComunidadRepository
+  rachas?: RachasRepository
 }
 
 const PREFIJO = 'gacelas:'

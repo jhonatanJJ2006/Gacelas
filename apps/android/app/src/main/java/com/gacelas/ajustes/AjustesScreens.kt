@@ -1,5 +1,8 @@
 package com.gacelas.ajustes
 
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -111,6 +114,22 @@ fun AjustesPreferenciasScreen(
         Tarjeta(padding = 0.dp) {
             FilaInterruptor(Icons.Filled.DarkMode, "Modo oscuro", if (a.modoOscuro) "Activado" else "Tema claro activo", checked = a.modoOscuro, onChange = { v -> guardar { it.copy(modoOscuro = v) } })
             FilaInterruptor(Icons.Filled.Straighten, "Unidades métricas", if (a.unidadesMetricas) "Kilómetros y metros" else "Millas", checked = a.unidadesMetricas, onChange = { v -> guardar { it.copy(unidadesMetricas = v) } })
+        }
+        EtiquetaGrupo("Rachas")
+        Tarjeta {
+            androidx.compose.foundation.layout.Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                androidx.compose.foundation.layout.Column(Modifier.weight(1f)) {
+                    Text("Meta semanal", style = GType.bodyLg, color = GColors.TextPrimary)
+                    Text("Carreras por semana para mantener la racha semanal", style = GType.bodySm, color = GColors.TextSecondary)
+                }
+                IconButton(onClick = { guardar { it.copy(metaSemanal = (it.metaSemanal - 1).coerceAtLeast(1)) } }) {
+                    Icon(Icons.Filled.Remove, "Menos carreras por semana", tint = GColors.Primary500)
+                }
+                Text("${a.metaSemanal}", style = GType.titleMd, color = GColors.TextPrimary)
+                IconButton(onClick = { guardar { it.copy(metaSemanal = (it.metaSemanal + 1).coerceAtMost(7)) } }) {
+                    Icon(Icons.Filled.Add, "Más carreras por semana", tint = GColors.Primary500)
+                }
+            }
         }
         EtiquetaGrupo("Información")
         Tarjeta(padding = 0.dp) {

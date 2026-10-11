@@ -6,6 +6,8 @@ import { formatearMs, formatearRitmo, Unidades } from '../../lib/geo'
 import { ritmoPromedio, tituloPorHora } from '../../lib/runTracker'
 import { useApp } from '../../store/app'
 import { descartarCarrera, tracker, useCarrera } from '../../store/carrera'
+import { CelebracionRacha } from '../../components/Racha'
+import { rachaTrasCarrera } from '../../lib/rachas'
 import { caloriasEstimadas } from '../../lib/logica'
 
 export function ResumenPostCarrera() {
@@ -13,6 +15,10 @@ export function ResumenPostCarrera() {
   const e = useCarrera()
   const ajustes = useApp((s) => s.ajustes)
   const guardarCarrera = useApp((s) => s.guardarCarrera)
+  const carreras = useApp((s) => s.carreras)
+  const [racha] = useState(() =>
+    rachaTrasCarrera(carreras, { inicioMs: Date.now() }, ajustes.metaSemanal)
+  )
   const m = ajustes.unidadesMetricas
   const [titulo, setTitulo] = useState('')
   const [nota, setNota] = useState('')
@@ -63,6 +69,8 @@ export function ResumenPostCarrera() {
             Gran trabajo, has terminado tu carrera
           </p>
         </div>
+
+        <CelebracionRacha antes={racha.antes} despues={racha.despues} />
 
         <div className="bg-surface-container rounded-3xl border border-border-subtle p-6 mb-6">
           <div className="grid grid-cols-3 gap-4 mb-6">
