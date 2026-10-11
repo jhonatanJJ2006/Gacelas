@@ -106,7 +106,7 @@ export function EditarPerfil() {
           <div className="flex gap-4 mt-3">
             <button
               onClick={() => archivo.current?.click()}
-              className="text-primary-500 font-label-lg text-label-lg hover:text-primary-400"
+              className="inline-block py-2 text-primary-500 font-label-lg text-label-lg hover:text-primary-400"
             >
               Cambiar foto
             </button>

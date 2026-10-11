@@ -69,7 +69,17 @@ export interface PublicacionRemota {
   puntos: CarreraGuardada['puntos']
 }
 
+export interface CorredorPublico {
+  id: string
+  nombre: string
+  username: string
+  foto: string | null
+  ubicacion: string
+}
+
 export interface ComunidadRepository {
+  /** Busca corredores por nombre o usuario (perfil publico minimo). */
+  buscar(consulta: string): Promise<CorredorPublico[]>
   /** Carreras publicas de otros corredores. */
   publicaciones(): Promise<PublicacionRemota[]>
   siguiendo(): Promise<string[]>

@@ -53,6 +53,9 @@ const DetalleEvento = lazy(() =>
   import('./features/comunidad/DetalleEvento').then((m) => ({ default: m.DetalleEvento }))
 )
 
+const Corredores = lazy(() =>
+  import('./features/comunidad/Corredores').then((m) => ({ default: m.Corredores }))
+)
 const Perfil = lazy(() => import('./features/perfil/Perfil').then((m) => ({ default: m.Perfil })))
 const EditarPerfil = lazy(() =>
   import('./features/perfil/EditarPerfil').then((m) => ({ default: m.EditarPerfil }))
@@ -148,6 +151,7 @@ export function AppRoutes() {
             <Route path="/rutas/navegacion" element={<NavegacionRuta />} />
 
             <Route path="/comunidad/eventos/:id" element={<DetalleEvento />} />
+            <Route path="/comunidad/corredores" element={<Corredores />} />
 
             <Route path="/perfil/editar" element={<EditarPerfil />} />
             <Route path="/perfil/avatar" element={<Avatar3D />} />

@@ -56,7 +56,7 @@ export function Notificaciones() {
           </div>
           <button
             onClick={marcarTodas}
-            className="text-primary-500 font-label-lg text-label-lg hover:text-primary-400"
+            className="inline-block py-2 text-primary-500 font-label-lg text-label-lg hover:text-primary-400"
           >
             Marcar todas leídas
           </button>

@@ -17,6 +17,7 @@ import {
   type NotificacionesRepository,
   type ComunidadRepository,
   type PublicacionRemota,
+  type CorredorPublico,
   type Repositorios,
   type RutasRepository,
 } from './repositorios'
@@ -665,6 +666,27 @@ export class SupabaseComunidadRepository implements ComunidadRepository {
       puntos: Array.isArray(f.public_points)
         ? (f.public_points as PublicacionRemota['puntos'])
         : [],
+    }))
+  }
+  async buscar(consulta: string): Promise<CorredorPublico[]> {
+    const user = await usuario(this.sb)
+    if (!user) return []
+    const q = consulta.trim().replace(/[%,()*]/g, '')
+    let consultaSb = this.sb
+      .from('profiles')
+      .select('id,full_name,username,avatar_url,location')
+      .neq('id', user.id)
+      .order('full_name', { ascending: true })
+      .limit(24)
+    if (q) consultaSb = consultaSb.or(`full_name.ilike.*${q}*,username.ilike.*${q}*`)
+    const { data, error } = await consultaSb
+    if (error) return []
+    return ((data ?? []) as Fila[]).map((f) => ({
+      id: f.id as string,
+      nombre: (f.full_name as string) || (f.username as string) || 'Corredor',
+      username: (f.username as string) ?? '',
+      foto: (f.avatar_url as string) ?? null,
+      ubicacion: (f.location as string) ?? '',
     }))
   }
   async siguiendo() {

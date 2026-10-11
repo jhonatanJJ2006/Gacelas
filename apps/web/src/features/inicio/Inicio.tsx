@@ -1,3 +1,5 @@
+import { useEsEscritorio } from '../../lib/useEsEscritorio'
+import { MetaSemanal, RankingSemanal } from '../../components/PanelesEscritorio'
 import { lazy, Suspense, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { filtrarEventos } from '../../lib/filtros'
@@ -14,6 +16,7 @@ const Runner3D = lazy(() =>
 const META_DIAS = 5
 
 export function Inicio() {
+  const escritorio = useEsEscritorio()
   const sesion = useApp((s) => s.sesion)
   const carreras = useApp((s) => s.carreras)
   const m = useApp((s) => s.ajustes.unidadesMetricas)
@@ -179,7 +182,10 @@ export function Inicio() {
       <section className="space-y-space-md lg:col-span-5">
         <div className="flex items-center justify-between">
           <h3 className="font-title-md text-title-md text-text-primary">Próximo encuentro</h3>
-          <Link to="/comunidad/eventos" className="font-label-md text-label-md text-primary">
+          <Link
+            to="/comunidad/eventos"
+            className="inline-block py-2 font-label-md text-label-md text-primary"
+          >
             Ver todos
           </Link>
         </div>
@@ -217,6 +223,12 @@ export function Inicio() {
           <p className="text-text-secondary">No hay encuentros próximos.</p>
         )}
       </section>
+      {escritorio && (
+        <div className="lg:col-span-12 grid grid-cols-2 gap-6">
+          <MetaSemanal km={semana.km} />
+          <RankingSemanal />
+        </div>
+      )}
     </div>
   )
 }
