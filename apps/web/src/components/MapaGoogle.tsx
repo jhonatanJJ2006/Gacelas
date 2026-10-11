@@ -1,51 +1,23 @@
-import { useEffect, type ReactNode } from 'react'
-import { APIProvider, Map, useMap } from '@vis.gl/react-google-maps'
-import { CENTRO_LOJA, claveMapas, ESTILO_CLARO, ESTILO_OSCURO, type Coordenada } from '../lib/mapas'
-import { useApp } from '../store/app'
+import { useCallback, useMemo, useState, type ReactNode } from 'react'
+import { type Coordenada } from '../lib/mapas'
+import { rumboReciente, tramosPorRitmo } from '../lib/mapaEstilo'
+import {
+  BotonSeguir,
+  MapaBase,
+  Pin,
+  Puck,
+  RutaEstilizada,
+  RutaPlan,
+  SeguirCamara,
+} from './mapa/MapaBase'
+import { Corredor3DMapa } from './mapa/Corredor3DMapa'
 
-/** Dibuja el trazado con google.maps.Polyline y ajusta la vista a los puntos. */
-function Trazado({ puntos, seguir }: { puntos: Coordenada[]; seguir: boolean }) {
-  const mapa = useMap()
-  const oscuro = useApp((s) => s.ajustes.modoOscuro)
-  useEffect(() => {
-    if (!mapa || puntos.length === 0) return
-    const linea = new google.maps.Polyline({
-      path: puntos,
-      strokeColor: oscuro ? '#F59E0B' : '#D97706',
-      strokeWeight: 4,
-      strokeOpacity: 0.95,
-      map: mapa,
-    })
-    const ultimo = puntos[puntos.length - 1]
-    const marca = new google.maps.Marker({
-      position: ultimo,
-      map: mapa,
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 7,
-        fillColor: '#10B981',
-        fillOpacity: 1,
-        strokeColor: '#ffffff',
-        strokeWeight: 2,
-      },
-    })
-    if (seguir) mapa.panTo(ultimo)
-    else if (puntos.length > 1) {
-      const limites = new google.maps.LatLngBounds()
-      puntos.forEach((p) => limites.extend(p))
-      mapa.fitBounds(limites, 32)
-    }
-    return () => {
-      linea.setMap(null)
-      marca.setMap(null)
-    }
-  }, [mapa, puntos, seguir, oscuro])
-  return null
-}
+type PuntoMapa = Coordenada & { tiempoMs?: number }
 
 /**
- * Mapa de Google con el recorrido. Sin VITE_GOOGLE_MAPS_API_KEY muestra `alternativa`
- * (el mapa dibujado de siempre), asi la app funciona sin clave y en las pruebas.
+ * Mapa de Gacelas con el recorrido (estilo propio, colores por ritmo, flechas, pines y "estas aqui").
+ * `seguir` = camara de seguimiento; `modo3d` = vectorial inclinado con el corredor 3D animado en el mapa.
+ * Sin VITE_GOOGLE_MAPS_API_KEY muestra `alternativa`.
  */
 export function MapaGoogle({
   puntos,
@@ -53,30 +25,66 @@ export function MapaGoogle({
   className = '',
   seguir = false,
   zoom = 15,
+  modo3d = false,
+  ritmoSegKm = null,
+  controles = true,
+  hijos,
+  plan,
+  adelanteM,
 }: {
-  puntos: Coordenada[]
+  puntos: PuntoMapa[]
   alternativa: ReactNode
   className?: string
   seguir?: boolean
   zoom?: number
+  modo3d?: boolean
+  ritmoSegKm?: number | null
+  controles?: boolean
+  hijos?: ReactNode
+  /** Ruta planificada (navegacion). */
+  plan?: Coordenada[]
+  adelanteM?: number
 }) {
-  const clave = claveMapas()
-  const oscuro = useApp((s) => s.ajustes.modoOscuro)
-  if (!clave) return <>{alternativa}</>
+  const tramos = useMemo(() => tramosPorRitmo(puntos), [puntos])
+  const ultimo = puntos[puntos.length - 1] ?? null
+  const rumbo = useMemo(() => rumboReciente(puntos), [puntos])
+  const [siguiendo, setSiguiendo] = useState(true)
+  const [sin3d, setSin3d] = useState(false)
+  const dejar = useCallback(() => setSiguiendo(false), [])
+  const fallo3d = useCallback(() => setSin3d(true), [])
+  const con3d = modo3d && !sin3d
   return (
-    <div className={className} data-testid="mapa-google">
-      <APIProvider apiKey={clave} language="es" region="EC">
-        <Map
-          defaultCenter={puntos[0] ?? CENTRO_LOJA}
-          defaultZoom={zoom}
-          disableDefaultUI
-          gestureHandling="greedy"
-          styles={oscuro ? ESTILO_OSCURO : ESTILO_CLARO}
-          style={{ width: '100%', height: '100%' }}
-        >
-          <Trazado puntos={puntos} seguir={seguir} />
-        </Map>
-      </APIProvider>
-    </div>
+    <MapaBase
+      centro={puntos[0]}
+      zoom={zoom}
+      modo3d={modo3d}
+      className={className}
+      alternativa={alternativa}
+      controles={controles}
+    >
+      {plan && <RutaPlan camino={plan} />}
+      <RutaEstilizada tramos={tramos} ajustar={!seguir} />
+      {!seguir && puntos.length > 1 && <Pin pos={puntos[0]} tipo="inicio" />}
+      {!seguir && puntos.length > 1 && <Pin pos={puntos[puntos.length - 1]} tipo="meta" />}
+      {seguir &&
+        ultimo &&
+        (con3d ? (
+          <Corredor3DMapa pos={ultimo} rumbo={rumbo} ritmoSegKm={ritmoSegKm} onFallo={fallo3d} />
+        ) : (
+          <Puck pos={ultimo} rumbo={rumbo} />
+        ))}
+      {seguir && (
+        <SeguirCamara
+          pos={ultimo}
+          rumbo={rumbo}
+          modo3d={modo3d}
+          siguiendo={siguiendo}
+          adelanteM={adelanteM}
+          onDejarDeSeguir={dejar}
+        />
+      )}
+      {seguir && <BotonSeguir siguiendo={siguiendo} onSeguir={() => setSiguiendo(true)} />}
+      {hijos}
+    </MapaBase>
   )
 }

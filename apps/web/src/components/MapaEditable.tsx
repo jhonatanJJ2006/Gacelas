@@ -1,8 +1,10 @@
 import { useEffect } from 'react'
+import { Controles } from './mapa/MapaBase'
+import { ESTILO_GACELAS } from '../lib/mapaEstilo'
 import { APIProvider, Map, useMap, type MapMouseEvent } from '@vis.gl/react-google-maps'
 import { MarkerClusterer } from '@googlemaps/markerclusterer'
 import { colorCorredor } from '../lib/eventos'
-import { CENTRO_LOJA, claveMapas, ESTILO_OSCURO, type Coordenada } from '../lib/mapas'
+import { CENTRO_LOJA, claveMapas, type Coordenada } from '../lib/mapas'
 
 function Linea({ puntos }: { puntos: Coordenada[] }) {
   const mapa = useMap()
@@ -59,7 +61,7 @@ export function MapaEditable({
       </div>
     )
   return (
-    <div className={className} data-testid="mapa-editable">
+    <div className={`relative ${className}`} data-testid="mapa-editable">
       <APIProvider apiKey={clave} language="es" region="EC">
         <Map
           defaultCenter={puntos[0] ?? CENTRO_LOJA}
@@ -67,7 +69,8 @@ export function MapaEditable({
           disableDefaultUI
           clickableIcons={false}
           gestureHandling="greedy"
-          styles={ESTILO_OSCURO}
+          styles={ESTILO_GACELAS}
+
           style={{ width: '100%', height: '100%' }}
           onClick={(e: MapMouseEvent) => {
             const ll = e.detail.latLng
@@ -76,6 +79,7 @@ export function MapaEditable({
         >
           <Linea puntos={puntos} />
         </Map>
+        <Controles />
       </APIProvider>
     </div>
   )
@@ -122,18 +126,20 @@ export function MapaRutas({
   if (!clave)
     return <p className="text-text-secondary p-4">El mapa necesita Google Maps configurado.</p>
   return (
-    <div className={className} data-testid="mapa-rutas">
+    <div className={`relative ${className}`} data-testid="mapa-rutas">
       <APIProvider apiKey={clave} language="es" region="EC">
         <Map
           defaultCenter={CENTRO_LOJA}
           defaultZoom={12}
           disableDefaultUI
           gestureHandling="greedy"
-          styles={ESTILO_OSCURO}
+          styles={ESTILO_GACELAS}
+          clickableIcons={false}
           style={{ width: '100%', height: '100%' }}
         >
           <Agrupados rutas={rutas} onAbrir={onAbrir} />
         </Map>
+        <Controles />
       </APIProvider>
     </div>
   )
@@ -198,18 +204,20 @@ export function MapaCorredores({
   if (!clave)
     return <p className="text-text-secondary p-4">El mapa necesita Google Maps configurado.</p>
   return (
-    <div className={className} data-testid="mapa-corredores">
+    <div className={`relative ${className}`} data-testid="mapa-corredores">
       <APIProvider apiKey={clave} language="es" region="EC">
         <Map
           defaultCenter={CENTRO_LOJA}
           defaultZoom={14}
           disableDefaultUI
           gestureHandling="greedy"
-          styles={ESTILO_OSCURO}
+          styles={ESTILO_GACELAS}
+          clickableIcons={false}
           style={{ width: '100%', height: '100%' }}
         >
           <Corredores corredores={corredores} />
         </Map>
+        <Controles />
       </APIProvider>
     </div>
   )
