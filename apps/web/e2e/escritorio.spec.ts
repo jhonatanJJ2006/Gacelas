@@ -15,6 +15,7 @@ const PANTALLAS = [
   '/ajustes/privacidad',
   '/ajustes/notificaciones',
   '/notificaciones',
+  '/comunidad/corredores',
 ]
 
 test.describe('Escritorio', () => {
@@ -51,6 +52,15 @@ test.describe('Escritorio', () => {
         })
       }
     }
+    await page.goto('/inicio')
+    await expect(page.getByTestId('panel-ranking')).toBeVisible()
+    await expect(page.getByTestId('panel-meta')).toBeVisible()
+    await page.goto('/perfil')
+    await expect(page.getByTestId('panel-records')).toBeVisible()
+    await page.goto('/comunidad')
+    await expect(page.getByTestId('panel-eventos')).toBeVisible()
+    await page.getByRole('button', { name: 'Buscar corredores' }).click()
+    await expect(page).toHaveURL(/\/comunidad\/corredores$/)
     await page.goto('/inicio')
     await lateral.getByRole('link', { name: 'Rutas' }).click()
     await expect(page).toHaveURL(/\/rutas$/)

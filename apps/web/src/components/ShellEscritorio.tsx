@@ -10,6 +10,7 @@ const NAV_ESCRITORIO = [
   { path: '/rutas', label: 'Rutas', icon: 'map' },
   { path: '/comunidad', label: 'Comunidad', icon: 'groups', exacto: true },
   { path: '/comunidad/eventos', label: 'Eventos', icon: 'event' },
+  { path: '/comunidad/corredores', label: 'Corredores', icon: 'person_search' },
   { path: '/notificaciones', label: 'Notificaciones', icon: 'notifications' },
   { path: '/perfil', label: 'Perfil', icon: 'person' },
   { path: '/ajustes', label: 'Ajustes', icon: 'settings' },
@@ -31,7 +32,9 @@ export function ShellEscritorio() {
     if (exacto)
       return (
         pathname === path ||
-        (pathname.startsWith(`${path}/`) && !pathname.startsWith('/comunidad/eventos'))
+        (pathname.startsWith(`${path}/`) &&
+          !pathname.startsWith('/comunidad/eventos') &&
+          !pathname.startsWith('/comunidad/corredores'))
       )
     return pathname === path || pathname.startsWith(`${path}/`)
   }

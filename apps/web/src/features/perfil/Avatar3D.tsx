@@ -64,7 +64,12 @@ export function Avatar3D() {
               </div>
             }
           >
-            <Runner3D animation={animacion} autoRotate cameraPosition={[0, 1.2, 3.5]} />
+            <Runner3D
+              animation={animacion}
+              autoRotate
+              cameraPosition={[0, 1.2, 4.6]}
+              target={[0, 1, 0]}
+            />
           </Suspense>
 
           <div className="absolute bottom-4 left-4 right-4">

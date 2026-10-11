@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import {
   repositoriosLocales,
   type PublicacionRemota,
+  type CorredorPublico,
   type Repositorios,
 } from '../data/repositorios'
 import {
@@ -42,6 +43,7 @@ export interface EstadoApp {
   publicaciones: PublicacionRemota[]
   siguiendo: string[]
   alternarSeguir(id: string): Promise<void>
+  buscarCorredores(consulta: string): Promise<CorredorPublico[]>
   marcarNotificacionesLeidas(ids: string[]): Promise<void>
   cargar(): Promise<void>
   iniciarSesion(email: string, password: string): Promise<ResultadoAuth>
@@ -114,6 +116,8 @@ export const useApp = create<EstadoApp>((set, get) => ({
         void get().cargar()
       }) ?? null
   },
+
+  buscarCorredores: (consulta) => repos.comunidad?.buscar(consulta) ?? Promise.resolve([]),
 
   async alternarSeguir(id) {
     if (!repos.comunidad) return

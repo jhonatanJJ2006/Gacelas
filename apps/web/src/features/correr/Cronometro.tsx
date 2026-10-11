@@ -250,7 +250,7 @@ export function PanelMetronomo() {
         onChange={(e) => setBpm(Number(e.target.value))}
         onPointerUp={() => void actualizar({ metronomoBpm: bpm })}
         onKeyUp={() => void actualizar({ metronomoBpm: bpm })}
-        className="w-full accent-primary-600"
+        className="h-8 w-full accent-primary-600"
       />
       <div className="flex gap-2">
         {[160, 170, 180].map((v) => (
@@ -522,7 +522,7 @@ export function Cronometro() {
                 role="tab"
                 aria-selected={pestana === id}
                 onClick={() => setPestana(id)}
-                className={`flex-1 py-1.5 rounded-lg text-label-md font-label-md flex items-center justify-center gap-1 ${
+                className={`flex-1 min-h-11 py-1.5 rounded-lg text-label-md font-label-md flex items-center justify-center gap-1 ${
                   pestana === id
                     ? 'bg-surface-container text-on-surface font-semibold shadow-sm'
                     : 'text-text-secondary'

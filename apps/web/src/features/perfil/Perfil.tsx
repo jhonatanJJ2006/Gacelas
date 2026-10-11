@@ -1,3 +1,5 @@
+import { useEsEscritorio } from '../../lib/useEsEscritorio'
+import { EstadisticasPerfil } from '../../components/PanelesEscritorio'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BotonTexto, Dialogo } from '../../components/ui'
@@ -34,6 +36,7 @@ export function FotoPerfil({
 }
 
 export function Perfil() {
+  const escritorio = useEsEscritorio()
   const sesion = useApp((s) => s.sesion)
   const carreras = useApp((s) => s.carreras)
   const m = useApp((s) => s.ajustes.unidadesMetricas)
@@ -169,7 +172,7 @@ export function Perfil() {
         {carreras.length === 0 && (
           <p className="bg-surface-container rounded-xl p-4 text-text-secondary">
             Todavía no guardas carreras. Toca el botón{' '}
-            <Link to="/correr" className="text-primary-500">
+            <Link to="/correr" className="text-primary-500 inline-block py-2">
               Correr
             </Link>{' '}
             para grabar la primera.
@@ -247,6 +250,11 @@ export function Perfil() {
       >
         <p>Esta acción no se puede deshacer.</p>
       </Dialogo>
+      {escritorio && (
+        <div className="px-margin pb-12 lg:px-0">
+          <EstadisticasPerfil />
+        </div>
+      )}
     </div>
   )
 }

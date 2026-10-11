@@ -102,7 +102,7 @@ export function PrivacidadUbicacion() {
               onPointerUp={guardarRadio}
               onKeyUp={guardarRadio}
               onBlur={guardarRadio}
-              className="w-full accent-primary-600"
+              className="h-8 w-full accent-primary-600"
             />
             <div className="flex justify-between text-body-sm text-text-secondary">
               <span>100m</span>

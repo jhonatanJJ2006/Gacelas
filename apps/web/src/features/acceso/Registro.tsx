@@ -146,7 +146,7 @@ export function Registro() {
               <button
                 type="button"
                 onClick={() => setLegal('terminos')}
-                className="text-primary-500 underline"
+                className="inline-block py-2 text-primary-500 underline"
               >
                 Términos de Servicio
               </button>{' '}
@@ -154,7 +154,7 @@ export function Registro() {
               <button
                 type="button"
                 onClick={() => setLegal('privacidad')}
-                className="text-primary-500 underline"
+                className="inline-block py-2 text-primary-500 underline"
               >
                 Política de Privacidad
               </button>
@@ -165,7 +165,7 @@ export function Registro() {
                 ¿Ya tienes cuenta?{' '}
                 <Link
                   to="/inicio-sesion"
-                  className="text-primary-500 hover:text-primary-400 font-medium"
+                  className="inline-block py-2 text-primary-500 hover:text-primary-400 font-medium"
                 >
                   Iniciar sesión
                 </Link>

@@ -106,7 +106,7 @@ export function InicioSesion() {
             <div className="flex justify-end">
               <Link
                 to="/recuperar-contrasena"
-                className="text-sm text-primary-500 hover:text-primary-400 font-medium"
+                className="inline-block py-2 text-sm text-primary-500 hover:text-primary-400 font-medium"
               >
                 ¿Olvidaste tu contraseña?
               </Link>
@@ -128,7 +128,7 @@ export function InicioSesion() {
                 ¿No tienes cuenta?{' '}
                 <Link
                   to="/registro"
-                  className="text-primary-500 hover:text-primary-400 font-medium"
+                  className="inline-block py-2 text-primary-500 hover:text-primary-400 font-medium"
                 >
                   Crear cuenta
                 </Link>
