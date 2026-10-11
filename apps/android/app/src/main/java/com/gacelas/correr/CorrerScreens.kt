@@ -743,6 +743,17 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
                 }
             }
         }, icono = Icons.Filled.Save, enabled = !guardando)
+        var compartiendo by remember { mutableStateOf(false) }
+        if (estado.segundos > 0) BotonSecundario("Compartir en redes", { compartiendo = true })
+        if (compartiendo) com.gacelas.compartir.CompartirDialogo(
+            com.gacelas.compartir.DatosCompartir(
+                com.gacelas.compartir.DatosCompartir.Tipo.Carrera,
+                titulo.ifBlank { "Mi carrera" },
+                // Privacidad: sin los primeros/ultimos 250 m (no revela la casa).
+                com.gacelas.compartir.Compartir.recortarExtremos(estado.puntos.map { it.lat to it.lng }),
+                estado.distanciaKm, estado.segundos, estado.ritmoPromedioSegKm, estado.desnivelM.toInt(), rachaDespues.diaria,
+            ),
+        ) { compartiendo = false }
         BotonSecundario("Descartar", salirSinGuardar, color = GColors.TextSecondary)
     }
 }

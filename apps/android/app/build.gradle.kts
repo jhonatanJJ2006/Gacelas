@@ -33,6 +33,8 @@ android {
         buildConfigField("String", "SUPABASE_URL", "\"${localProp("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProp("SUPABASE_ANON_KEY")}\"")
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"${localProp("GOOGLE_WEB_CLIENT_ID")}\"")
+        // Instagram exige un Facebook App ID en las historias compartidas (vacio = se usa el paquete).
+        buildConfigField("String", "FACEBOOK_APP_ID", "\"${localProp("FACEBOOK_APP_ID")}\"")
         manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = localProp("GOOGLE_MAPS_API_KEY")
     }
 

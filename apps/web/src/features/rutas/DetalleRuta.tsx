@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { MapaGoogle } from '../../components/MapaGoogle'
 import { TrazadoRuta } from '../../components/TrazadoRuta'
 import type { CorredorRuta, FotoRuta, ResenaRuta } from '../../data/repositorios'
 import { PerfilElevacion } from './PerfilElevacion'
+import { CompartirDialogo } from '../../components/CompartirDialogo'
+import { enlaceRuta, type DatosCompartir } from '../../lib/compartir'
+import { subirVistaPrevia } from '../../lib/vistaPrevia'
+import { useRacha } from '../../store/app'
 import { aPuntosGps } from '../../lib/enVivo'
 import { Unidades } from '../../lib/geo'
 import { ETIQUETAS_RUTA } from '../../lib/rutas'
@@ -36,6 +40,8 @@ export function DetalleRuta() {
     total: 0,
   })
   const [subiendo, setSubiendo] = useState(false)
+  const [compartiendo, setCompartiendo] = useState(false)
+  const rachaDias = useRacha().diaria
 
   useEffect(() => {
     if (!sociales) return
@@ -59,6 +65,25 @@ export function DetalleRuta() {
     }
   }
 
+  const datosCompartir = useMemo<DatosCompartir>(
+    () => ({
+      tipo: 'ruta',
+      titulo: ruta?.nombre ?? 'Ruta',
+      puntos: ruta?.puntos ?? [],
+      distanciaKm: ruta?.distanciaKm ?? 0,
+      desnivelM: ruta?.elevacionM,
+      rachaDias,
+      enlace: enlaceRuta(id),
+    }),
+    [ruta?.nombre, ruta?.puntos, ruta?.distanciaKm, ruta?.elevacionM, rachaDias, id]
+  )
+  const esPropia = !!ruta?.propia
+  const alGenerarPost = useCallback(
+    (b: Blob) => {
+      if (esPropia) void subirVistaPrevia(id, b)
+    },
+    [esPropia, id]
+  )
   if (!ruta)
     return (
       <main className="w-full min-h-screen bg-surface px-margin py-6">
@@ -172,6 +197,14 @@ export function DetalleRuta() {
             >
               <span className="material-symbols-outlined">directions_run</span>
               Correr esta ruta
+            </button>
+            <button
+              onClick={() => setCompartiendo(true)}
+              aria-label="Compartir ruta"
+              data-testid="compartir-ruta"
+              className="h-12 w-12 rounded-xl bg-surface-container text-text-primary flex items-center justify-center"
+            >
+              <span className="material-symbols-outlined">share</span>
             </button>
             {sociales && (
               <button
@@ -327,6 +360,13 @@ export function DetalleRuta() {
           </div>
         )}
       </div>
+      {compartiendo && (
+        <CompartirDialogo
+          datos={datosCompartir}
+          onCerrar={() => setCompartiendo(false)}
+          alGenerarPost={alGenerarPost}
+        />
+      )}
     </main>
   )
 }

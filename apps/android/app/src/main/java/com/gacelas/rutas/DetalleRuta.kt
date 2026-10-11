@@ -1,5 +1,6 @@
 package com.gacelas.rutas
 
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.foundation.horizontalScroll
 import android.Manifest
@@ -106,6 +107,9 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
     var fotos by remember { mutableStateOf<List<String>>(emptyList()) }
     var corredores by remember { mutableStateOf(emptyList<Pair<String, Int>>() to 0) }
     var subiendo by remember { mutableStateOf(false) }
+    var compartiendo by remember { mutableStateOf(false) }
+    val carrerasRacha by com.gacelas.ui.carrerasState()
+    val rachaDias = remember(carrerasRacha, ajustes.metaSemanal) { com.gacelas.data.rachas.Rachas.calcular(carrerasRacha, System.currentTimeMillis(), ajustes.metaSemanal).diaria }
     LaunchedEffect(id, sociales) {
         if (!sociales) return@LaunchedEffect
         resenas = repo!!.resenas(id)
@@ -132,6 +136,12 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
             Text("Ruta no encontrada", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.padding(16.dp))
             return
         }
+        if (compartiendo) com.gacelas.compartir.CompartirDialogo(
+            com.gacelas.compartir.DatosCompartir(
+                com.gacelas.compartir.DatosCompartir.Tipo.Ruta, ruta.nombre, ruta.puntos, ruta.distanciaKm,
+                desnivelM = ruta.elevacionM, rachaDias = rachaDias, enlace = com.gacelas.compartir.enlaceRuta(ruta.id),
+            ),
+        ) { compartiendo = false }
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -158,6 +168,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
             ruta.autorNombre?.let { Text("Creada por $it", style = GType.bodySm, color = GColors.TextSecondary) }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 BotonPrimario("Correr esta ruta", { com.gacelas.data.rutas.RutaActiva.id = id; onCorrer() }, Modifier.weight(1f), icono = Icons.AutoMirrored.Filled.DirectionsRun)
+                IconButton(onClick = { compartiendo = true }, modifier = Modifier.clip(CircleShape).background(GColors.SurfaceContainer)) { Icon(Icons.Filled.Share, "Compartir ruta", tint = GColors.TextPrimary) }
                 if (sociales) {
                     val activo = id in meGusta
                     Row(
