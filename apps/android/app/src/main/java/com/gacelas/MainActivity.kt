@@ -68,7 +68,10 @@ class MainActivity : ComponentActivity() {
                 // sus propios toques, asi que este detector solo recibe toques en zonas vacias.
                 val foco = LocalFocusManager.current
                 val teclado = LocalSoftwareKeyboardController.current
-                Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { foco.clearFocus(); teclado?.hide() } }) { GacelasRaiz() }
+                Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { foco.clearFocus(); teclado?.hide() } }) {
+                    GacelasRaiz()
+                    com.gacelas.actualizacion.AvisoActualizacion()
+                }
             }
         }
     }
