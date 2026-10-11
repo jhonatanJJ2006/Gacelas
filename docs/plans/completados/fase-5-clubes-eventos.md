@@ -39,3 +39,9 @@ Objetivo: carreras grupales y comunidades organizadas (ROADMAP, Fase 5).
 - Web: `lib/__tests__/fase5.test.ts` (clubes, cupo, calendario, clasificación, repetición).
 - Android: `Fase5Test.kt` (lo mismo + repositorio de clubes con backend falso).
 - RLS en producción: 27/27 comprobaciones (script de QA externo `qa/fase5/rls.mjs`).
+
+## Verificación
+
+- Producción (web): crear club con aprobación, publicar, evento de club con cupo, solicitud y aprobación, lista de espera, calendario, clasificación en vivo y repetición (8/8).
+- Android en emulador (`gacelas_phone`): unirse al club, publicar, inscribirse al evento, correr en vivo asociado al evento (con ocultado de casa), clasificación con dos corredores, compartir imagen e intent de Instagram Historia, dibujar ruta y subir foto.
+- Arreglos tras la verificación: encuadre del mapa del evento en Android, plural de miembros, título del calendario en web.

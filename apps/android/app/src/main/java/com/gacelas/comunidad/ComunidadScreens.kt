@@ -388,7 +388,7 @@ fun DetalleEventoScreen(id: String, onAtras: () -> Unit, onEnVivo: () -> Unit = 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Filled.CalendarToday, null, tint = GColors.Primary500)
                         Column(Modifier.padding(start = 12.dp)) {
-                            Text("${e.fecha}, 2026", style = GType.labelLg, color = GColors.TextPrimary)
+                            Text(if (e.fecha.any(Char::isDigit) && !e.fecha.contains("20")) "${e.fecha}, 2026" else e.fecha, style = GType.labelLg, color = GColors.TextPrimary)
                             Text(e.hora, style = GType.bodySm, color = GColors.TextSecondary)
                         }
                     }
