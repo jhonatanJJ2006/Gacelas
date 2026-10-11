@@ -2,6 +2,9 @@ package com.gacelas.ui.three
 
 import android.app.ActivityManager
 import android.content.Context
+import android.opengl.EGL14
+import android.opengl.EGLConfig
+import android.opengl.GLES20
 import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.background
@@ -34,8 +37,11 @@ import io.github.sceneview.rememberCameraNode
 import io.github.sceneview.rememberEngine
 import io.github.sceneview.rememberModelLoader
 
-/** Clips incluidos en gacelas-runner-animated.glb. */
-enum class ClipCorredor(val nombre: String) { Idle("Idle"), Jog("Jog"), Run("Run") }
+/**
+ * Clips incluidos en gacelas-runner-animated.glb. [alturaY] baja el modelo para que quede
+ * centrado en el origen: cada clip deja la cadera a una altura distinta (medido en emulador).
+ */
+enum class ClipCorredor(val nombre: String, val alturaY: Float) { Idle("Idle", -1.8f), Jog("Jog", -0.9f), Run("Run", -0.9f) }
 
 const val MODELO_CORREDOR = "models/gacelas-runner-animated.glb"
 
@@ -48,7 +54,31 @@ private const val TAG = "Runner3D"
 fun soporta3D(context: Context): Boolean {
     if (Build.FINGERPRINT == "robolectric") return false
     val am = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager ?: return false
-    return am.deviceConfigurationInfo.reqGlEsVersion >= 0x30000
+    if (am.deviceConfigurationInfo.reqGlEsVersion < 0x30000) return false
+    return !rendererProblematico(renderizadorGl)
+}
+
+/** Filament se cae (SIGSEGV en FEngine::loop) con el traductor SwiftShader del emulador. */
+fun rendererProblematico(renderer: String?) = renderer?.contains("SwiftShader", ignoreCase = true) == true
+
+/** GL_RENDERER del dispositivo, leido una vez con un contexto EGL temporal. */
+private val renderizadorGl: String? by lazy {
+    runCatching {
+        val d = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
+        val v = IntArray(2)
+        EGL14.eglInitialize(d, v, 0, v, 1)
+        val cfg = arrayOfNulls<EGLConfig>(1)
+        val n = IntArray(1)
+        EGL14.eglChooseConfig(d, intArrayOf(EGL14.EGL_RENDERABLE_TYPE, 0x40 /* EGL_OPENGL_ES3_BIT */, EGL14.EGL_SURFACE_TYPE, EGL14.EGL_PBUFFER_BIT, EGL14.EGL_NONE), 0, cfg, 0, 1, n, 0)
+        val ctx = EGL14.eglCreateContext(d, cfg[0], EGL14.EGL_NO_CONTEXT, intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, 3, EGL14.EGL_NONE), 0)
+        val sup = EGL14.eglCreatePbufferSurface(d, cfg[0], intArrayOf(EGL14.EGL_WIDTH, 1, EGL14.EGL_HEIGHT, 1, EGL14.EGL_NONE), 0)
+        EGL14.eglMakeCurrent(d, sup, sup, ctx)
+        val r = GLES20.glGetString(GLES20.GL_RENDERER)
+        EGL14.eglMakeCurrent(d, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT)
+        EGL14.eglDestroySurface(d, sup)
+        EGL14.eglDestroyContext(d, ctx)
+        r
+    }.onSuccess { Log.i(TAG, "GL_RENDERER: $it") }.onFailure { Log.w(TAG, "No se pudo leer GL_RENDERER", it) }.getOrNull()
 }
 
 /**
@@ -77,7 +107,12 @@ fun Runner3D(
                 autoAnimate = false,
                 scaleToUnits = 1.8f,
                 centerOrigin = Position(0f, 0f, 0f),
-            ).apply { playAnimation(clip.nombre, loop = true) }
+            ).apply {
+                // centerOrigin no centra este GLB animado (queda con los pies en el origen):
+                // se baja medio cuerpo para que la camara, que mira al origen, lo encuadre entero.
+                position = Position(0f, clip.alturaY, 0f)
+                playAnimation(clip.nombre, loop = true)
+            }
         }.onFailure { Log.w(TAG, "No se pudo cargar el corredor 3D", it) }.getOrNull()
     }
     if (modelo == null) {

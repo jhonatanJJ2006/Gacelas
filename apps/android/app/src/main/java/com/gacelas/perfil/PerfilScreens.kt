@@ -277,7 +277,7 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
         }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding()) {
             Box(Modifier.fillMaxWidth().height(340.dp).background(Brush.verticalGradient(listOf(GColors.SurfaceLow, equipaciones[equipacion].copy(alpha = 0.18f))))) {
-                Runner3D(ClipCorredor.Idle, autoRotar = true, camara = Position(0f, 0.5f, 3.4f))
+                Runner3D(ClipCorredor.Idle, autoRotar = true, camara = Position(0f, 0.3f, 4.4f))
             }
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Tarjeta {

@@ -43,6 +43,8 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null) {
     val tracker = RunTracker()
     /** Seguimiento en vivo; null sin servidor. */
     val enVivo: com.gacelas.data.envivo.EnVivoRepository?
+    /** Notificaciones reales; null sin servidor (se muestran las de ejemplo). */
+    val notificaciones: com.gacelas.data.notificaciones.NotificacionesRepository?
 
     /** Descarga los datos de la cuenta y sube lo pendiente. No hace nada sin servidor. */
     val sincronizar: suspend () -> Unit
@@ -56,6 +58,7 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null) {
             eventos = LocalEventosRepository(store)
             sincronizar = {}
             enVivo = null
+            notificaciones = null
         } else {
             lateinit var remotoAuth: SupabaseAuthRepository
             val uid: suspend () -> String? = { remotoAuth.userId() }
@@ -72,6 +75,7 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null) {
             eventos = e
             sincronizar = { remotoAuth.restaurar() }
             enVivo = com.gacelas.data.envivo.EnVivoRepository(backend, uid)
+            notificaciones = com.gacelas.data.notificaciones.NotificacionesRepository(backend, uid)
         }
     }
 

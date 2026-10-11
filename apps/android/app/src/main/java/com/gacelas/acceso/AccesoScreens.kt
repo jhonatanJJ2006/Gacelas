@@ -105,6 +105,7 @@ fun BienvenidaScreen(onSaltar: () -> Unit, onCrearCuenta: () -> Unit, onIniciarS
                 drawPath(path(0f to 200f, 0f to 150f, 60f to 110f, 130f to 135f, 200f to 90f, 280f to 140f, 360f to 100f, 400f to 130f, 400f to 200f, cerrar = true), GColors.BgSecondary)
                 drawPath(path(0f to 150f, 60f to 110f, 130f to 135f, 200f to 90f, 280f to 140f, 360f to 100f, 400f to 130f, cerrar = false), GColors.Primary500.copy(alpha = 0.4f), style = Stroke(3f))
             }
+            com.gacelas.ui.three.Runner3D(com.gacelas.ui.three.ClipCorredor.Jog, camara = io.github.sceneview.math.Position(0f, 0f, 4.2f))
             Row(Modifier.align(Alignment.BottomStart).padding(16.dp).clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.7f)).padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(8.dp).clip(CircleShape).background(GColors.Secondary500))
                 Spacer(Modifier.width(6.dp))

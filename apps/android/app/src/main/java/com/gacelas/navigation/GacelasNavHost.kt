@@ -44,6 +44,17 @@ fun NavHostController.irAPestana(ruta: String) {
     }
 }
 
+/**
+ * Sale del flujo de carrera a Inicio sin restaurar estado guardado: con restoreState, la
+ * pestaña Inicio podia restaurar una pila que aun tenia el resumen y la app se quedaba ahi.
+ */
+fun NavHostController.volverAInicio() {
+    navigate(Destinos.INICIO) {
+        popUpTo(Destinos.INICIO) { inclusive = true }
+        launchSingleTop = true
+    }
+}
+
 /** Entra a la app y limpia el flujo de acceso de la pila. */
 fun NavHostController.entrarApp() {
     navigate(Destinos.INICIO) {
@@ -144,7 +155,7 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
     }
     composable(Destinos.CRONOMETRO) { CronometroScreen(onAtras = { nav.popBackStack() }, onFin = { nav.navigate(Destinos.RESUMEN) }) }
     composable(Destinos.RESUMEN) {
-        val volver = { nav.irAPestana(Destinos.INICIO) }
+        val volver = { nav.volverAInicio() }
         ResumenPostCarreraScreen(onCerrar = volver, onGuardar = volver, onDescartar = volver)
     }
     composable(Destinos.BUSCADOR_RUTAS) { BuscadorRutasScreen(onAtras = { nav.popBackStack() }, onNavegar = { nav.navigate(Destinos.NAVEGACION) }) }
@@ -177,7 +188,7 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
                 TipoNotificacion.Evento -> nav.navigate(Destinos.detalleEvento("1"))
                 TipoNotificacion.EnVivo -> nav.navigate(Destinos.EN_VIVO)
                 TipoNotificacion.Comentario, TipoNotificacion.Like -> nav.irAPestana(Destinos.COMUNIDAD)
-                TipoNotificacion.Seguidor -> nav.irAPestana(Destinos.PERFIL)
+                TipoNotificacion.Seguidor, TipoNotificacion.Racha -> nav.irAPestana(Destinos.PERFIL)
             }
         })
     }
