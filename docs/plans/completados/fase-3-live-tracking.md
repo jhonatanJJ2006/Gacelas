@@ -9,7 +9,7 @@
 ## 3.2 Compartir en vivo
 
 - [x] Web y Android: botón "Compartir en vivo" en la carrera en curso; envía la posición cada 5 s; se cierra al terminar o descartar.
-- [x] Audiencia: la de `live_sharing_settings` o, si no hay, según la visibilidad del perfil (pública → pública; si no, seguidores).
+- [x] Audiencia: la de `live_sharing_settings` o, si no hay, según la visibilidad del perfil (si es pública, pública; si no, seguidores).
 
 ## 3.3 Ver en vivo
 
