@@ -25,21 +25,34 @@ export function EditarPerfil() {
 
   if (!sesion) return <Navigate to="/bienvenida" replace />
 
+  const fallar = (m: string) => {
+    setError(m)
+    requestAnimationFrame(() =>
+      document
+        .querySelector('[role="alert"]')
+        ?.scrollIntoView?.({ block: 'center', behavior: 'smooth' })
+    )
+  }
+
   const handleGuardar = async () => {
-    if (nombre.trim().length < 2) return setError('Ingresa tu nombre')
+    if (nombre.trim().length < 2) return fallar('Ingresa tu nombre')
     const usuario = username.trim().replace(/^@/, '')
     if (!/^[a-zA-Z0-9_.]{3,20}$/.test(usuario))
-      return setError('El usuario debe tener de 3 a 20 letras, números, punto o guion bajo')
-    await actualizarPerfil({
-      ...sesion,
-      nombre: nombre.trim(),
-      username: usuario,
-      bio,
-      ubicacion: ubicacion.trim(),
-      edad,
-      genero,
-      foto,
-    })
+      return fallar('El usuario debe tener de 3 a 20 letras, números, punto o guion bajo')
+    try {
+      await actualizarPerfil({
+        ...sesion,
+        nombre: nombre.trim(),
+        username: usuario,
+        bio,
+        ubicacion: ubicacion.trim(),
+        edad,
+        genero,
+        foto,
+      })
+    } catch (e) {
+      return fallar(e instanceof Error ? e.message : 'No se pudo guardar el perfil')
+    }
     navigate('/perfil')
   }
 

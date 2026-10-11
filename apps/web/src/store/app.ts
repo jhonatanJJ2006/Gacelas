@@ -7,7 +7,7 @@ import {
   type Perfil,
   type ResultadoAuth,
 } from '../data/tipos'
-import type { Evento } from '../mocks/data'
+import { notificacionesMock, type Evento, type Notificacion } from '../mocks/data'
 import { obtenerSupabase } from '../lib/supabase'
 import { repositoriosSupabase } from '../data/supabaseRepos'
 
@@ -33,6 +33,9 @@ export interface EstadoApp {
   rutasGuardadas: string[]
   eventosCreados: Evento[]
   inscritos: string[]
+  /** Notificaciones de la cuenta (o las de ejemplo sin backend). */
+  notificaciones: Notificacion[]
+  marcarNotificacionesLeidas(ids: string[]): Promise<void>
   cargar(): Promise<void>
   iniciarSesion(email: string, password: string): Promise<ResultadoAuth>
   registrar(nombre: string, email: string, password: string): Promise<ResultadoAuth>
@@ -57,6 +60,7 @@ export const useApp = create<EstadoApp>((set, get) => ({
   rutasGuardadas: [],
   eventosCreados: [],
   inscritos: [],
+  notificaciones: notificacionesMock,
 
   async cargar() {
     const [sesion, ajustes, carreras, rutasGuardadas, eventosCreados, inscritos] =
@@ -68,7 +72,20 @@ export const useApp = create<EstadoApp>((set, get) => ({
         repos.eventos.creados(),
         repos.eventos.inscritos(),
       ])
-    set({ listo: true, sesion, ajustes, carreras, rutasGuardadas, eventosCreados, inscritos })
+    const notificaciones =
+      repos.notificaciones && sesion
+        ? await repos.notificaciones.listar().catch(() => [])
+        : notificacionesMock
+    set({
+      listo: true,
+      sesion,
+      ajustes,
+      carreras,
+      rutasGuardadas,
+      eventosCreados,
+      inscritos,
+      notificaciones,
+    })
     dejarDeEscuchar?.()
     dejarDeEscuchar =
       repos.auth.alCambiarSesion?.((perfil) => {
@@ -78,6 +95,16 @@ export const useApp = create<EstadoApp>((set, get) => ({
         if (!perfil) return set({ sesion: null })
         void get().cargar()
       }) ?? null
+  },
+
+  async marcarNotificacionesLeidas(ids) {
+    set((s) => ({
+      notificaciones: s.notificaciones.map((n) => (ids.includes(n.id) ? { ...n, leida: true } : n)),
+    }))
+    if (repos.notificaciones) return repos.notificaciones.marcarLeidas(ids)
+    await get().actualizarAjustes((a) => ({
+      notificacionesLeidas: Array.from(new Set([...a.notificacionesLeidas, ...ids])),
+    }))
   },
 
   async iniciarSesion(email, password) {

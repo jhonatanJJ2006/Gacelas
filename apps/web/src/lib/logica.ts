@@ -24,7 +24,8 @@ export interface Publicacion {
 
 export type FiltroFeed = 'Todos' | 'Comunidad' | 'Mías'
 
-const hace = (ms: number, ahora: number) => {
+export const tiempoRelativo = (ms: number, ahora: number) => {
+  if (!Number.isFinite(ms)) return ''
   const min = Math.max(0, Math.round((ahora - ms) / 60_000))
   if (min < 60) return `hace ${min} min`
   if (min < 1440) return `hace ${Math.round(min / 60)}h`
@@ -75,7 +76,7 @@ export function construirFeed(
       autor: nombre,
       propia: true,
       titulo: c.titulo,
-      tiempo: hace(c.inicioMs, ahora),
+      tiempo: tiempoRelativo(c.inicioMs, ahora),
       distanciaKm: c.distanciaKm,
       segundos: c.segundos,
       ritmoSegKm: c.distanciaKm > 0.01 ? Math.floor(c.segundos / c.distanciaKm) : null,

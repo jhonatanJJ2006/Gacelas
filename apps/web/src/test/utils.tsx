@@ -1,3 +1,4 @@
+import { notificacionesMock } from '../mocks/data'
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { vi } from 'vitest'
@@ -60,6 +61,7 @@ export function prepararApp(
     carreras: opciones.carreras ?? [],
     rutasGuardadas: [],
     eventosCreados: [],
+    notificaciones: notificacionesMock,
     inscritos: [],
   })
 }

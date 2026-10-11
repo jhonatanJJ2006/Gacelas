@@ -32,7 +32,7 @@ describe('notificaciones', () => {
     expect(screen.getAllByTestId('notificacion')).toHaveLength(1)
     await userEvent.click(screen.getByRole('tab', { name: 'Todas' }))
     await userEvent.click(screen.getByRole('button', { name: /marcar todas/i }))
-    expect(useApp.getState().ajustes.notificacionesLeidas.length).toBe(total)
+    expect(useApp.getState().notificaciones.every((n) => n.leida)).toBe(true)
     await userEvent.click(screen.getByRole('tab', { name: 'Sin leer' }))
     expect(screen.getByText('No hay notificaciones.')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('tab', { name: 'Todas' }))

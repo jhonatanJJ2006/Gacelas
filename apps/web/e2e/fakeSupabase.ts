@@ -97,7 +97,6 @@ export async function instalarFakeSupabase(context: BrowserContext): Promise<Est
       // Como el trigger handle_new_user.
       tabla('profiles').push({
         id: u.id,
-        email,
         full_name: u.user_metadata.full_name,
         username: u.user_metadata.username,
         location: 'Loja, Ecuador',
@@ -105,6 +104,25 @@ export async function instalarFakeSupabase(context: BrowserContext): Promise<Est
         age: '',
         gender: 'Prefiero no decir',
       })
+      ;(
+        [
+          ['live', 'María López', 'está corriendo ahora', false],
+          ['like', 'Carlos Ruiz', 'le gustó tu carrera', false],
+          ['comment', 'Ana Martínez', 'comentó tu carrera', true],
+          ['follow', 'Pedro Sánchez', 'empezó a seguirte', true],
+          ['event', 'Gacelas Loja', 'Bienvenido a Gacelas', true],
+        ] as const
+      ).forEach(([type, actor_name, message, read], i) =>
+        tabla('notifications').push({
+          id: `n-${u.id}-${i}`,
+          user_id: u.id,
+          type,
+          actor_name,
+          message,
+          read,
+          created_at: new Date(Date.now() - i * 3_600_000).toISOString(),
+        })
+      )
       tabla('user_settings').push({
         user_id: u.id,
         visibility: 'followers',
@@ -155,9 +173,20 @@ export async function instalarFakeSupabase(context: BrowserContext): Promise<Est
     cab: Record<string, string>
   ) {
     const filtros = [...url.searchParams.entries()].filter(
-      ([k, v]) => !['select', 'order', 'on_conflict', 'limit'].includes(k) && v.startsWith('eq.')
+      ([k, v]) =>
+        !['select', 'order', 'on_conflict', 'limit'].includes(k) &&
+        (v.startsWith('eq.') || v.startsWith('in.'))
     )
-    const coincide = (r: Fila) => filtros.every(([k, v]) => String(r[k]) === v.slice(3))
+    const coincide = (r: Fila) =>
+      filtros.every(([k, v]) =>
+        v.startsWith('in.')
+          ? v
+              .slice(4, -1)
+              .split(',')
+              .map((x) => x.replace(/^"|"$/g, ''))
+              .includes(String(r[k]))
+          : String(r[k]) === v.slice(3)
+      )
     const unObjeto = (cab.accept ?? '').includes('vnd.pgrst.object')
     const responder = (filas: Fila[]) => {
       if (unObjeto)
