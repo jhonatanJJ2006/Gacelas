@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { CampoContrasena } from '../../components/CampoContrasena'
 import { useApp } from '../../store/app'
 import { MensajeError } from '../../components/ui'
 
@@ -30,9 +31,8 @@ export function NuevaContrasena() {
         <label htmlFor="nueva" className="block text-sm font-medium text-text-primary">
           Contraseña nueva
         </label>
-        <input
+        <CampoContrasena
           id="nueva"
-          type="password"
           value={password}
           onChange={(e) => {
             setPassword(e.target.value)

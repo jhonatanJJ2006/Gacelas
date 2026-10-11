@@ -14,6 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.gacelas.data.auth.Perfil
 import com.gacelas.navigation.Destinos
 import com.gacelas.navigation.GacelasNavHost
@@ -29,7 +33,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            GacelasTheme { GacelasRaiz() }
+            GacelasTheme {
+                // Tocar fuera de un campo oculta el teclado. Los botones, listas y mapas consumen
+                // sus propios toques, asi que este detector solo recibe toques en zonas vacias.
+                val foco = LocalFocusManager.current
+                val teclado = LocalSoftwareKeyboardController.current
+                Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { foco.clearFocus(); teclado?.hide() } }) { GacelasRaiz() }
+            }
         }
     }
 }
