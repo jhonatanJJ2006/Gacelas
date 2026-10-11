@@ -36,12 +36,7 @@ fun MapaOfflineAjuste() {
                 Column(Modifier.weight(1f)) {
                     Text("Mapa sin conexión: ${MapaOffline.LOJA.nombre}", style = GType.bodyLg, color = GColors.TextPrimary)
                     Text(
-                        when (val e = estado) {
-                            EstadoDescarga.SinDescargar -> "Descarga las calles de Loja (OpenStreetMap) para correr sin datos"
-                            is EstadoDescarga.Descargando -> "Descargando ${e.porcentaje}% (%.1f MB)".format(e.megas)
-                            is EstadoDescarga.Lista -> "Listo para usar sin red (%.1f MB)".format(e.megas)
-                            is EstadoDescarga.Error -> e.mensaje
-                        },
+                        textoEstadoMapa(estado),
                         style = GType.bodySm, color = GColors.TextSecondary,
                     )
                 }
@@ -53,5 +48,16 @@ fun MapaOfflineAjuste() {
             }
             (estado as? EstadoDescarga.Descargando)?.let { LinearProgressIndicator(progress = { it.porcentaje / 100f }, modifier = Modifier.fillMaxWidth()) }
         }
+    }
+}
+
+/** Texto del estado de la descarga. El porcentaje va fuera del patron de format: un "%" suelto lo rompia (crash en v0.6.x). */
+internal fun textoEstadoMapa(e: EstadoDescarga): String {
+    fun mb(m: Double) = String.format(java.util.Locale.US, "%.1f MB", m)
+    return when (e) {
+        EstadoDescarga.SinDescargar -> "Descarga las calles de Loja (OpenStreetMap) para correr sin datos"
+        is EstadoDescarga.Descargando -> "Descargando ${e.porcentaje}% (${mb(e.megas)})"
+        is EstadoDescarga.Lista -> "Listo para usar sin red (${mb(e.megas)})"
+        is EstadoDescarga.Error -> e.mensaje
     }
 }
