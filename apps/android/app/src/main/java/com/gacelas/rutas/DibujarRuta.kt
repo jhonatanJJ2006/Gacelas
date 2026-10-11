@@ -136,7 +136,7 @@ fun DibujarRutaScreen(onAtras: () -> Unit, onCreada: (String) -> Unit) {
                             val pares = puntos.map { it.latitude to it.longitude }
                             val perfil = Elevacion.perfil(pares)
                             runCatching { repo.crear(nombre.trim(), descripcion.trim(), dificultad, etiquetas.toList(), pares, Elevacion.desnivelPositivo(perfil), null, perfil, "dibujada") }
-                                .onSuccess { context.aviso("Ruta publicada"); onCreada(it) }
+                                .onSuccess { context.aviso(if (repo.pendiente(it)) "Sin conexión: la ruta quedó en el celular y se publicará al volver la red" else "Ruta publicada"); onCreada(it) }
                                 .onFailure { context.aviso(it.message ?: "No se pudo publicar"); guardando = false }
                         }
                     }

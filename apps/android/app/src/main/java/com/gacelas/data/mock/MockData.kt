@@ -19,6 +19,7 @@ data class Actividad(
 
 enum class Dificultad(val etiqueta: String) { Facil("Fácil"), Moderado("Moderado"), Dificil("Difícil") }
 
+@Serializable
 data class Ruta(
     val id: String,
     val nombre: String,
