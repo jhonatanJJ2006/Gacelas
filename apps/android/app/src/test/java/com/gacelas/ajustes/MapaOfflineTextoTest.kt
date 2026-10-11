@@ -25,3 +25,14 @@ class MapaOfflineTextoTest {
         }
     }
 }
+
+class MapaCompactoTest {
+    @org.junit.Test fun corredorEntraCompletoEnTarjetaPequena() {
+        listOf(260f, 320f, 400f, 479f).forEach { alto ->
+            val lado = com.gacelas.ui.components.MapaCompacto.ladoCorredor(androidx.compose.ui.unit.Dp(alto)).value
+            val (arriba, abajo) = com.gacelas.ui.components.MapaCompacto.franjaCorredor(alto, lado)
+            org.junit.Assert.assertTrue("alto $alto: $arriba-$abajo", arriba >= 0f && abajo <= 1f)
+            org.junit.Assert.assertTrue(abajo > 2f / 3f)
+        }
+    }
+}

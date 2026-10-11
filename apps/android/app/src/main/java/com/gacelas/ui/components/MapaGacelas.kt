@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -94,8 +95,12 @@ fun MapaGacelas(
     var rumbo by remember { mutableStateOf<Float?>(null) }
     LaunchedEffect(rumboCombinado) { if (Rumbo.cambioRelevante(rumbo, rumboCombinado)) rumbo = rumboCombinado }
     var ultimoAnimado by remember { mutableStateOf<LatLng?>(null) }
+    // Alto del mapa: en la tarjeta pequena de la pantalla de carrera el corredor se cortaba abajo.
+    var altoPx by remember { mutableStateOf(0) }
+    val densidadMapa = LocalDensity.current
+    val compacto = altoPx > 0 && with(densidadMapa) { altoPx.toDp() } < MapaCompacto.ALTO_MAX
 
-    LaunchedEffect(mapa, puntos.size, ultimo, modo3d, siguiendo, rumbo) {
+    LaunchedEffect(mapa, puntos.size, ultimo, modo3d, siguiendo, rumbo, compacto) {
         val m = mapa ?: return@LaunchedEffect
         runCatching {
             when {
@@ -104,11 +109,13 @@ fun MapaGacelas(
                 seguir && modo3d -> {
                     val r = (rumbo ?: m.cameraPosition.bearing.toFloat()).toDouble()
                     val z = ZoomNavegacion.para(velocidadMs)
-                    val centro = MapaMat.desplazar(ultimo, r, adelanteM * Math.pow(2.0, 18.0 - z))
+                    // En mapa compacto el punto va en el tercio inferior con padding de camara (sin desplazar el centro).
+                    val centro = if (compacto) ultimo else MapaMat.desplazar(ultimo, r, adelanteM * Math.pow(2.0, 18.0 - z))
+                    val arriba = if (compacto) altoPx * MapaCompacto.PADDING_ARRIBA else 0.0
                     // Punto GPS nuevo: animacion lineal de 1,9 s (avance continuo). Solo giro del sensor: 500 ms.
                     val nuevoPunto = ultimo != ultimoAnimado
                     ultimoAnimado = ultimo
-                    m.easeCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(centro).zoom(z).tilt(60.0).bearing(r).build()), if (nuevoPunto) 1900 else 500, !nuevoPunto)
+                    m.easeCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(centro).zoom(z).tilt(60.0).bearing(r).padding(0.0, arriba, 0.0, 0.0).build()), if (nuevoPunto) 1900 else 500, !nuevoPunto)
                 }
                 seguir || puntos.size < 2 -> m.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(ultimo).zoom(zoom.toDouble()).tilt(0.0).bearing(0.0).build()), 900)
                 else -> m.animateCamera(CameraUpdateFactory.newLatLngBounds(MapaMat.limites(puntos), 80))
@@ -138,7 +145,7 @@ fun MapaGacelas(
         }
     }
 
-    Box(modifier) {
+    Box(modifier.onSizeChanged { altoPx = it.height }) {
         MapaLibre(
             Modifier.fillMaxSize().testTag("mapa-gacelas"),
             trazos = trazos,
@@ -158,7 +165,7 @@ fun MapaGacelas(
             val px = pantalla
             val densidad = LocalDensity.current
             if (px != null) {
-                val lado = 190.dp
+                val lado = if (compacto) MapaCompacto.ladoCorredor(with(densidad) { altoPx.toDp() }) else 190.dp
                 val ladoPx = with(densidad) { lado.toPx() }
                 Box(Modifier.offset { IntOffset((px.x - ladoPx / 2).toInt(), (px.y - ladoPx * 0.86f).toInt()) }.size(lado).testTag("corredor-3d-mapa")) {
                     Runner3D(MapaMat.clipPorRitmo(ritmoSegKm), camara = Position(0f, 1.1f, -3.6f))
@@ -191,5 +198,19 @@ private fun ControlesMapa(mapa: MapLibreMap?, rumbo: Float, modifier: Modifier) 
             onClick = { mapa?.let { m -> m.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder(m.cameraPosition).bearing(0.0).tilt(0.0).build())) } },
             modifier = Modifier.clip(CircleShape).background(Color(0xE6121A2A)),
         ) { Icon(Icons.Filled.Navigation, "Orientar al norte", tint = NARANJA, modifier = Modifier.rotate(-rumbo)) }
+    }
+}
+
+/** Ajustes del mapa 3D cuando es una tarjeta pequena (pantalla de carrera). */
+object MapaCompacto {
+    val ALTO_MAX = 480.dp
+    /** Padding superior relativo: el foco queda a (1 + 0.45) / 2 = 72 % del alto, en el tercio inferior. */
+    const val PADDING_ARRIBA = 0.45
+    /** El corredor ocupa como maximo la mitad del alto, para que entre completo sobre su punto. */
+    fun ladoCorredor(alto: androidx.compose.ui.unit.Dp) = minOf(190.dp, alto * 0.5f)
+    /** Fraccion vertical [arriba, abajo] que ocupa el corredor (pies en el foco, 86 % del lado arriba). */
+    fun franjaCorredor(alto: Float, lado: Float): Pair<Float, Float> {
+        val foco = alto * (1 + PADDING_ARRIBA.toFloat()) / 2
+        return (foco - lado * 0.86f) / alto to (foco + lado * 0.14f) / alto
     }
 }
