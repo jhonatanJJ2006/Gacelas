@@ -1,1 +1,4 @@
 *.glb filter=lfs diff=lfs merge=lfs -text
+
+# La web se despliega en Vercel, que no descarga objetos LFS: el modelo de la web va como archivo normal
+apps/web/public/models/*.glb -filter -diff -merge binary

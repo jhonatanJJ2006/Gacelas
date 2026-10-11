@@ -27,6 +27,10 @@ vi.mock('@react-three/drei', () => ({
   OrbitControls: () => null,
 }))
 
+vi.mock('three/examples/jsm/utils/SkeletonUtils.js', () => ({
+  clone: vi.fn((o: unknown) => o),
+}))
+
 vi.mock('three', () => ({
   Group: class {},
 }))

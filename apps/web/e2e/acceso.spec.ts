@@ -35,3 +35,24 @@ test.describe('Acceso y sesión', () => {
     await expect(page.getByRole('alert')).toBeVisible()
   })
 })
+
+test.describe('bienvenida sin scroll', () => {
+  for (const [w, h] of [
+    [1024, 545],
+    [1440, 900],
+    [390, 844],
+    [360, 640],
+  ]) {
+    test(`cabe en ${w}x${h} y muestra el corredor`, async ({ page }) => {
+      await page.setViewportSize({ width: w, height: h })
+      await page.goto('/bienvenida')
+      await expect(page.getByTestId('bienvenida-corredor')).toBeVisible()
+      await expect(page.getByRole('img', { name: 'Corredor de Gacelas' }).first()).toBeVisible()
+      const { sh, ih } = await page.evaluate(() => ({
+        sh: document.scrollingElement!.scrollHeight,
+        ih: window.innerHeight,
+      }))
+      expect(sh).toBeLessThanOrEqual(ih)
+    })
+  }
+})

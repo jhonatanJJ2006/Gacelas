@@ -4,6 +4,7 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      screens: { short: { raw: '(max-height: 700px)' } },
       colors: {
         info: '#3B82F6',
         primary: {
