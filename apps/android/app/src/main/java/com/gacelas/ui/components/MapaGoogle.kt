@@ -53,6 +53,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import com.gacelas.BuildConfig
+import com.gacelas.core.sensores.Rumbo
+import com.gacelas.core.sensores.rumboSensorState
 import com.gacelas.data.carreras.PuntoGps
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -161,11 +163,19 @@ fun MapaGoogle(
     val con3d = modo3d && seguir && !LocalInspectionMode.current && remember { soporta3D(context) }
     val camara = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(puntos.firstOrNull() ?: plan.firstOrNull() ?: Mapas.CENTRO_LOJA, zoom) }
     var siguiendo by remember { mutableStateOf(true) }
-    val rumbo = remember(puntos.size) { MapaMat.rumboReciente(puntos) }
+    // Rumbo: sensor de orientacion cuando se esta quieto o lento, GPS (ultimos 15 m) al correr,
+    // con mezcla gradual entre ambos segun la velocidad (ver Rumbo.combinar).
+    val rumboGps = remember(puntos.size) { MapaMat.rumboReciente(puntos) }
+    val ultimoPunto = puntos.lastOrNull()
+    val rumboSensor by rumboSensorState(seguir && modo3d, ultimoPunto?.latitude, ultimoPunto?.longitude)
+    val velocidadMs = ritmoSegKm?.takeIf { it in 1..1800 }?.let { 1000.0 / it } ?: 0.0
+    val rumboCombinado = Rumbo.combinar(rumboSensor, rumboGps, velocidadMs)
+    var rumbo by remember { mutableStateOf<Float?>(null) }
+    LaunchedEffect(rumboCombinado) { if (Rumbo.cambioRelevante(rumbo, rumboCombinado)) rumbo = rumboCombinado }
     LaunchedEffect(camara.isMoving, camara.cameraMoveStartedReason) {
         if (camara.isMoving && camara.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE) siguiendo = false
     }
-    LaunchedEffect(puntos.size, puntos.lastOrNull(), modo3d, siguiendo) {
+    LaunchedEffect(puntos.size, puntos.lastOrNull(), modo3d, siguiendo, rumbo) {
         val ultimo = puntos.lastOrNull()
         runCatching {
             when {
@@ -175,7 +185,8 @@ fun MapaGoogle(
                     val r = rumbo ?: camara.position.bearing
                     val z = maxOf(camara.position.zoom, 17.5f)
                     val centro = MapaMat.desplazar(ultimo, r.toDouble(), adelanteM * Math.pow(2.0, 18.0 - z))
-                    camara.animate(CameraUpdateFactory.newCameraPosition(CameraPosition(centro, z, 60f, r)), 900)
+                    // Giros del sensor (sin nuevo punto) se animan mas rapido para que se sientan suaves.
+                    camara.animate(CameraUpdateFactory.newCameraPosition(CameraPosition(centro, z, 60f, r)), if (Rumbo.pesoGps(velocidadMs) < 1f) 500 else 900)
                 }
                 seguir || puntos.size < 2 -> camara.animate(CameraUpdateFactory.newLatLngZoom(ultimo, zoom), 900)
                 else -> camara.animate(CameraUpdateFactory.newLatLngBounds(MapaMat.limites(puntos), 80))
