@@ -7,6 +7,7 @@ import {
   type DatosCompartir,
   type FormatoCompartir,
 } from '../lib/compartir'
+import { ComponerFoto } from './ComponerFoto'
 
 const FORMATOS: { id: FormatoCompartir; etiqueta: string }[] = [
   { id: 'historia', etiqueta: 'Historia' },
@@ -28,6 +29,7 @@ export function CompartirDialogo({
   /** Se llama con la imagen de post (p. ej. para usarla como vista previa del enlace). */
   alGenerarPost?: (b: Blob) => void
 }) {
+  const [modo, setModo] = useState<'foto' | 'marca'>('foto')
   const [formato, setFormato] = useState<FormatoCompartir>('historia')
   const [imagen, setImagen] = useState<Blob | null>(null)
   const [url, setUrl] = useState<string | null>(null)
@@ -94,67 +96,94 @@ export function CompartirDialogo({
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
-        <div role="radiogroup" aria-label="Formato" className="flex gap-2">
-          {FORMATOS.map((f) => (
+        <div
+          role="tablist"
+          className="grid grid-cols-2 gap-1 p-1 rounded-full bg-surface-container"
+        >
+          {(
+            [
+              ['foto', 'Sobre tu foto'],
+              ['marca', 'Imagen Gacelas'],
+            ] as const
+          ).map(([m, e]) => (
             <button
-              key={f.id}
-              role="radio"
-              aria-checked={formato === f.id}
-              onClick={() => setFormato(f.id)}
-              className={`flex-1 min-h-[40px] rounded-full text-sm font-semibold ${formato === f.id ? 'bg-primary-600 text-bg-primary' : 'bg-surface-container text-text-secondary'}`}
+              key={m}
+              role="tab"
+              aria-selected={modo === m}
+              onClick={() => setModo(m)}
+              className={`min-h-[40px] rounded-full text-sm font-semibold ${modo === m ? 'bg-surface text-text-primary' : 'text-text-secondary'}`}
             >
-              {f.etiqueta}
+              {e}
             </button>
           ))}
         </div>
-        <div
-          className="mx-auto rounded-2xl overflow-hidden bg-[repeating-conic-gradient(#1f2937_0_25%,#111827_0_50%)] bg-[length:24px_24px]"
-          style={{ aspectRatio: `${ancho}/${alto}`, maxHeight: '52vh' }}
-        >
-          {url ? (
-            <img
-              src={url}
-              alt={`Vista previa (${ancho}×${alto})`}
-              className="w-full h-full object-contain"
-              data-testid="imagen-compartir"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-text-secondary">
-              Generando…
+        {modo === 'foto' ? (
+          <ComponerFoto datos={datos} />
+        ) : (
+          <>
+            <div role="radiogroup" aria-label="Formato" className="flex gap-2">
+              {FORMATOS.map((f) => (
+                <button
+                  key={f.id}
+                  role="radio"
+                  aria-checked={formato === f.id}
+                  onClick={() => setFormato(f.id)}
+                  className={`flex-1 min-h-[40px] rounded-full text-sm font-semibold ${formato === f.id ? 'bg-primary-600 text-bg-primary' : 'bg-surface-container text-text-secondary'}`}
+                >
+                  {f.etiqueta}
+                </button>
+              ))}
             </div>
-          )}
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => void compartir()}
-            disabled={!imagen}
-            className="col-span-2 h-12 rounded-xl bg-primary-600 text-bg-primary font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
-          >
-            <span className="material-symbols-outlined">ios_share</span>Compartir imagen
-          </button>
-          <a
-            href={url ?? undefined}
-            download={`gacelas-${formato}.png`}
-            aria-disabled={!url}
-            className="h-12 rounded-xl bg-surface-container text-text-primary flex items-center justify-center gap-1"
-          >
-            <span className="material-symbols-outlined">download</span>Descargar
-          </a>
-          <button
-            onClick={() => void copiar()}
-            className="h-12 rounded-xl bg-surface-container text-text-primary flex items-center justify-center gap-1"
-          >
-            <span className="material-symbols-outlined">link</span>Copiar enlace
-          </button>
-          <a
-            href={enlaceWhatsApp(datos)}
-            target="_blank"
-            rel="noreferrer"
-            className="col-span-2 h-12 rounded-xl bg-[#128C4B] text-white font-semibold flex items-center justify-center gap-2"
-          >
-            <span className="material-symbols-outlined">chat</span>Enviar por WhatsApp
-          </a>
-        </div>
+            <div
+              className="mx-auto rounded-2xl overflow-hidden bg-[repeating-conic-gradient(#1f2937_0_25%,#111827_0_50%)] bg-[length:24px_24px]"
+              style={{ aspectRatio: `${ancho}/${alto}`, maxHeight: '52vh' }}
+            >
+              {url ? (
+                <img
+                  src={url}
+                  alt={`Vista previa (${ancho}×${alto})`}
+                  className="w-full h-full object-contain"
+                  data-testid="imagen-compartir"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-text-secondary">
+                  Generando…
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => void compartir()}
+                disabled={!imagen}
+                className="col-span-2 h-12 rounded-xl bg-primary-600 text-bg-primary font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                <span className="material-symbols-outlined">ios_share</span>Compartir imagen
+              </button>
+              <a
+                href={url ?? undefined}
+                download={`gacelas-${formato}.png`}
+                aria-disabled={!url}
+                className="h-12 rounded-xl bg-surface-container text-text-primary flex items-center justify-center gap-1"
+              >
+                <span className="material-symbols-outlined">download</span>Descargar
+              </a>
+              <button
+                onClick={() => void copiar()}
+                className="h-12 rounded-xl bg-surface-container text-text-primary flex items-center justify-center gap-1"
+              >
+                <span className="material-symbols-outlined">link</span>Copiar enlace
+              </button>
+              <a
+                href={enlaceWhatsApp(datos)}
+                target="_blank"
+                rel="noreferrer"
+                className="col-span-2 h-12 rounded-xl bg-[#128C4B] text-white font-semibold flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined">chat</span>Enviar por WhatsApp
+              </a>
+            </div>
+          </>
+        )}
         {aviso && (
           <p role="status" className="text-sm text-text-secondary text-center">
             {aviso}

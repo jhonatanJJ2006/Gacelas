@@ -79,9 +79,10 @@ object Intenciones {
      * Historia de Instagram: fondo = historia 1080x1920 y, si hay, sticker encima.
      * https://developers.facebook.com/docs/instagram-platform/sharing-to-stories
      */
-    fun historiaInstagram(fondo: Uri, sticker: Uri?, appId: String, paquete: String) = Intent("com.instagram.share.ADD_TO_STORY").apply {
+    fun historiaInstagram(fondo: Uri?, sticker: Uri?, appId: String, paquete: String) = Intent("com.instagram.share.ADD_TO_STORY").apply {
         putExtra("source_application", appId.ifBlank { paquete })
-        setDataAndType(fondo, "image/png")
+        // Sin fondo: Instagram deja elegir la foto al usuario y pone el sticker encima.
+        if (fondo != null) setDataAndType(fondo, "image/png") else type = "image/png"
         if (sticker != null) putExtra("interactive_asset_uri", sticker)
         putExtra("top_background_color", "#0B1220")
         putExtra("bottom_background_color", "#111827")
@@ -102,6 +103,8 @@ fun CompartirDialogo(datos: DatosCompartir, onCerrar: () -> Unit) {
     val texto = "${Compartir.texto(datos)}\n${datos.enlace}"
     fun lanzar(i: Intent, si: String) = try { context.startActivity(i) } catch (_: ActivityNotFoundException) { context.aviso(si) }
 
+    var sobreFoto by remember { mutableStateOf(true) }
+    if (sobreFoto) return ComponerFotoDialogo(datos, onCerrar, onImagenMarca = { sobreFoto = false })
     AlertDialog(
         onDismissRequest = onCerrar,
         containerColor = GColors.Surface,
