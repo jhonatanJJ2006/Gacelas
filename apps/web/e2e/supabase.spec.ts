@@ -21,7 +21,7 @@ test.describe('Conexión con Supabase (servidor simulado)', () => {
     await page.evaluate(() => localStorage.clear())
     await page.goto('/inicio-sesion')
     await page.getByLabel('Correo electrónico').fill('jhona@utpl.edu.ec')
-    await page.getByLabel('Contraseña').fill('gacela123')
+    await page.getByLabel('Contraseña', { exact: true }).fill('gacela123')
     await page.getByRole('button', { name: /iniciar sesión/i }).click()
     await expect(page).toHaveURL(/\/inicio$/)
     expect(supabase.peticiones.some((p) => p.startsWith('GET /rest/v1/saved_routes'))).toBe(true)
