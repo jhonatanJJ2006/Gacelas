@@ -1,7 +1,11 @@
-# Android local configuration
-# DO NOT commit this file to version control
-# Copy from local.properties.example and fill with your keys
+# Configuracion local de Android. NO subir este archivo al repositorio.
+# Copia este archivo como local.properties y llena los valores.
 
-GOOGLE_MAPS_API_KEY=your-google-maps-api-key-here
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key-here
+sdk.dir=
+# Google Maps SDK for Android (restringida al paquete com.gacelas y la huella SHA-1). Sin clave se usa el mapa dibujado.
+GOOGLE_MAPS_API_KEY=
+# Supabase (Project Settings, API)
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+# ID del cliente OAuth de tipo "Aplicacion web" (el mismo que esta en Supabase). Sin el, el boton de Google avisa.
+GOOGLE_WEB_CLIENT_ID=

@@ -85,6 +85,7 @@ private fun NavGraphBuilder.accesoGraph(nav: NavHostController) {
             onSaltar = { nav.navigate(Destinos.INICIO_SESION) },
             onCrearCuenta = { nav.navigate(Destinos.REGISTRO) },
             onIniciarSesion = { nav.navigate(Destinos.INICIO_SESION) },
+            onEntrarGoogle = nav::entrarApp,
         )
     }
     composable(Destinos.INICIO_SESION) {

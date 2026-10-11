@@ -15,23 +15,78 @@ import com.gacelas.data.eventos.EventosRepository
 import com.gacelas.data.eventos.LocalEventosRepository
 import com.gacelas.data.rutas.LocalRutasRepository
 import com.gacelas.data.rutas.RutasRepository
+import com.gacelas.data.remoto.Backend
+import com.gacelas.data.remoto.SupabaseAjustesRepository
+import com.gacelas.data.remoto.SupabaseAuthRepository
+import com.gacelas.data.remoto.SupabaseBackend
+import com.gacelas.data.remoto.SupabaseCarrerasRepository
+import com.gacelas.data.remoto.SupabaseEventosRepository
+import com.gacelas.data.remoto.SupabaseRutasRepository
 import com.gacelas.tracking.RunTracker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 private val Context.almacenGacelas: DataStore<Preferences> by preferencesDataStore(name = "gacelas")
 
 /**
- * Contenedor simple de dependencias. Para usar Supabase basta con cambiar
- * las implementaciones Local* por otras con la misma interfaz.
+ * Contenedor simple de dependencias. Con Supabase configurado usa los repositorios remotos
+ * (con DataStore como cache); si no, todo queda en el dispositivo.
  */
-class Contenedor(store: DataStore<Preferences>) {
-    val auth: AuthRepository = LocalAuthRepository(store)
-    val carreras: CarrerasRepository = LocalCarrerasRepository(store)
-    val rutas: RutasRepository = LocalRutasRepository(store)
-    val ajustes: AjustesRepository = LocalAjustesRepository(store)
-    val eventos: EventosRepository = LocalEventosRepository(store)
+class Contenedor(store: DataStore<Preferences>, backend: Backend? = null) {
+    val auth: AuthRepository
+    val carreras: CarrerasRepository
+    val rutas: RutasRepository
+    val ajustes: AjustesRepository
+    val eventos: EventosRepository
     val tracker = RunTracker()
+
+    /** Descarga los datos de la cuenta y sube lo pendiente. No hace nada sin servidor. */
+    val sincronizar: suspend () -> Unit
+
+    init {
+        if (backend == null) {
+            auth = LocalAuthRepository(store)
+            carreras = LocalCarrerasRepository(store)
+            rutas = LocalRutasRepository(store)
+            ajustes = LocalAjustesRepository(store)
+            eventos = LocalEventosRepository(store)
+            sincronizar = {}
+        } else {
+            lateinit var remotoAuth: SupabaseAuthRepository
+            val uid: suspend () -> String? = { remotoAuth.userId() }
+            val c = SupabaseCarrerasRepository(backend, store, uid)
+            val r = SupabaseRutasRepository(backend, store, uid)
+            val a = SupabaseAjustesRepository(backend, store, uid)
+            val e = SupabaseEventosRepository(backend, store, uid)
+            val descargarTodo: suspend () -> Unit = { c.descargar(); r.descargar(); a.descargar(); e.descargar() }
+            remotoAuth = SupabaseAuthRepository(backend, store) { descargarTodo() }
+            auth = remotoAuth
+            carreras = c
+            rutas = r
+            ajustes = a
+            eventos = e
+            sincronizar = { remotoAuth.restaurar() }
+        }
+    }
+
+    companion object {
+        /** Supabase solo se usa si local.properties trae la URL y la clave. */
+        fun backendConfigurado(): Backend? =
+            // En las pruebas (Robolectric) nunca se usa el proyecto real.
+            if (android.os.Build.FINGERPRINT != "robolectric" && BuildConfig.SUPABASE_URL.isNotBlank() && BuildConfig.SUPABASE_ANON_KEY.isNotBlank())
+                runCatching { SupabaseBackend(BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_ANON_KEY) }.getOrNull()
+            else null
+    }
 }
 
 class GacelasApp : Application() {
-    val contenedor: Contenedor by lazy { Contenedor(applicationContext.almacenGacelas) }
+    private val alcance = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    val contenedor: Contenedor by lazy { Contenedor(applicationContext.almacenGacelas, Contenedor.backendConfigurado()) }
+
+    override fun onCreate() {
+        super.onCreate()
+        alcance.launch { runCatching { contenedor.sincronizar() } }
+    }
 }

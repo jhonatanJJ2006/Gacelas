@@ -20,6 +20,12 @@ export interface AuthRepository {
   recuperarContrasena(email: string): Promise<ResultadoAuth>
   actualizarPerfil(perfil: Perfil): Promise<Perfil>
   cerrarSesion(): Promise<void>
+  /** Abre el inicio de sesion con Google. Si redirige, la promesa devuelve null. */
+  entrarConGoogle(): Promise<string | null>
+  /** Cambia la contrasena de la sesion actual (tras abrir el enlace de recuperacion). */
+  cambiarContrasena(password: string): Promise<ResultadoAuth>
+  /** Avisa cuando la sesion cambia fuera de la app (OAuth, token vencido, otra pestana). */
+  alCambiarSesion?(cb: (perfil: Perfil | null) => void): () => void
 }
 
 export interface CarrerasRepository {
@@ -160,9 +166,29 @@ export class LocalAuthRepository implements AuthRepository {
   async cerrarSesion() {
     escribir('auth', { ...this.datos(), sesionEmail: null })
   }
+
+  async entrarConGoogle() {
+    return 'El inicio con Google necesita conexión con el servidor. Usa tu correo por ahora.'
+  }
+
+  async cambiarContrasena(password: string): Promise<ResultadoAuth> {
+    const error = ValidacionAuth.password(password)
+    if (error) return { ok: false, error }
+    const d = this.datos()
+    const cuenta = d.sesionEmail ? d.cuentas[d.sesionEmail] : undefined
+    if (!cuenta) return { ok: false, error: 'Abre el enlace de recuperación de nuevo' }
+    escribir('auth', {
+      ...d,
+      cuentas: {
+        ...d.cuentas,
+        [cuenta.perfil.email]: { ...cuenta, hash: await hashPassword(password) },
+      },
+    })
+    return { ok: true, perfil: cuenta.perfil }
+  }
 }
 
-const perfilVacio = (): Perfil => ({
+export const perfilVacio = (): Perfil => ({
   email: '',
   nombre: '',
   username: '',

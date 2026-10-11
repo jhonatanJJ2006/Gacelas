@@ -1,4 +1,16 @@
-import { expect, type BrowserContext, type Page } from '@playwright/test'
+import { test as base, expect, type BrowserContext, type Page } from '@playwright/test'
+import { instalarFakeSupabase, type EstadoFake } from './fakeSupabase'
+
+/** Prueba con Supabase falso instalado en el contexto (ver fakeSupabase.ts). */
+export const test = base.extend<{ supabase: EstadoFake }>({
+  supabase: [
+    async ({ context }, use) => {
+      await use(await instalarFakeSupabase(context))
+    },
+    { auto: true },
+  ],
+})
+export { expect }
 
 export const LOJA = { latitude: -3.9931, longitude: -79.2042, accuracy: 5 }
 

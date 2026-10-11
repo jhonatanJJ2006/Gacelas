@@ -1,5 +1,7 @@
 package com.gacelas.correr
 
+import com.gacelas.ui.components.MapaGoogle
+import com.gacelas.ui.components.aLatLng
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
@@ -304,7 +306,9 @@ fun CarreraEnCursoScreen(onCerrar: () -> Unit, onFinalizar: () -> Unit, onCronom
             }
         }
         if (estado.puntos.size >= 2) {
-            Tarjeta(padding = 8.dp) { TrazadoRuta(estado.puntos, Modifier.fillMaxWidth().height(160.dp)) }
+            Tarjeta(padding = 8.dp) {
+                MapaGoogle(estado.puntos.aLatLng(), Modifier.fillMaxWidth().height(160.dp), seguir = true) { TrazadoRuta(estado.puntos, Modifier.fillMaxWidth().height(160.dp)) }
+            }
         } else {
             Text(if (estado.pausada) "Carrera en pausa" else "Esperando puntos GPS. Muévete al aire libre para mejor señal.",
                 style = GType.bodySm, color = GColors.TextSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
@@ -662,7 +666,9 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
                 Tarjeta(Modifier.weight(1f), padding = 10.dp) { Metrica(v, e, Modifier.fillMaxWidth()) }
             }
         }
-        if (estado.puntos.size >= 2) Tarjeta(padding = 8.dp) { TrazadoRuta(estado.puntos, Modifier.fillMaxWidth().height(180.dp)) }
+        if (estado.puntos.size >= 2) Tarjeta(padding = 8.dp) {
+            MapaGoogle(estado.puntos.aLatLng(), Modifier.fillMaxWidth().height(180.dp)) { TrazadoRuta(estado.puntos, Modifier.fillMaxWidth().height(180.dp)) }
+        }
         CampoTexto("Título", titulo, { titulo = it }, "Título de la carrera (opcional)")
         CampoTexto("Notas", nota, { nota = it }, "¿Cómo te fue? Comparte tus pensamientos...", lineas = 3)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {

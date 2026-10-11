@@ -85,7 +85,7 @@ private fun PantallaAcceso(onAtras: (() -> Unit)?, content: @Composable ColumnSc
 }
 
 @Composable
-fun BienvenidaScreen(onSaltar: () -> Unit, onCrearCuenta: () -> Unit, onIniciarSesion: () -> Unit) {
+fun BienvenidaScreen(onSaltar: () -> Unit, onCrearCuenta: () -> Unit, onIniciarSesion: () -> Unit, onEntrarGoogle: () -> Unit = {}) {
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary).statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState())) {
         Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             MarcaGacelas(Modifier.weight(1f))
@@ -131,6 +131,7 @@ fun BienvenidaScreen(onSaltar: () -> Unit, onCrearCuenta: () -> Unit, onIniciarS
             }
             BotonPrimario("Crear cuenta", onCrearCuenta)
             BotonSecundario("Ya tengo cuenta, iniciar sesión", onIniciarSesion)
+            BotonGoogle(onEntrarGoogle)
         }
     }
 }
@@ -186,6 +187,7 @@ fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: (
             Text("¿No tienes cuenta? ", style = GType.bodyMd, color = GColors.TextSecondary)
             Text("Crear cuenta", style = GType.labelLg, color = GColors.Primary500, modifier = Modifier.clickable(onClick = onRegistro))
         }
+        BotonGoogle(onEntrar)
     }
 }
 
@@ -224,13 +226,14 @@ fun RegistroScreen(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: ()
             Text("¿Ya tienes cuenta? ", style = GType.bodyMd, color = GColors.TextSecondary)
             Text("Iniciar sesión", style = GType.labelLg, color = GColors.Primary500, modifier = Modifier.clickable(onClick = onIniciarSesion))
         }
+        BotonGoogle(onCrear)
     }
     if (verTerminos) {
         AlertDialog(
             onDismissRequest = { verTerminos = false },
             confirmButton = { TextButton(onClick = { verTerminos = false }) { Text("Entendido") } },
             title = { Text("Términos y privacidad") },
-            text = { Text("Tus datos se guardan solo en este dispositivo mientras la app no tenga servidor. Tú decides qué carreras son públicas y puedes ocultar la zona de tu casa en Ajustes.") },
+            text = { Text("Tus datos se guardan en tu cuenta de Gacelas y en este teléfono. Tú decides qué carreras son públicas y puedes ocultar la zona de tu casa en Ajustes.") },
             containerColor = GColors.BgSecondary,
         )
     }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useApp } from '../../store/app'
 import { BotonTexto, Dialogo, MensajeError } from '../../components/ui'
+import { BotonGoogle } from '../../components/BotonGoogle'
 
 export function Registro() {
   const navigate = useNavigate()
@@ -162,6 +163,14 @@ export function Registro() {
               </span>
             </div>
           </form>
+
+          <div className="mt-6 space-y-4">
+            <div className="flex items-center gap-3 text-xs text-text-secondary">
+              <span className="flex-1 h-px bg-border-subtle" />o
+              <span className="flex-1 h-px bg-border-subtle" />
+            </div>
+            <BotonGoogle />
+          </div>
         </div>
       </main>
 

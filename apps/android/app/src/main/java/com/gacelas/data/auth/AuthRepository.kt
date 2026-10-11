@@ -38,6 +38,11 @@ interface AuthRepository {
     suspend fun recuperarContrasena(email: String): ResultadoAuth
     suspend fun actualizarPerfil(perfil: Perfil)
     suspend fun cerrarSesion()
+    /** True si la app puede entrar con Google (hay servidor configurado). */
+    val googleDisponible: Boolean get() = false
+    /** Entra con el ID token de Google obtenido con Credential Manager. */
+    suspend fun entrarConGoogle(idToken: String, nonce: String?): ResultadoAuth =
+        ResultadoAuth.Error("El inicio con Google necesita conexión con el servidor. Usa tu correo por ahora.")
 }
 
 /** Reglas de validacion de los formularios de acceso. Devuelven el mensaje de error o null. */

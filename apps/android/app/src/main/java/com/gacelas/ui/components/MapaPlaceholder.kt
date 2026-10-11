@@ -12,9 +12,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import com.gacelas.ui.theme.GColors
 
 /**
- * Mapa estatico dibujado con Canvas (misma maqueta SVG que la web).
- * TODO: reemplazar por Maps Compose (com.google.maps.android:maps-compose) usando GOOGLE_MAPS_API_KEY
- * de local.properties y el estilo de mapa oscuro de docs/DESIGN.md.
+ * Mapa estatico dibujado con Canvas (misma maqueta SVG que la web). Se usa cuando no hay
+ * GOOGLE_MAPS_API_KEY (ver [MapaGoogle]).
  */
 @Composable
 fun MapaPlaceholder(modifier: Modifier = Modifier, rutaPrincipal: Boolean? = true) {

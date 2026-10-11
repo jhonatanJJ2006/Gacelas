@@ -1,3 +1,4 @@
+import { BotonGoogle } from '../../components/BotonGoogle'
 import { useNavigate } from 'react-router-dom'
 
 export function Bienvenida() {
@@ -130,6 +131,8 @@ export function Bienvenida() {
           >
             Ya tengo cuenta, iniciar sesión
           </button>
+
+          <BotonGoogle />
         </div>
 
         <div className="w-full flex justify-center pt-4 pb-1">

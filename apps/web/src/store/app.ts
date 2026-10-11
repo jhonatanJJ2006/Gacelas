@@ -8,8 +8,17 @@ import {
   type ResultadoAuth,
 } from '../data/tipos'
 import type { Evento } from '../mocks/data'
+import { obtenerSupabase } from '../lib/supabase'
+import { repositoriosSupabase } from '../data/supabaseRepos'
 
-let repos: Repositorios = repositoriosLocales()
+/** Con Supabase configurado se usa el servidor; si no, todo queda en el dispositivo. */
+export function repositoriosPorDefecto(): Repositorios {
+  const sb = obtenerSupabase()
+  return sb ? repositoriosSupabase(sb) : repositoriosLocales()
+}
+
+let repos: Repositorios = repositoriosPorDefecto()
+let dejarDeEscuchar: (() => void) | null = null
 
 /** Permite cambiar la implementacion de los repositorios (pruebas o Supabase). */
 export function usarRepositorios(r: Repositorios) {
@@ -30,6 +39,8 @@ export interface EstadoApp {
   recuperarContrasena(email: string): Promise<ResultadoAuth>
   actualizarPerfil(p: Perfil): Promise<void>
   cerrarSesion(): Promise<void>
+  entrarConGoogle(): Promise<string | null>
+  cambiarContrasena(password: string): Promise<ResultadoAuth>
   actualizarAjustes(c: Partial<Ajustes> | ((a: Ajustes) => Partial<Ajustes>)): Promise<void>
   guardarCarrera(c: CarreraGuardada): Promise<void>
   eliminarCarrera(id: string): Promise<void>
@@ -58,11 +69,23 @@ export const useApp = create<EstadoApp>((set, get) => ({
         repos.eventos.inscritos(),
       ])
     set({ listo: true, sesion, ajustes, carreras, rutasGuardadas, eventosCreados, inscritos })
+    dejarDeEscuchar?.()
+    dejarDeEscuchar =
+      repos.auth.alCambiarSesion?.((perfil) => {
+        const antes = get().sesion?.email ?? null
+        if (perfil?.email === antes && perfil) return set({ sesion: perfil })
+        // Otra cuenta o sesion cerrada: se recargan los datos de esa cuenta.
+        if (!perfil) return set({ sesion: null })
+        void get().cargar()
+      }) ?? null
   },
 
   async iniciarSesion(email, password) {
     const r = await repos.auth.iniciarSesion(email, password)
-    if (r.ok) set({ sesion: r.perfil })
+    if (r.ok) {
+      set({ sesion: r.perfil })
+      await get().cargar()
+    }
     return r
   },
   async registrar(nombre, email, password) {
@@ -77,6 +100,13 @@ export const useApp = create<EstadoApp>((set, get) => ({
   async cerrarSesion() {
     await repos.auth.cerrarSesion()
     set({ sesion: null })
+  },
+
+  entrarConGoogle: () => repos.auth.entrarConGoogle(),
+  async cambiarContrasena(password) {
+    const r = await repos.auth.cambiarContrasena(password)
+    if (r.ok) set({ sesion: r.perfil })
+    return r
   },
 
   async actualizarAjustes(c) {

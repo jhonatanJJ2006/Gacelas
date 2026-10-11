@@ -359,3 +359,12 @@ Si las pruebas pasan localmente pero fallan en CI:
 - Testing Library: https://testing-library.com/react
 - Playwright: https://playwright.dev/
 - Git LFS: https://git-lfs.com/
+
+## Supabase en las pruebas
+
+Ninguna prueba de CI usa el proyecto real ni necesita secretos:
+
+- Unitarias (Vitest): `src/test/fakeSupabase.ts` es un cliente de Supabase en memoria. `src/data/__tests__/supabaseRepos.test.ts` prueba registro, sesion, carreras con cola sin conexion, rutas, ajustes, likes, comentarios y eventos.
+- E2E (Playwright): la web se compila con `vite build --mode e2e` (`.env.e2e`) y `e2e/fakeSupabase.ts` responde las llamadas de Auth y PostgREST con `route()`. Todas las pruebas usan ese servidor falso.
+- Android: `FakeBackend.kt` reemplaza a supabase-kt en `RepositoriosRemotosTest`.
+- Contra el proyecto real, solo a mano: `cd apps/web && pnpm smoke:supabase` (ver `docs/SUPABASE.md`).
