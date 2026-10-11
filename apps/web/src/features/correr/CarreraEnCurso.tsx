@@ -45,7 +45,7 @@ export function CarreraEnCurso() {
       <div className="relative flex-1 bg-surface-container-low">
         <div className="absolute inset-0 bg-gradient-to-b from-surface-container-low via-surface to-surface"></div>
 
-        <div className="absolute top-4 inset-x-4 z-10 flex justify-between">
+        <div className="absolute top-4 inset-x-4 z-20 flex justify-between items-center gap-2">
           <button
             onClick={() => setDescartar(true)}
             aria-label="Salir de la carrera"

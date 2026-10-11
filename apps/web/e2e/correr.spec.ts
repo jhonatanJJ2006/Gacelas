@@ -16,6 +16,9 @@ test.describe('Correr con GPS simulado', () => {
     await expect(page.getByText('GPS Activado')).toBeVisible()
     await page.getByRole('button', { name: 'Comenzar carrera' }).click()
     await expect(page).toHaveURL(/\/correr\/en-curso/)
+    // Los botones de arriba no quedan tapados por el contenido.
+    await page.getByRole('button', { name: 'Abrir cronómetro' }).click({ trial: true, timeout: 5000 })
+    await page.getByRole('button', { name: 'Salir de la carrera' }).click({ trial: true, timeout: 5000 })
 
     await caminar(context, 6, 8)
     await expect(page.getByTestId('distancia')).not.toHaveText('0.00')
