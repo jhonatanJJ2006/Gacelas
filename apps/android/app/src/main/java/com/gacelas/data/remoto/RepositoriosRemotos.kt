@@ -212,6 +212,8 @@ class SupabaseCarrerasRepository(
     private val backend: Backend,
     store: DataStore<Preferences>,
     private val userId: suspend () -> String?,
+    /** Se llama si algo queda pendiente (programa SincronizacionWorker). */
+    private val alEncolar: () -> Unit = {},
 ) : CarrerasRepository {
     private val cache = ValorJson(store, "carreras", ListSerializer(CarreraGuardada.serializer()), emptyList())
     private val cola = ValorJson(store, "carreras_pendientes", ListSerializer(OperacionPendiente.serializer()), emptyList())
@@ -266,13 +268,13 @@ class SupabaseCarrerasRepository(
     override suspend fun guardar(carrera: CarreraGuardada) {
         cache.actualizar { lista -> listOf(carrera) + lista.filterNot { it.id == carrera.id } }
         cola.actualizar { it.filterNot { o -> o.carrera?.id == carrera.id } + OperacionPendiente("guardar", carrera = carrera) }
-        sincronizar()
+        if (sincronizar() > 0) alEncolar()
     }
 
     override suspend fun eliminar(id: String) {
         cache.actualizar { lista -> lista.filterNot { it.id == id } }
         cola.actualizar { it.filterNot { o -> o.carrera?.id == id } + OperacionPendiente("eliminar", id = id) }
-        sincronizar()
+        if (sincronizar() > 0) alEncolar()
     }
 }
 
@@ -282,6 +284,8 @@ class SupabaseRutasRepository(
     private val backend: Backend,
     store: DataStore<Preferences>,
     private val userId: suspend () -> String?,
+    private val offline: com.gacelas.data.rutas.RutasOffline? = null,
+    private val alEncolar: () -> Unit = {},
 ) : RutasRepository {
     private val valor = ValorJson(store, "rutas_guardadas", SetSerializer(String.serializer()), emptySet())
     override val guardadas: Flow<Set<String>> = valor.flujo
@@ -299,6 +303,8 @@ class SupabaseRutasRepository(
         runCatching {
             if (estaba) backend.delete("saved_routes", mapOf("user_id" to uid, "route_id" to id))
             else backend.insert("saved_routes", listOf(buildJsonObject { put("user_id", uid); put("route_id", id) }))
+        }.onFailure {
+            offline?.let { it.encolar(com.gacelas.data.rutas.OperacionRuta(if (estaba) "quitar" else "guardar", id)); alEncolar() }
         }
     }
 }
