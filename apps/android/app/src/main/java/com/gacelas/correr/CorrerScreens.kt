@@ -1,5 +1,9 @@
 package com.gacelas.correr
 
+import com.gacelas.ui.components.Pastilla
+
+import com.gacelas.ui.components.Mapas
+
 import androidx.compose.material.icons.filled.Sensors
 import com.gacelas.ui.components.MapaGoogle
 import com.gacelas.ui.components.aLatLng
@@ -278,6 +282,7 @@ fun CarreraEnCursoScreen(onCerrar: () -> Unit, onFinalizar: () -> Unit, onCronom
     val ajustes by ajustesState()
     val m = ajustes.unidadesMetricas
     var confirmar by remember { mutableStateOf(false) }
+    var vista3d by rememberSaveable { mutableStateOf(false) }
     MantenerPantallaEncendida()
     RelojCarrera(tracker, estado)
     BackHandler { confirmar = true }
@@ -317,7 +322,14 @@ fun CarreraEnCursoScreen(onCerrar: () -> Unit, onFinalizar: () -> Unit, onCronom
         }
         if (estado.puntos.size >= 2) {
             Tarjeta(padding = 8.dp) {
-                MapaGoogle(estado.puntos.aLatLng(), Modifier.fillMaxWidth().height(160.dp), seguir = true) { TrazadoRuta(estado.puntos, Modifier.fillMaxWidth().height(160.dp)) }
+                if (Mapas.configurado()) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 8.dp)) {
+                    Pastilla("2D", !vista3d, { vista3d = false })
+                    Pastilla("3D", vista3d, { vista3d = true })
+                }
+                MapaGoogle(
+                    estado.puntos.aLatLng(), Modifier.fillMaxWidth().height(if (vista3d) 340.dp else 220.dp).clip(RoundedCornerShape(16.dp)), seguir = true, zoom = 17f,
+                    modo3d = vista3d, ritmoSegKm = estado.ritmoActualSegKm, adelanteM = 60.0,
+                ) { TrazadoRuta(estado.puntos, Modifier.fillMaxWidth().height(160.dp)) }
             }
         } else {
             Text(if (estado.pausada) "Carrera en pausa" else "Esperando puntos GPS. Muévete al aire libre para mejor señal.",

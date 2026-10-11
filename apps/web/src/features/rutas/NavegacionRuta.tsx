@@ -6,7 +6,7 @@ import { useApp } from '../../store/app'
 import { empezarSeguimiento, finalizarCarrera, tracker, useCarrera } from '../../store/carrera'
 import { indicacion } from '../../lib/logica'
 import { MapaGoogle } from '../../components/MapaGoogle'
-import { claveMapas } from '../../lib/mapas'
+import { claveMapas, trazoDeOpcion } from '../../lib/mapas'
 
 const Runner3D = lazy(() =>
   import('../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
@@ -15,7 +15,14 @@ const Runner3D = lazy(() =>
 export function NavegacionRuta() {
   const navigate = useNavigate()
   const location = useLocation()
-  const nombreRuta = (location.state as { ruta?: string } | null)?.ruta ?? 'Ruta libre'
+  const estado = location.state as { ruta?: string; trazoId?: string } | null
+  const nombreRuta = estado?.ruta ?? 'Ruta libre'
+  const rutas = useApp((s) => s.rutas)
+  const rutaActivaId = useApp((s) => s.rutaActivaId)
+  const plan = estado?.trazoId
+    ? trazoDeOpcion(estado.trazoId)
+    : (rutas.find((r) => r.id === rutaActivaId)?.puntos ?? [])
+  const [mapa3d, setMapa3d] = useState(() => !!claveMapas())
   const e = useCarrera()
   const ajustes = useApp((s) => s.ajustes)
   const m = ajustes.unidadesMetricas
@@ -27,6 +34,10 @@ export function NavegacionRuta() {
     if (!estaActiva(tracker.estado))
       empezarSeguimiento({ precisa: ajustes.ubicacionPrecisa, onError: setErrorGps })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (e.puntos.length) setErrorGps(null)
+  }, [e.puntos.length])
 
   const paso = indicacion(e.distanciaKm)
 
@@ -45,6 +56,16 @@ export function NavegacionRuta() {
       <div className="absolute top-3 inset-x-0 z-50 px-6 flex justify-between items-center text-xs text-slate-300">
         <span className="pl-2 truncate">{nombreRuta}</span>
         <div className="flex gap-1">
+          {claveMapas() && (
+            <button
+              onClick={() => setMapa3d(!mapa3d)}
+              aria-pressed={mapa3d}
+              data-testid="mapa-3d"
+              className={`px-3 py-1.5 min-h-8 rounded-full ${mapa3d ? 'bg-primary-600 text-bg-primary' : 'bg-black/50'}`}
+            >
+              Mapa 3D
+            </button>
+          )}
           {(['Jog', 'Run'] as const).map((a) => (
             <button
               key={a}
@@ -69,7 +90,19 @@ export function NavegacionRuta() {
             </div>
           }
         >
-          <Runner3D animation={animacion} cameraPosition={[0, 3.8, 6.2]} />
+          {mapa3d ? (
+            <MapaGoogle
+              puntos={e.puntos.length ? e.puntos : plan.slice(0, 1)}
+              plan={plan}
+              seguir
+              modo3d
+              ritmoSegKm={e.ritmoActualSegKm}
+              className="w-full h-full"
+              alternativa={null}
+            />
+          ) : (
+            <Runner3D animation={animacion} cameraPosition={[0, 3.8, 6.2]} />
+          )}
         </Suspense>
       </div>
 
@@ -89,7 +122,7 @@ export function NavegacionRuta() {
             </div>
           </div>
           <div className="text-slate-300 text-sm">{paso.texto}</div>
-          {errorGps && (
+          {errorGps && e.puntos.length === 0 && (
             <div role="alert" className="text-danger text-xs mt-2">
               {errorGps}
             </div>
@@ -97,7 +130,7 @@ export function NavegacionRuta() {
         </div>
       </div>
 
-      {claveMapas() && (
+      {claveMapas() && !mapa3d && (
         <div className="absolute top-56 right-4 z-20 w-36 h-36 lg:top-20 lg:right-8 lg:w-80 lg:h-80 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
           <MapaGoogle
             puntos={e.puntos}

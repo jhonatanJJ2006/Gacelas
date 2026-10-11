@@ -79,6 +79,7 @@ import com.gacelas.ui.components.BotonPrimario
 import com.gacelas.ui.components.CampoTexto
 import com.gacelas.ui.components.IconoCirculo
 import com.gacelas.ui.components.MapaGoogle
+import com.gacelas.ui.components.MapaMat
 import com.gacelas.ui.components.MapaPlaceholder
 import com.gacelas.ui.components.Mapas
 import com.gacelas.ui.components.aLatLng
@@ -254,7 +255,7 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: (conCarrera: Boolea
     val estado by tracker.estado.collectAsState()
     val ajustes by ajustesState()
     val m = ajustes.unidadesMetricas
-    var carrera by rememberSaveable { mutableStateOf(false) }
+    var vista3d by rememberSaveable { mutableStateOf(true) }
     // Al entrar a la navegacion se empieza a grabar la carrera con GPS real si hay permiso.
     LaunchedEffect(Unit) {
         if (!estado.activa && LocationService.tienePermiso(context)) empezarCarrera(context, tracker)
@@ -266,10 +267,16 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: (conCarrera: Boolea
     val tramo = (estado.distanciaKm / 0.5).toInt().coerceAtMost(indicaciones.lastIndex)
     val faltanM = ((tramo + 1) * 500 - estado.distanciaKm * 1000).toInt().coerceAtLeast(0)
     Box(Modifier.fillMaxSize().background(Color(0xFF090F1A))) {
-        MapaGoogle(estado.puntos.aLatLng(), Modifier.fillMaxSize(), seguir = true, zoom = 17f) { MapaPlaceholder(rutaPrincipal = true) }
-        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, GColors.BgPrimary.copy(alpha = 0.6f)))))
-        Box(Modifier.fillMaxWidth().height(420.dp).align(Alignment.Center)) {
-            Runner3D(if (carrera) ClipCorredor.Run else ClipCorredor.Jog, camara = Position(0f, 1.6f, 3.8f))
+        val clip = MapaMat.clipPorRitmo(estado.ritmoActualSegKm)
+        if (Mapas.configurado()) {
+            // Estilo navegacion: mapa inclinado con el rumbo arriba, ruta brillante por delante y el corredor 3D en el mapa.
+            MapaGoogle(estado.puntos.aLatLng(), Modifier.fillMaxSize(), seguir = true, zoom = 17f, modo3d = vista3d, ritmoSegKm = estado.ritmoActualSegKm, plan = Mapas.trazo("primary"), adelanteM = 120.0) { }
+        } else {
+            MapaPlaceholder(rutaPrincipal = true)
+            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, GColors.BgPrimary.copy(alpha = 0.6f)))))
+            Box(Modifier.fillMaxWidth().height(420.dp).align(Alignment.Center)) {
+                Runner3D(if (clip == ClipCorredor.Idle) ClipCorredor.Jog else clip, camara = Position(0f, 1.6f, 3.8f))
+            }
         }
         Column(Modifier.statusBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Tarjeta(fondo = GColors.Secondary700, borde = null) {
@@ -284,8 +291,10 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: (conCarrera: Boolea
                 Text(indicaciones[tramo], style = GType.bodyMd, color = GColors.TextPrimary)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Pastilla("Trote", !carrera, { carrera = false })
-                Pastilla("Carrera", carrera, { carrera = true })
+                if (Mapas.configurado()) {
+                    Pastilla("3D", vista3d, { vista3d = true })
+                    Pastilla("2D", !vista3d, { vista3d = false })
+                }
             }
         }
         Column(

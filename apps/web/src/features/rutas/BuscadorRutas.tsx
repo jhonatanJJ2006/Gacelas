@@ -177,7 +177,10 @@ export function BuscadorRutas() {
 
           <button
             onClick={() =>
-              seleccionada && navigate('/rutas/navegacion', { state: { ruta: seleccionada.name } })
+              seleccionada &&
+              navigate('/rutas/navegacion', {
+                state: { ruta: seleccionada.name, trazoId: seleccionada.id },
+              })
             }
             disabled={!seleccionada}
             className="w-full mt-6 h-14 bg-gradient-to-r from-[#D97706] to-[#F59E0B] hover:from-[#B45309] hover:to-[#D97706] text-white font-bold rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
