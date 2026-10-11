@@ -1,7 +1,12 @@
 package com.gacelas.acceso
 
 import android.content.Context
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.res.painterResource
+import com.gacelas.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -134,7 +139,7 @@ fun BotonGoogle(onEntrar: () -> Unit, modifier: Modifier = Modifier) {
             onClick = {
                 error = null
                 if (!auth.googleDisponible) {
-                    error = "El inicio con Google necesita conexión con el servidor. Usa tu correo por ahora."
+                    error = "El inicio con Google no está disponible en esta versión de la app. Usa tu correo por ahora."
                     return@Button
                 }
                 cargando = true
@@ -150,15 +155,26 @@ fun BotonGoogle(onEntrar: () -> Unit, modifier: Modifier = Modifier) {
                 }
             },
             enabled = !cargando,
-            colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFF1F2937)),
-            shape = RoundedCornerShape(14.dp),
+            // Guias de marca de Google Sign-In, tema oscuro: fondo #131314, borde #8E918F, texto #E3E3E3,
+            // forma de pildora y el logo "G" multicolor oficial sin modificar.
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF131314), contentColor = Color(0xFFE3E3E3),
+                disabledContainerColor = Color(0xFF131314), disabledContentColor = Color(0xFFE3E3E3).copy(alpha = 0.6f),
+            ),
+            border = BorderStroke(1.dp, Color(0xFF8E918F)),
+            shape = CircleShape,
+            contentPadding = PaddingValues(horizontal = 16.dp),
             modifier = Modifier.fillMaxWidth().height(52.dp).testTag("boton-google"),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Box(Modifier.size(22.dp).background(Color(0xFF4285F4), CircleShape), contentAlignment = Alignment.Center) {
-                    Text("G", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
+                    if (cargando) CircularProgressIndicator(Modifier.size(18.dp), color = Color(0xFFE3E3E3), strokeWidth = 2.dp)
+                    else Image(painterResource(R.drawable.ic_google_g), contentDescription = null, modifier = Modifier.size(20.dp))
                 }
-                Text(if (cargando) "Abriendo Google..." else "Continuar con Google", style = GType.labelLg)
+                Text(
+                    if (cargando) "Abriendo Google..." else "Continuar con Google",
+                    fontFamily = GType.labelLg.fontFamily, fontWeight = FontWeight.Medium, fontSize = 15.sp, letterSpacing = 0.25.sp,
+                )
             }
         }
         error?.let { Text(it, style = GType.bodyMd, color = GColors.Danger, modifier = Modifier.testTag("error-google")) }

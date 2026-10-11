@@ -15,6 +15,14 @@ val localProperties = Properties().apply {
 
 fun localProp(name: String): String = localProperties.getProperty(name, "")
 
+// Sin estas claves el APK queda sin servidor: sin Google, sin sincronizacion ni datos de la cuenta.
+// Pasó en v0.6.0 (compilado sin SUPABASE_URL ni GOOGLE_WEB_CLIENT_ID). Ver docs/SUPABASE.md.
+listOf("SUPABASE_URL", "SUPABASE_ANON_KEY", "GOOGLE_WEB_CLIENT_ID").filter { localProp(it).isBlank() }.takeIf { it.isNotEmpty() }?.let { faltan ->
+    val msg = "local.properties no tiene ${faltan.joinToString()}: el APK no podra iniciar sesion con Google ni conectarse a Supabase."
+    if (project.findProperty("gacelas.release") == "true") throw GradleException("$msg No se puede publicar asi.")
+    logger.warn("ADVERTENCIA: $msg")
+}
+
 android {
     namespace = "com.gacelas"
     compileSdk = 35
