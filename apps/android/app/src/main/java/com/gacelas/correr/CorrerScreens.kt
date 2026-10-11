@@ -5,7 +5,7 @@ import com.gacelas.ui.components.Pastilla
 import com.gacelas.ui.components.Mapas
 
 import androidx.compose.material.icons.filled.Sensors
-import com.gacelas.ui.components.MapaGoogle
+import com.gacelas.ui.components.MapaGacelas
 import com.gacelas.ui.components.aLatLng
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -326,7 +326,7 @@ fun CarreraEnCursoScreen(onCerrar: () -> Unit, onFinalizar: () -> Unit, onCronom
                     Pastilla("2D", !vista3d, { vista3d = false })
                     Pastilla("3D", vista3d, { vista3d = true })
                 }
-                MapaGoogle(
+                MapaGacelas(
                     estado.puntos.aLatLng(), Modifier.fillMaxWidth().height(if (vista3d) 340.dp else 220.dp).clip(RoundedCornerShape(16.dp)), seguir = true, zoom = 17f,
                     modo3d = vista3d, ritmoSegKm = estado.ritmoActualSegKm, adelanteM = 60.0,
                 ) { TrazadoRuta(estado.puntos, Modifier.fillMaxWidth().height(160.dp)) }
@@ -697,7 +697,7 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
             }
         }
         if (estado.puntos.size >= 2) Tarjeta(padding = 8.dp) {
-            MapaGoogle(estado.puntos.aLatLng(), Modifier.fillMaxWidth().height(180.dp)) { TrazadoRuta(estado.puntos, Modifier.fillMaxWidth().height(180.dp)) }
+            MapaGacelas(estado.puntos.aLatLng(), Modifier.fillMaxWidth().height(180.dp)) { TrazadoRuta(estado.puntos, Modifier.fillMaxWidth().height(180.dp)) }
         }
         CampoTexto("Título", titulo, { titulo = it }, "Título de la carrera (opcional)")
         CampoTexto("Notas", nota, { nota = it }, "¿Cómo te fue? Comparte tus pensamientos...", lineas = 3)

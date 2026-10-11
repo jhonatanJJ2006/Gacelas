@@ -64,15 +64,7 @@ import com.gacelas.ui.components.Tarjeta
 import com.gacelas.ui.contenedor
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.maps.android.compose.Circle
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Polyline
-import com.google.maps.android.compose.rememberCameraPositionState
+import org.maplibre.android.geometry.LatLng
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -283,25 +275,24 @@ fun EventoEnVivoScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(Modifier.fillMaxWidth().height(320.dp).clip(RoundedCornerShape(16.dp)).background(GColors.SurfaceContainer)) {
                 if (Mapas.configurado()) {
-                    val camara = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(Mapas.CENTRO_LOJA, 14f) }
+                    var mapaEvento by remember { mutableStateOf<org.maplibre.android.maps.MapLibreMap?>(null) }
                     // Encuadrar a todos los corredores (posiciones y trazos) cuando llegan datos.
                     val puntos = tabla.flatMap { k -> k.puntos + listOfNotNull(k.lat?.let { la -> k.lng?.let { la to it } }) }
-                    LaunchedEffect(puntos.size) {
-                        if (puntos.isEmpty()) return@LaunchedEffect
-                        val b = com.google.android.gms.maps.model.LatLngBounds.builder()
-                        puntos.forEach { b.include(LatLng(it.first, it.second)) }
-                        runCatching { camara.move(com.google.android.gms.maps.CameraUpdateFactory.newLatLngBounds(b.build(), 120)) }
+                    LaunchedEffect(puntos.size, mapaEvento) {
+                        val m = mapaEvento ?: return@LaunchedEffect
+                        if (puntos.size < 2) return@LaunchedEffect
+                        runCatching { m.moveCamera(org.maplibre.android.camera.CameraUpdateFactory.newLatLngBounds(com.gacelas.ui.components.MapaMat.limites(puntos.map { LatLng(it.first, it.second) }), 120)) }
                     }
-                    GoogleMap(Modifier.fillMaxSize().testTag("mapa-evento"), cameraPositionState = camara,
-                        properties = MapProperties(mapStyleOptions = MapStyleOptions(Mapas.ESTILO_OSCURO)), uiSettings = MapUiSettings(zoomControlsEnabled = false)) {
-                        tabla.forEachIndexed { i, k ->
-                            val trazo = k.puntos.let { p -> repeticion?.let { r -> p.take(maxOf(1, (r * p.size).toInt())) } ?: p }.map { LatLng(it.first, it.second) }
-                            if (trazo.size >= 2) Polyline(points = trazo, color = colorCorredor(i), width = 10f)
-                            val pos = repeticion?.let { posicionRepeticion(k, it) } ?: k.lat?.let { la -> k.lng?.let { la to it } }
-                            pos?.let { Circle(center = LatLng(it.first, it.second), radius = 30.0, fillColor = colorCorredor(i), strokeColor = Color.White, strokeWidth = 4f) }
-                        }
+                    val trazos = mutableListOf<com.gacelas.ui.components.TrazoMapa>()
+                    val circulos = mutableListOf<com.gacelas.ui.components.CirculoMapa>()
+                    tabla.forEachIndexed { i, k ->
+                        val trazo = k.puntos.let { p -> repeticion?.let { r -> p.take(maxOf(1, (r * p.size).toInt())) } ?: p }.map { LatLng(it.first, it.second) }
+                        if (trazo.size >= 2) trazos += com.gacelas.ui.components.TrazoMapa(trazo, colorCorredor(i), 4f)
+                        val pos = repeticion?.let { posicionRepeticion(k, it) } ?: k.lat?.let { la -> k.lng?.let { la to it } }
+                        pos?.let { circulos += com.gacelas.ui.components.CirculoMapa(LatLng(it.first, it.second), 8f, colorCorredor(i), bordeDp = 1.5f) }
                     }
-                } else Text("El mapa necesita Google Maps configurado.", color = GColors.TextSecondary, modifier = Modifier.align(Alignment.Center))
+                    com.gacelas.ui.components.MapaLibre(Modifier.fillMaxSize().testTag("mapa-evento"), trazos = trazos, circulos = circulos, alListo = { mapaEvento = it })
+                } else Text("El mapa no está disponible en este dispositivo.", color = GColors.TextSecondary, modifier = Modifier.align(Alignment.Center))
             }
             BotonPrimario("Correr y compartir en el evento", { c.enVivo?.eventoId = id; onCorrer() }, icono = null)
             if (tabla.any { it.puntos.size > 1 }) {

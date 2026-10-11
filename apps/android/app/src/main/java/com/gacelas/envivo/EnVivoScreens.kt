@@ -36,9 +36,9 @@ import com.gacelas.data.envivo.SesionEnVivo
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearHms
 import com.gacelas.tracking.formatearRitmo
-import com.google.android.gms.maps.model.LatLng
+import org.maplibre.android.geometry.LatLng
 import com.gacelas.ui.ajustesState
-import com.gacelas.ui.components.MapaGoogle
+import com.gacelas.ui.components.MapaGacelas
 import com.gacelas.ui.components.Metrica
 import com.gacelas.ui.components.Pantalla
 import com.gacelas.ui.components.Tarjeta
@@ -119,7 +119,7 @@ fun DetalleEnVivoScreen(id: String, onAtras: () -> Unit) {
         }
         val puntos = x.puntos.mapIndexed { i, p -> PuntoGps(p.lat, p.lng, i.toLong()) }
         Tarjeta(padding = 8.dp) {
-            MapaGoogle(x.puntos.map { LatLng(it.lat, it.lng) }, Modifier.fillMaxWidth().height(320.dp), seguir = true, oscuro = a.modoOscuro) {
+            MapaGacelas(x.puntos.map { LatLng(it.lat, it.lng) }, Modifier.fillMaxWidth().height(320.dp), seguir = true, oscuro = a.modoOscuro) {
                 TrazadoRuta(puntos, Modifier.fillMaxWidth().height(320.dp))
             }
             if (x.oculta) Row(Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {

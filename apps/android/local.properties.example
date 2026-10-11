@@ -2,8 +2,7 @@
 # Copia este archivo como local.properties y llena los valores.
 
 sdk.dir=
-# Google Maps SDK for Android (restringida al paquete com.gacelas y la huella SHA-1). Sin clave se usa el mapa dibujado.
-GOOGLE_MAPS_API_KEY=
+# El mapa usa MapLibre con teselas de OpenStreetMap (OpenFreeMap): no necesita clave.
 # Supabase (Project Settings, API)
 SUPABASE_URL=
 SUPABASE_ANON_KEY=

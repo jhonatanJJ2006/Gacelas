@@ -78,7 +78,7 @@ import com.gacelas.data.mock.MockData
 import com.gacelas.ui.components.BotonPrimario
 import com.gacelas.ui.components.CampoTexto
 import com.gacelas.ui.components.IconoCirculo
-import com.gacelas.ui.components.MapaGoogle
+import com.gacelas.ui.components.MapaGacelas
 import com.gacelas.ui.components.MapaMat
 import com.gacelas.ui.components.MapaPlaceholder
 import com.gacelas.ui.components.Mapas
@@ -215,9 +215,9 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
     val todas = remember(remotas, locales, guardadas) { rutasNavegables(remotas, locales, guardadas, elegida) }
     var seleccion by rememberSaveable { mutableStateOf(elegida ?: com.gacelas.data.rutas.RutaActiva.navegarId ?: "primary") }
     val sugeridas = todas.filter { consulta.isBlank() || it.nombre.contains(consulta.trim(), ignoreCase = true) }.take(8)
-    val trazoSeleccion = todas.firstOrNull { it.id == seleccion }?.trazo.orEmpty().map { com.google.android.gms.maps.model.LatLng(it.first, it.second) }
+    val trazoSeleccion = todas.firstOrNull { it.id == seleccion }?.trazo.orEmpty().map { org.maplibre.android.geometry.LatLng(it.first, it.second) }
     Box(Modifier.fillMaxSize().background(Color(0xFF090F1A))) {
-        MapaGoogle(trazoSeleccion, Modifier.fillMaxSize(), zoom = 14f) { MapaPlaceholder(rutaPrincipal = seleccion == "primary") }
+        MapaGacelas(trazoSeleccion, Modifier.fillMaxSize(), zoom = 14f) { MapaPlaceholder(rutaPrincipal = seleccion == "primary") }
         IconButton(onClick = onAtras, modifier = Modifier.statusBarsPadding().padding(12.dp).clip(CircleShape).background(GColors.BgSecondary)) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Atrás", tint = GColors.TextPrimary)
         }
@@ -284,7 +284,7 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: (conCarrera: Boolea
     val idRuta = rememberSaveable { com.gacelas.data.rutas.RutaActiva.navegarId ?: "primary" }
     val ruta = remember(remotas, locales, guardadas) { rutasNavegables(remotas, locales, guardadas).firstOrNull { it.id == idRuta } }
     val trazo = ruta?.trazo.orEmpty()
-    val plan = remember(trazo) { trazo.map { com.google.android.gms.maps.model.LatLng(it.first, it.second) } }
+    val plan = remember(trazo) { trazo.map { org.maplibre.android.geometry.LatLng(it.first, it.second) } }
     val ultimo = estado.puntos.lastOrNull()
     val guia = remember(trazo, ultimo) { com.gacelas.data.rutas.Guia.calcular(trazo, ultimo?.let { it.lat to it.lng }) }
     val fueraDeRuta = guia != null && ultimo != null && guia.desvioM > com.gacelas.data.rutas.Guia.DESVIO_M
@@ -292,7 +292,7 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: (conCarrera: Boolea
         val clip = MapaMat.clipPorRitmo(estado.ritmoActualSegKm)
         if (Mapas.configurado()) {
             // Estilo navegacion: mapa inclinado con el rumbo arriba, ruta brillante por delante y el corredor 3D en el mapa.
-            MapaGoogle(estado.puntos.aLatLng(), Modifier.fillMaxSize(), seguir = true, zoom = 17f, modo3d = vista3d, ritmoSegKm = estado.ritmoActualSegKm, plan = plan, adelanteM = 120.0) { }
+            MapaGacelas(estado.puntos.aLatLng(), Modifier.fillMaxSize(), seguir = true, zoom = 17f, modo3d = vista3d, ritmoSegKm = estado.ritmoActualSegKm, plan = plan, adelanteM = 120.0) { }
         } else {
             MapaPlaceholder(rutaPrincipal = true)
             Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, GColors.BgPrimary.copy(alpha = 0.6f)))))

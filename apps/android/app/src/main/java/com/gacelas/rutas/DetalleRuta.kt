@@ -59,7 +59,7 @@ import com.gacelas.ui.ajustesState
 import com.gacelas.ui.components.BotonPrimario
 import com.gacelas.ui.components.CampoTexto
 import com.gacelas.ui.components.EncabezadoAtras
-import com.gacelas.ui.components.MapaGoogle
+import com.gacelas.ui.components.MapaGacelas
 import com.gacelas.ui.components.Tarjeta
 import com.gacelas.ui.aviso
 import com.gacelas.ui.contenedor
@@ -67,7 +67,7 @@ import com.gacelas.ui.sesionState
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 import com.gacelas.tracking.Unidades
-import com.google.android.gms.maps.model.LatLng
+import org.maplibre.android.geometry.LatLng
 import kotlinx.coroutines.launch
 
 /** Ultima ubicacion conocida (para "Cerca de mí"); null sin permiso. */
@@ -148,7 +148,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
         ) {
             val puntos = ruta.puntos.map { PuntoGps(it.first, it.second, 0) }
             Box(Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(16.dp)).background(GColors.SurfaceContainer)) {
-                MapaGoogle(puntos.map { LatLng(it.lat, it.lng) }, Modifier.fillMaxSize(), zoom = 14f) { TrazadoRuta(puntos, Modifier.fillMaxSize()) }
+                MapaGacelas(puntos.map { LatLng(it.lat, it.lng) }, Modifier.fillMaxSize(), zoom = 14f) { TrazadoRuta(puntos, Modifier.fillMaxSize()) }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 listOf(

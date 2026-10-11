@@ -75,7 +75,7 @@ cd apps/web && pnpm smoke:supabase
 | `apps/web/.env.local`           | `VITE_GOOGLE_OAUTH_CLIENT_ID`                                                                   | Referencia; el login con Google va por Supabase.                                          |
 | `apps/android/local.properties` | `SUPABASE_URL`, `SUPABASE_ANON_KEY`                                                             | Cliente supabase-kt (BuildConfig). Sin ellas la app funciona solo en el telefono.         |
 | `apps/android/local.properties` | `GOOGLE_WEB_CLIENT_ID`                                                                          | Credential Manager pide el ID token para este cliente web.                                |
-| `apps/android/local.properties` | `GOOGLE_MAPS_API_KEY`                                                                           | Maps Compose. Sin ella se usa el mapa dibujado.                                           |
+| `apps/android/local.properties` | (ninguna)                                                                                       | Android usa MapLibre con OpenStreetMap, sin clave.                                        |
 | `backend/.env`                  | `SUPABASE_ACCESS_TOKEN`, `DATABASE_URL`, `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` | Migraciones y configuracion; nunca van en las apps.                                       |
 
 Ninguno de estos archivos se sube al repositorio. Las plantillas sin valores son `apps/web/.env.example`, `apps/android/local.properties.example` y `backend/.env.example`. Las pruebas e2e usan `apps/web/.env.e2e`, que apunta a un Supabase falso.

@@ -3,8 +3,7 @@ package com.gacelas
 import com.gacelas.ui.components.MapaMat
 import com.gacelas.ui.components.Mapas
 import com.gacelas.ui.three.ClipCorredor
-import com.google.android.gms.maps.model.LatLng
-import org.json.JSONArray
+import org.maplibre.android.geometry.LatLng
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -35,9 +34,36 @@ class MapaMatTest {
         assertEquals(ClipCorredor.Run, MapaMat.clipPorRitmo(280))
     }
 
-    @Test fun estiloEsJsonValidoYOcultaPois() {
-        val j = JSONArray(Mapas.ESTILO_GACELAS)
-        assertTrue(j.length() > 10)
-        assertTrue((0 until j.length()).any { j.getJSONObject(it).optString("featureType") == "poi" })
+    @Test fun estilosGacelasSonJsonValidosConTeselasOsm() {
+        listOf("gacelas-oscuro.json", "gacelas-claro.json").forEach { nombre ->
+            val j = org.json.JSONObject(java.io.File("src/main/assets/mapas/$nombre").readText())
+            assertEquals(8, j.getInt("version"))
+            assertTrue(j.getJSONObject("sources").getJSONObject("openmaptiles").getString("url").startsWith("https://tiles.openfreemap.org/"))
+            val capas = j.getJSONArray("layers")
+            assertTrue(capas.length() > 10)
+            // Sin capa de POIs: el estilo Gacelas los oculta.
+            assertTrue((0 until capas.length()).none { capas.getJSONObject(it).optString("source-layer") == "poi" })
+        }
+        assertTrue(Mapas.ESTILO_GACELAS.startsWith("asset://"))
+    }
+
+    @Test fun zoom3dHaceNotarElAvanceCaminando() {
+        // A 5-8 km/h el suelo debe moverse al menos 12 dp por segundo (unos 25 dp por punto GPS).
+        listOf(5.0, 6.5, 8.0).forEach { kmh ->
+            val dpS = com.gacelas.ui.components.ZoomNavegacion.avanceDpPorSegundo(kmh / 3.6)
+            assertTrue("a $kmh km/h solo avanza $dpS dp/s", dpS >= 12.0)
+        }
+        // Corriendo se aleja un poco la camara, sin saltos.
+        val lento = com.gacelas.ui.components.ZoomNavegacion.para(1.0)
+        val rapido = com.gacelas.ui.components.ZoomNavegacion.para(5.0)
+        assertTrue(lento > rapido)
+        assertEquals(com.gacelas.ui.components.ZoomNavegacion.ZOOM_LENTO, lento, 1e-9)
+    }
+
+    @Test fun regionLojaCubreLaCiudad() {
+        val r = com.gacelas.ui.components.MapaOffline.LOJA
+        assertTrue(r.contiene(Mapas.CENTRO_LOJA.latitude, Mapas.CENTRO_LOJA.longitude))
+        Mapas.trazos.values.flatten().forEach { assertTrue(r.contiene(it.latitude, it.longitude)) }
+        assertTrue(r.zoomMax >= 14.0)
     }
 }

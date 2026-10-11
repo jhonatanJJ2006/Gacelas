@@ -28,11 +28,6 @@
         android:theme="@style/Theme.Gacelas"
         tools:targetApi="31">
 
-        <!-- Google Maps API Key -->
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="${GOOGLE_MAPS_API_KEY}" />
-
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
