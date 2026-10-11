@@ -31,8 +31,8 @@ android {
         applicationId = "com.gacelas"
         minSdk = 24
         targetSdk = 35
-        versionName = "0.6.1"
-        // versionCode sale de versionName (0.6.1 -> 601): siempre sube con cada version y el aviso
+        versionName = "0.6.2"
+        // versionCode sale de versionName (0.6.2 -> 602): siempre sube con cada version y el aviso
         // de actualizacion lo compara con latest.json. Hasta 0.6.1 fue siempre 1.
         versionCode = versionName!!.split('.', '-').take(3).map { it.toIntOrNull() ?: 0 }.plus(listOf(0, 0, 0)).let { it[0] * 10000 + it[1] * 100 + it[2] }
 
