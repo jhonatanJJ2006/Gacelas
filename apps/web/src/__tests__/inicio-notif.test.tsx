@@ -37,7 +37,7 @@ describe('notificaciones', () => {
     expect(screen.getByText('No hay notificaciones.')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('tab', { name: 'Todas' }))
     await userEvent.click(screen.getAllByTestId('notificacion')[0])
-    expect(await screen.findByRole('button', { name: /Filtrar publicaciones/ })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'En vivo ahora' })).toBeInTheDocument()
   })
 
   it('respeta los ajustes desactivados', async () => {

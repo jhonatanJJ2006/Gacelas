@@ -7,8 +7,8 @@ import org.junit.Test
 
 class DestinosTest {
     @Test
-    fun hay23PantallasUnicas() {
-        assertEquals(23, Destinos.todas.size)
+    fun hay25PantallasUnicas() {
+        assertEquals(25, Destinos.todas.size)
         assertEquals(Destinos.todas.size, Destinos.todas.toSet().size)
     }
 
@@ -18,7 +18,7 @@ class DestinosTest {
             "bienvenida", "inicio-sesion", "registro", "recuperar-contrasena", "permisos-ubicacion",
             "inicio", "rutas", "comunidad", "comunidad/eventos", "perfil",
             "correr", "correr/en-curso", "correr/cronometro", "correr/resumen",
-            "rutas/buscar", "rutas/navegacion", "comunidad/eventos/{id}",
+            "rutas/buscar", "rutas/navegacion", "comunidad/eventos/{id}", "comunidad/en-vivo", "comunidad/en-vivo/{id}",
             "perfil/editar", "perfil/avatar", "ajustes", "ajustes/privacidad", "ajustes/notificaciones", "notificaciones",
         )
         assertEquals(web.toSet(), Destinos.todas.toSet())

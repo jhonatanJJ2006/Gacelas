@@ -25,6 +25,10 @@ object Destinos {
     const val DETALLE_EVENTO = "comunidad/eventos/{id}"
     fun detalleEvento(id: String) = "comunidad/eventos/$id"
 
+    const val EN_VIVO = "comunidad/en-vivo"
+    const val DETALLE_EN_VIVO = "comunidad/en-vivo/{id}"
+    fun detalleEnVivo(id: String) = "comunidad/en-vivo/$id"
+
     const val EDITAR_PERFIL = "perfil/editar"
     const val AVATAR = "perfil/avatar"
 
@@ -41,7 +45,7 @@ object Destinos {
 
     val todas = acceso + conBarraInferior + listOf(
         CORRER, CARRERA_EN_CURSO, CRONOMETRO, RESUMEN,
-        BUSCADOR_RUTAS, NAVEGACION, DETALLE_EVENTO,
+        BUSCADOR_RUTAS, NAVEGACION, DETALLE_EVENTO, EN_VIVO, DETALLE_EN_VIVO,
         EDITAR_PERFIL, AVATAR,
         AJUSTES, PRIVACIDAD, CONFIG_NOTIFICACIONES, NOTIFICACIONES,
     )

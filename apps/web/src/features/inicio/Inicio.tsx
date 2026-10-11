@@ -51,16 +51,18 @@ export function Inicio() {
             <span className="material-symbols-outlined text-[18px] text-primary-400">
               calendar_today
             </span>
-            <span className="font-label-md text-label-md text-on-surface capitalize">{fecha}</span>
+            <span className="font-label-md text-label-md text-on-surface capitalize whitespace-nowrap">
+              {fecha}
+            </span>
           </div>
         </div>
       </section>
 
       <section className="lg:col-span-7 lg:row-span-3 relative flex flex-col rounded-3xl overflow-hidden bg-surface-container-high border border-border-subtle shadow-2xl">
         <div className="absolute top-3 inset-x-3 z-20 flex items-center justify-between pointer-events-none">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-bg-secondary/90 backdrop-blur-md text-primary border border-primary/20 shadow-md">
+          <div className="inline-flex items-center gap-1.5 px-3 max-[380px]:px-2 py-1 min-w-0 rounded-full bg-bg-secondary/90 backdrop-blur-md text-primary border border-primary/20 shadow-md">
             <span className="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
-            <span className="font-label-md text-label-md font-bold tracking-wide uppercase">
+            <span className="font-label-md text-label-md font-bold tracking-wide uppercase whitespace-nowrap max-[380px]:text-[10px] max-[380px]:tracking-normal">
               {semana.carreras} {semana.carreras === 1 ? 'carrera' : 'carreras'} esta semana
             </span>
           </div>

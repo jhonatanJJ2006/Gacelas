@@ -96,4 +96,33 @@ class FakeBackend : Backend {
         red()
         tabla(tabla).removeAll { coincide(it, filtros) }
     }
+
+    /** Funciones live_* en memoria (sin difuminado: eso se prueba contra Supabase real). */
+    override suspend fun rpc(funcion: String, args: JsonObject): kotlinx.serialization.json.JsonElement {
+        red()
+        val yo = actual?.id ?: throw ErrorRemoto("no autenticado")
+        val t = tabla("live_sessions")
+        return when (funcion) {
+            "live_iniciar" -> {
+                val id = "s-${++n}"
+                t += JsonObject(mapOf("id" to JsonPrimitive(id), "user_id" to JsonPrimitive(yo), "audience" to JsonPrimitive("followers"),
+                    "started_at" to JsonPrimitive("2026-10-11T05:00:00Z"), "hidden" to JsonPrimitive(true)))
+                JsonPrimitive(id)
+            }
+            "live_enviar" -> {
+                val id = args.valor("sesion")
+                val i = t.indexOfFirst { it.valor("id") == id && it.valor("user_id") == yo }
+                if (i < 0) throw ErrorRemoto("sesion no valida")
+                t[i] = JsonObject(t[i] + mapOf("hidden" to JsonPrimitive(false), "last_lat" to args.getValue("lat"), "last_lng" to args.getValue("lng"),
+                    "distance_m" to args.getValue("distancia_m"), "elapsed_s" to args.getValue("segundos")))
+                JsonPrimitive(true)
+            }
+            "live_terminar" -> {
+                val i = t.indexOfFirst { it.valor("id") == args.valor("sesion") && it.valor("user_id") == yo }
+                if (i >= 0) t[i] = JsonObject(t[i] + ("ended_at" to JsonPrimitive("2026-10-11T05:30:00Z")))
+                kotlinx.serialization.json.JsonNull
+            }
+            else -> throw ErrorRemoto("funcion desconocida $funcion")
+        }
+    }
 }

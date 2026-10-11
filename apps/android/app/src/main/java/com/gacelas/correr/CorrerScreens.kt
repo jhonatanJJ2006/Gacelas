@@ -1,5 +1,6 @@
 package com.gacelas.correr
 
+import androidx.compose.material.icons.filled.Sensors
 import com.gacelas.ui.components.MapaGoogle
 import com.gacelas.ui.components.aLatLng
 import android.annotation.SuppressLint
@@ -124,12 +125,19 @@ fun empezarCarrera(context: Context, tracker: RunTracker) {
 }
 
 /** Detiene el servicio y deja la carrera lista para el resumen. */
+private fun terminarEnVivo(context: Context) {
+    val repo = (context.applicationContext as? com.gacelas.GacelasApp)?.contenedor?.enVivo ?: return
+    if (repo.sesionId != null) kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch { repo.terminar() }
+}
+
 fun terminarCarrera(context: Context, tracker: RunTracker) {
+    terminarEnVivo(context)
     tracker.finalizar()
     LocationService.detener(context)
 }
 
 fun descartarCarrera(context: Context, tracker: RunTracker) {
+    terminarEnVivo(context)
     LocationService.detener(context)
     tracker.reiniciar()
 }
@@ -277,6 +285,8 @@ fun CarreraEnCursoScreen(onCerrar: () -> Unit, onFinalizar: () -> Unit, onCronom
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             BotonCerrar { confirmar = true }
             Spacer(Modifier.weight(1f))
+            BotonCompartirEnVivo(tracker)
+            Spacer(Modifier.width(8.dp))
             Row(Modifier.clip(CircleShape).background(GColors.SurfaceContainer).padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(8.dp).clip(CircleShape).background(if (estado.pausada) GColors.Primary500 else GColors.Secondary500))
                 Text(if (estado.pausada) "  En pausa" else "  En curso", style = GType.labelMd, color = GColors.TextPrimary)
@@ -697,5 +707,28 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
             }
         }, icono = Icons.Filled.Save, enabled = !guardando)
         BotonSecundario("Descartar", salirSinGuardar, color = GColors.TextSecondary)
+    }
+}
+
+/** Boton "Compartir en vivo": envia la posicion cada 5 s mientras se corre. */
+@Composable
+private fun BotonCompartirEnVivo(tracker: com.gacelas.tracking.RunTracker) {
+    val repo = contenedor().enVivo ?: return
+    val perfil by com.gacelas.ui.sesionState()
+    if (perfil == null) return
+    val estado by tracker.estado.collectAsState()
+    val scope = rememberCoroutineScope()
+    var activo by remember { mutableStateOf(repo.sesionId != null) }
+    var visible by remember { mutableStateOf(repo.visible) }
+    LaunchedEffect(activo, estado.puntos.size, estado.pausada) {
+        val p = estado.puntos.lastOrNull()
+        if (activo && !estado.pausada && p != null && repo.enviar(p.lat, p.lng, estado.distanciaKm, estado.segundos)) visible = repo.visible
+    }
+    androidx.compose.material3.TextButton(
+        onClick = { scope.launch { if (activo) { repo.terminar(); activo = false } else activo = repo.iniciar() != null } },
+        modifier = Modifier.height(44.dp).clip(CircleShape).background(if (activo) GColors.Danger else GColors.SurfaceContainer),
+    ) {
+        Icon(Icons.Filled.Sensors, null, tint = if (activo) Color.White else GColors.TextPrimary, modifier = Modifier.size(18.dp))
+        Text(if (!activo) " Compartir en vivo" else if (visible == false) " En vivo · casa oculta" else " En vivo", style = GType.labelMd, color = if (activo) Color.White else GColors.TextPrimary)
     }
 }
