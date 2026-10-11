@@ -1,7 +1,8 @@
+import { listarEnVivo, suscribirLista, type SesionEnVivo } from '../../lib/enVivo'
 import { useEsEscritorio } from '../../lib/useEsEscritorio'
 import { ProximosEventos, RankingSemanal } from '../../components/PanelesEscritorio'
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { TrazadoRuta } from '../../components/TrazadoRuta'
 import { Aviso, BotonTexto, Dialogo } from '../../components/ui'
 import { compartir, useAviso } from '../../hooks'
@@ -10,6 +11,17 @@ import { useApp } from '../../store/app'
 import { construirFeed, filtrarFeed, type FiltroFeed, type Publicacion } from '../../lib/logica'
 
 export function Feed() {
+  const [enVivo, setEnVivo] = useState<SesionEnVivo[]>([])
+  useEffect(() => {
+    let vivo = true
+    const cargar = () => void listarEnVivo().then((l) => vivo && setEnVivo(l))
+    cargar()
+    const salir = suscribirLista(cargar)
+    return () => {
+      vivo = false
+      salir()
+    }
+  }, [])
   const escritorio = useEsEscritorio()
   const navigate = useNavigate()
   const sesion = useApp((s) => s.sesion)
@@ -101,6 +113,22 @@ export function Feed() {
               </div>
             )}
           </div>
+
+          {enVivo.length > 0 && (
+            <Link
+              to="/comunidad/en-vivo"
+              data-testid="banner-en-vivo"
+              className="flex items-center gap-3 min-h-[52px] mb-4 px-4 rounded-2xl bg-danger/15 border border-danger/40 text-text-primary"
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-danger animate-pulse" />
+              <span className="flex-1 font-semibold">
+                {enVivo.length === 1
+                  ? `${enVivo[0].nombre} está corriendo en vivo`
+                  : `${enVivo.length} corredores en vivo ahora`}
+              </span>
+              <span className="material-symbols-outlined">chevron_right</span>
+            </Link>
+          )}
 
           <div className="flex gap-2 mb-4">
             <span

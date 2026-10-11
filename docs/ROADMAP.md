@@ -10,47 +10,9 @@ Movidas a [plans/completados](plans/completados/). Ver [plans/README.md](plans/R
 
 ---
 
-## Fase 3: Live Tracking en Tiempo Real (EN CURSO)
+## Fase 3: Live Tracking en Tiempo Real: Completada
 
-Plan activo: [plans/activos/fase-3-live-tracking.md](plans/activos/fase-3-live-tracking.md)
-
-**Objetivo**: Compartir ubicación en vivo durante actividades.
-
-### 3.1 Backend - Realtime
-
-**Features**:
-
-- [ ] Supabase Realtime Broadcast setup
-- [x] Tabla `live_sharing_settings` (y `live_sessions`)
-- [ ] Edge Function para verificar permisos de visualización
-- [ ] Channels por actividad: `live:activity:{id}`
-
-### 3.2 Android - Compartir en Vivo
-
-**Features**:
-
-- [ ] Botón "Compartir en vivo" durante actividad
-- [ ] Selector de audiencia (seguidores, club, link público)
-- [ ] Broadcast de posición cada 5 segundos
-- [ ] Indicador visual de "broadcasting"
-- [ ] Auto-stop al terminar actividad
-
-### 3.3 Web & Android - Ver en Vivo
-
-**Features**:
-
-- [ ] Notificación "X está corriendo ahora"
-- [ ] Vista de mapa en vivo con posición actualizada
-- [ ] Métricas en tiempo real del corredor
-- [ ] Animación suave de transición de marcador
-
-### 3.4 Privacidad
-
-**Features**:
-
-- [ ] Home zone fuzzing (primeros/últimos 300m)
-- [ ] Configurar ubicación de casa en perfil
-- [ ] Permisos granulares de visualización
+Ver [plans/completados/fase-3-live-tracking.md](plans/completados/fase-3-live-tracking.md).
 
 ---
 
@@ -407,6 +369,6 @@ Plan activo: [plans/activos/fase-3-live-tracking.md](plans/activos/fase-3-live-t
 
 ## Siguiente Paso Inmediato
 
-**Siguiente paso**: Fase 3.1, canal Realtime Broadcast con autorización, y luego 3.2 (compartir en vivo desde Android).
+**Siguiente paso**: Fase 4, rutas y exploración (crear rutas desde una actividad y explorar rutas cercanas).
 
 Ver [CONTRIBUTING.md](CONTRIBUTING.md) para comenzar a contribuir al desarrollo.

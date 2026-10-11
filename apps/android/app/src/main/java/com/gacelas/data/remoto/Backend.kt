@@ -10,6 +10,7 @@ import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.JsonObject
@@ -38,6 +39,8 @@ interface Backend {
     suspend fun upsert(tabla: String, filas: List<JsonObject>, onConflict: String): List<JsonObject>
     suspend fun update(tabla: String, valores: JsonObject, filtros: Map<String, String>)
     suspend fun delete(tabla: String, filtros: Map<String, String>)
+    /** Llama a una funcion SQL (RPC). Devuelve JsonNull si no retorna nada. */
+    suspend fun rpc(funcion: String, args: JsonObject): kotlinx.serialization.json.JsonElement
 }
 
 /** Traduce mensajes de Supabase a textos para la app (igual que la web). */
@@ -127,5 +130,10 @@ class SupabaseBackend(url: String, clave: String) : Backend {
     override suspend fun delete(tabla: String, filtros: Map<String, String>) = remoto {
         cliente.from(tabla).delete { filter { filtros.forEach { (k, v) -> eq(k, v) } } }
         Unit
+    }
+
+    override suspend fun rpc(funcion: String, args: JsonObject) = remoto {
+        val datos = cliente.postgrest.rpc(funcion, args).data
+        if (datos.isBlank()) kotlinx.serialization.json.JsonNull else kotlinx.serialization.json.Json.parseToJsonElement(datos)
     }
 }

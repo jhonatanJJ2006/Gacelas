@@ -1,5 +1,6 @@
 package com.gacelas.comunidad
 
+import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -115,7 +116,7 @@ fun filtrarFeed(lista: List<Publicacion>, filtro: FiltroFeed, ocultas: Set<Strin
     }
 
 @Composable
-fun FeedScreen(onEventos: () -> Unit) {
+fun FeedScreen(onEventos: () -> Unit, onEnVivo: () -> Unit = {}) {
     val context = LocalContext.current
     val c = contenedor()
     val scope = rememberCoroutineScope()
@@ -136,6 +137,7 @@ fun FeedScreen(onEventos: () -> Unit) {
     Pantalla {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Comunidad", style = GType.headlineLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+            IconButton(onClick = onEnVivo) { Icon(Icons.Filled.Sensors, "Corredores en vivo", tint = GColors.Danger) }
             Box {
                 IconButton(onClick = { menuFiltro = true }) { Icon(Icons.Filled.FilterList, "Filtrar", tint = GColors.TextSecondary) }
                 DropdownMenu(expanded = menuFiltro, onDismissRequest = { menuFiltro = false }) {

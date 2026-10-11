@@ -1,4 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import {
+  dejarDeCompartir,
+  empezarACompartir,
+  enviarPosicion,
+  puedeCompartir,
+  useCompartirEnVivo,
+} from '../../lib/enVivo'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { MapaGoogle } from '../../components/MapaGoogle'
 import { TrazadoRuta } from '../../components/TrazadoRuta'
@@ -14,12 +21,21 @@ export function CarreraEnCurso() {
   const e = useCarrera()
   const m = useApp((s) => s.ajustes.unidadesMetricas)
   const [descartar, setDescartar] = useState(false)
+  const sesion = useApp((s) => s.sesion)
+  const vivo = useCompartirEnVivo()
+  const compartiendo = vivo.sesionId !== null
+  const ultimo = e.puntos.at(-1)
+  useEffect(() => {
+    if (compartiendo && e.fase === 'corriendo')
+      void enviarPosicion(ultimo, e.distanciaKm, e.segundos)
+  }, [compartiendo, e.fase, ultimo, e.distanciaKm, e.segundos])
 
   if (!estaActiva(e))
     return <Navigate to={e.fase === 'terminada' ? '/correr/resumen' : '/correr'} replace />
 
   const pausada = e.fase === 'pausada'
   const terminar = () => {
+    void dejarDeCompartir()
     finalizarCarrera()
     navigate('/correr/resumen')
   }
@@ -37,6 +53,25 @@ export function CarreraEnCurso() {
           >
             <span className="material-symbols-outlined">close</span>
           </button>
+          {sesion && puedeCompartir() && (
+            <button
+              onClick={() => void (compartiendo ? dejarDeCompartir() : empezarACompartir())}
+              aria-pressed={compartiendo}
+              data-testid="compartir-en-vivo"
+              className={`h-11 px-4 rounded-full flex items-center gap-2 font-semibold shadow-lg ${
+                compartiendo
+                  ? 'bg-danger text-white'
+                  : 'bg-surface/90 backdrop-blur-md text-text-primary'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[20px]">sensors</span>
+              {compartiendo
+                ? vivo.visible === false
+                  ? 'En vivo · casa oculta'
+                  : 'En vivo'
+                : 'Compartir en vivo'}
+            </button>
+          )}
           <button
             onClick={() => navigate('/correr/cronometro')}
             aria-label="Abrir cronómetro"
@@ -162,6 +197,7 @@ export function CarreraEnCurso() {
             <BotonTexto
               peligro
               onClick={() => {
+                void dejarDeCompartir()
                 descartarCarrera()
                 navigate('/inicio')
               }}

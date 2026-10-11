@@ -122,7 +122,7 @@ private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
     conBarra(nav, Destinos.RUTAS) {
         ListaRutasScreen(onBuscar = { nav.navigate(Destinos.BUSCADOR_RUTAS) }, onRuta = { nav.navigate(Destinos.BUSCADOR_RUTAS) })
     }
-    conBarra(nav, Destinos.COMUNIDAD) { FeedScreen(onEventos = { nav.navigate(Destinos.EVENTOS) }) }
+    conBarra(nav, Destinos.COMUNIDAD) { FeedScreen(onEventos = { nav.navigate(Destinos.EVENTOS) }, onEnVivo = { nav.navigate(Destinos.EN_VIVO) }) }
     conBarra(nav, Destinos.EVENTOS) { EventosScreen(onEvento = { nav.navigate(Destinos.detalleEvento(it)) }) }
     conBarra(nav, Destinos.PERFIL) {
         PerfilScreen(
@@ -154,6 +154,10 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
     composable(Destinos.DETALLE_EVENTO) { entry ->
         DetalleEventoScreen(id = entry.arguments?.getString("id") ?: "1", onAtras = { nav.popBackStack() })
     }
+    composable(Destinos.EN_VIVO) { com.gacelas.envivo.ListaEnVivoScreen(onAtras = { nav.popBackStack() }, onSesion = { nav.navigate(Destinos.detalleEnVivo(it)) }) }
+    composable(Destinos.DETALLE_EN_VIVO) { entry ->
+        com.gacelas.envivo.DetalleEnVivoScreen(id = entry.arguments?.getString("id") ?: "", onAtras = { nav.popBackStack() })
+    }
     composable(Destinos.EDITAR_PERFIL) { EditarPerfilScreen(onAtras = { nav.popBackStack() }, onGuardar = { nav.popBackStack() }) }
     composable(Destinos.AVATAR) { Avatar3DScreen(onAtras = { nav.popBackStack() }, onGuardar = { nav.popBackStack() }) }
     composable(Destinos.AJUSTES) {
@@ -171,7 +175,8 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
         NotificacionesScreen(onAtras = { nav.popBackStack() }, onAbrir = { n ->
             when (n.tipo) {
                 TipoNotificacion.Evento -> nav.navigate(Destinos.detalleEvento("1"))
-                TipoNotificacion.EnVivo, TipoNotificacion.Comentario, TipoNotificacion.Like -> nav.irAPestana(Destinos.COMUNIDAD)
+                TipoNotificacion.EnVivo -> nav.navigate(Destinos.EN_VIVO)
+                TipoNotificacion.Comentario, TipoNotificacion.Like -> nav.irAPestana(Destinos.COMUNIDAD)
                 TipoNotificacion.Seguidor -> nav.irAPestana(Destinos.PERFIL)
             }
         })

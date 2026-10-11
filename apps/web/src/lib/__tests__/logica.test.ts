@@ -189,7 +189,7 @@ describe('logica de pantallas', () => {
     expect(saludo(21)).toBe('Buenas noches')
     expect(destinoNotificacion(notificacionesMock[4])).toBe('/comunidad/eventos/1')
     expect(destinoNotificacion(notificacionesMock[3])).toBe('/perfil')
-    expect(destinoNotificacion(notificacionesMock[0])).toBe('/comunidad')
+    expect(destinoNotificacion(notificacionesMock[0])).toBe('/comunidad/en-vivo')
   })
 })
 
