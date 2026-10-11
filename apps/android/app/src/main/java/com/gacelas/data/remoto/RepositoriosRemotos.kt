@@ -365,7 +365,7 @@ class SupabaseAjustesRepository(
 
 /* ---------------- Eventos ---------------- */
 
-fun eventoDesdeFila(f: JsonObject): Evento {
+fun eventoDesdeFila(f: JsonObject, uid: String? = null): Evento {
     val inicio = f.texto("starts_at")?.let(FechaIso::leer)
     return Evento(
         id = f.texto("id").orEmpty(),
@@ -377,7 +377,7 @@ fun eventoDesdeFila(f: JsonObject): Evento {
         participantes = f.entero("base_participants") ?: 0,
         distanciaKm = f.numero("distance_km")?.toInt() ?: 0,
         pasado = inicio?.let { it < System.currentTimeMillis() } ?: false,
-        creadoPorUsuario = true,
+        creadoPorUsuario = uid == null || f.texto("created_by") == uid,
         inicioMs = inicio,
         cupo = f.entero("max_participants"),
         tipo = f.texto("kind") ?: "grupal",
@@ -397,8 +397,9 @@ class SupabaseEventosRepository(
 
     suspend fun descargar() {
         val uid = userId() ?: return
-        runCatching { backend.select("events", mapOf("created_by" to uid), "created_at") }.getOrNull()?.let { filas ->
-            creadosValor.actualizar { filas.map(::eventoDesdeFila) }
+        // Igual que la web: todos los eventos creados por la comunidad (los de ejemplo vienen en MockData).
+        runCatching { backend.select("events", emptyMap(), "starts_at") }.getOrNull()?.let { filas ->
+            creadosValor.actualizar { filas.filter { it.texto("created_by") != null }.map { eventoDesdeFila(it, uid) } }
         }
         runCatching { backend.select("event_rsvps", mapOf("user_id" to uid)) }.getOrNull()?.let { filas ->
             inscritosValor.actualizar { filas.mapNotNull { it.texto("event_id") }.toSet() }
