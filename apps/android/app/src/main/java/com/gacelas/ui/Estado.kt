@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.gacelas.Contenedor
@@ -32,6 +33,16 @@ fun sesionState(): State<Perfil?> = contenedor().auth.sesion.collectAsState(init
 
 @Composable
 fun carrerasState(): State<List<CarreraGuardada>> = contenedor().carreras.carreras.collectAsState(initial = emptyList())
+
+/** Racha vigente calculada con las carreras (misma logica que el servidor). */
+@Composable
+fun rachaState(): com.gacelas.data.rachas.Racha {
+    val carreras by carrerasState()
+    val ajustes by ajustesState()
+    return remember(carreras, ajustes.metaSemanal) {
+        com.gacelas.data.rachas.Rachas.calcular(carreras, System.currentTimeMillis(), ajustes.metaSemanal)
+    }
+}
 
 fun Context.aviso(texto: String) = Toast.makeText(this, texto, Toast.LENGTH_SHORT).show()
 

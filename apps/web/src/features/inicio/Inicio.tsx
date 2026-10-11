@@ -1,3 +1,4 @@
+import { InsigniaRacha } from '../../components/Racha'
 import { useEsEscritorio } from '../../lib/useEsEscritorio'
 import { MetaSemanal, RankingSemanal } from '../../components/PanelesEscritorio'
 import { lazy, Suspense, useMemo } from 'react'
@@ -63,17 +64,7 @@ export function Inicio() {
               {semana.carreras} {semana.carreras === 1 ? 'carrera' : 'carreras'} esta semana
             </span>
           </div>
-          <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-highest/90 backdrop-blur-md text-text-primary shadow-sm border border-white/5">
-            <span className="material-symbols-outlined text-[14px] text-primary">
-              local_fire_department
-            </span>
-            <span
-              className="font-label-md text-label-md font-semibold text-primary"
-              data-testid="racha"
-            >
-              Racha {semana.racha}d
-            </span>
-          </div>
+          <InsigniaRacha compacta />
         </div>
 
         <div className="relative w-full h-[430px] lg:h-[560px] bg-surface-container-lowest">

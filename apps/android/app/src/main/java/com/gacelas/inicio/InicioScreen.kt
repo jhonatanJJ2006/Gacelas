@@ -1,5 +1,6 @@
 package com.gacelas.inicio
 
+import com.gacelas.ui.components.InsigniaRacha
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -88,10 +89,7 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
                     Box(Modifier.size(8.dp).clip(CircleShape).background(GColors.Secondary500))
                     Text("  AUTOPILOT ACTIVO", style = GType.labelMd, color = GColors.Secondary500)
                 }
-                Row(Modifier.align(Alignment.TopEnd).padding(12.dp).clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.7f)).padding(horizontal = 10.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.LocalFireDepartment, null, tint = GColors.Primary500, modifier = Modifier.size(16.dp))
-                    Text(" Racha ${semana.racha}d", style = GType.labelMd, color = GColors.TextPrimary)
-                }
+                InsigniaRacha(com.gacelas.ui.rachaState(), Modifier.align(Alignment.TopEnd).padding(12.dp))
             }
             Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceAround) {
                 Metrica("${semana.diasCorridos.size}", "Días", color = GColors.TextPrimary)

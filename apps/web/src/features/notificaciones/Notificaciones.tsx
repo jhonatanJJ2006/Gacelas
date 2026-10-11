@@ -33,6 +33,8 @@ export function Notificaciones() {
         return { icon: 'person_add', color: 'text-secondary-500' }
       case 'event':
         return { icon: 'event', color: 'text-tertiary' }
+      case 'streak':
+        return { icon: 'local_fire_department', color: 'text-primary' }
       case 'live':
         return { icon: 'sensors', color: 'text-secondary-500' }
       default:

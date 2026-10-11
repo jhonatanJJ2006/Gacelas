@@ -37,6 +37,8 @@ data class Ajustes(
     val likes: Set<String> = emptySet(),
     val comentarios: Map<String, List<String>> = emptyMap(),
     val ocultas: Set<String> = emptySet(),
+    /** Carreras por semana para mantener la racha semanal. */
+    val metaSemanal: Int = 3,
 )
 
 interface AjustesRepository {

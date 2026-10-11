@@ -26,6 +26,7 @@ test.describe('Correr con GPS simulado', () => {
 
     await page.getByRole('button', { name: 'Terminar carrera' }).click()
     await expect(page.getByText('Carrera completada')).toBeVisible()
+    await expect(page.getByTestId('celebracion-racha')).toContainText('Racha de 1 día')
     await page.getByLabel('Título de la carrera').fill('Prueba e2e')
     await page.getByRole('button', { name: /guardar carrera/i }).click()
 
@@ -34,6 +35,8 @@ test.describe('Correr con GPS simulado', () => {
     expect(supabase.tablas.activity_tracks?.[0].points).not.toEqual([])
     await expect(page.getByText('Prueba e2e')).toBeVisible()
     await expect(page.getByTestId('total-carreras')).toHaveText('1')
+    await expect(page.getByTestId('racha-diaria')).toHaveText('1 día')
+    await expect(page.getByTestId('mapa-calor')).toBeVisible()
     await page.reload()
     await expect(page.getByText('Prueba e2e')).toBeVisible()
     await page.goto('/inicio')

@@ -14,6 +14,7 @@ import {
 } from '../data/tipos'
 import { notificacionesMock, type Evento, type Notificacion } from '../mocks/data'
 import { obtenerSupabase } from '../lib/supabase'
+import { calcularRacha, type Racha } from '../lib/rachas'
 import { repositoriosSupabase } from '../data/supabaseRepos'
 
 /** Con Supabase configurado se usa el servidor; si no, todo queda en el dispositivo. */
@@ -41,6 +42,9 @@ export interface EstadoApp {
   /** Notificaciones de la cuenta (o las de ejemplo sin backend). */
   notificaciones: Notificacion[]
   publicaciones: PublicacionRemota[]
+  /** Racha calculada en Supabase (null sin backend: se calcula en el cliente). */
+  rachaServidor: Racha | null
+  refrescarRacha(): Promise<void>
   siguiendo: string[]
   alternarSeguir(id: string): Promise<void>
   buscarCorredores(consulta: string): Promise<CorredorPublico[]>
@@ -71,6 +75,7 @@ export const useApp = create<EstadoApp>((set, get) => ({
   inscritos: [],
   notificaciones: notificacionesMock,
   publicaciones: [],
+  rachaServidor: null,
   siguiendo: [],
 
   async cargar() {
@@ -94,7 +99,10 @@ export const useApp = create<EstadoApp>((set, get) => ({
             repos.comunidad.siguiendo().catch(() => []),
           ])
         : [[], []]
+    const rachaServidor =
+      repos.rachas && sesion ? await repos.rachas.leer().catch(() => null) : null
     set({
+      rachaServidor,
       publicaciones,
       siguiendo,
       listo: true,
@@ -167,12 +175,20 @@ export const useApp = create<EstadoApp>((set, get) => ({
     const cambios = typeof c === 'function' ? c(get().ajustes) : c
     set({ ajustes: { ...get().ajustes, ...cambios } })
     set({ ajustes: await repos.ajustes.actualizar(cambios) })
+    if ('metaSemanal' in cambios) await get().refrescarRacha()
   },
   async guardarCarrera(c) {
     set({ carreras: await repos.carreras.guardar(c) })
+    await get().refrescarRacha()
   },
   async eliminarCarrera(id) {
     set({ carreras: await repos.carreras.eliminar(id) })
+    await get().refrescarRacha()
+  },
+  async refrescarRacha() {
+    if (!repos.rachas || !get().sesion) return
+    const r = await repos.rachas.leer().catch(() => null)
+    if (r) set({ rachaServidor: r })
   },
   async alternarRutaGuardada(id) {
     set({ rutasGuardadas: await repos.rutas.alternarGuardada(id) })
@@ -185,3 +201,16 @@ export const useApp = create<EstadoApp>((set, get) => ({
     set({ inscritos: await repos.eventos.alternarInscripcion(id) })
   },
 }))
+
+/**
+ * Racha vigente: la del servidor si esta al dia; si no, la calculada con las carreras
+ * locales (modo sin conexion o carreras aun en cola de subida).
+ */
+export function useRacha(): Racha {
+  const carreras = useApp((s) => s.carreras)
+  const meta = useApp((s) => s.ajustes.metaSemanal)
+  const servidor = useApp((s) => s.rachaServidor)
+  const local = calcularRacha(carreras, Date.now(), meta)
+  if (!servidor) return local
+  return servidor.diaria >= local.diaria && servidor.semanal >= local.semanal ? servidor : local
+}

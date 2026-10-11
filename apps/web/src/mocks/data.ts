@@ -55,7 +55,7 @@ export interface RutaSugerida {
   principal: boolean
 }
 
-export type TipoNotificacion = 'like' | 'comment' | 'follow' | 'event' | 'live'
+export type TipoNotificacion = 'like' | 'comment' | 'follow' | 'event' | 'live' | 'streak'
 
 export interface Notificacion {
   id: string

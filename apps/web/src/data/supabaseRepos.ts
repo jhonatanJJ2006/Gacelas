@@ -1,6 +1,7 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js'
 import type { Evento, Notificacion } from '../mocks/data'
 import { tiempoRelativo } from '../lib/logica'
+import type { Racha } from '../lib/rachas'
 import { ValidacionAuth } from '../lib/validacion'
 import { configSupabase } from '../lib/supabase'
 import {
@@ -18,6 +19,7 @@ import {
   type ComunidadRepository,
   type PublicacionRemota,
   type CorredorPublico,
+  type RachasRepository,
   type Repositorios,
   type RutasRepository,
 } from './repositorios'
@@ -444,6 +446,7 @@ export class SupabaseAjustesRepository implements AjustesRepository {
       ...(fila.visibility ? { visibilidad: DB_A_VIS[fila.visibility as string] } : {}),
       ...(fila.hide_home != null ? { ocultarHogar: Boolean(fila.hide_home) } : {}),
       ...(fila.home_radius_m != null ? { radioHogarM: Number(fila.home_radius_m) } : {}),
+      ...(fila.weekly_goal_runs != null ? { metaSemanal: Number(fila.weekly_goal_runs) } : {}),
       ...(fila.precise_location != null
         ? { ubicacionPrecisa: Boolean(fila.precise_location) }
         : {}),
@@ -485,6 +488,7 @@ export class SupabaseAjustesRepository implements AjustesRepository {
         hide_home: nuevos.ocultarHogar,
         home_radius_m: nuevos.radioHogarM,
         precise_location: nuevos.ubicacionPrecisa,
+        weekly_goal_runs: nuevos.metaSemanal,
         prefs,
       },
       { onConflict: 'user_id' }
@@ -587,9 +591,10 @@ export const repositoriosSupabase = (sb: SupabaseClient): Repositorios => ({
   eventos: new SupabaseEventosRepository(sb),
   notificaciones: new SupabaseNotificacionesRepository(sb),
   comunidad: new SupabaseComunidadRepository(sb),
+  rachas: new SupabaseRachasRepository(sb),
 })
 
-const TIPOS_NOTIF = ['like', 'comment', 'follow', 'event', 'live'] as const
+const TIPOS_NOTIF = ['like', 'comment', 'follow', 'event', 'live', 'streak'] as const
 
 export function notificacionDesdeFila(f: Fila, ahora = Date.now()): Notificacion {
   const tipo = TIPOS_NOTIF.includes(f.type as (typeof TIPOS_NOTIF)[number])
@@ -708,5 +713,38 @@ export class SupabaseComunidadRepository implements ComunidadRepository {
       if (error) throw new Error(traducirError(error.message))
     }
     return this.siguiendo()
+  }
+}
+
+export function rachaDesdeFila(f: Fila): Racha {
+  const fecha = f.last_active_date as string | null
+  let ultimoDiaMs: number | null = null
+  if (fecha) {
+    const [a, m, d] = fecha.split('-').map(Number)
+    ultimoDiaMs = new Date(a, m - 1, d).getTime()
+  }
+  return {
+    diaria: Number(f.current_daily ?? 0),
+    mejorDiaria: Number(f.best_daily ?? 0),
+    ultimoDiaMs,
+    semanal: Number(f.current_weekly ?? 0),
+    mejorSemanal: Number(f.best_weekly ?? 0),
+    metaSemanal: Number(f.weekly_goal_runs ?? 3),
+    carrerasSemana: Number(f.runs_this_week ?? 0),
+  }
+}
+
+export class SupabaseRachasRepository implements RachasRepository {
+  private sb: SupabaseClient
+  constructor(sb: SupabaseClient) {
+    this.sb = sb
+  }
+  async leer() {
+    const user = await usuario(this.sb)
+    if (!user) return null
+    const { data, error } = await this.sb.rpc('mi_racha')
+    if (error || !data) return null
+    const fila = (Array.isArray(data) ? data[0] : data) as Fila | undefined
+    return fila ? rachaDesdeFila(fila) : null
   }
 }

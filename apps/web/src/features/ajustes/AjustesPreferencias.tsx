@@ -83,6 +83,31 @@ export function AjustesPreferencias() {
           onCambiar={(v) => void actualizar({ unidadesMetricas: v })}
         />
       </Seccion>
+      <Seccion titulo="Rachas">
+        <label className="flex items-center justify-between gap-4 px-4 min-h-[56px]">
+          <span className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-primary">local_fire_department</span>
+            <span>
+              <span className="block text-text-primary">Meta semanal</span>
+              <span className="block text-body-sm text-text-secondary">
+                Carreras por semana para mantener la racha semanal
+              </span>
+            </span>
+          </span>
+          <select
+            aria-label="Meta semanal de carreras"
+            value={ajustes.metaSemanal}
+            onChange={(e) => void actualizar({ metaSemanal: Number(e.target.value) })}
+            className="min-h-[44px] min-w-[72px] rounded-xl bg-surface-container-highest text-text-primary px-3 border border-border-subtle"
+          >
+            {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </label>
+      </Seccion>
       <Seccion titulo="Información">
         <Boton
           onClick={() => setDialogo('acerca')}
