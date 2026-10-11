@@ -42,6 +42,9 @@ export interface Ruta {
   autorNombre?: string
   /** La creo la cuenta actual. */
   propia?: boolean
+  /** Alturas (m) a lo largo del trazo. */
+  perfilElevacion?: number[]
+  origen?: 'actividad' | 'dibujada' | 'oficial'
 }
 
 export interface Evento {

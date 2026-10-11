@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { MapaGoogle } from '../../components/MapaGoogle'
 import { TrazadoRuta } from '../../components/TrazadoRuta'
-import type { ResenaRuta } from '../../data/repositorios'
+import type { CorredorRuta, FotoRuta, ResenaRuta } from '../../data/repositorios'
+import { PerfilElevacion } from './PerfilElevacion'
 import { aPuntosGps } from '../../lib/enVivo'
 import { Unidades } from '../../lib/geo'
 import { ETIQUETAS_RUTA } from '../../lib/rutas'
@@ -27,10 +28,36 @@ export function DetalleRuta() {
   const [comentario, setComentario] = useState('')
   const [aviso, setAviso] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  const explorar = useApp((s) => s.explorar)
+  const elegirRutaActiva = useApp((s) => s.elegirRutaActiva)
+  const [fotos, setFotos] = useState<FotoRuta[]>([])
+  const [corredores, setCorredores] = useState<{ lista: CorredorRuta[]; total: number }>({
+    lista: [],
+    total: 0,
+  })
+  const [subiendo, setSubiendo] = useState(false)
 
   useEffect(() => {
-    if (sociales) void resenasRuta(id).then(setResenas)
-  }, [id, sociales, resenasRuta])
+    if (!sociales) return
+    void resenasRuta(id).then(setResenas)
+    void explorar()?.fotos(id).then(setFotos)
+    void explorar()?.corredores(id).then(setCorredores)
+  }, [id, sociales, resenasRuta, explorar])
+
+  const subirFoto = async (archivo: File | undefined) => {
+    const repo = explorar()
+    if (!archivo || !repo) return
+    setSubiendo(true)
+    try {
+      await repo.subirFoto(id, archivo)
+      setFotos(await repo.fotos(id))
+      setAviso('Foto subida')
+    } catch (e) {
+      setAviso(e instanceof Error ? e.message : 'No se pudo subir la foto')
+    } finally {
+      setSubiendo(false)
+    }
+  }
 
   if (!ruta)
     return (
@@ -115,6 +142,9 @@ export function DetalleRuta() {
               </div>
             ))}
           </div>
+          {(ruta.perfilElevacion?.length ?? 0) > 1 && (
+            <PerfilElevacion alturas={ruta.perfilElevacion!} distanciaKm={ruta.distanciaKm} />
+          )}
           <p className="text-text-secondary">{ruta.descripcion}</p>
           {(ruta.etiquetas?.length ?? 0) > 0 && (
             <ul className="flex flex-wrap gap-2" aria-label="Etiquetas">
@@ -133,7 +163,10 @@ export function DetalleRuta() {
           )}
           <div className="flex gap-3">
             <button
-              onClick={() => navigate(`/rutas/buscar?ruta=${ruta.id}`)}
+              onClick={() => {
+                elegirRutaActiva(ruta.id)
+                navigate(`/rutas/buscar?ruta=${ruta.id}`)
+              }}
               data-testid="correr-ruta"
               className="flex-1 h-12 rounded-xl bg-primary-600 text-bg-primary font-semibold flex items-center justify-center gap-2"
             >
@@ -165,73 +198,133 @@ export function DetalleRuta() {
         </div>
 
         {sociales && (
-          <section aria-labelledby="titulo-resenas" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 id="titulo-resenas" className="font-title-md text-title-md text-text-primary">
-                Reseñas
-              </h2>
-              {ruta.valoracion != null && (
-                <span
-                  className="flex items-center gap-1 text-text-primary"
-                  data-testid="valoracion-ruta"
-                >
-                  <Estrellas valor={ruta.valoracion} />
-                  {ruta.valoracion.toFixed(1)} · {ruta.resenas}
-                </span>
-              )}
-            </div>
-            {sesion ? (
-              <div className="bg-surface-container rounded-2xl p-4 space-y-3">
-                <SelectorEstrellas valor={estrellas} onCambiar={setEstrellas} />
-                <label className="block">
-                  <span className="sr-only">Comentario</span>
-                  <textarea
-                    value={comentario}
-                    onChange={(e) => setComentario(e.target.value)}
-                    maxLength={500}
-                    rows={3}
-                    placeholder="¿Qué tal la ruta? (opcional)"
-                    className="w-full rounded-xl bg-surface p-3 text-text-primary border border-border-subtle placeholder-text-secondary"
-                  />
-                </label>
-                <button
-                  onClick={() => void enviar()}
-                  disabled={enviando}
-                  className="w-full h-11 rounded-xl bg-primary-600 text-bg-primary font-semibold disabled:opacity-60"
-                >
-                  {enviando ? 'Enviando…' : 'Publicar reseña'}
-                </button>
+          <div className="space-y-6">
+            <section aria-labelledby="titulo-fotos" className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 id="titulo-fotos" className="font-title-md text-title-md text-text-primary">
+                  Fotos
+                </h2>
+                {sesion && (
+                  <label className="h-10 px-3 rounded-full bg-surface-container text-text-primary flex items-center gap-1 cursor-pointer focus-within:ring-2 focus-within:ring-primary-600">
+                    <span className="material-symbols-outlined text-[18px]">add_a_photo</span>
+                    {subiendo ? 'Subiendo…' : 'Añadir foto'}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="sr-only"
+                      data-testid="subir-foto"
+                      onChange={(ev) => void subirFoto(ev.target.files?.[0])}
+                    />
+                  </label>
+                )}
               </div>
-            ) : (
-              <p className="text-text-secondary">Inicia sesión para dejar una reseña.</p>
-            )}
-            {aviso && (
-              <p role="status" className="text-sm text-text-primary">
-                {aviso}
-              </p>
-            )}
-            <ul className="space-y-3" data-testid="lista-resenas">
-              {resenas.length === 0 && (
-                <li className="text-text-secondary text-sm">Aún no hay reseñas.</li>
+              {fotos.length === 0 ? (
+                <p className="text-sm text-text-secondary">Aún no hay fotos de esta ruta.</p>
+              ) : (
+                <ul className="grid grid-cols-3 gap-2" data-testid="fotos-ruta">
+                  {fotos.map((f) => (
+                    <li key={f.id}>
+                      <a href={f.url} target="_blank" rel="noreferrer">
+                        <img
+                          src={f.url}
+                          alt={`Foto de ${ruta.nombre}`}
+                          loading="lazy"
+                          className="w-full aspect-square object-cover rounded-xl"
+                        />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               )}
-              {resenas.map((r) => (
-                <li key={r.id} className="bg-surface-container rounded-xl p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-semibold text-text-primary truncate">{r.nombre}</span>
-                    <span
-                      className="flex items-center"
-                      aria-label={`${r.estrellas} de 5 estrellas`}
-                    >
-                      <Estrellas valor={r.estrellas} tamano={16} />
+            </section>
+            <section aria-labelledby="titulo-corredores" className="space-y-2">
+              <h2 id="titulo-corredores" className="font-title-md text-title-md text-text-primary">
+                Quién la ha corrido
+              </h2>
+              <p className="text-sm text-text-secondary" data-testid="total-corredores">
+                {corredores.total === 0
+                  ? 'Nadie la ha corrido todavía. ¡Sé el primero!'
+                  : `${corredores.total} ${corredores.total === 1 ? 'persona' : 'personas'}`}
+              </p>
+              <ul className="space-y-1" data-testid="lista-corredores">
+                {corredores.lista.map((c) => (
+                  <li key={c.usuarioId} className="flex justify-between text-sm">
+                    <span className="text-text-primary">{c.nombre}</span>
+                    <span className="text-text-secondary">
+                      {c.veces} {c.veces === 1 ? 'vez' : 'veces'}
                     </span>
-                  </div>
-                  {r.comentario && (
-                    <p className="text-sm text-text-secondary mt-1">{r.comentario}</p>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
+                  </li>
+                ))}
+              </ul>
+            </section>
+            <section aria-labelledby="titulo-resenas" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 id="titulo-resenas" className="font-title-md text-title-md text-text-primary">
+                  Reseñas
+                </h2>
+                {ruta.valoracion != null && (
+                  <span
+                    className="flex items-center gap-1 text-text-primary"
+                    data-testid="valoracion-ruta"
+                  >
+                    <Estrellas valor={ruta.valoracion} />
+                    {ruta.valoracion.toFixed(1)} · {ruta.resenas}
+                  </span>
+                )}
+              </div>
+              {sesion ? (
+                <div className="bg-surface-container rounded-2xl p-4 space-y-3">
+                  <SelectorEstrellas valor={estrellas} onCambiar={setEstrellas} />
+                  <label className="block">
+                    <span className="sr-only">Comentario</span>
+                    <textarea
+                      value={comentario}
+                      onChange={(e) => setComentario(e.target.value)}
+                      maxLength={500}
+                      rows={3}
+                      placeholder="¿Qué tal la ruta? (opcional)"
+                      className="w-full rounded-xl bg-surface p-3 text-text-primary border border-border-subtle placeholder-text-secondary"
+                    />
+                  </label>
+                  <button
+                    onClick={() => void enviar()}
+                    disabled={enviando}
+                    className="w-full h-11 rounded-xl bg-primary-600 text-bg-primary font-semibold disabled:opacity-60"
+                  >
+                    {enviando ? 'Enviando…' : 'Publicar reseña'}
+                  </button>
+                </div>
+              ) : (
+                <p className="text-text-secondary">Inicia sesión para dejar una reseña.</p>
+              )}
+              {aviso && (
+                <p role="status" className="text-sm text-text-primary">
+                  {aviso}
+                </p>
+              )}
+              <ul className="space-y-3" data-testid="lista-resenas">
+                {resenas.length === 0 && (
+                  <li className="text-text-secondary text-sm">Aún no hay reseñas.</li>
+                )}
+                {resenas.map((r) => (
+                  <li key={r.id} className="bg-surface-container rounded-xl p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-semibold text-text-primary truncate">{r.nombre}</span>
+                      <span
+                        className="flex items-center"
+                        aria-label={`${r.estrellas} de 5 estrellas`}
+                      >
+                        <Estrellas valor={r.estrellas} tamano={16} />
+                      </span>
+                    </div>
+                    {r.comentario && (
+                      <p className="text-sm text-text-secondary mt-1">{r.comentario}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
         )}
       </div>
     </main>

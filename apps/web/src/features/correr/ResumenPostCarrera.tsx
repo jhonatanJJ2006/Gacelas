@@ -1,3 +1,4 @@
+import { desnivelPositivo, perfilElevacion } from '../../lib/elevacion'
 import { ETIQUETAS_RUTA, trazoParaRuta } from '../../lib/rutas'
 import { useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
@@ -45,13 +46,16 @@ export function ResumenPostCarrera() {
     await guardarCarrera(carrera)
     if (comoRuta && puedeSerRuta) {
       try {
+        const trazo = trazoParaRuta(e.puntos)
+        const perfil = await perfilElevacion(trazo).catch(() => [])
         await publicarRuta({
+          perfilElevacion: perfil,
           nombre: (titulo.trim() || tituloPorHora(e.inicioMs)).slice(0, 80),
           descripcion: nota.trim(),
           dificultad,
           etiquetas,
-          puntos: trazoParaRuta(e.puntos),
-          elevacionM: e.desnivelM,
+          puntos: trazo,
+          elevacionM: perfil.length > 1 ? desnivelPositivo(perfil) : e.desnivelM,
           actividadId: carrera.id,
         })
       } catch (err) {

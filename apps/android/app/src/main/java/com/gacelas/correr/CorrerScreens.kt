@@ -636,6 +636,7 @@ private fun CeldaMetrica(icono: ImageVector, etiqueta: String, valor: String, mo
     }
 }
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDescartar: () -> Unit) {
     val context = LocalContext.current
@@ -696,6 +697,7 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
         val perfilActual by com.gacelas.ui.sesionState()
         var comoRuta by rememberSaveable { mutableStateOf(false) }
         var dificultadRuta by rememberSaveable { mutableStateOf(com.gacelas.data.mock.Dificultad.Moderado) }
+        var etiquetasRuta by rememberSaveable { mutableStateOf(listOf<String>()) }
         val puedeSerRuta = explorar != null && perfilActual != null && estado.puntos.size >= 2 && estado.distanciaKm >= 0.3
         if (puedeSerRuta) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -704,6 +706,11 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
             }
             if (comoRuta) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 com.gacelas.data.mock.Dificultad.entries.forEach { d -> com.gacelas.ui.components.Pastilla(d.etiqueta, d == dificultadRuta, { dificultadRuta = d }) }
+            }
+            if (comoRuta) androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                com.gacelas.data.rutas.ETIQUETAS_RUTA.forEach { (k, v) ->
+                    com.gacelas.ui.components.Pastilla("#$v", k in etiquetasRuta, { etiquetasRuta = if (k in etiquetasRuta) etiquetasRuta - k else etiquetasRuta + k })
+                }
             }
         }
         BotonPrimario(if (guardando) "Guardando..." else "Guardar carrera", {
@@ -715,11 +722,18 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
                 scope.launch {
                     val carrera = tracker.aCarreraGuardada(titulo, nota, publica)
                     c.carreras.guardar(carrera)
+                    com.gacelas.data.rutas.RutaActiva.id?.let { r ->
+                        com.gacelas.data.rutas.RutaActiva.id = null
+                        explorar?.registrarCorrida(r, carrera.id)
+                    }
                     if (comoRuta && puedeSerRuta) {
                         runCatching {
+                            val trazo = com.gacelas.data.rutas.trazoParaRuta(estado.puntos.map { it.lat to it.lng })
+                            val perfil = com.gacelas.data.rutas.Elevacion.perfil(trazo)
                             explorar!!.crear(
-                                titulo.ifBlank { carrera.titulo }, nota, dificultadRuta, emptyList(),
-                                estado.puntos.map { it.lat to it.lng }, estado.desnivelM.toInt(), carrera.id,
+                                titulo.ifBlank { carrera.titulo }, nota, dificultadRuta, etiquetasRuta,
+                                estado.puntos.map { it.lat to it.lng },
+                                if (perfil.size > 1) com.gacelas.data.rutas.Elevacion.desnivelPositivo(perfil) else estado.desnivelM.toInt(), carrera.id, perfil,
                             )
                         }.onSuccess { context.aviso("Ruta publicada") }.onFailure { context.aviso("No se pudo publicar la ruta: ${it.message}") }
                     }

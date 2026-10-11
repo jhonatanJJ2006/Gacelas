@@ -94,6 +94,7 @@ fun rutaDesdeFila(f: JsonObject, yo: String? = null) = Ruta(
     valoracion = f.numero("rating_avg"),
     resenas = f.numero("rating_count")?.toInt() ?: 0,
     propia = yo != null && f.texto("author_id") == yo,
+    perfilElevacion = (f["elevation_profile"] as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.doubleOrNull?.toInt() }.orEmpty(),
 )
 
 /** Rutas de la comunidad en Supabase (backend/migrations/009_rutas.sql). */
@@ -121,7 +122,7 @@ class ExplorarRepository(private val backend: Backend, private val uid: suspend 
         (r as? JsonArray)?.mapNotNull { e -> (e as? JsonObject)?.let { o -> o.texto("id")?.let { it to (o.numero("distancia_km") ?: 0.0) } } }?.toMap().orEmpty()
     }.getOrDefault(emptyMap())
 
-    suspend fun crear(nombre: String, descripcion: String, dificultad: Dificultad, etiquetas: List<String>, puntos: List<Pair<Double, Double>>, elevacionM: Int, actividadId: String?) {
+    suspend fun crear(nombre: String, descripcion: String, dificultad: Dificultad, etiquetas: List<String>, puntos: List<Pair<Double, Double>>, elevacionM: Int, actividadId: String?, perfil: List<Int> = emptyList(), origen: String = "actividad"): String {
         val yo = uid() ?: throw ErrorRemoto("Inicia sesión para publicar rutas")
         backend.insert("routes", listOf(JsonObject(mapOf(
             "name" to JsonPrimitive(nombre.take(80)), "description" to JsonPrimitive(descripcion), "difficulty" to JsonPrimitive(dificultad.etiqueta),
@@ -129,8 +130,36 @@ class ExplorarRepository(private val backend: Backend, private val uid: suspend 
             "path" to JsonArray(trazoParaRuta(puntos).map { JsonObject(mapOf("lat" to JsonPrimitive(it.first), "lng" to JsonPrimitive(it.second))) }),
             "elevation_m" to JsonPrimitive(elevacionM), "distance_km" to JsonPrimitive(0), "author_id" to JsonPrimitive(yo), "is_public" to JsonPrimitive(true),
             "source_activity_id" to (actividadId?.let(::JsonPrimitive) ?: JsonNull),
+            "elevation_profile" to JsonArray(perfil.map(::JsonPrimitive)), "origin" to JsonPrimitive(origen),
+            "id" to JsonPrimitive(java.util.UUID.randomUUID().toString().also { nuevoId = it }),
         ))))
         refrescar()
+        return nuevoId
+    }
+    private var nuevoId = ""
+
+    suspend fun fotos(id: String): List<String> = runCatching {
+        backend.select("route_photos", mapOf("route_id" to id), "created_at", descendente = true).mapNotNull { it.texto("path") }.map { backend.urlPublica("route-photos", it) }
+    }.getOrDefault(emptyList())
+
+    suspend fun subirFoto(id: String, bytes: ByteArray, tipo: String) {
+        val yo = uid() ?: throw ErrorRemoto("Inicia sesión para subir fotos")
+        if (bytes.size > 5 * 1024 * 1024) throw ErrorRemoto("La foto pesa más de 5 MB")
+        val ext = when (tipo) { "image/png" -> "png"; "image/webp" -> "webp"; else -> "jpg" }
+        val ruta = "$yo/${id.filter { it.isLetterOrDigit() || it == '-' }}/${java.util.UUID.randomUUID()}.$ext"
+        backend.subirArchivo("route-photos", ruta, bytes, tipo)
+        backend.insert("route_photos", listOf(JsonObject(mapOf("route_id" to JsonPrimitive(id), "user_id" to JsonPrimitive(yo), "path" to JsonPrimitive(ruta)))))
+    }
+
+    /** (nombre, veces) visibles y total de personas. */
+    suspend fun corredores(id: String): Pair<List<Pair<String, Int>>, Int> = runCatching {
+        val filas = (backend.rpc("corredores_ruta", JsonObject(mapOf("ruta" to JsonPrimitive(id)))) as? JsonArray).orEmpty().mapNotNull { it as? JsonObject }
+        filas.map { (it.texto("nombre") ?: it.texto("usuario") ?: "Corredor") to (it.numero("veces")?.toInt() ?: 1) } to (filas.firstOrNull()?.numero("total")?.toInt() ?: 0)
+    }.getOrDefault(emptyList<Pair<String, Int>>() to 0)
+
+    suspend fun registrarCorrida(rutaId: String, actividadId: String) {
+        val yo = uid() ?: return
+        runCatching { backend.insert("route_runs", listOf(JsonObject(mapOf("route_id" to JsonPrimitive(rutaId), "user_id" to JsonPrimitive(yo), "activity_id" to JsonPrimitive(actividadId))))) }
     }
 
     suspend fun alternarMeGusta(id: String) {

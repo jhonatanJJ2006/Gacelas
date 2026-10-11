@@ -1,5 +1,7 @@
 package com.gacelas.rutas
 
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.foundation.horizontalScroll
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
@@ -101,7 +103,28 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
     var estrellas by remember { mutableIntStateOf(0) }
     var comentario by remember { mutableStateOf("") }
     val sociales = repo != null && remotas != null
-    LaunchedEffect(id, sociales) { if (sociales) resenas = repo!!.resenas(id) }
+    var fotos by remember { mutableStateOf<List<String>>(emptyList()) }
+    var corredores by remember { mutableStateOf(emptyList<Pair<String, Int>>() to 0) }
+    var subiendo by remember { mutableStateOf(false) }
+    LaunchedEffect(id, sociales) {
+        if (!sociales) return@LaunchedEffect
+        resenas = repo!!.resenas(id)
+        fotos = repo.fotos(id)
+        corredores = repo.corredores(id)
+    }
+    val elegirFoto = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri == null || repo == null) return@rememberLauncherForActivityResult
+        subiendo = true
+        scope.launch {
+            runCatching {
+                val tipo = context.contentResolver.getType(uri) ?: "image/jpeg"
+                val bytes = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { context.contentResolver.openInputStream(uri)!!.use { it.readBytes() } }
+                repo.subirFoto(id, bytes, tipo)
+                fotos = repo.fotos(id)
+            }.onSuccess { context.aviso("Foto subida") }.onFailure { context.aviso(it.message ?: "No se pudo subir la foto") }
+            subiendo = false
+        }
+    }
 
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
         EncabezadoAtras(ruta?.nombre ?: "Ruta", onAtras)
@@ -129,11 +152,12 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
                     }
                 }
             }
+            if (ruta.perfilElevacion.size > 1) PerfilElevacion(ruta.perfilElevacion, ruta.distanciaKm)
             if (ruta.descripcion.isNotBlank()) Text(ruta.descripcion, style = GType.bodyMd, color = GColors.TextSecondary)
             if (ruta.etiquetas.isNotEmpty()) Text(ruta.etiquetas.joinToString("  ") { "#" + (ETIQUETAS_RUTA[it] ?: it) }, style = GType.labelLg, color = GColors.TextPrimary)
             ruta.autorNombre?.let { Text("Creada por $it", style = GType.bodySm, color = GColors.TextSecondary) }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                BotonPrimario("Correr esta ruta", onCorrer, Modifier.weight(1f), icono = Icons.AutoMirrored.Filled.DirectionsRun)
+                BotonPrimario("Correr esta ruta", { com.gacelas.data.rutas.RutaActiva.id = id; onCorrer() }, Modifier.weight(1f), icono = Icons.AutoMirrored.Filled.DirectionsRun)
                 if (sociales) {
                     val activo = id in meGusta
                     Row(
@@ -149,6 +173,22 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
                 }
             }
             if (sociales) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Fotos", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+                    if (perfil != null) androidx.compose.material3.TextButton(onClick = {
+                        elegirFoto.launch(androidx.activity.result.PickVisualMediaRequest(androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    }, enabled = !subiendo) { Text(if (subiendo) "Subiendo..." else "Añadir foto", color = GColors.Primary400) }
+                }
+                if (fotos.isEmpty()) Text("Aún no hay fotos de esta ruta.", style = GType.bodySm, color = GColors.TextSecondary)
+                else Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) { fotos.forEach { FotoRemota(it) } }
+                Text("Quién la ha corrido", style = GType.titleMd, color = GColors.TextPrimary)
+                Text(
+                    if (corredores.second == 0) "Nadie la ha corrido todavía. ¡Sé el primero!" else "${corredores.second} ${if (corredores.second == 1) "persona" else "personas"}",
+                    style = GType.bodySm, color = GColors.TextSecondary,
+                )
+                corredores.first.forEach { (n, v) ->
+                    Row { Text(n, style = GType.bodyMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f)); Text("$v ${if (v == 1) "vez" else "veces"}", style = GType.bodySm, color = GColors.TextSecondary) }
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Reseñas", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
                     ruta.valoracion?.let { Estrellas(it); Text(" %.1f · %d".format(it, ruta.resenas), style = GType.labelMd, color = GColors.TextPrimary) }
@@ -185,5 +225,41 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
                 }
             }
         }
+    }
+}
+
+/** Grafica del perfil de elevacion (Canvas). */
+@Composable
+fun PerfilElevacion(alturas: List<Int>, distanciaKm: Double) {
+    val min = alturas.min(); val max = alturas.max(); val rango = maxOf(max - min, 10).toFloat()
+    Tarjeta(padding = 12.dp) {
+        Row {
+            Text("Perfil de elevación", style = GType.labelLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+            Text("$min–$max m · ${"%.1f".format(distanciaKm)} km", style = GType.bodySm, color = GColors.TextSecondary)
+        }
+        androidx.compose.foundation.Canvas(Modifier.fillMaxWidth().height(110.dp).semantics { contentDescription = "Elevación entre $min y $max metros" }) {
+            val pts = alturas.mapIndexed { i, h -> androidx.compose.ui.geometry.Offset(i * size.width / (alturas.size - 1), size.height - 4f - (h - min) / rango * (size.height - 12f)) }
+            val linea = androidx.compose.ui.graphics.Path().apply { pts.forEachIndexed { i, o -> if (i == 0) moveTo(o.x, o.y) else lineTo(o.x, o.y) } }
+            val area = androidx.compose.ui.graphics.Path().apply { addPath(linea); lineTo(size.width, size.height); lineTo(0f, size.height); close() }
+            drawPath(area, androidx.compose.ui.graphics.Brush.verticalGradient(listOf(GColors.Primary500.copy(alpha = 0.45f), androidx.compose.ui.graphics.Color.Transparent)))
+            drawPath(linea, GColors.Primary500, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 5f))
+        }
+    }
+}
+
+/** Imagen remota sin dependencias extra (descarga y decodifica a tamano reducido). */
+@Composable
+private fun FotoRemota(url: String) {
+    val img by androidx.compose.runtime.produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, url) {
+        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            runCatching {
+                val bytes = java.net.URL(url).readBytes()
+                val op = android.graphics.BitmapFactory.Options().apply { inSampleSize = 4 }
+                android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size, op)?.asImageBitmap()
+            }.getOrNull()
+        }
+    }
+    Box(Modifier.size(110.dp).clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceContainer)) {
+        img?.let { androidx.compose.foundation.Image(it, "Foto de la ruta", Modifier.fillMaxSize(), contentScale = androidx.compose.ui.layout.ContentScale.Crop) }
     }
 }

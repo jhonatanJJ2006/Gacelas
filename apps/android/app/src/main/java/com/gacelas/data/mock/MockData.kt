@@ -34,6 +34,7 @@ data class Ruta(
     val resenas: Int = 0,
     val autorNombre: String? = null,
     val propia: Boolean = false,
+    val perfilElevacion: List<Int> = emptyList(),
 )
 
 @Serializable

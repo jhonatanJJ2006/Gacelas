@@ -6,6 +6,7 @@ import {
   type Repositorios,
   type NuevaRuta,
   type ResenaRuta,
+  type ExplorarRepository,
 } from '../data/repositorios'
 import {
   AJUSTES_POR_DEFECTO,
@@ -80,6 +81,11 @@ export interface EstadoApp {
   rutasCercanas(lat: number, lng: number): Promise<Record<string, number>>
   resenasRuta(id: string): Promise<ResenaRuta[]>
   resenarRuta(id: string, estrellas: number, comentario: string): Promise<void>
+  /** Ruta elegida con "Correr esta ruta": al guardar la carrera se registra como corrida. */
+  rutaActivaId: string | null
+  elegirRutaActiva(id: string | null): void
+  /** Repositorio de rutas (fotos, corredores); undefined sin servidor. */
+  explorar(): ExplorarRepository | undefined
   crearEvento(e: Evento): Promise<void>
   alternarInscripcion(id: string): Promise<void>
 }
@@ -99,6 +105,9 @@ export const useApp = create<EstadoApp>((set, get) => ({
   rutas: rutasMock,
   rutasMeGusta: [],
   rutasSociales: false,
+  rutaActivaId: null,
+  elegirRutaActiva: (id) => set({ rutaActivaId: id }),
+  explorar: () => repos.explorar,
 
   async refrescarRutas() {
     if (!repos.explorar) return set({ rutas: rutasMock, rutasSociales: false })
@@ -243,6 +252,11 @@ export const useApp = create<EstadoApp>((set, get) => ({
   },
   async guardarCarrera(c) {
     set({ carreras: await repos.carreras.guardar(c) })
+    const ruta = get().rutaActivaId
+    if (ruta) {
+      set({ rutaActivaId: null })
+      await repos.explorar?.registrarCorrida(ruta, c.id).catch(() => undefined)
+    }
     await get().refrescarRacha()
   },
   async eliminarCarrera(id) {
