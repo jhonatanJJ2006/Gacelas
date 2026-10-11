@@ -42,6 +42,14 @@ object MapaOffline {
     /** Ciudad de Loja y alrededores (Jipiro, Zamora Huayco, Punzara, Carigan). */
     val LOJA = RegionMapa("loja", "Loja, Ecuador", norte = -3.92, este = -79.15, sur = -4.06, oeste = -79.28)
 
+    /**
+     * El descargador offline de MapLibre solo baja estilos por http(s): con asset://mapas/... se quedaba en 0%.
+     * Este estilo publico de OpenFreeMap usa la misma fuente (tiles.openfreemap.org/planet) y las mismas
+     * fuentes (Noto Sans) que los estilos Gacelas, y la cache de teselas es compartida por URL, asi que
+     * el mapa Gacelas (oscuro o claro) las encuentra sin red.
+     */
+    const val ESTILO_DESCARGA = "https://tiles.openfreemap.org/styles/dark"
+
     private val _estado = MutableStateFlow<EstadoDescarga>(EstadoDescarga.SinDescargar)
     val estado: StateFlow<EstadoDescarga> = _estado
 
@@ -63,7 +71,13 @@ object MapaOffline {
     /** Lee si la zona ya esta descargada (y cuanto pesa). */
     fun consultar(context: Context, r: RegionMapa = LOJA) {
         regiones(context) { lista ->
-            val propias = lista.filter { it.clave().startsWith("${r.id}|") }
+            // Regiones de v0.6.0-0.6.2 con estilo asset:// nunca terminan: se borran.
+            lista.filter { it.clave().startsWith("${r.id}|") && it.clave() != String(metadatos(r, ESTILO_DESCARGA)) }
+                .forEach { vieja -> vieja.setDownloadState(OfflineRegion.STATE_INACTIVE); vieja.delete(object : OfflineRegion.OfflineRegionDeleteCallback {
+                    override fun onDelete() = Unit
+                    override fun onError(error: String) = Unit
+                }) }
+            val propias = lista.filter { it.clave() == String(metadatos(r, ESTILO_DESCARGA)) }
             if (propias.isEmpty()) { _estado.value = EstadoDescarga.SinDescargar; return@regiones }
             var bytes = 0L; var completas = 0
             propias.forEach { reg ->
@@ -81,7 +95,7 @@ object MapaOffline {
     }
 
     fun descargar(context: Context, r: RegionMapa = LOJA) {
-        val estilos = listOf(Mapas.ESTILO_OSCURO, Mapas.ESTILO_CLARO)
+        val estilos = listOf(ESTILO_DESCARGA)
         val densidad = context.resources.displayMetrics.density
         val limites = LatLngBounds.from(r.norte, r.este, r.sur, r.oeste)
         _estado.value = EstadoDescarga.Descargando(0, 0.0)
