@@ -129,6 +129,20 @@ Los mapas usan MapLibre (`ui/components/MapaLibre.kt` y `MapaGacelas.kt`) con te
 - Vista 3D: la cámara se inclina 60 grados con el rumbo hacia arriba. El zoom depende de la velocidad (`ZoomNavegacion`): 19,5 hasta 8 km/h y baja a 18,3 a partir de 12 km/h, para que a 5-8 km/h el suelo avance al menos 12 dp por segundo.
 - En las pruebas JVM (Robolectric) no hay código nativo, así que se muestra `MapaPlaceholder`, el mapa dibujado con Canvas.
 
+## Actualizaciones y publicar una versión
+
+La app revisa al abrir (como máximo una vez al día) `android/latest.json` en el bucket público `app-releases` de Supabase Storage. Si `versionCode` es mayor que el instalado, muestra "Hay una nueva versión" con las novedades, "Actualizar" (descarga con DownloadManager, verifica SHA-256 e instala con FileProvider, pidiendo permiso para instalar apps desconocidas si hace falta) y "Más tarde" (no vuelve a avisar de esa versión). Con `minVersionCode` la actualización es obligatoria. El repo de GitHub es privado: la app no lee GitHub ni lleva tokens.
+
+`versionCode` se calcula desde `versionName` (0.6.1 -> 601, 1.2.3 -> 10203), así que basta con subir `versionName`.
+
+Para publicar:
+
+1. Sube `versionName` en `app/build.gradle.kts`, haz commit y push a `main`.
+2. Comprueba que `local.properties` tenga `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `GOOGLE_WEB_CLIENT_ID`, y que el keystore de depuración sea el de SHA-1 23:CF:...:F9.
+3. `SUPABASE_SERVICE_ROLE_KEY=... scripts/publicar-android.sh "Notas cortas"` (agrega `--obligatoria` para forzarla). Compila, prueba, sube el APK y `latest.json`, crea el tag y el pre-release de GitHub.
+
+El bucket se crea con `backend/migrations/013_app_releases.sql`.
+
 ## Pruebas
 
 - `DestinosTest`: hay 23 rutas únicas y coinciden con la web.

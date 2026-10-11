@@ -54,6 +54,10 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null, progra
     val sincronizar: suspend () -> Unit
     /** Rutas guardadas en el celular y cambios pendientes. */
     val rutasOffline = com.gacelas.data.rutas.RutasOffline(store)
+    /** Aviso de version nueva (manifiesto publico en Supabase Storage); null en pruebas o sin servidor. */
+    val actualizacion: com.gacelas.data.actualizacion.ActualizacionRepository? =
+        (if (android.os.Build.FINGERPRINT == "robolectric") null else com.gacelas.data.actualizacion.ReglasActualizacion.urlManifiesto(BuildConfig.SUPABASE_URL))
+            ?.let { com.gacelas.data.actualizacion.ActualizacionRepository(store, it, BuildConfig.VERSION_CODE) }
     /** Sube carreras y rutas pendientes; devuelve cuantas operaciones quedan (lo usa SincronizacionWorker). */
     val subirPendientes: suspend () -> Int
 
