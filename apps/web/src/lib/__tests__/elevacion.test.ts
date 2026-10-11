@@ -22,6 +22,8 @@ describe('elevacion', () => {
     const h = await perfilElevacion(recta, pedir as unknown as typeof fetch)
     expect(h).toHaveLength(60)
     expect(h[0]).toBe(2100)
-    expect(String((pedir.mock.calls as unknown as string[][])[0][0])).toContain('api.open-meteo.com')
+    expect(String((pedir.mock.calls as unknown as string[][])[0][0])).toContain(
+      'api.open-meteo.com'
+    )
   })
 })
