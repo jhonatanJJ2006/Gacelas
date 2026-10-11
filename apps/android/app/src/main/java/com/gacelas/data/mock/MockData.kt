@@ -47,7 +47,7 @@ data class Split(val id: Int, val distancia: Double, val ritmo: String, val tiem
 
 data class RutaSugerida(val id: String, val nombre: String, val distanciaKm: Double, val minutos: Int, val elevacionM: Int, val principal: Boolean)
 
-enum class TipoNotificacion { Like, Comentario, Seguidor, Evento, EnVivo }
+enum class TipoNotificacion { Like, Comentario, Seguidor, Evento, EnVivo, Racha }
 
 data class Notificacion(val id: String, val tipo: TipoNotificacion, val usuario: String, val mensaje: String, val tiempo: String, val leida: Boolean)
 

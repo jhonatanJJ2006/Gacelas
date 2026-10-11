@@ -56,7 +56,8 @@ val itemsNav = listOf(
 @Composable
 fun BarraSuperior(onNotificaciones: () -> Unit, onPerfil: () -> Unit = {}) {
     val ajustes by ajustesState()
-    val sinLeer = notificacionesVisibles(ajustes).count { !it.leida }
+    val base by com.gacelas.notificaciones.notificacionesBase()
+    val sinLeer = notificacionesVisibles(ajustes, base).count { !it.leida }
     Row(
         Modifier.fillMaxWidth().background(GColors.BgSecondary).statusBarsPadding().height(64.dp).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,

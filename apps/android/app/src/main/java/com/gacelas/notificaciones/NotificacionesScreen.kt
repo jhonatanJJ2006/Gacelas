@@ -1,5 +1,7 @@
 package com.gacelas.notificaciones
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -59,10 +61,11 @@ fun iconoNotificacion(tipo: TipoNotificacion): Pair<ImageVector, Color> = when (
     TipoNotificacion.Seguidor -> Icons.Filled.PersonAdd to GColors.Secondary500
     TipoNotificacion.Evento -> Icons.Filled.Event to GColors.Tertiary
     TipoNotificacion.EnVivo -> Icons.Filled.Sensors to GColors.Secondary500
+    TipoNotificacion.Racha -> Icons.Filled.LocalFireDepartment to GColors.Primary500
 }
 
 /** Notificaciones visibles segun los ajustes de notificaciones y las ya leidas. */
-fun notificacionesVisibles(a: com.gacelas.data.ajustes.Ajustes): List<Notificacion> = MockData.notificaciones
+fun notificacionesVisibles(a: com.gacelas.data.ajustes.Ajustes, base: List<Notificacion> = MockData.notificaciones): List<Notificacion> = base
     .filter {
         when (it.tipo) {
             TipoNotificacion.Like -> a.notifLikes
@@ -70,6 +73,7 @@ fun notificacionesVisibles(a: com.gacelas.data.ajustes.Ajustes): List<Notificaci
             TipoNotificacion.Seguidor -> a.notifSeguidores
             TipoNotificacion.Evento -> a.notifEventos
             TipoNotificacion.EnVivo -> a.notifEnVivo
+            TipoNotificacion.Racha -> true
         }
     }
     .map { if (it.id in a.notificacionesLeidas) it.copy(leida = true) else it }
@@ -87,11 +91,15 @@ fun NotificacionesScreen(onAtras: () -> Unit, onAbrir: (Notificacion) -> Unit = 
     val scope = rememberCoroutineScope()
     val ajustes by ajustesState()
     var filtro by rememberSaveable { mutableStateOf("Todas") }
-    val visibles = notificacionesVisibles(ajustes)
+    val base by notificacionesBase()
+    val visibles = notificacionesVisibles(ajustes, base)
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
         EncabezadoAtras("Notificaciones", onAtras) {
             Text("Marcar todas leídas", style = GType.labelMd, color = GColors.Primary500, modifier = Modifier.clickable {
-                scope.launch { c.ajustes.actualizar { a -> a.copy(notificacionesLeidas = a.notificacionesLeidas + MockData.notificaciones.map { it.id }) } }
+                scope.launch {
+                    c.notificaciones?.marcarLeidas(base.map { it.id })
+                    c.ajustes.actualizar { a -> a.copy(notificacionesLeidas = a.notificacionesLeidas + base.map { it.id }) }
+                }
             }.padding(12.dp))
         }
         Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -105,7 +113,10 @@ fun NotificacionesScreen(onAtras: () -> Unit, onAbrir: (Notificacion) -> Unit = 
                 Row(
                     Modifier.fillMaxWidth().background(if (!n.leida) GColors.SurfaceContainer.copy(alpha = 0.5f) else Color.Transparent)
                         .clickable {
-                            scope.launch { c.ajustes.actualizar { a -> a.copy(notificacionesLeidas = a.notificacionesLeidas + n.id) } }
+                            scope.launch {
+                                c.notificaciones?.marcarLeidas(listOf(n.id))
+                                c.ajustes.actualizar { a -> a.copy(notificacionesLeidas = a.notificacionesLeidas + n.id) }
+                            }
                             onAbrir(n)
                         }.padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.Top,
@@ -133,4 +144,12 @@ fun NotificacionesScreen(onAtras: () -> Unit, onAbrir: (Notificacion) -> Unit = 
             }
         }
     }
+}
+
+/** Notificaciones de la cuenta si hay servidor; si no, las de ejemplo. Se refrescan al mostrarse. */
+@Composable
+fun notificacionesBase(): androidx.compose.runtime.State<List<Notificacion>> {
+    val repo = contenedor().notificaciones ?: return androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(MockData.notificaciones) }
+    androidx.compose.runtime.LaunchedEffect(repo) { repo.refrescar() }
+    return repo.lista.collectAsState()
 }

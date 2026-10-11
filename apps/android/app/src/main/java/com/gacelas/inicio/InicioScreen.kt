@@ -84,7 +84,7 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
         }
         Tarjeta(fondo = GColors.SurfaceLow, padding = 0.dp) {
             Box(Modifier.fillMaxWidth().height(300.dp).background(Brush.verticalGradient(listOf(GColors.SurfaceLow, GColors.Primary.copy(alpha = 0.12f))))) {
-                Runner3D(ClipCorredor.Idle, autoRotar = true, camara = Position(0f, 0.6f, 3.6f))
+                Runner3D(ClipCorredor.Idle, autoRotar = true, camara = Position(0f, 0.3f, 4.4f))
                 Row(Modifier.align(Alignment.TopStart).padding(12.dp).clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.7f)).padding(horizontal = 10.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.size(8.dp).clip(CircleShape).background(GColors.Secondary500))
                     Text("  AUTOPILOT ACTIVO", style = GType.labelMd, color = GColors.Secondary500)
