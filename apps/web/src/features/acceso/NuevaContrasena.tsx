@@ -21,7 +21,7 @@ export function NuevaContrasena() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-surface flex flex-col px-6 py-8">
+    <div className="w-full min-h-[100dvh] bg-surface flex flex-col px-6 py-8">
       <form onSubmit={enviar} noValidate className="max-w-md mx-auto w-full my-auto space-y-4">
         <h1 className="text-text-primary font-headline-lg text-2xl font-bold">Nueva contraseña</h1>
         <p className="text-text-secondary text-sm">

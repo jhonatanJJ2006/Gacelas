@@ -19,7 +19,7 @@ export function RecuperarContrasena() {
 
   if (submitted) {
     return (
-      <div className="w-full min-h-screen bg-surface flex flex-col">
+      <div className="w-full min-h-[100dvh] bg-surface flex flex-col">
         <header className="w-full z-20 px-margin py-4">
           <button
             onClick={() => navigate('/inicio-sesion')}
@@ -58,7 +58,7 @@ export function RecuperarContrasena() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-surface flex flex-col">
+    <div className="w-full min-h-[100dvh] bg-surface flex flex-col">
       <header className="w-full z-20 px-margin py-4">
         <button
           onClick={() => navigate('/inicio-sesion')}
