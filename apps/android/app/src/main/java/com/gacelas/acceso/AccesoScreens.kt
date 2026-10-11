@@ -167,14 +167,8 @@ fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: (
     var password by rememberSaveable { mutableStateOf("") }
     var error by rememberSaveable { mutableStateOf<String?>(null) }
     var cargando by remember { mutableStateOf(false) }
-    PantallaAcceso(onAtras) {
-        EncabezadoFormulario("Bienvenido de vuelta", "Inicia sesión para continuar con tus carreras")
-        CampoTexto("Correo electrónico", email, { email = it; error = null }, "tu@email.com", tipo = KeyboardType.Email)
-        CampoTexto("Contraseña", password, { password = it; error = null }, "••••••••", password = true)
-        MensajeError(error)
-        Text("¿Olvidaste tu contraseña?", style = GType.labelLg, color = GColors.Primary500,
-            modifier = Modifier.align(Alignment.End).clickable(onClick = onRecuperar))
-        BotonPrimario(if (cargando) "Ingresando..." else "Iniciar sesión", {
+    val entrar = {
+        if (!cargando) {
             cargando = true
             scope.launch {
                 when (val r = auth.iniciarSesion(email, password)) {
@@ -183,6 +177,17 @@ fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: (
                 }
                 cargando = false
             }
+        }
+    }
+    PantallaAcceso(onAtras) {
+        EncabezadoFormulario("Bienvenido de vuelta", "Inicia sesión para continuar con tus carreras")
+        CampoTexto("Correo electrónico", email, { email = it; error = null }, "tu@email.com", tipo = KeyboardType.Email)
+        CampoTexto("Contraseña", password, { password = it; error = null }, "••••••••", password = true, onListo = { entrar() })
+        MensajeError(error)
+        Text("¿Olvidaste tu contraseña?", style = GType.labelLg, color = GColors.Primary500,
+            modifier = Modifier.align(Alignment.End).clickable(onClick = onRecuperar))
+        BotonPrimario(if (cargando) "Ingresando..." else "Iniciar sesión", {
+            entrar()
         }, enabled = !cargando)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             Text("¿No tienes cuenta? ", style = GType.bodyMd, color = GColors.TextSecondary)
@@ -208,7 +213,7 @@ fun RegistroScreen(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: ()
         CampoTexto("Nombre completo", nombre, { nombre = it; error = null }, "Tu nombre")
         CampoTexto("Correo electrónico", email, { email = it; error = null }, "tu@email.com", tipo = KeyboardType.Email)
         CampoTexto("Contraseña", password, { password = it; error = null }, "Mínimo 8 caracteres", password = true,
-            ayuda = "Usa mínimo 8 caracteres con letras y números")
+            ayuda = "Usa mínimo 8 caracteres con letras y números", onListo = {})
         MensajeError(error)
         BotonPrimario(if (cargando) "Creando cuenta..." else "Crear cuenta", {
             cargando = true

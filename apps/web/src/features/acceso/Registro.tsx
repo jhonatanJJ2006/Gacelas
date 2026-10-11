@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { CampoContrasena } from '../../components/CampoContrasena'
 import { useApp } from '../../store/app'
 import { BotonTexto, Dialogo, MensajeError } from '../../components/ui'
 import { BotonGoogle } from '../../components/BotonGoogle'
@@ -112,8 +113,7 @@ export function Registro() {
               >
                 Contraseña
               </label>
-              <input
-                type="password"
+              <CampoContrasena
                 id="password"
                 value={password}
                 onChange={(e) => {

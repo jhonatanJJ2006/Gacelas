@@ -49,6 +49,18 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -165,7 +177,13 @@ fun CampoTexto(
     lineas: Int = 1,
     ayuda: String? = null,
     trailing: (@Composable () -> Unit)? = null,
+    /** Si se da, el teclado muestra "Listo" y lo ejecuta (por ejemplo enviar el formulario). */
+    onListo: (() -> Unit)? = null,
 ) {
+    val foco = LocalFocusManager.current
+    val teclado = LocalSoftwareKeyboardController.current
+    var visible by rememberSaveable { mutableStateOf(false) }
+    val multilinea = lineas > 1
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(etiqueta, style = GType.labelLg, color = GColors.TextSecondary)
         OutlinedTextField(
@@ -174,9 +192,26 @@ fun CampoTexto(
             placeholder = { Text(placeholder, color = GColors.TextSecondary.copy(alpha = 0.6f)) },
             singleLine = lineas == 1,
             minLines = lineas,
-            visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
-            keyboardOptions = KeyboardOptions(keyboardType = if (password) KeyboardType.Password else tipo),
-            trailingIcon = trailing,
+            visualTransformation = if (password && !visible) PasswordVisualTransformation() else VisualTransformation.None,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = if (password) KeyboardType.Password else tipo,
+                imeAction = if (multilinea) ImeAction.Default else if (onListo != null) ImeAction.Done else ImeAction.Next,
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { if (!foco.moveFocus(FocusDirection.Down)) { foco.clearFocus(); teclado?.hide() } },
+                onDone = { foco.clearFocus(); teclado?.hide(); onListo?.invoke() },
+            ),
+            trailingIcon = if (password) {
+                {
+                    IconButton(onClick = { visible = !visible }, modifier = Modifier.size(48.dp).testTag("ver-contrasena")) {
+                        Icon(
+                            if (visible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                            contentDescription = if (visible) "Ocultar contraseña" else "Mostrar contraseña",
+                            tint = GColors.TextSecondary,
+                        )
+                    }
+                }
+            } else trailing,
             shape = RoundedCornerShape(12.dp),
             textStyle = GType.bodyLg,
             colors = OutlinedTextFieldDefaults.colors(
