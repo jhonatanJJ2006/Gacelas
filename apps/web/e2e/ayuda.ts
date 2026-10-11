@@ -29,7 +29,7 @@ export async function registrarse(
   await page.goto('/registro')
   await page.getByLabel('Nombre completo').fill(nombre)
   await page.getByLabel('Correo electrónico').fill(email)
-  await page.getByLabel('Contraseña').fill('gacela123')
+  await page.getByLabel('Contraseña', { exact: true }).fill('gacela123')
   await page.getByRole('button', { name: /crear cuenta/i }).click()
   await expect(page.getByText('Activa tu ubicación')).toBeVisible()
   await page.getByRole('button', { name: 'Configurar más tarde' }).click()

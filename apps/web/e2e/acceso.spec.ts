@@ -21,10 +21,10 @@ test.describe('Acceso y sesión', () => {
 
     await page.goto('/inicio-sesion')
     await page.getByLabel('Correo electrónico').fill('jhona@utpl.edu.ec')
-    await page.getByLabel('Contraseña').fill('equivocada1')
+    await page.getByLabel('Contraseña', { exact: true }).fill('equivocada1')
     await page.getByRole('button', { name: /iniciar sesión/i }).click()
     await expect(page.getByRole('alert')).toHaveText(/incorrectos/)
-    await page.getByLabel('Contraseña').fill('gacela123')
+    await page.getByLabel('Contraseña', { exact: true }).fill('gacela123')
     await page.getByRole('button', { name: /iniciar sesión/i }).click()
     await expect(page).toHaveURL(/\/inicio$/)
   })
