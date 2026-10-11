@@ -21,10 +21,8 @@ export function CalendarioEventos({
     setMes({ anio: f.getFullYear(), mes: f.getMonth() })
     setDia(null)
   }
-  const titulo = new Date(mes.anio, mes.mes, 1).toLocaleDateString('es-EC', {
-    month: 'long',
-    year: 'numeric',
-  })
+  const nombreMes = new Date(mes.anio, mes.mes, 1).toLocaleDateString('es-EC', { month: 'long' })
+  const titulo = `${nombreMes.charAt(0).toUpperCase()}${nombreMes.slice(1)} ${mes.anio}`
   const delDia = semanas.flat().find((d) => d.fecha.toDateString() === dia)
   return (
     <section
@@ -40,7 +38,7 @@ export function CalendarioEventos({
         >
           <span className="material-symbols-outlined">chevron_left</span>
         </button>
-        <h2 className="font-title-md text-title-md text-text-primary capitalize">{titulo}</h2>
+        <h2 className="font-title-md text-title-md text-text-primary">{titulo}</h2>
         <button
           onClick={() => mover(1)}
           aria-label="Mes siguiente"

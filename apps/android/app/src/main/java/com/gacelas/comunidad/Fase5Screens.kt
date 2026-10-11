@@ -185,7 +185,7 @@ fun DetalleClubScreen(id: String, onAtras: () -> Unit, onEvento: (String) -> Uni
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Tarjeta {
                 Text(c.descripcion.ifBlank { "Sin descripción." }, style = GType.bodyMd, color = GColors.TextSecondary)
-                Text("${c.miembros} miembros · ${if (c.conAprobacion) "Con aprobación" else "Abierto"}", style = GType.bodySm, color = GColors.TextSecondary)
+                Text("${c.miembros} ${if (c.miembros == 1) "miembro" else "miembros"} · ${if (c.conAprobacion) "Con aprobación" else "Abierto"}", style = GType.bodySm, color = GColors.TextSecondary)
                 accionClub(yo, c.conAprobacion)?.let { a ->
                     BotonPrimario(a, {
                         if (yo == null) intentar(if (c.conAprobacion) "Solicitud enviada" else "Te uniste al club") { repo.unirse(id) }
@@ -284,13 +284,21 @@ fun EventoEnVivoScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
             Box(Modifier.fillMaxWidth().height(320.dp).clip(RoundedCornerShape(16.dp)).background(GColors.SurfaceContainer)) {
                 if (Mapas.configurado()) {
                     val camara = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(Mapas.CENTRO_LOJA, 14f) }
+                    // Encuadrar a todos los corredores (posiciones y trazos) cuando llegan datos.
+                    val puntos = tabla.flatMap { k -> k.puntos + listOfNotNull(k.lat?.let { la -> k.lng?.let { la to it } }) }
+                    LaunchedEffect(puntos.size) {
+                        if (puntos.isEmpty()) return@LaunchedEffect
+                        val b = com.google.android.gms.maps.model.LatLngBounds.builder()
+                        puntos.forEach { b.include(LatLng(it.first, it.second)) }
+                        runCatching { camara.move(com.google.android.gms.maps.CameraUpdateFactory.newLatLngBounds(b.build(), 120)) }
+                    }
                     GoogleMap(Modifier.fillMaxSize().testTag("mapa-evento"), cameraPositionState = camara,
                         properties = MapProperties(mapStyleOptions = MapStyleOptions(Mapas.ESTILO_OSCURO)), uiSettings = MapUiSettings(zoomControlsEnabled = false)) {
                         tabla.forEachIndexed { i, k ->
                             val trazo = k.puntos.let { p -> repeticion?.let { r -> p.take(maxOf(1, (r * p.size).toInt())) } ?: p }.map { LatLng(it.first, it.second) }
                             if (trazo.size >= 2) Polyline(points = trazo, color = colorCorredor(i), width = 10f)
                             val pos = repeticion?.let { posicionRepeticion(k, it) } ?: k.lat?.let { la -> k.lng?.let { la to it } }
-                            pos?.let { Circle(center = LatLng(it.first, it.second), radius = 12.0, fillColor = colorCorredor(i), strokeColor = Color.White, strokeWidth = 4f) }
+                            pos?.let { Circle(center = LatLng(it.first, it.second), radius = 30.0, fillColor = colorCorredor(i), strokeColor = Color.White, strokeWidth = 4f) }
                         }
                     }
                 } else Text("El mapa necesita Google Maps configurado.", color = GColors.TextSecondary, modifier = Modifier.align(Alignment.Center))
