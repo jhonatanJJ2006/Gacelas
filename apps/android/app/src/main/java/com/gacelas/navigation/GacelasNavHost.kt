@@ -2,6 +2,7 @@ package com.gacelas.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.NavGraphBuilder
@@ -82,6 +83,15 @@ fun GacelasNavHost(
     }
     if (rutaInicial != null && rutaInicial != inicio) {
         LaunchedEffect(rutaInicial) { nav.navigate(rutaInicial) }
+    }
+    // Destino pedido desde la notificacion de la carrera (abrir carrera en curso o resumen).
+    if (sesionActiva != false) {
+        val pendiente by com.gacelas.tracking.DestinoPendiente.valor.collectAsState()
+        LaunchedEffect(pendiente) {
+            val d = pendiente ?: return@LaunchedEffect
+            com.gacelas.tracking.DestinoPendiente.valor.value = null
+            if (nav.currentDestination?.route != d) runCatching { nav.navigate(d) { launchSingleTop = true } }
+        }
     }
     NavHost(navController = nav, startDestination = inicio) {
         accesoGraph(nav)
