@@ -15,6 +15,8 @@ import {
   type CarrerasRepository,
   type EventosRepository,
   type NotificacionesRepository,
+  type ComunidadRepository,
+  type PublicacionRemota,
   type Repositorios,
   type RutasRepository,
 } from './repositorios'
@@ -492,7 +494,7 @@ export class SupabaseAjustesRepository implements AjustesRepository {
 
 /* ---------------- Eventos ---------------- */
 
-export function eventoDesdeFila(f: Fila): Evento {
+export function eventoDesdeFila(f: Fila, uid?: string): Evento {
   const inicio = f.starts_at ? Date.parse(f.starts_at as string) : NaN
   return {
     id: f.id as string,
@@ -504,7 +506,7 @@ export function eventoDesdeFila(f: Fila): Evento {
     participantes: Number(f.base_participants ?? 0),
     distanciaKm: Number(f.distance_km ?? 0),
     pasado: Number.isFinite(inicio) ? inicio < Date.now() : false,
-    creadoPorUsuario: true,
+    creadoPorUsuario: uid ? f.created_by === uid : true,
   }
 }
 
@@ -521,10 +523,14 @@ export class SupabaseEventosRepository implements EventosRepository {
     const { data, error } = await this.sb
       .from('events')
       .select('*')
-      .eq('created_by', user.id)
+      .not('created_by', 'is', null)
       .order('created_at', { ascending: false })
+      .limit(100)
     if (error) return this.local.creados()
-    return escribir('eventos-creados', ((data ?? []) as Fila[]).map(eventoDesdeFila))
+    return escribir(
+      'eventos-creados',
+      ((data ?? []) as Fila[]).map((f) => eventoDesdeFila(f, user.id))
+    )
   }
 
   async inscritos() {
@@ -579,6 +585,7 @@ export const repositoriosSupabase = (sb: SupabaseClient): Repositorios => ({
   ajustes: new SupabaseAjustesRepository(sb),
   eventos: new SupabaseEventosRepository(sb),
   notificaciones: new SupabaseNotificacionesRepository(sb),
+  comunidad: new SupabaseComunidadRepository(sb),
 })
 
 const TIPOS_NOTIF = ['like', 'comment', 'follow', 'event', 'live'] as const
@@ -618,5 +625,66 @@ export class SupabaseNotificacionesRepository implements NotificacionesRepositor
     const user = await usuario(this.sb)
     if (!user) return
     await this.sb.from('notifications').update({ read: true }).in('id', ids).eq('user_id', user.id)
+  }
+}
+
+export class SupabaseComunidadRepository implements ComunidadRepository {
+  private sb: SupabaseClient
+  constructor(sb: SupabaseClient) {
+    this.sb = sb
+  }
+  async publicaciones(): Promise<PublicacionRemota[]> {
+    const user = await usuario(this.sb)
+    if (!user) return []
+    const { data, error } = await this.sb
+      .from('activities')
+      .select(
+        'id,user_id,title,start_time,distance_meters,duration_seconds,likes_count,comments_count,public_points'
+      )
+      .eq('is_public', true)
+      .neq('user_id', user.id)
+      .order('start_time', { ascending: false })
+      .limit(30)
+    if (error || !data?.length) return []
+    const filas = data as Fila[]
+    const ids = Array.from(new Set(filas.map((f) => f.user_id as string)))
+    const { data: perfiles } = await this.sb.from('profiles').select('id,full_name').in('id', ids)
+    const nombres = new Map(
+      ((perfiles ?? []) as Fila[]).map((p) => [p.id as string, p.full_name as string])
+    )
+    return filas.map((f) => ({
+      id: f.id as string,
+      autorId: f.user_id as string,
+      autor: nombres.get(f.user_id as string) || 'Corredor',
+      titulo: (f.title as string) || 'Carrera',
+      inicioMs: Date.parse(f.start_time as string),
+      distanciaKm: Number(f.distance_meters ?? 0) / 1000,
+      segundos: Number(f.duration_seconds ?? 0),
+      likes: Number(f.likes_count ?? 0),
+      comentarios: Number(f.comments_count ?? 0),
+      puntos: Array.isArray(f.public_points)
+        ? (f.public_points as PublicacionRemota['puntos'])
+        : [],
+    }))
+  }
+  async siguiendo() {
+    const user = await usuario(this.sb)
+    if (!user) return []
+    const { data } = await this.sb.from('follows').select('following_id').eq('follower_id', user.id)
+    return ((data ?? []) as Fila[]).map((f) => f.following_id as string)
+  }
+  async alternarSeguir(id: string) {
+    const user = await usuario(this.sb)
+    if (!user) return []
+    const actuales = await this.siguiendo()
+    if (actuales.includes(id)) {
+      await this.sb.from('follows').delete().eq('follower_id', user.id).eq('following_id', id)
+    } else {
+      const { error } = await this.sb
+        .from('follows')
+        .insert({ follower_id: user.id, following_id: id })
+      if (error) throw new Error(traducirError(error.message))
+    }
+    return this.siguiendo()
   }
 }

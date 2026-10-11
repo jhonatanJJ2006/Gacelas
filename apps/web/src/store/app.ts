@@ -1,5 +1,9 @@
 import { create } from 'zustand'
-import { repositoriosLocales, type Repositorios } from '../data/repositorios'
+import {
+  repositoriosLocales,
+  type PublicacionRemota,
+  type Repositorios,
+} from '../data/repositorios'
 import {
   AJUSTES_POR_DEFECTO,
   type Ajustes,
@@ -35,6 +39,9 @@ export interface EstadoApp {
   inscritos: string[]
   /** Notificaciones de la cuenta (o las de ejemplo sin backend). */
   notificaciones: Notificacion[]
+  publicaciones: PublicacionRemota[]
+  siguiendo: string[]
+  alternarSeguir(id: string): Promise<void>
   marcarNotificacionesLeidas(ids: string[]): Promise<void>
   cargar(): Promise<void>
   iniciarSesion(email: string, password: string): Promise<ResultadoAuth>
@@ -61,6 +68,8 @@ export const useApp = create<EstadoApp>((set, get) => ({
   eventosCreados: [],
   inscritos: [],
   notificaciones: notificacionesMock,
+  publicaciones: [],
+  siguiendo: [],
 
   async cargar() {
     const [sesion, ajustes, carreras, rutasGuardadas, eventosCreados, inscritos] =
@@ -76,7 +85,16 @@ export const useApp = create<EstadoApp>((set, get) => ({
       repos.notificaciones && sesion
         ? await repos.notificaciones.listar().catch(() => [])
         : notificacionesMock
+    const [publicaciones, siguiendo] =
+      repos.comunidad && sesion
+        ? await Promise.all([
+            repos.comunidad.publicaciones().catch(() => []),
+            repos.comunidad.siguiendo().catch(() => []),
+          ])
+        : [[], []]
     set({
+      publicaciones,
+      siguiendo,
       listo: true,
       sesion,
       ajustes,
@@ -95,6 +113,11 @@ export const useApp = create<EstadoApp>((set, get) => ({
         if (!perfil) return set({ sesion: null })
         void get().cargar()
       }) ?? null
+  },
+
+  async alternarSeguir(id) {
+    if (!repos.comunidad) return
+    set({ siguiendo: await repos.comunidad.alternarSeguir(id) })
   },
 
   async marcarNotificacionesLeidas(ids) {

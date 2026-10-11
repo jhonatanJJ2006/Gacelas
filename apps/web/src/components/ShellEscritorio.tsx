@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEsEscritorio } from '../lib/useEsEscritorio'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { notificacionesVisibles } from '../lib/filtros'
 import { useApp } from '../store/app'
@@ -14,22 +14,6 @@ const NAV_ESCRITORIO = [
   { path: '/perfil', label: 'Perfil', icon: 'person' },
   { path: '/ajustes', label: 'Ajustes', icon: 'settings' },
 ]
-
-const CONSULTA = '(min-width: 1024px)'
-
-/** true cuando la ventana tiene ancho de escritorio. */
-function useEsEscritorio() {
-  const soporta = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-  const [es, setEs] = useState(() => soporta && window.matchMedia(CONSULTA).matches)
-  useEffect(() => {
-    if (!soporta) return
-    const mq = window.matchMedia(CONSULTA)
-    const alCambiar = () => setEs(mq.matches)
-    mq.addEventListener?.('change', alCambiar)
-    return () => mq.removeEventListener?.('change', alCambiar)
-  }, [soporta])
-  return es
-}
 
 /**
  * Contenedor de escritorio (>=1024px): barra lateral fija a la izquierda.

@@ -41,6 +41,7 @@ export function crearFakeSupabase(): FakeSupabase {
 
   function consulta(t: string) {
     const filtros: [string, unknown][] = []
+    const predicados: ((r: Fila) => boolean)[] = []
     let op: 'select' | 'insert' | 'upsert' | 'update' | 'delete' = 'select'
     let datos: Fila[] = []
     let cambios: Fila = {}
@@ -48,7 +49,8 @@ export function crearFakeSupabase(): FakeSupabase {
     let modo: 'lista' | 'una' | 'quiza' = 'lista'
     let devolver = false
 
-    const coincide = (r: Fila) => filtros.every(([c, v]) => r[c] === v)
+    const coincide = (r: Fila) =>
+      filtros.every(([c, v]) => r[c] === v) && predicados.every((p) => p(r))
     const ejecutar = (): Resultado => {
       f.llamadas.push(`${op}:${t}`)
       if (f.sinRed) return { data: null, error: errRed }
@@ -112,6 +114,21 @@ export function crearFakeSupabase(): FakeSupabase {
       },
       eq(c: string, v: unknown) {
         filtros.push([c, v])
+        return b
+      },
+      neq(c: string, v: unknown) {
+        predicados.push((r) => r[c] !== v)
+        return b
+      },
+      in(c: string, vs: unknown[]) {
+        predicados.push((r) => vs.includes(r[c]))
+        return b
+      },
+      not(c: string, _op: string, v: unknown) {
+        predicados.push((r) => (v === null ? r[c] != null : r[c] !== v))
+        return b
+      },
+      limit() {
         return b
       },
       order(col: string, o?: { ascending?: boolean }) {
