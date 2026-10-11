@@ -40,7 +40,8 @@ export function ShellEscritorio() {
   const escritorio = useEsEscritorio()
   const sesion = useApp((s) => s.sesion)
   const ajustes = useApp((s) => s.ajustes)
-  const sinLeer = notificacionesVisibles(ajustes).filter((n) => !n.leida).length
+  const listaNotif = useApp((s) => s.notificaciones)
+  const sinLeer = notificacionesVisibles(ajustes, listaNotif).filter((n) => !n.leida).length
 
   const activo = (path: string, exacto?: boolean) => {
     if (exacto)

@@ -5,23 +5,21 @@ import {
   notificacionesVisibles,
   type FiltroNotificaciones,
 } from '../../lib/filtros'
-import { notificacionesMock, type Notificacion } from '../../mocks/data'
+import type { Notificacion } from '../../mocks/data'
 import { useApp } from '../../store/app'
 import { destinoNotificacion } from '../../lib/logica'
 
 export function Notificaciones() {
   const navigate = useNavigate()
   const ajustes = useApp((s) => s.ajustes)
-  const actualizar = useApp((s) => s.actualizarAjustes)
+  const lista = useApp((s) => s.notificaciones)
+  const marcar = useApp((s) => s.marcarNotificacionesLeidas)
   const [filtro, setFiltro] = useState<FiltroNotificaciones>('Todas')
-  const notificaciones = filtrarNotificaciones(notificacionesVisibles(ajustes), filtro)
+  const notificaciones = filtrarNotificaciones(notificacionesVisibles(ajustes, lista), filtro)
 
-  const marcarTodas = () =>
-    void actualizar({ notificacionesLeidas: notificacionesMock.map((n) => n.id) })
+  const marcarTodas = () => void marcar(lista.filter((n) => !n.leida).map((n) => n.id))
   const abrir = (n: Notificacion) => {
-    void actualizar((a) => ({
-      notificacionesLeidas: Array.from(new Set([...a.notificacionesLeidas, n.id])),
-    }))
+    void marcar([n.id])
     navigate(destinoNotificacion(n))
   }
 

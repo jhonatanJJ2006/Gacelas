@@ -1,4 +1,4 @@
-import type { Evento } from '../mocks/data'
+import type { Evento, Notificacion } from '../mocks/data'
 import { ValidacionAuth } from '../lib/validacion'
 import {
   AJUSTES_POR_DEFECTO,
@@ -51,12 +51,19 @@ export interface EventosRepository {
   alternarInscripcion(id: string): Promise<string[]>
 }
 
+export interface NotificacionesRepository {
+  listar(): Promise<Notificacion[]>
+  marcarLeidas(ids: string[]): Promise<void>
+}
+
 export interface Repositorios {
   auth: AuthRepository
   carreras: CarrerasRepository
   rutas: RutasRepository
   ajustes: AjustesRepository
   eventos: EventosRepository
+  /** Notificaciones reales; sin este repositorio se usan las de ejemplo. */
+  notificaciones?: NotificacionesRepository
 }
 
 const PREFIJO = 'gacelas:'

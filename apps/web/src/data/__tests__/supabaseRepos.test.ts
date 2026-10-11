@@ -227,3 +227,29 @@ describe('utilidades', () => {
     expect((await useApp.getState().cambiarContrasena('otra12345')).ok).toBe(true)
   })
 })
+
+describe('notificaciones', () => {
+  it('convierte filas de Supabase', async () => {
+    const { notificacionDesdeFila } = await import('../supabaseRepos')
+    const ahora = Date.parse('2026-10-10T12:00:00Z')
+    const n = notificacionDesdeFila(
+      {
+        id: 'x',
+        type: 'raro',
+        actor_name: 'Gacelas Loja',
+        message: 'Hola',
+        read: false,
+        created_at: '2026-10-10T11:00:00Z',
+      },
+      ahora
+    )
+    expect(n).toEqual({
+      id: 'x',
+      tipo: 'event',
+      usuario: 'Gacelas Loja',
+      mensaje: 'Hola',
+      tiempo: 'hace 1h',
+      leida: false,
+    })
+  })
+})

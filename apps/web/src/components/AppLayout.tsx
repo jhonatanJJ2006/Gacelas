@@ -10,7 +10,8 @@ export function AppLayout() {
     location.pathname === path || location.pathname.startsWith(`${path}/`)
   const ajustes = useApp((s) => s.ajustes)
   const sesion = useApp((s) => s.sesion)
-  const sinLeer = notificacionesVisibles(ajustes).filter((n) => !n.leida).length
+  const listaNotif = useApp((s) => s.notificaciones)
+  const sinLeer = notificacionesVisibles(ajustes, listaNotif).filter((n) => !n.leida).length
 
   const navItems = [
     { path: '/inicio', label: 'Inicio', icon: 'home' },
