@@ -43,8 +43,20 @@ UPDATE routes SET distance_km = CASE id WHEN '1' THEN 5.2 WHEN '2' THEN 8.5 WHEN
   WHERE author_id IS NULL AND id IN ('1', '2', '3');
 CREATE INDEX IF NOT EXISTS routes_start_idx ON routes USING GIST (start_point);
 
--- Los contadores solo los cambian los triggers.
-REVOKE UPDATE (likes_count, rating_avg, rating_count, start_point) ON routes FROM authenticated, anon;
+-- Los contadores solo los cambian los triggers de likes y reseñas (profundidad > 1).
+CREATE OR REPLACE FUNCTION public.route_proteger_contadores() RETURNS TRIGGER
+LANGUAGE plpgsql SET search_path = public AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    NEW.likes_count := 0; NEW.rating_count := 0; NEW.rating_avg := NULL;
+  ELSIF pg_trigger_depth() <= 1 THEN
+    NEW.likes_count := OLD.likes_count; NEW.rating_count := OLD.rating_count; NEW.rating_avg := OLD.rating_avg;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+DROP TRIGGER IF EXISTS routes_contadores ON routes;
+CREATE TRIGGER routes_contadores BEFORE INSERT OR UPDATE ON routes FOR EACH ROW EXECUTE FUNCTION route_proteger_contadores();
 
 CREATE TABLE IF NOT EXISTS route_likes (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
