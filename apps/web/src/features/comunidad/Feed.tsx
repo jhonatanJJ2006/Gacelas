@@ -11,6 +11,9 @@ export function Feed() {
   const navigate = useNavigate()
   const sesion = useApp((s) => s.sesion)
   const carreras = useApp((s) => s.carreras)
+  const remotas = useApp((s) => s.publicaciones)
+  const siguiendo = useApp((s) => s.siguiendo)
+  const alternarSeguir = useApp((s) => s.alternarSeguir)
   const ajustes = useApp((s) => s.ajustes)
   const actualizar = useApp((s) => s.actualizarAjustes)
   const m = ajustes.unidadesMetricas
@@ -22,7 +25,7 @@ export function Feed() {
   const [aviso, mostrarAviso] = useAviso()
 
   const posts = filtrarFeed(
-    construirFeed(carreras, sesion?.nombre ?? 'Tú', Date.now()),
+    construirFeed(carreras, sesion?.nombre ?? 'Tú', Date.now(), remotas),
     filtro,
     ajustes.ocultas
   )
@@ -133,10 +136,23 @@ export function Feed() {
                     {post.titulo} · {post.tiempo}
                   </p>
                 </div>
+                {post.autorId && (
+                  <button
+                    onClick={() => void alternarSeguir(post.autorId!)}
+                    aria-pressed={siguiendo.includes(post.autorId)}
+                    className={`h-9 px-4 rounded-full text-sm font-semibold transition-colors ${
+                      siguiendo.includes(post.autorId)
+                        ? 'bg-surface-container-high text-text-primary border border-border-subtle'
+                        : 'bg-primary text-on-primary hover:bg-primary-700'
+                    }`}
+                  >
+                    {siguiendo.includes(post.autorId) ? 'Siguiendo' : 'Seguir'}
+                  </button>
+                )}
                 <button
                   onClick={() => setMenuPost(menuPost === post.id ? null : post.id)}
                   aria-label="Más opciones"
-                  className="text-text-secondary hover:text-text-primary"
+                  className="w-11 h-11 -mr-2 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary"
                 >
                   <span className="material-symbols-outlined">more_vert</span>
                 </button>
@@ -209,7 +225,7 @@ export function Feed() {
                     onClick={() => alternarLike(post.id)}
                     aria-pressed={meGusta}
                     aria-label={meGusta ? 'Quitar me gusta' : 'Me gusta'}
-                    className={`flex items-center gap-2 transition-colors ${meGusta ? 'text-danger' : 'text-text-secondary hover:text-primary'}`}
+                    className={`min-h-11 min-w-11 flex items-center gap-2 transition-colors ${meGusta ? 'text-danger' : 'text-text-secondary hover:text-primary'}`}
                   >
                     <span className="material-symbols-outlined">
                       {meGusta ? 'favorite' : 'favorite_border'}
@@ -221,7 +237,7 @@ export function Feed() {
                   <button
                     onClick={() => setComentando(post)}
                     aria-label="Comentar"
-                    className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors"
+                    className="min-h-11 min-w-11 flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors"
                   >
                     <span className="material-symbols-outlined">chat_bubble_outline</span>
                     <span className="font-label-md text-label-md">
@@ -231,7 +247,7 @@ export function Feed() {
                   <button
                     onClick={() => void compartirPost(post)}
                     aria-label="Compartir"
-                    className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors ml-auto"
+                    className="min-h-11 min-w-11 justify-center flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors ml-auto"
                   >
                     <span className="material-symbols-outlined">share</span>
                   </button>

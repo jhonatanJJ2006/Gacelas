@@ -52,8 +52,8 @@ export function Avatar3D() {
         </div>
       </header>
 
-      <main className="lg:w-full lg:max-w-3xl lg:mx-auto flex-1 flex flex-col pb-24">
-        <div className="relative flex-1 bg-surface-container-low">
+      <main className="lg:w-full lg:max-w-6xl lg:mx-auto flex-1 flex flex-col pb-24 lg:flex-row lg:gap-8 lg:p-8 lg:items-start">
+        <div className="relative flex-1 bg-surface-container-low lg:flex-none lg:w-3/5 lg:h-[640px] lg:rounded-2xl lg:overflow-hidden lg:border lg:border-border-subtle">
           <Suspense
             fallback={
               <div className="w-full h-full flex items-center justify-center">
@@ -82,7 +82,7 @@ export function Avatar3D() {
                     onClick={() => cambiar({ equipacion: i })}
                     aria-label={`Equipación ${NOMBRES_EQUIPACION[i]}`}
                     aria-pressed={avatar.equipacion === i}
-                    className={`aspect-square rounded-lg ${color} border-2 ${avatar.equipacion === i ? 'border-white shadow-lg' : 'border-transparent hover:border-border-subtle'}`}
+                    className={`aspect-square lg:aspect-auto lg:h-12 rounded-lg ${color} border-2 ${avatar.equipacion === i ? 'border-white shadow-lg' : 'border-transparent hover:border-border-subtle'}`}
                   ></button>
                 ))}
               </div>
@@ -90,7 +90,7 @@ export function Avatar3D() {
           </div>
         </div>
 
-        <div className="px-margin py-6 space-y-4 bg-surface">
+        <div className="px-margin py-6 space-y-4 bg-surface lg:flex-1 lg:px-0 lg:py-0">
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="font-body-md text-body-md text-text-primary font-medium">

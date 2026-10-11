@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useApp } from '../../store/app'
 import { BotonTexto, Dialogo, MensajeError } from '../../components/ui'
 import { BotonGoogle } from '../../components/BotonGoogle'
+import { PanelCorredorAcceso } from '../../components/PanelCorredorAcceso'
 
 export function Registro() {
   const navigate = useNavigate()
@@ -57,6 +58,7 @@ export function Registro() {
             <p className="text-text-secondary text-sm">
               Crea tu cuenta y empieza a correr con la comunidad
             </p>
+            <PanelCorredorAcceso />
           </div>
 
           <form

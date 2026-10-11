@@ -1,5 +1,6 @@
 /** Logica de pantallas sin dependencias de React, separada para poder probarla. */
 import type { CarreraGuardada, PuntoGps } from '../data/tipos'
+import type { PublicacionRemota } from '../data/repositorios'
 import {
   actividadesMock,
   rutasMock,
@@ -11,6 +12,8 @@ import {
 export interface Publicacion {
   id: string
   autor: string
+  /** Id del autor en Supabase (solo publicaciones reales de otros). */
+  autorId?: string
   propia: boolean
   titulo: string
   tiempo: string
@@ -67,7 +70,8 @@ export function validarEvento(e: {
 export function construirFeed(
   carreras: CarreraGuardada[],
   nombre: string,
-  ahora: number
+  ahora: number,
+  remotas: PublicacionRemota[] = []
 ): Publicacion[] {
   const propias: Publicacion[] = carreras
     .filter((c) => c.publica)
@@ -97,7 +101,22 @@ export function construirFeed(
     comentarios: a.comentarios,
     puntos: [],
   }))
-  return [...propias, ...comunidad]
+  const reales: Publicacion[] = remotas.map((r) => ({
+    id: `r-${r.id}`,
+    autor: r.autor,
+    autorId: r.autorId,
+    propia: false,
+    titulo: r.titulo,
+    tiempo: tiempoRelativo(r.inicioMs, ahora),
+    distanciaKm: r.distanciaKm,
+    segundos: r.segundos,
+    ritmoSegKm: r.distanciaKm > 0.01 ? Math.floor(r.segundos / r.distanciaKm) : null,
+    likes: r.likes,
+    comentarios: r.comentarios,
+    puntos: r.puntos,
+  }))
+  // Con publicaciones reales de la comunidad no se mezclan las de ejemplo.
+  return [...propias, ...(reales.length ? reales : comunidad)]
 }
 
 export function filtrarFeed(lista: Publicacion[], filtro: FiltroFeed, ocultas: string[]) {

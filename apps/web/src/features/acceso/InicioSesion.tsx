@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useApp } from '../../store/app'
 import { MensajeError } from '../../components/ui'
 import { BotonGoogle } from '../../components/BotonGoogle'
+import { PanelCorredorAcceso } from '../../components/PanelCorredorAcceso'
 
 export function InicioSesion() {
   const navigate = useNavigate()
@@ -55,6 +56,7 @@ export function InicioSesion() {
             <p className="text-text-secondary text-sm">
               Inicia sesión para continuar con tus carreras
             </p>
+            <PanelCorredorAcceso />
           </div>
 
           <form

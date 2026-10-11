@@ -92,7 +92,7 @@ export function Interruptor({
       aria-checked={activo}
       aria-label={etiqueta}
       onClick={() => onCambiar(!activo)}
-      className={`relative w-12 h-7 rounded-full transition-colors shrink-0 ${activo ? 'bg-primary-600' : 'bg-surface-container-highest'}`}
+      className={`relative w-12 h-7 rounded-full transition-colors shrink-0 before:absolute before:-inset-2 before:content-[''] ${activo ? 'bg-primary-600' : 'bg-surface-container-highest'}`}
     >
       <span
         className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform ${activo ? 'translate-x-5' : ''}`}

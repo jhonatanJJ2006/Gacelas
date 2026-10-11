@@ -192,3 +192,25 @@ describe('logica de pantallas', () => {
     expect(destinoNotificacion(notificacionesMock[0])).toBe('/comunidad')
   })
 })
+
+describe('feed con publicaciones reales', () => {
+  it('usa las reales y no mezcla las de ejemplo', () => {
+    const ahora = Date.parse('2026-10-10T12:00:00Z')
+    const feed = construirFeed([], 'Yo', ahora, [
+      {
+        id: 'x',
+        autorId: 'u2',
+        autor: 'Ana',
+        titulo: 'Fondo',
+        inicioMs: ahora - 3_600_000,
+        distanciaKm: 5,
+        segundos: 1500,
+        likes: 1,
+        comentarios: 0,
+        puntos: [],
+      },
+    ])
+    expect(feed).toHaveLength(1)
+    expect(feed[0]).toMatchObject({ id: 'r-x', autorId: 'u2', tiempo: 'hace 1h', ritmoSegKm: 300 })
+  })
+})

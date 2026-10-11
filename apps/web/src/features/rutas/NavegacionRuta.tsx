@@ -49,7 +49,7 @@ export function NavegacionRuta() {
               key={a}
               onClick={() => setAnimacion(a)}
               aria-pressed={animacion === a}
-              className={`px-2 py-0.5 rounded-full ${animacion === a ? 'bg-primary-600 text-white' : 'bg-black/50'}`}
+              className={`px-3 py-1.5 min-h-8 rounded-full ${animacion === a ? 'bg-primary-600 text-white' : 'bg-black/50'}`}
             >
               {a === 'Jog' ? 'Trote' : 'Carrera'}
             </button>
@@ -72,7 +72,7 @@ export function NavegacionRuta() {
         </Suspense>
       </div>
 
-      <div className="absolute top-20 left-4 right-4 z-20">
+      <div className="absolute top-20 left-4 right-4 z-20 lg:right-auto lg:left-8 lg:w-[420px]">
         <div className="bg-black/80 backdrop-blur-md rounded-2xl p-4 shadow-2xl">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-12 h-12 rounded-full bg-primary-600 flex items-center justify-center">
@@ -97,7 +97,7 @@ export function NavegacionRuta() {
       </div>
 
       {claveMapas() && (
-        <div className="absolute top-56 right-4 z-20 w-36 h-36 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+        <div className="absolute top-56 right-4 z-20 w-36 h-36 lg:top-20 lg:right-8 lg:w-80 lg:h-80 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
           <MapaGoogle
             puntos={e.puntos}
             seguir
@@ -109,7 +109,7 @@ export function NavegacionRuta() {
       )}
 
       <div className="absolute bottom-0 left-0 right-0 z-20">
-        <div className="bg-gradient-to-t from-[#0c1322] via-[#0c1322]/95 to-transparent p-6 pb-8">
+        <div className="bg-gradient-to-t from-[#0c1322] via-[#0c1322]/95 to-transparent p-6 pb-8 lg:px-8 [&>*]:lg:max-w-4xl [&>*]:lg:mx-auto">
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-black/60 backdrop-blur-md rounded-xl p-3 text-center">
               <div className="text-primary-400 text-2xl font-bold">

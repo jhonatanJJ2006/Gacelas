@@ -57,8 +57,8 @@ export function DetalleEvento() {
         </div>
       </div>
 
-      <div className="flex-1 px-6 py-6 pb-24 lg:px-0">
-        <h1 className="font-headline-lg text-headline-lg text-text-primary mb-4">
+      <div className="flex-1 px-6 py-6 pb-24 lg:px-0 lg:grid lg:grid-cols-2 lg:gap-x-8 lg:content-start">
+        <h1 className="font-headline-lg text-headline-lg text-text-primary mb-4 lg:col-span-2">
           {evento.titulo}
         </h1>
 

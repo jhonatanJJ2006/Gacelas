@@ -56,6 +56,26 @@ export interface NotificacionesRepository {
   marcarLeidas(ids: string[]): Promise<void>
 }
 
+export interface PublicacionRemota {
+  id: string
+  autorId: string
+  autor: string
+  titulo: string
+  inicioMs: number
+  distanciaKm: number
+  segundos: number
+  likes: number
+  comentarios: number
+  puntos: CarreraGuardada['puntos']
+}
+
+export interface ComunidadRepository {
+  /** Carreras publicas de otros corredores. */
+  publicaciones(): Promise<PublicacionRemota[]>
+  siguiendo(): Promise<string[]>
+  alternarSeguir(id: string): Promise<string[]>
+}
+
 export interface Repositorios {
   auth: AuthRepository
   carreras: CarrerasRepository
@@ -64,6 +84,7 @@ export interface Repositorios {
   eventos: EventosRepository
   /** Notificaciones reales; sin este repositorio se usan las de ejemplo. */
   notificaciones?: NotificacionesRepository
+  comunidad?: ComunidadRepository
 }
 
 const PREFIJO = 'gacelas:'
