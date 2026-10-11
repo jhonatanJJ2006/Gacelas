@@ -1,8 +1,17 @@
 import { useState } from 'react'
+import {
+  aplicarFiltros,
+  ETIQUETAS_RUTA,
+  FILTROS_DISTANCIA,
+  FILTROS_INICIALES,
+  ordenarPorCercania,
+  type FiltroDistancia,
+} from '../../lib/rutas'
+import { Estrellas } from './Estrellas'
 import { Link } from 'react-router-dom'
 import { filtrarRutas, PESTANAS_RUTAS, type PestanaRutas } from '../../lib/filtros'
 import { Unidades } from '../../lib/geo'
-import { ID_USUARIO, rutasMock } from '../../mocks/data'
+import { ID_USUARIO } from '../../mocks/data'
 import { useApp } from '../../store/app'
 
 export function ListaRutas() {
@@ -11,7 +20,35 @@ export function ListaRutas() {
   const guardadas = useApp((s) => s.rutasGuardadas)
   const alternar = useApp((s) => s.alternarRutaGuardada)
   const m = useApp((s) => s.ajustes.unidadesMetricas)
-  const rutas = filtrarRutas(rutasMock, pestana, guardadas, ID_USUARIO, consulta)
+  const todas = useApp((s) => s.rutas)
+  const rutasCercanas = useApp((s) => s.rutasCercanas)
+  const [filtros, setFiltros] = useState(FILTROS_INICIALES)
+  const [cerca, setCerca] = useState<Record<string, number> | null>(null)
+  const [buscandoCerca, setBuscandoCerca] = useState(false)
+  const filtradas = aplicarFiltros(
+    filtrarRutas(todas, pestana, guardadas, ID_USUARIO, consulta),
+    filtros
+  )
+  const rutas = cerca ? ordenarPorCercania(filtradas, cerca) : filtradas
+  const alternarCerca = () => {
+    if (cerca) return setCerca(null)
+    if (!navigator.geolocation) return
+    setBuscandoCerca(true)
+    navigator.geolocation.getCurrentPosition(
+      (p) =>
+        void rutasCercanas(p.coords.latitude, p.coords.longitude)
+          .then(setCerca)
+          .finally(() => setBuscandoCerca(false)),
+      () => setBuscandoCerca(false),
+      { maximumAge: 60_000, timeout: 10_000 }
+    )
+  }
+  const chip = (activo: boolean) =>
+    `shrink-0 min-h-[40px] px-3 rounded-full font-label-md text-label-md border transition-colors ${
+      activo
+        ? 'bg-primary-600 text-bg-primary border-primary-600'
+        : 'bg-surface-container text-text-secondary border-border-subtle hover:text-text-primary'
+    }`
 
   return (
     <div className="flex flex-col w-full contenedor-escritorio">
@@ -58,6 +95,60 @@ export function ListaRutas() {
             search
           </span>
         </div>
+
+        <div
+          className="mt-3 flex gap-2 overflow-x-auto pb-1"
+          aria-label="Filtros de rutas"
+          role="group"
+        >
+          <button
+            onClick={alternarCerca}
+            aria-pressed={!!cerca}
+            data-testid="rutas-cerca"
+            className={chip(!!cerca) + ' flex items-center gap-1'}
+          >
+            <span className="material-symbols-outlined text-[18px]">near_me</span>
+            {buscandoCerca ? 'Buscando…' : 'Cerca de mí'}
+          </button>
+          {(['Todas', 'Fácil', 'Moderado', 'Difícil'] as const).map((d) => (
+            <button
+              key={d}
+              aria-pressed={filtros.dificultad === d}
+              onClick={() => setFiltros({ ...filtros, dificultad: d })}
+              className={chip(filtros.dificultad === d)}
+            >
+              {d === 'Todas' ? 'Toda dificultad' : d}
+            </button>
+          ))}
+        </div>
+        <div
+          className="mt-2 flex gap-2 overflow-x-auto pb-1"
+          role="group"
+          aria-label="Distancia y tipo"
+        >
+          {FILTROS_DISTANCIA.map((d: FiltroDistancia) => (
+            <button
+              key={d}
+              aria-pressed={filtros.distancia === d}
+              onClick={() => setFiltros({ ...filtros, distancia: d })}
+              className={chip(filtros.distancia === d)}
+            >
+              {d === 'Todas' ? 'Toda distancia' : d}
+            </button>
+          ))}
+          {Object.entries(ETIQUETAS_RUTA).map(([k, v]) => (
+            <button
+              key={k}
+              aria-pressed={filtros.etiqueta === k}
+              onClick={() =>
+                setFiltros({ ...filtros, etiqueta: filtros.etiqueta === k ? null : k })
+              }
+              className={chip(filtros.etiqueta === k)}
+            >
+              #{v}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6 lg:space-y-0">
@@ -78,11 +169,7 @@ export function ListaRutas() {
               key={ruta.id}
               className="relative bg-surface-container rounded-2xl border border-border-subtle overflow-hidden hover:border-primary-600/50 transition-colors"
             >
-              <Link
-                to={`/rutas/buscar?ruta=${ruta.id}`}
-                className="block"
-                aria-label={`Abrir ${ruta.nombre}`}
-              >
+              <Link to={`/rutas/${ruta.id}`} className="block" aria-label={`Abrir ${ruta.nombre}`}>
                 <div className="h-32 bg-gradient-to-br from-primary-600/30 to-secondary-600/30 flex items-center justify-center">
                   <span className="material-symbols-outlined text-[64px] text-primary">route</span>
                 </div>
@@ -91,6 +178,27 @@ export function ListaRutas() {
                     {ruta.nombre}
                   </h2>
                   <p className="text-body-sm text-text-secondary mb-2">{ruta.descripcion}</p>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-sm text-text-secondary">
+                    {ruta.valoracion != null && (
+                      <span className="flex items-center gap-1">
+                        <Estrellas valor={ruta.valoracion} tamano={16} />
+                        {ruta.valoracion.toFixed(1)} ({ruta.resenas})
+                      </span>
+                    )}
+                    {(ruta.meGusta ?? 0) > 0 && (
+                      <span className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px]">favorite</span>
+                        {ruta.meGusta}
+                      </span>
+                    )}
+                    {cerca?.[ruta.id] != null && (
+                      <span className="flex items-center gap-1" data-testid="ruta-cerca-km">
+                        <span className="material-symbols-outlined text-[16px]">near_me</span>a{' '}
+                        {Unidades.texto(cerca[ruta.id], m, 1)} {Unidades.etiquetaDistancia(m)}
+                      </span>
+                    )}
+                    {ruta.autorNombre && <span>por {ruta.autorNombre}</span>}
+                  </div>
                   <div className="flex items-center gap-4 text-text-secondary">
                     <span className="font-label-md text-label-md flex items-center gap-1">
                       <span className="material-symbols-outlined text-[16px]">straighten</span>

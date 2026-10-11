@@ -16,46 +16,9 @@ Ver [plans/completados/fase-3-live-tracking.md](plans/completados/fase-3-live-tr
 
 ---
 
-## Fase 4: Rutas y Exploración
+## Fase 4: Rutas y Exploración: Completada
 
-**Objetivo**: Descubrir y compartir rutas populares.
-
-### 4.1 Creación de Rutas
-
-**Features**:
-
-- [ ] Guardar actividad como ruta pública
-- [ ] Dibujar ruta manualmente en mapa
-- [ ] Asignar nombre, descripción, dificultad
-- [ ] Tags (scenic, flat, urban, trail, etc.)
-- [ ] Calcular elevación con API externa
-
-**Implementación**:
-
-- Tablas: `routes`, `route_points`
-- Douglas-Peucker para simplificar puntos
-- PostGIS para cálculos de distancia
-
-### 4.2 Exploración de Rutas
-
-**Features**:
-
-- [ ] Mapa con rutas cercanas (clusters)
-- [ ] Filtros: distancia, dificultad, tipo
-- [ ] Búsqueda por ubicación o ciudad
-- [ ] Vista de detalle con elevación gráfica
-- [ ] Guardar ruta para más tarde
-- [ ] Botón "Correr esta ruta" (inicia actividad con ruta cargada)
-
-### 4.3 Social en Rutas
-
-**Features**:
-
-- [ ] Dar like a rutas
-- [ ] Comentarios y reviews
-- [ ] Rating (1-5 estrellas)
-- [ ] Fotos de la ruta
-- [ ] Ver quién ha corrido esta ruta
+Ver [plans/completados/fase-4-rutas.md](plans/completados/fase-4-rutas.md).
 
 ---
 
@@ -356,8 +319,8 @@ Ver [plans/completados/fase-3-live-tracking.md](plans/completados/fase-3-live-tr
 | Fase 0  | Arquitectura e infraestructura  | Setup inicial          | Completo      |
 | Fase 1  | MVP - Grabación y visualización | Implementación         | Completo      |
 | Fase 2  | Feed social y follows           | Desarrollo incremental | Completo      |
-| Fase 3  | Live tracking                   | Desarrollo incremental | En curso      |
-| Fase 4  | Rutas y exploración             | Desarrollo incremental | Pendiente     |
+| Fase 3  | Live tracking                   | Desarrollo incremental | Completa      |
+| Fase 4  | Rutas y exploración             | Desarrollo incremental | Completa      |
 | Fase 5  | Eventos y clubes                | Desarrollo incremental | Pendiente     |
 | Fase 6  | Análisis avanzados              | Desarrollo incremental | Pendiente     |
 | Fase 7  | Gamificación                    | Desarrollo incremental | Pendiente     |
@@ -369,6 +332,6 @@ Ver [plans/completados/fase-3-live-tracking.md](plans/completados/fase-3-live-tr
 
 ## Siguiente Paso Inmediato
 
-**Siguiente paso**: Fase 4, rutas y exploración (crear rutas desde una actividad y explorar rutas cercanas).
+**Siguiente paso**: Fase 5, eventos y clubes.
 
 Ver [CONTRIBUTING.md](CONTRIBUTING.md) para comenzar a contribuir al desarrollo.

@@ -27,6 +27,13 @@ data class Ruta(
     val elevacionM: Int,
     val descripcion: String,
     val autorId: String = "gacelas",
+    val etiquetas: List<String> = emptyList(),
+    val puntos: List<Pair<Double, Double>> = emptyList(),
+    val meGusta: Int = 0,
+    val valoracion: Double? = null,
+    val resenas: Int = 0,
+    val autorNombre: String? = null,
+    val propia: Boolean = false,
 )
 
 @Serializable
@@ -69,7 +76,7 @@ object MockData {
     )
 
     val rutas = listOf(
-        Ruta("1", "Parque Jipiro", 5.2, Dificultad.Facil, 45, "Ruta panorámica alrededor del Parque Jipiro, ideal para principiantes."),
+        Ruta("1", "Parque Jipiro", 5.2, Dificultad.Facil, 45, "Ruta panorámica alrededor del Parque Jipiro, ideal para principiantes.", etiquetas = listOf("parque", "plana", "urbana")),
         Ruta("2", "Río Zamora", 8.5, Dificultad.Moderado, 120, "Ruta junto al río con algunas subidas moderadas."),
         Ruta("3", "Cerro Villonaco", 12.3, Dificultad.Dificil, 380, "Ruta de montaña desafiante con vistas espectaculares de Loja."),
         Ruta("4", "Campus UTPL - San Cayetano", 6.1, Dificultad.Moderado, 150, "Mi ruta de entrenamiento entre el campus y San Cayetano.", autorId = ID_USUARIO),

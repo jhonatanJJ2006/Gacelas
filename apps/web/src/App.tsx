@@ -56,6 +56,9 @@ const DetalleEvento = lazy(() =>
 const Corredores = lazy(() =>
   import('./features/comunidad/Corredores').then((m) => ({ default: m.Corredores }))
 )
+const DetalleRuta = lazy(() =>
+  import('./features/rutas/DetalleRuta').then((m) => ({ default: m.DetalleRuta }))
+)
 const ListaEnVivo = lazy(() =>
   import('./features/comunidad/EnVivo').then((m) => ({ default: m.ListaEnVivo }))
 )
@@ -155,6 +158,7 @@ export function AppRoutes() {
 
             <Route path="/rutas/buscar" element={<BuscadorRutas />} />
             <Route path="/rutas/navegacion" element={<NavegacionRuta />} />
+            <Route path="/rutas/:id" element={<DetalleRuta />} />
 
             <Route path="/comunidad/eventos/:id" element={<DetalleEvento />} />
             <Route path="/comunidad/corredores" element={<Corredores />} />

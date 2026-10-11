@@ -1,4 +1,4 @@
-import { notificacionesMock } from '../mocks/data'
+import { notificacionesMock, rutasMock } from '../mocks/data'
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { vi } from 'vitest'
@@ -60,6 +60,9 @@ export function prepararApp(
     ajustes: { ...AJUSTES_POR_DEFECTO, ...opciones.ajustes },
     carreras: opciones.carreras ?? [],
     rutasGuardadas: [],
+    rutas: rutasMock,
+    rutasMeGusta: [],
+    rutasSociales: false,
     eventosCreados: [],
     notificaciones: notificacionesMock,
     inscritos: [],

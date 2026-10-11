@@ -13,7 +13,7 @@ export function filtrarRutas(
 ): Ruta[] {
   const base =
     pestana === 'Mis Rutas'
-      ? rutas.filter((r) => r.autorId === usuarioId)
+      ? rutas.filter((r) => r.autorId === usuarioId || r.propia)
       : pestana === 'Guardadas'
         ? rutas.filter((r) => guardadas.includes(r.id))
         : rutas

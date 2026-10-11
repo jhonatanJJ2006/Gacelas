@@ -4,6 +4,8 @@ import {
   type PublicacionRemota,
   type CorredorPublico,
   type Repositorios,
+  type NuevaRuta,
+  type ResenaRuta,
 } from '../data/repositorios'
 import {
   AJUSTES_POR_DEFECTO,
@@ -12,7 +14,13 @@ import {
   type Perfil,
   type ResultadoAuth,
 } from '../data/tipos'
-import { notificacionesMock, type Evento, type Notificacion } from '../mocks/data'
+import {
+  notificacionesMock,
+  rutasMock,
+  type Evento,
+  type Notificacion,
+  type Ruta,
+} from '../mocks/data'
 import { obtenerSupabase } from '../lib/supabase'
 import { calcularRacha, type Racha } from '../lib/rachas'
 import { repositoriosSupabase } from '../data/supabaseRepos'
@@ -61,6 +69,17 @@ export interface EstadoApp {
   guardarCarrera(c: CarreraGuardada): Promise<void>
   eliminarCarrera(id: string): Promise<void>
   alternarRutaGuardada(id: string): Promise<void>
+  /** Rutas de la comunidad (Supabase) o las de ejemplo. */
+  rutas: Ruta[]
+  rutasMeGusta: string[]
+  /** true si hay servidor de rutas (se puede publicar, dar me gusta y reseñar). */
+  rutasSociales: boolean
+  refrescarRutas(): Promise<void>
+  alternarMeGustaRuta(id: string): Promise<void>
+  publicarRuta(r: NuevaRuta): Promise<Ruta>
+  rutasCercanas(lat: number, lng: number): Promise<Record<string, number>>
+  resenasRuta(id: string): Promise<ResenaRuta[]>
+  resenarRuta(id: string, estrellas: number, comentario: string): Promise<void>
   crearEvento(e: Evento): Promise<void>
   alternarInscripcion(id: string): Promise<void>
 }
@@ -77,6 +96,50 @@ export const useApp = create<EstadoApp>((set, get) => ({
   publicaciones: [],
   rachaServidor: null,
   siguiendo: [],
+  rutas: rutasMock,
+  rutasMeGusta: [],
+  rutasSociales: false,
+
+  async refrescarRutas() {
+    if (!repos.explorar) return set({ rutas: rutasMock, rutasSociales: false })
+    const [rutas, rutasMeGusta] = await Promise.all([
+      repos.explorar.listar().catch(() => null),
+      get().sesion ? repos.explorar.meGusta().catch(() => []) : Promise.resolve([]),
+    ])
+    // Sin rutas en el servidor (o sin red) se muestran las de ejemplo.
+    set({ rutas: rutas?.length ? rutas : rutasMock, rutasMeGusta, rutasSociales: rutas !== null })
+  },
+  async alternarMeGustaRuta(id) {
+    if (!repos.explorar) return
+    const activo = !get().rutasMeGusta.includes(id)
+    const ajustar = (d: number) =>
+      set((s) => ({
+        rutasMeGusta: d > 0 ? [...s.rutasMeGusta, id] : s.rutasMeGusta.filter((x) => x !== id),
+        rutas: s.rutas.map((r) =>
+          r.id === id ? { ...r, meGusta: Math.max(0, (r.meGusta ?? 0) + d) } : r
+        ),
+      }))
+    ajustar(activo ? 1 : -1)
+    try {
+      await repos.explorar.alternarMeGusta(id, activo)
+    } catch (e) {
+      ajustar(activo ? -1 : 1)
+      throw e
+    }
+  },
+  async publicarRuta(r) {
+    if (!repos.explorar) throw new Error('Publicar rutas necesita conexión con el servidor')
+    const nueva = await repos.explorar.crear(r)
+    set((s) => ({ rutas: [...s.rutas, { ...nueva, autorNombre: s.sesion?.nombre }] }))
+    return nueva
+  },
+  rutasCercanas: (lat, lng) => repos.explorar?.cercanas(lat, lng) ?? Promise.resolve({}),
+  resenasRuta: (id) => repos.explorar?.resenas(id) ?? Promise.resolve([]),
+  async resenarRuta(id, estrellas, comentario) {
+    if (!repos.explorar) return
+    await repos.explorar.resenar(id, estrellas, comentario)
+    await get().refrescarRutas()
+  },
 
   async cargar() {
     const [sesion, ajustes, carreras, rutasGuardadas, eventosCreados, inscritos] =
@@ -114,6 +177,7 @@ export const useApp = create<EstadoApp>((set, get) => ({
       inscritos,
       notificaciones,
     })
+    void get().refrescarRutas()
     dejarDeEscuchar?.()
     dejarDeEscuchar =
       repos.auth.alCambiarSesion?.((perfil) => {

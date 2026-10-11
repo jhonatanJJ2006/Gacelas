@@ -3,6 +3,9 @@ package com.gacelas.rutas
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -96,7 +99,13 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit) {
     val m = ajustes.unidadesMetricas
     var pestana by rememberSaveable { mutableStateOf(PestanaRutas.Explorar) }
     var consulta by rememberSaveable { mutableStateOf("") }
-    val lista = filtrarRutas(MockData.rutas, pestana, guardadas, MockData.ID_USUARIO, consulta)
+    val repo = c.explorar
+    val remotas by (repo?.rutas ?: remember { kotlinx.coroutines.flow.MutableStateFlow(null) }).collectAsState()
+    LaunchedEffect(repo) { repo?.refrescar() }
+    var filtros by remember { mutableStateOf(com.gacelas.data.rutas.FiltrosRuta()) }
+    var cerca by remember { mutableStateOf<Map<String, Double>?>(null) }
+    val filtradas = com.gacelas.data.rutas.aplicarFiltros(filtrarRutas(remotas ?: MockData.rutas, pestana, guardadas, MockData.ID_USUARIO, consulta), filtros)
+    val lista = cerca?.let { com.gacelas.data.rutas.ordenarPorCercania(filtradas, it) } ?: filtradas
     Pantalla {
         Text("Rutas de Loja", style = GType.headlineLg, color = GColors.TextPrimary)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -105,6 +114,22 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit) {
         CampoTexto("Buscar", consulta, { consulta = it }, "Buscar rutas...", trailing = {
             IconButton(onClick = onBuscar) { Icon(Icons.Filled.Search, "Abrir buscador en el mapa", tint = GColors.TextSecondary) }
         })
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Pastilla("Cerca de mí", cerca != null, {
+                if (cerca != null) cerca = null
+                else {
+                    val u = ultimaUbicacion(context)
+                    if (u == null || repo == null) context.aviso("Activa la ubicación para ver rutas cercanas")
+                    else scope.launch { cerca = repo.cercanas(u.first, u.second) }
+                }
+            })
+            Pastilla("Toda dificultad", filtros.dificultad == null, { filtros = filtros.copy(dificultad = null) })
+            com.gacelas.data.mock.Dificultad.entries.forEach { d -> Pastilla(d.etiqueta, filtros.dificultad == d, { filtros = filtros.copy(dificultad = d) }) }
+        }
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            com.gacelas.data.rutas.FiltroDistancia.entries.forEach { d -> Pastilla(d.etiqueta, filtros.distancia == d, { filtros = filtros.copy(distancia = d) }) }
+            com.gacelas.data.rutas.ETIQUETAS_RUTA.forEach { (k, v) -> Pastilla("#$v", filtros.etiqueta == k, { filtros = filtros.copy(etiqueta = if (filtros.etiqueta == k) null else k) }) }
+        }
         if (lista.isEmpty()) {
             Tarjeta {
                 Text(
@@ -135,6 +160,13 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(ruta.nombre, style = GType.titleMd, color = GColors.TextPrimary)
                     Text(ruta.descripcion, style = GType.bodySm, color = GColors.TextSecondary)
+                    val extra = listOfNotNull(
+                        ruta.valoracion?.let { "★ %.1f (%d)".format(it, ruta.resenas) },
+                        ruta.meGusta.takeIf { it > 0 }?.let { "♥ $it" },
+                        cerca?.get(ruta.id)?.let { "a ${Unidades.texto(it, m, 1)} ${Unidades.etiquetaDistancia(m)}" },
+                        ruta.autorNombre?.let { "por $it" },
+                    )
+                    if (extra.isNotEmpty()) Text(extra.joinToString("  ·  "), style = GType.labelMd, color = GColors.TextSecondary)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Filled.Straighten, null, tint = GColors.TextSecondary, modifier = Modifier.size(16.dp))
                         Text(" ${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}   ", style = GType.bodyMd, color = GColors.TextSecondary)

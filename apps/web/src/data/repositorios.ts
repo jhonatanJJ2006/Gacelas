@@ -1,4 +1,4 @@
-import type { Evento, Notificacion } from '../mocks/data'
+import type { Evento, Notificacion, Ruta } from '../mocks/data'
 import { ValidacionAuth } from '../lib/validacion'
 import type { Racha } from '../lib/rachas'
 import {
@@ -102,6 +102,38 @@ export interface Repositorios {
   notificaciones?: NotificacionesRepository
   comunidad?: ComunidadRepository
   rachas?: RachasRepository
+  /** Rutas de la comunidad (Fase 4); sin este repositorio se usan las de ejemplo. */
+  explorar?: ExplorarRepository
+}
+
+export interface ResenaRuta {
+  id: string
+  usuarioId: string
+  nombre: string
+  estrellas: number
+  comentario: string
+  fecha: string
+}
+
+export interface NuevaRuta {
+  nombre: string
+  descripcion: string
+  dificultad: Ruta['dificultad']
+  etiquetas: string[]
+  puntos: { lat: number; lng: number }[]
+  elevacionM: number
+  actividadId?: string
+}
+
+export interface ExplorarRepository {
+  listar(): Promise<Ruta[]>
+  /** id de ruta -> km desde el punto (rutas a menos de 50 km). */
+  cercanas(lat: number, lng: number): Promise<Record<string, number>>
+  crear(r: NuevaRuta): Promise<Ruta>
+  meGusta(): Promise<string[]>
+  alternarMeGusta(id: string, activo: boolean): Promise<void>
+  resenas(id: string): Promise<ResenaRuta[]>
+  resenar(id: string, estrellas: number, comentario: string): Promise<void>
 }
 
 const PREFIJO = 'gacelas:'
