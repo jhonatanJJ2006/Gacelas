@@ -134,7 +134,7 @@ private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
         ListaRutasScreen(onBuscar = { nav.navigate(Destinos.BUSCADOR_RUTAS) }, onRuta = { nav.navigate(Destinos.detalleRuta(it)) }, onDibujar = { nav.navigate(Destinos.CREAR_RUTA) })
     }
     conBarra(nav, Destinos.COMUNIDAD) { FeedScreen(onEventos = { nav.navigate(Destinos.EVENTOS) }, onEnVivo = { nav.navigate(Destinos.EN_VIVO) }) }
-    conBarra(nav, Destinos.EVENTOS) { EventosScreen(onEvento = { nav.navigate(Destinos.detalleEvento(it)) }) }
+    conBarra(nav, Destinos.EVENTOS) { EventosScreen(onEvento = { nav.navigate(Destinos.detalleEvento(it)) }, onClubes = { nav.navigate(Destinos.CLUBES) }) }
     conBarra(nav, Destinos.PERFIL) {
         PerfilScreen(
             onEditar = { nav.navigate(Destinos.EDITAR_PERFIL) },
@@ -163,7 +163,18 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
         NavegacionRutaScreen(onCronometro = { nav.navigate(Destinos.CRONOMETRO) }, onCerrar = { conCarrera -> if (conCarrera) nav.navigate(Destinos.RESUMEN) else nav.irAPestana(Destinos.RUTAS) })
     }
     composable(Destinos.DETALLE_EVENTO) { entry ->
-        DetalleEventoScreen(id = entry.arguments?.getString("id") ?: "1", onAtras = { nav.popBackStack() })
+        val idEvento = entry.arguments?.getString("id") ?: "1"
+        DetalleEventoScreen(id = idEvento, onAtras = { nav.popBackStack() }, onEnVivo = { nav.navigate(Destinos.eventoEnVivo(idEvento)) })
+    }
+    composable(Destinos.CLUBES) { com.gacelas.comunidad.ClubesScreen(onAtras = { nav.popBackStack() }, onClub = { nav.navigate(Destinos.detalleClub(it)) }) }
+    composable(Destinos.DETALLE_CLUB) { entry ->
+        com.gacelas.comunidad.DetalleClubScreen(
+            id = entry.arguments?.getString("id").orEmpty(), onAtras = { nav.popBackStack() },
+            onEvento = { nav.navigate(Destinos.detalleEvento(it)) }, onCrearEvento = { com.gacelas.data.clubes.EventoDeClub.id = it; nav.navigate(Destinos.EVENTOS) },
+        )
+    }
+    composable(Destinos.EVENTO_EN_VIVO) { entry ->
+        com.gacelas.comunidad.EventoEnVivoScreen(id = entry.arguments?.getString("id").orEmpty(), onAtras = { nav.popBackStack() }, onCorrer = { nav.navigate(Destinos.CORRER) })
     }
     composable(Destinos.CREAR_RUTA) {
         com.gacelas.rutas.DibujarRutaScreen(onAtras = { nav.popBackStack() }, onCreada = { id ->

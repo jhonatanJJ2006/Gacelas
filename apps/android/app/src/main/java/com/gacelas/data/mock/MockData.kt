@@ -49,6 +49,10 @@ data class Evento(
     val distanciaKm: Int,
     val pasado: Boolean = false,
     val creadoPorUsuario: Boolean = false,
+    val inicioMs: Long? = null,
+    val cupo: Int? = null,
+    val tipo: String = "grupal",
+    val clubId: String? = null,
 )
 
 data class Split(val id: Int, val distancia: Double, val ritmo: String, val tiempo: String, val etiqueta: String, val actual: Boolean = false)
@@ -84,10 +88,10 @@ object MockData {
     )
 
     val eventos = listOf(
-        Evento("1", "Carrera Parque Jipiro", "Carrera grupal de 10km por el Parque Jipiro. Todos los niveles bienvenidos.", "Sábado 11 de Octubre", "6:00 AM", "Parque Jipiro, Loja", 15, 10),
-        Evento("2", "Trail Running Podocarpus", "Aventura de trail running en el Parque Nacional Podocarpus.", "Domingo 19 de Octubre", "7:00 AM", "Entrada Cajanuma", 8, 15),
-        Evento("3", "Entrenamiento Intervalos Villonaco", "Series en la base del Cerro Villonaco.", "Miércoles 15 de Octubre", "6:30 AM", "Base Cerro Villonaco", 12, 8),
-        Evento("4", "Fondo dominical Zamora", "Fondo suave de 12 km junto al río Zamora.", "Domingo 28 de Septiembre", "6:30 AM", "Parque Lineal La Tebaida", 21, 12, pasado = true),
+        Evento("1", "Carrera Parque Jipiro", "Carrera grupal de 10km por el Parque Jipiro. Todos los niveles bienvenidos.", "Sábado 11 de Octubre", "6:00 AM", "Parque Jipiro, Loja", 15, 10, inicioMs = 1791716400000),
+        Evento("2", "Trail Running Podocarpus", "Aventura de trail running en el Parque Nacional Podocarpus.", "Domingo 19 de Octubre", "7:00 AM", "Entrada Cajanuma", 8, 15, inicioMs = 1792411200000),
+        Evento("3", "Entrenamiento Intervalos Villonaco", "Series en la base del Cerro Villonaco.", "Miércoles 15 de Octubre", "6:30 AM", "Base Cerro Villonaco", 12, 8, inicioMs = 1792063800000),
+        Evento("4", "Fondo dominical Zamora", "Fondo suave de 12 km junto al río Zamora.", "Domingo 28 de Septiembre", "6:30 AM", "Parque Lineal La Tebaida", 21, 12, pasado = true, inicioMs = 1790595000000),
     )
 
     val splits = listOf(

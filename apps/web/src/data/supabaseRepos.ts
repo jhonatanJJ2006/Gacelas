@@ -516,6 +516,11 @@ export function eventoDesdeFila(f: Fila, uid?: string): Evento {
     distanciaKm: Number(f.distance_km ?? 0),
     pasado: Number.isFinite(inicio) ? inicio < Date.now() : false,
     creadoPorUsuario: uid ? f.created_by === uid : true,
+    inicioMs: Number.isFinite(inicio) ? inicio : undefined,
+    cupo: f.max_participants == null ? null : Number(f.max_participants),
+    tipo: (f.kind as Evento['tipo']) ?? 'grupal',
+    clubId: (f.club_id as string) ?? null,
+    rutaId: (f.route_id as string) ?? null,
   }
 }
 
@@ -569,6 +574,11 @@ export class SupabaseEventosRepository implements EventosRepository {
       distance_km: e.distanciaKm,
       base_participants: e.participantes,
       created_by: user.id,
+      starts_at: e.inicioMs ? new Date(e.inicioMs).toISOString() : null,
+      max_participants: e.cupo ?? null,
+      kind: e.tipo ?? 'grupal',
+      club_id: e.clubId ?? null,
+      route_id: e.rutaId ?? null,
     })
     if (error) throw new Error(traducirError(error.message))
     await this.sb.from('event_rsvps').insert({ event_id: e.id, user_id: user.id })
@@ -799,7 +809,7 @@ export const repositoriosSupabase = (sb: SupabaseClient): Repositorios => ({
   explorar: new SupabaseExplorarRepository(sb),
 })
 
-const TIPOS_NOTIF = ['like', 'comment', 'follow', 'event', 'live', 'streak'] as const
+const TIPOS_NOTIF = ['like', 'comment', 'follow', 'event', 'live', 'streak', 'club'] as const
 
 export function notificacionDesdeFila(f: Fila, ahora = Date.now()): Notificacion {
   const tipo = TIPOS_NOTIF.includes(f.type as (typeof TIPOS_NOTIF)[number])

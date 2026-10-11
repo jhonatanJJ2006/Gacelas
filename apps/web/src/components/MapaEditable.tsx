@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { APIProvider, Map, useMap, type MapMouseEvent } from '@vis.gl/react-google-maps'
 import { MarkerClusterer } from '@googlemaps/markerclusterer'
+import { colorCorredor } from '../lib/eventos'
 import { CENTRO_LOJA, claveMapas, ESTILO_OSCURO, type Coordenada } from '../lib/mapas'
 
 function Linea({ puntos }: { puntos: Coordenada[] }) {
@@ -132,6 +133,82 @@ export function MapaRutas({
           style={{ width: '100%', height: '100%' }}
         >
           <Agrupados rutas={rutas} onAbrir={onAbrir} />
+        </Map>
+      </APIProvider>
+    </div>
+  )
+}
+
+function Corredores({
+  corredores,
+}: {
+  corredores: { id: string; nombre: string; punto: Coordenada | null; trazo: Coordenada[] }[]
+}) {
+  const mapa = useMap()
+  useEffect(() => {
+    if (!mapa) return
+    const objetos: { setMap(m: google.maps.Map | null): void }[] = []
+    const limites = new google.maps.LatLngBounds()
+    corredores.forEach((c, i) => {
+      if (c.trazo.length > 1)
+        objetos.push(
+          new google.maps.Polyline({
+            path: c.trazo,
+            strokeColor: colorCorredor(i),
+            strokeOpacity: 0.7,
+            strokeWeight: 4,
+            map: mapa,
+          })
+        )
+      if (c.punto) {
+        limites.extend(c.punto)
+        objetos.push(
+          new google.maps.Marker({
+            position: c.punto,
+            map: mapa,
+            title: c.nombre,
+            label: { text: String(i + 1), color: '#0b1220', fontWeight: '700' },
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 11,
+              fillColor: colorCorredor(i),
+              fillOpacity: 1,
+              strokeColor: '#fff',
+              strokeWeight: 2,
+            },
+          })
+        )
+      }
+    })
+    if (!limites.isEmpty()) mapa.fitBounds(limites, 60)
+    return () => objetos.forEach((o) => o.setMap(null))
+  }, [mapa, corredores])
+  return null
+}
+
+/** Mapa con varios corredores (en vivo o repeticion de un evento). */
+export function MapaCorredores({
+  corredores,
+  className = '',
+}: {
+  corredores: { id: string; nombre: string; punto: Coordenada | null; trazo: Coordenada[] }[]
+  className?: string
+}) {
+  const clave = claveMapas()
+  if (!clave)
+    return <p className="text-text-secondary p-4">El mapa necesita Google Maps configurado.</p>
+  return (
+    <div className={className} data-testid="mapa-corredores">
+      <APIProvider apiKey={clave} language="es" region="EC">
+        <Map
+          defaultCenter={CENTRO_LOJA}
+          defaultZoom={14}
+          disableDefaultUI
+          gestureHandling="greedy"
+          styles={ESTILO_OSCURO}
+          style={{ width: '100%', height: '100%' }}
+        >
+          <Corredores corredores={corredores} />
         </Map>
       </APIProvider>
     </div>

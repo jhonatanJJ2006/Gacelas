@@ -1,5 +1,8 @@
 package com.gacelas.comunidad
 
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -231,17 +234,21 @@ fun eventosState(): Pair<List<Evento>, Set<String>> {
 }
 
 @Composable
-fun EventosScreen(onEvento: (String) -> Unit) {
+fun EventosScreen(onEvento: (String) -> Unit, onClubes: () -> Unit = {}) {
     val c = contenedor()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val (eventos, inscritos) = eventosState()
     var pestana by rememberSaveable { mutableStateOf(PestanaEventos.Proximos) }
-    var creando by remember { mutableStateOf(false) }
+    val clubId = remember { com.gacelas.data.clubes.EventoDeClub.id.also { com.gacelas.data.clubes.EventoDeClub.id = null } }
+    var creando by remember { mutableStateOf(clubId != null) }
+    var calendario by rememberSaveable { mutableStateOf(false) }
     val lista = filtrarEventos(eventos, pestana, inscritos)
     Pantalla {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Eventos", style = GType.headlineLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+            if (c.clubes != null) IconButton(onClick = onClubes) { Icon(Icons.Filled.Groups, "Clubes", tint = GColors.TextPrimary) }
+            IconButton(onClick = { calendario = !calendario }) { Icon(Icons.Filled.CalendarMonth, if (calendario) "Ver lista" else "Ver calendario", tint = GColors.TextPrimary) }
             IconButton(onClick = { creando = true }, modifier = Modifier.clip(CircleShape).background(GColors.Primary)) {
                 Icon(Icons.Filled.Add, "Crear evento", tint = GColors.TextPrimary)
             }
@@ -249,6 +256,7 @@ fun EventosScreen(onEvento: (String) -> Unit) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             PestanaEventos.entries.forEach { p -> Pastilla(p.etiqueta, p == pestana, { pestana = p }) }
         }
+        if (calendario) com.gacelas.comunidad.CalendarioEventos(eventos, inscritos, onEvento)
         if (lista.isEmpty()) Tarjeta { Text(if (pestana == PestanaEventos.MisEventos) "Aún no te inscribes a ningún evento." else "No hay eventos.", style = GType.bodyMd, color = GColors.TextSecondary) }
         lista.forEach { e ->
             TarjetaEvento(e, e.id in inscritos, onClick = { onEvento(e.id) }) {
@@ -258,7 +266,8 @@ fun EventosScreen(onEvento: (String) -> Unit) {
         }
     }
     if (creando) {
-        DialogoCrearEvento(onCerrar = { creando = false }) { nuevo ->
+        DialogoCrearEvento(onCerrar = { creando = false }) { base ->
+            val nuevo = base.copy(clubId = clubId)
             scope.launch { c.eventos.crear(nuevo) }
             creando = false
             pestana = PestanaEventos.MisEventos
@@ -271,25 +280,35 @@ fun EventosScreen(onEvento: (String) -> Unit) {
 private fun DialogoCrearEvento(onCerrar: () -> Unit, onCrear: (Evento) -> Unit) {
     var titulo by remember { mutableStateOf("") }
     var fecha by remember { mutableStateOf("") }
-    var hora by remember { mutableStateOf("6:00 AM") }
+    var hora by remember { mutableStateOf("06:00") }
+    var cupo by remember { mutableStateOf("") }
+    var tipo by remember { mutableStateOf("grupal") }
     var lugar by remember { mutableStateOf("") }
     var km by remember { mutableStateOf("5") }
-    val valido = titulo.isNotBlank() && fecha.isNotBlank() && lugar.isNotBlank() && km.toIntOrNull() != null
+    val inicio = remember(fecha, hora) { runCatching { java.time.LocalDateTime.parse("${fecha.trim()}T${hora.trim()}").atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() }.getOrNull() }
+    val valido = titulo.isNotBlank() && inicio != null && lugar.isNotBlank() && km.toIntOrNull() != null
     AlertDialog(
         onDismissRequest = onCerrar,
         title = { Text("Nuevo evento") },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 CampoTexto("Título", titulo, { titulo = it }, "Fondo del sábado")
-                CampoTexto("Fecha", fecha, { fecha = it }, "Sábado 18 de Octubre")
-                CampoTexto("Hora", hora, { hora = it })
+                CampoTexto("Fecha (AAAA-MM-DD)", fecha, { fecha = it.take(10) }, "2026-10-18")
+                CampoTexto("Hora (HH:MM)", hora, { hora = it.take(5) })
+                CampoTexto("Cupo (opcional)", cupo, { cupo = it.filter(Char::isDigit).take(4) }, "Sin límite", tipo = KeyboardType.Number)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf("grupal" to "Grupal", "carrera" to "Competencia", "entrenamiento" to "Entreno").forEach { (k, v) -> Pastilla(v, k == tipo, { tipo = k }) }
+                }
                 CampoTexto("Lugar", lugar, { lugar = it }, "Parque Jipiro")
                 CampoTexto("Distancia (km)", km, { km = it.filter(Char::isDigit) }, tipo = KeyboardType.Number)
             }
         },
         confirmButton = {
             TextButton(enabled = valido, onClick = {
-                onCrear(Evento("u-${UUID.randomUUID()}", titulo.trim(), "Evento creado por la comunidad Gacelas.", fecha.trim(), hora.trim(), lugar.trim(), 1, km.toInt(), creadoPorUsuario = true))
+                val etiqueta = java.time.Instant.ofEpochMilli(inicio!!).atZone(java.time.ZoneId.systemDefault())
+                    .format(java.time.format.DateTimeFormatter.ofPattern("EEEE d 'de' MMMM", java.util.Locale("es", "EC"))).replaceFirstChar { it.uppercase() }
+                onCrear(Evento("u-${UUID.randomUUID()}", titulo.trim(), "Evento creado por la comunidad Gacelas.", etiqueta, hora.trim(), lugar.trim(), 1, km.toInt(),
+                    creadoPorUsuario = true, inicioMs = inicio, cupo = cupo.toIntOrNull()?.coerceAtLeast(1), tipo = tipo))
             }) { Text("Crear") }
         },
         dismissButton = { TextButton(onClick = onCerrar) { Text("Cancelar") } },
@@ -333,14 +352,18 @@ private fun TarjetaEvento(e: Evento, inscrito: Boolean, onClick: () -> Unit, onI
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun DetalleEventoScreen(id: String, onAtras: () -> Unit) {
+fun DetalleEventoScreen(id: String, onAtras: () -> Unit, onEnVivo: () -> Unit = {}) {
     val c = contenedor()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val (eventos, inscritos) = eventosState()
-    val e = eventos.firstOrNull { it.id == id } ?: MockData.eventos.first()
+    val remoto by androidx.compose.runtime.produceState<Evento?>(null, id) { value = c.clubes?.evento(id) }
+    val e = eventos.firstOrNull { it.id == id } ?: remoto ?: MockData.eventos.firstOrNull { it.id == id } ?: MockData.eventos.first()
     val inscrito = e.id in inscritos
-    val participantes = e.participantes + if (inscrito && !e.creadoPorUsuario) 1 else 0
+    var estado by remember { mutableStateOf<com.gacelas.data.clubes.EstadoEvento?>(null) }
+    androidx.compose.runtime.LaunchedEffect(id, inscritos) { estado = c.clubes?.estadoEvento(id) }
+    val participantes = estado?.let { e.participantes + it.inscritos } ?: (e.participantes + if (inscrito && !e.creadoPorUsuario) 1 else 0)
+    val enEspera = estado?.miEstado == "waitlist"
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
             Box(Modifier.fillMaxWidth().height(220.dp).background(Brush.verticalGradient(listOf(GColors.Primary700, GColors.BgPrimary)))) {
@@ -379,9 +402,11 @@ fun DetalleEventoScreen(id: String, onAtras: () -> Unit) {
                 }
                 Text("Descripción", style = GType.titleMd, color = GColors.TextPrimary)
                 Text(e.descripcion, style = GType.bodyMd, color = GColors.TextSecondary)
+                androidx.compose.material3.TextButton(onClick = onEnVivo) { Icon(Icons.Filled.Sensors, null, tint = GColors.Danger); Text(if (e.pasado) " Repetición del evento" else " Ver evento en vivo", color = GColors.Danger) }
                 Text("Participantes ($participantes)", style = GType.titleMd, color = GColors.TextPrimary)
+                estado?.let { Text(com.gacelas.data.clubes.textoCupo(it) + if (enEspera) " · estás en la lista de espera (puesto ${it.miPosicion})" else "", style = GType.bodySm, color = GColors.TextSecondary) }
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    repeat(participantes) { AvatarCirculo(36.dp, it) }
+                    repeat(minOf(participantes, 30)) { AvatarCirculo(36.dp, it) }
                 }
                 Tarjeta {
                     Text("Detalles de la ruta", style = GType.titleMd, color = GColors.TextPrimary)
@@ -396,9 +421,13 @@ fun DetalleEventoScreen(id: String, onAtras: () -> Unit) {
             if (e.pasado) {
                 BotonPrimario("Evento finalizado", {}, icono = null, enabled = false)
             } else {
-                BotonPrimario(if (inscrito) "Inscrito (toca para cancelar)" else "Inscribirme al evento", {
-                    scope.launch { c.eventos.alternarInscripcion(e.id) }
-                    context.aviso(if (inscrito) "Inscripción cancelada" else "Inscripción confirmada")
+                val lleno = estado?.let { it.cupo != null && it.inscritos >= it.cupo } == true
+                BotonPrimario(if (inscrito) (if (enEspera) "En lista de espera (toca para salir)" else "Inscrito (toca para cancelar)") else if (lleno) "Unirme a la lista de espera" else "Inscribirme al evento", {
+                    scope.launch {
+                        c.eventos.alternarInscripcion(e.id)
+                        estado = c.clubes?.estadoEvento(e.id)
+                        context.aviso(if (inscrito) "Inscripción cancelada" else if (estado?.miEstado == "waitlist") "Evento lleno: quedaste en la lista de espera" else "Inscripción confirmada")
+                    }
                 }, icono = Icons.Filled.CheckCircle, color = if (inscrito) GColors.Secondary else GColors.Primary)
             }
         }

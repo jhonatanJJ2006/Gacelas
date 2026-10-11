@@ -22,7 +22,7 @@ Ver [plans/completados/fase-4-rutas.md](plans/completados/fase-4-rutas.md).
 
 ---
 
-## Fase 5: Eventos y Clubes
+## Fase 5: Eventos y Clubes (completada)
 
 **Objetivo**: Facilitar carreras grupales y comunidades organizadas.
 
@@ -30,11 +30,11 @@ Ver [plans/completados/fase-4-rutas.md](plans/completados/fase-4-rutas.md).
 
 **Features**:
 
-- [ ] Crear club (nombre, descripción, ubicación)
-- [ ] Unirse a club (público o con aprobación)
-- [ ] Roles: owner, admin, member
-- [ ] Feed del club (posts, actividades de miembros)
-- [ ] Eventos del club
+- [x] Crear club (nombre, descripción, ubicación)
+- [x] Unirse a club (público o con aprobación)
+- [x] Roles: owner, admin, member
+- [x] Feed del club (posts, actividades de miembros)
+- [x] Eventos del club
 
 **Implementación**:
 
@@ -45,12 +45,12 @@ Ver [plans/completados/fase-4-rutas.md](plans/completados/fase-4-rutas.md).
 
 **Features**:
 
-- [ ] Crear evento (carrera grupal, race, entrenamiento)
-- [ ] Definir fecha, hora, punto de encuentro
-- [ ] Ruta planificada (opcional)
-- [ ] Límite de participantes
-- [ ] Inscripción y lista de espera
-- [ ] Calendario de eventos
+- [x] Crear evento (carrera grupal, race, entrenamiento)
+- [x] Definir fecha, hora, punto de encuentro
+- [x] Ruta planificada (opcional)
+- [x] Límite de participantes
+- [x] Inscripción y lista de espera
+- [x] Calendario de eventos
 
 **Implementación**:
 
@@ -61,10 +61,10 @@ Ver [plans/completados/fase-4-rutas.md](plans/completados/fase-4-rutas.md).
 
 **Features**:
 
-- [ ] Vista de mapa con TODOS los participantes en tiempo real
-- [ ] Leaderboard en vivo (quién va primero)
-- [ ] Ver track individual de cada participante
-- [ ] Replay del evento después de terminar
+- [x] Vista de mapa con TODOS los participantes en tiempo real
+- [x] Leaderboard en vivo (quién va primero)
+- [x] Ver track individual de cada participante
+- [x] Replay del evento después de terminar
 
 **Implementación**:
 

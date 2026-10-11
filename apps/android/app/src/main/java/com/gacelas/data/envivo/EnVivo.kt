@@ -72,8 +72,13 @@ class EnVivoRepository(private val backend: Backend, private val uid: suspend ()
         private set
     private var ultimoEnvio = 0L
 
+    /** Evento elegido para correr en vivo (Fase 5): la sesion se asocia a el. */
+    @Volatile var eventoId: String? = null
+
     suspend fun iniciar(): String? = runCatching {
-        val r = backend.rpc("live_iniciar", JsonObject(emptyMap()))
+        val ev = eventoId
+        val r = if (ev != null) backend.rpc("live_iniciar_evento", JsonObject(mapOf("evento" to kotlinx.serialization.json.JsonPrimitive(ev))))
+        else backend.rpc("live_iniciar", JsonObject(emptyMap()))
         r.jsonPrimitive.contentOrNull
     }.getOrNull()?.also { sesionId = it; ultimoEnvio = 0L; visible = null }
 
@@ -96,6 +101,7 @@ class EnVivoRepository(private val backend: Backend, private val uid: suspend ()
     suspend fun terminar() {
         val id = sesionId ?: return
         sesionId = null
+        eventoId = null
         visible = null
         runCatching { backend.rpc("live_terminar", JsonObject(mapOf("sesion" to JsonPrimitive(id)))) }
     }

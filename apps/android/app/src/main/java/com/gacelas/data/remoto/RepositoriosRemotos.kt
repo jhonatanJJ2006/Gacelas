@@ -378,6 +378,10 @@ fun eventoDesdeFila(f: JsonObject): Evento {
         distanciaKm = f.numero("distance_km")?.toInt() ?: 0,
         pasado = inicio?.let { it < System.currentTimeMillis() } ?: false,
         creadoPorUsuario = true,
+        inicioMs = inicio,
+        cupo = f.entero("max_participants"),
+        tipo = f.texto("kind") ?: "grupal",
+        clubId = f.texto("club_id"),
     )
 }
 
@@ -416,6 +420,10 @@ class SupabaseEventosRepository(
                 put("distance_km", evento.distanciaKm)
                 put("base_participants", evento.participantes)
                 put("created_by", uid)
+                evento.inicioMs?.let { put("starts_at", java.time.Instant.ofEpochMilli(it).toString()) }
+                evento.cupo?.let { put("max_participants", it) }
+                put("kind", evento.tipo)
+                evento.clubId?.let { put("club_id", it) }
             }))
             backend.insert("event_rsvps", listOf(buildJsonObject { put("event_id", evento.id); put("user_id", uid) }))
         }
