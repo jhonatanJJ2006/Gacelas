@@ -1,3 +1,4 @@
+import { ETIQUETAS_RUTA, trazoParaRuta } from '../../lib/rutas'
 import { useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { MapaGoogle } from '../../components/MapaGoogle'
@@ -24,6 +25,14 @@ export function ResumenPostCarrera() {
   const [nota, setNota] = useState('')
   const [publica, setPublica] = useState(ajustes.visibilidad !== 'privado')
   const [guardando, setGuardando] = useState(false)
+  const sesion = useApp((s) => s.sesion)
+  const rutasSociales = useApp((s) => s.rutasSociales)
+  const publicarRuta = useApp((s) => s.publicarRuta)
+  const [comoRuta, setComoRuta] = useState(false)
+  const [dificultad, setDificultad] = useState<'Fácil' | 'Moderado' | 'Difícil'>('Moderado')
+  const [etiquetas, setEtiquetas] = useState<string[]>([])
+  const [errorRuta, setErrorRuta] = useState<string | null>(null)
+  const puedeSerRuta = rutasSociales && !!sesion && e.puntos.length >= 2 && e.distanciaKm >= 0.3
   const saliendo = useRef(false)
 
   // Tras guardar se va a Perfil; no se redirige a Inicio al reiniciar la carrera.
@@ -32,7 +41,25 @@ export function ResumenPostCarrera() {
 
   const guardar = async () => {
     setGuardando(true)
-    await guardarCarrera(tracker.aCarreraGuardada(titulo, nota, publica))
+    const carrera = tracker.aCarreraGuardada(titulo, nota, publica)
+    await guardarCarrera(carrera)
+    if (comoRuta && puedeSerRuta) {
+      try {
+        await publicarRuta({
+          nombre: (titulo.trim() || tituloPorHora(e.inicioMs)).slice(0, 80),
+          descripcion: nota.trim(),
+          dificultad,
+          etiquetas,
+          puntos: trazoParaRuta(e.puntos),
+          elevacionM: e.desnivelM,
+          actividadId: carrera.id,
+        })
+      } catch (err) {
+        setErrorRuta(err instanceof Error ? err.message : 'No se pudo publicar la ruta')
+        setGuardando(false)
+        return
+      }
+    }
     saliendo.current = true
     navigate('/perfil', { replace: true })
     tracker.reiniciar()
@@ -160,6 +187,74 @@ export function ResumenPostCarrera() {
               className="w-5 h-5 accent-primary-600"
             />
           </label>
+          {puedeSerRuta && (
+            <div className="bg-surface-container border border-border-subtle rounded-xl">
+              <label className="flex items-center justify-between px-4 py-3 cursor-pointer">
+                <span className="font-body-md text-body-md text-text-primary">
+                  Publicar también como ruta
+                </span>
+                <input
+                  type="checkbox"
+                  checked={comoRuta}
+                  data-testid="publicar-ruta"
+                  onChange={(ev) => setComoRuta(ev.target.checked)}
+                  className="w-5 h-5 accent-primary-600"
+                />
+              </label>
+              {comoRuta && (
+                <div className="px-4 pb-4 space-y-3">
+                  <p className="text-xs text-text-secondary">
+                    Se publica el trazo completo (simplificado). Si sales de casa, mejor no la
+                    publiques.
+                  </p>
+                  <div role="radiogroup" aria-label="Dificultad de la ruta" className="flex gap-2">
+                    {(['Fácil', 'Moderado', 'Difícil'] as const).map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        role="radio"
+                        aria-checked={dificultad === d}
+                        onClick={() => setDificultad(d)}
+                        className={`flex-1 min-h-[40px] rounded-full text-sm font-semibold ${
+                          dificultad === d
+                            ? 'bg-primary-600 text-bg-primary'
+                            : 'bg-surface text-text-secondary'
+                        }`}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2" role="group" aria-label="Etiquetas">
+                    {Object.entries(ETIQUETAS_RUTA).map(([k, v]) => (
+                      <button
+                        key={k}
+                        type="button"
+                        aria-pressed={etiquetas.includes(k)}
+                        onClick={() =>
+                          setEtiquetas((x) =>
+                            x.includes(k) ? x.filter((y) => y !== k) : [...x, k]
+                          )
+                        }
+                        className={`min-h-[36px] px-3 rounded-full text-sm ${
+                          etiquetas.includes(k)
+                            ? 'bg-secondary-600 text-bg-primary'
+                            : 'bg-surface text-text-secondary'
+                        }`}
+                      >
+                        #{v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {errorRuta && (
+            <p role="alert" className="text-sm text-red-300">
+              {errorRuta}
+            </p>
+          )}
         </div>
 
         <div className="mt-8 space-y-3">

@@ -131,7 +131,7 @@ private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
         InicioScreen(onCorrer = { nav.navigate(Destinos.CORRER) }, onEventos = { nav.navigate(Destinos.EVENTOS) }, onEvento = { nav.navigate(Destinos.detalleEvento(it)) })
     }
     conBarra(nav, Destinos.RUTAS) {
-        ListaRutasScreen(onBuscar = { nav.navigate(Destinos.BUSCADOR_RUTAS) }, onRuta = { nav.navigate(Destinos.BUSCADOR_RUTAS) })
+        ListaRutasScreen(onBuscar = { nav.navigate(Destinos.BUSCADOR_RUTAS) }, onRuta = { nav.navigate(Destinos.detalleRuta(it)) })
     }
     conBarra(nav, Destinos.COMUNIDAD) { FeedScreen(onEventos = { nav.navigate(Destinos.EVENTOS) }, onEnVivo = { nav.navigate(Destinos.EN_VIVO) }) }
     conBarra(nav, Destinos.EVENTOS) { EventosScreen(onEvento = { nav.navigate(Destinos.detalleEvento(it)) }) }
@@ -164,6 +164,9 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
     }
     composable(Destinos.DETALLE_EVENTO) { entry ->
         DetalleEventoScreen(id = entry.arguments?.getString("id") ?: "1", onAtras = { nav.popBackStack() })
+    }
+    composable(Destinos.DETALLE_RUTA) { entry ->
+        com.gacelas.rutas.DetalleRutaScreen(id = entry.arguments?.getString("id") ?: "", onAtras = { nav.popBackStack() }, onCorrer = { nav.navigate(Destinos.BUSCADOR_RUTAS) })
     }
     composable(Destinos.EN_VIVO) { com.gacelas.envivo.ListaEnVivoScreen(onAtras = { nav.popBackStack() }, onSesion = { nav.navigate(Destinos.detalleEnVivo(it)) }) }
     composable(Destinos.DETALLE_EN_VIVO) { entry ->

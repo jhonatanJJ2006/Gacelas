@@ -26,7 +26,7 @@ enum class PestanaRutas(val etiqueta: String) { Explorar("Explorar"), MisRutas("
 fun filtrarRutas(rutas: List<Ruta>, pestana: PestanaRutas, guardadas: Set<String>, usuarioId: String, consulta: String = ""): List<Ruta> {
     val base = when (pestana) {
         PestanaRutas.Explorar -> rutas
-        PestanaRutas.MisRutas -> rutas.filter { it.autorId == usuarioId }
+        PestanaRutas.MisRutas -> rutas.filter { it.autorId == usuarioId || it.propia }
         PestanaRutas.Guardadas -> rutas.filter { it.id in guardadas }
     }
     val q = consulta.trim().lowercase()

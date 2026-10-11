@@ -31,6 +31,17 @@ export interface Ruta {
   elevacionM: number
   descripcion: string
   autorId: string
+  /** Etiquetas (ver ETIQUETAS_RUTA). */
+  etiquetas?: string[]
+  /** Trazo de la ruta. */
+  puntos?: { lat: number; lng: number }[]
+  meGusta?: number
+  /** Promedio de estrellas (1-5) o null sin reseñas. */
+  valoracion?: number | null
+  resenas?: number
+  autorNombre?: string
+  /** La creo la cuenta actual. */
+  propia?: boolean
 }
 
 export interface Evento {
@@ -112,6 +123,7 @@ export const rutasMock: Ruta[] = [
     elevacionM: 45,
     descripcion: 'Ruta panorámica alrededor del Parque Jipiro, ideal para principiantes.',
     autorId: 'gacelas',
+    etiquetas: ['parque', 'plana', 'urbana'],
   },
   {
     id: '2',

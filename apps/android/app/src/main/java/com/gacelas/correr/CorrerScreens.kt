@@ -692,6 +692,20 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
             Text("Hacer pública", style = GType.bodyLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
             Interruptor(publica) { publica = it }
         }
+        val explorar = c.explorar
+        val perfilActual by com.gacelas.ui.sesionState()
+        var comoRuta by rememberSaveable { mutableStateOf(false) }
+        var dificultadRuta by rememberSaveable { mutableStateOf(com.gacelas.data.mock.Dificultad.Moderado) }
+        val puedeSerRuta = explorar != null && perfilActual != null && estado.puntos.size >= 2 && estado.distanciaKm >= 0.3
+        if (puedeSerRuta) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("Publicar también como ruta", style = GType.bodyLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+                Interruptor(comoRuta) { comoRuta = it }
+            }
+            if (comoRuta) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                com.gacelas.data.mock.Dificultad.entries.forEach { d -> com.gacelas.ui.components.Pastilla(d.etiqueta, d == dificultadRuta, { dificultadRuta = d }) }
+            }
+        }
         BotonPrimario(if (guardando) "Guardando..." else "Guardar carrera", {
             if (estado.segundos == 0) {
                 context.aviso("No hay una carrera para guardar")
@@ -699,7 +713,16 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
             } else {
                 guardando = true
                 scope.launch {
-                    c.carreras.guardar(tracker.aCarreraGuardada(titulo, nota, publica))
+                    val carrera = tracker.aCarreraGuardada(titulo, nota, publica)
+                    c.carreras.guardar(carrera)
+                    if (comoRuta && puedeSerRuta) {
+                        runCatching {
+                            explorar!!.crear(
+                                titulo.ifBlank { carrera.titulo }, nota, dificultadRuta, emptyList(),
+                                estado.puntos.map { it.lat to it.lng }, estado.desnivelM.toInt(), carrera.id,
+                            )
+                        }.onSuccess { context.aviso("Ruta publicada") }.onFailure { context.aviso("No se pudo publicar la ruta: ${it.message}") }
+                    }
                     tracker.reiniciar()
                     context.aviso("Carrera guardada")
                     onGuardar()

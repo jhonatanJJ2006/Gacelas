@@ -1,5 +1,5 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js'
-import type { Evento, Notificacion } from '../mocks/data'
+import type { Evento, Notificacion, Ruta } from '../mocks/data'
 import { tiempoRelativo } from '../lib/logica'
 import type { Racha } from '../lib/rachas'
 import { ValidacionAuth } from '../lib/validacion'
@@ -22,6 +22,8 @@ import {
   type RachasRepository,
   type Repositorios,
   type RutasRepository,
+  type ExplorarRepository,
+  type NuevaRuta,
 } from './repositorios'
 import {
   AJUSTES_POR_DEFECTO,
@@ -583,6 +585,147 @@ export class SupabaseEventosRepository implements EventosRepository {
   }
 }
 
+const DIFICULTADES = ['Fácil', 'Moderado', 'Difícil'] as const
+
+export function rutaDesdeFila(f: Fila): Ruta {
+  return {
+    id: String(f.id),
+    nombre: String(f.name ?? ''),
+    distanciaKm: Number(f.distance_km ?? 0),
+    dificultad: DIFICULTADES.includes(f.difficulty as Ruta['dificultad'])
+      ? (f.difficulty as Ruta['dificultad'])
+      : 'Moderado',
+    elevacionM: Number(f.elevation_m ?? 0),
+    descripcion: String(f.description ?? ''),
+    autorId: f.author_id ? String(f.author_id) : 'gacelas',
+    etiquetas: Array.isArray(f.tags) ? (f.tags as string[]) : [],
+    puntos: Array.isArray(f.path) ? (f.path as { lat: number; lng: number }[]) : [],
+    meGusta: Number(f.likes_count ?? 0),
+    valoracion: f.rating_avg == null ? null : Number(f.rating_avg),
+    resenas: Number(f.rating_count ?? 0),
+  }
+}
+
+export class SupabaseExplorarRepository implements ExplorarRepository {
+  private sb: SupabaseClient
+  constructor(sb: SupabaseClient) {
+    this.sb = sb
+  }
+
+  async listar() {
+    const { data, error } = await this.sb
+      .from('routes')
+      .select('*')
+      .order('created_at', { ascending: true })
+      .limit(200)
+    if (error) throw new Error(error.message)
+    const user = await usuario(this.sb)
+    const rutas = ((data ?? []) as Fila[]).map(rutaDesdeFila)
+    rutas.forEach((r) => (r.propia = !!user && r.autorId === user.id))
+    const autores = [...new Set(rutas.map((r) => r.autorId).filter((a) => a !== 'gacelas'))]
+    if (autores.length) {
+      const { data: p } = await this.sb
+        .from('profiles')
+        .select('id,full_name,username')
+        .in('id', autores)
+      const n = new Map(
+        ((p ?? []) as Fila[]).map((x) => [String(x.id), String(x.full_name || x.username || '')])
+      )
+      rutas.forEach((r) => (r.autorNombre = n.get(r.autorId)))
+    }
+    return rutas
+  }
+
+  async cercanas(lat: number, lng: number) {
+    const { data, error } = await this.sb.rpc('rutas_cercanas', { lat, lng, radio_km: 50 })
+    if (error) return {}
+    return Object.fromEntries(
+      ((data ?? []) as Fila[]).map((f) => [String(f.id), Number(f.distancia_km)])
+    )
+  }
+
+  async crear(r: NuevaRuta) {
+    const user = await usuario(this.sb)
+    if (!user) throw new Error('Inicia sesión para publicar rutas')
+    const { data, error } = await this.sb
+      .from('routes')
+      .insert({
+        name: r.nombre,
+        description: r.descripcion,
+        difficulty: r.dificultad,
+        tags: r.etiquetas,
+        path: r.puntos,
+        elevation_m: Math.round(r.elevacionM),
+        distance_km: 0,
+        author_id: user.id,
+        is_public: true,
+        source_activity_id: r.actividadId ?? null,
+      })
+      .select('*')
+      .single()
+    if (error) throw new Error(error.message)
+    return { ...rutaDesdeFila(data as Fila), propia: true }
+  }
+
+  async meGusta() {
+    const user = await usuario(this.sb)
+    if (!user) return []
+    const { data } = await this.sb.from('route_likes').select('route_id').eq('user_id', user.id)
+    return ((data ?? []) as Fila[]).map((f) => String(f.route_id))
+  }
+
+  async alternarMeGusta(id: string, activo: boolean) {
+    const user = await usuario(this.sb)
+    if (!user) throw new Error('Inicia sesión para dar me gusta')
+    const { error } = activo
+      ? await this.sb.from('route_likes').insert({ user_id: user.id, route_id: id })
+      : await this.sb.from('route_likes').delete().eq('user_id', user.id).eq('route_id', id)
+    if (error) throw new Error(error.message)
+  }
+
+  async resenas(id: string) {
+    const { data } = await this.sb
+      .from('route_reviews')
+      .select('*')
+      .eq('route_id', id)
+      .order('created_at', { ascending: false })
+    const filas = (data ?? []) as Fila[]
+    const ids = [...new Set(filas.map((f) => String(f.user_id)))]
+    const { data: p } = ids.length
+      ? await this.sb.from('profiles').select('id,full_name,username').in('id', ids)
+      : { data: [] }
+    const n = new Map(
+      ((p ?? []) as Fila[]).map((x) => [
+        String(x.id),
+        String(x.full_name || x.username || 'Corredor'),
+      ])
+    )
+    return filas.map((f) => ({
+      id: String(f.id),
+      usuarioId: String(f.user_id),
+      nombre: n.get(String(f.user_id)) ?? 'Corredor',
+      estrellas: Number(f.rating),
+      comentario: String(f.comment ?? ''),
+      fecha: String(f.created_at ?? ''),
+    }))
+  }
+
+  async resenar(id: string, estrellas: number, comentario: string) {
+    const user = await usuario(this.sb)
+    if (!user) throw new Error('Inicia sesión para reseñar')
+    const { error } = await this.sb.from('route_reviews').upsert(
+      {
+        route_id: id,
+        user_id: user.id,
+        rating: estrellas,
+        comment: comentario.trim().slice(0, 500),
+      },
+      { onConflict: 'route_id,user_id' }
+    )
+    if (error) throw new Error(error.message)
+  }
+}
+
 export const repositoriosSupabase = (sb: SupabaseClient): Repositorios => ({
   auth: new SupabaseAuthRepository(sb),
   carreras: new SupabaseCarrerasRepository(sb),
@@ -592,6 +735,7 @@ export const repositoriosSupabase = (sb: SupabaseClient): Repositorios => ({
   notificaciones: new SupabaseNotificacionesRepository(sb),
   comunidad: new SupabaseComunidadRepository(sb),
   rachas: new SupabaseRachasRepository(sb),
+  explorar: new SupabaseExplorarRepository(sb),
 })
 
 const TIPOS_NOTIF = ['like', 'comment', 'follow', 'event', 'live', 'streak'] as const

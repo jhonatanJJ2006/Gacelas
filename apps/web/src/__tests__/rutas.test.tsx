@@ -42,6 +42,8 @@ describe('rutas', () => {
     const gps = instalarGpsFalso()
     renderRuta('/rutas')
     await userEvent.click(await screen.findByRole('link', { name: 'Abrir Cerro Villonaco' }))
+    await screen.findByTestId('correr-ruta', {}, { timeout: 4000 })
+    await userEvent.click(screen.getByTestId('correr-ruta'))
     const opcion = await screen.findByRole('button', { name: /Cerro Villonaco/ })
     expect(opcion).toHaveAttribute('aria-pressed', 'true')
     await userEvent.type(screen.getByPlaceholderText('¿A dónde quieres correr?'), 'zzzz')
