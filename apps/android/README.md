@@ -2,7 +2,7 @@
 
 Aplicación nativa de Gacelas para Android, hecha con Kotlin, Jetpack Compose y Material 3. Tiene las mismas 23 pantallas que la app web (`apps/web`) y sigue el diseño exportado de Stitch y `docs/DESIGN.md`.
 
-Por ahora la app funciona con datos de prueba (`data/mock`). La conexión con Supabase y Google Maps está pendiente.
+Por ahora la app funciona con datos de prueba (`data/mock`). El mapa usa MapLibre con teselas de OpenStreetMap y funciona sin red en las zonas descargadas.
 
 ## Requisitos
 
@@ -22,12 +22,11 @@ Edita `local.properties` y agrega `sdk.dir` si no usas Android Studio:
 
 ```properties
 sdk.dir=/ruta/a/android-sdk
-GOOGLE_MAPS_API_KEY=tu-api-key
 SUPABASE_URL=https://tu-proyecto.supabase.co
 SUPABASE_ANON_KEY=tu-anon-key
 ```
 
-Las claves se exponen como `BuildConfig.GOOGLE_MAPS_API_KEY`, `BuildConfig.SUPABASE_URL` y `BuildConfig.SUPABASE_ANON_KEY`, y la de Maps también como meta-data en el manifiesto. `local.properties` no se sube al repositorio.
+Las claves se exponen como `BuildConfig.SUPABASE_URL` y `BuildConfig.SUPABASE_ANON_KEY`. El mapa no necesita clave. `local.properties` no se sube al repositorio.
 
 ## Comandos
 
@@ -124,7 +123,11 @@ Las rutas son las mismas de la web (`apps/web/src/App.tsx`).
 
 ## Mapas
 
-Las pantallas de Rutas usan `MapaPlaceholder`, un mapa estático dibujado con Canvas que copia la maqueta SVG de la web. Queda pendiente reemplazarlo por Maps Compose con `GOOGLE_MAPS_API_KEY` y el estilo oscuro de `docs/DESIGN.md` (ver los TODO en el código).
+Los mapas usan MapLibre (`ui/components/MapaLibre.kt` y `MapaGacelas.kt`) con teselas vectoriales de OpenStreetMap servidas por OpenFreeMap, sin clave. Los estilos Gacelas oscuro y claro están en `app/src/main/assets/mapas/`.
+
+- Sin conexión: en Ajustes, Mapa, "Descargar" baja la zona de Loja (zoom 10 a 14, unos pocos MB) con `OfflineManager`. MapLibre usa esas teselas sin red y las amplía para los zooms de navegación.
+- Vista 3D: la cámara se inclina 60 grados con el rumbo hacia arriba. El zoom depende de la velocidad (`ZoomNavegacion`): 19,5 hasta 8 km/h y baja a 18,3 a partir de 12 km/h, para que a 5-8 km/h el suelo avance al menos 12 dp por segundo.
+- En las pruebas JVM (Robolectric) no hay código nativo, así que se muestra `MapaPlaceholder`, el mapa dibujado con Canvas.
 
 ## Pruebas
 
@@ -140,5 +143,4 @@ El workflow de Android está en `apps/android/ci/android.yml`. Hay que moverlo a
 ## Pendiente
 
 - Conectar Supabase: basta con nuevas implementaciones de `AuthRepository`, `CarrerasRepository`, `RutasRepository`, `EventosRepository` y `AjustesRepository` en `Contenedor` (`GacelasApp.kt`).
-- Google Maps real en Rutas, Buscador y Navegación (el trazado GPS se dibuja hoy con Canvas).
 - Probar el 3D en dispositivos reales y ajustar la cámara de cada pantalla.

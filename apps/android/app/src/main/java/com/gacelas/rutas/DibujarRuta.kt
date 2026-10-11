@@ -38,47 +38,27 @@ import com.gacelas.ui.components.CampoTexto
 import com.gacelas.ui.components.EncabezadoAtras
 import com.gacelas.ui.components.Mapas
 import com.gacelas.ui.components.Pastilla
+import com.gacelas.ui.components.CirculoMapa
+import com.gacelas.ui.components.MapaLibre
+import com.gacelas.ui.components.TrazoMapa
 import com.gacelas.ui.aviso
 import com.gacelas.ui.contenedor
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.maps.android.clustering.ClusterItem
-import com.google.maps.android.compose.Circle
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Polyline
-import com.google.maps.android.compose.clustering.Clustering
-import com.google.maps.android.compose.rememberCameraPositionState
+import org.maplibre.android.geometry.LatLng
 import kotlinx.coroutines.launch
 
-private class ItemRuta(val ruta: Ruta) : ClusterItem {
-    override fun getPosition() = LatLng(ruta.puntos.first().first, ruta.puntos.first().second)
-    override fun getTitle() = ruta.nombre
-    override fun getSnippet() = "%.1f km".format(ruta.distanciaKm)
-    override fun getZIndex() = 0f
-}
-
-/** Salidas de las rutas en el mapa, agrupadas en clusters (maps-compose-utils). */
+/** Salidas de las rutas en el mapa; al tocar una se abre su detalle. */
 @Composable
 fun MapaRutasAgrupadas(rutas: List<Ruta>, onRuta: (String) -> Unit, modifier: Modifier = Modifier) {
     if (!Mapas.configurado()) {
-        Text("El mapa necesita Google Maps configurado.", style = GType.bodyMd, color = GColors.TextSecondary)
+        Text("El mapa no está disponible en este dispositivo.", style = GType.bodyMd, color = GColors.TextSecondary)
         return
     }
-    val items = remember(rutas) { rutas.filter { it.puntos.isNotEmpty() }.map(::ItemRuta) }
-    val camara = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(Mapas.CENTRO_LOJA, 12f) }
-    GoogleMap(
-        modifier = modifier,
-        cameraPositionState = camara,
-        properties = MapProperties(mapStyleOptions = MapStyleOptions(Mapas.ESTILO_OSCURO)),
-        uiSettings = MapUiSettings(zoomControlsEnabled = false, mapToolbarEnabled = false),
-    ) {
-        Clustering(items = items, onClusterItemClick = { onRuta(it.ruta.id); true })
+    val salidas = remember(rutas) {
+        rutas.filter { it.puntos.isNotEmpty() }.map { CirculoMapa(LatLng(it.puntos.first().first, it.puntos.first().second), 9f, Color(0xFFFF6A13), bordeDp = 2.5f, id = it.id) }
     }
+    MapaLibre(modifier, circulos = salidas, zoom = 12.0, alTocarCirculo = onRuta)
 }
 
 /** Crear una ruta tocando el mapa punto a punto. */
@@ -100,18 +80,14 @@ fun DibujarRutaScreen(onAtras: () -> Unit, onCreada: (String) -> Unit) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(Modifier.fillMaxWidth().height(340.dp).clip(RoundedCornerShape(16.dp)).background(GColors.SurfaceContainer)) {
                 if (Mapas.configurado()) {
-                    val camara = rememberCameraPositionState { position = CameraPosition.fromLatLngZoom(Mapas.CENTRO_LOJA, 15f) }
-                    GoogleMap(
-                        modifier = Modifier.fillMaxSize(),
-                        cameraPositionState = camara,
-                        properties = MapProperties(mapStyleOptions = MapStyleOptions(Mapas.ESTILO_OSCURO)),
-                        uiSettings = MapUiSettings(zoomControlsEnabled = false, mapToolbarEnabled = false),
-                        onMapClick = { puntos = puntos + it },
-                    ) {
-                        if (puntos.size >= 2) Polyline(points = puntos, color = Color(0xFFF59E0B), width = 12f)
-                        puntos.forEachIndexed { i, p -> Circle(center = p, radius = if (i == 0) 8.0 else 5.0, fillColor = if (i == 0) Color(0xFF10B981) else Color(0xFFF59E0B), strokeColor = Color.White, strokeWidth = 3f) }
-                    }
-                } else Text("Dibujar rutas necesita Google Maps configurado.", color = GColors.TextSecondary, modifier = Modifier.align(Alignment.Center))
+                    MapaLibre(
+                        Modifier.fillMaxSize(),
+                        trazos = if (puntos.size >= 2) listOf(TrazoMapa(puntos, Color(0xFFF59E0B), 4.5f)) else emptyList(),
+                        circulos = puntos.mapIndexed { i, p -> CirculoMapa(p, if (i == 0) 7f else 4.5f, if (i == 0) Color(0xFF10B981) else Color(0xFFF59E0B), bordeDp = 1.5f) },
+                        zoom = 15.0,
+                        alTocar = { puntos = puntos + it },
+                    )
+                } else Text("El mapa no está disponible en este dispositivo.", color = GColors.TextSecondary, modifier = Modifier.align(Alignment.Center))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("%.2f km · %d puntos".format(km, puntos.size), style = GType.bodyMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))

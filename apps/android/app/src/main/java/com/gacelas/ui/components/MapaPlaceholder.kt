@@ -13,7 +13,7 @@ import com.gacelas.ui.theme.GColors
 
 /**
  * Mapa estatico dibujado con Canvas (misma maqueta SVG que la web). Se usa cuando no hay
- * GOOGLE_MAPS_API_KEY (ver [MapaGoogle]).
+ * el mapa nativo (pruebas JVM o vista previa, ver [MapaGacelas]).
  */
 @Composable
 fun MapaPlaceholder(modifier: Modifier = Modifier, rutaPrincipal: Boolean? = true) {

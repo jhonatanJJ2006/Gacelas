@@ -78,7 +78,7 @@ import com.gacelas.data.mock.MockData
 import com.gacelas.ui.components.BotonPrimario
 import com.gacelas.ui.components.CampoTexto
 import com.gacelas.ui.components.IconoCirculo
-import com.gacelas.ui.components.MapaGoogle
+import com.gacelas.ui.components.MapaGacelas
 import com.gacelas.ui.components.MapaMat
 import com.gacelas.ui.components.MapaPlaceholder
 import com.gacelas.ui.components.Mapas
@@ -209,7 +209,7 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
     var seleccion by rememberSaveable { mutableStateOf("primary") }
     val sugeridas = MockData.rutasSugeridas.filter { consulta.isBlank() || it.nombre.contains(consulta.trim(), ignoreCase = true) }
     Box(Modifier.fillMaxSize().background(Color(0xFF090F1A))) {
-        MapaGoogle(Mapas.trazo(seleccion), Modifier.fillMaxSize(), zoom = 14f) { MapaPlaceholder(rutaPrincipal = seleccion == "primary") }
+        MapaGacelas(Mapas.trazo(seleccion), Modifier.fillMaxSize(), zoom = 14f) { MapaPlaceholder(rutaPrincipal = seleccion == "primary") }
         IconButton(onClick = onAtras, modifier = Modifier.statusBarsPadding().padding(12.dp).clip(CircleShape).background(GColors.BgSecondary)) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Atrás", tint = GColors.TextPrimary)
         }
@@ -270,7 +270,7 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: (conCarrera: Boolea
         val clip = MapaMat.clipPorRitmo(estado.ritmoActualSegKm)
         if (Mapas.configurado()) {
             // Estilo navegacion: mapa inclinado con el rumbo arriba, ruta brillante por delante y el corredor 3D en el mapa.
-            MapaGoogle(estado.puntos.aLatLng(), Modifier.fillMaxSize(), seguir = true, zoom = 17f, modo3d = vista3d, ritmoSegKm = estado.ritmoActualSegKm, plan = Mapas.trazo("primary"), adelanteM = 120.0) { }
+            MapaGacelas(estado.puntos.aLatLng(), Modifier.fillMaxSize(), seguir = true, zoom = 17f, modo3d = vista3d, ritmoSegKm = estado.ritmoActualSegKm, plan = Mapas.trazo("primary"), adelanteM = 120.0) { }
         } else {
             MapaPlaceholder(rutaPrincipal = true)
             Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, GColors.BgPrimary.copy(alpha = 0.6f)))))
