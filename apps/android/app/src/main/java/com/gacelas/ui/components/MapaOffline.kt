@@ -71,7 +71,13 @@ object MapaOffline {
     /** Lee si la zona ya esta descargada (y cuanto pesa). */
     fun consultar(context: Context, r: RegionMapa = LOJA) {
         regiones(context) { lista ->
-            val propias = lista.filter { it.clave().startsWith("${r.id}|") }
+            // Regiones de v0.6.0-0.6.2 con estilo asset:// nunca terminan: se borran.
+            lista.filter { it.clave().startsWith("${r.id}|") && it.clave() != String(metadatos(r, ESTILO_DESCARGA)) }
+                .forEach { vieja -> vieja.setDownloadState(OfflineRegion.STATE_INACTIVE); vieja.delete(object : OfflineRegion.OfflineRegionDeleteCallback {
+                    override fun onDelete() = Unit
+                    override fun onError(error: String) = Unit
+                }) }
+            val propias = lista.filter { it.clave() == String(metadatos(r, ESTILO_DESCARGA)) }
             if (propias.isEmpty()) { _estado.value = EstadoDescarga.SinDescargar; return@regiones }
             var bytes = 0L; var completas = 0
             propias.forEach { reg ->
