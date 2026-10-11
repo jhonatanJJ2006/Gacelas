@@ -43,9 +43,9 @@ export function Inicio() {
               <span className="material-symbols-outlined text-[16px]">location_on</span>
               Loja, Ecuador
             </span>
-            <h2 className="font-headline-md text-headline-md text-text-primary tracking-tight">
+            <h1 className="font-headline-md text-headline-md text-text-primary tracking-tight">
               {saludo(new Date(ahora).getHours())}, {nombre}
-            </h2>
+            </h1>
           </div>
           <div className="bg-surface-container px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm text-text-secondary">
             <span className="material-symbols-outlined text-[18px] text-primary-400">
@@ -78,13 +78,18 @@ export function Inicio() {
               </div>
             }
           >
-            <Runner3D animation="Idle" autoRotate cameraPosition={[0, 1.5, 4]} />
+            <Runner3D
+              animation="Idle"
+              autoRotate
+              cameraPosition={[0, 1.1, 5.3]}
+              target={[0, 0.8, 0]}
+            />
           </Suspense>
         </div>
 
         <div className="absolute bottom-4 inset-x-4 z-20 grid grid-cols-3 gap-2">
           <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
-            <span className="font-metric-huge text-metric-huge text-primary leading-none">
+            <span className="font-metric-huge text-metric-huge max-[380px]:text-[28px] whitespace-nowrap text-primary leading-none">
               {semana.diasCorridos.size}
             </span>
             <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
@@ -93,7 +98,7 @@ export function Inicio() {
           </div>
           <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
             <span
-              className="font-metric-huge text-metric-huge text-secondary leading-none"
+              className="font-metric-huge text-metric-huge max-[380px]:text-[28px] whitespace-nowrap text-secondary leading-none"
               data-testid="km-semana"
             >
               {Unidades.texto(semana.km, m, 1)}
@@ -103,7 +108,7 @@ export function Inicio() {
             </span>
           </div>
           <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
-            <span className="font-metric-huge text-metric-huge text-text-primary leading-none">
+            <span className="font-metric-huge text-metric-huge max-[380px]:text-[28px] whitespace-nowrap text-text-primary leading-none">
               {formatearRitmo(Unidades.ritmo(semana.ritmoSegKm, m))}
             </span>
             <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
@@ -115,7 +120,7 @@ export function Inicio() {
 
       <section className="space-y-space-md lg:col-span-5">
         <div className="flex items-center justify-between">
-          <h3 className="font-title-md text-title-md text-text-primary">Acción rápida</h3>
+          <h2 className="font-title-md text-title-md text-text-primary">Acción rápida</h2>
         </div>
 
         <Link
@@ -126,7 +131,7 @@ export function Inicio() {
             <span className="font-headline-sm text-headline-sm text-bg-primary font-bold">
               Empezar a correr
             </span>
-            <span className="font-body-md text-body-md text-bg-primary/80 mt-1">
+            <span className="font-body-md text-body-md text-bg-primary mt-1">
               Graba tu siguiente carrera
             </span>
           </div>
@@ -140,7 +145,7 @@ export function Inicio() {
 
       <section className="space-y-space-md lg:col-span-5">
         <div className="flex items-center justify-between">
-          <h3 className="font-title-md text-title-md text-text-primary">Semana atlética</h3>
+          <h2 className="font-title-md text-title-md text-text-primary">Semana atlética</h2>
           <span className="font-label-md text-label-md text-text-secondary">
             {semana.diasCorridos.size} de {META_DIAS} días
           </span>
@@ -172,7 +177,7 @@ export function Inicio() {
 
       <section className="space-y-space-md lg:col-span-5">
         <div className="flex items-center justify-between">
-          <h3 className="font-title-md text-title-md text-text-primary">Próximo encuentro</h3>
+          <h2 className="font-title-md text-title-md text-text-primary">Próximo encuentro</h2>
           <Link
             to="/comunidad/eventos"
             className="inline-block py-2 font-label-md text-label-md text-primary"
@@ -198,9 +203,9 @@ export function Inicio() {
                   {proximo.fecha}, {proximo.hora}
                 </span>
               </div>
-              <h4 className="font-title-md text-title-md text-text-primary mb-1">
+              <h3 className="font-title-md text-title-md text-text-primary mb-1">
                 {proximo.titulo}
-              </h4>
+              </h3>
               <p className="font-body-sm text-body-sm text-text-secondary mb-3">
                 {proximo.descripcion}
               </p>

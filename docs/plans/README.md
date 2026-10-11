@@ -1,0 +1,12 @@
+# Planes
+
+| Plan                        | Estado     | Archivo                                                                  |
+| --------------------------- | ---------- | ------------------------------------------------------------------------ |
+| Fase 3: Seguimiento en vivo | **Activo** | [activos/fase-3-live-tracking.md](activos/fase-3-live-tracking.md)       |
+| Fase 0: Arquitectura        | Completado | [completados/fase-0-arquitectura.md](completados/fase-0-arquitectura.md) |
+| Fase 1: MVP                 | Completado | [completados/fase-1-mvp.md](completados/fase-1-mvp.md)                   |
+| Fase 2: Social              | Completado | [completados/fase-2-social.md](completados/fase-2-social.md)             |
+| Arreglos de QA (rondas 1–3) | Completado | [completados/qa-rondas-1-3.md](completados/qa-rondas-1-3.md)             |
+| Rachas                      | Completado | [completados/rachas.md](completados/rachas.md)                           |
+
+Fases 4 a 10 siguen en [ROADMAP.md](../ROADMAP.md). Partes ya hechas por adelantado: rutas guardadas y buscador (4.2), eventos con inscripción (5.2), récords personales y racha (6.1–6.2), ranking semanal (7.2).

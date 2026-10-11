@@ -19,7 +19,8 @@ export function BuscadorRutas() {
   const seleccionada = routes.find((r) => r.id === selectedRoute) ?? null
 
   return (
-    <div className="w-full min-h-screen bg-[#070b13] flex flex-col relative">
+    <main className="w-full min-h-screen bg-[#070b13] flex flex-col relative">
+      <h1 className="sr-only">Buscar rutas</h1>
       <div className="absolute inset-0 z-0 bg-[#0b1220] overflow-hidden">
         <MapaGoogle
           puntos={trazoDeOpcion(selectedRoute)}
@@ -143,7 +144,7 @@ export function BuscadorRutas() {
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-white font-semibold text-left">{route.name}</h3>
+                  <h2 className="text-white font-semibold text-left">{route.name}</h2>
                   <span
                     className={`material-symbols-outlined ${
                       selectedRoute === route.id
@@ -185,6 +186,6 @@ export function BuscadorRutas() {
           </button>
         </div>
       </div>
-    </div>
+    </main>
   )
 }

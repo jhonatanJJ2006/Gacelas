@@ -87,9 +87,9 @@ export function ListaRutas() {
                   <span className="material-symbols-outlined text-[64px] text-primary">route</span>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-title-md text-title-md text-text-primary mb-1">
+                  <h2 className="font-title-md text-title-md text-text-primary mb-1">
                     {ruta.nombre}
-                  </h3>
+                  </h2>
                   <p className="text-body-sm text-text-secondary mb-2">{ruta.descripcion}</p>
                   <div className="flex items-center gap-4 text-text-secondary">
                     <span className="font-label-md text-label-md flex items-center gap-1">
@@ -106,7 +106,7 @@ export function ListaRutas() {
                           ? 'bg-secondary-600/20 text-secondary-500'
                           : ruta.dificultad === 'Moderado'
                             ? 'bg-primary-600/20 text-primary-500'
-                            : 'bg-danger/20 text-danger'
+                            : 'bg-danger/20 text-red-300'
                       }`}
                     >
                       {ruta.dificultad}

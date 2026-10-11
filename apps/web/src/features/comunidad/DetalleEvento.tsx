@@ -28,7 +28,7 @@ export function DetalleEvento() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-surface flex flex-col lg:max-w-5xl lg:mx-auto lg:px-8 lg:py-8">
+    <main className="w-full min-h-screen bg-surface flex flex-col lg:max-w-5xl lg:mx-auto lg:px-8 lg:py-8">
       <div className="h-64 lg:h-80 lg:rounded-3xl lg:overflow-hidden bg-gradient-to-br from-primary-600 to-secondary-600 relative">
         <button
           onClick={() => navigate('/comunidad/eventos')}
@@ -138,6 +138,6 @@ export function DetalleEvento() {
         )}
       </div>
       <Aviso mensaje={aviso} />
-    </div>
+    </main>
   )
 }

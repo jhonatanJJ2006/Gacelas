@@ -40,7 +40,8 @@ export function NavegacionRuta() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#0c1322] relative overflow-hidden">
+    <main className="w-full min-h-screen bg-[#0c1322] relative overflow-hidden">
+      <h1 className="sr-only">Navegación de ruta</h1>
       <div className="absolute top-3 inset-x-0 z-50 px-6 flex justify-between items-center text-xs text-slate-300">
         <span className="pl-2 truncate">{nombreRuta}</span>
         <div className="flex gap-1">
@@ -49,7 +50,7 @@ export function NavegacionRuta() {
               key={a}
               onClick={() => setAnimacion(a)}
               aria-pressed={animacion === a}
-              className={`px-3 py-1.5 min-h-8 rounded-full ${animacion === a ? 'bg-primary-600 text-white' : 'bg-black/50'}`}
+              className={`px-3 py-1.5 min-h-8 rounded-full ${animacion === a ? 'bg-primary-600 text-bg-primary' : 'bg-black/50'}`}
             >
               {a === 'Jog' ? 'Trote' : 'Carrera'}
             </button>
@@ -132,7 +133,7 @@ export function NavegacionRuta() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/correr/cronometro')}
-              className="flex-1 h-12 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl flex items-center justify-center gap-2 shadow-lg transition-colors active:scale-95"
+              className="flex-1 h-12 bg-primary-600 hover:bg-primary-700 text-bg-primary font-semibold rounded-xl flex items-center justify-center gap-2 shadow-lg transition-colors active:scale-95"
             >
               <span className="material-symbols-outlined">timer</span>
               Ver cronómetro
@@ -151,6 +152,6 @@ export function NavegacionRuta() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
         <div className="w-2 h-2 rounded-full bg-primary-600 shadow-lg shadow-primary-600/50"></div>
       </div>
-    </div>
+    </main>
   )
 }
