@@ -40,6 +40,8 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.gacelas.core.sensores.Rumbo
+import com.gacelas.core.sensores.rumboSensorState
 import com.gacelas.ui.theme.GType
 import com.gacelas.ui.three.Runner3D
 import com.gacelas.ui.three.soporta3D
@@ -84,10 +86,16 @@ fun MapaGacelas(
     var pantalla by remember { mutableStateOf<Offset?>(null) }
     val ultimo = puntos.lastOrNull()
     val ultimoActual by rememberUpdatedState(ultimo)
-    val rumbo = remember(puntos.size) { MapaMat.rumboReciente(puntos) }
     val velocidadMs = ritmoSegKm?.takeIf { it in 1..1800 }?.let { 1000.0 / it } ?: 0.0
+    // Rumbo: sensor de orientacion quieto o lento, GPS (ultimos 15 m) al correr, mezcla gradual (Rumbo.combinar).
+    val rumboGps = remember(puntos.size) { MapaMat.rumboReciente(puntos) }
+    val rumboSensor by rumboSensorState(seguir && modo3d, ultimo?.latitude, ultimo?.longitude)
+    val rumboCombinado = Rumbo.combinar(rumboSensor, rumboGps, velocidadMs)
+    var rumbo by remember { mutableStateOf<Float?>(null) }
+    LaunchedEffect(rumboCombinado) { if (Rumbo.cambioRelevante(rumbo, rumboCombinado)) rumbo = rumboCombinado }
+    var ultimoAnimado by remember { mutableStateOf<LatLng?>(null) }
 
-    LaunchedEffect(mapa, puntos.size, ultimo, modo3d, siguiendo) {
+    LaunchedEffect(mapa, puntos.size, ultimo, modo3d, siguiendo, rumbo) {
         val m = mapa ?: return@LaunchedEffect
         runCatching {
             when {
@@ -97,8 +105,10 @@ fun MapaGacelas(
                     val r = (rumbo ?: m.cameraPosition.bearing.toFloat()).toDouble()
                     val z = ZoomNavegacion.para(velocidadMs)
                     val centro = MapaMat.desplazar(ultimo, r, adelanteM * Math.pow(2.0, 18.0 - z))
-                    // Animacion lineal del largo del intervalo GPS (2 s): el suelo avanza de forma continua.
-                    m.easeCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(centro).zoom(z).tilt(60.0).bearing(r).build()), 1900, false)
+                    // Punto GPS nuevo: animacion lineal de 1,9 s (avance continuo). Solo giro del sensor: 500 ms.
+                    val nuevoPunto = ultimo != ultimoAnimado
+                    ultimoAnimado = ultimo
+                    m.easeCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(centro).zoom(z).tilt(60.0).bearing(r).build()), if (nuevoPunto) 1900 else 500, !nuevoPunto)
                 }
                 seguir || puntos.size < 2 -> m.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(ultimo).zoom(zoom.toDouble()).tilt(0.0).bearing(0.0).build()), 900)
                 else -> m.animateCamera(CameraUpdateFactory.newLatLngBounds(MapaMat.limites(puntos), 80))

@@ -13,7 +13,11 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /** Ruta elegida con "Correr esta ruta": se registra como corrida al guardar la carrera. */
-object RutaActiva { @Volatile var id: String? = null }
+object RutaActiva {
+    @Volatile var id: String? = null
+    /** Ruta que se navega (puede ser una de ejemplo). */
+    @Volatile var navegarId: String? = null
+}
 
 /** Perfil de elevacion con Open-Meteo (igual que la web, lib/elevacion.ts). */
 object Elevacion {

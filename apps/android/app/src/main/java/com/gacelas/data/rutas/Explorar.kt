@@ -6,6 +6,7 @@ import com.gacelas.data.remoto.Backend
 import com.gacelas.data.remoto.ErrorRemoto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -98,7 +99,14 @@ fun rutaDesdeFila(f: JsonObject, yo: String? = null) = Ruta(
 )
 
 /** Rutas de la comunidad en Supabase (backend/migrations/009_rutas.sql). */
-class ExplorarRepository(private val backend: Backend, private val uid: suspend () -> String?) {
+class ExplorarRepository(
+    private val backend: Backend,
+    /** Copia local y cola de pendientes; null en pruebas antiguas. */
+    val offline: RutasOffline? = null,
+    /** Se llama al dejar algo pendiente (programa SincronizacionWorker). */
+    private val alEncolar: () -> Unit = {},
+    private val uid: suspend () -> String?,
+) {
     private val _rutas = MutableStateFlow<List<Ruta>?>(null)
     /** null hasta cargar o si el servidor falla (se usan las de ejemplo). */
     val rutas: StateFlow<List<Ruta>?> = _rutas
@@ -111,7 +119,12 @@ class ExplorarRepository(private val backend: Backend, private val uid: suspend 
             val lista = filas.map { rutaDesdeFila(it, yo) }
             val autores = lista.map { it.autorId }.filter { it != "gacelas" }.distinct()
             val nombres = autores.associateWith { a -> runCatching { backend.select("profiles", mapOf("id" to a)).firstOrNull()?.let { it.texto("full_name") ?: it.texto("username") } }.getOrNull() }
-            _rutas.value = lista.map { it.copy(autorNombre = nombres[it.autorId]) }.ifEmpty { null }
+            val conNombre = lista.map { it.copy(autorNombre = nombres[it.autorId]) }
+            offline?.guardarDelServidor(conNombre)
+            _rutas.value = (offline?.rutasAhora() ?: conNombre).ifEmpty { null }
+        }.onFailure {
+            // Sin red: se muestran las rutas guardadas en el celular.
+            if (_rutas.value == null) _rutas.value = offline?.rutasAhora()?.ifEmpty { null }
         }
         if (yo != null) runCatching { backend.select("route_likes", mapOf("user_id" to yo)) }
             .onSuccess { f -> _meGusta.value = f.mapNotNull { it.texto("route_id") }.toSet() }
@@ -124,19 +137,52 @@ class ExplorarRepository(private val backend: Backend, private val uid: suspend 
 
     suspend fun crear(nombre: String, descripcion: String, dificultad: Dificultad, etiquetas: List<String>, puntos: List<Pair<Double, Double>>, elevacionM: Int, actividadId: String?, perfil: List<Int> = emptyList(), origen: String = "actividad"): String {
         val yo = uid() ?: throw ErrorRemoto("Inicia sesión para publicar rutas")
-        backend.insert("routes", listOf(JsonObject(mapOf(
-            "name" to JsonPrimitive(nombre.take(80)), "description" to JsonPrimitive(descripcion), "difficulty" to JsonPrimitive(dificultad.etiqueta),
-            "tags" to JsonArray(etiquetas.map(::JsonPrimitive)),
-            "path" to JsonArray(trazoParaRuta(puntos).map { JsonObject(mapOf("lat" to JsonPrimitive(it.first), "lng" to JsonPrimitive(it.second))) }),
-            "elevation_m" to JsonPrimitive(elevacionM), "distance_km" to JsonPrimitive(0), "author_id" to JsonPrimitive(yo), "is_public" to JsonPrimitive(true),
-            "source_activity_id" to (actividadId?.let(::JsonPrimitive) ?: JsonNull),
-            "elevation_profile" to JsonArray(perfil.map(::JsonPrimitive)), "origin" to JsonPrimitive(origen),
-            "id" to JsonPrimitive(java.util.UUID.randomUUID().toString().also { nuevoId = it }),
-        ))))
+        val nueva = RutaNueva(java.util.UUID.randomUUID().toString(), nombre.take(80), descripcion, dificultad, etiquetas, trazoParaRuta(puntos), elevacionM, actividadId, perfil, origen)
+        val ok = runCatching { insertar(nueva, yo) }
+        if (ok.isFailure) {
+            val local = offline ?: throw ok.exceptionOrNull()!!
+            // Sin red: queda guardada en el celular y se publica sola al volver la conexion.
+            val ruta = nueva.aRuta(yo)
+            local.guardarRuta(ruta)
+            local.encolar(OperacionRuta("crear", nueva.id, nueva = nueva))
+            _rutas.value = listOf(ruta) + (_rutas.value ?: emptyList()).filterNot { it.id == ruta.id }
+            alEncolar()
+            return nueva.id
+        }
         refrescar()
-        return nuevoId
+        return nueva.id
     }
-    private var nuevoId = ""
+
+    /** true si la ultima ruta creada quedo pendiente de subir. */
+    suspend fun pendiente(id: String): Boolean = offline?.pendientes?.first()?.any { it.rutaId == id && it.tipo == "crear" } == true
+
+    private suspend fun insertar(n: RutaNueva, yo: String) {
+        backend.insert("routes", listOf(JsonObject(mapOf(
+            "name" to JsonPrimitive(n.nombre), "description" to JsonPrimitive(n.descripcion), "difficulty" to JsonPrimitive(n.dificultad.etiqueta),
+            "tags" to JsonArray(n.etiquetas.map(::JsonPrimitive)),
+            "path" to JsonArray(n.puntos.map { JsonObject(mapOf("lat" to JsonPrimitive(it.first), "lng" to JsonPrimitive(it.second))) }),
+            "elevation_m" to JsonPrimitive(n.elevacionM), "distance_km" to JsonPrimitive(0), "author_id" to JsonPrimitive(yo), "is_public" to JsonPrimitive(true),
+            "source_activity_id" to (n.actividadId?.let(::JsonPrimitive) ?: JsonNull),
+            "elevation_profile" to JsonArray(n.perfil.map(::JsonPrimitive)), "origin" to JsonPrimitive(n.origen),
+            "id" to JsonPrimitive(n.id),
+        ))))
+    }
+
+    /** Sube rutas creadas y corridas registradas sin red. Devuelve cuantas operaciones quedan. */
+    suspend fun subirPendientes(): Int {
+        val local = offline ?: return 0
+        val yo = uid() ?: return local.pendientes.first().size
+        val quedan = local.procesar { op ->
+            when (op.tipo) {
+                "crear" -> op.nueva?.let { insertar(it, yo) }
+                "corrida" -> backend.insert("route_runs", listOf(JsonObject(mapOf("route_id" to JsonPrimitive(op.rutaId), "user_id" to JsonPrimitive(yo), "activity_id" to JsonPrimitive(op.actividadId.orEmpty())))))
+                "guardar" -> backend.insert("saved_routes", listOf(JsonObject(mapOf("user_id" to JsonPrimitive(yo), "route_id" to JsonPrimitive(op.rutaId)))))
+                "quitar" -> backend.delete("saved_routes", mapOf("user_id" to yo, "route_id" to op.rutaId))
+            }
+        }
+        runCatching { refrescar() }
+        return quedan
+    }
 
     suspend fun fotos(id: String): List<String> = runCatching {
         backend.select("route_photos", mapOf("route_id" to id), "created_at", descendente = true).mapNotNull { it.texto("path") }.map { backend.urlPublica("route-photos", it) }
@@ -160,6 +206,7 @@ class ExplorarRepository(private val backend: Backend, private val uid: suspend 
     suspend fun registrarCorrida(rutaId: String, actividadId: String) {
         val yo = uid() ?: return
         runCatching { backend.insert("route_runs", listOf(JsonObject(mapOf("route_id" to JsonPrimitive(rutaId), "user_id" to JsonPrimitive(yo), "activity_id" to JsonPrimitive(actividadId))))) }
+            .onFailure { offline?.let { it.encolar(OperacionRuta("corrida", rutaId, actividadId = actividadId)); alEncolar() } }
     }
 
     suspend fun alternarMeGusta(id: String) {

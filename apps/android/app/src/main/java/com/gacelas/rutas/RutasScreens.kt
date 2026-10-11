@@ -206,10 +206,18 @@ fun EtiquetaDificultad(d: Dificultad) {
 @Composable
 fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
     var consulta by rememberSaveable { mutableStateOf("") }
-    var seleccion by rememberSaveable { mutableStateOf("primary") }
-    val sugeridas = MockData.rutasSugeridas.filter { consulta.isBlank() || it.nombre.contains(consulta.trim(), ignoreCase = true) }
+    val c = contenedor()
+    val remotas by (c.explorar?.rutas ?: remember { kotlinx.coroutines.flow.MutableStateFlow(null) }).collectAsState()
+    val locales by c.rutasOffline.rutas.collectAsState(initial = emptyList())
+    val guardadas by c.rutas.guardadas.collectAsState(initial = emptySet())
+    LaunchedEffect(Unit) { c.explorar?.refrescar() }
+    val elegida = remember { com.gacelas.data.rutas.RutaActiva.id }
+    val todas = remember(remotas, locales, guardadas) { rutasNavegables(remotas, locales, guardadas, elegida) }
+    var seleccion by rememberSaveable { mutableStateOf(elegida ?: com.gacelas.data.rutas.RutaActiva.navegarId ?: "primary") }
+    val sugeridas = todas.filter { consulta.isBlank() || it.nombre.contains(consulta.trim(), ignoreCase = true) }.take(8)
+    val trazoSeleccion = todas.firstOrNull { it.id == seleccion }?.trazo.orEmpty().map { org.maplibre.android.geometry.LatLng(it.first, it.second) }
     Box(Modifier.fillMaxSize().background(Color(0xFF090F1A))) {
-        MapaGacelas(Mapas.trazo(seleccion), Modifier.fillMaxSize(), zoom = 14f) { MapaPlaceholder(rutaPrincipal = seleccion == "primary") }
+        MapaGacelas(trazoSeleccion, Modifier.fillMaxSize(), zoom = 14f) { MapaPlaceholder(rutaPrincipal = seleccion == "primary") }
         IconButton(onClick = onAtras, modifier = Modifier.statusBarsPadding().padding(12.dp).clip(CircleShape).background(GColors.BgSecondary)) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Atrás", tint = GColors.TextPrimary)
         }
@@ -235,7 +243,7 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
                     Spacer(Modifier.height(6.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Filled.Straighten, null, tint = GColors.TextSecondary, modifier = Modifier.size(14.dp))
-                        Text(" ${r.distanciaKm} km   ", style = GType.bodySm, color = GColors.TextSecondary)
+                        Text(" ${"%.1f".format(r.distanciaKm)} km   ", style = GType.bodySm, color = GColors.TextSecondary)
                         Icon(Icons.Filled.Schedule, null, tint = GColors.TextSecondary, modifier = Modifier.size(14.dp))
                         Text(" ${r.minutos} min   ", style = GType.bodySm, color = GColors.TextSecondary)
                         Icon(Icons.AutoMirrored.Filled.TrendingUp, null, tint = GColors.TextSecondary, modifier = Modifier.size(14.dp))
@@ -243,7 +251,13 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
                     }
                 }
             }
-            BotonPrimario("Comenzar navegación", onNavegar, icono = Icons.Filled.Navigation, enabled = sugeridas.any { it.id == seleccion })
+            BotonPrimario("Comenzar navegación", {
+                val r = todas.firstOrNull { it.id == seleccion }
+                com.gacelas.data.rutas.RutaActiva.navegarId = r?.id
+                // Solo las rutas reales de la comunidad registran la corrida al guardar.
+                com.gacelas.data.rutas.RutaActiva.id = r?.id?.takeIf { r.real }
+                onNavegar()
+            }, icono = Icons.Filled.Navigation, enabled = sugeridas.any { it.id == seleccion })
         }
     }
 }
@@ -262,15 +276,23 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: (conCarrera: Boolea
     }
     MantenerPantallaEncendida()
     RelojCarrera(tracker, estado)
-    // Las indicaciones de giro siguen la ruta de ejemplo segun la distancia recorrida.
-    val indicaciones = listOf("Gira a la derecha en Av. Universitaria", "Continúa recto por Av. Orillas del Zamora", "Gira a la izquierda hacia Parque Jipiro", "Llegaste a tu destino")
-    val tramo = (estado.distanciaKm / 0.5).toInt().coerceAtMost(indicaciones.lastIndex)
-    val faltanM = ((tramo + 1) * 500 - estado.distanciaKm * 1000).toInt().coerceAtLeast(0)
+    // La ruta elegida se lee de la copia local, asi la navegacion funciona sin red.
+    val c = contenedor()
+    val remotas by (c.explorar?.rutas ?: remember { kotlinx.coroutines.flow.MutableStateFlow(null) }).collectAsState()
+    val locales by c.rutasOffline.rutas.collectAsState(initial = emptyList())
+    val guardadas by c.rutas.guardadas.collectAsState(initial = emptySet())
+    val idRuta = rememberSaveable { com.gacelas.data.rutas.RutaActiva.navegarId ?: "primary" }
+    val ruta = remember(remotas, locales, guardadas) { rutasNavegables(remotas, locales, guardadas).firstOrNull { it.id == idRuta } }
+    val trazo = ruta?.trazo.orEmpty()
+    val plan = remember(trazo) { trazo.map { org.maplibre.android.geometry.LatLng(it.first, it.second) } }
+    val ultimo = estado.puntos.lastOrNull()
+    val guia = remember(trazo, ultimo) { com.gacelas.data.rutas.Guia.calcular(trazo, ultimo?.let { it.lat to it.lng }) }
+    val fueraDeRuta = guia != null && ultimo != null && guia.desvioM > com.gacelas.data.rutas.Guia.DESVIO_M
     Box(Modifier.fillMaxSize().background(Color(0xFF090F1A))) {
         val clip = MapaMat.clipPorRitmo(estado.ritmoActualSegKm)
         if (Mapas.configurado()) {
             // Estilo navegacion: mapa inclinado con el rumbo arriba, ruta brillante por delante y el corredor 3D en el mapa.
-            MapaGacelas(estado.puntos.aLatLng(), Modifier.fillMaxSize(), seguir = true, zoom = 17f, modo3d = vista3d, ritmoSegKm = estado.ritmoActualSegKm, plan = Mapas.trazo("primary"), adelanteM = 120.0) { }
+            MapaGacelas(estado.puntos.aLatLng(), Modifier.fillMaxSize(), seguir = true, zoom = 17f, modo3d = vista3d, ritmoSegKm = estado.ritmoActualSegKm, plan = plan, adelanteM = 120.0) { }
         } else {
             MapaPlaceholder(rutaPrincipal = true)
             Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, GColors.BgPrimary.copy(alpha = 0.6f)))))
@@ -284,11 +306,27 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: (conCarrera: Boolea
                     IconoCirculo(Icons.Filled.Navigation, GColors.TextPrimary.copy(alpha = 0.2f), GColors.TextPrimary, 44.dp)
                     Spacer(Modifier.width(12.dp))
                     Column {
-                        Text("Siguiente giro en", style = GType.labelMd, color = GColors.TextPrimary.copy(alpha = 0.8f))
-                        Text(if (tramo == indicaciones.lastIndex) "Destino" else "$faltanM metros", style = GType.headlineSm, color = GColors.TextPrimary)
+                        Text(ruta?.nombre ?: "Ruta no disponible sin conexión", style = GType.labelMd, color = GColors.TextPrimary.copy(alpha = 0.8f), maxLines = 1)
+                        Text(
+                            when {
+                                guia == null -> "--"
+                                guia.llegada -> "Destino"
+                                fueraDeRuta -> "Fuera de ruta"
+                                else -> "${guia.hastaGiroM.toInt()} metros"
+                            },
+                            style = GType.headlineSm, color = GColors.TextPrimary,
+                        )
                     }
                 }
-                Text(indicaciones[tramo], style = GType.bodyMd, color = GColors.TextPrimary)
+                Text(
+                    when {
+                        guia == null -> "Elige una ruta guardada para navegar"
+                        fueraDeRuta -> "Vuelve a la ruta, estás a ${guia.desvioM.toInt()} m"
+                        guia.llegada -> guia.texto
+                        else -> "${guia.texto}  ·  faltan ${Unidades.texto(guia.restanteM / 1000.0, m, 1)} ${Unidades.etiquetaDistancia(m)}"
+                    },
+                    style = GType.bodyMd, color = GColors.TextPrimary,
+                )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (Mapas.configurado()) {

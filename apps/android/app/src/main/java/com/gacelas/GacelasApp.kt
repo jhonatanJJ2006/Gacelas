@@ -34,7 +34,7 @@ private val Context.almacenGacelas: DataStore<Preferences> by preferencesDataSto
  * Contenedor simple de dependencias. Con Supabase configurado usa los repositorios remotos
  * (con DataStore como cache); si no, todo queda en el dispositivo.
  */
-class Contenedor(store: DataStore<Preferences>, backend: Backend? = null) {
+class Contenedor(store: DataStore<Preferences>, backend: Backend? = null, programarSincronizacion: () -> Unit = {}) {
     val auth: AuthRepository
     val carreras: CarrerasRepository
     val rutas: RutasRepository
@@ -52,6 +52,10 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null) {
 
     /** Descarga los datos de la cuenta y sube lo pendiente. No hace nada sin servidor. */
     val sincronizar: suspend () -> Unit
+    /** Rutas guardadas en el celular y cambios pendientes. */
+    val rutasOffline = com.gacelas.data.rutas.RutasOffline(store)
+    /** Sube carreras y rutas pendientes; devuelve cuantas operaciones quedan (lo usa SincronizacionWorker). */
+    val subirPendientes: suspend () -> Int
 
     init {
         if (backend == null) {
@@ -61,6 +65,7 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null) {
             ajustes = LocalAjustesRepository(store)
             eventos = LocalEventosRepository(store)
             sincronizar = {}
+            subirPendientes = { 0 }
             enVivo = null
             notificaciones = null
             explorar = null
@@ -68,8 +73,8 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null) {
         } else {
             lateinit var remotoAuth: SupabaseAuthRepository
             val uid: suspend () -> String? = { remotoAuth.userId() }
-            val c = SupabaseCarrerasRepository(backend, store, uid)
-            val r = SupabaseRutasRepository(backend, store, uid)
+            val c = SupabaseCarrerasRepository(backend, store, uid, programarSincronizacion)
+            val r = SupabaseRutasRepository(backend, store, uid, rutasOffline, programarSincronizacion)
             val a = SupabaseAjustesRepository(backend, store, uid)
             val e = SupabaseEventosRepository(backend, store, uid)
             val descargarTodo: suspend () -> Unit = { c.descargar(); r.descargar(); a.descargar(); e.descargar() }
@@ -82,7 +87,9 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null) {
             sincronizar = { remotoAuth.restaurar() }
             enVivo = com.gacelas.data.envivo.EnVivoRepository(backend, uid)
             notificaciones = com.gacelas.data.notificaciones.NotificacionesRepository(backend, uid)
-            explorar = com.gacelas.data.rutas.ExplorarRepository(backend, uid)
+            val ex = com.gacelas.data.rutas.ExplorarRepository(backend, rutasOffline, programarSincronizacion, uid)
+            explorar = ex
+            subirPendientes = { c.sincronizar() + ex.subirPendientes() }
             clubes = com.gacelas.data.clubes.ClubesRepository(backend, uid)
         }
     }
@@ -99,10 +106,14 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null) {
 
 class GacelasApp : Application() {
     private val alcance = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    val contenedor: Contenedor by lazy { Contenedor(applicationContext.almacenGacelas, Contenedor.backendConfigurado()) }
+    val contenedor: Contenedor by lazy {
+        Contenedor(applicationContext.almacenGacelas, Contenedor.backendConfigurado()) { com.gacelas.core.sync.Sincronizacion.programar(this) }
+    }
 
     override fun onCreate() {
         super.onCreate()
-        alcance.launch { runCatching { contenedor.sincronizar() } }
+        alcance.launch { runCatching { contenedor.sincronizar() }; runCatching { contenedor.explorar?.refrescar() } }
+        // Si quedo algo pendiente de otra sesion, se sube en cuanto haya red.
+        com.gacelas.core.sync.Sincronizacion.programar(this)
     }
 }
