@@ -72,7 +72,10 @@ import com.gacelas.data.mock.MockData
 import com.gacelas.ui.components.BotonPrimario
 import com.gacelas.ui.components.CampoTexto
 import com.gacelas.ui.components.IconoCirculo
+import com.gacelas.ui.components.MapaGoogle
 import com.gacelas.ui.components.MapaPlaceholder
+import com.gacelas.ui.components.Mapas
+import com.gacelas.ui.components.aLatLng
 import com.gacelas.ui.components.Metrica
 import com.gacelas.ui.components.Pantalla
 import com.gacelas.ui.components.Pastilla
@@ -161,7 +164,7 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
     var seleccion by rememberSaveable { mutableStateOf("primary") }
     val sugeridas = MockData.rutasSugeridas.filter { consulta.isBlank() || it.nombre.contains(consulta.trim(), ignoreCase = true) }
     Box(Modifier.fillMaxSize().background(Color(0xFF090F1A))) {
-        MapaPlaceholder(rutaPrincipal = seleccion == "primary")
+        MapaGoogle(Mapas.trazo(seleccion), Modifier.fillMaxSize(), zoom = 14f) { MapaPlaceholder(rutaPrincipal = seleccion == "primary") }
         IconButton(onClick = onAtras, modifier = Modifier.statusBarsPadding().padding(12.dp).clip(CircleShape).background(GColors.BgSecondary)) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Atrás", tint = GColors.TextPrimary)
         }
@@ -214,12 +217,12 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: (conCarrera: Boolea
     }
     MantenerPantallaEncendida()
     RelojCarrera(tracker, estado)
-    // Mientras no haya Google Maps, las indicaciones de giro siguen la ruta de ejemplo segun la distancia recorrida.
+    // Las indicaciones de giro siguen la ruta de ejemplo segun la distancia recorrida.
     val indicaciones = listOf("Gira a la derecha en Av. Universitaria", "Continúa recto por Av. Orillas del Zamora", "Gira a la izquierda hacia Parque Jipiro", "Llegaste a tu destino")
     val tramo = (estado.distanciaKm / 0.5).toInt().coerceAtMost(indicaciones.lastIndex)
     val faltanM = ((tramo + 1) * 500 - estado.distanciaKm * 1000).toInt().coerceAtLeast(0)
     Box(Modifier.fillMaxSize().background(Color(0xFF090F1A))) {
-        MapaPlaceholder(rutaPrincipal = true)
+        MapaGoogle(estado.puntos.aLatLng(), Modifier.fillMaxSize(), seguir = true, zoom = 17f) { MapaPlaceholder(rutaPrincipal = true) }
         Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, GColors.BgPrimary.copy(alpha = 0.6f)))))
         Box(Modifier.fillMaxWidth().height(420.dp).align(Alignment.Center)) {
             Runner3D(if (carrera) ClipCorredor.Run else ClipCorredor.Jog, camara = Position(0f, 1.6f, 3.8f))

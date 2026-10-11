@@ -1,5 +1,4 @@
-import { expect, test } from '@playwright/test'
-import { prepararGps, registrarse } from './ayuda'
+import { expect, test, prepararGps, registrarse } from './ayuda'
 
 test.describe('Rutas y comunidad', () => {
   test.beforeEach(async ({ page, context }) => {
@@ -14,6 +13,7 @@ test.describe('Rutas y comunidad', () => {
     await expect(page.getByRole('article')).toHaveCount(1)
     await page.getByRole('tab', { name: 'Explorar' }).click()
     await page.getByRole('button', { name: 'Guardar Río Zamora' }).click()
+    await expect(page.getByRole('button', { name: 'Quitar Río Zamora de guardadas' })).toBeVisible()
     await page.reload()
     await page.getByRole('tab', { name: 'Guardadas (1)' }).click()
     await expect(page.getByText('Río Zamora')).toBeVisible()

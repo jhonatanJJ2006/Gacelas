@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
+import { MapaGoogle } from '../../components/MapaGoogle'
 import { TrazadoRuta } from '../../components/TrazadoRuta'
 import { BotonTexto, Dialogo } from '../../components/ui'
 import { formatearHms, formatearRitmo, Unidades } from '../../lib/geo'
@@ -99,7 +100,12 @@ export function CarreraEnCurso() {
           </div>
 
           <div className="w-full max-w-md h-40 mb-6 rounded-2xl bg-surface-container/40 border border-border-subtle p-2">
-            <TrazadoRuta puntos={e.puntos} className="w-full h-full" />
+            <MapaGoogle
+              puntos={e.puntos}
+              seguir
+              className="w-full h-full"
+              alternativa={<TrazadoRuta puntos={e.puntos} className="w-full h-full" />}
+            />
           </div>
 
           <div className="flex gap-4">

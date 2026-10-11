@@ -1,5 +1,4 @@
-import { expect, test } from '@playwright/test'
-import { registrarse } from './ayuda'
+import { expect, test, registrarse } from './ayuda'
 
 test.describe('Acceso y sesión', () => {
   test('sin sesión, las pantallas protegidas llevan a bienvenida', async ({ page }) => {

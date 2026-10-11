@@ -15,6 +15,9 @@ const Registro = lazy(() =>
 const RecuperarContrasena = lazy(() =>
   import('./features/acceso/RecuperarContrasena').then((m) => ({ default: m.RecuperarContrasena }))
 )
+const NuevaContrasena = lazy(() =>
+  import('./features/acceso/NuevaContrasena').then((m) => ({ default: m.NuevaContrasena }))
+)
 const PermisosUbicacion = lazy(() =>
   import('./features/ajustes/PermisosUbicacion').then((m) => ({ default: m.PermisosUbicacion }))
 )
@@ -120,6 +123,8 @@ export function AppRoutes() {
           <Route path="/registro" element={<Registro />} />
           <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
         </Route>
+
+        <Route path="/nueva-contrasena" element={<NuevaContrasena />} />
 
         <Route element={<RutaProtegida />}>
           <Route path="/permisos-ubicacion" element={<PermisosUbicacion />} />

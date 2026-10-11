@@ -29,9 +29,10 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'pnpm preview --port 4173 --strictPort',
+    // Build en modo e2e: usa .env.e2e (Supabase falso, sin clave de Maps).
+    command: 'pnpm exec vite build --mode e2e && pnpm preview --port 4173 --strictPort',
+    timeout: 240000,
     url: 'http://localhost:4173',
     reuseExistingServer: false,
-    timeout: 120000,
   },
 })

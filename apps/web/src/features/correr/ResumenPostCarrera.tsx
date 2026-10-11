@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
+import { MapaGoogle } from '../../components/MapaGoogle'
 import { TrazadoRuta } from '../../components/TrazadoRuta'
 import { formatearMs, formatearRitmo, Unidades } from '../../lib/geo'
 import { ritmoPromedio, tituloPorHora } from '../../lib/runTracker'
@@ -17,14 +18,18 @@ export function ResumenPostCarrera() {
   const [nota, setNota] = useState('')
   const [publica, setPublica] = useState(ajustes.visibilidad !== 'privado')
   const [guardando, setGuardando] = useState(false)
+  const saliendo = useRef(false)
 
+  // Tras guardar se va a Perfil; no se redirige a Inicio al reiniciar la carrera.
+  if (saliendo.current) return null
   if (e.fase !== 'terminada') return <Navigate to="/inicio" replace />
 
   const guardar = async () => {
     setGuardando(true)
     await guardarCarrera(tracker.aCarreraGuardada(titulo, nota, publica))
-    tracker.reiniciar()
+    saliendo.current = true
     navigate('/perfil', { replace: true })
+    tracker.reiniciar()
   }
 
   const descartar = () => {
@@ -113,7 +118,11 @@ export function ResumenPostCarrera() {
             </div>
           </div>
           <div className="h-36 mt-4">
-            <TrazadoRuta puntos={e.puntos} className="w-full h-full" />
+            <MapaGoogle
+              puntos={e.puntos}
+              className="w-full h-full"
+              alternativa={<TrazadoRuta puntos={e.puntos} className="w-full h-full" />}
+            />
           </div>
         </div>
 

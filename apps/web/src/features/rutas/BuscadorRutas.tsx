@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Unidades } from '../../lib/geo'
 import { useApp } from '../../store/app'
 import { opcionesBuscador } from '../../lib/logica'
+import { MapaGoogle } from '../../components/MapaGoogle'
+import { trazoDeOpcion } from '../../lib/mapas'
 
 export function BuscadorRutas() {
   const navigate = useNavigate()
@@ -19,72 +21,79 @@ export function BuscadorRutas() {
   return (
     <div className="w-full min-h-screen bg-[#070b13] flex flex-col relative">
       <div className="absolute inset-0 z-0 bg-[#0b1220] overflow-hidden">
-        <svg className="w-full h-full object-cover scale-110 opacity-90" viewBox="0 0 600 900">
-          <defs>
-            <pattern id="urban-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#162238" strokeWidth="0.8" />
-            </pattern>
-            <linearGradient id="routeGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#10B981" />
-              <stop offset="50%" stopColor="#F59E0B" />
-              <stop offset="100%" stopColor="#D97706" />
-            </linearGradient>
-          </defs>
+        <MapaGoogle
+          puntos={trazoDeOpcion(selectedRoute)}
+          zoom={14}
+          className="w-full h-full"
+          alternativa={
+            <svg className="w-full h-full object-cover scale-110 opacity-90" viewBox="0 0 600 900">
+              <defs>
+                <pattern id="urban-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#162238" strokeWidth="0.8" />
+                </pattern>
+                <linearGradient id="routeGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#10B981" />
+                  <stop offset="50%" stopColor="#F59E0B" />
+                  <stop offset="100%" stopColor="#D97706" />
+                </linearGradient>
+              </defs>
 
-          <rect width="600" height="900" fill="#090f1a" />
-          <rect width="600" height="900" fill="url(#urban-grid)" />
+              <rect width="600" height="900" fill="#090f1a" />
+              <rect width="600" height="900" fill="url(#urban-grid)" />
 
-          <path
-            d="M-50,150 Q180,80 340,190 T650,120 L650,0 L-50,0 Z"
-            fill="#0d182b"
-            opacity="0.6"
-          />
+              <path
+                d="M-50,150 Q180,80 340,190 T650,120 L650,0 L-50,0 Z"
+                fill="#0d182b"
+                opacity="0.6"
+              />
 
-          <path
-            d="M 330,0 C 310,220 340,380 290,560 C 260,680 280,800 270,900"
-            fill="none"
-            stroke="#1e3a5f"
-            strokeWidth="12"
-            strokeLinecap="round"
-            opacity="0.7"
-          />
+              <path
+                d="M 330,0 C 310,220 340,380 290,560 C 260,680 280,800 270,900"
+                fill="none"
+                stroke="#1e3a5f"
+                strokeWidth="12"
+                strokeLinecap="round"
+                opacity="0.7"
+              />
 
-          <path
-            d="M 280,110 C 380,100 450,150 430,230 C 380,280 300,270 260,210 Z"
-            fill="#064e3b"
-            opacity="0.35"
-            stroke="#10b981"
-            strokeWidth="1"
-          />
+              <path
+                d="M 280,110 C 380,100 450,150 430,230 C 380,280 300,270 260,210 Z"
+                fill="#064e3b"
+                opacity="0.35"
+                stroke="#10b981"
+                strokeWidth="1"
+              />
 
-          {seleccionada?.color === 'primary' && (
-            <path
-              d="M 330,210 C 310,260 270,320 280,380 C 290,450 270,520 310,570 C 330,590 350,610 380,620"
-              fill="none"
-              stroke="#D97706"
-              strokeWidth="8"
-              strokeLinecap="round"
-              opacity="0.95"
-            />
-          )}
+              {seleccionada?.color === 'primary' && (
+                <path
+                  d="M 330,210 C 310,260 270,320 280,380 C 290,450 270,520 310,570 C 330,590 350,610 380,620"
+                  fill="none"
+                  stroke="#D97706"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  opacity="0.95"
+                />
+              )}
 
-          {seleccionada?.color === 'secondary' && (
-            <path
-              d="M 250,220 C 240,320 220,450 250,560 C 270,610 320,620 370,630"
-              fill="none"
-              stroke="#10B981"
-              strokeWidth="8"
-              strokeLinecap="round"
-              opacity="0.95"
-            />
-          )}
+              {seleccionada?.color === 'secondary' && (
+                <path
+                  d="M 250,220 C 240,320 220,450 250,560 C 270,610 320,620 370,630"
+                  fill="none"
+                  stroke="#10B981"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  opacity="0.95"
+                />
+              )}
 
-          <circle cx="330" cy="210" r="12" fill="#D97706" opacity="0.9">
-            <animate attributeName="r" values="12;16;12" dur="2s" repeatCount="indefinite" />
-          </circle>
+              <circle cx="330" cy="210" r="12" fill="#D97706" opacity="0.9">
+                <animate attributeName="r" values="12;16;12" dur="2s" repeatCount="indefinite" />
+              </circle>
 
-          <circle cx="380" cy="620" r="10" fill="#10B981" />
-        </svg>
+              <circle cx="380" cy="620" r="10" fill="#10B981" />
+            </svg>
+          }
+        />
       </div>
 
       <div className="relative z-30 flex-1 flex flex-col">

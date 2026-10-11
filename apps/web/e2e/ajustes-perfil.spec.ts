@@ -1,5 +1,4 @@
-import { expect, test } from '@playwright/test'
-import { registrarse } from './ayuda'
+import { expect, test, registrarse } from './ayuda'
 
 test.describe('Ajustes, perfil y notificaciones', () => {
   test.beforeEach(async ({ page }) => registrarse(page))

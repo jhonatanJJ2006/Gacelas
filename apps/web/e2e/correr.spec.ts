@@ -1,5 +1,4 @@
-import { expect, test } from '@playwright/test'
-import { caminar, prepararGps, registrarse } from './ayuda'
+import { expect, test, caminar, prepararGps, registrarse } from './ayuda'
 
 test.describe('Correr con GPS simulado', () => {
   test.beforeEach(async ({ page, context }) => {
@@ -10,6 +9,7 @@ test.describe('Correr con GPS simulado', () => {
   test('graba distancia real, pausa, guarda y aparece en Perfil e Inicio', async ({
     page,
     context,
+    supabase,
   }) => {
     test.setTimeout(90_000)
     await page.getByRole('link', { name: /empezar a correr/i }).click()
@@ -30,6 +30,8 @@ test.describe('Correr con GPS simulado', () => {
     await page.getByRole('button', { name: /guardar carrera/i }).click()
 
     await expect(page).toHaveURL(/\/perfil/)
+    await expect.poll(() => supabase.tablas.activities?.length ?? 0).toBe(1)
+    expect(supabase.tablas.activity_tracks?.[0].points).not.toEqual([])
     await expect(page.getByText('Prueba e2e')).toBeVisible()
     await expect(page.getByTestId('total-carreras')).toHaveText('1')
     await page.reload()

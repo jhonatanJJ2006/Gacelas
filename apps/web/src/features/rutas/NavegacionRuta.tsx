@@ -5,6 +5,8 @@ import { estaActiva } from '../../lib/runTracker'
 import { useApp } from '../../store/app'
 import { empezarSeguimiento, finalizarCarrera, tracker, useCarrera } from '../../store/carrera'
 import { indicacion } from '../../lib/logica'
+import { MapaGoogle } from '../../components/MapaGoogle'
+import { claveMapas } from '../../lib/mapas'
 
 const Runner3D = lazy(() =>
   import('../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
@@ -93,6 +95,18 @@ export function NavegacionRuta() {
           )}
         </div>
       </div>
+
+      {claveMapas() && (
+        <div className="absolute top-56 right-4 z-20 w-36 h-36 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+          <MapaGoogle
+            puntos={e.puntos}
+            seguir
+            zoom={16}
+            className="w-full h-full"
+            alternativa={null}
+          />
+        </div>
+      )}
 
       <div className="absolute bottom-0 left-0 right-0 z-20">
         <div className="bg-gradient-to-t from-[#0c1322] via-[#0c1322]/95 to-transparent p-6 pb-8">
