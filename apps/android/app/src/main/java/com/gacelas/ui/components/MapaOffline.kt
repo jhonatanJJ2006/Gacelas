@@ -42,6 +42,14 @@ object MapaOffline {
     /** Ciudad de Loja y alrededores (Jipiro, Zamora Huayco, Punzara, Carigan). */
     val LOJA = RegionMapa("loja", "Loja, Ecuador", norte = -3.92, este = -79.15, sur = -4.06, oeste = -79.28)
 
+    /**
+     * El descargador offline de MapLibre solo baja estilos por http(s): con asset://mapas/... se quedaba en 0%.
+     * Este estilo publico de OpenFreeMap usa la misma fuente (tiles.openfreemap.org/planet) y las mismas
+     * fuentes (Noto Sans) que los estilos Gacelas, y la cache de teselas es compartida por URL, asi que
+     * el mapa Gacelas (oscuro o claro) las encuentra sin red.
+     */
+    const val ESTILO_DESCARGA = "https://tiles.openfreemap.org/styles/dark"
+
     private val _estado = MutableStateFlow<EstadoDescarga>(EstadoDescarga.SinDescargar)
     val estado: StateFlow<EstadoDescarga> = _estado
 
@@ -81,7 +89,7 @@ object MapaOffline {
     }
 
     fun descargar(context: Context, r: RegionMapa = LOJA) {
-        val estilos = listOf(Mapas.ESTILO_OSCURO, Mapas.ESTILO_CLARO)
+        val estilos = listOf(ESTILO_DESCARGA)
         val densidad = context.resources.displayMetrics.density
         val limites = LatLngBounds.from(r.norte, r.este, r.sur, r.oeste)
         _estado.value = EstadoDescarga.Descargando(0, 0.0)
