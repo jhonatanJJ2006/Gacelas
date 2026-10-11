@@ -1,3 +1,5 @@
+import { CompartirDialogo } from '../../components/CompartirDialogo'
+import { recortarExtremos, SITIO, type DatosCompartir } from '../../lib/compartir'
 import { desnivelPositivo, perfilElevacion } from '../../lib/elevacion'
 import { ETIQUETAS_RUTA, trazoParaRuta } from '../../lib/rutas'
 import { useRef, useState } from 'react'
@@ -22,6 +24,23 @@ export function ResumenPostCarrera() {
     rachaTrasCarrera(carreras, { inicioMs: Date.now() }, ajustes.metaSemanal)
   )
   const m = ajustes.unidadesMetricas
+  const [compartiendo, setCompartiendo] = useState(false)
+  const [datosCompartir, setDatosCompartir] = useState<DatosCompartir | null>(null)
+  const abrirCompartir = () => {
+    setDatosCompartir({
+      tipo: 'carrera',
+      titulo: titulo.trim() || tituloPorHora(e.inicioMs),
+      // Privacidad: sin los primeros/ultimos 250 m para no revelar la casa.
+      puntos: recortarExtremos(e.puntos),
+      distanciaKm: e.distanciaKm,
+      segundos: e.segundos,
+      ritmoSegKm: ritmoPromedio(e),
+      desnivelM: e.desnivelM,
+      rachaDias: racha.despues.diaria,
+      enlace: SITIO,
+    })
+    setCompartiendo(true)
+  }
   const [titulo, setTitulo] = useState('')
   const [nota, setNota] = useState('')
   const [publica, setPublica] = useState(ajustes.visibilidad !== 'privado')
@@ -270,6 +289,16 @@ export function ResumenPostCarrera() {
             <span className="material-symbols-outlined text-[20px]">save</span>
             <span>Guardar carrera</span>
           </button>
+          {e.segundos > 0 && (
+            <button
+              onClick={abrirCompartir}
+              data-testid="compartir-carrera"
+              className="w-full h-12 bg-surface-container border border-border-subtle text-text-primary font-semibold rounded-xl flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[20px]">share</span>
+              Compartir en redes
+            </button>
+          )}
           <button
             onClick={descartar}
             className="w-full h-12 bg-transparent hover:bg-surface-container border border-border-subtle text-text-secondary font-medium text-sm rounded-xl flex items-center justify-center transition-all"
@@ -278,6 +307,9 @@ export function ResumenPostCarrera() {
           </button>
         </div>
       </main>
+      {compartiendo && datosCompartir && (
+        <CompartirDialogo datos={datosCompartir} onCerrar={() => setCompartiendo(false)} />
+      )}
     </div>
   )
 }
