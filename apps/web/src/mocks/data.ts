@@ -58,6 +58,12 @@ export interface Evento {
   distanciaKm: number
   pasado: boolean
   creadoPorUsuario: boolean
+  /** Inicio (ms) para el calendario. */
+  inicioMs?: number
+  cupo?: number | null
+  tipo?: 'grupal' | 'carrera' | 'entrenamiento'
+  clubId?: string | null
+  rutaId?: string | null
 }
 
 export interface RutaSugerida {
@@ -69,7 +75,7 @@ export interface RutaSugerida {
   principal: boolean
 }
 
-export type TipoNotificacion = 'like' | 'comment' | 'follow' | 'event' | 'live' | 'streak'
+export type TipoNotificacion = 'like' | 'comment' | 'follow' | 'event' | 'live' | 'streak' | 'club'
 
 export interface Notificacion {
   id: string
@@ -160,6 +166,7 @@ export const rutasMock: Ruta[] = [
 export const eventosMock: Evento[] = [
   {
     id: '1',
+    inicioMs: Date.parse('2026-10-11T11:00:00Z'),
     titulo: 'Carrera Parque Jipiro',
     descripcion: 'Carrera grupal de 10km por el Parque Jipiro. Todos los niveles bienvenidos.',
     fecha: 'Sábado 11 de Octubre',
@@ -172,6 +179,7 @@ export const eventosMock: Evento[] = [
   },
   {
     id: '2',
+    inicioMs: Date.parse('2026-10-19T12:00:00Z'),
     titulo: 'Trail Running Podocarpus',
     descripcion: 'Aventura de trail running en el Parque Nacional Podocarpus.',
     fecha: 'Domingo 19 de Octubre',
@@ -184,6 +192,7 @@ export const eventosMock: Evento[] = [
   },
   {
     id: '3',
+    inicioMs: Date.parse('2026-10-15T11:30:00Z'),
     titulo: 'Entrenamiento Intervalos Villonaco',
     descripcion: 'Series en la base del Cerro Villonaco.',
     fecha: 'Miércoles 15 de Octubre',
@@ -196,6 +205,7 @@ export const eventosMock: Evento[] = [
   },
   {
     id: '4',
+    inicioMs: Date.parse('2026-09-28T11:30:00Z'),
     titulo: 'Fondo dominical Zamora',
     descripcion: 'Fondo suave de 12 km junto al río Zamora.',
     fecha: 'Domingo 28 de Septiembre',

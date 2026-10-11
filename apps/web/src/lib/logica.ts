@@ -149,6 +149,8 @@ export function destinoNotificacion(n: Notificacion): string {
       return '/perfil'
     case 'live':
       return '/comunidad/en-vivo'
+    case 'club':
+      return '/comunidad/clubes'
     default:
       return '/comunidad'
   }

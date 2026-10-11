@@ -56,6 +56,15 @@ const DetalleEvento = lazy(() =>
 const Corredores = lazy(() =>
   import('./features/comunidad/Corredores').then((m) => ({ default: m.Corredores }))
 )
+const Clubes = lazy(() =>
+  import('./features/comunidad/Clubes').then((m) => ({ default: m.Clubes }))
+)
+const DetalleClub = lazy(() =>
+  import('./features/comunidad/DetalleClub').then((m) => ({ default: m.DetalleClub }))
+)
+const EventoEnVivo = lazy(() =>
+  import('./features/comunidad/EventoEnVivo').then((m) => ({ default: m.EventoEnVivo }))
+)
 const DibujarRuta = lazy(() =>
   import('./features/rutas/DibujarRuta').then((m) => ({ default: m.DibujarRuta }))
 )
@@ -165,6 +174,9 @@ export function AppRoutes() {
             <Route path="/rutas/:id" element={<DetalleRuta />} />
 
             <Route path="/comunidad/eventos/:id" element={<DetalleEvento />} />
+            <Route path="/comunidad/eventos/:id/en-vivo" element={<EventoEnVivo />} />
+            <Route path="/comunidad/clubes" element={<Clubes />} />
+            <Route path="/comunidad/clubes/:id" element={<DetalleClub />} />
             <Route path="/comunidad/corredores" element={<Corredores />} />
             <Route path="/comunidad/en-vivo" element={<ListaEnVivo />} />
             <Route path="/comunidad/en-vivo/:id" element={<DetalleEnVivo />} />

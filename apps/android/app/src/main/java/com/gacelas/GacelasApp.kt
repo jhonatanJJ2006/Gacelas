@@ -47,6 +47,8 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null) {
     val notificaciones: com.gacelas.data.notificaciones.NotificacionesRepository?
     /** Rutas de la comunidad (Fase 4); null sin servidor. */
     val explorar: com.gacelas.data.rutas.ExplorarRepository?
+    /** Clubes y eventos de Fase 5; null sin servidor. */
+    val clubes: com.gacelas.data.clubes.ClubesRepository?
 
     /** Descarga los datos de la cuenta y sube lo pendiente. No hace nada sin servidor. */
     val sincronizar: suspend () -> Unit
@@ -62,6 +64,7 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null) {
             enVivo = null
             notificaciones = null
             explorar = null
+            clubes = null
         } else {
             lateinit var remotoAuth: SupabaseAuthRepository
             val uid: suspend () -> String? = { remotoAuth.userId() }
@@ -80,6 +83,7 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null) {
             enVivo = com.gacelas.data.envivo.EnVivoRepository(backend, uid)
             notificaciones = com.gacelas.data.notificaciones.NotificacionesRepository(backend, uid)
             explorar = com.gacelas.data.rutas.ExplorarRepository(backend, uid)
+            clubes = com.gacelas.data.clubes.ClubesRepository(backend, uid)
         }
     }
 

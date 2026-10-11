@@ -57,6 +57,7 @@ const PERMITIDA: Record<Notificacion['tipo'], keyof Ajustes> = {
   event: 'notifEventos',
   live: 'notifEnVivo',
   streak: 'notifEventos',
+  club: 'notifEventos',
 }
 
 /** Notificaciones visibles segun los ajustes y las ya leidas. */

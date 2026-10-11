@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import { CalendarioEventos } from './CalendarioEventos'
+import { TIPOS_EVENTO, type TipoEvento } from '../../lib/eventos'
 import { Aviso, BotonTexto, Dialogo, MensajeError } from '../../components/ui'
 import { useAviso } from '../../hooks'
 import { filtrarEventos, PESTANAS_EVENTOS, type PestanaEventos } from '../../lib/filtros'
@@ -17,7 +19,12 @@ export function Eventos() {
   const crearEvento = useApp((s) => s.crearEvento)
   const alternar = useApp((s) => s.alternarInscripcion)
   const [pestana, setPestana] = useState<PestanaEventos>('Próximos')
-  const [creando, setCreando] = useState(false)
+  const [params, setParams] = useSearchParams()
+  const clubId = params.get('club')
+  const [creando, setCreando] = useState(() => !!clubId)
+  const [vista, setVista] = useState<'lista' | 'calendario'>('lista')
+  const rutas = useApp((s) => s.rutas)
+  const [extra, setExtra] = useState({ tipo: 'grupal' as TipoEvento, cupo: '', rutaId: '' })
   const [form, setForm] = useState({
     titulo: '',
     descripcion: '',
@@ -45,8 +52,19 @@ export function Eventos() {
       distanciaKm: Math.round(Number(form.distanciaKm)),
       pasado: false,
       creadoPorUsuario: true,
+      inicioMs: fecha.getTime(),
+      tipo: extra.tipo,
+      cupo: extra.cupo ? Math.max(1, Math.round(Number(extra.cupo))) : null,
+      rutaId: extra.rutaId || null,
+      clubId,
     }
-    await crearEvento(evento)
+    try {
+      await crearEvento(evento)
+    } catch (e) {
+      return setError(e instanceof Error ? e.message : 'No se pudo crear el evento')
+    }
+    if (clubId) setParams({}, { replace: true })
+    setExtra({ tipo: 'grupal', cupo: '', rutaId: '' })
     setCreando(false)
     setForm({ titulo: '', descripcion: '', fecha: '', hora: '', ubicacion: '', distanciaKm: '5' })
     setPestana('Mis eventos')
@@ -66,6 +84,26 @@ export function Eventos() {
               <span className="material-symbols-outlined">arrow_back</span>
             </Link>
             <h1 className="font-headline-md text-headline-md text-text-primary">Eventos</h1>
+          </div>
+          <div className="flex items-center gap-2 ml-auto mr-2">
+            <Link
+              to="/comunidad/clubes"
+              className="h-10 px-3 rounded-full bg-surface-container text-text-primary flex items-center gap-1"
+              data-testid="ir-clubes"
+            >
+              <span className="material-symbols-outlined text-[20px]">groups</span>Clubes
+            </Link>
+            <button
+              onClick={() => setVista(vista === 'lista' ? 'calendario' : 'lista')}
+              aria-pressed={vista === 'calendario'}
+              data-testid="ver-calendario"
+              aria-label={vista === 'lista' ? 'Ver calendario' : 'Ver lista'}
+              className="w-10 h-10 rounded-full bg-surface-container text-text-primary flex items-center justify-center"
+            >
+              <span className="material-symbols-outlined">
+                {vista === 'lista' ? 'calendar_month' : 'list'}
+              </span>
+            </button>
           </div>
           <button
             onClick={() => {
@@ -94,6 +132,11 @@ export function Eventos() {
         </div>
       </div>
 
+      {vista === 'calendario' && (
+        <div className="px-margin lg:px-0 pb-6">
+          <CalendarioEventos eventos={[...creados, ...eventosMock]} inscritos={inscritos} />
+        </div>
+      )}
       <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6 lg:space-y-0">
         {eventos.length === 0 && (
           <p className="text-center text-text-secondary py-8 lg:col-span-full">
@@ -230,6 +273,44 @@ export function Eventos() {
           value={form.distanciaKm}
           onChange={(e) => setForm({ ...form, distanciaKm: e.target.value })}
         />
+        <div className="grid grid-cols-2 gap-2">
+          <select
+            aria-label="Tipo de evento"
+            className={campo}
+            value={extra.tipo}
+            onChange={(e) => setExtra({ ...extra, tipo: e.target.value as TipoEvento })}
+          >
+            {Object.entries(TIPOS_EVENTO).map(([k, v]) => (
+              <option key={k} value={k}>
+                {v}
+              </option>
+            ))}
+          </select>
+          <input
+            aria-label="Cupo máximo (opcional)"
+            type="number"
+            min={1}
+            max={5000}
+            placeholder="Cupo (opcional)"
+            className={campo}
+            value={extra.cupo}
+            onChange={(e) => setExtra({ ...extra, cupo: e.target.value })}
+          />
+        </div>
+        <select
+          aria-label="Ruta planificada (opcional)"
+          className={campo}
+          value={extra.rutaId}
+          onChange={(e) => setExtra({ ...extra, rutaId: e.target.value })}
+        >
+          <option value="">Sin ruta planificada</option>
+          {rutas.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.nombre}
+            </option>
+          ))}
+        </select>
+        {clubId && <p className="text-primary-400">Se publicará como evento del club.</p>}
         <MensajeError mensaje={error} />
       </Dialogo>
       <Aviso mensaje={aviso} />

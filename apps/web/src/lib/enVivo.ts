@@ -146,10 +146,19 @@ export const useCompartirEnVivo = () =>
 
 export const puedeCompartir = () => obtenerSupabase() !== null
 
+/** Evento elegido para correr en vivo: la sesion se asocia a el (Fase 5). */
+let eventoEnVivo: string | null = null
+export const elegirEventoEnVivo = (id: string | null) => {
+  eventoEnVivo = id
+}
+export const eventoEnVivoActual = () => eventoEnVivo
+
 export async function empezarACompartir(): Promise<boolean> {
   const sb = obtenerSupabase()
   if (!sb) return false
-  const { data, error } = await sb.rpc('live_iniciar', {})
+  const { data, error } = eventoEnVivo
+    ? await sb.rpc('live_iniciar_evento', { evento: eventoEnVivo })
+    : await sb.rpc('live_iniciar', {})
   if (error || !data) {
     emitir({ error: 'No se pudo iniciar el seguimiento en vivo' })
     return false
@@ -184,5 +193,6 @@ export async function dejarDeCompartir() {
   const sb = obtenerSupabase()
   const id = estado.sesionId
   emitir({ sesionId: null, visible: null })
+  eventoEnVivo = null
   if (sb && id) await sb.rpc('live_terminar', { sesion: id })
 }

@@ -11,4 +11,4 @@
 | Fase 4: Rutas y exploración | Completado | [completados/fase-4-rutas.md](completados/fase-4-rutas.md)                 |
 | Compartir en redes          | Completado | [completados/compartir-redes.md](completados/compartir-redes.md)           |
 
-No hay planes activos. Fases 5 a 10 siguen en [ROADMAP.md](../ROADMAP.md). Partes ya hechas por adelantado: rutas guardadas y buscador (4.2), eventos con inscripción (5.2), récords personales y racha (6.1–6.2), ranking semanal (7.2).
+Plan activo: [Fase 5: Clubes y eventos](activos/fase-5-clubes-eventos.md). Fases 6 a 10 siguen en [ROADMAP.md](../ROADMAP.md). Partes ya hechas por adelantado: rutas guardadas y buscador (4.2), eventos con inscripción (5.2), récords personales y racha (6.1–6.2), ranking semanal (7.2).
