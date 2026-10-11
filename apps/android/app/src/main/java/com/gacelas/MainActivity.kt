@@ -3,6 +3,14 @@ package com.gacelas
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import com.gacelas.tracking.DestinoPendiente
+import com.gacelas.GacelasApp
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -29,9 +37,31 @@ import com.gacelas.ui.theme.GacelasTheme
 import kotlinx.coroutines.flow.map
 
 class MainActivity : ComponentActivity() {
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        leerDestino(intent)
+    }
+
+    private fun leerDestino(i: Intent?) {
+        if (i?.getBooleanExtra(DestinoPendiente.TERMINAR, false) == true) {
+            (application as GacelasApp).contenedor.tracker.let { if (it.estado.value.activa) it.finalizar() }
+            i.removeExtra(DestinoPendiente.TERMINAR)
+        }
+        i?.getStringExtra(DestinoPendiente.EXTRA)?.let { DestinoPendiente.valor.value = it }
+        i?.removeExtra(DestinoPendiente.EXTRA)
+    }
+
+    /** Android 13+: sin este permiso la notificacion de la carrera (con sus botones) no se ve. */
+    private fun pedirPermisoNotificaciones() {
+        if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) {}.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        leerDestino(intent)
+        pedirPermisoNotificaciones()
         setContent {
             GacelasTheme {
                 // Tocar fuera de un campo oculta el teclado. Los botones, listas y mapas consumen
