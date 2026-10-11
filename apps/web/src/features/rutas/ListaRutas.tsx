@@ -8,7 +8,8 @@ import {
   type FiltroDistancia,
 } from '../../lib/rutas'
 import { Estrellas } from './Estrellas'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { MapaRutas } from '../../components/MapaEditable'
 import { filtrarRutas, PESTANAS_RUTAS, type PestanaRutas } from '../../lib/filtros'
 import { Unidades } from '../../lib/geo'
 import { ID_USUARIO } from '../../mocks/data'
@@ -23,6 +24,9 @@ export function ListaRutas() {
   const todas = useApp((s) => s.rutas)
   const rutasCercanas = useApp((s) => s.rutasCercanas)
   const [filtros, setFiltros] = useState(FILTROS_INICIALES)
+  const [verMapa, setVerMapa] = useState(false)
+  const navigate = useNavigate()
+  const sociales = useApp((s) => s.rutasSociales)
   const [cerca, setCerca] = useState<Record<string, number> | null>(null)
   const [buscandoCerca, setBuscandoCerca] = useState(false)
   const filtradas = aplicarFiltros(
@@ -55,13 +59,35 @@ export function ListaRutas() {
       <div className="px-margin pt-space-md pb-space-sm lg:px-0 lg:pb-6">
         <div className="flex items-center justify-between mb-4">
           <h1 className="font-headline-md text-headline-md text-text-primary">Rutas de Loja</h1>
-          <Link
-            to="/rutas/buscar"
-            aria-label="Planificar ruta"
-            className="w-10 h-10 rounded-full bg-primary-600 text-bg-primary flex items-center justify-center shadow-lg"
-          >
-            <span className="material-symbols-outlined">directions</span>
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setVerMapa((v) => !v)}
+              aria-pressed={verMapa}
+              data-testid="ver-mapa-rutas"
+              className="h-10 px-3 rounded-full bg-surface-container text-text-primary flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                {verMapa ? 'list' : 'map'}
+              </span>
+              {verMapa ? 'Lista' : 'Mapa'}
+            </button>
+            {sociales && (
+              <Link
+                to="/rutas/crear"
+                aria-label="Dibujar ruta"
+                className="w-10 h-10 rounded-full bg-surface-container text-text-primary flex items-center justify-center"
+              >
+                <span className="material-symbols-outlined">draw</span>
+              </Link>
+            )}
+            <Link
+              to="/rutas/buscar"
+              aria-label="Planificar ruta"
+              className="w-10 h-10 rounded-full bg-primary-600 text-bg-primary flex items-center justify-center shadow-lg"
+            >
+              <span className="material-symbols-outlined">directions</span>
+            </Link>
+          </div>
         </div>
 
         <div className="flex gap-2 mb-4" role="tablist">
@@ -151,6 +177,17 @@ export function ListaRutas() {
         </div>
       </div>
 
+      {verMapa && (
+        <div className="px-margin lg:px-0 pb-4">
+          <MapaRutas
+            className="h-[420px] lg:h-[560px] rounded-2xl overflow-hidden"
+            onAbrir={(id) => navigate(`/rutas/${id}`)}
+            rutas={rutas
+              .filter((r) => (r.puntos?.length ?? 0) > 0)
+              .map((r) => ({ id: r.id, nombre: r.nombre, salida: r.puntos![0] }))}
+          />
+        </div>
+      )}
       <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6 lg:space-y-0">
         {rutas.length === 0 && (
           <p

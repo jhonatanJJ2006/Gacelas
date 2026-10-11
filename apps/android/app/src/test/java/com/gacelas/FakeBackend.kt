@@ -125,4 +125,10 @@ class FakeBackend : Backend {
             else -> throw ErrorRemoto("funcion desconocida $funcion")
         }
     }
+    val archivos = mutableMapOf<String, ByteArray>()
+    override suspend fun subirArchivo(bucket: String, ruta: String, bytes: ByteArray, tipo: String): String {
+        archivos["$bucket/$ruta"] = bytes
+        return urlPublica(bucket, ruta)
+    }
+    override fun urlPublica(bucket: String, ruta: String) = "https://fake/$bucket/$ruta"
 }

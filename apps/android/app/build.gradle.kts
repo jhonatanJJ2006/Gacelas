@@ -117,11 +117,13 @@ dependencies {
     implementation(platform(libs.supabase.bom))
     implementation(libs.supabase.auth)
     implementation(libs.supabase.postgrest)
+    implementation(libs.supabase.storage)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play)
     implementation(libs.googleid)
     implementation(libs.maps.compose)
+    implementation(libs.maps.compose.utils)
 
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)

@@ -1,5 +1,6 @@
 package com.gacelas.data.remoto
 
+import io.github.jan.supabase.storage.storage
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.auth
@@ -41,6 +42,9 @@ interface Backend {
     suspend fun delete(tabla: String, filtros: Map<String, String>)
     /** Llama a una funcion SQL (RPC). Devuelve JsonNull si no retorna nada. */
     suspend fun rpc(funcion: String, args: JsonObject): kotlinx.serialization.json.JsonElement
+    /** Sube un archivo a Storage y devuelve su URL publica. */
+    suspend fun subirArchivo(bucket: String, ruta: String, bytes: ByteArray, tipo: String): String
+    fun urlPublica(bucket: String, ruta: String): String
 }
 
 /** Traduce mensajes de Supabase a textos para la app (igual que la web). */
@@ -69,7 +73,15 @@ class SupabaseBackend(url: String, clave: String) : Backend {
     val cliente: SupabaseClient = createSupabaseClient(url, clave) {
         install(Auth)
         install(Postgrest)
+        install(io.github.jan.supabase.storage.Storage)
     }
+
+    override suspend fun subirArchivo(bucket: String, ruta: String, bytes: ByteArray, tipo: String) = remoto {
+        cliente.storage.from(bucket).upload(ruta, bytes) { contentType = io.ktor.http.ContentType.parse(tipo) }
+        urlPublica(bucket, ruta)
+    }
+
+    override fun urlPublica(bucket: String, ruta: String) = cliente.storage.from(bucket).publicUrl(ruta)
 
     private fun aUsuario(u: io.github.jan.supabase.auth.user.UserInfo) =
         UsuarioRemoto(u.id, u.email.orEmpty().lowercase(), u.userMetadata ?: JsonObject(emptyMap()))

@@ -38,3 +38,13 @@ Estado: **Completada** (octubre 2026). El plan empezó en `activos/` y se movió
 - Dibujar una ruta a mano en el mapa.
 - Fotos de rutas y "quién ha corrido esta ruta".
 - Clusters en el mapa de exploración.
+
+## Extras (segunda entrega)
+
+- Perfil de elevación (Open-Meteo, 60 muestras) guardado en `routes.elevation_profile` y gráfica en el detalle (SVG en web, Canvas en Android). Rutas semilla rellenadas.
+- Dibujar ruta a mano en el mapa (`/rutas/crear`, `rutas/crear` en Android), con deshacer/borrar, dificultad y etiquetas.
+- Fotos de rutas: bucket `route-photos` (público, 5 MB, solo imágenes, cada usuario sube en su carpeta) + tabla `route_photos` con RLS.
+- "Quién la ha corrido": `route_runs` + RPC `corredores_ruta` (solo perfiles públicos, propios o seguidos; el total sí es global).
+- Agrupación de marcadores en el mapa de rutas (`@googlemaps/markerclusterer` en web, `maps-compose-utils` en Android).
+- Selector de etiquetas al publicar una carrera como ruta en Android.
+- Migración: `backend/migrations/010_rutas_extra.sql`.

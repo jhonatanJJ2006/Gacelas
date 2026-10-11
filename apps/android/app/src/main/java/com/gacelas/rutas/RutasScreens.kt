@@ -1,5 +1,8 @@
 package com.gacelas.rutas
 
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Draw
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
@@ -90,7 +93,7 @@ import com.gacelas.ui.three.Runner3D
 import io.github.sceneview.math.Position
 
 @Composable
-fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit) {
+fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: () -> Unit = {}) {
     val c = contenedor()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -107,7 +110,16 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit) {
     val filtradas = com.gacelas.data.rutas.aplicarFiltros(filtrarRutas(remotas ?: MockData.rutas, pestana, guardadas, MockData.ID_USUARIO, consulta), filtros)
     val lista = cerca?.let { com.gacelas.data.rutas.ordenarPorCercania(filtradas, it) } ?: filtradas
     Pantalla {
-        Text("Rutas de Loja", style = GType.headlineLg, color = GColors.TextPrimary)
+        var verMapa by rememberSaveable { mutableStateOf(false) }
+        val perfilSesion by com.gacelas.ui.sesionState()
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Rutas de Loja", style = GType.headlineLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+            IconButton(onClick = { verMapa = !verMapa }) { Icon(if (verMapa) Icons.AutoMirrored.Filled.List else Icons.Filled.Map, if (verMapa) "Ver lista" else "Ver mapa", tint = GColors.TextPrimary) }
+            if (repo != null && perfilSesion != null) IconButton(onClick = onDibujar) { Icon(Icons.Filled.Draw, "Dibujar ruta", tint = GColors.TextPrimary) }
+        }
+        if (verMapa) {
+            MapaRutasAgrupadas(lista, onRuta, Modifier.fillMaxWidth().height(420.dp).clip(RoundedCornerShape(16.dp)))
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             PestanaRutas.entries.forEach { p -> Pastilla(if (p == PestanaRutas.Guardadas) "${p.etiqueta} (${guardadas.size})" else p.etiqueta, p == pestana, { pestana = p }) }
         }

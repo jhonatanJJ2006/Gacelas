@@ -24,6 +24,8 @@ import {
   type RutasRepository,
   type ExplorarRepository,
   type NuevaRuta,
+  type FotoRuta,
+  type CorredorRuta,
 } from './repositorios'
 import {
   AJUSTES_POR_DEFECTO,
@@ -603,6 +605,8 @@ export function rutaDesdeFila(f: Fila): Ruta {
     meGusta: Number(f.likes_count ?? 0),
     valoracion: f.rating_avg == null ? null : Number(f.rating_avg),
     resenas: Number(f.rating_count ?? 0),
+    perfilElevacion: Array.isArray(f.elevation_profile) ? (f.elevation_profile as number[]) : [],
+    origen: (f.origin as Ruta['origen']) ?? 'actividad',
   }
 }
 
@@ -660,6 +664,8 @@ export class SupabaseExplorarRepository implements ExplorarRepository {
         author_id: user.id,
         is_public: true,
         source_activity_id: r.actividadId ?? null,
+        elevation_profile: r.perfilElevacion ?? [],
+        origin: r.origen ?? 'actividad',
       })
       .select('*')
       .single()
@@ -723,6 +729,61 @@ export class SupabaseExplorarRepository implements ExplorarRepository {
       { onConflict: 'route_id,user_id' }
     )
     if (error) throw new Error(error.message)
+  }
+
+  async fotos(id: string): Promise<FotoRuta[]> {
+    const { data } = await this.sb
+      .from('route_photos')
+      .select('id,path,user_id')
+      .eq('route_id', id)
+      .order('created_at', { ascending: false })
+      .limit(30)
+    return ((data ?? []) as Fila[]).map((f) => ({
+      id: String(f.id),
+      usuarioId: String(f.user_id),
+      url: this.sb.storage.from('route-photos').getPublicUrl(String(f.path)).data.publicUrl,
+    }))
+  }
+
+  async subirFoto(id: string, archivo: Blob) {
+    const user = await usuario(this.sb)
+    if (!user) throw new Error('Inicia sesión para subir fotos')
+    if (archivo.size > 5 * 1024 * 1024) throw new Error('La foto pesa más de 5 MB')
+    const ext =
+      archivo.type === 'image/png' ? 'png' : archivo.type === 'image/webp' ? 'webp' : 'jpg'
+    const path = `${user.id}/${id.replace(/[^\w-]/g, '')}/${crypto.randomUUID()}.${ext}`
+    const subida = await this.sb.storage
+      .from('route-photos')
+      .upload(path, archivo, { contentType: archivo.type || 'image/jpeg' })
+    if (subida.error) throw new Error(subida.error.message)
+    const { error } = await this.sb
+      .from('route_photos')
+      .insert({ route_id: id, user_id: user.id, path })
+    if (error) throw new Error(error.message)
+  }
+
+  async corredores(id: string): Promise<{ lista: CorredorRuta[]; total: number }> {
+    const { data, error } = await this.sb.rpc('corredores_ruta', { ruta: id })
+    if (error) return { lista: [], total: 0 }
+    const filas = (data ?? []) as Fila[]
+    return {
+      total: Number(filas[0]?.total ?? 0),
+      lista: filas.map((f) => ({
+        usuarioId: String(f.user_id),
+        nombre: String(f.nombre || f.usuario || 'Corredor'),
+        usuario: String(f.usuario ?? ''),
+        veces: Number(f.veces),
+        ultima: String(f.ultima),
+      })),
+    }
+  }
+
+  async registrarCorrida(rutaId: string, actividadId: string) {
+    const user = await usuario(this.sb)
+    if (!user) return
+    await this.sb
+      .from('route_runs')
+      .insert({ route_id: rutaId, user_id: user.id, activity_id: actividadId })
   }
 }
 
