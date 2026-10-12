@@ -1,6 +1,5 @@
 package com.gacelas.correr
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -58,7 +57,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -71,20 +69,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.gacelas.ui.theme.SpaceGrotesk
-import com.gacelas.ui.ajustesState
 import com.gacelas.data.carreras.Parcial
 import com.gacelas.tracking.EstadoCarrera
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearMs
 import com.gacelas.tracking.formatearRitmo
-import com.gacelas.ui.components.MapaGacelas
-import com.gacelas.ui.components.Mapas
-import com.gacelas.ui.components.aLatLng
-import com.gacelas.ui.contenedor
 import com.gacelas.ui.theme.Inter
 
 /** Valores del export de Stitch "Carrera V1 Barra superior" (tools/carrera/V1-*.html). */
-internal object K1 {
+object K1 {
     val Fondo = Color(0xFF0A0E16)
     val Tarjeta = Color(0xFF131926)
     val Secondary = Color(0xFFBCC7DE)
@@ -100,7 +93,7 @@ private val num = SpaceGrotesk
 
 /** Tarjeta glass: #131926/90 (sin blur en Compose: 94%), borde blanco 10%, linea superior en degradado (inset 16). */
 @Composable
-internal fun Modifier.vidrio(forma: Shape, alpha: Float = 0.94f, sombra: Dp = 16.dp): Modifier =
+fun Modifier.vidrio(forma: Shape, alpha: Float = 0.94f, sombra: Dp = 16.dp): Modifier =
     this.shadow(sombra, forma, ambientColor = Color.Black.copy(alpha = 0.6f), spotColor = Color.Black.copy(alpha = 0.6f))
         .clip(forma).background(K1.Tarjeta.copy(alpha = alpha)).border(1.dp, K1.b(0.10f), forma)
 
@@ -115,40 +108,6 @@ data class VistaCarrera(
     val estado: EstadoCarrera,
     val metricas: Boolean = true,
 )
-
-@Composable
-fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
-    val context = LocalContext.current
-    val tracker = contenedor().tracker
-    val estado by tracker.estado.collectAsState()
-    val ajustes by ajustesState()
-    var confirmar by remember { mutableStateOf(false) }
-    MantenerPantallaEncendida()
-    RelojCarrera(tracker, estado)
-    ContenidoCarreraC4(
-        VistaCarrera(estado, ajustes.unidadesMetricas),
-        onPausa = tracker::alternarPausa,
-        onStop = { terminarCarrera(context, tracker); onFinalizar() },
-        onVuelta = tracker::vuelta,
-        onAtras = { confirmar = true },
-        extraCabecera = { BotonCompartirEnVivo(tracker) },
-        mapa = { vista3d, controles, panelAbierto ->
-            if (Mapas.configurado()) MapaGacelas(
-                estado.puntos.aLatLng(), Modifier.fillMaxSize(), seguir = true, zoom = 17f, modo3d = vista3d,
-                ritmoSegKm = estado.ritmoActualSegKm, adelanteM = 60.0, rutaMagenta = true, avisoArriba = 210.dp,
-                controlesPropios = controles, corredorVisible = !panelAbierto,
-            ) { }
-            else TrazadoRuta(estado.puntos, Modifier.fillMaxSize())
-        },
-    )
-    if (confirmar) {
-        DialogoDescartarCarrera(onConfirmar = {
-            confirmar = false
-            descartarCarrera(context, tracker)
-            onCerrar()
-        }, onCancelar = { confirmar = false })
-    }
-}
 
 typealias ControlesMapaC4 = @Composable BoxScope.(recentrar: () -> Unit, norte: () -> Unit, rumbo: Float, siguiendo: Boolean) -> Unit
 
@@ -171,7 +130,7 @@ fun ContenidoCarreraC4(
     val m = vista.metricas
     var panel by rememberSaveable { mutableStateOf(panelInicial) }
     var vista3d by rememberSaveable { mutableStateOf(true) }
-    BackHandler { if (panel) panel = false else onAtras() }
+    ManejarAtras { if (panel) panel = false else onAtras() }
 
     BoxWithConstraints(Modifier.fillMaxSize().background(K1.Fondo).testTag("pantalla-carrera")) {
         val bajo = maxHeight < 640.dp

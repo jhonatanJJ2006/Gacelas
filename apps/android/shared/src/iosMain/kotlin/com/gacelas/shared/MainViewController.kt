@@ -26,6 +26,8 @@ import kotlinx.coroutines.delay
 import platform.Foundation.NSProcessInfo
 import platform.UIKit.UIViewController
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 
 /** Argumento de lanzamiento (CI): abre directamente la pantalla de sensores con una carrera en curso. */
 private fun argumento(a: String) = NSProcessInfo.processInfo.arguments.contains(a)
@@ -39,6 +41,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
             when {
                 argumento("--pantalla=login") -> PantallaIos.Login
                 argumento("--pantalla=inicio") -> PantallaIos.Inicio
+                argumento("--pantalla=carrera") -> PantallaIos.Carrera
                 else -> PantallaIos.Bienvenida
             },
         )
@@ -56,8 +59,9 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                 PantallaIos.Login -> LoginIos(onAtras = { pantalla = PantallaIos.Bienvenida })
                 PantallaIos.Inicio -> ScaffoldPrincipal(
                     Destinos.INICIO, sinLeer = MockData.notificaciones.count { !it.leida },
-                    onNavegar = { if (it == Destinos.CORRER) enSensores = true },
-                ) { InicioIos(onCorrer = { enSensores = true }) }
+                    onNavegar = { if (it == Destinos.CORRER) pantalla = PantallaIos.Carrera },
+                ) { InicioIos(onCorrer = { pantalla = PantallaIos.Carrera }) }
+                PantallaIos.Carrera -> CarreraIos(panelInicial = argumento("--panel"), onSalir = { pantalla = PantallaIos.Inicio })
             }
         }
     } else {
@@ -74,7 +78,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
     }
 }
 
-private enum class PantallaIos { Bienvenida, Login, Inicio }
+private enum class PantallaIos { Bienvenida, Login, Inicio, Carrera }
 
 /** "Versión 0.7.0 (700)", mismo formato que textoVersion() de Android, desde el Info.plist. */
 private fun versionIos(): String {
@@ -123,4 +127,34 @@ private fun InicioIos(onCorrer: () -> Unit) {
         onCorrer = onCorrer, onEventos = {}, onEvento = {},
         corredor3D = { com.gacelas.ui.three.Runner3DFallback() },
     )
+}
+
+/**
+ * Carrera V1 compartida con el tracker y el GPS reales de iOS (CoreLocation).
+ * El mapa MapLibre iOS llega en la etapa 4: mientras, el mismo trazado de respaldo que usa
+ * Android sin MapLibre (TrazadoRuta), con los controles del diseño.
+ */
+@Composable
+private fun CarreraIos(panelInicial: Boolean, onSalir: () -> Unit) {
+    val s = remember { SeguimientoSensores(fuenteUbicacionNativa(), fuenteRumboNativa()) }
+    DisposableEffect(s) { s.iniciar(carrera = true); onDispose { s.detener() } }
+    LaunchedEffect(s) { while (true) { delay(1000); s.tic() } }
+    val real by s.tracker.estado.collectAsState()
+    // --carrera-muestra (solo capturas de CI): los mismos datos fijos que la captura Android.
+    val e = if (argumento("--carrera-muestra")) com.gacelas.correr.CarreraMuestra.estado else real
+    com.gacelas.correr.ContenidoCarreraC4(
+        com.gacelas.correr.VistaCarrera(e),
+        onPausa = { s.tracker.alternarPausa(); s.tic() },
+        onStop = { s.tracker.finalizar(); onSalir() },
+        onVuelta = { s.tracker.vuelta() },
+        onAtras = onSalir,
+        panelInicial = panelInicial,
+    ) { _, controles, _ ->
+        androidx.compose.foundation.layout.Box(
+            androidx.compose.ui.Modifier.fillMaxSize().background(com.gacelas.correr.K1.Fondo),
+        ) {
+            com.gacelas.correr.TrazadoRuta(e.puntos, androidx.compose.ui.Modifier.fillMaxSize())
+            controles({}, {}, 0f, true)
+        }
+    }
 }
