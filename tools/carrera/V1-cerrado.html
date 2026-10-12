@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gacelas — Carrera Activa</title>
+<!-- Google Fonts & Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+          },
+          colors: {
+            gacelas: {
+              bg: '#0A0E16',
+              surface: 'rgba(19, 25, 38, 0.90)',
+              orange: '#D97706',
+              magenta: '#D6338A',
+              magentaDeep: '#AB0660',
+              secondary: '#BCC7DE',
+              stopRed: '#E5484D',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* Estilos base */
+    body {
+      background-color: #05070B;
+      color: #FFFFFF;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Contenedor móvil estricto 390x884 */
+    .mobile-screen {
+      width: 390px;
+      height: 884px;
+      position: relative;
+      background-color: #0A0E16;
+      overflow: hidden;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      border-radius: 44px;
+    }
+
+    /* Tarjetas oficiales con radio 28px, fondo #131926 90%, borde 1px blanco 10% y línea superior degradado */
+    .gacelas-card {
+      background: rgba(19, 25, 38, 0.90);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      position: relative;
+    }
+
+    .gacelas-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 16px;
+      right: 16px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.20) 50%, transparent 100%);
+      pointer-events: none;
+      border-radius: 28px 28px 0 0;
+    }
+
+    /* Glows y efectos cartográficos */
+    .route-glow {
+      filter: drop-shadow(0 0 8px #D6338A) drop-shadow(0 0 16px rgba(214, 51, 138, 0.6));
+    }
+    
+    .runner-pulse {
+      animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(0.9);
+        opacity: 0.9;
+      }
+      50% {
+        transform: scale(1.6);
+        opacity: 0.3;
+      }
+      100% {
+        transform: scale(2.2);
+        opacity: 0;
+      }
+    }
+
+    /* Vista 3D inclinada del mapa */
+    .map-3d-perspective {
+      perspective: 750px;
+    }
+    .map-3d-plane {
+      transform: rotateX(24deg) scale(1.08) translateY(-20px);
+      transform-origin: center 65%;
+      transition: transform 0.4s ease;
+    }
+  </style>
+</head>
+<body>
+<!-- Mockup / Marco del dispositivo -->
+<div class="mobile-screen flex flex-col select-none">
+<!-- MAPA COMPLETO EN PERSPECTIVA 3D INCLINADA -->
+<div class="absolute inset-0 w-full h-full overflow-hidden map-3d-perspective z-0">
+<div class="w-full h-[110%] absolute -top-[5%] left-0 map-3d-plane">
+<svg class="w-full h-full" fill="none" viewbox="0 0 390 920" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<!-- Gradiente de fondo del mapa oscuro -->
+<radialgradient cx="50%" cy="55%" id="mapVignette" r="65%">
+<stop offset="0%" stop-color="#0E1524"></stop>
+<stop offset="70%" stop-color="#090D15"></stop>
+<stop offset="100%" stop-color="#05070B"></stop>
+</radialgradient>
+<!-- Gradiente de ruta magenta con glow -->
+<lineargradient id="routeGradient" x1="0%" x2="0%" y1="100%" y2="0%">
+<stop offset="0%" stop-color="#AB0660"></stop>
+<stop offset="40%" stop-color="#D6338A"></stop>
+<stop offset="100%" stop-color="#FF40A8"></stop>
+</lineargradient>
+<!-- Glow filter para la ruta activa -->
+<filter height="160%" id="neonGlow" width="160%" x="-30%" y="-30%">
+<fegaussianblur result="coloredBlur" stddeviation="3.5"></fegaussianblur>
+<femerge>
+<femergenode in="coloredBlur"></femergenode>
+<femergenode in="coloredBlur"></femergenode>
+<femergenode in="SourceGraphic"></femergenode>
+</femerge>
+</filter>
+<!-- Río Zamora tenue con brillo sutil -->
+<filter height="140%" id="riverGlow" width="140%" x="-20%" y="-20%">
+<fegaussianblur result="blur" stddeviation="2"></fegaussianblur>
+<femerge>
+<femergenode in="blur"></femergenode>
+<femergenode in="SourceGraphic"></femergenode>
+</femerge>
+</filter>
+</defs>
+<!-- Fondo cartográfico -->
+<rect fill="url(#mapVignette)" height="920" width="390"></rect>
+<!-- Cuadrícula y manzanas urbanas tenues de Loja -->
+<g opacity="0.45" stroke="#161F31" stroke-width="1">
+<rect fill="#0C111C" height="70" rx="3" width="45" x="25" y="160"></rect>
+<rect fill="#0C111C" height="50" rx="3" width="55" x="80" y="150"></rect>
+<rect fill="#0C111C" height="60" rx="3" width="55" x="80" y="210"></rect>
+<rect fill="#0C111C" height="85" rx="3" width="45" x="25" y="245"></rect>
+<rect fill="#0C111C" height="90" rx="3" width="55" x="80" y="280"></rect>
+<rect fill="#0C111C" height="70" rx="3" width="50" x="270" y="180"></rect>
+<rect fill="#0C111C" height="60" rx="3" width="40" x="330" y="190"></rect>
+<rect fill="#0C111C" height="75" rx="3" width="60" x="260" y="265"></rect>
+<rect fill="#0C111C" height="85" rx="3" width="45" x="330" y="265"></rect>
+<!-- Zona Parque Jipiro hacia el norte -->
+<path d="M190,80 C240,60 310,85 330,130 C340,160 300,185 240,180 C180,175 160,110 190,80 Z" fill="#0E1826" opacity="0.7" stroke="#1B283E" stroke-width="1.2"></path>
+</g>
+<!-- CALLES TENUES #1b2438 -->
+<g stroke="#1b2438" stroke-linecap="round" stroke-linejoin="round">
+<!-- Ejes transversales Loja -->
+<path d="M-10,135 L400,145" stroke-width="2.5"></path>
+<path d="M-10,210 L400,225" stroke-width="2.2"></path>
+<path d="M-10,295 L400,310" stroke-width="2.8"></path>
+<path d="M-10,390 L400,410" stroke-width="3"></path>
+<path d="M-10,490 L400,515" stroke-width="2.5"></path>
+<path d="M-10,600 L400,620" stroke-width="2.2"></path>
+<path d="M-10,720 L400,740" stroke-width="2"></path>
+<!-- Calles menores secundarias -->
+<path d="M15,100 L15,850" opacity="0.6" stroke-dasharray="8 6" stroke-width="1.5"></path>
+<path d="M75,120 L75,850" stroke-width="1.5"></path>
+<path d="M145,130 L145,850" stroke-width="1.8"></path>
+<path d="M260,140 L260,850" stroke-width="1.8"></path>
+<path d="M325,120 L325,850" stroke-width="1.5"></path>
+<path d="M375,100 L375,850" opacity="0.6" stroke-width="1.2"></path>
+<!-- Diagonales y vías de montaña -->
+<path d="M30,780 Q120,680 180,620 T360,540" opacity="0.5" stroke-width="2"></path>
+<path d="M350,150 Q280,240 220,310" opacity="0.6" stroke-width="1.5"></path>
+</g>
+<!-- RÍO ZAMORA AZUL TENUE (#1d4ed8 / #38bdf8 tenue) -->
+<g filter="url(#riverGlow)">
+<!-- Río Zamora serpenteante que cruza la ciudad de Loja norte-sur -->
+<path d="M210,50 Q195,140 205,230 T190,380 T215,530 T185,690 T200,880" fill="none" opacity="0.5" stroke="#1E3A8A" stroke-linecap="round" stroke-width="7"></path>
+<path d="M210,50 Q195,140 205,230 T190,380 T215,530 T185,690 T200,880" fill="none" opacity="0.55" stroke="#38BDF8" stroke-linecap="round" stroke-width="2.2"></path>
+</g>
+<!-- Etiquetas urbanas geográficas sutiles -->
+<g opacity="0.6">
+<!-- Río Zamora texto a lo largo del cauce -->
+<text fill="#38BDF8" font-family="'Space Grotesk', sans-serif" font-size="8" font-weight="600" letter-spacing="1.2" transform="rotate(82 214 270)" x="214" y="270">RÍO ZAMORA</text>
+<text fill="#7E93B8" font-family="'Inter', sans-serif" font-size="8.5" font-weight="600" letter-spacing="0.5" x="235" y="115">PARQUE JIPIRO</text>
+<circle cx="225" cy="112" fill="#7E93B8" r="2"></circle>
+<text fill="#7E93B8" font-family="'Inter', sans-serif" font-size="8" font-weight="600" letter-spacing="0.5" x="65" y="440">AV. ORILLAS DEL ZAMORA</text>
+<text fill="#7E93B8" font-family="'Inter', sans-serif" font-size="8" font-weight="600" letter-spacing="0.5" x="260" y="525">PUERTA DE LA CIUDAD</text>
+<circle cx="252" cy="522" fill="#7E93B8" r="2"></circle>
+</g>
+<!-- RUTA RECORRIDA MAGENTA #D6338A CON GLOW -->
+<!-- Punto de inicio / trazado de carrera activa 2.34 km -->
+<g>
+<!-- Línea de trazado base gruesa con glow -->
+<path d="M195,740 
+                     C 195,680 180,630 175,580 
+                     C 170,530 160,490 165,430 
+                     C 170,370 185,340 185,290 
+                     C 185,250 178,220 172,190" fill="none" filter="url(#neonGlow)" stroke="url(#routeGradient)" stroke-linecap="round" stroke-linejoin="round" stroke-width="5.5"></path>
+<!-- Núcleo brillante blanco-magenta de la ruta -->
+<path d="M195,740 
+                     C 195,680 180,630 175,580 
+                     C 170,530 160,490 165,430 
+                     C 170,370 185,340 185,290 
+                     C 185,250 178,220 172,190" fill="none" opacity="0.9" stroke="#FFE4F3" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+<!-- Marcador del punto de partida (Km 0) -->
+<circle cx="195" cy="740" fill="#131926" r="4.5" stroke="#D6338A" stroke-width="2.5"></circle>
+<circle cx="195" cy="740" fill="#FFFFFF" r="1.8"></circle>
+<!-- MARCADOR DEL CORREDOR NARANJA CON FLECHA DE DIRECCIÓN (Posición actual aprox en x=172, y=190) -->
+<g transform="translate(172, 190)">
+<!-- Ondas de pulso concéntricas -->
+<circle class="runner-pulse" cx="0" cy="0" fill="#D97706" opacity="0.25" r="22"></circle>
+<circle cx="0" cy="0" fill="#D97706" opacity="0.35" r="14"></circle>
+<!-- Marcador circular principal naranja #D97706 -->
+<circle cx="0" cy="0" fill="#D97706" filter="drop-shadow(0 2px 6px rgba(0,0,0,0.6))" r="9.5" stroke="#FFFFFF" stroke-width="2.5"></circle>
+<!-- Flecha de dirección (rumbo norte con ligera inclinación hacia el noroeste siguiendo el trazado) -->
+<path d="M0,-5.5 L3.5,3 L0,1.2 L-3.5,3 Z" fill="#FFFFFF" transform="rotate(-15)"></path>
+</g>
+</g>
+</svg>
+</div>
+</div>
+<!-- CAPA SUPERIOR: BARRA DE ESTADO Y ENCABEZADO -->
+<header class="relative z-20 pt-3 px-6 flex justify-between items-center">
+<!-- Logo Gacelas: cuadro naranja 32px radio 8 con icono directions_run + texto -->
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-[8px] bg-gacelas-orange flex items-center justify-center shadow-lg shadow-amber-600/30">
+<span class="material-symbols-outlined text-white text-[20px] font-bold">directions_run</span>
+</div>
+<div class="flex flex-col leading-none">
+<span class="font-display font-bold text-sm tracking-wider text-white">GACELAS</span>
+<span class="text-[9px] font-sans font-semibold tracking-widest text-gacelas-secondary uppercase mt-0.5">LOJA · EN VIVO</span>
+</div>
+</div>
+<!-- ESTADO: PANEL CERRADO -> Solo botón cronómetro pequeño arriba a la derecha (icono timer) -->
+<button class="w-10 h-10 rounded-full gacelas-card flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all shadow-md group">
+<span class="material-symbols-outlined text-white text-[20px] group-hover:text-gacelas-orange transition-colors">timer</span>
+</button>
+</header>
+<!-- VARIANTE 1 "BARRA SUPERIOR": MÉTRICAS COMPACTAS EN UNA SOLA TARJETA DE VIDRIO ARRIBA -->
+<!-- (Distancia grande al centro, tiempo y ritmo a los lados) -->
+<div class="relative z-20 px-4 mt-3">
+<div class="gacelas-card px-5 py-4 shadow-2xl">
+<!-- Indicador tenue superior de carrera activa -->
+<div class="flex items-center justify-center gap-1.5 mb-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-gacelas-magenta animate-pulse"></span>
+<span class="text-[10px] font-bold tracking-widest uppercase text-gacelas-secondary">CARRERA ACTIVA</span>
+</div>
+<!-- Fila de 3 columnas de métricas -->
+<div class="grid grid-cols-3 items-center text-center">
+<!-- TIEMPO (Izquierda) -->
+<div class="flex flex-col items-center">
+<span class="text-[10px] uppercase tracking-wider font-semibold text-gacelas-secondary font-sans">TIEMPO</span>
+<span class="font-display font-bold text-[19px] text-white tracking-tight leading-snug mt-0.5">00:14:52</span>
+<span class="text-[10px] text-gacelas-secondary font-medium">hh:mm:ss</span>
+</div>
+<!-- DISTANCIA (Centro - Grande) -->
+<div class="flex flex-col items-center border-x border-white/10 px-2">
+<span class="text-[10px] uppercase tracking-wider font-bold text-gacelas-orange font-sans flex items-center gap-1">
+              DISTANCIA
+            </span>
+<div class="flex items-baseline justify-center leading-none mt-0.5">
+<span class="font-display font-bold text-[36px] text-white tracking-tight">2.34</span>
+</div>
+<span class="text-[11px] font-display font-semibold text-gacelas-secondary uppercase">KILÓMETROS</span>
+</div>
+<!-- RITMO (Derecha) -->
+<div class="flex flex-col items-center">
+<span class="text-[10px] uppercase tracking-wider font-semibold text-gacelas-secondary font-sans">RITMO</span>
+<span class="font-display font-bold text-[19px] text-white tracking-tight leading-snug mt-0.5">6:21</span>
+<span class="text-[10px] text-gacelas-secondary font-medium">/km</span>
+</div>
+</div>
+</div>
+</div><div class="relative z-20 px-4 mt-2 flex items-center justify-center gap-2">
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#131926]/85 backdrop-blur-md border border-white/10 text-[11px] font-sans font-medium text-gacelas-secondary shadow-md">
+<span>Prom <strong class="text-white font-semibold">6:21</strong></span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#131926]/85 backdrop-blur-md border border-white/10 text-[11px] font-sans font-medium text-gacelas-secondary shadow-md">
+<span>Desnivel <strong class="text-white font-semibold">18 m</strong></span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#131926]/85 backdrop-blur-md border border-white/10 text-[11px] font-sans font-medium text-gacelas-secondary shadow-md">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10B981] inline-block shadow-[0_0_6px_#10B981]"></span>
+<span>GPS <strong class="text-white font-semibold">±9 m</strong></span>
+</div>
+</div>
+<!-- ÁREA CENTRAL: MAPA LIBRE Y HERRAMIENTAS FLOTANTES LATERALES DERECHAS -->
+<div class="relative z-10 flex-1 flex flex-col justify-end pointer-events-none">
+<!-- BOTONES FLOTANTES A LA DERECHA: 2D/3D Y RECENTRAR -->
+<div class="absolute right-4 bottom-24 flex flex-col gap-2.5 pointer-events-auto z-20">
+<!-- Botón alternador 2D/3D (Actualmente en 3D con indicador activo) -->
+<button class="w-11 h-11 rounded-full gacelas-card flex items-center justify-center active:scale-90 transition-transform shadow-lg group">
+<span class="font-display font-bold text-xs text-gacelas-orange tracking-tighter">3D</span>
+</button>
+<!-- Botón Recentrar posición del corredor -->
+<button class="w-11 h-11 rounded-full gacelas-card flex items-center justify-center active:scale-90 transition-transform shadow-lg group">
+<span class="material-symbols-outlined text-white text-[20px] group-hover:text-gacelas-orange transition-colors">my_location</span>
+</button>
+<!-- Capas / Brújula de orientación hacia el norte de Loja -->
+<button class="w-11 h-11 rounded-full gacelas-card flex items-center justify-center active:scale-90 transition-transform shadow-lg group">
+<span class="material-symbols-outlined text-gacelas-secondary text-[20px] group-hover:text-white transition-colors">explore</span>
+</button>
+</div>
+</div>
+<!-- CONTROLES FLOTANDO ABAJO CENTRADOS SOBRE EL MAPA: PAUSA Y STOP -->
+<footer class="relative z-30 pb-9 pt-2 px-6 flex items-center justify-center pointer-events-auto">
+<div class="flex items-center gap-4">
+<!-- BOTÓN STOP: Rojo #E5484D más pequeño -->
+<button class="w-14 h-14 rounded-full bg-gacelas-stopRed/20 border border-gacelas-stopRed/40 text-gacelas-stopRed flex items-center justify-center active:scale-90 hover:bg-gacelas-stopRed hover:text-white transition-all duration-200 shadow-xl backdrop-blur-md group" title="Detener carrera">
+<span class="material-symbols-outlined text-[26px] fill-current group-hover:text-white transition-colors" style="font-variation-settings: 'FILL' 1;">
+            stop
+          </span>
+</button>
+<!-- BOTÓN PAUSA: Naranja #D97706 grande estilo píldora -->
+<button class="h-16 px-9 rounded-full bg-gacelas-orange text-white flex items-center justify-center gap-2.5 font-display font-bold text-base tracking-wide shadow-xl shadow-amber-600/30 active:scale-95 hover:brightness-110 transition-all duration-200" title="Pausar carrera">
+<span class="material-symbols-outlined text-[28px] fill-current" style="font-variation-settings: 'FILL' 1;">
+            pause
+          </span>
+<span>PAUSAR</span>
+</button>
+</div>
+</footer>
+<!-- Indicador de barra de inicio inferior (Home Indicator iOS) -->
+<div class="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full z-40 pointer-events-none"></div>
+</div>
+</body>
+</html>

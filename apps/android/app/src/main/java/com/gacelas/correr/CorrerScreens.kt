@@ -275,75 +275,13 @@ private fun DialogoDescartar(onConfirmar: () -> Unit, onCancelar: () -> Unit) {
 }
 
 @Composable
-fun CarreraEnCursoScreen(onCerrar: () -> Unit, onFinalizar: () -> Unit, onCronometro: () -> Unit) {
-    val context = LocalContext.current
-    val tracker = contenedor().tracker
-    val estado by tracker.estado.collectAsState()
-    val ajustes by ajustesState()
-    val m = ajustes.unidadesMetricas
-    var confirmar by remember { mutableStateOf(false) }
-    var vista3d by rememberSaveable { mutableStateOf(false) }
-    MantenerPantallaEncendida()
-    RelojCarrera(tracker, estado)
-    BackHandler { confirmar = true }
-    PantallaCompleta {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            BotonCerrar { confirmar = true }
-            Spacer(Modifier.weight(1f))
-            BotonCompartirEnVivo(tracker)
-            Spacer(Modifier.width(8.dp))
-            Row(Modifier.clip(CircleShape).background(GColors.SurfaceContainer).padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(8.dp).clip(CircleShape).background(if (estado.pausada) GColors.Primary500 else GColors.Secondary500))
-                Text(if (estado.pausada) "  En pausa" else "  En curso", style = GType.labelMd, color = GColors.TextPrimary)
-            }
-        }
-        Column(Modifier.fillMaxWidth().padding(vertical = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(Unidades.texto(estado.distanciaKm, m), style = GType.metricHuge.copy(fontSize = GType.metricHuge.fontSize * 1.8f, lineHeight = GType.metricHuge.lineHeight * 1.8f), color = GColors.TextPrimary)
-            Text(if (m) "Kilómetros" else "Millas", style = GType.labelLg, color = GColors.TextSecondary)
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            Metrica(estado.tiempoTexto, "Tiempo", grande = true)
-            Metrica(formatearRitmo(Unidades.ritmo(estado.ritmoActualSegKm ?: estado.ritmoPromedioSegKm, m)), "Ritmo ${Unidades.etiquetaRitmo(m)}", grande = true, color = GColors.Primary500)
-        }
-        Row(Modifier.fillMaxWidth().padding(vertical = 16.dp), horizontalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
-            BotonRedondo(Icons.Filled.Timer, "Ver cronómetro", GColors.SurfaceHigh, 56.dp, onCronometro)
-            BotonRedondo(if (estado.pausada) Icons.Filled.PlayArrow else Icons.Filled.Pause, if (estado.pausada) "Reanudar" else "Pausar", GColors.Primary, 88.dp, tracker::alternarPausa)
-            BotonRedondo(Icons.Filled.Stop, "Finalizar", GColors.Danger, 56.dp, {
-                terminarCarrera(context, tracker)
-                onFinalizar()
-            })
-        }
-        Tarjeta {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                Metrica(formatearRitmo(Unidades.ritmo(estado.ritmoPromedioSegKm, m)), "Promedio", color = GColors.Secondary500)
-                Metrica("${estado.desnivelM.toInt()} m", "Desnivel")
-                Metrica(estado.ultimaPrecisionM?.let { "±${it.toInt()} m" } ?: "--", "GPS", color = GColors.Primary500)
-            }
-        }
-        if (estado.puntos.size >= 2) {
-            Tarjeta(padding = 8.dp) {
-                if (Mapas.configurado()) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 8.dp)) {
-                    Pastilla("2D", !vista3d, { vista3d = false })
-                    Pastilla("3D", vista3d, { vista3d = true })
-                }
-                MapaGacelas(
-                    estado.puntos.aLatLng(), Modifier.fillMaxWidth().height(if (vista3d) 340.dp else 220.dp).clip(RoundedCornerShape(16.dp)), seguir = true, zoom = 17f,
-                    modo3d = vista3d, ritmoSegKm = estado.ritmoActualSegKm, adelanteM = 60.0,
-                ) { TrazadoRuta(estado.puntos, Modifier.fillMaxWidth().height(160.dp)) }
-            }
-        } else {
-            Text(if (estado.pausada) "Carrera en pausa" else "Esperando puntos GPS. Muévete al aire libre para mejor señal.",
-                style = GType.bodySm, color = GColors.TextSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-        }
-    }
-    if (confirmar) {
-        DialogoDescartar(onConfirmar = {
-            confirmar = false
-            descartarCarrera(context, tracker)
-            onCerrar()
-        }, onCancelar = { confirmar = false })
-    }
+fun CarreraEnCursoScreen(onCerrar: () -> Unit, onFinalizar: () -> Unit, @Suppress("UNUSED_PARAMETER") onCronometro: () -> Unit) {
+    // Diseño V1 "Barra superior" (Stitch): el cronometro ahora es un panel lateral dentro de la pantalla.
+    CarreraEnCursoC4(onCerrar, onFinalizar)
 }
+
+@Composable
+internal fun DialogoDescartarCarrera(onConfirmar: () -> Unit, onCancelar: () -> Unit) = DialogoDescartar(onConfirmar, onCancelar)
 
 /** Dibuja el recorrido GPS normalizado al tamano disponible. */
 @Composable
@@ -772,7 +710,7 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
 
 /** Boton "Compartir en vivo": envia la posicion cada 5 s mientras se corre. */
 @Composable
-private fun BotonCompartirEnVivo(tracker: com.gacelas.tracking.RunTracker) {
+internal fun BotonCompartirEnVivo(tracker: com.gacelas.tracking.RunTracker) {
     val repo = contenedor().enVivo ?: return
     val perfil by com.gacelas.ui.sesionState()
     if (perfil == null) return
