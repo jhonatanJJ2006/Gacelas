@@ -132,6 +132,7 @@ fun ModalActualizacion(info: InfoVersion, obligatoria: Boolean, onMasTarde: () -
         onDismissRequest = { if (cerrable) onMasTarde() },
         properties = DialogProperties(dismissOnClickOutside = false, dismissOnBackPress = !obligatoria, usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
+        // Sin backdrop-blur en Compose: la tarjeta va al 98% (Stitch 95% + blur-xl) para que no se lea lo de atrás.
         // El scrim es el del diseño (negro 60%); se quita el atenuado propio del Dialog para no oscurecer doble.
         (androidx.compose.ui.platform.LocalView.current.parent as? androidx.compose.ui.window.DialogWindowProvider)?.window?.setDimAmount(0f)
         ContenidoModal(
@@ -178,7 +179,7 @@ internal fun ContenidoModal(
         Box(
             Modifier.widthIn(max = 350.dp).fillMaxWidth()
                 .shadow(20.dp, forma, ambientColor = Color.Black.copy(alpha = 0.65f), spotColor = Color.Black.copy(alpha = 0.65f))
-                .clip(forma).background(M3.Tarjeta.copy(alpha = 0.95f)).border(1.dp, M3.blanco(0.10f), forma)
+                .clip(forma).background(M3.Tarjeta.copy(alpha = 0.98f)).border(1.dp, M3.blanco(0.10f), forma)
                 .drawBehind {
                     // Brillo ambiental arriba a la derecha (-top-16 -right-16 w-36, #D6338A/10, blur-2xl).
                     drawCircle(Brush.radialGradient(listOf(M3.Magenta.copy(alpha = 0.12f), Color.Transparent), center = Offset(size.width + 8.dp.toPx(), 8.dp.toPx()), radius = 110.dp.toPx()),
