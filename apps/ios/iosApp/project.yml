@@ -1,0 +1,34 @@
+name: iosApp
+options:
+  bundleIdPrefix: com.gacelas
+  deploymentTarget:
+    iOS: "15.0"
+settings:
+  base:
+    MARKETING_VERSION: "0.7.0"
+    CURRENT_PROJECT_VERSION: "700"
+targets:
+  iosApp:
+    type: application
+    platform: iOS
+    sources: [iosApp]
+    info:
+      path: iosApp/Info.plist
+      properties:
+        CFBundleDisplayName: Gacelas
+        UILaunchScreen: {}
+        CADisableMinimumFrameDurationOnPhone: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.gacelas.app
+        FRAMEWORK_SEARCH_PATHS: "$(SRCROOT)/../../android/shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
+        OTHER_LDFLAGS: ["$(inherited)", "-framework", "Shared"]
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        # Firma: se añadirá con secretos (DEVELOPMENT_TEAM, perfil) en la etapa TestFlight
+        CODE_SIGN_STYLE: Automatic
+    preBuildScripts:
+      - name: Compilar Shared (KMP)
+        basedOnDependencyAnalysis: false
+        script: |
+          cd "$SRCROOT/../../android"
+          ./gradlew :shared:embedAndSignAppleFrameworkForXcode

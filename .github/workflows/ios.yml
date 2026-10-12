@@ -1,0 +1,83 @@
+name: iOS
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      ANDROID_DIR: apps/android
+      IOS_DIR: apps/ios/iosApp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('apps/android/gradle/libs.versions.toml') }}
+      - name: Tests compartidos (simulador)
+        working-directory: ${{ env.ANDROID_DIR }}
+        run: ./gradlew :shared:iosSimulatorArm64Test --no-daemon
+      - name: Xcode 16
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)" && xcodebuild -version
+      - name: Generar proyecto Xcode
+        working-directory: ${{ env.IOS_DIR }}
+        run: brew install xcodegen && xcodegen generate
+      - name: Build simulador
+        working-directory: ${{ env.IOS_DIR }}
+        run: |
+          xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build ARCHS=arm64 CODE_SIGNING_ALLOWED=NO build
+      - name: Capturas en simulador
+        working-directory: ${{ env.IOS_DIR }}
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
+          xcrun simctl boot "$UDID"; xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" build/Build/Products/Debug-iphonesimulator/iosApp.app
+          xcrun simctl launch "$UDID" com.gacelas.app
+          sleep 15
+          mkdir -p shots && xcrun simctl io "$UDID" screenshot shots/inicio.png
+      - uses: actions/upload-artifact@v4
+        with: { name: ios-simulator-screenshots, path: apps/ios/iosApp/shots }
+      - name: Empaquetar .app simulador
+        working-directory: ${{ env.IOS_DIR }}
+        run: cd build/Build/Products/Debug-iphonesimulator && zip -qry $GITHUB_WORKSPACE/Gacelas-simulator.app.zip iosApp.app
+      - name: Build .ipa sin firmar
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
+        working-directory: ${{ env.IOS_DIR }}
+        # Etapa TestFlight: importar certificado/perfil desde secrets
+        # (IOS_CERT_P12, IOS_CERT_PASSWORD, IOS_PROFILE, ASC_API_KEY) y usar xcodebuild archive + exportArchive.
+        run: |
+          xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+          mkdir -p Payload && cp -R build/Build/Products/Release-iphoneos/iosApp.app Payload/
+          zip -qry $GITHUB_WORKSPACE/Gacelas-unsigned.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-builds
+          path: |
+            Gacelas-simulator.app.zip
+            Gacelas-unsigned.ipa
+          if-no-files-found: ignore
+      - name: Adjuntar a GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          TAG=${{ github.event.release.tag_name || github.ref_name }}
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TAG" --notes "Build iOS"
+          gh release upload "$TAG" Gacelas-unsigned.ipa Gacelas-simulator.app.zip --clobber
