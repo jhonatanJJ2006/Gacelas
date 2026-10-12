@@ -27,13 +27,8 @@ object Mapas {
      */
     fun configurado(): Boolean = android.os.Build.FINGERPRINT != "robolectric"
 
-    val trazos: Map<String, List<LatLng>> = mapOf(
-        "1" to listOf(LatLng(-3.9746, -79.2017), LatLng(-3.9712, -79.2001), LatLng(-3.969, -79.203), LatLng(-3.9718, -79.2058), LatLng(-3.9746, -79.2017)),
-        "2" to listOf(LatLng(-3.9931, -79.2005), LatLng(-3.999, -79.1985), LatLng(-4.006, -79.197), LatLng(-4.0125, -79.195)),
-        "3" to listOf(LatLng(-3.995, -79.225), LatLng(-3.999, -79.24), LatLng(-4.001, -79.255), LatLng(-4.0002, -79.264)),
-        "primary" to listOf(LatLng(-3.9746, -79.2017), LatLng(-3.9845, -79.2035), LatLng(-3.9931, -79.2005), LatLng(-4.0045, -79.1958)),
-        "alt" to listOf(LatLng(-3.9746, -79.2017), LatLng(-3.988, -79.2075), LatLng(-3.999, -79.201)),
-    )
+    val trazos: Map<String, List<LatLng>> =
+        com.gacelas.data.rutas.TrazosRutas.puntos.mapValues { (_, p) -> p.map { (lat, lng) -> LatLng(lat, lng) } }
 
     fun trazo(id: String?): List<LatLng> = id?.removePrefix("ruta-")?.let { trazos[it] } ?: emptyList()
 }

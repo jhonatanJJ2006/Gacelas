@@ -55,13 +55,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -73,7 +70,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import com.gacelas.R
+import com.gacelas.shared.decimales
+import com.gacelas.ui.theme.SpaceGrotesk
 import com.gacelas.ui.theme.Inter
 
 /**
@@ -95,12 +93,6 @@ object C4 {
     val Blanco5 = Color.White.copy(alpha = 0.05f)
 }
 
-@OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
-private fun spaceGrotesk(w: FontWeight) = Font(R.font.space_grotesk, w, variationSettings = FontVariation.Settings(FontVariation.weight(w.weight)))
-
-/** Space Grotesk (titulares del diseño C4). */
-val SpaceGrotesk = FontFamily(spaceGrotesk(FontWeight.Medium), spaceGrotesk(FontWeight.SemiBold), spaceGrotesk(FontWeight.Bold))
-
 object C4Texto {
     /** label-caps: Inter 11/14, 0.08em, 600 (tracking-wider = 0.05em). */
     val labelCaps = TextStyle(fontFamily = Inter, fontSize = 11.sp, lineHeight = 14.sp, letterSpacing = 0.05.em, fontWeight = FontWeight.SemiBold)
@@ -113,17 +105,15 @@ object C4Texto {
 /** Datos reales de la ruta: trazo "1" (Parque Jipiro) de Mapas.trazos; la distancia se calcula. */
 object PortadaRuta {
     const val NOMBRE = "Jipiro"
-    fun km(): Double = com.gacelas.data.rutas.Guia.longitudM(
-        com.gacelas.ui.components.Mapas.trazos.getValue("1").map { it.latitude to it.longitude },
-    ) / 1000.0
-    fun etiqueta(): String = "$NOMBRE · ${"%.1f".format(java.util.Locale.US, km())} KM"
+    fun km(): Double = com.gacelas.data.rutas.Guia.longitudM(com.gacelas.data.rutas.TrazosRutas.puntos.getValue("1")) / 1000.0
+    fun etiqueta(): String = "$NOMBRE · ${decimales(km(), 1)} KM"
 }
 
 /** Fondo de mapa exportado de Stitch (390x884 @3x). Ocupa toda la ventana, el teclado no lo mueve. */
 @Composable
 fun FondoMapaC4(login: Boolean) {
     Image(
-        painterResource(if (login) R.drawable.mapa_stitch_login else R.drawable.mapa_stitch_bienvenida),
+        imagenGacelas(if (login) ImagenGacelas.MapaLogin else ImagenGacelas.MapaBienvenida),
         contentDescription = "Mapa de Loja con la ruta del Parque Jipiro",
         contentScale = ContentScale.Crop, alignment = Alignment.TopCenter,
         modifier = Modifier.fillMaxSize().testTag("mapa-portada"),

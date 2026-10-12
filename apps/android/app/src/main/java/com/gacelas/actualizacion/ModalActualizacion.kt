@@ -61,7 +61,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.gacelas.BuildConfig
-import com.gacelas.acceso.SpaceGrotesk
+import com.gacelas.ui.theme.SpaceGrotesk
 import com.gacelas.data.actualizacion.Aviso
 import com.gacelas.data.actualizacion.InfoVersion
 import com.gacelas.data.actualizacion.ReglasActualizacion

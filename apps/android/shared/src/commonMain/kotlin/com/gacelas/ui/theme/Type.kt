@@ -1,40 +1,26 @@
 package com.gacelas.ui.theme
 
 import androidx.compose.material3.Typography
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import com.gacelas.R
 
-@OptIn(ExperimentalTextApi::class)
-private fun interFont(weight: FontWeight) =
-    Font(R.font.inter, weight, variationSettings = FontVariation.Settings(FontVariation.weight(weight.weight)))
+/*
+ * Familias tipograficas de la app (mismos archivos en Android e iOS).
+ * Android usa las fuentes variables de res/font con FontVariation; iOS usa instancias estaticas
+ * de esas mismas fuentes por peso (Compose iOS 1.7 no aplica FontVariation), generadas con
+ * tools/fuentes-ios.py.
+ */
+/** Inter para textos de cuerpo (400/500/600/700). */
+expect val Inter: FontFamily
 
-@OptIn(ExperimentalTextApi::class)
-private fun robotoFlexFont(weight: FontWeight) =
-    Font(R.font.roboto_flex, weight, variationSettings = FontVariation.Settings(FontVariation.weight(weight.weight)))
+/** Roboto Flex para titulos, etiquetas y metricas (400/500/600/700/900). */
+expect val RobotoFlex: FontFamily
 
-/** Inter para textos de cuerpo. */
-val Inter = FontFamily(
-    interFont(FontWeight.Normal),
-    interFont(FontWeight.Medium),
-    interFont(FontWeight.SemiBold),
-    interFont(FontWeight.Bold),
-)
-
-/** Roboto Flex para titulos, etiquetas y metricas. */
-val RobotoFlex = FontFamily(
-    robotoFlexFont(FontWeight.Normal),
-    robotoFlexFont(FontWeight.Medium),
-    robotoFlexFont(FontWeight.SemiBold),
-    robotoFlexFont(FontWeight.Bold),
-    robotoFlexFont(FontWeight.Black),
-)
+/** Space Grotesk, titulares del diseño C4 (500/600/700). */
+expect val SpaceGrotesk: FontFamily
 
 /** Escala tipografica del DESIGN.md (body, label, title, headline, metric). */
 object GType {
