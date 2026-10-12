@@ -16,6 +16,7 @@ import platform.CoreMotion.CMAttitudeReferenceFrameXTrueNorthZVertical
 import platform.CoreMotion.CMAttitudeReferenceFrameXMagneticNorthZVertical
 import platform.CoreMotion.CMMotionManager
 import platform.Foundation.NSBundle
+import platform.Foundation.timeIntervalSince1970
 import platform.Foundation.NSOperationQueue
 import platform.darwin.NSObject
 
