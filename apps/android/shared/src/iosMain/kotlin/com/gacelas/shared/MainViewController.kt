@@ -103,8 +103,8 @@ private fun LoginIos(onAtras: () -> Unit) {
 }
 
 /**
- * Inicio compartido. Sin carreras guardadas todavia en iOS (llegan con la sesion); la figura 3D
- * (SceneView en Android) queda vacia hasta su etapa, sin diseño propio.
+ * Inicio compartido. Sin carreras guardadas todavia en iOS (llegan con la sesion). El 3D (SceneView
+ * en Android) llega en su etapa; mientras, la misma imagen de reemplazo que usa Android sin 3D.
  */
 @Composable
 private fun InicioIos(onCorrer: () -> Unit) {
@@ -121,6 +121,6 @@ private fun InicioIos(onCorrer: () -> Unit) {
         racha = remember { com.gacelas.data.rachas.Rachas.calcular(emptyList(), ahora) },
         evento = evento,
         onCorrer = onCorrer, onEventos = {}, onEvento = {},
-        corredor3D = {},
+        corredor3D = { com.gacelas.ui.three.Runner3DFallback() },
     )
 }
