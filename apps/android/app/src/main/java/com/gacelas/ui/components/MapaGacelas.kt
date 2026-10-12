@@ -55,6 +55,7 @@ import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 
 private val NARANJA = Color(0xFFFF6A13)
+private val MAGENTA = Color(0xFFD6338A)
 
 /**
  * Mapa estilo Gacelas (MapLibre + OpenStreetMap, funciona sin red en las zonas descargadas):
@@ -75,6 +76,12 @@ fun MapaGacelas(
     plan: List<LatLng> = emptyList(),
     adelanteM: Double = 120.0,
     controles: Boolean = true,
+    /** Ruta recorrida en magenta (#D6338A, diseño C4 de la carrera) en vez de naranja. */
+    rutaMagenta: Boolean = false,
+    /** Distancia desde arriba del aviso "sin conexion" (para no quedar bajo tarjetas superpuestas). */
+    avisoArriba: androidx.compose.ui.unit.Dp = 8.dp,
+    /** Controles propios (recentrar, orientar al norte, rumbo de camara); sustituyen a los de serie y al chip "recentrar". */
+    controlesPropios: (@Composable androidx.compose.foundation.layout.BoxScope.(recentrar: () -> Unit, norte: () -> Unit, rumbo: Float) -> Unit)? = null,
     alternativa: @Composable () -> Unit,
 ) {
     if (!Mapas.configurado() || LocalInspectionMode.current) {
@@ -130,7 +137,10 @@ fun MapaGacelas(
             add(TrazoMapa(plan, NARANJA, 22f, 0.22f))
             add(TrazoMapa(plan, Color(0xFFFFD2B3), 6f, 0.55f))
         }
-        if (puntos.size >= 2) {
+        if (puntos.size >= 2 && rutaMagenta) {
+            add(TrazoMapa(puntos, MAGENTA, 16f, 0.25f))
+            add(TrazoMapa(puntos, MAGENTA, 5f))
+        } else if (puntos.size >= 2) {
             add(TrazoMapa(puntos, NARANJA, 14f, 0.18f))
             add(TrazoMapa(puntos, Color(0xFF05080F), 9f))
             add(TrazoMapa(puntos, NARANJA, 5f))
@@ -174,7 +184,11 @@ fun MapaGacelas(
                 }
             }
         }
-        if (controles) ControlesMapa(mapa, rumboCamara, Modifier.align(Alignment.CenterEnd).padding(end = 12.dp))
+        if (controlesPropios != null) controlesPropios(
+            { siguiendo = true },
+            { mapa?.let { m -> m.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder(m.cameraPosition).bearing(0.0).build())) } },
+            rumboCamara,
+        ) else if (controles) ControlesMapa(mapa, rumboCamara, Modifier.align(Alignment.CenterEnd).padding(end = 12.dp))
         // Sin red y sin Loja descargada no hay teselas: se avisa en vez de dejar el mapa vacio sin explicacion.
         val descarga by MapaOffline.estado.collectAsState()
         val conRed = remember(puntos.size / 10) { ReglasDescarga.conRed(context) }
@@ -182,11 +196,11 @@ fun MapaGacelas(
             Text(
                 "Sin conexión · descarga el mapa de Loja en Ajustes",
                 color = Color.White, fontSize = 11.sp,
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = 8.dp).clip(CircleShape).background(Color(0xE6121A2A))
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = avisoArriba).clip(CircleShape).background(Color(0xE6121A2A))
                     .padding(horizontal = 10.dp, vertical = 4.dp).testTag("aviso-sin-mapa"),
             )
         }
-        if (seguir && !siguiendo) {
+        if (seguir && !siguiendo && controlesPropios == null) {
             Row(
                 Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp).clip(CircleShape).background(Color(0xF2121A2A))
                     .clickable { siguiendo = true }.padding(horizontal = 16.dp, vertical = 10.dp).testTag("recentrar"),
