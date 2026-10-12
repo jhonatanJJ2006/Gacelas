@@ -37,7 +37,7 @@ private fun plural(n: Int, uno: String, varios: String) = "$n ${if (n == 1) uno 
 
 @Composable
 fun InsigniaRacha(r: Racha, modifier: Modifier = Modifier) {
-    val riesgo = Rachas.enRiesgo(r, System.currentTimeMillis())
+    val riesgo = Rachas.enRiesgo(r, com.gacelas.shared.ahoraMs())
     Row(
         modifier.clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.75f))
             .border(1.dp, if (r.diaria > 0) GColors.Primary500.copy(alpha = 0.5f) else Color.Transparent, CircleShape)
@@ -52,7 +52,7 @@ fun InsigniaRacha(r: Racha, modifier: Modifier = Modifier) {
 
 @Composable
 fun TarjetaRacha(r: Racha, carreras: List<CarreraGuardada>) {
-    val ahora = System.currentTimeMillis()
+    val ahora = com.gacelas.shared.ahoraMs()
     val semanas = Rachas.mapaCalor(carreras, ahora)
     val max = maxOf(1.0, semanas.flatten().maxOf { it.km })
     Tarjeta {
