@@ -10,4 +10,5 @@ for v in bienvenida login; do
     --virtual-time-budget=8000 --screenshot=mapa-$v.png file:///tmp/mapa-$v.html
 done
 ```
+
 Después se recortan 2 px por lado (borde del contenedor de Stitch) y se convierten a WebP.
