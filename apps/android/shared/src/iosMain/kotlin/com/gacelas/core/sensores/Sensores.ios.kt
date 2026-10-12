@@ -29,7 +29,7 @@ private fun fondoDeclarado(): Boolean =
 
 /** CoreLocation con BestForNavigation; entrega como maximo una lectura por intervalo (1 s). */
 @OptIn(ExperimentalForeignApi::class)
-class UbicacionIos : NSObject(), FuenteUbicacion, CLLocationManagerDelegateProtocol {
+class UbicacionIos : FuenteUbicacion {
     private val gestor = CLLocationManager()
     private var alLeer: ((LecturaGps) -> Unit)? = null
     private var intervaloMs = INTERVALO_GPS_MS
@@ -38,7 +38,7 @@ class UbicacionIos : NSObject(), FuenteUbicacion, CLLocationManagerDelegateProto
 
     override fun iniciar(intervaloMs: Long, enSegundoPlano: Boolean, alLeer: (LecturaGps) -> Unit) {
         this.alLeer = alLeer; this.intervaloMs = intervaloMs; fondo = enSegundoPlano
-        gestor.delegate = this
+        gestor.delegate = delegado
         gestor.desiredAccuracy = kCLLocationAccuracyBestForNavigation
         gestor.distanceFilter = kCLDistanceFilterNone
         gestor.activityType = CLActivityTypeFitness
@@ -61,12 +61,18 @@ class UbicacionIos : NSObject(), FuenteUbicacion, CLLocationManagerDelegateProto
         alLeer = null
     }
 
-    override fun locationManagerDidChangeAuthorization(manager: CLLocationManager) {
+    // Kotlin/Native no permite mezclar supertipos Kotlin y Objective-C: el delegado es un objeto aparte.
+    private val delegado = object : NSObject(), CLLocationManagerDelegateProtocol {
+        override fun locationManagerDidChangeAuthorization(manager: CLLocationManager) = autorizacion(manager)
+        override fun locationManager(manager: CLLocationManager, didUpdateLocations: List<*>) = recibir(didUpdateLocations)
+    }
+
+    private fun autorizacion(manager: CLLocationManager) {
         val s = manager.authorizationStatus
         if (s == kCLAuthorizationStatusAuthorizedWhenInUse || s == kCLAuthorizationStatusAuthorizedAlways) manager.startUpdatingLocation()
     }
 
-    override fun locationManager(manager: CLLocationManager, didUpdateLocations: List<*>) {
+    private fun recibir(didUpdateLocations: List<*>) {
         val l = didUpdateLocations.lastOrNull() as? CLLocation ?: return
         if (l.horizontalAccuracy < 0) return
         val ms = (l.timestamp.timeIntervalSince1970 * 1000).toLong()
@@ -90,7 +96,7 @@ class UbicacionIos : NSObject(), FuenteUbicacion, CLLocationManagerDelegateProto
  * entonces del curso GPS con Rumbo.combinar.
  */
 @OptIn(ExperimentalForeignApi::class)
-class RumboIos : NSObject(), FuenteRumbo, CLLocationManagerDelegateProtocol {
+class RumboIos : FuenteRumbo {
     private val movimiento = CMMotionManager()
     private val gestor = CLLocationManager()
     private var alCambiar: ((Float) -> Unit)? = null
@@ -98,7 +104,7 @@ class RumboIos : NSObject(), FuenteRumbo, CLLocationManagerDelegateProtocol {
     override fun iniciar(alCambiar: (Float) -> Unit) {
         this.alCambiar = alCambiar
         if (CLLocationManager.headingAvailable()) {
-            gestor.delegate = this
+            gestor.delegate = delegado
             gestor.headingFilter = 1.0
             gestor.startUpdatingHeading()
             return
@@ -124,7 +130,11 @@ class RumboIos : NSObject(), FuenteRumbo, CLLocationManagerDelegateProtocol {
         alCambiar = null
     }
 
-    override fun locationManager(manager: CLLocationManager, didUpdateHeading: CLHeading) {
+    private val delegado = object : NSObject(), CLLocationManagerDelegateProtocol {
+        override fun locationManager(manager: CLLocationManager, didUpdateHeading: CLHeading) = rumbo(didUpdateHeading)
+    }
+
+    private fun rumbo(didUpdateHeading: CLHeading) {
         val g = if (didUpdateHeading.trueHeading >= 0) didUpdateHeading.trueHeading else didUpdateHeading.magneticHeading
         alCambiar?.invoke(g.toFloat())
     }
