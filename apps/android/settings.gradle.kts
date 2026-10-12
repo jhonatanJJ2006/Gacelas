@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Gacelas"
 include(":app")
+include(":shared")
