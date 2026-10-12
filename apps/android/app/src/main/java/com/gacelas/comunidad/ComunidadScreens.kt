@@ -1,5 +1,6 @@
 package com.gacelas.comunidad
 
+import com.gacelas.data.eventos.yaPaso
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Sensors
@@ -319,7 +320,7 @@ private fun DialogoCrearEvento(onCerrar: () -> Unit, onCrear: (Evento) -> Unit) 
 @Composable
 private fun TarjetaEvento(e: Evento, inscrito: Boolean, onClick: () -> Unit, onInscribir: () -> Unit) {
     Tarjeta(padding = 0.dp, onClick = onClick) {
-        Box(Modifier.fillMaxWidth().height(110.dp).background(Brush.linearGradient(listOf(if (e.pasado) GColors.SurfaceHigh else GColors.Primary700, GColors.SurfaceLow)))) {
+        Box(Modifier.fillMaxWidth().height(110.dp).background(Brush.linearGradient(listOf(if (e.yaPaso()) GColors.SurfaceHigh else GColors.Primary700, GColors.SurfaceLow)))) {
             Icon(Icons.Filled.Event, null, tint = GColors.TextPrimary.copy(alpha = 0.6f), modifier = Modifier.align(Alignment.Center).size(48.dp))
             Text("${e.distanciaKm} km", style = GType.labelMd, color = GColors.TextPrimary,
                 modifier = Modifier.align(Alignment.TopEnd).padding(12.dp).clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.7f)).padding(horizontal = 10.dp, vertical = 4.dp))
@@ -339,7 +340,7 @@ private fun TarjetaEvento(e: Evento, inscrito: Boolean, onClick: () -> Unit, onI
                 Box(Modifier.width(64.dp)) { (0 until minOf(3, total)).forEach { i -> Box(Modifier.offset(x = (i * 16).dp)) { AvatarCirculo(28.dp, i) } } }
                 Text(if (total > 3) "+${total - 3} participantes" else "$total participantes",
                     style = GType.labelMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
-                if (!e.pasado) {
+                if (!e.yaPaso()) {
                     Text(if (inscrito) "Inscrito" else "Inscribirse", style = GType.labelMd, color = GColors.TextPrimary,
                         modifier = Modifier.clip(CircleShape).background(if (inscrito) GColors.Secondary else GColors.Primary).clickable(onClick = onInscribir).padding(horizontal = 12.dp, vertical = 6.dp))
                 } else {
@@ -402,7 +403,7 @@ fun DetalleEventoScreen(id: String, onAtras: () -> Unit, onEnVivo: () -> Unit = 
                 }
                 Text("Descripción", style = GType.titleMd, color = GColors.TextPrimary)
                 Text(e.descripcion, style = GType.bodyMd, color = GColors.TextSecondary)
-                androidx.compose.material3.TextButton(onClick = onEnVivo) { Icon(Icons.Filled.Sensors, null, tint = GColors.Danger); Text(if (e.pasado) " Repetición del evento" else " Ver evento en vivo", color = GColors.Danger) }
+                androidx.compose.material3.TextButton(onClick = onEnVivo) { Icon(Icons.Filled.Sensors, null, tint = GColors.Danger); Text(if (e.yaPaso()) " Repetición del evento" else " Ver evento en vivo", color = GColors.Danger) }
                 Text("Participantes ($participantes)", style = GType.titleMd, color = GColors.TextPrimary)
                 estado?.let { Text(com.gacelas.data.clubes.textoCupo(it) + if (enEspera) " · estás en la lista de espera (puesto ${it.miPosicion})" else "", style = GType.bodySm, color = GColors.TextSecondary) }
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -418,7 +419,7 @@ fun DetalleEventoScreen(id: String, onAtras: () -> Unit, onEnVivo: () -> Unit = 
             }
         }
         Box(Modifier.background(GColors.BgSecondary).navigationBarsPadding().padding(16.dp)) {
-            if (e.pasado) {
+            if (e.yaPaso()) {
                 BotonPrimario("Evento finalizado", {}, icono = null, enabled = false)
             } else {
                 val lleno = estado?.let { it.cupo != null && it.inscritos >= it.cupo } == true

@@ -7,6 +7,7 @@ import com.gacelas.data.carreras.Estadisticas
 import com.gacelas.data.carreras.PuntoGps
 import com.gacelas.data.eventos.PestanaEventos
 import com.gacelas.data.eventos.filtrarEventos
+import com.gacelas.data.eventos.yaPaso
 import com.gacelas.data.mock.MockData.ID_USUARIO
 import com.gacelas.data.mock.MockData
 import com.gacelas.data.rutas.PestanaRutas
@@ -169,8 +170,8 @@ class FiltrosTest {
     }
     @Test fun eventos() {
         val ev = MockData.eventos
-        assertTrue(filtrarEventos(ev, PestanaEventos.Proximos, emptySet()).none { it.pasado })
-        assertTrue(filtrarEventos(ev, PestanaEventos.Pasados, emptySet()).all { it.pasado })
+        assertTrue(filtrarEventos(ev, PestanaEventos.Proximos, emptySet()).none { it.yaPaso() })
+        assertTrue(filtrarEventos(ev, PestanaEventos.Pasados, emptySet()).all { it.yaPaso() })
         assertTrue(filtrarEventos(ev, PestanaEventos.Pasados, emptySet()).isNotEmpty())
         val id = ev.first().id
         assertTrue(filtrarEventos(ev, PestanaEventos.MisEventos, setOf(id)).any { it.id == id })

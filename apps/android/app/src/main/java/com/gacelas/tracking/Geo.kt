@@ -33,5 +33,10 @@ object Unidades {
     fun etiquetaDistancia(metricas: Boolean) = if (metricas) "km" else "mi"
     fun ritmo(segKm: Int?, metricas: Boolean): Int? = segKm?.let { if (metricas) it else (it * KM_POR_MILLA).toInt() }
     fun etiquetaRitmo(metricas: Boolean) = if (metricas) "/km" else "/mi"
-    fun texto(km: Double, metricas: Boolean, decimales: Int = 2) = "%.${decimales}f".format(java.util.Locale.US, distancia(km, metricas))
+    fun texto(km: Double, metricas: Boolean, decimales: Int = 2): String {
+        // Bajo 1 km/mi siempre 2 decimales: con 1 decimal una carrera de 0.05 km salia "0.1".
+        val d = distancia(km, metricas)
+        val dec = if (d < 1.0) maxOf(decimales, 2) else decimales
+        return "%.${dec}f".format(java.util.Locale.US, d)
+    }
 }
