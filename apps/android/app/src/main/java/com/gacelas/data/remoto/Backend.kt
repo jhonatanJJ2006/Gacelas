@@ -54,7 +54,11 @@ fun traducirError(mensaje: String?): String {
         "invalid login" in m || "invalid_credentials" in m -> "Correo o contraseña incorrectos"
         "already registered" in m || "already been registered" in m || "user_already_exists" in m -> "Ya existe una cuenta con ese correo"
         "not confirmed" in m -> "Confirma tu correo antes de iniciar sesión"
-        "provider is not enabled" in m || "unsupported provider" in m -> "El inicio con Google todavía no está activado en el servidor"
+        "provider is not enabled" in m || ("provider" in m && "not enabled" in m) || "unsupported provider" in m -> "El inicio con Google todavía no está activado en el servidor (Supabase › Auth › Providers › Google)"
+        "audience" in m -> "El servidor no acepta el ID de cliente de Google de esta app (falta en Supabase › Google › Client IDs)"
+        "nonce" in m -> "El servidor rechazó la verificación de Google (nonce). Intenta de nuevo; si sigue, revisa \"Skip nonce check\" en Supabase"
+        "bad id token" in m || "id_token" in m || "id token" in m -> "El servidor rechazó el token de Google (Bad ID token). Revisa el Client ID de Google en Supabase"
+        "signups not allowed" in m || "signup is disabled" in m -> "El registro de cuentas nuevas está desactivado en el servidor"
         "rate limit" in m || "security purposes" in m -> "Demasiados intentos. Espera un momento y vuelve a probar"
         "unable to resolve host" in m || "failed to connect" in m || "timeout" in m || "network" in m -> "Sin conexión con el servidor"
         else -> "No se pudo completar. Intenta de nuevo"
@@ -65,7 +69,10 @@ private suspend fun <T> remoto(bloque: suspend () -> T): T = try {
     bloque()
 } catch (e: ErrorRemoto) {
     throw e
+} catch (e: kotlinx.coroutines.CancellationException) {
+    throw e
 } catch (e: Exception) {
+    android.util.Log.w("Backend", "Supabase: ${e.javaClass.simpleName}: ${e.message}")
     throw ErrorRemoto(traducirError(e.message ?: e.javaClass.simpleName))
 }
 
