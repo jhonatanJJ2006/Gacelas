@@ -105,7 +105,7 @@ fun BienvenidaScreen(onSaltar: () -> Unit, onCrearCuenta: () -> Unit, onIniciarS
                 MarcaC4()
                 Spacer(Modifier.weight(1f))
                 ChipC4(PortadaRuta.etiqueta())
-                Text("Saltar", style = C4Texto.labelCaps, color = C4.Secondary,
+                Text("Saltar", style = C4Texto.labelCaps, color = C4.Secondary, maxLines = 1, softWrap = false,
                     modifier = Modifier.padding(start = 4.dp).clip(CircleShape).clickable(onClick = onSaltar).padding(8.dp))
             }
             Box(Modifier.weight(1f).fillMaxWidth().clipToBounds().padding(start = 20.dp, end = 20.dp, bottom = 12.dp), contentAlignment = Alignment.BottomStart) {

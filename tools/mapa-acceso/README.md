@@ -5,7 +5,7 @@ Se generan desde los HTML de esta carpeta ocultando la cabecera y la tarjeta y c
 
 ```sh
 for v in bienvenida login; do
-  sed 's#</head>#<style>header,section,body>div>div.z-10{visibility:hidden!important}</style></head>#' C4-$v.html > /tmp/mapa-$v.html
+  sed 's#</head>#<style>header,section,body>div>div.z-10{visibility:hidden!important} *{animation:none!important}</style></head>#' C4-$v.html > /tmp/mapa-$v.html
   google-chrome --headless=new --hide-scrollbars --force-device-scale-factor=3 --window-size=390,884 \
     --virtual-time-budget=8000 --screenshot=mapa-$v.png file:///tmp/mapa-$v.html
 done
