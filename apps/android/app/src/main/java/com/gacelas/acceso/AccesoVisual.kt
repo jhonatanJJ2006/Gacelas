@@ -131,7 +131,7 @@ object AlturasAcceso {
     /** Bienvenida: por debajo se usa titulo y texto compactos. */
     val BIENVENIDA_COMPACTA = 700.dp
     /** Login: por debajo (p. ej. teclado abierto) se ocultan subtitulo, Google y pie. */
-    val LOGIN_COMPACTO = 560.dp
+    val LOGIN_COMPACTO = 680.dp
     /** Login: por debajo se quitan tambien etiquetas, encabezado y mapa (el gesto atras sigue funcionando). */
     val LOGIN_MINIMO = 480.dp
 }

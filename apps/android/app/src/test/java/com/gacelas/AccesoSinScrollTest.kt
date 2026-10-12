@@ -32,10 +32,18 @@ class AccesoSinScrollTest {
         }
     }
 
-    @Test fun loginCompletoEnPantallaPequena() {
-        compose.setContent { GacelasTheme { InicioSesionScreen({}, {}, {}, {}) } }
+    @Test fun loginCompletoEnPantallaNormal() {
+        compose.setContent { GacelasTheme { Box(Modifier.size(360.dp, 760.dp)) { InicioSesionScreen({}, {}, {}, {}) } } }
         compose.onAllNodes(hasScrollAction()).assertCountEquals(0)
         listOf("Bienvenido de vuelta", "Iniciar sesión", "Continuar con Google", "Crear cuenta").forEach {
+            compose.onNodeWithText(it).assertIsDisplayed()
+        }
+    }
+
+    @Test fun loginEn640dpCabeSinScroll() {
+        compose.setContent { GacelasTheme { InicioSesionScreen({}, {}, {}, {}) } }
+        compose.onAllNodes(hasScrollAction()).assertCountEquals(0)
+        listOf("Bienvenido de vuelta", "Correo electrónico", "Iniciar sesión", "¿Olvidaste tu contraseña?").forEach {
             compose.onNodeWithText(it).assertIsDisplayed()
         }
     }
