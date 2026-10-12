@@ -24,7 +24,15 @@ data class InfoVersion(
     /** Versiones por debajo de esta deben actualizar (sin "Mas tarde"). */
     val minVersionCode: Int? = null,
     val sha256: String? = null,
-)
+    /** Novedades como lista (opcional, desde 0.6.6). Si falta se derivan de [notes]. */
+    val items: List<String>? = null,
+    /** Tamano del APK en bytes (opcional). Si falta, la app lo pide con HEAD. */
+    val apkBytes: Long? = null,
+) {
+    /** Lista de novedades: [items] o, en manifiestos viejos, [notes] partido por lineas, ";" o frases. */
+    fun novedades(): List<String> = items?.map { it.trim() }?.filter { it.isNotEmpty() }
+        ?: ReglasActualizacion.partirNotas(notes)
+}
 
 @Serializable
 data class CacheActualizacion(val revisadoMs: Long = 0L, val info: InfoVersion? = null, val pospuesta: Int? = null)
@@ -45,6 +53,23 @@ object ReglasActualizacion {
     }
 
     fun tocaRevisar(cache: CacheActualizacion, ahoraMs: Long) = cache.revisadoMs == 0L || ahoraMs - cache.revisadoMs >= UN_DIA_MS || ahoraMs < cache.revisadoMs
+
+    fun partirNotas(notes: String): List<String> {
+        val t = notes.trim()
+        if (t.isEmpty()) return emptyList()
+        val partes = when {
+            '\n' in t -> t.split('\n')
+            ';' in t -> t.split(';')
+            else -> t.split(Regex("(?<=[.!?])\\s+"))
+        }
+        val limpias = partes.map { it.trim().trimStart('-', '•', '*').trim().trimEnd('.') }.filter { it.isNotEmpty() }
+        // Una sola frase larga con comas ("a, b y c") se lista por partes.
+        val lista = if (limpias.size == 1 && limpias[0].length > 60 && ", " in limpias[0]) limpias[0].split(", ") else limpias
+        return lista.map { it.trim().replaceFirstChar { c -> c.uppercase() } }.filter { it.isNotEmpty() }
+    }
+
+    /** "47 MB" a partir de bytes (MiB redondeados, igual que el resto de la app). */
+    fun textoMb(bytes: Long): String = "${Math.round(bytes / 1048576.0)} MB"
 
     /** URL publica del manifiesto a partir de SUPABASE_URL; null sin servidor. */
     fun urlManifiesto(supabaseUrl: String): String? =

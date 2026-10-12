@@ -17,7 +17,7 @@ import java.io.File
 import java.security.MessageDigest
 
 sealed interface Descarga {
-    data class Progreso(val porcentaje: Int) : Descarga
+    data class Progreso(val porcentaje: Int, val hechos: Long = 0, val total: Long = 0) : Descarga
     data class Lista(val archivo: File) : Descarga
     data class Error(val mensaje: String) : Descarga
 }
@@ -57,7 +57,7 @@ object Instalador {
                     emit(Descarga.Lista(archivo)); return@flow
                 }
                 DownloadManager.STATUS_FAILED -> { emit(Descarga.Error("No se pudo descargar. Revisa tu conexión.")); return@flow }
-                else -> emit(Descarga.Progreso(if (total > 0) (hechos * 100 / total).toInt() else 0))
+                else -> emit(Descarga.Progreso(if (total > 0) (hechos * 100 / total).toInt() else 0, hechos, maxOf(total, 0)))
             }
             delay(400)
         }
@@ -67,6 +67,14 @@ object Instalador {
         val md = MessageDigest.getInstance("SHA-256")
         f.inputStream().use { i -> val b = ByteArray(1 shl 16); while (true) { val n = i.read(b); if (n < 0) break; md.update(b, 0, n) } }
         return md.digest().joinToString("") { "%02x".format(it) }
+    }
+
+    /** Tamano del APK con una peticion HEAD (para manifiestos sin apkBytes). */
+    suspend fun tamano(url: String): Long? = kotlinx.coroutines.withContext(Dispatchers.IO) {
+        runCatching {
+            val con = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+            try { con.requestMethod = "HEAD"; con.connectTimeout = 6000; con.readTimeout = 6000; con.contentLengthLong.takeIf { it > 0 } } finally { con.disconnect() }
+        }.getOrNull()
     }
 
     /** En Android 8+ cada app necesita permiso del usuario para instalar APKs. */
