@@ -76,8 +76,10 @@ class UbicacionIos : FuenteUbicacion {
         val l = didUpdateLocations.lastOrNull() as? CLLocation ?: return
         if (l.horizontalAccuracy < 0) return
         val ms = (l.timestamp.timeIntervalSince1970 * 1000).toLong()
-        if (ms - ultimaMs < intervaloMs - 100) return
-        ultimaMs = ms
+        // Se limita con el reloj monotono: las ubicaciones simuladas pueden repetir el timestamp.
+        val ahora = com.gacelas.shared.relojMonotonoMs()
+        if (ahora - ultimaMs < intervaloMs - 100) return
+        ultimaMs = ahora
         val (lat, lng) = l.coordinate.useContents { latitude to longitude }
         alLeer?.invoke(
             LecturaGps(
