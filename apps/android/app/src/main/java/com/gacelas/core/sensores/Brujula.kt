@@ -81,10 +81,14 @@ class Brujula(context: Context) : SensorEventListener {
 
 /** Matematicas de rumbos (grados 0..360), sin dependencias de Android para poder probarlas. */
 object Rumbo {
-    /** Por debajo de esta velocidad (m/s, unos 4 km/h) manda el sensor. */
-    const val VEL_SENSOR_MS = 1.1
-    /** Por encima de esta velocidad (m/s, unos 9 km/h) manda el GPS. */
-    const val VEL_GPS_MS = 2.5
+    /**
+     * Por debajo de esta velocidad (m/s, ~2 km/h) manda el sensor. Antes era 1,1-2,5 m/s: trotando a
+     * 9 min/km (1,85 m/s) el rumbo era mitad brujula y mitad GPS, y la camara miraba hacia donde
+     * apuntaba el telefono (p. ej. norte) en vez de hacia donde se corre.
+     */
+    const val VEL_SENSOR_MS = 0.6
+    /** Desde esta velocidad (m/s, ~3,6 km/h, caminar rapido) manda solo el curso GPS. */
+    const val VEL_GPS_MS = 1.0
 
     fun normalizar(g: Float): Float = ((g % 360f) + 360f) % 360f
 
@@ -127,6 +131,9 @@ object Rumbo {
         val norte = r[4] - r[5]
         return normalizar(Math.toDegrees(kotlin.math.atan2(este.toDouble(), norte.toDouble())).toFloat())
     }
+
+    /** Giro del corredor respecto a la camara (grados en -180..180); 0 si no hay rumbo de movimiento. */
+    fun relativo(movimiento: Float?, camara: Float): Float = movimiento?.let { diferencia(camara, it) } ?: 0f
 
     /** Evita mover la camara por cambios minimos del sensor. */
     fun cambioRelevante(previo: Float?, nuevo: Float?, umbral: Float = 4f): Boolean =

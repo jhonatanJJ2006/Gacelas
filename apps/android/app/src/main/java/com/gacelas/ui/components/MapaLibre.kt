@@ -133,7 +133,9 @@ fun MapaLibre(
     LaunchedEffect(mapa, uriEstilo) {
         val m = mapa ?: return@LaunchedEffect
         estilo = null
-        m.setStyle(Style.Builder().fromUri(uriEstilo)) { s ->
+        // Sin red se usa el estilo con las teselas fijas de la region descargada (ver MapaOffline.estiloSinRed).
+        val sinRed = if (!ReglasDescarga.conRed(context)) MapaOffline.estiloSinRed(context, uriEstilo.removePrefix("asset://")) else null
+        m.setStyle(if (sinRed != null) Style.Builder().fromJson(sinRed) else Style.Builder().fromUri(uriEstilo)) { s ->
             s.addSource(GeoJsonSource(FUENTE_TRAZOS))
             s.addSource(GeoJsonSource(FUENTE_CIRCULOS))
             s.addLayer(LineLayer(FUENTE_TRAZOS, FUENTE_TRAZOS).withProperties(

@@ -71,6 +71,8 @@ object ReglasActualizacion {
     /** "47 MB" a partir de bytes (MiB redondeados, igual que el resto de la app). */
     fun textoMb(bytes: Long): String = "${Math.round(bytes / 1048576.0)} MB"
 
+    fun sinCache(url: String, t: Long): String = url + (if ('?' in url) "&" else "?") + "t=$t"
+
     /** URL publica del manifiesto a partir de SUPABASE_URL; null sin servidor. */
     fun urlManifiesto(supabaseUrl: String): String? =
         supabaseUrl.trimEnd('/').takeIf { it.startsWith("https://") }?.let { "$it/storage/v1/object/public/app-releases/android/latest.json" }
@@ -82,7 +84,7 @@ object ReglasActualizacion {
     }
 }
 
-/** Revisa como maximo una vez al dia (o siempre con [forzar]) y recuerda "Mas tarde" por version. */
+/** Revisa en cada llamada (sin cache diaria; la cache solo cubre la falta de red) y recuerda "Mas tarde" solo en la sesion. */
 class ActualizacionRepository(
     store: DataStore<Preferences>,
     private val urlManifiesto: String?,
@@ -95,23 +97,32 @@ class ActualizacionRepository(
     suspend fun revisar(forzar: Boolean = false): Aviso {
         var c = cache.flujo.first()
         val url = urlManifiesto
-        if (url != null && (forzar || ReglasActualizacion.tocaRevisar(c, ahora()))) {
+        if (url != null) {
+            // Siempre se pide al servidor (al abrir y al volver a primer plano); la cache solo sirve sin red.
             runCatching { jsonGacelas.decodeFromString(InfoVersion.serializer(), descargar(url)) }.onSuccess { info ->
                 c = c.copy(revisadoMs = ahora(), info = info)
                 cache.actualizar { it.copy(revisadoMs = ahora(), info = info) }
             }
         }
-        return ReglasActualizacion.aviso(versionActual, c.info, c.pospuesta)
+        val aviso = ReglasActualizacion.aviso(versionActual, c.info, pospuestaSesion)
+        runCatching { android.util.Log.i("Actualizacion", "actual=$versionActual servidor=${c.info?.versionCode} -> ${aviso.javaClass.simpleName}") }
+        return aviso
     }
 
-    suspend fun posponer(versionCode: Int) = cache.actualizar { it.copy(pospuesta = versionCode) }
+    /** "Mas tarde" solo vale para esta sesion (proceso): al volver a abrir la app se avisa otra vez. */
+    @Volatile private var pospuestaSesion: Int? = null
+
+    suspend fun posponer(versionCode: Int) { pospuestaSesion = versionCode }
 }
 
 private suspend fun descargarTexto(url: String): String = withContext(Dispatchers.IO) {
-    val con = URL(url).openConnection() as HttpURLConnection
+    // ?t= evita la cache del CDN de Storage (max-age=60) y de proxies.
+    val con = URL(ReglasActualizacion.sinCache(url, System.currentTimeMillis())).openConnection() as HttpURLConnection
     try {
         con.connectTimeout = 8000; con.readTimeout = 8000
+        con.useCaches = false
         con.setRequestProperty("Cache-Control", "no-cache")
+        con.setRequestProperty("Pragma", "no-cache")
         if (con.responseCode != 200) error("HTTP ${con.responseCode}")
         con.inputStream.bufferedReader().use { it.readText() }
     } finally { con.disconnect() }

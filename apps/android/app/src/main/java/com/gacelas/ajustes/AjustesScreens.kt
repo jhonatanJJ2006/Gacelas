@@ -135,7 +135,7 @@ fun AjustesPreferenciasScreen(
         }
         EtiquetaGrupo("Información")
         Tarjeta(padding = 0.dp) {
-            FilaAjuste(Icons.Filled.Info, "Acerca de", "Versión ${BuildConfig.VERSION_NAME}", onClick = { dialogo = "acerca" })
+            FilaAjuste(Icons.Filled.Info, "Acerca de", com.gacelas.actualizacion.textoVersion(), onClick = { dialogo = "acerca" })
             FilaAjuste(Icons.AutoMirrored.Filled.Help, "Ayuda y soporte", onClick = { dialogo = "ayuda" })
         }
         Tarjeta(padding = 0.dp, fondo = GColors.Danger.copy(alpha = 0.1f), borde = GColors.Danger.copy(alpha = 0.4f)) {
@@ -147,7 +147,7 @@ fun AjustesPreferenciasScreen(
             onDismissRequest = { dialogo = null },
             confirmButton = { TextButton(onClick = { dialogo = null }) { Text("Cerrar") } },
             title = { Text("Gacelas Loja") },
-            text = { Text("Versión ${BuildConfig.VERSION_NAME}. App del grupo de running Gacelas de Loja, Ecuador. Graba tus carreras con GPS, descubre rutas y entrena con la comunidad.") },
+            text = { Text("${com.gacelas.actualizacion.textoVersion()}. App del grupo de running Gacelas de Loja, Ecuador. Graba tus carreras con GPS, descubre rutas y entrena con la comunidad.") },
             containerColor = GColors.BgSecondary,
         )
         "ayuda" -> AlertDialog(

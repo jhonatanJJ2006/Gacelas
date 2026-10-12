@@ -46,6 +46,8 @@ import com.google.android.gms.location.Priority
 class LocationService : Service() {
 
     companion object {
+        /** Una posicion por segundo (alta precision). */
+        const val INTERVALO_MS = 1_000L
         const val ACTION_START = "com.gacelas.location.START"
         const val ACTION_STOP = "com.gacelas.location.STOP"
         const val ACTION_PAUSA = "com.gacelas.location.PAUSA"
@@ -114,8 +116,10 @@ class LocationService : Service() {
     @SuppressLint("MissingPermission")
     private fun empezarUbicacion() {
         if (escuchando || !tienePermiso(this)) return
-        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2_000L)
-            .setMinUpdateIntervalMillis(1_000L)
+        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, INTERVALO_MS)
+            .setMinUpdateIntervalMillis(INTERVALO_MS)
+            .setMaxUpdateDelayMillis(0L)
+            .setWaitForAccurateLocation(false)
             .setMinUpdateDistanceMeters(0f)
             .build()
         cliente.requestLocationUpdates(request, callback, Looper.getMainLooper())

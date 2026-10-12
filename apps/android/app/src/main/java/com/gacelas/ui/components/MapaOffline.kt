@@ -3,6 +3,7 @@ package com.gacelas.ui.components
 import android.content.Context
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import org.maplibre.android.MapLibre
 import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.offline.OfflineManager
@@ -21,7 +22,7 @@ data class RegionMapa(
     val oeste: Double,
     val zoomMin: Double = 10.0,
     /** OpenFreeMap sirve teselas hasta z14; MapLibre las amplia para zooms mayores. */
-    val zoomMax: Double = 14.0,
+    val zoomMax: Double = 16.0,
 ) {
     fun contiene(lat: Double, lng: Double) = lat in sur..norte && lng in oeste..este
 }
@@ -102,12 +103,12 @@ object MapaOffline {
      * no esta descargada y hay wifi (red no medida), la descarga sola. Antes solo se bajaba a mano
      * desde Ajustes y una descarga interrumpida no se reanudaba nunca.
      */
-    fun asegurar(context: Context, r: RegionMapa = LOJA) {
+    fun asegurar(context: Context, r: RegionMapa = LOJA, conDatos: Boolean = false) {
         val app = context.applicationContext
         runCatching { gestor(app).setMaximumAmbientCacheSize(CACHE_AMBIENTAL_BYTES, null) }
         regiones(app) { lista ->
             val propia = lista.firstOrNull { it.clave() == String(metadatos(r, ESTILO_DESCARGA)) }
-            val wifi = ReglasDescarga.redNoMedida(app)
+            val wifi = conDatos || ReglasDescarga.redNoMedida(app)
             if (propia == null) {
                 if (ReglasDescarga.descargarSola(existe = false, completa = false, wifi = wifi)) descargar(app, r) else consultar(app, r)
                 return@regiones
@@ -123,6 +124,7 @@ object MapaOffline {
     }
 
     private fun reanudar(region: OfflineRegion) {
+        if (teselasGuardadas(MapLibre.getApplicationContext()) == null) guardarTeselas(MapLibre.getApplicationContext())
         _estado.value = EstadoDescarga.Descargando(0, 0.0)
         region.setObserver(observador(region, 0, DoubleArray(1), DoubleArray(1), BooleanArray(1)))
         region.setDownloadState(OfflineRegion.STATE_ACTIVE)
@@ -149,7 +151,43 @@ object MapaOffline {
             }
         }
 
+    /**
+     * CAUSA del mapa vacio sin red: los estilos usan la TileJSON https://tiles.openfreemap.org/planet,
+     * cuyas teselas llevan version (planet/20261004_113936_pt/{z}/{x}/{y}.pbf) y OpenFreeMap la cambia
+     * cada semana. Al abrir el mapa con red despues de descargar, MapLibre refrescaba la TileJSON con la
+     * version nueva y, sin red, pedia teselas que no estaban en la region. Se guarda la plantilla de la
+     * version descargada y sin red el estilo se arma con ella (ver [estiloSinRed]).
+     */
+    private const val PREFS = "mapa_offline"
+    private const val CLAVE_TESELAS = "teselas_loja"
+
+    fun teselasGuardadas(context: Context): String? =
+        context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(CLAVE_TESELAS, null)
+
+    private fun guardarTeselas(context: Context) {
+        Thread {
+            runCatching {
+                val con = java.net.URL(TILEJSON).openConnection() as java.net.HttpURLConnection
+                con.connectTimeout = 8000; con.readTimeout = 8000
+                val txt = con.inputStream.bufferedReader().use { it.readText() }
+                ReglasDescarga.plantillaTeselas(txt)?.let {
+                    context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(CLAVE_TESELAS, it).apply()
+                }
+            }
+        }.start()
+    }
+
+    const val TILEJSON = "https://tiles.openfreemap.org/planet"
+
+    /** Estilo Gacelas (JSON del asset) apuntando a las teselas fijas de la region descargada. */
+    fun estiloSinRed(context: Context, asset: String): String? {
+        val teselas = teselasGuardadas(context) ?: return null
+        val json = runCatching { context.assets.open(asset).bufferedReader().use { it.readText() } }.getOrNull() ?: return null
+        return ReglasDescarga.fijarTeselas(json, teselas)
+    }
+
     fun descargar(context: Context, r: RegionMapa = LOJA) {
+        guardarTeselas(context)
         val estilos = listOf(ESTILO_DESCARGA)
         val densidad = context.resources.displayMetrics.density
         val limites = LatLngBounds.from(r.norte, r.este, r.sur, r.oeste)
@@ -184,6 +222,29 @@ object MapaOffline {
 
 /** Reglas puras de la descarga automatica (probadas en JVM). */
 object ReglasDescarga {
+    private val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+
+    /** Primera plantilla "tiles" de una TileJSON. */
+    fun plantillaTeselas(tilejson: String): String? = runCatching {
+        json.parseToJsonElement(tilejson).let { it as kotlinx.serialization.json.JsonObject }["tiles"]
+            .let { it as kotlinx.serialization.json.JsonArray }.first().let { (it as kotlinx.serialization.json.JsonPrimitive).content }
+    }.getOrNull()
+
+    /** Cambia la fuente openmaptiles {url: TileJSON} por {tiles:[plantilla], maxzoom 14}. */
+    fun fijarTeselas(estilo: String, plantilla: String): String? = runCatching {
+        val e = json.parseToJsonElement(estilo) as kotlinx.serialization.json.JsonObject
+        val fuentes = e["sources"] as kotlinx.serialization.json.JsonObject
+        val nuevas = kotlinx.serialization.json.JsonObject(fuentes.mapValues { (k, v) ->
+            if (k != "openmaptiles") v else kotlinx.serialization.json.buildJsonObject {
+                (v as kotlinx.serialization.json.JsonObject).forEach { (kk, vv) -> if (kk != "url") put(kk, vv) }
+                put("tiles", kotlinx.serialization.json.JsonArray(listOf(kotlinx.serialization.json.JsonPrimitive(plantilla))))
+                put("minzoom", kotlinx.serialization.json.JsonPrimitive(0))
+                put("maxzoom", kotlinx.serialization.json.JsonPrimitive(14))
+            }
+        })
+        kotlinx.serialization.json.JsonObject(e + ("sources" to nuevas)).toString()
+    }.getOrNull()
+
     /** Se descarga sola si falta o quedo incompleta, y solo con wifi (o red no medida). */
     fun descargarSola(existe: Boolean, completa: Boolean, wifi: Boolean): Boolean = wifi && (!existe || !completa)
 
@@ -197,5 +258,29 @@ object ReglasDescarga {
     fun conRed(context: Context): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager ?: return true
         return cm.getNetworkCapabilities(cm.activeNetwork)?.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+    }
+}
+
+/** Descarga (o reanuda) Loja en segundo plano en cuanto hay internet; reintenta con espera exponencial. */
+class MapaOfflineWorker(context: Context, params: androidx.work.WorkerParameters) : androidx.work.CoroutineWorker(context, params) {
+    override suspend fun doWork(): Result {
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) { MapaOffline.asegurar(applicationContext, conDatos = true) }
+        val fin = kotlinx.coroutines.withTimeoutOrNull(20 * 60_000L) {
+            MapaOffline.estado.first { it is EstadoDescarga.Lista || it is EstadoDescarga.Error }
+        }
+        return if (fin is EstadoDescarga.Lista) Result.success() else Result.retry()
+    }
+
+    companion object {
+        const val NOMBRE = "gacelas-mapa-offline-loja"
+        fun programar(context: Context) {
+            runCatching {
+                val req = androidx.work.OneTimeWorkRequestBuilder<MapaOfflineWorker>()
+                    .setConstraints(androidx.work.Constraints.Builder().setRequiredNetworkType(androidx.work.NetworkType.CONNECTED).build())
+                    .setBackoffCriteria(androidx.work.BackoffPolicy.EXPONENTIAL, 30, java.util.concurrent.TimeUnit.SECONDS)
+                    .build()
+                androidx.work.WorkManager.getInstance(context).enqueueUniqueWork(NOMBRE, androidx.work.ExistingWorkPolicy.KEEP, req)
+            }
+        }
     }
 }

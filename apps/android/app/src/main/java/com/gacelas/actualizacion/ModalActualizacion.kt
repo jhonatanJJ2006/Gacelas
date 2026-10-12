@@ -82,8 +82,16 @@ internal sealed interface Fase {
 fun AvisoActualizacion() {
     val repo = contenedor().actualizacion ?: return
     var aviso by remember { mutableStateOf<Aviso.Nueva?>(null) }
-    LaunchedEffect(Unit) { aviso = repo.revisar() as? Aviso.Nueva }
     val scope = rememberCoroutineScope()
+    // Al abrir y cada vez que la app vuelve a primer plano (ON_START).
+    val ciclo = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(ciclo) {
+        val obs = LifecycleEventObserver { _, e ->
+            if (e == Lifecycle.Event.ON_START) scope.launch { (repo.revisar() as? Aviso.Nueva)?.let { nueva -> if (aviso == null) aviso = nueva } }
+        }
+        ciclo.addObserver(obs)
+        onDispose { ciclo.removeObserver(obs) }
+    }
     aviso?.let { a ->
         ModalActualizacion(a.info, a.obligatoria, onMasTarde = {
             scope.launch { repo.posponer(a.info.versionCode) }
@@ -358,3 +366,6 @@ internal fun textoBytes(hechos: Long, total: Long): String {
     val mb = { b: Long -> Math.round(b / 1048576.0) }
     return if (total > 0) "${mb(hechos)} de ${mb(total)} MB · no cierres la app" else "${mb(hechos)} MB · no cierres la app"
 }
+
+/** "Versión 0.6.8 (608)", visible en Ajustes y en la bienvenida. */
+fun textoVersion(nombre: String = BuildConfig.VERSION_NAME, codigo: Int = BuildConfig.VERSION_CODE) = "Versión $nombre ($codigo)"
