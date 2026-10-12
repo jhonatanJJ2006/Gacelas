@@ -48,9 +48,30 @@ jobs:
           UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
           xcrun simctl boot "$UDID"; xcrun simctl bootstatus "$UDID" -b
           xcrun simctl install "$UDID" build/Build/Products/Debug-iphonesimulator/iosApp.app
+          mkdir -p shots
           xcrun simctl launch "$UDID" com.gacelas.app
+          sleep 12
+          xcrun simctl io "$UDID" screenshot shots/inicio.png
+          xcrun simctl terminate "$UDID" com.gacelas.app || true
+          # Etapa 3: ubicacion simulada (Loja, ~3.3 m/s hacia el sur) y pantalla de sensores con carrera.
+          xcrun simctl privacy "$UDID" grant location-always com.gacelas.app || xcrun simctl privacy "$UDID" grant location com.gacelas.app
+          xcrun simctl launch "$UDID" com.gacelas.app --sensores
+          sleep 5
+          # Recorrido simulado. "location start" (ruta propia) solo llega al proceso en su primera
+          # lectura en el simulador headless; el escenario "City Run" de Apple si se reproduce en vivo.
+          xcrun simctl location "$UDID" run "City Run" || \
+            printf -- '-3.99310,-79.20420\n-3.99600,-79.20430\n-3.99900,-79.20440\n' | xcrun simctl location "$UDID" start --speed=3.3 --interval=1 -
+          sleep 12
+          xcrun simctl io "$UDID" screenshot shots/sensores-12s.png
           sleep 15
-          mkdir -p shots && xcrun simctl io "$UDID" screenshot shots/inicio.png
+          xcrun simctl io "$UDID" screenshot shots/sensores.png
+          # El simulador headless solo entrega al proceso la ubicacion inyectada al arrancar (sensores.png
+          # prueba CoreLocation real). Para ver lecturas crecientes por el mismo pipeline: --gps-simulado.
+          xcrun simctl terminate "$UDID" com.gacelas.app || true
+          xcrun simctl launch "$UDID" com.gacelas.app --sensores --gps-simulado
+          sleep 20
+          xcrun simctl io "$UDID" screenshot shots/recorrido.png
+          xcrun simctl location "$UDID" clear || true
       - uses: actions/upload-artifact@v4
         with: { name: ios-simulator-screenshots, path: apps/ios/iosApp/shots }
       - name: Empaquetar .app simulador

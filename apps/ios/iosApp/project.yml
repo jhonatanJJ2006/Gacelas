@@ -18,6 +18,10 @@ targets:
         CFBundleDisplayName: Gacelas
         UILaunchScreen: {}
         CADisableMinimumFrameDurationOnPhone: true
+        NSLocationWhenInUseUsageDescription: Gacelas usa tu ubicación para medir distancia, ritmo y ruta de tus carreras.
+        NSLocationAlwaysAndWhenInUseUsageDescription: Gacelas sigue registrando tu carrera con la pantalla apagada o en segundo plano.
+        NSMotionUsageDescription: Gacelas usa la brújula y el movimiento para orientar el mapa hacia donde miras.
+        UIBackgroundModes: [location]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.gacelas.app

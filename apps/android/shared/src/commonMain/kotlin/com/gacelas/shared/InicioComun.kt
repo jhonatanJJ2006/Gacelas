@@ -1,6 +1,7 @@
 package com.gacelas.shared
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,7 +45,7 @@ object ColoresC4 {
  * Usa logica comun real (Rumbo) para comprobar que el modulo compartido funciona en cada plataforma.
  */
 @Composable
-fun InicioComun(version: String = VersionGacelas.NOMBRE) {
+fun InicioComun(version: String = VersionGacelas.NOMBRE, onEmpezar: () -> Unit = {}) {
     Box(
         Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(ColoresC4.Fondo, Color(0xFF111827), ColoresC4.Fondo))).testTag("inicio-comun"),
     ) {
@@ -73,7 +74,7 @@ fun InicioComun(version: String = VersionGacelas.NOMBRE) {
                 Text("Corre. Comparte.\nSupera.", color = Color.White, fontSize = 26.sp, lineHeight = 30.sp, fontWeight = FontWeight.Bold)
                 Text("Gacelas para ${Plataforma.nombre}: versión en preparación.", color = ColoresC4.Secondary, fontSize = 15.sp)
                 Spacer(Modifier.height(6.dp))
-                Box(Modifier.fillMaxWidth().height(52.dp).clip(CircleShape).background(ColoresC4.Naranja), contentAlignment = Alignment.Center) {
+                Box(Modifier.fillMaxWidth().height(52.dp).clip(CircleShape).background(ColoresC4.Naranja).clickable(onClick = onEmpezar).testTag("empezar"), contentAlignment = Alignment.Center) {
                     Text("Empezar", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 }
                 Text(
