@@ -47,6 +47,8 @@ class RunTracker(
         /** Velocidad maxima creible para una persona corriendo (m/s). */
         const val VELOCIDAD_MAX_MS = 12.0
         private const val VENTANA_RITMO_MS = 30_000L
+        /** Sin avance valido durante este tiempo se considera que estas quieto. */
+        const val PARADO_MS = 6_000L
     }
 
     private val _estado = MutableStateFlow(EstadoCarrera())
@@ -109,7 +111,10 @@ class RunTracker(
         val d = haversineM(previo, p)
         val dt = (p.tiempoMs - previo.tiempoMs).coerceAtLeast(1L) / 1000.0
         if (d < MOVIMIENTO_MIN_M || d / dt > VELOCIDAD_MAX_MS) {
-            _estado.update { it.copy(ultimaPrecisionM = p.precisionM) }
+            // Quieto: sin puntos validos el ritmo "actual" se quedaba con el ultimo valor y el mapa 3D
+            // creia que seguias corriendo (rumbo del GPS en vez de la brujula). Se borra tras PARADO_MS.
+            val parado = p.tiempoMs - previo.tiempoMs >= PARADO_MS
+            _estado.update { it.copy(ultimaPrecisionM = p.precisionM, ritmoActualSegKm = if (parado) null else it.ritmoActualSegKm) }
             return
         }
         ultimoValido = p
