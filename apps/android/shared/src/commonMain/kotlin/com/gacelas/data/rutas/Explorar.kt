@@ -1,5 +1,8 @@
 package com.gacelas.data.rutas
 
+import com.gacelas.shared.nuevoUuid
+import com.gacelas.shared.rad
+
 import com.gacelas.data.mock.Dificultad
 import com.gacelas.data.mock.Ruta
 import com.gacelas.data.remoto.Backend
@@ -40,7 +43,7 @@ fun aplicarFiltros(rutas: List<Ruta>, f: FiltrosRuta) = rutas.filter { r ->
 fun ordenarPorCercania(rutas: List<Ruta>, cerca: Map<String, Double>) = rutas.sortedBy { cerca[it.id] ?: Double.MAX_VALUE }
 
 private fun distanciaASegmentoM(p: Pair<Double, Double>, a: Pair<Double, Double>, b: Pair<Double, Double>): Double {
-    val kx = 111_320 * cos(Math.toRadians(a.first)); val ky = 110_540.0
+    val kx = 111_320 * cos(rad(a.first)); val ky = 110_540.0
     val px = (p.second - a.second) * kx; val py = (p.first - a.first) * ky
     val bx = (b.second - a.second) * kx; val by = (b.first - a.first) * ky
     val l2 = bx * bx + by * by
@@ -137,7 +140,7 @@ class ExplorarRepository(
 
     suspend fun crear(nombre: String, descripcion: String, dificultad: Dificultad, etiquetas: List<String>, puntos: List<Pair<Double, Double>>, elevacionM: Int, actividadId: String?, perfil: List<Int> = emptyList(), origen: String = "actividad"): String {
         val yo = uid() ?: throw ErrorRemoto("Inicia sesión para publicar rutas")
-        val nueva = RutaNueva(java.util.UUID.randomUUID().toString(), nombre.take(80), descripcion, dificultad, etiquetas, trazoParaRuta(puntos), elevacionM, actividadId, perfil, origen)
+        val nueva = RutaNueva(nuevoUuid(), nombre.take(80), descripcion, dificultad, etiquetas, trazoParaRuta(puntos), elevacionM, actividadId, perfil, origen)
         val ok = runCatching { insertar(nueva, yo) }
         if (ok.isFailure) {
             val local = offline ?: throw ok.exceptionOrNull()!!
@@ -192,7 +195,7 @@ class ExplorarRepository(
         val yo = uid() ?: throw ErrorRemoto("Inicia sesión para subir fotos")
         if (bytes.size > 5 * 1024 * 1024) throw ErrorRemoto("La foto pesa más de 5 MB")
         val ext = when (tipo) { "image/png" -> "png"; "image/webp" -> "webp"; else -> "jpg" }
-        val ruta = "$yo/${id.filter { it.isLetterOrDigit() || it == '-' }}/${java.util.UUID.randomUUID()}.$ext"
+        val ruta = "$yo/${id.filter { it.isLetterOrDigit() || it == '-' }}/${nuevoUuid()}.$ext"
         backend.subirArchivo("route-photos", ruta, bytes, tipo)
         backend.insert("route_photos", listOf(JsonObject(mapOf("route_id" to JsonPrimitive(id), "user_id" to JsonPrimitive(yo), "path" to JsonPrimitive(ruta)))))
     }

@@ -18,7 +18,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.Calendar
-import java.util.TimeZone
 
 class Fase5Test {
     private fun k(id: String, km: Double, s: Int, n: Int = 0) =
@@ -40,10 +39,10 @@ class Fase5Test {
     }
 
     @Test fun calendarioDeLunesADomingo() {
-        val tz = TimeZone.getTimeZone("America/Guayaquil")
+        val tz = java.util.TimeZone.getTimeZone("America/Guayaquil")
         val inicio = Calendar.getInstance(tz).apply { clear(); set(2026, 9, 15, 7, 0) }.timeInMillis
         val e = Evento("x", "X", "", "", "", "", 0, 5, inicioMs = inicio)
-        val semanas = calendarioMes(2026, 9, listOf(e), tz)
+        val semanas = calendarioMes(2026, 9, listOf(e), kotlinx.datetime.TimeZone.of("America/Guayaquil"))
         assertEquals(31, semanas.flatten().count { it.delMes })
         val primero = Calendar.getInstance(tz).apply { timeInMillis = semanas[0][0].inicioMs }
         assertEquals(Calendar.MONDAY, primero[Calendar.DAY_OF_WEEK])

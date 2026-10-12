@@ -1,5 +1,8 @@
 package com.gacelas.tracking
 
+import com.gacelas.shared.fmt
+import com.gacelas.shared.rad
+
 import com.gacelas.data.carreras.PuntoGps
 import kotlin.math.asin
 import kotlin.math.cos
@@ -11,20 +14,20 @@ private const val RADIO_TIERRA_M = 6_371_000.0
 
 /** Distancia en metros entre dos coordenadas (formula de haversine). */
 fun haversineM(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Double {
-    val dLat = Math.toRadians(lat2 - lat1)
-    val dLng = Math.toRadians(lng2 - lng1)
-    val a = sin(dLat / 2).pow(2) + cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLng / 2).pow(2)
+    val dLat = rad(lat2 - lat1)
+    val dLng = rad(lng2 - lng1)
+    val a = sin(dLat / 2).pow(2) + cos(rad(lat1)) * cos(rad(lat2)) * sin(dLng / 2).pow(2)
     return 2 * RADIO_TIERRA_M * asin(sqrt(a.coerceIn(0.0, 1.0)))
 }
 
 fun haversineM(a: PuntoGps, b: PuntoGps): Double = haversineM(a.lat, a.lng, b.lat, b.lng)
 
 /** Formatea un ritmo en segundos por km como m:ss. */
-fun formatearRitmo(segKm: Int?): String = if (segKm == null || segKm <= 0 || segKm > 59 * 60) "--:--" else "%d:%02d".format(segKm / 60, segKm % 60)
+fun formatearRitmo(segKm: Int?): String = if (segKm == null || segKm <= 0 || segKm > 59 * 60) "--:--" else "%d:%02d".fmt(segKm / 60, segKm % 60)
 
-fun formatearHms(segundos: Int): String = "%02d:%02d:%02d".format(segundos / 3600, (segundos % 3600) / 60, segundos % 60)
+fun formatearHms(segundos: Int): String = "%02d:%02d:%02d".fmt(segundos / 3600, (segundos % 3600) / 60, segundos % 60)
 
-fun formatearMs(segundos: Int): String = "%d:%02d".format(segundos / 60, segundos % 60)
+fun formatearMs(segundos: Int): String = "%d:%02d".fmt(segundos / 60, segundos % 60)
 
 /** Conversion de unidades segun la preferencia metrica o imperial. */
 object Unidades {
@@ -37,6 +40,6 @@ object Unidades {
         // Bajo 1 km/mi siempre 2 decimales: con 1 decimal una carrera de 0.05 km salia "0.1".
         val d = distancia(km, metricas)
         val dec = if (d < 1.0) maxOf(decimales, 2) else decimales
-        return "%.${dec}f".format(java.util.Locale.US, d)
+        return "%.${dec}f".fmt(d)
     }
 }

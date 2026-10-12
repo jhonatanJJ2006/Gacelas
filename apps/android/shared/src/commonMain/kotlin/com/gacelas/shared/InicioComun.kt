@@ -77,7 +77,7 @@ fun InicioComun(version: String = VersionGacelas.NOMBRE) {
                     Text("Empezar", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 }
                 Text(
-                    "Versión $version (${VersionGacelas.codigo(version)}) · módulo compartido OK (rumbo ${Rumbo.normalizar(-90f).toInt()}°)",
+                    "Versión $version (${VersionGacelas.codigo(version)}) · lógica compartida OK (rumbo ${Rumbo.normalizar(-90f).toInt()}°, ${com.gacelas.tracking.formatearHms(3723)}, ${com.gacelas.data.mock.MockData.rutas.size} rutas)",
                     color = ColoresC4.Secondary.copy(alpha = 0.5f), fontSize = 10.sp, modifier = Modifier.testTag("version-comun"),
                 )
             }

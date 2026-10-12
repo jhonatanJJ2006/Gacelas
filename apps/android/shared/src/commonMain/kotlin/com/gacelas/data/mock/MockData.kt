@@ -1,5 +1,7 @@
 package com.gacelas.data.mock
 
+import com.gacelas.shared.fmt
+
 import kotlinx.serialization.Serializable
 
 /** Datos de prueba tipados, equivalentes a apps/web/src/mocks/data.ts. Se reemplazaran por Supabase. */
@@ -120,5 +122,5 @@ object MockData {
 
     fun evento(id: String): Evento? = eventos.firstOrNull { it.id == id }
 
-    fun duracionTexto(segundos: Int): String = "%d:%02d".format(segundos / 60, segundos % 60)
+    fun duracionTexto(segundos: Int): String = "%d:%02d".fmt(segundos / 60, segundos % 60)
 }

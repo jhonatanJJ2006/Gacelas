@@ -1,5 +1,7 @@
 package com.gacelas.data.notificaciones
 
+import com.gacelas.shared.ahoraMs
+
 import com.gacelas.data.mock.Notificacion
 import com.gacelas.data.mock.TipoNotificacion
 import com.gacelas.data.remoto.Backend
@@ -25,7 +27,7 @@ fun tipoDesde(t: String?): TipoNotificacion? = when (t) {
 }
 
 /** "hace 5 min", "hace 3h", "hace 2d" (igual que la web). */
-fun haceCuanto(ms: Long?, ahora: Long = System.currentTimeMillis()): String {
+fun haceCuanto(ms: Long?, ahora: Long = ahoraMs()): String {
     if (ms == null) return ""
     val min = ((ahora - ms) / 60_000).coerceAtLeast(0)
     return when {
@@ -36,7 +38,7 @@ fun haceCuanto(ms: Long?, ahora: Long = System.currentTimeMillis()): String {
     }
 }
 
-fun notificacionDesdeFila(f: JsonObject, ahora: Long = System.currentTimeMillis()): Notificacion? {
+fun notificacionDesdeFila(f: JsonObject, ahora: Long = ahoraMs()): Notificacion? {
     val tipo = tipoDesde(f.texto("type")) ?: return null
     return Notificacion(
         id = f.texto("id").orEmpty(),

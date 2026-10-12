@@ -1,7 +1,8 @@
 package com.gacelas.data.rachas
 
+import com.gacelas.shared.Fechas
+
 import com.gacelas.data.carreras.CarreraGuardada
-import java.util.Calendar
 
 /** Estado de rachas. Misma logica que public.recalcular_racha en Supabase. */
 data class Racha(
@@ -17,18 +18,13 @@ data class Racha(
 data class CeldaCalor(val diaMs: Long, val km: Double, val futuro: Boolean)
 
 object Rachas {
-    private fun cal(ms: Long) = Calendar.getInstance().apply { timeInMillis = ms; firstDayOfWeek = Calendar.MONDAY }
+    fun inicioDia(ms: Long): Long = Fechas.inicioDia(ms)
 
-    fun inicioDia(ms: Long): Long = cal(ms).apply {
-        set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
-    }.timeInMillis
-
-    fun sumarDias(ms: Long, n: Int): Long = cal(ms).apply { add(Calendar.DAY_OF_MONTH, n) }.timeInMillis
+    fun sumarDias(ms: Long, n: Int): Long = Fechas.sumarDias(ms, n)
 
     fun inicioSemana(ms: Long): Long {
-        val c = cal(inicioDia(ms))
-        c.add(Calendar.DAY_OF_MONTH, -((c.get(Calendar.DAY_OF_WEEK) + 5) % 7))
-        return c.timeInMillis
+        val d = inicioDia(ms)
+        return Fechas.sumarDias(d, -Fechas.diaSemana(d))
     }
 
     private class Islas(val mejor: Int, val finales: Map<Long, Int>, val ultimo: Long?)
@@ -38,7 +34,7 @@ object Rachas {
         var actual = 0
         var previo: Long? = null
         val finales = HashMap<Long, Int>()
-        for (k in claves.toSortedSet()) {
+        for (k in claves.toSet().sorted()) {
             actual = if (previo != null && paso(previo) == k) actual + 1 else 1
             mejor = maxOf(mejor, actual)
             finales[k] = actual

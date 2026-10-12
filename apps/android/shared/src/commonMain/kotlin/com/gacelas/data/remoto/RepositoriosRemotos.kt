@@ -1,5 +1,8 @@
 package com.gacelas.data.remoto
 
+import com.gacelas.shared.ahoraMs
+import com.gacelas.shared.redondear
+
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.gacelas.data.ValorJson
@@ -35,9 +38,6 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.put
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
 
 /*
  * Repositorios con Supabase. La interfaz usa siempre la copia local (DataStore) como cache:
@@ -64,18 +64,16 @@ fun perfilDesdeFila(fila: JsonObject?, u: UsuarioRemoto): Perfil {
     )
 }
 
-/** Fechas ISO 8601 sin java.time (minSdk 24). */
+/** Fechas ISO 8601 con kotlinx-datetime (multiplataforma). */
 object FechaIso {
-    private fun formato() = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US).apply { timeZone = TimeZone.getTimeZone("UTC") }
-
-    fun formatear(ms: Long): String = formato().format(java.util.Date(ms))
+    fun formatear(ms: Long): String = com.gacelas.shared.isoUtc(ms)
 
     /** Acepta "2026-10-10T10:00:00Z", "2026-10-10 10:00:00.123+00" y variantes de Postgres. */
     fun leer(texto: String): Long? {
         var t = texto.trim().replace(' ', 'T').replace(Regex("\\.\\d+"), "")
         if (t.endsWith("Z")) t = t.dropLast(1) + "+00:00"
         if (Regex("[+-]\\d{2}$").containsMatchIn(t)) t += ":00"
-        return runCatching { formato().parse(t)?.time }.getOrNull()
+        return runCatching { kotlinx.datetime.Instant.parse(t).toEpochMilliseconds() }.getOrNull()
     }
 }
 
@@ -189,7 +187,7 @@ fun filaDesdeCarrera(c: CarreraGuardada, userId: String): JsonObject = buildJson
     put("start_time", FechaIso.formatear(c.inicioMs))
     put("end_time", FechaIso.formatear(c.inicioMs + c.segundos * 1000L))
     put("duration_seconds", c.segundos)
-    put("distance_meters", Math.round(c.distanciaKm * 1000).toInt())
+    put("distance_meters", redondear(c.distanciaKm * 1000).toInt())
     c.ritmoSegKm?.let { put("avg_pace_seconds_per_km", it) }
     put("elevation_gain_meters", c.desnivelM)
     put("splits", jsonGacelas.encodeToJsonElement(ListSerializer(Parcial.serializer()), c.parciales))
@@ -382,7 +380,7 @@ fun eventoDesdeFila(f: JsonObject, uid: String? = null): Evento {
         ubicacion = f.texto("location").orEmpty(),
         participantes = f.entero("base_participants") ?: 0,
         distanciaKm = f.numero("distance_km")?.toInt() ?: 0,
-        pasado = inicio?.let { it < System.currentTimeMillis() } ?: false,
+        pasado = inicio?.let { it < ahoraMs() } ?: false,
         creadoPorUsuario = uid == null || f.texto("created_by") == uid,
         inicioMs = inicio,
         cupo = f.entero("max_participants"),
@@ -427,7 +425,7 @@ class SupabaseEventosRepository(
                 put("distance_km", evento.distanciaKm)
                 put("base_participants", evento.participantes)
                 put("created_by", uid)
-                evento.inicioMs?.let { put("starts_at", java.time.Instant.ofEpochMilli(it).toString()) }
+                evento.inicioMs?.let { put("starts_at", kotlinx.datetime.Instant.fromEpochMilliseconds(it).toString()) }
                 evento.cupo?.let { put("max_participants", it) }
                 put("kind", evento.tipo)
                 evento.clubId?.let { put("club_id", it) }
@@ -448,7 +446,7 @@ class SupabaseEventosRepository(
 }
 
 /** Utilidad para pruebas: arma un JsonObject desde pares. */
-internal fun fila(vararg pares: Pair<String, Any?>): JsonObject = JsonObject(pares.associate { (k, v) ->
+fun fila(vararg pares: Pair<String, Any?>): JsonObject = JsonObject(pares.associate { (k, v) ->
     k to when (v) {
         null -> JsonNull
         is String -> JsonPrimitive(v)

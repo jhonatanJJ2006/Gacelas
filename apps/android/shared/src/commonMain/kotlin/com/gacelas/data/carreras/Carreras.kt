@@ -1,12 +1,13 @@
 package com.gacelas.data.carreras
 
+import com.gacelas.shared.Fechas
+
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.gacelas.data.ValorJson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
-import java.util.Calendar
 
 @Serializable
 data class PuntoGps(val lat: Double, val lng: Double, val tiempoMs: Long, val precisionM: Float = 0f, val altitudM: Double? = null)
@@ -58,20 +59,14 @@ data class ResumenSemana(
 data class ResumenPeriodo(val carreras: Int, val km: Double, val segundos: Int, val desnivelM: Int)
 
 object Estadisticas {
-    private fun calendario(ms: Long) = Calendar.getInstance().apply { timeInMillis = ms; firstDayOfWeek = Calendar.MONDAY }
-
-    private fun inicioDia(ms: Long): Long = calendario(ms).apply {
-        set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
-    }.timeInMillis
+    private fun inicioDia(ms: Long): Long = Fechas.inicioDia(ms)
 
     fun inicioSemana(ahoraMs: Long): Long {
-        val c = calendario(inicioDia(ahoraMs))
-        val desdeLunes = (c.get(Calendar.DAY_OF_WEEK) + 5) % 7
-        c.add(Calendar.DAY_OF_MONTH, -desdeLunes)
-        return c.timeInMillis
+        val d = inicioDia(ahoraMs)
+        return Fechas.sumarDias(d, -Fechas.diaSemana(d))
     }
 
-    fun diaSemana(ms: Long): Int = (calendario(ms).get(Calendar.DAY_OF_WEEK) + 5) % 7
+    fun diaSemana(ms: Long): Int = Fechas.diaSemana(ms)
 
     fun semana(carreras: List<CarreraGuardada>, ahoraMs: Long): ResumenSemana {
         val desde = inicioSemana(ahoraMs)
@@ -90,20 +85,20 @@ object Estadisticas {
     fun racha(carreras: List<CarreraGuardada>, ahoraMs: Long): Int {
         val dias = carreras.map { inicioDia(it.inicioMs) }.toSet()
         var dia = inicioDia(ahoraMs)
-        if (dia !in dias) dia = calendario(dia).apply { add(Calendar.DAY_OF_MONTH, -1) }.timeInMillis
+        if (dia !in dias) dia = Fechas.sumarDias(dia, -1)
         var n = 0
         while (dia in dias) {
             n++
-            dia = calendario(dia).apply { add(Calendar.DAY_OF_MONTH, -1) }.timeInMillis
+            dia = Fechas.sumarDias(dia, -1)
         }
         return n
     }
 
     fun mes(carreras: List<CarreraGuardada>, ahoraMs: Long): ResumenPeriodo {
-        val c = calendario(ahoraMs)
+        val c = Fechas.fecha(ahoraMs)
         val delMes = carreras.filter {
-            val x = calendario(it.inicioMs)
-            x.get(Calendar.YEAR) == c.get(Calendar.YEAR) && x.get(Calendar.MONTH) == c.get(Calendar.MONTH)
+            val x = Fechas.fecha(it.inicioMs)
+            x.year == c.year && x.monthNumber == c.monthNumber
         }
         return ResumenPeriodo(delMes.size, delMes.sumOf { it.distanciaKm }, delMes.sumOf { it.segundos }, delMes.sumOf { it.desnivelM })
     }

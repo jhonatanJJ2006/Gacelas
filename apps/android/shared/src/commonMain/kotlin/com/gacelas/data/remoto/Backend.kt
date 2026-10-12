@@ -1,5 +1,7 @@
 package com.gacelas.data.remoto
 
+import com.gacelas.shared.nombreClase
+
 import io.github.jan.supabase.storage.storage
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
@@ -72,8 +74,8 @@ private suspend fun <T> remoto(bloque: suspend () -> T): T = try {
 } catch (e: kotlinx.coroutines.CancellationException) {
     throw e
 } catch (e: Exception) {
-    android.util.Log.w("Backend", "Supabase: ${e.javaClass.simpleName}: ${e.message}")
-    throw ErrorRemoto(traducirError(e.message ?: e.javaClass.simpleName))
+    com.gacelas.shared.logAviso("Backend", "Supabase: ${nombreClase(e)}: ${e.message}")
+    throw ErrorRemoto(traducirError(e.message ?: nombreClase(e)))
 }
 
 class SupabaseBackend(url: String, clave: String) : Backend {

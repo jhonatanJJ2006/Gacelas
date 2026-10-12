@@ -1,5 +1,8 @@
 package com.gacelas.data.rutas
 
+import com.gacelas.shared.grados
+import com.gacelas.shared.rad
+
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -29,7 +32,7 @@ object Guia {
     const val DESVIO_M = 50.0
 
     private fun xy(origen: Pair<Double, Double>, p: Pair<Double, Double>): Pair<Double, Double> {
-        val kx = 111_320.0 * cos(Math.toRadians(origen.first))
+        val kx = 111_320.0 * cos(rad(origen.first))
         return (p.second - origen.second) * kx to (p.first - origen.first) * 110_540.0
     }
 
@@ -37,7 +40,7 @@ object Guia {
 
     fun longitudM(trazo: List<Pair<Double, Double>>): Double = trazo.zipWithNext { a, b -> distanciaM(a, b) }.sum()
 
-    private fun rumbo(a: Pair<Double, Double>, b: Pair<Double, Double>): Double = xy(a, b).let { Math.toDegrees(atan2(it.first, it.second)) }
+    private fun rumbo(a: Pair<Double, Double>, b: Pair<Double, Double>): Double = xy(a, b).let { grados(atan2(it.first, it.second)) }
 
     /** Giro con signo en grados (-180..180]: positivo a la derecha. */
     fun giro(a: Pair<Double, Double>, b: Pair<Double, Double>, c: Pair<Double, Double>): Double {
@@ -58,7 +61,7 @@ object Guia {
             val l2 = bx * bx + by * by
             val t = if (l2 == 0.0) 0.0 else ((px * bx + py * by) / l2).coerceIn(0.0, 1.0)
             val d = hypot(px - t * bx, py - t * by)
-            val largo = Math.sqrt(l2)
+            val largo = kotlin.math.sqrt(l2)
             if (d < mejor) { mejor = d; avance = acumulado + t * largo }
             acumulado += largo
         }

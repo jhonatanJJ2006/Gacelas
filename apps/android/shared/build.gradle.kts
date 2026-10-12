@@ -26,16 +26,32 @@ kotlin {
         }
     }
 
+    compilerOptions { optIn.add("kotlin.uuid.ExperimentalUuidApi") }
     sourceSets {
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.ui)
-            implementation(libs.kotlinx.serialization.json)
+            api(libs.kotlinx.serialization.json)
+            api(libs.kotlinx.coroutines.core)
+            api(libs.kotlinx.datetime)
+            api(libs.androidx.datastore.preferences.core)
+            api(libs.ktor.client.core)
+            api(project.dependencies.platform(libs.supabase.bom))
+            api(libs.supabase.auth)
+            api(libs.supabase.postgrest)
+            api(libs.supabase.storage)
+        }
+        androidMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }
