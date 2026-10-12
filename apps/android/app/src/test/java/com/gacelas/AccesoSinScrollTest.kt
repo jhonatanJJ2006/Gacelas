@@ -32,8 +32,9 @@ class AccesoSinScrollTest {
         }
     }
 
-    @Test fun loginCompletoEnPantallaNormal() {
-        compose.setContent { GacelasTheme { Box(Modifier.size(360.dp, 760.dp)) { InicioSesionScreen({}, {}, {}, {}) } } }
+    @Test @Config(qualifiers = "w360dp-h800dp")
+    fun loginCompletoEnPantallaNormal() {
+        compose.setContent { GacelasTheme { InicioSesionScreen({}, {}, {}, {}) } }
         compose.onAllNodes(hasScrollAction()).assertCountEquals(0)
         listOf("Bienvenido de vuelta", "Iniciar sesión", "Continuar con Google", "Crear cuenta").forEach {
             compose.onNodeWithText(it).assertIsDisplayed()
