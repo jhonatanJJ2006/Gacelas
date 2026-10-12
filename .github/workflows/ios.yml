@@ -55,6 +55,7 @@ jobs:
           xcrun simctl terminate "$UDID" com.gacelas.app || true
           # Etapa 3: ubicacion simulada (Loja, ~3.3 m/s hacia el sur) y pantalla de sensores con carrera.
           xcrun simctl privacy "$UDID" grant location-always com.gacelas.app || xcrun simctl privacy "$UDID" grant location com.gacelas.app
+          xcrun simctl location "$UDID" set -3.99310,-79.20420 || true
           xcrun simctl launch "$UDID" com.gacelas.app --sensores
           sleep 5
           # Recorrido simulado: un punto por segundo (~3,3 m/s hacia el sur). "location set" con "--"
@@ -65,6 +66,7 @@ jobs:
             sleep 1
           done
           xcrun simctl io "$UDID" screenshot shots/sensores.png
+          xcrun simctl location "$UDID" list || true
           xcrun simctl spawn "$UDID" log show --last 3m --predicate 'process == "iosApp"' > shots/log-app.txt 2>&1 || true
           xcrun simctl location "$UDID" clear || true
       - uses: actions/upload-artifact@v4

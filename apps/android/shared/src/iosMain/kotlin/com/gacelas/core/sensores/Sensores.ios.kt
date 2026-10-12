@@ -71,7 +71,6 @@ class UbicacionIos : FuenteUbicacion {
         override fun locationManager(manager: CLLocationManager, didUpdateLocations: List<*>) = recibir(didUpdateLocations)
         override fun locationManager(manager: CLLocationManager, didFailWithError: platform.Foundation.NSError) {
             error = "${didFailWithError.domain}:${didFailWithError.code}"
-            platform.Foundation.NSLog("Gacelas GPS error %@", error ?: "")
         }
     }
 
