@@ -81,7 +81,9 @@ fun MapaGacelas(
     /** Distancia desde arriba del aviso "sin conexion" (para no quedar bajo tarjetas superpuestas). */
     avisoArriba: androidx.compose.ui.unit.Dp = 8.dp,
     /** Controles propios (recentrar, orientar al norte, rumbo de camara); sustituyen a los de serie y al chip "recentrar". */
-    controlesPropios: (@Composable androidx.compose.foundation.layout.BoxScope.(recentrar: () -> Unit, norte: () -> Unit, rumbo: Float) -> Unit)? = null,
+    controlesPropios: (@Composable androidx.compose.foundation.layout.BoxScope.(recentrar: () -> Unit, norte: () -> Unit, rumbo: Float, siguiendo: Boolean) -> Unit)? = null,
+    /** Falso oculta el corredor 3D (p. ej. con un panel abierto encima). */
+    corredorVisible: Boolean = true,
     alternativa: @Composable () -> Unit,
 ) {
     if (!Mapas.configurado() || LocalInspectionMode.current) {
@@ -92,6 +94,9 @@ fun MapaGacelas(
     val con3d = modo3d && seguir && remember { soporta3D(context) }
     var mapa by remember { mutableStateOf<MapLibreMap?>(null) }
     var siguiendo by remember { mutableStateOf(true) }
+    // Tras arrastrar el mapa se deja de seguir; vuelve solo a los SEGUIR_DE_NUEVO_MS sin tocarlo.
+    var gestos by remember { mutableStateOf(0) }
+    LaunchedEffect(gestos) { if (gestos > 0) { kotlinx.coroutines.delay(MapaCompacto.SEGUIR_DE_NUEVO_MS); siguiendo = true } }
     var rumboCamara by remember { mutableFloatStateOf(0f) }
     var pantalla by remember { mutableStateOf<Offset?>(null) }
     val ultimo = puntos.lastOrNull()
@@ -121,10 +126,10 @@ fun MapaGacelas(
                     // En mapa compacto el punto va en el tercio inferior con padding de camara (sin desplazar el centro).
                     val centro = if (compacto) ultimo else MapaMat.desplazar(ultimo, r, adelanteM * Math.pow(2.0, 18.0 - z))
                     val arriba = if (compacto) altoPx * MapaCompacto.PADDING_ARRIBA else 0.0
-                    // Punto GPS nuevo: animacion lineal de 1,9 s (avance continuo). Solo giro del sensor: 500 ms.
+                    // Punto GPS nuevo (1 por segundo): animacion lineal de 1 s hasta el siguiente (avance continuo). Solo giro: 500 ms.
                     val nuevoPunto = ultimo != ultimoAnimado
                     ultimoAnimado = ultimo
-                    m.easeCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(centro).zoom(z).tilt(60.0).bearing(r).padding(0.0, arriba, 0.0, 0.0).build()), if (nuevoPunto) 1900 else 500, !nuevoPunto)
+                    m.easeCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(centro).zoom(z).tilt(60.0).bearing(r).padding(0.0, arriba, 0.0, 0.0).build()), if (nuevoPunto) MapaCompacto.ANIMACION_PUNTO_MS else 500, !nuevoPunto)
                 }
                 seguir || puntos.size < 2 -> m.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(ultimo).zoom(zoom.toDouble()).tilt(0.0).bearing(0.0).build()), 900)
                 else -> m.animateCamera(CameraUpdateFactory.newLatLngBounds(MapaMat.limites(puntos), 80))
@@ -165,14 +170,14 @@ fun MapaGacelas(
             oscuro = oscuro,
             centro = ultimo ?: plan.firstOrNull() ?: Mapas.CENTRO_LOJA,
             zoom = zoom.toDouble(),
-            alGesto = { if (seguir) siguiendo = false },
+            alGesto = { if (seguir) { siguiendo = false; gestos++ } },
             alMoverCamara = { m ->
                 rumboCamara = m.cameraPosition.bearing.toFloat()
                 pantalla = ultimoActual?.let { m.projection.toScreenLocation(it).let { p -> Offset(p.x, p.y) } }
             },
             alListo = { mapa = it },
         )
-        if (con3d && ultimo != null) {
+        if (con3d && ultimo != null && corredorVisible) {
             // Corredor 3D anclado al punto proyectado del usuario (la camara gira con el rumbo).
             val px = pantalla
             val densidad = LocalDensity.current
@@ -180,14 +185,17 @@ fun MapaGacelas(
                 val lado = if (compacto) MapaCompacto.ladoCorredor(with(densidad) { altoPx.toDp() }) else 190.dp
                 val ladoPx = with(densidad) { lado.toPx() }
                 Box(Modifier.offset { IntOffset((px.x - ladoPx / 2).toInt(), (px.y - ladoPx * MapaCompacto.PIES).toInt()) }.size(lado).testTag("corredor-3d-mapa")) {
-                    Runner3D(MapaMat.clipPorRitmo(ritmoSegKm), camara = Position(0f, 1.1f, -3.6f))
+                    // Corriendo mira hacia su curso GPS; la camara ya sigue ese rumbo, asi que el giro relativo es ~0.
+                    val haciaDonde = if (Rumbo.pesoGps(velocidadMs) > 0f) rumboGps else null
+                    Runner3D(MapaMat.clipPorRitmo(ritmoSegKm), camara = Position(0f, 1.1f, -3.6f), rumboRelativo = Rumbo.relativo(haciaDonde, rumboCamara))
                 }
             }
         }
         if (controlesPropios != null) controlesPropios(
-            { siguiendo = true },
+            { siguiendo = true; gestos = 0 },
             { mapa?.let { m -> m.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder(m.cameraPosition).bearing(0.0).build())) } },
             rumboCamara,
+            siguiendo,
         ) else if (controles) ControlesMapa(mapa, rumboCamara, Modifier.align(Alignment.CenterEnd).padding(end = 12.dp))
         // Sin red y sin Loja descargada no hay teselas: se avisa en vez de dejar el mapa vacio sin explicacion.
         val descarga by MapaOffline.estado.collectAsState()
@@ -230,6 +238,10 @@ private fun ControlesMapa(mapa: MapLibreMap?, rumbo: Float, modifier: Modifier) 
 
 /** Ajustes del mapa 3D cuando es una tarjeta pequena (pantalla de carrera). */
 object MapaCompacto {
+    /** Tras arrastrar el mapa, la camara vuelve a seguir al corredor pasados estos ms. */
+    const val SEGUIR_DE_NUEVO_MS = 8_000L
+    /** Duracion de la animacion entre dos posiciones GPS (una por segundo). */
+    const val ANIMACION_PUNTO_MS = 1_000
     val ALTO_MAX = 480.dp
     /** Padding superior relativo: el foco queda a (1 + 0.45) / 2 = 72 % del alto, en el tercio inferior. */
     const val PADDING_ARRIBA = 0.45

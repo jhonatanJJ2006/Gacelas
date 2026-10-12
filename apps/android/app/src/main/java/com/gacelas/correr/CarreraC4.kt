@@ -132,11 +132,11 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
         onVuelta = tracker::vuelta,
         onAtras = { confirmar = true },
         extraCabecera = { BotonCompartirEnVivo(tracker) },
-        mapa = { vista3d, controles ->
+        mapa = { vista3d, controles, panelAbierto ->
             if (Mapas.configurado()) MapaGacelas(
                 estado.puntos.aLatLng(), Modifier.fillMaxSize(), seguir = true, zoom = 17f, modo3d = vista3d,
                 ritmoSegKm = estado.ritmoActualSegKm, adelanteM = 60.0, rutaMagenta = true, avisoArriba = 210.dp,
-                controlesPropios = controles,
+                controlesPropios = controles, corredorVisible = !panelAbierto,
             ) { }
             else TrazadoRuta(estado.puntos, Modifier.fillMaxSize())
         },
@@ -150,7 +150,7 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
     }
 }
 
-typealias ControlesMapaC4 = @Composable BoxScope.(recentrar: () -> Unit, norte: () -> Unit, rumbo: Float) -> Unit
+typealias ControlesMapaC4 = @Composable BoxScope.(recentrar: () -> Unit, norte: () -> Unit, rumbo: Float, siguiendo: Boolean) -> Unit
 
 /**
  * Pantalla de carrera V1: mapa a pantalla completa, tarjeta de metricas arriba, chips, pausa/stop
@@ -165,7 +165,7 @@ fun ContenidoCarreraC4(
     onAtras: () -> Unit,
     panelInicial: Boolean = false,
     extraCabecera: @Composable () -> Unit = {},
-    mapa: @Composable (vista3d: Boolean, controles: ControlesMapaC4) -> Unit,
+    mapa: @Composable (vista3d: Boolean, controles: ControlesMapaC4, panelAbierto: Boolean) -> Unit,
 ) {
     val e = vista.estado
     val m = vista.metricas
@@ -175,7 +175,7 @@ fun ContenidoCarreraC4(
 
     BoxWithConstraints(Modifier.fillMaxSize().background(K1.Fondo).testTag("pantalla-carrera")) {
         val bajo = maxHeight < 640.dp
-        val controles: ControlesMapaC4 = { recentrar, norte, rumbo ->
+        val controles: ControlesMapaC4 = { recentrar, norte, rumbo, siguiendo ->
             Column(
                 Modifier.align(Alignment.BottomEnd).navigationBarsPadding().padding(end = 16.dp, bottom = if (bajo) 92.dp else 112.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -183,11 +183,14 @@ fun ContenidoCarreraC4(
                 BotonMapa("Vista ${if (vista3d) "2D" else "3D"}", { vista3d = !vista3d }, "boton-3d") {
                     Text(if (vista3d) "3D" else "2D", style = TextStyle(fontFamily = num, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.05).em), color = K1.Naranja)
                 }
-                BotonMapa("Recentrar", recentrar, "boton-recentrar") { Icon(Icons.Filled.MyLocation, null, tint = Color.White, modifier = Modifier.size(20.dp)) }
+                // Sin seguimiento (tras arrastrar) el boton se enciende en naranja.
+                BotonMapa("Recentrar", recentrar, if (siguiendo) "boton-recentrar" else "boton-recentrar-activo", fondo = if (siguiendo) null else K1.Naranja) {
+                    Icon(Icons.Filled.MyLocation, null, tint = Color.White, modifier = Modifier.size(20.dp))
+                }
                 BotonMapa("Orientar al norte", norte, "boton-brujula") { Icon(Icons.Filled.Explore, null, tint = K1.Secondary, modifier = Modifier.size(20.dp).rotate(-rumbo)) }
             }
         }
-        mapa(vista3d, controles)
+        mapa(vista3d, controles, panel)
 
         Column(Modifier.fillMaxWidth().statusBarsPadding()) {
             // Cabecera: logo + cronometro.
@@ -313,8 +316,8 @@ private fun Chip(titulo: String, valor: String, punto: Color? = null, tag: Strin
 }
 
 @Composable
-private fun BotonMapa(descripcion: String, onClick: () -> Unit, tag: String, contenido: @Composable () -> Unit) {
-    Box(Modifier.size(44.dp).vidrio(CircleShape, sombra = 8.dp).clickable(onClick = onClick).testTag(tag), contentAlignment = Alignment.Center) {
+private fun BotonMapa(descripcion: String, onClick: () -> Unit, tag: String, fondo: Color? = null, contenido: @Composable () -> Unit) {
+    Box(Modifier.size(44.dp).vidrio(CircleShape, sombra = 8.dp).then(if (fondo != null) Modifier.background(fondo) else Modifier).clickable(onClickLabel = descripcion, onClick = onClick).testTag(tag), contentAlignment = Alignment.Center) {
         LineaSuperior(10.dp)
         contenido()
     }

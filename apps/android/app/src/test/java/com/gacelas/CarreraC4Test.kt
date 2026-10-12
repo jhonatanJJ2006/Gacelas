@@ -48,10 +48,10 @@ class CarreraC4Test {
 
     private fun mostrar(panel: Boolean = false, e: EstadoCarrera = estado) = compose.setContent {
         GacelasTheme {
-            ContenidoCarreraC4(VistaCarrera(e), onPausa = {}, onStop = {}, onVuelta = { vueltas++ }, onAtras = {}, panelInicial = panel) { _, controles ->
+            ContenidoCarreraC4(VistaCarrera(e), onPausa = {}, onStop = {}, onVuelta = { vueltas++ }, onAtras = {}, panelInicial = panel) { _, controles, _ ->
                 Box(Modifier.fillMaxSize().background(Color(0xFF0A0E16))) {
                     TrazadoRuta(e.puntos, Modifier.fillMaxSize())
-                    controles({}, {}, 0f)
+                    controles({}, {}, 0f, true)
                 }
             }
         }

@@ -91,6 +91,8 @@ fun Runner3D(
     modifier: Modifier = Modifier,
     autoRotar: Boolean = false,
     camara: Position = Position(0f, 1.2f, 3.5f),
+    /** Giro del corredor (grados, horario) respecto a "hacia adelante" en pantalla. */
+    rumboRelativo: Float = 0f,
 ) {
     val context = LocalContext.current
     val disponible = !LocalInspectionMode.current && remember { soporta3D(context) }
@@ -132,7 +134,11 @@ fun Runner3D(
         cameraNode = camaraNode,
         cameraManipulator = null,
         childNodes = listOf(modelo),
+        // Con isOpaque=false el SurfaceView se pone encima de toda la ventana (setZOrderOnTop) y tapaba
+        // el panel del cronometro y la tarjeta. Como capa de medios queda sobre el mapa y bajo la UI.
+        onViewCreated = { setZOrderOnTop(false); setZOrderMediaOverlay(true) },
         onFrame = {
+            if (!autoRotar) modelo.rotation = Rotation(y = -rumboRelativo)
             if (autoRotar) {
                 angulo = (angulo + 0.3f) % 360f
                 modelo.rotation = Rotation(y = angulo)

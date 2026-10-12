@@ -39,18 +39,7 @@ class ActualizacionTest {
         assertEquals("https://p.supabase.co/storage/v1/object/public/app-releases/android/latest.json", ReglasActualizacion.urlManifiesto("https://p.supabase.co/"))
     }
 
-    @Test fun revisaUnaVezAlDiaYRecuerdaMasTarde() = runBlocking {
-        var ahora = 1_000_000L; var llamadas = 0
-        val r = ActualizacionRepository(store, "https://m", 601, { ahora }) { llamadas++; json }
-        val a = r.revisar() as Aviso.Nueva
-        assertEquals("0.6.2", a.info.versionName)
-        r.revisar(); assertEquals(1, llamadas)
-        r.posponer(602)
-        assertEquals(Aviso.Nada, r.revisar())
-        ahora += ReglasActualizacion.UN_DIA_MS
-        r.revisar(); assertEquals(2, llamadas)
-    }
-
+    // (Reemplazado por Feedback068Test.revisaSiempreYMasTardeSoloEnLaSesion: ya no hay cache diaria.)
     @Test fun sinRedUsaLoUltimoConocido() = runBlocking {
         var falla = false
         var ahora = 5L

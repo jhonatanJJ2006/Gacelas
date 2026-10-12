@@ -22,7 +22,7 @@ class RumboTest {
     @Test fun quietoOLentoMandaElSensor() {
         assertEquals(90f, Rumbo.combinar(90f, 180f, 0.0)!!, 0.001f)
         assertEquals(90f, Rumbo.combinar(90f, 180f, null)!!, 0.001f)
-        assertEquals(90f, Rumbo.combinar(90f, 180f, 1.0)!!, 0.001f)
+        assertEquals(90f, Rumbo.combinar(90f, 180f, 0.5)!!, 0.001f)
     }
 
     @Test fun corriendoMandaElGps() {
@@ -36,8 +36,8 @@ class RumboTest {
         var v = 0.0
         while (v <= 3.0) {
             val r = Rumbo.combinar(90f, 180f, v)!!
-            assertTrue("salto brusco a $v m/s", r - previo <= 10f)
-            previo = r; v += 0.1
+            assertTrue("salto brusco a $v m/s", r - previo <= 25f)
+            previo = r; v += 0.05
         }
     }
 

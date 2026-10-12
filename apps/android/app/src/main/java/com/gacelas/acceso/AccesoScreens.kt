@@ -130,6 +130,8 @@ fun BienvenidaScreen(onSaltar: () -> Unit, onCrearCuenta: () -> Unit, onIniciarS
                 Spacer(Modifier.height(12.dp))
                 BotonGoogle(onEntrarGoogle, portada = true)
                 PieC4("¿Ya tienes cuenta? ", "Inicia sesión", onIniciarSesion)
+                Text(com.gacelas.actualizacion.textoVersion(), style = C4Texto.bodySm.copy(fontSize = 10.sp), color = C4.Secondary.copy(alpha = 0.5f),
+                    modifier = Modifier.fillMaxWidth().padding(top = 6.dp).testTag("version-app"), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             }
         }
     }
