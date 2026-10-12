@@ -21,7 +21,26 @@ import platform.Foundation.timeIntervalSince1970
 import platform.Foundation.NSOperationQueue
 import platform.darwin.NSObject
 
-actual fun fuenteUbicacionNativa(): FuenteUbicacion? = UbicacionIos()
+actual fun fuenteUbicacionNativa(): FuenteUbicacion? =
+    if (platform.Foundation.NSProcessInfo.processInfo.arguments.contains("--gps-simulado")) RecorridoSimulado() else UbicacionIos()
+
+/**
+ * Solo pruebas (argumento --gps-simulado): recorrido por Loja hacia el sur a 3,3 m/s, una lectura por
+ * segundo, por el mismo camino que CoreLocation (SeguimientoSensores → RunTracker/Rumbo). Existe porque
+ * el simulador headless de CI solo entrega a un proceso la ubicacion inyectada al arrancar.
+ */
+class RecorridoSimulado : FuenteUbicacion {
+    private var temporizador: NSTimer? = null
+    override fun iniciar(intervaloMs: Long, enSegundoPlano: Boolean, alLeer: (LecturaGps) -> Unit) {
+        var i = 0
+        temporizador?.invalidate()
+        temporizador = NSTimer.scheduledTimerWithTimeInterval(intervaloMs / 1000.0, repeats = true) { _ ->
+            alLeer(LecturaGps(-3.99310 - i * 0.0000297, -79.20420, 5f, com.gacelas.shared.ahoraMs(), 2100.0, 3.3, 180f))
+            i++
+        }
+    }
+    override fun detener() { temporizador?.invalidate(); temporizador = null }
+}
 actual fun fuenteRumboNativa(): FuenteRumbo? = RumboIos()
 
 /** Solo se pide segundo plano si el Info.plist declara UIBackgroundModes=location (si no, iOS cierra la app). */
@@ -31,7 +50,7 @@ private fun fondoDeclarado(): Boolean =
 /** CoreLocation con precision Best; entrega como maximo una lectura por intervalo (1 s). */
 @OptIn(ExperimentalForeignApi::class)
 class UbicacionIos : FuenteUbicacion {
-    private companion object { const val SIN_LECTURAS_MS = 1_500L }
+    private companion object { const val SIN_LECTURAS_MS = 5_000L }
 
     private var gestor = CLLocationManager()
     private var alLeer: ((LecturaGps) -> Unit)? = null
@@ -51,32 +70,26 @@ class UbicacionIos : FuenteUbicacion {
             else -> {}
         }
         gestor.startUpdatingLocation()
-        // Vigilante: si CoreLocation deja de entregar (locationd del simulador de CI solo envia la
-        // primera posicion a cada gestor), se crea un gestor nuevo. En un iPhone llegan lecturas cada
-        // segundo y esto no se activa.
+        // Vigilante: si CoreLocation deja de entregar 5 s, se reinicia la suscripcion. En un iPhone
+        // llegan lecturas cada segundo y esto no se activa.
         ultimoDelegadoMs = com.gacelas.shared.relojMonotonoMs()
         temporizador?.invalidate()
         temporizador = NSTimer.scheduledTimerWithTimeInterval(intervaloMs / 1000.0, repeats = true) { _ ->
             if (com.gacelas.shared.relojMonotonoMs() - ultimoDelegadoMs > SIN_LECTURAS_MS) {
                 ultimoDelegadoMs = com.gacelas.shared.relojMonotonoMs()
                 gestor.stopUpdatingLocation()
-                gestor.delegate = null
-                gestor = CLLocationManager()
-                configurar()
                 gestor.startUpdatingLocation()
             }
         }
     }
 
-    private fun arg(a: String) = platform.Foundation.NSProcessInfo.processInfo.arguments.contains(a)
-
     private fun configurar() {
         gestor.delegate = delegado
-        gestor.desiredAccuracy = if (arg("--prueba-10m")) platform.CoreLocation.kCLLocationAccuracyNearestTenMeters else kCLLocationAccuracyBest
+        gestor.desiredAccuracy = kCLLocationAccuracyBest
         gestor.distanceFilter = kCLDistanceFilterNone
-        if (!arg("--prueba-sin-tipo")) gestor.activityType = CLActivityTypeFitness
+        gestor.activityType = CLActivityTypeFitness
         gestor.pausesLocationUpdatesAutomatically = false
-        if (fondo && fondoDeclarado() && !arg("--prueba-sin-fondo")) {
+        if (fondo && fondoDeclarado()) {
             gestor.allowsBackgroundLocationUpdates = true
             gestor.showsBackgroundLocationIndicator = true
         }
