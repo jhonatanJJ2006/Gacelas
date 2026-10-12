@@ -82,9 +82,9 @@ object MockData {
     )
 
     val rutas = listOf(
-        Ruta("1", "Parque Jipiro", 5.2, Dificultad.Facil, 45, "Ruta panorámica alrededor del Parque Jipiro, ideal para principiantes.", etiquetas = listOf("parque", "plana", "urbana")),
-        Ruta("2", "Río Zamora", 8.5, Dificultad.Moderado, 120, "Ruta junto al río con algunas subidas moderadas."),
-        Ruta("3", "Cerro Villonaco", 12.3, Dificultad.Dificil, 380, "Ruta de montaña desafiante con vistas espectaculares de Loja."),
+        Ruta("1", "Parque Jipiro", 1.8, Dificultad.Facil, 45, "Ruta panorámica alrededor del Parque Jipiro, ideal para principiantes.", etiquetas = listOf("parque", "plana", "urbana")),
+        Ruta("2", "Río Zamora", 2.2, Dificultad.Moderado, 120, "Ruta junto al río con algunas subidas moderadas."),
+        Ruta("3", "Cerro Villonaco", 4.4, Dificultad.Dificil, 380, "Ruta de montaña desafiante con vistas espectaculares de Loja."),
         Ruta("4", "Campus UTPL - San Cayetano", 6.1, Dificultad.Moderado, 150, "Mi ruta de entrenamiento entre el campus y San Cayetano.", autorId = ID_USUARIO),
     )
 

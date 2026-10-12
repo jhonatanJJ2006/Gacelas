@@ -1,5 +1,6 @@
 package com.gacelas.inicio
 
+import com.gacelas.data.eventos.yaPaso
 import com.gacelas.ui.components.InsigniaRacha
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -57,7 +58,7 @@ import io.github.sceneview.math.Position
 
 @Composable
 fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String) -> Unit = { onEventos() }) {
-    val evento = MockData.eventos.first { !it.pasado }
+    val evento = MockData.eventos.firstOrNull { !it.yaPaso() } ?: MockData.eventos.maxBy { it.inicioMs ?: 0L }
     val perfil by sesionState()
     val carreras by carrerasState()
     val ajustes by ajustesState()

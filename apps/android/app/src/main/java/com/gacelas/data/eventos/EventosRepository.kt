@@ -33,8 +33,15 @@ class LocalEventosRepository(store: DataStore<Preferences>) : EventosRepository 
 @Serializable
 enum class PestanaEventos(val etiqueta: String) { Proximos("Próximos"), MisEventos("Mis eventos"), Pasados("Pasados") }
 
-fun filtrarEventos(eventos: List<Evento>, pestana: PestanaEventos, inscritos: Set<String>): List<Evento> = when (pestana) {
-    PestanaEventos.Proximos -> eventos.filter { !it.pasado }
+/**
+ * Si el evento ya empezo, con la hora de ahora. `pasado` venia fijo (datos de ejemplo) o calculado al
+ * descargar, asi que el evento Jipiro del sabado 11 de octubre seguia en "Proximos". inicioMs es un
+ * instante absoluto (America/Guayaquil = UTC-5 en el servidor), no depende de la zona del telefono.
+ */
+fun Evento.yaPaso(ahoraMs: Long = System.currentTimeMillis()): Boolean = inicioMs?.let { it < ahoraMs } ?: pasado
+
+fun filtrarEventos(eventos: List<Evento>, pestana: PestanaEventos, inscritos: Set<String>, ahoraMs: Long = System.currentTimeMillis()): List<Evento> = when (pestana) {
+    PestanaEventos.Proximos -> eventos.filter { !it.yaPaso(ahoraMs) }
     PestanaEventos.MisEventos -> eventos.filter { it.id in inscritos || it.creadoPorUsuario }
-    PestanaEventos.Pasados -> eventos.filter { it.pasado }
+    PestanaEventos.Pasados -> eventos.filter { it.yaPaso(ahoraMs) }
 }

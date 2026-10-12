@@ -40,6 +40,8 @@ object Destinos {
 
     const val EDITAR_PERFIL = "perfil/editar"
     const val AVATAR = "perfil/avatar"
+    const val DETALLE_CARRERA = "perfil/carrera/{id}"
+    fun detalleCarrera(id: String) = "perfil/carrera/$id"
 
     const val AJUSTES = "ajustes"
     const val PRIVACIDAD = "ajustes/privacidad"

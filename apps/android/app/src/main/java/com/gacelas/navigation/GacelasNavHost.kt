@@ -150,6 +150,7 @@ private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
             onEditar = { nav.navigate(Destinos.EDITAR_PERFIL) },
             onAvatar = { nav.navigate(Destinos.AVATAR) },
             onAjustes = { nav.navigate(Destinos.AJUSTES) },
+            onCarrera = { nav.navigate(Destinos.detalleCarrera(it)) },
         )
     }
 }
@@ -199,6 +200,7 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
         com.gacelas.envivo.DetalleEnVivoScreen(id = entry.arguments?.getString("id") ?: "", onAtras = { nav.popBackStack() })
     }
     composable(Destinos.EDITAR_PERFIL) { EditarPerfilScreen(onAtras = { nav.popBackStack() }, onGuardar = { nav.popBackStack() }) }
+    composable(Destinos.DETALLE_CARRERA) { e -> com.gacelas.perfil.DetalleCarreraScreen(e.arguments?.getString("id").orEmpty(), onAtras = { nav.popBackStack() }) }
     composable(Destinos.AVATAR) { Avatar3DScreen(onAtras = { nav.popBackStack() }, onGuardar = { nav.popBackStack() }) }
     composable(Destinos.AJUSTES) {
         AjustesPreferenciasScreen(
