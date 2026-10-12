@@ -1,5 +1,7 @@
 package com.gacelas.ui.components
 
+import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -173,6 +175,17 @@ fun MapaGacelas(
             }
         }
         if (controles) ControlesMapa(mapa, rumboCamara, Modifier.align(Alignment.CenterEnd).padding(end = 12.dp))
+        // Sin red y sin Loja descargada no hay teselas: se avisa en vez de dejar el mapa vacio sin explicacion.
+        val descarga by MapaOffline.estado.collectAsState()
+        val conRed = remember(puntos.size / 10) { ReglasDescarga.conRed(context) }
+        if (!conRed && descarga !is EstadoDescarga.Lista) {
+            Text(
+                "Sin conexión · descarga el mapa de Loja en Ajustes",
+                color = Color.White, fontSize = 11.sp,
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = 8.dp).clip(CircleShape).background(Color(0xE6121A2A))
+                    .padding(horizontal = 10.dp, vertical = 4.dp).testTag("aviso-sin-mapa"),
+            )
+        }
         if (seguir && !siguiendo) {
             Row(
                 Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp).clip(CircleShape).background(Color(0xF2121A2A))

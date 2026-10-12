@@ -30,7 +30,6 @@ class Brujula(context: Context) : SensorEventListener {
     private val ventana = context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager
     private val matriz = FloatArray(9)
     private val remapeada = FloatArray(9)
-    private val orientacion = FloatArray(3)
     private var suavizado: Float? = null
     private var alCambiar: ((Float) -> Unit)? = null
 
@@ -64,8 +63,9 @@ class Brujula(context: Context) : SensorEventListener {
             else -> SensorManager.AXIS_X to SensorManager.AXIS_Y
         }
         SensorManager.remapCoordinateSystem(matriz, ejeX, ejeY, remapeada)
-        SensorManager.getOrientation(remapeada, orientacion)
-        val crudo = Rumbo.normalizar(Math.toDegrees(orientacion[0].toDouble()).toFloat() + declinacion)
+        // getOrientation() se vuelve inestable con el telefono vertical (como se lleva al correr):
+        // el azimut casi no cambia al girar. Se usa el rumbo robusto de Rumbo.deMatriz.
+        val crudo = Rumbo.normalizar(Rumbo.deMatriz(remapeada) + declinacion)
         val nuevo = suavizado?.let { Rumbo.suavizar(it, crudo, 0.15f) } ?: crudo
         suavizado = nuevo
         alCambiar?.invoke(nuevo)
@@ -114,6 +114,18 @@ object Rumbo {
         sensor == null -> gps
         gps == null -> sensor
         else -> mezclar(sensor, gps, pesoGps(velocidadMs))
+    }
+
+    /**
+     * Rumbo (grados, norte magnetico) hacia donde apunta el telefono a partir de la matriz de rotacion
+     * (dispositivo → mundo, ENU). Suma la proyeccion horizontal del eje Y (arriba de la pantalla; vale
+     * con el telefono plano) y la del eje -Z (la camara trasera; vale con el telefono vertical), asi
+     * funciona en cualquier inclinacion sin el bloqueo de getOrientation().
+     */
+    fun deMatriz(r: FloatArray): Float {
+        val este = r[1] - r[2]
+        val norte = r[4] - r[5]
+        return normalizar(Math.toDegrees(kotlin.math.atan2(este.toDouble(), norte.toDouble())).toFloat())
     }
 
     /** Evita mover la camara por cambios minimos del sensor. */

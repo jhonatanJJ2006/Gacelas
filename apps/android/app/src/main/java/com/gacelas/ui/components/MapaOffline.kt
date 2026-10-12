@@ -94,6 +94,61 @@ object MapaOffline {
         }
     }
 
+    /** Cache ambiental de MapLibre (zonas vistas con red), aparte de la region descargada. */
+    const val CACHE_AMBIENTAL_BYTES = 150L * 1024 * 1024
+
+    /**
+     * Al abrir la app: amplia la cache ambiental, reanuda una descarga que quedo a medias y, si Loja
+     * no esta descargada y hay wifi (red no medida), la descarga sola. Antes solo se bajaba a mano
+     * desde Ajustes y una descarga interrumpida no se reanudaba nunca.
+     */
+    fun asegurar(context: Context, r: RegionMapa = LOJA) {
+        val app = context.applicationContext
+        runCatching { gestor(app).setMaximumAmbientCacheSize(CACHE_AMBIENTAL_BYTES, null) }
+        regiones(app) { lista ->
+            val propia = lista.firstOrNull { it.clave() == String(metadatos(r, ESTILO_DESCARGA)) }
+            val wifi = ReglasDescarga.redNoMedida(app)
+            if (propia == null) {
+                if (ReglasDescarga.descargarSola(existe = false, completa = false, wifi = wifi)) descargar(app, r) else consultar(app, r)
+                return@regiones
+            }
+            propia.getStatus(object : OfflineRegion.OfflineRegionStatusCallback {
+                override fun onStatus(status: OfflineRegionStatus?) {
+                    val completa = status?.isComplete == true
+                    if (ReglasDescarga.descargarSola(existe = true, completa = completa, wifi = wifi)) reanudar(propia) else consultar(app, r)
+                }
+                override fun onError(error: String?) = consultar(app, r)
+            })
+        }
+    }
+
+    private fun reanudar(region: OfflineRegion) {
+        _estado.value = EstadoDescarga.Descargando(0, 0.0)
+        region.setObserver(observador(region, 0, DoubleArray(1), DoubleArray(1), BooleanArray(1)))
+        region.setDownloadState(OfflineRegion.STATE_ACTIVE)
+    }
+
+    private fun observador(offlineRegion: OfflineRegion, i: Int, progreso: DoubleArray, megas: DoubleArray, listas: BooleanArray) =
+        object : OfflineRegion.OfflineRegionObserver {
+            override fun onStatusChanged(status: OfflineRegionStatus) {
+                val req = status.requiredResourceCount.coerceAtLeast(1)
+                progreso[i] = status.completedResourceCount.toDouble() / req
+                megas[i] = status.completedResourceSize / 1e6
+                if (status.isComplete) {
+                    listas[i] = true
+                    offlineRegion.setDownloadState(OfflineRegion.STATE_INACTIVE)
+                }
+                _estado.value = if (listas.all { it }) EstadoDescarga.Lista(megas.sum())
+                else EstadoDescarga.Descargando((progreso.average() * 100).toInt().coerceIn(0, 99), megas.sum())
+            }
+            override fun onError(error: OfflineRegionError) {
+                if (error.reason == OfflineRegionError.REASON_CONNECTION) _estado.value = EstadoDescarga.Error("Sin conexión: la descarga sigue al volver la red")
+            }
+            override fun mapboxTileCountLimitExceeded(limit: Long) {
+                _estado.value = EstadoDescarga.Error("La zona supera el límite de $limit teselas")
+            }
+        }
+
     fun descargar(context: Context, r: RegionMapa = LOJA) {
         val estilos = listOf(ESTILO_DESCARGA)
         val densidad = context.resources.displayMetrics.density
@@ -106,26 +161,7 @@ object MapaOffline {
             val def = OfflineTilePyramidRegionDefinition(estilo, limites, r.zoomMin, r.zoomMax, densidad)
             gestor(context).createOfflineRegion(def, metadatos(r, estilo), object : OfflineManager.CreateOfflineRegionCallback {
                 override fun onCreate(offlineRegion: OfflineRegion) {
-                    offlineRegion.setObserver(object : OfflineRegion.OfflineRegionObserver {
-                        override fun onStatusChanged(status: OfflineRegionStatus) {
-                            val req = status.requiredResourceCount.coerceAtLeast(1)
-                            progreso[i] = status.completedResourceCount.toDouble() / req
-                            megas[i] = status.completedResourceSize / 1e6
-                            if (status.isComplete) {
-                                listas[i] = true
-                                offlineRegion.setDownloadState(OfflineRegion.STATE_INACTIVE)
-                            }
-                            _estado.value = if (listas.all { it }) EstadoDescarga.Lista(megas.sum())
-                            else EstadoDescarga.Descargando((progreso.average() * 100).toInt().coerceIn(0, 99), megas.sum())
-                        }
-                        override fun onError(error: OfflineRegionError) {
-                            // Errores sueltos de una tesela no detienen la descarga; se informan al final.
-                            if (error.reason == OfflineRegionError.REASON_CONNECTION) _estado.value = EstadoDescarga.Error("Sin conexión: la descarga sigue al volver la red")
-                        }
-                        override fun mapboxTileCountLimitExceeded(limit: Long) {
-                            _estado.value = EstadoDescarga.Error("La zona supera el límite de $limit teselas")
-                        }
-                    })
+                    offlineRegion.setObserver(observador(offlineRegion, i, progreso, megas, listas))
                     offlineRegion.setDownloadState(OfflineRegion.STATE_ACTIVE)
                 }
                 override fun onError(error: String) { _estado.value = EstadoDescarga.Error(error) }
@@ -143,5 +179,23 @@ object MapaOffline {
                 })
             }
         }
+    }
+}
+
+/** Reglas puras de la descarga automatica (probadas en JVM). */
+object ReglasDescarga {
+    /** Se descarga sola si falta o quedo incompleta, y solo con wifi (o red no medida). */
+    fun descargarSola(existe: Boolean, completa: Boolean, wifi: Boolean): Boolean = wifi && (!existe || !completa)
+
+    fun redNoMedida(context: Context): Boolean {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager ?: return false
+        val caps = cm.getNetworkCapabilities(cm.activeNetwork) ?: return false
+        return caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+    }
+
+    fun conRed(context: Context): Boolean {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager ?: return true
+        return cm.getNetworkCapabilities(cm.activeNetwork)?.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
     }
 }
