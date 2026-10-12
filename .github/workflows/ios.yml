@@ -57,10 +57,13 @@ jobs:
           xcrun simctl privacy "$UDID" grant location-always com.gacelas.app || xcrun simctl privacy "$UDID" grant location com.gacelas.app
           xcrun simctl launch "$UDID" com.gacelas.app --sensores
           sleep 5
-          # Coordenadas negativas por stdin ("-"): como argumentos simctl las toma por opciones.
-          printf -- '-3.99310,-79.20420\n-3.99600,-79.20430\n-3.99900,-79.20440\n-4.00200,-79.20450\n' \
-            | xcrun simctl location "$UDID" start --speed=3.3 --interval=1 -
-          sleep 25
+          # Recorrido simulado: un punto por segundo (~3,3 m/s hacia el sur). "location set" con "--"
+          # porque las coordenadas negativas parecen opciones; "start" (ruta) no entrega actualizaciones fiables.
+          for i in $(seq 0 27); do
+            LAT=$(python3 -c "print(f'{-3.99310 - $i*0.00003:.6f}')")
+            xcrun simctl location "$UDID" set -- "$LAT,-79.20420" || xcrun simctl location "$UDID" set "$LAT,-79.20420"
+            sleep 1
+          done
           xcrun simctl io "$UDID" screenshot shots/sensores.png
           xcrun simctl location "$UDID" clear || true
       - uses: actions/upload-artifact@v4
