@@ -65,6 +65,17 @@ jobs:
           xcrun simctl io "$UDID" screenshot shots/sensores-12s.png
           sleep 15
           xcrun simctl io "$UDID" screenshot shots/sensores.png
+          # Experimento temporal: variantes de configuracion de CoreLocation.
+          for V in --prueba-sin-fondo --prueba-sin-tipo --prueba-10m; do
+            xcrun simctl terminate "$UDID" com.gacelas.app || true
+            xcrun simctl launch "$UDID" com.gacelas.app --sensores $V
+            sleep 15
+            xcrun simctl io "$UDID" screenshot "shots/v$V.png"
+          done
+          xcrun simctl terminate "$UDID" com.gacelas.app || true
+          xcrun simctl launch "$UDID" com.gacelas.app
+          sleep 4
+          xcrun simctl io "$UDID" screenshot shots/v-inicio.png
           xcrun simctl location "$UDID" clear || true
       - uses: actions/upload-artifact@v4
         with: { name: ios-simulator-screenshots, path: apps/ios/iosApp/shots }

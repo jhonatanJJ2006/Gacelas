@@ -68,13 +68,15 @@ class UbicacionIos : FuenteUbicacion {
         }
     }
 
+    private fun arg(a: String) = platform.Foundation.NSProcessInfo.processInfo.arguments.contains(a)
+
     private fun configurar() {
         gestor.delegate = delegado
-        gestor.desiredAccuracy = kCLLocationAccuracyBest
+        gestor.desiredAccuracy = if (arg("--prueba-10m")) platform.CoreLocation.kCLLocationAccuracyNearestTenMeters else kCLLocationAccuracyBest
         gestor.distanceFilter = kCLDistanceFilterNone
-        gestor.activityType = CLActivityTypeFitness
+        if (!arg("--prueba-sin-tipo")) gestor.activityType = CLActivityTypeFitness
         gestor.pausesLocationUpdatesAutomatically = false
-        if (fondo && fondoDeclarado()) {
+        if (fondo && fondoDeclarado() && !arg("--prueba-sin-fondo")) {
             gestor.allowsBackgroundLocationUpdates = true
             gestor.showsBackgroundLocationIndicator = true
         }
