@@ -1,321 +1,183 @@
 {
- "version": 8,
- "name": "Gacelas oscuro",
- "sources": {
-  "openmaptiles": {
-   "type": "vector",
-   "url": "https://tiles.openfreemap.org/planet",
-   "attribution": "© OpenStreetMap contributors, OpenFreeMap"
-  }
- },
- "glyphs": "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
- "layers": [
-  {
-   "id": "fondo",
-   "type": "background",
-   "paint": {
-    "background-color": "#0d1422"
-   }
+  "version": 8,
+  "name": "Gacelas oscuro",
+  "sources": {
+    "openmaptiles": {
+      "type": "vector",
+      "url": "https://tiles.openfreemap.org/planet",
+      "attribution": "© OpenStreetMap contributors, OpenFreeMap"
+    }
   },
-  {
-   "id": "agua",
-   "type": "fill",
-   "source": "openmaptiles",
-   "source-layer": "water",
-   "paint": {
-    "fill-color": "#0a2340"
-   }
-  },
-  {
-   "id": "parques",
-   "type": "fill",
-   "source": "openmaptiles",
-   "source-layer": "park",
-   "paint": {
-    "fill-color": "#0f2a24"
-   }
-  },
-  {
-   "id": "verde",
-   "type": "fill",
-   "source": "openmaptiles",
-   "source-layer": "landcover",
-   "filter": [
-    "in",
-    "class",
-    "grass",
-    "wood"
-   ],
-   "paint": {
-    "fill-color": "#0f2a24",
-    "fill-opacity": 0.6
-   }
-  },
-  {
-   "id": "urbano",
-   "type": "fill",
-   "source": "openmaptiles",
-   "source-layer": "landuse",
-   "filter": [
-    "in",
-    "class",
-    "residential",
-    "commercial",
-    "industrial"
-   ],
-   "paint": {
-    "fill-color": "#111a2b"
-   }
-  },
-  {
-   "id": "edificios",
-   "type": "fill",
-   "source": "openmaptiles",
-   "source-layer": "building",
-   "minzoom": 15,
-   "paint": {
-    "fill-color": "#151f33",
-    "fill-opacity": 0.8
-   }
-  },
-  {
-   "id": "rios",
-   "type": "line",
-   "source": "openmaptiles",
-   "source-layer": "waterway",
-   "paint": {
-    "line-color": "#0a2340",
-    "line-width": [
-     "interpolate",
-     [
-      "linear"
-     ],
-     [
-      "zoom"
-     ],
-     12,
-     1,
-     18,
-     6
-    ]
-   }
-  },
-  {
-   "id": "senderos",
-   "type": "line",
-   "source": "openmaptiles",
-   "source-layer": "transportation",
-   "filter": [
-    "in",
-    "class",
-    "path",
-    "track"
-   ],
-   "paint": {
-    "line-color": "#3a4a5e",
-    "line-width": [
-     "interpolate",
-     [
-      "linear"
-     ],
-     [
-      "zoom"
-     ],
-     14,
-     0.8,
-     20,
-     4
-    ],
-    "line-dasharray": [
-     2,
-     1.5
-    ]
-   }
-  },
-  {
-   "id": "vias-borde",
-   "type": "line",
-   "source": "openmaptiles",
-   "source-layer": "transportation",
-   "filter": [
-    "in",
-    "class",
-    "minor",
-    "service",
-    "tertiary",
-    "secondary",
-    "primary",
-    "trunk",
-    "motorway"
-   ],
-   "layout": {
-    "line-cap": "round",
-    "line-join": "round"
-   },
-   "paint": {
-    "line-color": "#0d1422",
-    "line-width": [
-     "interpolate",
-     [
-      "exponential",
-      1.6
-     ],
-     [
-      "zoom"
-     ],
-     12,
-     2,
-     20,
-     34
-    ]
-   }
-  },
-  {
-   "id": "vias",
-   "type": "line",
-   "source": "openmaptiles",
-   "source-layer": "transportation",
-   "filter": [
-    "in",
-    "class",
-    "minor",
-    "service",
-    "tertiary"
-   ],
-   "layout": {
-    "line-cap": "round",
-    "line-join": "round"
-   },
-   "paint": {
-    "line-color": "#1c2638",
-    "line-width": [
-     "interpolate",
-     [
-      "exponential",
-      1.6
-     ],
-     [
-      "zoom"
-     ],
-     12,
-     1,
-     20,
-     28
-    ]
-   }
-  },
-  {
-   "id": "avenidas",
-   "type": "line",
-   "source": "openmaptiles",
-   "source-layer": "transportation",
-   "filter": [
-    "in",
-    "class",
-    "secondary",
-    "primary",
-    "trunk",
-    "motorway"
-   ],
-   "layout": {
-    "line-cap": "round",
-    "line-join": "round"
-   },
-   "paint": {
-    "line-color": "#2a3446",
-    "line-width": [
-     "interpolate",
-     [
-      "exponential",
-      1.6
-     ],
-     [
-      "zoom"
-     ],
-     10,
-     1.5,
-     20,
-     32
-    ]
-   }
-  },
-  {
-   "id": "nombres-vias",
-   "type": "symbol",
-   "source": "openmaptiles",
-   "source-layer": "transportation_name",
-   "minzoom": 14,
-   "layout": {
-    "symbol-placement": "line",
-    "text-field": [
-     "coalesce",
-     [
-      "get",
-      "name:es"
-     ],
-     [
-      "get",
-      "name"
-     ]
-    ],
-    "text-font": [
-     "Noto Sans Regular"
-    ],
-    "text-size": 12
-   },
-   "paint": {
-    "text-color": "#5d6b80",
-    "text-halo-color": "#0d1422",
-    "text-halo-width": 1.5
-   }
-  },
-  {
-   "id": "lugares",
-   "type": "symbol",
-   "source": "openmaptiles",
-   "source-layer": "place",
-   "filter": [
-    "in",
-    "class",
-    "city",
-    "town",
-    "suburb",
-    "neighbourhood"
-   ],
-   "layout": {
-    "text-field": [
-     "coalesce",
-     [
-      "get",
-      "name:es"
-     ],
-     [
-      "get",
-      "name"
-     ]
-    ],
-    "text-font": [
-     "Noto Sans Regular"
-    ],
-    "text-size": [
-     "interpolate",
-     [
-      "linear"
-     ],
-     [
-      "zoom"
-     ],
-     10,
-     11,
-     16,
-     15
-    ]
-   },
-   "paint": {
-    "text-color": "#9aa6b8",
-    "text-halo-color": "#0d1422",
-    "text-halo-width": 2
-   }
-  }
- ]
+  "glyphs": "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "fondo",
+      "type": "background",
+      "paint": {
+        "background-color": "#0d1422"
+      }
+    },
+    {
+      "id": "agua",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "water",
+      "paint": {
+        "fill-color": "#0a2340"
+      }
+    },
+    {
+      "id": "parques",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "park",
+      "paint": {
+        "fill-color": "#0f2a24"
+      }
+    },
+    {
+      "id": "verde",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landcover",
+      "filter": ["in", "class", "grass", "wood"],
+      "paint": {
+        "fill-color": "#0f2a24",
+        "fill-opacity": 0.6
+      }
+    },
+    {
+      "id": "urbano",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landuse",
+      "filter": ["in", "class", "residential", "commercial", "industrial"],
+      "paint": {
+        "fill-color": "#111a2b"
+      }
+    },
+    {
+      "id": "edificios",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "building",
+      "minzoom": 15,
+      "paint": {
+        "fill-color": "#151f33",
+        "fill-opacity": 0.8
+      }
+    },
+    {
+      "id": "rios",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "waterway",
+      "paint": {
+        "line-color": "#0a2340",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 12, 1, 18, 6]
+      }
+    },
+    {
+      "id": "senderos",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "filter": ["in", "class", "path", "track"],
+      "paint": {
+        "line-color": "#3a4a5e",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 14, 0.8, 20, 4],
+        "line-dasharray": [2, 1.5]
+      }
+    },
+    {
+      "id": "vias-borde",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "filter": [
+        "in",
+        "class",
+        "minor",
+        "service",
+        "tertiary",
+        "secondary",
+        "primary",
+        "trunk",
+        "motorway"
+      ],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "#0d1422",
+        "line-width": ["interpolate", ["exponential", 1.6], ["zoom"], 12, 2, 20, 34]
+      }
+    },
+    {
+      "id": "vias",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "filter": ["in", "class", "minor", "service", "tertiary"],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "#1c2638",
+        "line-width": ["interpolate", ["exponential", 1.6], ["zoom"], 12, 1, 20, 28]
+      }
+    },
+    {
+      "id": "avenidas",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "filter": ["in", "class", "secondary", "primary", "trunk", "motorway"],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "#2a3446",
+        "line-width": ["interpolate", ["exponential", 1.6], ["zoom"], 10, 1.5, 20, 32]
+      }
+    },
+    {
+      "id": "nombres-vias",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "transportation_name",
+      "minzoom": 14,
+      "layout": {
+        "symbol-placement": "line",
+        "text-field": ["coalesce", ["get", "name:es"], ["get", "name"]],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": 12
+      },
+      "paint": {
+        "text-color": "#5d6b80",
+        "text-halo-color": "#0d1422",
+        "text-halo-width": 1.5
+      }
+    },
+    {
+      "id": "lugares",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "place",
+      "filter": ["in", "class", "city", "town", "suburb", "neighbourhood"],
+      "layout": {
+        "text-field": ["coalesce", ["get", "name:es"], ["get", "name"]],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 10, 11, 16, 15]
+      },
+      "paint": {
+        "text-color": "#9aa6b8",
+        "text-halo-color": "#0d1422",
+        "text-halo-width": 2
+      }
+    }
+  ]
 }

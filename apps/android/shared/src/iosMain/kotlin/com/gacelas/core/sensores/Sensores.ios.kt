@@ -9,7 +9,7 @@ import platform.CoreLocation.CLLocationManagerDelegateProtocol
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
 import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
-import platform.CoreLocation.kCLLocationAccuracyBestForNavigation
+import platform.CoreLocation.kCLLocationAccuracyBest
 import platform.CoreLocation.kCLDistanceFilterNone
 import platform.CoreLocation.CLActivityTypeFitness
 import platform.CoreMotion.CMAttitudeReferenceFrameXTrueNorthZVertical
@@ -47,7 +47,7 @@ class UbicacionIos : FuenteUbicacion {
     override fun iniciar(intervaloMs: Long, enSegundoPlano: Boolean, alLeer: (LecturaGps) -> Unit) {
         this.alLeer = alLeer; this.intervaloMs = intervaloMs; fondo = enSegundoPlano
         gestor.delegate = delegado
-        gestor.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        gestor.desiredAccuracy = kCLLocationAccuracyBest
         gestor.distanceFilter = kCLDistanceFilterNone
         gestor.activityType = CLActivityTypeFitness
         gestor.pausesLocationUpdatesAutomatically = false
