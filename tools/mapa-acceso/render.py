@@ -5,7 +5,7 @@ CLAT,CLON=-3.9718,-79.2030
 DEG_W=0.0155;DEG_H=DEG_W*H/W
 top=CLAT+DEG_H*0.40; left=CLON-DEG_W/2
 def P(lat,lon): return ((lon-left)/DEG_W*W*S,(top-lat)/DEG_H*H*S)
-d=json.load(open('osm.json'))['elements']
+d=json.load(open(__import__('sys').argv[1] if len(__import__('sys').argv)>1 else 'osm.json'))['elements']
 bg=Image.new('RGB',(W*S,H*S),'#0B1120');dr=ImageDraw.Draw(bg)
 def pts(e): return [P(g['lat'],g['lon']) for g in e.get('geometry',[])]
 for e in d:
@@ -51,9 +51,9 @@ try: f.set_variation_by_axes([14,600])
 except Exception as ex: print(ex)
 def lab(lat,lon,txt,c=(148,163,184,255)):
   x,y=P(lat,lon);dr.text((x,y),txt,font=f,fill=c,spacing=4)
-lab(-3.9668,-79.2040,'P A R Q U E   J I P I R O')
+lab(-3.9722,-79.1992,'P A R Q U E   J I P I R O')
 # river label along Zamora: find a point
-lab(-3.9663,-79.2101,'R Í O   Z A M O R A',(96,130,200,255))
+lab(-3.9690,-79.2104,'R Í O   Z A M O R A',(96,130,200,255))
 lab(-3.9808,-79.2018,'A V .   O R I L L A S   D E L   Z A M O R A')
 # vignette bottom fade
 v=Image.new('L',(1,H*S))
