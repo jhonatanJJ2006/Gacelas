@@ -184,9 +184,9 @@ fun IndicadorZonaC4(modifier: Modifier = Modifier) {
     }
 }
 
-/** Tarjeta "aero-glass": r28, #131926 al 85/90%, borde blanco 10%, sombra 0 16 40 negro 65%, hairline superior. */
+/** Tarjeta "aero-glass": r28, #131926 (Stitch usa 85/90% + backdrop-blur-xl; sin blur de fondo en Compose se sube a 95/96% para el mismo resultado), borde blanco 10%, sombra 0 16 40 negro 65%, hairline superior. */
 @Composable
-fun TarjetaC4(modifier: Modifier = Modifier, alpha: Float = 0.85f, padding: Dp = 24.dp, content: @Composable ColumnScope.() -> Unit) {
+fun TarjetaC4(modifier: Modifier = Modifier, alpha: Float = 0.95f, padding: Dp = 24.dp, content: @Composable ColumnScope.() -> Unit) {
     val forma = RoundedCornerShape(28.dp)
     Box(
         modifier.fillMaxWidth()

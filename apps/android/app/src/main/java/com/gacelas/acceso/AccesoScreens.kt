@@ -210,7 +210,7 @@ fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: (
                 }
                 TarjetaC4(
                     Modifier.padding(horizontal = 20.dp).navigationBarsPadding().padding(top = 8.dp, bottom = if (compacto) 8.dp else 24.dp),
-                    alpha = 0.90f, padding = if (minimo) 16.dp else if (compacto) 20.dp else 24.dp,
+                    alpha = 0.96f, padding = if (minimo) 16.dp else if (compacto) 20.dp else 24.dp,
                 ) {
                     Text("Bienvenido de vuelta", style = C4Texto.headlineLgMobile.copy(fontSize = if (compacto) 20.sp else 24.sp), color = Color.White)
                     if (!compacto) {
