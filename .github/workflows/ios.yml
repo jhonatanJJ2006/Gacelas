@@ -64,6 +64,8 @@ jobs:
           sleep 8
           xcrun simctl io "$UDID" screenshot shots/inicio.png
           xcrun simctl terminate "$UDID" com.gacelas.app || true
+          # La carrera pide ubicacion: se concede antes para que el aviso del sistema no tape la captura.
+          xcrun simctl privacy "$UDID" grant location-always com.gacelas.app || xcrun simctl privacy "$UDID" grant location com.gacelas.app
           xcrun simctl launch "$UDID" com.gacelas.app --pantalla=carrera --carrera-muestra
           sleep 8
           xcrun simctl io "$UDID" screenshot shots/carrera.png
