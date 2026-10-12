@@ -167,7 +167,7 @@ fun MapaGacelas(
             if (px != null) {
                 val lado = if (compacto) MapaCompacto.ladoCorredor(with(densidad) { altoPx.toDp() }) else 190.dp
                 val ladoPx = with(densidad) { lado.toPx() }
-                Box(Modifier.offset { IntOffset((px.x - ladoPx / 2).toInt(), (px.y - ladoPx * 0.86f).toInt()) }.size(lado).testTag("corredor-3d-mapa")) {
+                Box(Modifier.offset { IntOffset((px.x - ladoPx / 2).toInt(), (px.y - ladoPx * MapaCompacto.PIES).toInt()) }.size(lado).testTag("corredor-3d-mapa")) {
                     Runner3D(MapaMat.clipPorRitmo(ritmoSegKm), camara = Position(0f, 1.1f, -3.6f))
                 }
             }
@@ -206,11 +206,13 @@ object MapaCompacto {
     val ALTO_MAX = 480.dp
     /** Padding superior relativo: el foco queda a (1 + 0.45) / 2 = 72 % del alto, en el tercio inferior. */
     const val PADDING_ARRIBA = 0.45
+    /** Altura de los pies dentro del cuadro del corredor 3D (medido en el emulador: 0.86 lo dejaba ~22 dp por encima de su punto). */
+    const val PIES = 0.745f
     /** El corredor ocupa como maximo la mitad del alto, para que entre completo sobre su punto. */
     fun ladoCorredor(alto: androidx.compose.ui.unit.Dp) = minOf(190.dp, alto * 0.5f)
-    /** Fraccion vertical [arriba, abajo] que ocupa el corredor (pies en el foco, 86 % del lado arriba). */
+    /** Fraccion vertical [arriba, abajo] que ocupa el corredor (pies en el foco). */
     fun franjaCorredor(alto: Float, lado: Float): Pair<Float, Float> {
         val foco = alto * (1 + PADDING_ARRIBA.toFloat()) / 2
-        return (foco - lado * 0.86f) / alto to (foco + lado * 0.14f) / alto
+        return (foco - lado * PIES) / alto to (foco + lado * (1 - PIES)) / alto
     }
 }

@@ -22,7 +22,8 @@ data class RutaNavegable(
 private fun minutos(km: Double) = (km * 6).toInt().coerceAtLeast(1)
 
 private fun Ruta.navegable(): RutaNavegable? = puntos.takeIf { it.size >= 2 }?.let { t ->
-    val km = if (distanciaKm > 0) distanciaKm else Guia.longitudM(t) / 1000.0
+    // Se navega sobre el trazo: su largo manda. Antes Jipiro decia 5.2 km (dato de la ficha) y la guia "faltan 1.8 km".
+    val km = Guia.longitudM(t) / 1000.0
     RutaNavegable(id, nombre, km, minutos(km), elevacionM, t)
 }
 
@@ -36,7 +37,7 @@ fun rutasNavegables(remotas: List<Ruta>?, locales: List<Ruta>, guardadas: Set<St
     if (todas.isEmpty()) MockData.rutas.forEach { todas[it.id] = it }
     val ordenadas = todas.values.sortedWith(compareBy({ it.id != elegida }, { it.id !in guardadas }, { !it.propia }))
     val ejemplos = MockData.rutasSugeridas.mapNotNull { s ->
-        Mapas.trazos[s.id]?.let { t -> RutaNavegable(s.id, s.nombre, s.distanciaKm, s.minutos, s.elevacionM, t.map { it.latitude to it.longitude }, s.principal, real = false) }
+        Mapas.trazos[s.id]?.let { t -> Guia.longitudM(t.map { it.latitude to it.longitude }).div(1000.0).let { km -> RutaNavegable(s.id, s.nombre, km, minutos(km), s.elevacionM, t.map { it.latitude to it.longitude }, s.principal, real = false) } }
     }
     return (ordenadas.mapNotNull { it.navegable() } + ejemplos).distinctBy { it.id }
 }
