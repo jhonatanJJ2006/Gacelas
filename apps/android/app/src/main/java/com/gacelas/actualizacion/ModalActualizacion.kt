@@ -132,6 +132,8 @@ fun ModalActualizacion(info: InfoVersion, obligatoria: Boolean, onMasTarde: () -
         onDismissRequest = { if (cerrable) onMasTarde() },
         properties = DialogProperties(dismissOnClickOutside = false, dismissOnBackPress = !obligatoria, usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
+        // El scrim es el del diseño (negro 60%); se quita el atenuado propio del Dialog para no oscurecer doble.
+        (androidx.compose.ui.platform.LocalView.current.parent as? androidx.compose.ui.window.DialogWindowProvider)?.window?.setDimAmount(0f)
         ContenidoModal(
             versionActual = BuildConfig.VERSION_NAME, info = info, obligatoria = obligatoria, fase = fase, bytes = bytes,
             onActualizar = { actualizar() }, onMasTarde = onMasTarde, onPermiso = { Instalador.pedirPermiso(context) },
