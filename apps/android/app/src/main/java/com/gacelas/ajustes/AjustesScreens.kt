@@ -255,7 +255,22 @@ fun PrivacidadUbicacionScreen(onAtras: () -> Unit) {
 fun ConfiguracionNotificacionesScreen(onAtras: () -> Unit) {
     val a by ajustesState()
     val g = guardarAjuste()
+    val sistema by com.gacelas.core.notificaciones.notificacionesPermitidasState()
+    val activar = com.gacelas.core.notificaciones.rememberActivarNotificaciones()
     PantallaConEncabezado("Notificaciones", onAtras) {
+        EtiquetaGrupo("En este teléfono")
+        Tarjeta(padding = 0.dp) {
+            // Refleja el estado REAL de Android (permiso + canal), no un ajuste guardado.
+            FilaInterruptor(
+                androidx.compose.material.icons.Icons.Filled.Notifications, "Notificaciones de Gacelas",
+                if (sistema) "Activadas en Android" else "Bloqueadas en Android: no verás la carrera en la barra",
+                sistema, { activar() }, if (sistema) GColors.Secondary500 else GColors.Danger,
+            )
+        }
+        if (!sistema) com.gacelas.core.notificaciones.AvisoNotificacionesBloqueadas(
+            "Android tiene bloqueadas las notificaciones de Gacelas. Actívalas para ver el tiempo y la distancia de tu carrera y los avisos de la comunidad.",
+            activar,
+        )
         EtiquetaGrupo("Notificaciones push")
         Tarjeta(padding = 0.dp) {
             FilaInterruptor(Icons.Filled.Favorite, "Likes", "Cuando alguien da like a tu actividad", a.notifLikes, { v -> g { it.copy(notifLikes = v) } }, GColors.Danger)

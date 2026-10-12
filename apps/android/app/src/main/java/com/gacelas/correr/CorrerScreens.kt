@@ -197,6 +197,8 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
     val tracker = contenedor().tracker
     var permiso by remember { mutableStateOf(LocationService.tienePermiso(context)) }
     var precision by remember { mutableStateOf<Float?>(null) }
+    val notificaciones by com.gacelas.core.notificaciones.notificacionesPermitidasState()
+    val activarNotificaciones = com.gacelas.core.notificaciones.rememberActivarNotificaciones()
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         permiso = LocationService.tienePermiso(context)
         if (!permiso) context.aviso("Sin permiso de ubicación no se puede grabar la carrera")
@@ -240,11 +242,19 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
             FilaDato("Ubicación", "Loja, Ecuador")
             FilaDato("Grabación", if (permiso) "GPS en primer plano" else "Requiere permiso")
         }
+        if (!notificaciones) com.gacelas.core.notificaciones.AvisoNotificacionesBloqueadas(
+            "Puedes correr igual, pero no verás la notificación con tiempo, distancia y los botones Pausar/Terminar.",
+            activarNotificaciones,
+        )
         Column(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
             BotonRedondo(Icons.Filled.PlayArrow, "Comenzar", GColors.Primary, 112.dp, {
                 if (!permiso) {
                     launcher.launch(permisosCarrera())
                 } else {
+                    if (!com.gacelas.core.notificaciones.PermisoNotificaciones.permitidas(context)) {
+                        context.aviso("Notificaciones bloqueadas: no verás la carrera en la barra de Android")
+                        if (com.gacelas.core.notificaciones.PermisoNotificaciones.sePuedePedir(context)) activarNotificaciones()
+                    }
                     empezarCarrera(context, tracker)
                     onEmpezar()
                 }
