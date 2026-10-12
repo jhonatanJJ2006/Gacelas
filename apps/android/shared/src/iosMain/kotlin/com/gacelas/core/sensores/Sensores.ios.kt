@@ -35,6 +35,10 @@ class UbicacionIos : FuenteUbicacion {
     private var intervaloMs = INTERVALO_GPS_MS
     private var ultimaMs = 0L
     private var fondo = false
+    private var llamadas = 0
+    private var error: String? = null
+    override val diagnostico: String
+        get() = "permiso=${gestor.authorizationStatus} llamadas=$llamadas" + (error?.let { " error=$it" } ?: "")
 
     override fun iniciar(intervaloMs: Long, enSegundoPlano: Boolean, alLeer: (LecturaGps) -> Unit) {
         this.alLeer = alLeer; this.intervaloMs = intervaloMs; fondo = enSegundoPlano
@@ -65,6 +69,10 @@ class UbicacionIos : FuenteUbicacion {
     private val delegado = object : NSObject(), CLLocationManagerDelegateProtocol {
         override fun locationManagerDidChangeAuthorization(manager: CLLocationManager) = autorizacion(manager)
         override fun locationManager(manager: CLLocationManager, didUpdateLocations: List<*>) = recibir(didUpdateLocations)
+        override fun locationManager(manager: CLLocationManager, didFailWithError: platform.Foundation.NSError) {
+            error = "${didFailWithError.domain}:${didFailWithError.code}"
+            platform.Foundation.NSLog("Gacelas GPS error %@", error ?: "")
+        }
     }
 
     private fun autorizacion(manager: CLLocationManager) {
@@ -73,6 +81,7 @@ class UbicacionIos : FuenteUbicacion {
     }
 
     private fun recibir(didUpdateLocations: List<*>) {
+        llamadas++
         val l = didUpdateLocations.lastOrNull() as? CLLocation ?: return
         if (l.horizontalAccuracy < 0) return
         val ms = (l.timestamp.timeIntervalSince1970 * 1000).toLong()

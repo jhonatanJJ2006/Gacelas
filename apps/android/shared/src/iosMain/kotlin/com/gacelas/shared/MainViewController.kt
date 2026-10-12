@@ -25,12 +25,14 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
     if (!enSensores) {
         InicioComun(onEmpezar = { enSensores = true })
     } else {
-        val s = remember { SeguimientoSensores(fuenteUbicacionNativa(), fuenteRumboNativa()) }
+        val gps = remember { fuenteUbicacionNativa() }
+        val s = remember { SeguimientoSensores(gps, fuenteRumboNativa()) }
         DisposableEffect(s) { s.iniciar(carrera = auto); onDispose { s.detener() } }
         LaunchedEffect(s) { while (true) { delay(1000); s.tic() } }
         val e by s.estado.collectAsState()
         PantallaSensores(
             e,
+            diagnostico = gps?.diagnostico.orEmpty(),
             onCarrera = { if (s.tracker.estado.value.activa) s.tracker.finalizar() else s.tracker.iniciar(); s.tic() },
             onVolver = { enSensores = false },
         )
