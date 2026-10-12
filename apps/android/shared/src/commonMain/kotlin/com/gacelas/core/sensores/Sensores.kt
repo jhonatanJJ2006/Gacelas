@@ -25,8 +25,6 @@ data class LecturaGps(
 interface FuenteUbicacion {
     fun iniciar(intervaloMs: Long = INTERVALO_GPS_MS, enSegundoPlano: Boolean = false, alLeer: (LecturaGps) -> Unit)
     fun detener()
-    /** Estado interno para la pantalla de prueba (permiso, llamadas recibidas, ultimo error). */
-    val diagnostico: String get() = ""
 }
 
 /** Rumbo del telefono en grados (norte verdadero si se conoce, si no magnetico). En iOS: CLHeading/CoreMotion. */

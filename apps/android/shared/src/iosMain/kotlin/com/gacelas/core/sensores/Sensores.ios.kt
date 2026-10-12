@@ -31,18 +31,16 @@ private fun fondoDeclarado(): Boolean =
 /** CoreLocation con BestForNavigation; entrega como maximo una lectura por intervalo (1 s). */
 @OptIn(ExperimentalForeignApi::class)
 class UbicacionIos : FuenteUbicacion {
+    private companion object { const val SIN_LECTURAS_MS = 1_500L }
+
     private val gestor = CLLocationManager()
     private var alLeer: ((LecturaGps) -> Unit)? = null
     private var intervaloMs = INTERVALO_GPS_MS
     private var ultimaMs = 0L
     private var fondo = false
-    private var llamadas = 0
-    private var sondeos = 0
+    private var ultimoDelegadoMs = 0L
     private var temporizador: NSTimer? = null
     private var ultimaClave: String? = null
-    private var error: String? = null
-    override val diagnostico: String
-        get() = "permiso=${gestor.authorizationStatus} llamadas=$llamadas sondeos=$sondeos" + (error?.let { " error=$it" } ?: "")
 
     override fun iniciar(intervaloMs: Long, enSegundoPlano: Boolean, alLeer: (LecturaGps) -> Unit) {
         this.alLeer = alLeer; this.intervaloMs = intervaloMs; fondo = enSegundoPlano
@@ -61,12 +59,16 @@ class UbicacionIos : FuenteUbicacion {
             else -> {}
         }
         gestor.startUpdatingLocation()
-        // Respaldo: cada intervalo se lee gestor.location por si CoreLocation no llama al delegado
-        // (pasa en el simulador con ubicaciones inyectadas). Se ignoran lecturas repetidas.
+        // Vigilante: si CoreLocation deja de entregar (le pasa a locationd en el simulador de CI, que
+        // solo envia la primera posicion por suscripcion), se reinicia la suscripcion. En un iPhone
+        // llegan lecturas cada segundo y esto no se activa.
+        ultimoDelegadoMs = com.gacelas.shared.relojMonotonoMs()
         temporizador?.invalidate()
         temporizador = NSTimer.scheduledTimerWithTimeInterval(intervaloMs / 1000.0, repeats = true) { _ ->
-            sondeos++
-            gestor.location?.let { procesar(it, desdeSondeo = true) }
+            if (com.gacelas.shared.relojMonotonoMs() - ultimoDelegadoMs > SIN_LECTURAS_MS) {
+                gestor.stopUpdatingLocation()
+                gestor.startUpdatingLocation()
+            }
         }
     }
 
@@ -81,9 +83,8 @@ class UbicacionIos : FuenteUbicacion {
     private val delegado = object : NSObject(), CLLocationManagerDelegateProtocol {
         override fun locationManagerDidChangeAuthorization(manager: CLLocationManager) = autorizacion(manager)
         override fun locationManager(manager: CLLocationManager, didUpdateLocations: List<*>) = recibir(didUpdateLocations)
-        override fun locationManager(manager: CLLocationManager, didFailWithError: platform.Foundation.NSError) {
-            error = "${didFailWithError.domain}:${didFailWithError.code}"
-        }
+        // kCLErrorLocationUnknown es transitorio: CoreLocation sigue intentando.
+        override fun locationManager(manager: CLLocationManager, didFailWithError: platform.Foundation.NSError) = Unit
     }
 
     private fun autorizacion(manager: CLLocationManager) {
@@ -92,16 +93,15 @@ class UbicacionIos : FuenteUbicacion {
     }
 
     private fun recibir(didUpdateLocations: List<*>) {
-        llamadas++
-        (didUpdateLocations.lastOrNull() as? CLLocation)?.let { procesar(it, desdeSondeo = false) }
+        ultimoDelegadoMs = com.gacelas.shared.relojMonotonoMs()
+        (didUpdateLocations.lastOrNull() as? CLLocation)?.let { procesar(it) }
     }
 
-    private fun procesar(l: CLLocation, desdeSondeo: Boolean) {
+    private fun procesar(l: CLLocation) {
         if (l.horizontalAccuracy < 0) return
         val ms = (l.timestamp.timeIntervalSince1970 * 1000).toLong()
         val clave = l.coordinate.useContents { "$latitude,$longitude" } + "@$ms"
         if (clave == ultimaClave) return
-        if (desdeSondeo && com.gacelas.shared.relojMonotonoMs() - ultimaMs < intervaloMs / 2) return
         // Se limita con el reloj monotono: las ubicaciones simuladas pueden repetir el timestamp.
         val ahora = com.gacelas.shared.relojMonotonoMs()
         if (ahora - ultimaMs < intervaloMs - 100) return

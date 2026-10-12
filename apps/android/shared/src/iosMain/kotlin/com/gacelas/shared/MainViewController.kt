@@ -32,7 +32,6 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
         val e by s.estado.collectAsState()
         PantallaSensores(
             e,
-            diagnostico = gps?.diagnostico.orEmpty(),
             onCarrera = { if (s.tracker.estado.value.activa) s.tracker.finalizar() else s.tracker.iniciar(); s.tic() },
             onVolver = { enSensores = false },
         )

@@ -65,17 +65,6 @@ jobs:
           xcrun simctl io "$UDID" screenshot shots/sensores-12s.png
           sleep 15
           xcrun simctl io "$UDID" screenshot shots/sensores.png
-          # Diagnostico: relanzar para ver si locationd avanzo la ruta.
-          xcrun simctl terminate "$UDID" com.gacelas.app || true
-          xcrun simctl launch "$UDID" com.gacelas.app --sensores
-          sleep 6
-          xcrun simctl io "$UDID" screenshot shots/relanzada.png
-          xcrun simctl location "$UDID" set 10.5,20.5
-          sleep 4
-          xcrun simctl io "$UDID" screenshot shots/set-positivo.png
-          xcrun simctl location "$UDID" list || true
-          xcrun simctl spawn "$UDID" log show --last 3m --predicate 'process == "iosApp"' > shots/log-app.txt 2>&1 || true
-          xcrun simctl spawn "$UDID" log show --last 3m --predicate 'process == "locationd"' > shots/log-locationd.txt 2>&1 || true
           xcrun simctl location "$UDID" clear || true
       - uses: actions/upload-artifact@v4
         with: { name: ios-simulator-screenshots, path: apps/ios/iosApp/shots }

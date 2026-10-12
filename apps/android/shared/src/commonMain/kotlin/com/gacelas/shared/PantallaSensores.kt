@@ -39,7 +39,7 @@ import com.gacelas.tracking.formatearRitmo
 
 /** Pantalla de prueba (etapa 3 de iOS): GPS cada 1 s, rumbo combinado y cronometro compartido. */
 @Composable
-fun PantallaSensores(e: EstadoSensores, diagnostico: String = "", onCarrera: () -> Unit = {}, onVolver: () -> Unit = {}) {
+fun PantallaSensores(e: EstadoSensores, onCarrera: () -> Unit = {}, onVolver: () -> Unit = {}) {
     val l = e.lectura
     Column(
         Modifier.fillMaxSize().background(ColoresC4.Fondo).safeDrawingPadding().padding(20.dp).testTag("sensores"),
@@ -62,7 +62,6 @@ fun PantallaSensores(e: EstadoSensores, diagnostico: String = "", onCarrera: () 
             else -> "mezcla brújula/GPS"
         }
         Text("Fuente: $fuente", color = ColoresC4.Secondary, fontSize = 13.sp)
-        if (diagnostico.isNotEmpty()) Text(diagnostico, color = ColoresC4.Secondary.copy(alpha = 0.6f), fontSize = 11.sp, modifier = Modifier.testTag("diagnostico"))
         Tarjeta {
             Fila("Latitud", l?.lat?.let { decimales(it, 6) } ?: "—")
             Fila("Longitud", l?.lng?.let { decimales(it, 6) } ?: "—")
