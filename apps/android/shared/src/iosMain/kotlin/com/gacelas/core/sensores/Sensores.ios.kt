@@ -28,12 +28,12 @@ actual fun fuenteRumboNativa(): FuenteRumbo? = RumboIos()
 private fun fondoDeclarado(): Boolean =
     (NSBundle.mainBundle.objectForInfoDictionaryKey("UIBackgroundModes") as? List<*>)?.contains("location") == true
 
-/** CoreLocation con BestForNavigation; entrega como maximo una lectura por intervalo (1 s). */
+/** CoreLocation con precision Best; entrega como maximo una lectura por intervalo (1 s). */
 @OptIn(ExperimentalForeignApi::class)
 class UbicacionIos : FuenteUbicacion {
     private companion object { const val SIN_LECTURAS_MS = 1_500L }
 
-    private val gestor = CLLocationManager()
+    private var gestor = CLLocationManager()
     private var alLeer: ((LecturaGps) -> Unit)? = null
     private var intervaloMs = INTERVALO_GPS_MS
     private var ultimaMs = 0L
@@ -44,31 +44,39 @@ class UbicacionIos : FuenteUbicacion {
 
     override fun iniciar(intervaloMs: Long, enSegundoPlano: Boolean, alLeer: (LecturaGps) -> Unit) {
         this.alLeer = alLeer; this.intervaloMs = intervaloMs; fondo = enSegundoPlano
-        gestor.delegate = delegado
-        gestor.desiredAccuracy = kCLLocationAccuracyBest
-        gestor.distanceFilter = kCLDistanceFilterNone
-        gestor.activityType = CLActivityTypeFitness
-        gestor.pausesLocationUpdatesAutomatically = false
-        if (enSegundoPlano && fondoDeclarado()) {
-            gestor.allowsBackgroundLocationUpdates = true
-            gestor.showsBackgroundLocationIndicator = true
-        }
+        configurar()
         when (gestor.authorizationStatus) {
             kCLAuthorizationStatusNotDetermined ->
                 if (enSegundoPlano) gestor.requestAlwaysAuthorization() else gestor.requestWhenInUseAuthorization()
             else -> {}
         }
         gestor.startUpdatingLocation()
-        // Vigilante: si CoreLocation deja de entregar (le pasa a locationd en el simulador de CI, que
-        // solo envia la primera posicion por suscripcion), se reinicia la suscripcion. En un iPhone
-        // llegan lecturas cada segundo y esto no se activa.
+        // Vigilante: si CoreLocation deja de entregar (locationd del simulador de CI solo envia la
+        // primera posicion a cada gestor), se crea un gestor nuevo. En un iPhone llegan lecturas cada
+        // segundo y esto no se activa.
         ultimoDelegadoMs = com.gacelas.shared.relojMonotonoMs()
         temporizador?.invalidate()
         temporizador = NSTimer.scheduledTimerWithTimeInterval(intervaloMs / 1000.0, repeats = true) { _ ->
             if (com.gacelas.shared.relojMonotonoMs() - ultimoDelegadoMs > SIN_LECTURAS_MS) {
+                ultimoDelegadoMs = com.gacelas.shared.relojMonotonoMs()
                 gestor.stopUpdatingLocation()
+                gestor.delegate = null
+                gestor = CLLocationManager()
+                configurar()
                 gestor.startUpdatingLocation()
             }
+        }
+    }
+
+    private fun configurar() {
+        gestor.delegate = delegado
+        gestor.desiredAccuracy = kCLLocationAccuracyBest
+        gestor.distanceFilter = kCLDistanceFilterNone
+        gestor.activityType = CLActivityTypeFitness
+        gestor.pausesLocationUpdatesAutomatically = false
+        if (fondo && fondoDeclarado()) {
+            gestor.allowsBackgroundLocationUpdates = true
+            gestor.showsBackgroundLocationIndicator = true
         }
     }
 
