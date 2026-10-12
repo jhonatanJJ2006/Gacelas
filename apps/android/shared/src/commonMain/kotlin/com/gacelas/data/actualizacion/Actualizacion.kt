@@ -92,7 +92,7 @@ class ActualizacionRepository(
     store: DataStore<Preferences>,
     private val urlManifiesto: String?,
     private val versionActual: Int,
-    private val ahora: () -> Long = System::currentTimeMillis,
+    private val ahora: () -> Long = { com.gacelas.shared.ahoraMs() },
     private val descargar: suspend (String) -> String = ::descargarTexto,
 ) {
     private val cache = ValorJson(store, "actualizacion", CacheActualizacion.serializer(), CacheActualizacion())

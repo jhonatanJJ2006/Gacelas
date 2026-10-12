@@ -68,7 +68,7 @@ fun sesionDesdeFila(f: JsonObject, nombre: String = "Corredor"): SesionEnVivo {
  * Compartir y ver carreras en vivo. Escribe con las funciones live_* de Supabase
  * (backend/migrations/008_live_rpc.sql); la lectura respeta el RLS de live_sessions.
  */
-class EnVivoRepository(private val backend: Backend, private val uid: suspend () -> String?, private val reloj: () -> Long = System::currentTimeMillis) {
+class EnVivoRepository(private val backend: Backend, private val uid: suspend () -> String?, private val reloj: () -> Long = { com.gacelas.shared.ahoraMs() }) {
     var sesionId: String? = null
         private set
     /** Ultimo envio: true visible, false oculto cerca de casa, null sin envios. */

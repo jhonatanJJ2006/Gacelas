@@ -34,7 +34,7 @@ object Rachas {
         var actual = 0
         var previo: Long? = null
         val finales = HashMap<Long, Int>()
-        for (k in claves.toSortedSet()) {
+        for (k in claves.toSet().sorted()) {
             actual = if (previo != null && paso(previo) == k) actual + 1 else 1
             mejor = maxOf(mejor, actual)
             finales[k] = actual
