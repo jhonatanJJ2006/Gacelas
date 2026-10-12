@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   ios:
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 60
     env:
       ANDROID_DIR: apps/android
@@ -31,6 +31,8 @@ jobs:
       - name: Tests compartidos (simulador)
         working-directory: ${{ env.ANDROID_DIR }}
         run: ./gradlew :shared:iosSimulatorArm64Test --no-daemon
+      - name: Xcode 16
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)" && xcodebuild -version
       - name: Generar proyecto Xcode
         working-directory: ${{ env.IOS_DIR }}
         run: brew install xcodegen && xcodegen generate
