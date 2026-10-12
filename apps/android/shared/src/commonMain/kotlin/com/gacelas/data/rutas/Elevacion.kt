@@ -1,5 +1,10 @@
 package com.gacelas.data.rutas
 
+import com.gacelas.shared.fmt
+import com.gacelas.shared.rad
+import com.gacelas.shared.redondear
+import kotlin.concurrent.Volatile
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -22,7 +27,7 @@ object RutaActiva {
 /** Perfil de elevacion con Open-Meteo (igual que la web, lib/elevacion.ts). */
 object Elevacion {
     private fun hv(a: Pair<Double, Double>, b: Pair<Double, Double>): Double {
-        val p1 = Math.toRadians(a.first); val p2 = Math.toRadians(b.first); val dl = Math.toRadians(b.second - a.second)
+        val p1 = rad(a.first); val p2 = rad(b.first); val dl = rad(b.second - a.second)
         val h = sin((p2 - p1) / 2).let { it * it } + cos(p1) * cos(p2) * sin(dl / 2).let { it * it }
         return 2 * 6_371_000 * asin(sqrt(h))
     }
@@ -49,12 +54,12 @@ object Elevacion {
     }
 
     fun url(m: List<Pair<Double, Double>>) = "https://api.open-meteo.com/v1/elevation?latitude=" +
-        m.joinToString(",") { "%.5f".format(java.util.Locale.US, it.first) } + "&longitude=" + m.joinToString(",") { "%.5f".format(java.util.Locale.US, it.second) }
+        m.joinToString(",") { "%.5f".fmt(it.first) } + "&longitude=" + m.joinToString(",") { "%.5f".fmt(it.second) }
 
     fun leer(json: String): List<Int> = (Json.parseToJsonElement(json).jsonObject["elevation"] as? JsonArray)
-        ?.mapNotNull { it.jsonPrimitive.doubleOrNull?.let(Math::round)?.toInt() }.orEmpty()
+        ?.mapNotNull { it.jsonPrimitive.doubleOrNull?.let(::redondear)?.toInt() }.orEmpty()
 
-    suspend fun perfil(puntos: List<Pair<Double, Double>>): List<Int> = withContext(Dispatchers.IO) {
-        runCatching { leer(java.net.URL(url(muestrear(puntos))).readText()) }.getOrDefault(emptyList())
+    suspend fun perfil(puntos: List<Pair<Double, Double>>): List<Int> = run {
+        runCatching { leer(com.gacelas.shared.Red.texto(url(muestrear(puntos)))) }.getOrDefault(emptyList())
     }
 }

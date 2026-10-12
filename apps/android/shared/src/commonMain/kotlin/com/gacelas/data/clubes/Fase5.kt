@@ -1,5 +1,11 @@
 package com.gacelas.data.clubes
 
+import com.gacelas.shared.Fechas
+import kotlinx.datetime.plus
+
+import com.gacelas.shared.nuevoUuid
+import kotlin.concurrent.Volatile
+
 import com.gacelas.data.mock.Evento
 import com.gacelas.data.remoto.Backend
 import com.gacelas.data.remoto.ErrorRemoto
@@ -10,7 +16,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
-import java.util.Calendar
 
 enum class RolClub(val etiqueta: String) { owner("Fundador"), admin("Admin"), member("Miembro") }
 
@@ -59,7 +64,7 @@ class ClubesRepository(private val backend: Backend, val uid: suspend () -> Stri
     suspend fun crear(nombre: String, descripcion: String, ubicacion: String, conAprobacion: Boolean): String {
         val yo = uid() ?: throw ErrorRemoto("Inicia sesión para crear un club")
         validarClub(nombre, descripcion)?.let { throw ErrorRemoto(it) }
-        val id = java.util.UUID.randomUUID().toString()
+        val id = nuevoUuid()
         backend.insert("clubs", listOf(JsonObject(mapOf("id" to s(id), "name" to s(nombre.trim()), "description" to s(descripcion.trim()),
             "location" to s(ubicacion.trim()), "requires_approval" to JsonPrimitive(conAprobacion), "owner_id" to s(yo)))))
         return id
@@ -136,18 +141,17 @@ fun posicionRepeticion(c: CorredorEvento, t: Float): Pair<Double, Double>? =
 data class DiaCalendario(val dia: Int, val delMes: Boolean, val eventos: List<Evento>, val inicioMs: Long)
 
 /** Semanas (lunes a domingo) del mes con los eventos de cada dia. */
-fun calendarioMes(anio: Int, mes: Int, eventos: List<Evento>, zona: java.util.TimeZone = java.util.TimeZone.getDefault()): List<List<DiaCalendario>> {
-    fun cal() = Calendar.getInstance(zona).apply { clear() }
-    val porDia = eventos.filter { it.inicioMs != null }.groupBy { e -> cal().apply { timeInMillis = e.inicioMs!! }.let { Triple(it[Calendar.YEAR], it[Calendar.MONTH], it[Calendar.DAY_OF_MONTH]) } }
-    val d = cal().apply { set(anio, mes, 1) }
-    d.add(Calendar.DAY_OF_MONTH, -((d[Calendar.DAY_OF_WEEK] + 5) % 7))
+fun calendarioMes(anio: Int, mes: Int, eventos: List<Evento>, zona: kotlinx.datetime.TimeZone = kotlinx.datetime.TimeZone.currentSystemDefault()): List<List<DiaCalendario>> {
+    // mes base 0 (como Calendar.MONTH).
+    val porDia = eventos.filter { it.inicioMs != null }.groupBy { e -> Fechas.fecha(e.inicioMs!!, zona) }
+    var d = Fechas.lunes(kotlinx.datetime.LocalDate(anio, mes + 1, 1))
     val semanas = mutableListOf<List<DiaCalendario>>()
     do {
         semanas += (0 until 7).map {
-            val k = Triple(d[Calendar.YEAR], d[Calendar.MONTH], d[Calendar.DAY_OF_MONTH])
-            DiaCalendario(k.third, k.second == mes, porDia[k].orEmpty(), d.timeInMillis).also { d.add(Calendar.DAY_OF_MONTH, 1) }
+            DiaCalendario(d.dayOfMonth, d.monthNumber == mes + 1, porDia[d].orEmpty(), Fechas.inicio(d, zona))
+                .also { d = d.plus(kotlinx.datetime.DatePeriod(days = 1)) }
         }
-    } while (d[Calendar.MONTH] == mes)
+    } while (d.monthNumber == mes + 1)
     return semanas
 }
 

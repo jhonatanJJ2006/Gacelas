@@ -1,5 +1,9 @@
 package com.gacelas.data.envivo
 
+import com.gacelas.shared.ahoraMs
+import com.gacelas.shared.redondear
+import kotlin.concurrent.Volatile
+
 import com.gacelas.data.remoto.Backend
 import com.gacelas.data.remoto.FechaIso
 import kotlinx.serialization.json.JsonArray
@@ -29,7 +33,7 @@ data class SesionEnVivo(
     val distanciaKm: Double,
     val segundos: Int,
 ) {
-    fun activa(ahoraMs: Long = System.currentTimeMillis()) = finMs == null && ahoraMs - (ultimaMs ?: inicioMs) < 15 * 60_000L
+    fun activa(ahoraMs: Long = ahoraMs()) = finMs == null && ahoraMs - (ultimaMs ?: inicioMs) < 15 * 60_000L
 }
 
 private fun JsonObject.texto(k: String) = (this[k] as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
@@ -91,7 +95,7 @@ class EnVivoRepository(private val backend: Backend, private val uid: suspend ()
         return runCatching {
             val r = backend.rpc("live_enviar", JsonObject(mapOf(
                 "sesion" to JsonPrimitive(id), "lat" to JsonPrimitive(lat), "lng" to JsonPrimitive(lng),
-                "distancia_m" to JsonPrimitive(Math.round(distanciaKm * 1000).toDouble()), "segundos" to JsonPrimitive(segundos),
+                "distancia_m" to JsonPrimitive(redondear(distanciaKm * 1000).toDouble()), "segundos" to JsonPrimitive(segundos),
             )))
             visible = r.jsonPrimitive.booleanOrNull
             true

@@ -1,5 +1,7 @@
 package com.gacelas.data.auth
 
+import com.gacelas.shared.fmt
+
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.gacelas.data.ValorJson
@@ -7,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
-import java.security.MessageDigest
 
 @Serializable
 data class Perfil(
@@ -116,6 +117,6 @@ class LocalAuthRepository(store: DataStore<Preferences>) : AuthRepository {
     override suspend fun cerrarSesion() = datos.actualizar { it.copy(sesionEmail = null) }
 
     private fun hash(email: String, password: String): String =
-        MessageDigest.getInstance("SHA-256").digest("gacelas:$email:$password".toByteArray()).joinToString("") { "%02x".format(it) }
+        com.gacelas.shared.sha256Hex("gacelas:$email:$password")
 
 }

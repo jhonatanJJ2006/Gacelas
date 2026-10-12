@@ -1,5 +1,7 @@
 package com.gacelas.tracking
 
+import com.gacelas.shared.fmt
+
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /** Texto de la notificacion de la carrera (logica pura, probada en unit tests). */
@@ -8,7 +10,7 @@ data class ContenidoNotificacion(val titulo: String, val texto: String, val acci
 object NotificacionCarrera {
     fun contenido(e: EstadoCarrera): ContenidoNotificacion = ContenidoNotificacion(
         titulo = if (e.pausada) "Carrera en pausa" else "Carrera en curso",
-        texto = "%.2f km  ·  %s  ·  %s /km".format(java.util.Locale.US, e.distanciaKm, formatearHms(e.segundos), formatearRitmo(e.ritmoActualSegKm ?: e.ritmoPromedioSegKm)),
+        texto = "%.2f km  ·  %s  ·  %s /km".fmt(e.distanciaKm, formatearHms(e.segundos), formatearRitmo(e.ritmoActualSegKm ?: e.ritmoPromedioSegKm)),
         accionPausa = if (e.pausada) "Reanudar" else "Pausar",
         cronometroCorre = !e.pausada,
     )

@@ -1,5 +1,10 @@
 package com.gacelas.data.actualizacion
 
+import com.gacelas.shared.ahoraMs
+import com.gacelas.shared.nombreClase
+import com.gacelas.shared.redondear
+import kotlin.concurrent.Volatile
+
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.gacelas.data.ValorJson
@@ -8,8 +13,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import java.net.HttpURLConnection
-import java.net.URL
 
 /**
  * Manifiesto publico de la ultima version (Supabase Storage, bucket publico app-releases,
@@ -69,7 +72,7 @@ object ReglasActualizacion {
     }
 
     /** "47 MB" a partir de bytes (MiB redondeados, igual que el resto de la app). */
-    fun textoMb(bytes: Long): String = "${Math.round(bytes / 1048576.0)} MB"
+    fun textoMb(bytes: Long): String = "${redondear(bytes / 1048576.0)} MB"
 
     fun sinCache(url: String, t: Long): String = url + (if ('?' in url) "&" else "?") + "t=$t"
 
@@ -105,7 +108,7 @@ class ActualizacionRepository(
             }
         }
         val aviso = ReglasActualizacion.aviso(versionActual, c.info, pospuestaSesion)
-        runCatching { android.util.Log.i("Actualizacion", "actual=$versionActual servidor=${c.info?.versionCode} -> ${aviso.javaClass.simpleName}") }
+        runCatching { com.gacelas.shared.logAviso("Actualizacion", "actual=$versionActual servidor=${c.info?.versionCode} -> ${nombreClase(aviso)}") }
         return aviso
     }
 
@@ -115,15 +118,6 @@ class ActualizacionRepository(
     suspend fun posponer(versionCode: Int) { pospuestaSesion = versionCode }
 }
 
-private suspend fun descargarTexto(url: String): String = withContext(Dispatchers.IO) {
+private suspend fun descargarTexto(url: String): String =
     // ?t= evita la cache del CDN de Storage (max-age=60) y de proxies.
-    val con = URL(ReglasActualizacion.sinCache(url, System.currentTimeMillis())).openConnection() as HttpURLConnection
-    try {
-        con.connectTimeout = 8000; con.readTimeout = 8000
-        con.useCaches = false
-        con.setRequestProperty("Cache-Control", "no-cache")
-        con.setRequestProperty("Pragma", "no-cache")
-        if (con.responseCode != 200) error("HTTP ${con.responseCode}")
-        con.inputStream.bufferedReader().use { it.readText() }
-    } finally { con.disconnect() }
-}
+    com.gacelas.shared.Red.texto(ReglasActualizacion.sinCache(url, ahoraMs()), sinCache = true)

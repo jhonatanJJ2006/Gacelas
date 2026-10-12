@@ -1,5 +1,8 @@
 package com.gacelas.tracking
 
+import com.gacelas.shared.ahoraMs
+import com.gacelas.shared.nuevoUuid
+
 import com.gacelas.data.carreras.CarreraGuardada
 import com.gacelas.data.carreras.Parcial
 import com.gacelas.data.carreras.PuntoGps
@@ -7,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.util.UUID
 
 enum class FaseCarrera { Inactiva, Corriendo, Pausada, Terminada }
 
@@ -36,8 +38,8 @@ data class EstadoCarrera(
  * @param ahora reloj de pared en milisegundos.
  */
 class RunTracker(
-    private val reloj: () -> Long = { android.os.SystemClock.elapsedRealtime() },
-    private val ahora: () -> Long = { System.currentTimeMillis() },
+    private val reloj: () -> Long = { com.gacelas.shared.relojMonotonoMs() },
+    private val ahora: () -> Long = { ahoraMs() },
 ) {
     companion object {
         /** Puntos con peor precision se descartan. */
@@ -175,7 +177,7 @@ class RunTracker(
         _estado.value = EstadoCarrera()
     }
 
-    fun aCarreraGuardada(titulo: String, nota: String, publica: Boolean, id: String = UUID.randomUUID().toString()): CarreraGuardada {
+    fun aCarreraGuardada(titulo: String, nota: String, publica: Boolean, id: String = nuevoUuid()): CarreraGuardada {
         val e = _estado.value
         return CarreraGuardada(
             id = id,
@@ -193,7 +195,7 @@ class RunTracker(
 }
 
 fun tituloPorHora(ms: Long): String {
-    val h = java.util.Calendar.getInstance().apply { timeInMillis = ms }.get(java.util.Calendar.HOUR_OF_DAY)
+    val h = com.gacelas.shared.Fechas.hora(ms)
     return when (h) {
         in 5..11 -> "Carrera matutina"
         in 12..18 -> "Carrera de la tarde"

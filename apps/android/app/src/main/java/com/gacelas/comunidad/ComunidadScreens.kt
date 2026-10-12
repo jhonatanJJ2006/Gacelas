@@ -422,7 +422,7 @@ fun DetalleEventoScreen(id: String, onAtras: () -> Unit, onEnVivo: () -> Unit = 
             if (e.yaPaso()) {
                 BotonPrimario("Evento finalizado", {}, icono = null, enabled = false)
             } else {
-                val lleno = estado?.let { it.cupo != null && it.inscritos >= it.cupo } == true
+                val lleno = estado?.let { it.cupo.let { c -> c != null && it.inscritos >= c } } == true
                 BotonPrimario(if (inscrito) (if (enEspera) "En lista de espera (toca para salir)" else "Inscrito (toca para cancelar)") else if (lleno) "Unirme a la lista de espera" else "Inscribirme al evento", {
                     scope.launch {
                         c.eventos.alternarInscripcion(e.id)
