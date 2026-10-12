@@ -179,17 +179,19 @@ fun CampoTexto(
     trailing: (@Composable () -> Unit)? = null,
     /** Si se da, el teclado muestra "Listo" y lo ejecuta (por ejemplo enviar el formulario). */
     onListo: (() -> Unit)? = null,
+    /** En pantallas sin espacio (teclado abierto) la etiqueta se omite y se usa como placeholder. */
+    mostrarEtiqueta: Boolean = true,
 ) {
     val foco = LocalFocusManager.current
     val teclado = LocalSoftwareKeyboardController.current
     var visible by rememberSaveable { mutableStateOf(false) }
     val multilinea = lineas > 1
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(etiqueta, style = GType.labelLg, color = GColors.TextSecondary)
+        if (mostrarEtiqueta) Text(etiqueta, style = GType.labelLg, color = GColors.TextSecondary)
         OutlinedTextField(
             value = valor,
             onValueChange = onCambio,
-            placeholder = { Text(placeholder, color = GColors.TextSecondary.copy(alpha = 0.6f)) },
+            placeholder = { Text(if (mostrarEtiqueta) placeholder else etiqueta, color = GColors.TextSecondary.copy(alpha = 0.6f)) },
             singleLine = lineas == 1,
             minLines = lineas,
             visualTransformation = if (password && !visible) PasswordVisualTransformation() else VisualTransformation.None,

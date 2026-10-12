@@ -32,6 +32,7 @@
 
         <!-- Main Activity -->
         <activity
+            android:windowSoftInputMode="adjustResize"
             android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Gacelas">

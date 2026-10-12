@@ -5,6 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -86,54 +91,44 @@ private fun PantallaAcceso(onAtras: (() -> Unit)?, content: @Composable ColumnSc
 
 @Composable
 fun BienvenidaScreen(onSaltar: () -> Unit, onCrearCuenta: () -> Unit, onIniciarSesion: () -> Unit, onEntrarGoogle: () -> Unit = {}) {
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary).statusBarsPadding().navigationBarsPadding().verticalScroll(rememberScrollState())) {
-        Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            MarcaGacelas(Modifier.weight(1f))
-            Text("Saltar", style = GType.labelLg, color = GColors.TextSecondary, modifier = Modifier.clickable(onClick = onSaltar).padding(8.dp))
-        }
-        Box(Modifier.fillMaxWidth().height(260.dp).padding(horizontal = 16.dp).clip(RoundedCornerShape(24.dp))
-            .background(Brush.verticalGradient(listOf(Color(0xFF3B1F05), GColors.SurfaceLow)))) {
-            Canvas(Modifier.fillMaxSize()) {
-                val sx = size.width / 400f
-                val sy = size.height / 200f
-                fun path(vararg pts: Pair<Float, Float>, cerrar: Boolean) = Path().apply {
-                    moveTo(pts[0].first * sx, pts[0].second * sy)
-                    pts.drop(1).forEach { lineTo(it.first * sx, it.second * sy) }
-                    if (cerrar) close()
+    BoxWithConstraints(Modifier.fillMaxSize().background(GColors.BgPrimary).testTag("pantalla-bienvenida")) {
+        val compacta = maxHeight < AlturasAcceso.BIENVENIDA_COMPACTA
+        Column(Modifier.fillMaxSize()) {
+            MapaPortada(Modifier.fillMaxWidth().weight(1f)) {
+                Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    MarcaGacelas(Modifier.weight(1f))
+                    Text("Saltar", style = GType.labelLg, color = GColors.TextSecondary, modifier = Modifier.clip(CircleShape).clickable(onClick = onSaltar).padding(8.dp))
                 }
-                drawPath(path(0f to 200f, 0f to 120f, 80f to 70f, 150f to 110f, 230f to 45f, 320f to 105f, 400f to 60f, 400f to 200f, cerrar = true), GColors.SurfaceLow)
-                drawPath(path(0f to 200f, 0f to 150f, 60f to 110f, 130f to 135f, 200f to 90f, 280f to 140f, 360f to 100f, 400f to 130f, 400f to 200f, cerrar = true), GColors.BgSecondary)
-                drawPath(path(0f to 150f, 60f to 110f, 130f to 135f, 200f to 90f, 280f to 140f, 360f to 100f, 400f to 130f, cerrar = false), GColors.Primary500.copy(alpha = 0.4f), style = Stroke(3f))
+                ChipRuta(PortadaRuta.etiqueta(), Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 40.dp))
             }
-            com.gacelas.ui.three.Runner3D(com.gacelas.ui.three.ClipCorredor.Jog, camara = io.github.sceneview.math.Position(0f, 0f, 4.2f))
-            Row(Modifier.align(Alignment.BottomStart).padding(16.dp).clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.7f)).padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(8.dp).clip(CircleShape).background(GColors.Secondary500))
-                Spacer(Modifier.width(6.dp))
-                Text("2,100 msnm", style = GType.labelMd, color = GColors.TextPrimary)
-            }
-            Row(Modifier.align(Alignment.TopEnd).padding(16.dp).clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.7f)).padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.WbTwilight, null, tint = GColors.Primary400, modifier = Modifier.size(16.dp))
-                Spacer(Modifier.width(6.dp))
-                Text("14°C Fresco", style = GType.labelMd, color = GColors.TextPrimary)
+            TarjetaVidrio(
+                Modifier.padding(horizontal = 16.dp).offset(y = (-24).dp).navigationBarsPadding(),
+                padding = if (compacta) 16.dp else 20.dp, espacio = if (compacta) 10.dp else 14.dp,
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(6.dp).clip(CircleShape).background(GColors.Primary500))
+                    Spacer(Modifier.width(8.dp))
+                    Text("RUNNING EN LOJA, ECUADOR", style = GType.labelMd, color = GColors.Primary500)
+                }
+                Text("Corre. Comparte. Supera.", style = if (compacta) GType.headlineMd else GType.headlineLg, color = GColors.TextPrimary)
+                Text(
+                    "Únete a la comunidad de runners en Loja. Explora rutas, registra tus carreras y corre acompañado.",
+                    style = if (compacta) GType.bodyMd else GType.bodyLg, color = GColors.TextSecondary,
+                    maxLines = if (compacta) 2 else 3, overflow = TextOverflow.Ellipsis,
+                )
+                BotonPrimario("Empezar", onCrearCuenta, Modifier.shadow(6.dp, RoundedCornerShape(16.dp), ambientColor = GColors.Primary, spotColor = GColors.Primary.copy(alpha = 0.35f)))
+                BotonGoogle(onEntrarGoogle)
+                EnlaceAcceso("¿Ya tienes cuenta? ", "Inicia sesión", onIniciarSesion)
             }
         }
-        Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Box(Modifier.width(32.dp).height(6.dp).clip(CircleShape).background(GColors.Primary))
-                Box(Modifier.width(8.dp).height(6.dp).clip(CircleShape).background(GColors.BorderSubtle))
-                Box(Modifier.width(8.dp).height(6.dp).clip(CircleShape).background(GColors.BorderSubtle))
-            }
-            Text("Corre con la manada de Loja", style = GType.headlineXl, color = GColors.TextPrimary)
-            Text("Graba tus carreras, descubre rutas locales y entrena con el grupo Gacelas.", style = GType.bodyLg, color = GColors.TextSecondary)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ChipBeneficio(Icons.Filled.Route, "Jipiro y Zamora", Modifier.weight(1f))
-                ChipBeneficio(Icons.Filled.Sensors, "GPS en vivo", Modifier.weight(1f))
-                ChipBeneficio(Icons.Filled.Groups, "Comunidad", Modifier.weight(1f))
-            }
-            BotonPrimario("Crear cuenta", onCrearCuenta)
-            BotonSecundario("Ya tengo cuenta, iniciar sesión", onIniciarSesion)
-            BotonGoogle(onEntrarGoogle)
-        }
+    }
+}
+
+@Composable
+private fun EnlaceAcceso(texto: String, enlace: String, onClick: () -> Unit) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+        Text(texto, style = GType.bodyMd, color = GColors.TextSecondary)
+        Text(enlace, style = GType.labelLg, color = GColors.Primary500, modifier = Modifier.clip(RoundedCornerShape(6.dp)).clickable(onClick = onClick).padding(4.dp))
     }
 }
 
@@ -179,21 +174,45 @@ fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: (
             }
         }
     }
-    PantallaAcceso(onAtras) {
-        EncabezadoFormulario("Bienvenido de vuelta", "Inicia sesión para continuar con tus carreras")
-        CampoTexto("Correo electrónico", email, { email = it; error = null }, "tu@email.com", tipo = KeyboardType.Email)
-        CampoTexto("Contraseña", password, { password = it; error = null }, "••••••••", password = true, onListo = { entrar() })
-        MensajeError(error)
-        Text("¿Olvidaste tu contraseña?", style = GType.labelLg, color = GColors.Primary500,
-            modifier = Modifier.align(Alignment.End).clickable(onClick = onRecuperar))
-        BotonPrimario(if (cargando) "Ingresando..." else "Iniciar sesión", {
-            entrar()
-        }, enabled = !cargando)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-            Text("¿No tienes cuenta? ", style = GType.bodyMd, color = GColors.TextSecondary)
-            Text("Crear cuenta", style = GType.labelLg, color = GColors.Primary500, modifier = Modifier.clickable(onClick = onRegistro))
+    // Sin scroll: el teclado (imePadding) achica el hueco y la pantalla se adapta por niveles:
+    // primero se comprime el mapa, luego se ocultan subtitulo/Google/pie y por ultimo etiquetas y mapa.
+    BoxWithConstraints(Modifier.fillMaxSize().background(GColors.BgPrimary).imePadding().testTag("pantalla-login")) {
+        val compacto = maxHeight < AlturasAcceso.LOGIN_COMPACTO
+        val minimo = maxHeight < AlturasAcceso.LOGIN_MINIMO
+        Column(Modifier.fillMaxSize()) {
+            val encabezado: @Composable () -> Unit = {
+                Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onAtras) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = GColors.TextPrimary) }
+                    MarcaGacelas(Modifier.weight(1f))
+                }
+            }
+            if (minimo) {
+                Spacer(Modifier.weight(1f))
+            } else {
+                MapaPortada(Modifier.fillMaxWidth().weight(1f)) {
+                    encabezado()
+                    ChipRuta(PortadaRuta.etiqueta(), Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 36.dp))
+                }
+            }
+            TarjetaVidrio(
+                Modifier.padding(horizontal = 16.dp).offset(y = if (minimo) 0.dp else (-20).dp).navigationBarsPadding().padding(bottom = if (minimo) 8.dp else 0.dp),
+                padding = if (minimo) 14.dp else if (compacto) 16.dp else 20.dp, espacio = if (minimo) 8.dp else if (compacto) 10.dp else 14.dp,
+            ) {
+                Text("Bienvenido de vuelta", style = if (compacto) GType.headlineSm else GType.headlineMd, color = GColors.TextPrimary)
+                if (!compacto) Text("Inicia sesión para seguir corriendo", style = GType.bodyMd, color = GColors.TextSecondary)
+                CampoTexto("Correo electrónico", email, { email = it; error = null }, "tu@email.com", tipo = KeyboardType.Email, mostrarEtiqueta = !minimo)
+                CampoTexto("Contraseña", password, { password = it; error = null }, "••••••••", password = true, onListo = { entrar() }, mostrarEtiqueta = !minimo)
+                MensajeError(error)
+                Text("¿Olvidaste tu contraseña?", style = GType.labelLg, color = GColors.Primary500,
+                    modifier = Modifier.align(Alignment.End).clip(RoundedCornerShape(6.dp)).clickable(onClick = onRecuperar).padding(4.dp))
+                BotonPrimario(if (cargando) "Ingresando..." else "Iniciar sesión", { entrar() }, enabled = !cargando)
+                if (!compacto) {
+                    SeparadorO()
+                    BotonGoogle(onEntrar)
+                    EnlaceAcceso("¿No tienes cuenta? ", "Crear cuenta", onRegistro)
+                }
+            }
         }
-        BotonGoogle(onEntrar)
     }
 }
 
