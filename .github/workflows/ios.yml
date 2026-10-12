@@ -55,8 +55,10 @@ jobs:
           xcrun simctl terminate "$UDID" com.gacelas.app || true
           # Etapa 3: ubicacion simulada (Loja, ~3.3 m/s hacia el sur) y pantalla de sensores con carrera.
           xcrun simctl privacy "$UDID" grant location-always com.gacelas.app || xcrun simctl privacy "$UDID" grant location com.gacelas.app
-          xcrun simctl location "$UDID" start --speed=3.3 --interval=1 \
-            -3.99310,-79.20420 -3.99600,-79.20430 -3.99900,-79.20440 -4.00200,-79.20450
+          # Coordenadas negativas por stdin ("-"): como argumentos simctl las toma por opciones.
+          xcrun simctl location "$UDID" help 2>&1 | head -30 || true
+          printf -- '-3.99310,-79.20420\n-3.99600,-79.20430\n-3.99900,-79.20440\n-4.00200,-79.20450\n' \
+            | xcrun simctl location "$UDID" start --speed=3.3 --interval=1 -
           xcrun simctl launch "$UDID" com.gacelas.app --sensores
           sleep 25
           xcrun simctl io "$UDID" screenshot shots/sensores.png
