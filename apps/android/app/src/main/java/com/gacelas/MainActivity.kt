@@ -63,7 +63,10 @@ class MainActivity : ComponentActivity() {
         leerDestino(intent)
         pedirPermisoNotificaciones()
         // Mapa sin conexion: Loja se descarga sola con wifi y se reanuda si quedo a medias.
-        if (com.gacelas.ui.components.Mapas.configurado()) runCatching { com.gacelas.ui.components.MapaOffline.asegurar(this) }
+        if (com.gacelas.ui.components.Mapas.configurado()) {
+            runCatching { com.gacelas.ui.components.MapaOffline.asegurar(this) } // cache ambiental + estado
+            com.gacelas.ui.components.MapaOfflineWorker.programar(this)         // descarga con internet (reintenta)
+        }
         setContent {
             GacelasTheme {
                 // Tocar fuera de un campo oculta el teclado. Los botones, listas y mapas consumen

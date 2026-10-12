@@ -57,7 +57,7 @@ internal fun textoEstadoMapa(e: EstadoDescarga): String {
     return when (e) {
         EstadoDescarga.SinDescargar -> "Descarga las calles de Loja (OpenStreetMap) para correr sin datos"
         is EstadoDescarga.Descargando -> "Descargando ${e.porcentaje}% (${mb(e.megas)})"
-        is EstadoDescarga.Lista -> "Listo para usar sin red (${mb(e.megas)})"
+        is EstadoDescarga.Lista -> "Mapa offline listo (${mb(e.megas)})"
         is EstadoDescarga.Error -> e.mensaje
     }
 }

@@ -66,3 +66,25 @@ class Feedback068Test {
         assertEquals(0f, Rumbo.relativo(null, 123f), 0.01f)
     }
 }
+
+class MapaSinRedTest {
+    private val tilejson = """{"tilejson":"3.0.0","tiles":["https://tiles.openfreemap.org/planet/20261004_113936_pt/{z}/{x}/{y}.pbf"],"maxzoom":14}"""
+
+    @Test fun fijaLaVersionDeTeselasDescargada() {
+        val plantilla = com.gacelas.ui.components.ReglasDescarga.plantillaTeselas(tilejson)
+        assertEquals("https://tiles.openfreemap.org/planet/20261004_113936_pt/{z}/{x}/{y}.pbf", plantilla)
+        val estilo = java.io.File("src/main/assets/mapas/gacelas-oscuro.json").readText()
+        val fijo = com.gacelas.ui.components.ReglasDescarga.fijarTeselas(estilo, plantilla!!)!!
+        assertTrue(fijo.contains("20261004_113936_pt"))
+        assertTrue(!fijo.contains("\"url\":\"https://tiles.openfreemap.org/planet\""))
+        assertTrue(fijo.contains("\"glyphs\""))
+    }
+
+    @Test fun regionCubreLojaHastaZ16SinPasarElLimite() {
+        val r = com.gacelas.ui.components.MapaOffline.LOJA
+        assertEquals(16.0, r.zoomMax, 0.0)
+        assertTrue(r.contiene(-3.9931, -79.2045)) // Av. Isidro Ayora
+    }
+
+    @Test fun textoListo() = assertEquals("Mapa offline listo (12.3 MB)", com.gacelas.ajustes.textoEstadoMapa(com.gacelas.ui.components.EstadoDescarga.Lista(12.3)))
+}
