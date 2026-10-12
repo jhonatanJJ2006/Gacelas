@@ -5,6 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
@@ -75,7 +78,7 @@ import com.gacelas.ui.theme.GType
 @Composable
 private fun PantallaAcceso(onAtras: (() -> Unit)?, content: @Composable ColumnScope.() -> Unit) {
     Column(
-        Modifier.fillMaxSize().background(GColors.BgPrimary).statusBarsPadding().navigationBarsPadding()
+        Modifier.fillMaxSize().background(GColors.BgPrimary).cerrarTecladoAlTocarFuera().statusBarsPadding().navigationBarsPadding()
             .verticalScroll(rememberScrollState()),
     ) {
         if (onAtras != null) {
@@ -91,34 +94,42 @@ private fun PantallaAcceso(onAtras: (() -> Unit)?, content: @Composable ColumnSc
 
 @Composable
 fun BienvenidaScreen(onSaltar: () -> Unit, onCrearCuenta: () -> Unit, onIniciarSesion: () -> Unit, onEntrarGoogle: () -> Unit = {}) {
-    BoxWithConstraints(Modifier.fillMaxSize().background(GColors.BgPrimary).testTag("pantalla-bienvenida")) {
+    BoxWithConstraints(Modifier.fillMaxSize().background(C4.Fondo).testTag("pantalla-bienvenida")) {
         val compacta = maxHeight < AlturasAcceso.BIENVENIDA_COMPACTA
+        FondoMapaC4(login = false)
         Column(Modifier.fillMaxSize()) {
-            MapaPortada(Modifier.fillMaxWidth().weight(1f)) {
-                Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    MarcaGacelas(Modifier.weight(1f))
-                    Text("Saltar", style = GType.labelLg, color = GColors.TextSecondary, modifier = Modifier.clip(CircleShape).clickable(onClick = onSaltar).padding(8.dp))
-                }
-                ChipRuta(PortadaRuta.etiqueta(), Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 40.dp))
-            }
-            TarjetaVidrio(
-                Modifier.padding(horizontal = 16.dp).offset(y = (-24).dp).navigationBarsPadding(),
-                padding = if (compacta) 16.dp else 20.dp, espacio = if (compacta) 10.dp else 14.dp,
+            Row(
+                Modifier.fillMaxWidth().statusBarsPadding().padding(start = 20.dp, end = 20.dp, top = if (compacta) 8.dp else 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
+                MarcaC4()
+                Spacer(Modifier.weight(1f))
+                ChipC4(PortadaRuta.etiqueta())
+                Text("Saltar", style = C4Texto.labelCaps, color = C4.Secondary,
+                    modifier = Modifier.padding(start = 4.dp).clip(CircleShape).clickable(onClick = onSaltar).padding(8.dp))
+            }
+            Box(Modifier.weight(1f).fillMaxWidth().clipToBounds().padding(start = 20.dp, end = 20.dp, bottom = 12.dp), contentAlignment = Alignment.BottomStart) {
+                IndicadorZonaC4()
+            }
+            TarjetaC4(Modifier.padding(horizontal = 20.dp).navigationBarsPadding().padding(top = 8.dp, bottom = if (compacta) 12.dp else 24.dp), padding = if (compacta) 20.dp else 24.dp) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(6.dp).clip(CircleShape).background(GColors.Primary500))
-                    Spacer(Modifier.width(8.dp))
-                    Text("RUNNING EN LOJA, ECUADOR", style = GType.labelMd, color = GColors.Primary500)
+                    Box(Modifier.size(8.dp).clip(CircleShape).background(C4.Magenta))
+                    Spacer(Modifier.width(6.dp))
+                    Text("RUNNING EN LOJA, ECUADOR", style = C4Texto.labelCaps, color = C4.Magenta)
                 }
-                Text("Corre. Comparte. Supera.", style = if (compacta) GType.headlineMd else GType.headlineLg, color = GColors.TextPrimary)
+                Spacer(Modifier.height(12.dp))
+                TitularC4(compacto = compacta)
+                Spacer(Modifier.height(10.dp))
                 Text(
-                    "Únete a la comunidad de runners en Loja. Explora rutas, registra tus carreras y corre acompañado.",
-                    style = if (compacta) GType.bodyMd else GType.bodyLg, color = GColors.TextSecondary,
-                    maxLines = if (compacta) 2 else 3, overflow = TextOverflow.Ellipsis,
+                    "Únete a la comunidad de runners en Loja. Explora rutas andinas, registra tus marcas y corre acompañado.",
+                    style = C4Texto.bodyMd, color = C4.Secondary.copy(alpha = 0.9f),
+                    maxLines = if (compacta) 2 else 4, overflow = TextOverflow.Ellipsis,
                 )
-                BotonPrimario("Empezar", onCrearCuenta, Modifier.shadow(6.dp, RoundedCornerShape(16.dp), ambientColor = GColors.Primary, spotColor = GColors.Primary.copy(alpha = 0.35f)))
-                BotonGoogle(onEntrarGoogle)
-                EnlaceAcceso("¿Ya tienes cuenta? ", "Inicia sesión", onIniciarSesion)
+                Spacer(Modifier.height(if (compacta) 16.dp else 24.dp))
+                BotonC4("Empezar", onCrearCuenta)
+                Spacer(Modifier.height(12.dp))
+                BotonGoogle(onEntrarGoogle, portada = true)
+                PieC4("¿Ya tienes cuenta? ", "Inicia sesión", onIniciarSesion)
             }
         }
     }
@@ -174,42 +185,63 @@ fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: (
             }
         }
     }
-    // Sin scroll: el teclado (imePadding) achica el hueco y la pantalla se adapta por niveles:
-    // primero se comprime el mapa, luego se ocultan subtitulo/Google/pie y por ultimo etiquetas y mapa.
-    BoxWithConstraints(Modifier.fillMaxSize().background(GColors.BgPrimary).imePadding().testTag("pantalla-login")) {
-        val compacto = maxHeight < AlturasAcceso.LOGIN_COMPACTO
-        val minimo = maxHeight < AlturasAcceso.LOGIN_MINIMO
-        Column(Modifier.fillMaxSize()) {
-            val encabezado: @Composable () -> Unit = {
-                Row(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onAtras) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = GColors.TextPrimary) }
-                    MarcaGacelas(Modifier.weight(1f))
+    // Sin scroll: el teclado (imePadding) achica el hueco y la pantalla se adapta por niveles.
+    // El mapa es fondo de ventana completa (no se mueve con el teclado), igual que en el export de Stitch.
+    BoxWithConstraints(Modifier.fillMaxSize().background(C4.Fondo).testTag("pantalla-login")) {
+        FondoMapaC4(login = true)
+        BoxWithConstraints(Modifier.fillMaxSize().imePadding().cerrarTecladoAlTocarFuera()) {
+            val compacto = maxHeight < AlturasAcceso.LOGIN_COMPACTO
+            val minimo = maxHeight < AlturasAcceso.LOGIN_MINIMO
+            Column(Modifier.fillMaxSize()) {
+                if (!minimo) {
+                    Row(
+                        Modifier.fillMaxWidth().statusBarsPadding().padding(start = 20.dp, end = 20.dp, top = if (compacto) 8.dp else 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        AtrasC4(onAtras)
+                        Spacer(Modifier.width(12.dp))
+                        MarcaC4()
+                        Spacer(Modifier.weight(1f))
+                        ChipC4(PortadaRuta.etiqueta())
+                    }
                 }
-            }
-            if (minimo) {
-                Spacer(Modifier.weight(1f))
-            } else {
-                MapaPortada(Modifier.fillMaxWidth().weight(1f)) {
-                    encabezado()
-                    ChipRuta(PortadaRuta.etiqueta(), Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 36.dp))
+                Box(Modifier.weight(1f).fillMaxWidth().clipToBounds().padding(start = 20.dp, end = 20.dp, bottom = 12.dp), contentAlignment = Alignment.BottomStart) {
+                    if (!compacto) IndicadorZonaC4()
                 }
-            }
-            TarjetaVidrio(
-                Modifier.padding(horizontal = 16.dp).offset(y = if (minimo) 0.dp else (-20).dp).navigationBarsPadding().padding(bottom = if (minimo) 8.dp else 0.dp),
-                padding = if (minimo) 14.dp else if (compacto) 16.dp else 20.dp, espacio = if (minimo) 8.dp else if (compacto) 10.dp else 14.dp,
-            ) {
-                Text("Bienvenido de vuelta", style = if (compacto) GType.headlineSm else GType.headlineMd, color = GColors.TextPrimary)
-                if (!compacto) Text("Inicia sesión para seguir corriendo", style = GType.bodyMd, color = GColors.TextSecondary)
-                CampoTexto("Correo electrónico", email, { email = it; error = null }, "tu@email.com", tipo = KeyboardType.Email, mostrarEtiqueta = !minimo)
-                CampoTexto("Contraseña", password, { password = it; error = null }, "••••••••", password = true, onListo = { entrar() }, mostrarEtiqueta = !minimo)
-                MensajeError(error)
-                Text("¿Olvidaste tu contraseña?", style = GType.labelLg, color = GColors.Primary500,
-                    modifier = Modifier.align(Alignment.End).clip(RoundedCornerShape(6.dp)).clickable(onClick = onRecuperar).padding(4.dp))
-                BotonPrimario(if (cargando) "Ingresando..." else "Iniciar sesión", { entrar() }, enabled = !cargando)
-                if (!compacto) {
-                    SeparadorO()
-                    BotonGoogle(onEntrar)
-                    EnlaceAcceso("¿No tienes cuenta? ", "Crear cuenta", onRegistro)
+                TarjetaC4(
+                    Modifier.padding(horizontal = 20.dp).navigationBarsPadding().padding(top = 8.dp, bottom = if (compacto) 8.dp else 24.dp),
+                    alpha = 0.90f, padding = if (minimo) 16.dp else if (compacto) 20.dp else 24.dp,
+                ) {
+                    Text("Bienvenido de vuelta", style = C4Texto.headlineLgMobile.copy(fontSize = if (compacto) 20.sp else 24.sp), color = Color.White)
+                    if (!compacto) {
+                        Spacer(Modifier.height(6.dp))
+                        Text("Inicia sesión para seguir corriendo", style = C4Texto.bodySm, color = C4.Subtitulo.copy(alpha = 0.8f))
+                    }
+                    Spacer(Modifier.height(if (minimo) 10.dp else if (compacto) 14.dp else 20.dp))
+                    CampoC4("Correo electrónico", email, { email = it; error = null }, "tu@email.com", IconosC4.Correo,
+                        tipo = KeyboardType.Email, mostrarEtiqueta = !minimo)
+                    Spacer(Modifier.height(if (minimo) 10.dp else 16.dp))
+                    CampoC4("Contraseña", password, { password = it; error = null }, "••••••••", IconosC4.Candado,
+                        password = true, mostrarEtiqueta = !minimo, onListo = { entrar() },
+                        accion = if (minimo) null else ({
+                            Text("¿Olvidaste tu contraseña?", style = C4Texto.labelCaps.copy(fontWeight = FontWeight.Medium, letterSpacing = 0.sp), color = C4.Enlace,
+                                modifier = Modifier.clickable(onClick = onRecuperar))
+                        }))
+                    if (error != null) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(error!!, style = C4Texto.bodySm, color = Color(0xFFFFB4AB), modifier = Modifier.testTag("error-acceso"))
+                    }
+                    if (minimo) {
+                        Text("¿Olvidaste tu contraseña?", style = C4Texto.labelCaps.copy(fontWeight = FontWeight.Medium, letterSpacing = 0.sp), color = C4.Enlace,
+                            modifier = Modifier.align(Alignment.End).padding(top = 8.dp).clickable(onClick = onRecuperar))
+                    }
+                    Spacer(Modifier.height(if (minimo) 10.dp else 20.dp))
+                    BotonC4(if (cargando) "Ingresando..." else "Iniciar sesión", { entrar() }, alto = 48.dp, tamTexto = 16, enabled = !cargando)
+                    if (!compacto) {
+                        SeparadorC4()
+                        BotonGoogle(onEntrar, portada = true, alto = 48.dp)
+                        PieC4("¿No tienes cuenta? ", "Crear cuenta", onRegistro, arriba = 10.dp)
+                    }
                 }
             }
         }

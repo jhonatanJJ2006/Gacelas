@@ -8,6 +8,12 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.click
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.unit.dp
 import com.gacelas.acceso.BienvenidaScreen
 import com.gacelas.acceso.InicioSesionScreen
@@ -44,9 +50,17 @@ class AccesoSinScrollTest {
     @Test fun loginEn640dpCabeSinScroll() {
         compose.setContent { GacelasTheme { InicioSesionScreen({}, {}, {}, {}) } }
         compose.onAllNodes(hasScrollAction()).assertCountEquals(0)
-        listOf("Bienvenido de vuelta", "Correo electrónico", "Iniciar sesión", "¿Olvidaste tu contraseña?").forEach {
+        listOf("Bienvenido de vuelta", "CORREO ELECTRÓNICO", "Iniciar sesión", "¿Olvidaste tu contraseña?").forEach {
             compose.onNodeWithText(it).assertIsDisplayed()
         }
+    }
+
+    @Test fun tocarFueraCierraElTeclado() {
+        compose.setContent { GacelasTheme { InicioSesionScreen({}, {}, {}, {}) } }
+        compose.onNodeWithTag("campo-Correo electrónico").performClick()
+        compose.onNodeWithTag("campo-Correo electrónico").assertIsFocused()
+        compose.onNodeWithText("Bienvenido de vuelta").performTouchInput { click() }
+        compose.onNodeWithTag("campo-Correo electrónico").assertIsNotFocused()
     }
 
     @Test fun loginConTecladoSeCompactaSinPerderElBoton() {
