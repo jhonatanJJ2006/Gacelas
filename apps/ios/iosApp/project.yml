@@ -24,6 +24,8 @@ targets:
       path: iosApp/Info.plist
       properties:
         CFBundleDisplayName: Gacelas
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UILaunchScreen: {}
         CADisableMinimumFrameDurationOnPhone: true
         NSLocationWhenInUseUsageDescription: Gacelas usa tu ubicación para medir distancia, ritmo y ruta de tus carreras.
