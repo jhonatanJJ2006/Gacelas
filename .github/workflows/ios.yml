@@ -45,13 +45,20 @@ jobs:
       - name: Capturas en simulador
         working-directory: ${{ env.IOS_DIR }}
         run: |
-          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
+          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];p=[x for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')];print(next((x['udid'] for x in p if x['name']=='iPhone 16'),p[0]['udid']))")
           xcrun simctl boot "$UDID"; xcrun simctl bootstatus "$UDID" -b
           xcrun simctl install "$UDID" build/Build/Products/Debug-iphonesimulator/iosApp.app
           mkdir -p shots
+          xcrun simctl list devices booted | grep "$UDID"
+          # Paridad: pantallas compartidas con Android (bienvenida y login C4).
+          xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 || true
           xcrun simctl launch "$UDID" com.gacelas.app
           sleep 12
-          xcrun simctl io "$UDID" screenshot shots/inicio.png
+          xcrun simctl io "$UDID" screenshot shots/bienvenida.png
+          xcrun simctl terminate "$UDID" com.gacelas.app || true
+          xcrun simctl launch "$UDID" com.gacelas.app --pantalla=login
+          sleep 8
+          xcrun simctl io "$UDID" screenshot shots/login.png
           xcrun simctl terminate "$UDID" com.gacelas.app || true
           # Etapa 3: ubicacion simulada (Loja, ~3.3 m/s hacia el sur) y pantalla de sensores con carrera.
           xcrun simctl privacy "$UDID" grant location-always com.gacelas.app || xcrun simctl privacy "$UDID" grant location com.gacelas.app

@@ -11,11 +11,21 @@ targets:
   iosApp:
     type: application
     platform: iOS
-    sources: [iosApp]
+    sources:
+      - iosApp
+      # Mismas imagenes que Android (shared/src/androidMain/res), copiadas al bundle.
+      - path: ../../android/shared/src/androidMain/res/drawable-nodpi/mapa_stitch_bienvenida.webp
+        buildPhase: resources
+      - path: ../../android/shared/src/androidMain/res/drawable-nodpi/mapa_stitch_login.webp
+        buildPhase: resources
+      - path: ../../android/shared/src/androidMain/res/drawable/ic_google_g.xml
+        buildPhase: resources
     info:
       path: iosApp/Info.plist
       properties:
         CFBundleDisplayName: Gacelas
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UILaunchScreen: {}
         CADisableMinimumFrameDurationOnPhone: true
         NSLocationWhenInUseUsageDescription: Gacelas usa tu ubicación para medir distancia, ritmo y ruta de tus carreras.

@@ -70,7 +70,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import com.gacelas.acceso.SpaceGrotesk
+import com.gacelas.ui.theme.SpaceGrotesk
 import com.gacelas.ui.ajustesState
 import com.gacelas.data.carreras.Parcial
 import com.gacelas.tracking.EstadoCarrera

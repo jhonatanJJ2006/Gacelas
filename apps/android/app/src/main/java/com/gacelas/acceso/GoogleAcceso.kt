@@ -163,12 +163,12 @@ fun BotonGoogle(
     var fase by remember { mutableStateOf<FaseGoogle?>(null) }
     val cargando = fase != null
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Button(
+        BotonGoogleVisual(
             onClick = {
                 error = null
                 if (!auth.googleDisponible) {
                     error = "El inicio con Google no está disponible en esta versión de la app. Usa tu correo por ahora."
-                    return@Button
+                    return@BotonGoogleVisual
                 }
                 fase = FaseGoogle.Cuenta
                 scope.launch {
@@ -191,33 +191,8 @@ fun BotonGoogle(
                     } finally { fase = null }
                 }
             },
-            enabled = !cargando,
-            // Guias de marca de Google Sign-In, tema oscuro: fondo #131314, borde #8E918F, texto #E3E3E3,
-            // forma de pildora y el logo "G" multicolor oficial sin modificar.
-            colors = if (portada) ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF1C2028), contentColor = Color.White,
-                disabledContainerColor = Color(0xFF1C2028), disabledContentColor = Color.White.copy(alpha = 0.6f),
-            ) else ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF131314), contentColor = Color(0xFFE3E3E3),
-                disabledContainerColor = Color(0xFF131314), disabledContentColor = Color(0xFFE3E3E3).copy(alpha = 0.6f),
-            ),
-            border = BorderStroke(1.dp, if (portada) Color.White.copy(alpha = 0.10f) else Color(0xFF8E918F)),
-            shape = CircleShape,
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            modifier = Modifier.fillMaxWidth().height(alto).testTag("boton-google"),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
-                    if (cargando) CircularProgressIndicator(Modifier.size(18.dp), color = Color(0xFFE3E3E3), strokeWidth = 2.dp)
-                    else Image(painterResource(R.drawable.ic_google_g), contentDescription = null, modifier = Modifier.size(20.dp))
-                }
-                Text(
-                    if (cargando) "Abriendo Google..." else "Continuar con Google",
-                    fontFamily = if (portada) com.gacelas.ui.theme.Inter else GType.labelLg.fontFamily, fontWeight = FontWeight.Medium, fontSize = 15.sp,
-                    letterSpacing = if (portada) (-0.075).sp else 0.25.sp,
-                )
-            }
-        }
+            cargando = cargando, portada = portada, alto = alto,
+        )
     }
     fase?.let { CargandoGoogle(it) }
     error?.let { ErrorGoogle(it) { error = null } }
