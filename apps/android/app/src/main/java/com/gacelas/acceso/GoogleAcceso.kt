@@ -1,6 +1,10 @@
 package com.gacelas.acceso
 
 import android.content.Context
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.PaddingValues
@@ -119,12 +123,29 @@ object GoogleAcceso {
         is GetCredentialProviderConfigurationException -> "Este teléfono necesita actualizar los Servicios de Google Play para iniciar con Google"
         is GetCredentialUnsupportedException -> "Este teléfono no permite iniciar con Google desde apps"
         is GoogleIdTokenParsingException -> "Google devolvió una respuesta que no se pudo leer"
-        is GetCredentialException -> "No se pudo usar Google (${e.type}). Revisa la configuración del cliente OAuth de Android."
+        is GetCredentialException -> mensajeCredencial(e.type, e.message)
         else -> "No se pudo usar Google en este teléfono (${e.javaClass.simpleName})"
+    }
+
+    /**
+     * Errores que Google devuelve DESPUES de elegir la cuenta. "[10]"/"[16] Account reauth failed"/28444
+     * significan que el cliente OAuth Android (paquete + SHA-1 de la firma) no existe en el proyecto
+     * del web client id.
+     */
+    fun mensajeCredencial(tipo: String, detalle: String?): String {
+        val d = detalle.orEmpty()
+        return when {
+            "[10]" in d || "[16]" in d || "reauth" in d.lowercase() || "28444" in d || "developer console" in d.lowercase() ->
+                "Google rechazó la app: su firma (SHA-1) no está registrada en el cliente OAuth Android de com.gacelas. ($d)"
+            else -> "No se pudo usar Google ($tipo${if (d.isNotBlank()) ": $d" else ""})"
+        }
     }
 
     private const val TAG = "GoogleAcceso"
 }
+
+/** Fases del inicio con Google que se muestran en el loading a pantalla completa. */
+enum class FaseGoogle(val texto: String) { Cuenta("Elige tu cuenta de Google…"), Servidor("Iniciando sesión…"), Perfil("Preparando tu cuenta…") }
 
 /** Boton "Continuar con Google": Credential Manager + Supabase signInWith(IDToken). */
 @Composable
@@ -139,7 +160,8 @@ fun BotonGoogle(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var error by remember { mutableStateOf<String?>(null) }
-    var cargando by remember { mutableStateOf(false) }
+    var fase by remember { mutableStateOf<FaseGoogle?>(null) }
+    val cargando = fase != null
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Button(
             onClick = {
@@ -148,16 +170,25 @@ fun BotonGoogle(
                     error = "El inicio con Google no está disponible en esta versión de la app. Usa tu correo por ahora."
                     return@Button
                 }
-                cargando = true
+                fase = FaseGoogle.Cuenta
                 scope.launch {
-                    when (val t = GoogleAcceso.pedirToken(context)) {
-                        is TokenGoogle.Error -> error = t.mensaje
-                        is TokenGoogle.Ok -> when (val r = auth.entrarConGoogle(t.idToken, t.nonce)) {
-                            is ResultadoAuth.Ok -> onEntrar()
-                            is ResultadoAuth.Error -> error = r.mensaje
+                    try {
+                        when (val t = GoogleAcceso.pedirToken(context)) {
+                            is TokenGoogle.Error -> error = t.mensaje
+                            is TokenGoogle.Ok -> {
+                                fase = FaseGoogle.Servidor
+                                when (val r = auth.entrarConGoogle(t.idToken, t.nonce)) {
+                                    is ResultadoAuth.Ok -> { fase = FaseGoogle.Perfil; onEntrar() }
+                                    is ResultadoAuth.Error -> error = r.mensaje.ifBlank { "No se pudo iniciar sesión con Google" }
+                                }
+                            }
                         }
-                    }
-                    cargando = false
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        Log.e("GoogleAcceso", "Fallo inesperado", e)
+                        error = "No se pudo iniciar sesión con Google (${e.javaClass.simpleName}: ${e.message})"
+                    } finally { fase = null }
                 }
             },
             enabled = !cargando,
@@ -187,6 +218,34 @@ fun BotonGoogle(
                 )
             }
         }
-        error?.let { Text(it, style = GType.bodyMd, color = GColors.Danger, modifier = Modifier.testTag("error-google")) }
     }
+    fase?.let { CargandoGoogle(it) }
+    error?.let { ErrorGoogle(it) { error = null } }
+}
+
+/** Loading a pantalla completa, sin poder cerrarse, desde que se toca el boton hasta la sesion o el error. */
+@Composable
+fun CargandoGoogle(fase: FaseGoogle) {
+    androidx.compose.ui.window.Dialog(onDismissRequest = {}, properties = androidx.compose.ui.window.DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)) {
+        Column(
+            Modifier.clip(RoundedCornerShape(24.dp)).background(Color(0xFF131926)).border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(24.dp))
+                .padding(horizontal = 28.dp, vertical = 24.dp).testTag("cargando-google"),
+            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            CircularProgressIndicator(Modifier.size(36.dp), color = Color(0xFFD97706), strokeWidth = 3.dp)
+            Text(fase.texto, fontFamily = com.gacelas.ui.theme.Inter, fontSize = 15.sp, color = Color.White)
+        }
+    }
+}
+
+/** El error se muestra en un dialogo (no se pierde fuera de la tarjeta). */
+@Composable
+fun ErrorGoogle(mensaje: String, onCerrar: () -> Unit) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onCerrar,
+        confirmButton = { androidx.compose.material3.TextButton(onClick = onCerrar) { Text("Entendido", color = Color(0xFFF59E0B)) } },
+        title = { Text("No se pudo entrar con Google") },
+        text = { Text(mensaje, modifier = Modifier.testTag("error-google")) },
+        containerColor = Color(0xFF131926), titleContentColor = Color.White, textContentColor = Color(0xFFBCC7DE),
+    )
 }
