@@ -53,7 +53,7 @@ class LocationService : Service() {
         const val ACTION_PAUSA = "com.gacelas.location.PAUSA"
         const val ACTION_TERMINAR = "com.gacelas.location.TERMINAR"
         private const val NOTIFICATION_ID = 1
-        private const val CHANNEL_ID = "location_service"
+        const val CHANNEL_ID = "location_service"
         private const val CHANNEL_NAME = "Seguimiento de Actividad"
 
         fun tienePermiso(context: Context): Boolean =
