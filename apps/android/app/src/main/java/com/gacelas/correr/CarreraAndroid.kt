@@ -21,16 +21,17 @@ import com.gacelas.ui.contenedor
 fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
     val context = LocalContext.current
     val tracker = contenedor().tracker
-    val estado by tracker.estado.collectAsState()
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.carreras.presentation.CarreraEnCursoViewModel(tracker) }
+    val estado by vm.estado.collectAsState()
     val ajustes by ajustesState()
     var confirmar by remember { mutableStateOf(false) }
     MantenerPantallaEncendida()
     RelojCarrera(tracker, estado)
     ContenidoCarreraC4(
         VistaCarrera(estado, ajustes.unidadesMetricas),
-        onPausa = tracker::alternarPausa,
+        onPausa = vm::alternarPausa,
         onStop = { terminarCarrera(context, tracker); onFinalizar() },
-        onVuelta = tracker::vuelta,
+        onVuelta = vm::vuelta,
         onAtras = { confirmar = true },
         extraCabecera = { BotonCompartirEnVivo(tracker) },
         mapa = { vista3d, controles, panelAbierto ->

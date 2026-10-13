@@ -152,7 +152,7 @@ El bucket se crea con `backend/migrations/013_app_releases.sql`.
 - `MockDataTest`: datos de prueba y filtros de notificaciones.
 - `ScreenshotTest` (Roborazzi): una captura por pantalla; solo graba con `recordRoborazziDebug`.
 
-El workflow de Android está en `apps/android/ci/android.yml`. Hay que moverlo a `.github/workflows/android.yml`, porque el token que subió este cambio no tiene permiso `workflow`. Ese workflow compila el APK, corre las pruebas y el lint en cada PR que toque `apps/android`, y publica el APK como artefacto.
+El workflow de Android está en `.github/workflows/android.yml`. Ese workflow compila el APK, corre las pruebas y el lint en cada PR que toque `apps/android`, y publica el APK como artefacto.
 
 ## Pendiente
 

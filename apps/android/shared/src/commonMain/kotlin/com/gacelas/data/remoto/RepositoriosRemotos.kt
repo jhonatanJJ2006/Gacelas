@@ -45,10 +45,10 @@ import kotlinx.serialization.json.put
  * Las carreras sin conexion quedan en una cola y se suben al volver la red.
  */
 
-private fun JsonObject.texto(k: String): String? = (this[k] as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
-private fun JsonObject.numero(k: String): Double? = (this[k] as? JsonPrimitive)?.doubleOrNull
-private fun JsonObject.entero(k: String): Int? = (this[k] as? JsonPrimitive)?.intOrNull ?: numero(k)?.toInt()
-private fun JsonObject.logico(k: String): Boolean? = (this[k] as? JsonPrimitive)?.booleanOrNull
+internal fun JsonObject.texto(k: String): String? = (this[k] as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
+internal fun JsonObject.numero(k: String): Double? = (this[k] as? JsonPrimitive)?.doubleOrNull
+internal fun JsonObject.entero(k: String): Int? = (this[k] as? JsonPrimitive)?.intOrNull ?: numero(k)?.toInt()
+internal fun JsonObject.logico(k: String): Boolean? = (this[k] as? JsonPrimitive)?.booleanOrNull
 
 fun perfilDesdeFila(fila: JsonObject?, u: UsuarioRemoto): Perfil {
     val nombre = fila?.texto("full_name") ?: u.meta.texto("full_name") ?: u.meta.texto("name") ?: u.email.substringBefore('@')
@@ -179,108 +179,11 @@ class SupabaseAuthRepository(
     }
 }
 
-/* ---------------- Carreras ---------------- */
-
-@Serializable
-data class OperacionPendiente(val tipo: String, val carrera: CarreraGuardada? = null, val id: String? = null)
-
-fun filaDesdeCarrera(c: CarreraGuardada, userId: String): JsonObject = buildJsonObject {
-    put("user_id", userId)
-    put("client_id", c.id)
-    put("title", c.titulo)
-    put("description", c.nota)
-    put("is_public", c.publica)
-    put("start_time", FechaIso.formatear(c.inicioMs))
-    put("end_time", FechaIso.formatear(c.inicioMs + c.segundos * 1000L))
-    put("duration_seconds", c.segundos)
-    put("distance_meters", redondear(c.distanciaKm * 1000).toInt())
-    c.ritmoSegKm?.let { put("avg_pace_seconds_per_km", it) }
-    put("elevation_gain_meters", c.desnivelM)
-    put("splits", jsonGacelas.encodeToJsonElement(ListSerializer(Parcial.serializer()), c.parciales))
-}
-
-fun carreraDesdeFila(f: JsonObject, puntos: List<PuntoGps>): CarreraGuardada = CarreraGuardada(
-    id = f.texto("client_id") ?: f.texto("id").orEmpty(),
-    titulo = f.texto("title").orEmpty(),
-    nota = f.texto("description").orEmpty(),
-    publica = f.logico("is_public") ?: false,
-    inicioMs = f.texto("start_time")?.let(FechaIso::leer) ?: 0L,
-    segundos = f.entero("duration_seconds") ?: 0,
-    distanciaKm = (f.numero("distance_meters") ?: 0.0) / 1000.0,
-    desnivelM = f.entero("elevation_gain_meters") ?: 0,
-    parciales = f["splits"]?.let { runCatching { jsonGacelas.decodeFromJsonElement(ListSerializer(Parcial.serializer()), it) }.getOrNull() } ?: emptyList(),
-    puntos = puntos,
-)
-
-class SupabaseCarrerasRepository(
-    private val backend: Backend,
-    store: DataStore<Preferences>,
-    private val userId: suspend () -> String?,
-    /** Se llama si algo queda pendiente (programa SincronizacionWorker). */
-    private val alEncolar: () -> Unit = {},
-) : CarrerasRepository {
-    private val cache = ValorJson(store, "carreras", ListSerializer(CarreraGuardada.serializer()), emptyList())
-    private val cola = ValorJson(store, "carreras_pendientes", ListSerializer(OperacionPendiente.serializer()), emptyList())
-    override val carreras: Flow<List<CarreraGuardada>> = cache.flujo
-    val pendientes: Flow<List<OperacionPendiente>> = cola.flujo
-
-    private suspend fun subir(op: OperacionPendiente, uid: String) {
-        if (op.tipo == "eliminar") {
-            backend.delete("activities", mapOf("user_id" to uid, "client_id" to op.id.orEmpty()))
-            return
-        }
-        val c = op.carrera ?: return
-        val fila = backend.upsert("activities", listOf(filaDesdeCarrera(c, uid)), "user_id,client_id").first()
-        backend.upsert("activity_tracks", listOf(buildJsonObject {
-            put("activity_id", fila.texto("id").orEmpty())
-            put("user_id", uid)
-            put("points", jsonGacelas.encodeToJsonElement(ListSerializer(PuntoGps.serializer()), c.puntos))
-        }), "activity_id")
-    }
-
-    /** Sube la cola en orden; se detiene en el primer fallo. Devuelve cuantas quedan. */
-    suspend fun sincronizar(): Int {
-        val uid = userId() ?: return cola.flujo.first().size
-        val ops = cola.flujo.first()
-        var hechas = 0
-        for (op in ops) {
-            if (runCatching { subir(op, uid) }.isFailure) break
-            hechas++
-        }
-        if (hechas > 0) cola.actualizar { it.drop(hechas) }
-        return ops.size - hechas
-    }
-
-    /** Descarga las carreras del servidor y las une con las pendientes. */
-    suspend fun descargar() {
-        val uid = userId() ?: return
-        sincronizar()
-        val filas = runCatching { backend.select("activities", mapOf("user_id" to uid), "start_time", descendente = true) }.getOrNull() ?: return
-        val tracks = runCatching { backend.select("activity_tracks", mapOf("user_id" to uid)) }.getOrDefault(emptyList())
-        val puntos = tracks.associate { t ->
-            t.texto("activity_id").orEmpty() to (t["points"]?.let { runCatching { jsonGacelas.decodeFromJsonElement(ListSerializer(PuntoGps.serializer()), it) }.getOrNull() } ?: emptyList())
-        }
-        val remotas = filas.map { carreraDesdeFila(it, puntos[it.texto("id")] ?: emptyList()) }
-        val ops = cola.flujo.first()
-        val nuevas = ops.mapNotNull { it.carrera }
-        val borradas = ops.filter { it.tipo == "eliminar" }.mapNotNull { it.id }.toSet()
-        cache.actualizar {
-            (nuevas + remotas.filter { r -> nuevas.none { it.id == r.id } }).filterNot { it.id in borradas }.sortedByDescending { it.inicioMs }
-        }
-    }
-
-    override suspend fun guardar(carrera: CarreraGuardada) {
-        cache.actualizar { lista -> listOf(carrera) + lista.filterNot { it.id == carrera.id } }
-        cola.actualizar { it.filterNot { o -> o.carrera?.id == carrera.id } + OperacionPendiente("guardar", carrera = carrera) }
-        if (sincronizar() > 0) alEncolar()
-    }
-
-    override suspend fun eliminar(id: String) {
-        cache.actualizar { lista -> lista.filterNot { it.id == id } }
-        cola.actualizar { it.filterNot { o -> o.carrera?.id == id } + OperacionPendiente("eliminar", id = id) }
-        if (sincronizar() > 0) alEncolar()
-    }
-}
+/* Carreras: com.gacelas.carreras.data.SupabaseCarrerasRepository (alias abajo). */
+typealias OperacionPendiente = com.gacelas.carreras.data.OperacionPendiente
+typealias SupabaseCarrerasRepository = com.gacelas.carreras.data.SupabaseCarrerasRepository
+fun filaDesdeCarrera(c: CarreraGuardada, userId: String): JsonObject = com.gacelas.carreras.data.filaDesdeCarrera(c, userId)
+fun carreraDesdeFila(f: JsonObject, puntos: List<PuntoGps>): CarreraGuardada = com.gacelas.carreras.data.carreraDesdeFila(f, puntos)
 
 /* ---------------- Rutas ---------------- */
 
