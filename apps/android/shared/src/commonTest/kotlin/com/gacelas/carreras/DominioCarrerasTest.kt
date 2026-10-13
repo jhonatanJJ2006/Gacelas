@@ -70,7 +70,7 @@ class DominioCarrerasTest {
         assertEquals(esperado, r)
     }
 
-    @Test fun sesionCompletaYGuardar() = runTest {
+        assertEquals(com.gacelas.carreras.domain.reglas.tituloPorHora(1_791_811_800_000L), c.titulo) // depende de la zona horaria del equipo
         var reloj = 0L
         val sesion = SesionCarrera(reloj = { reloj }, ahora = { 1_791_811_800_000L })
         sesion.iniciar()
