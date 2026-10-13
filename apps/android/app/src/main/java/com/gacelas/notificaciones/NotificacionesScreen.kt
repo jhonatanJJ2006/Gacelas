@@ -48,8 +48,8 @@ import com.gacelas.data.mock.MockData
 import com.gacelas.ui.ajustesState
 import com.gacelas.ui.contenedor
 import kotlinx.coroutines.launch
-import com.gacelas.data.mock.Notificacion
-import com.gacelas.data.mock.TipoNotificacion
+import com.gacelas.comunidad.domain.modelo.Notificacion
+import com.gacelas.comunidad.domain.modelo.TipoNotificacion
 import com.gacelas.ui.components.EncabezadoAtras
 import com.gacelas.ui.components.Pastilla
 import com.gacelas.ui.theme.GColors

@@ -1,47 +1,27 @@
-package com.gacelas.data.clubes
+package com.gacelas.comunidad.data
 
-import com.gacelas.shared.Fechas
-import kotlinx.datetime.plus
-
-import com.gacelas.shared.nuevoUuid
-import kotlin.concurrent.Volatile
-
-import com.gacelas.data.mock.Evento
 import com.gacelas.data.remoto.Backend
 import com.gacelas.data.remoto.ErrorRemoto
-import com.gacelas.data.remoto.eventoDesdeFila
+import com.gacelas.comunidad.data.eventoDesdeFila
+import com.gacelas.shared.Fechas
+import com.gacelas.shared.nuevoUuid
+import kotlin.concurrent.Volatile
+import kotlinx.datetime.plus
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
-
-enum class RolClub(val etiqueta: String) { owner("Fundador"), admin("Admin"), member("Miembro") }
-
-data class Club(val id: String, val nombre: String, val descripcion: String, val ubicacion: String, val conAprobacion: Boolean, val miembros: Int)
-data class MiembroClub(val usuarioId: String, val nombre: String, val rol: RolClub, val activo: Boolean)
-data class PostClub(val id: String, val usuarioId: String, val nombre: String, val texto: String)
-
-fun puedeGestionar(rol: RolClub?) = rol == RolClub.owner || rol == RolClub.admin
-
-/** Texto del boton principal segun mi relacion con el club (igual que la web). */
-fun accionClub(yo: MiembroClub?, conAprobacion: Boolean): String? = when {
-    yo == null -> if (conAprobacion) "Solicitar unirme" else "Unirme"
-    !yo.activo -> "Solicitud enviada"
-    yo.rol == RolClub.owner -> null
-    else -> "Salir del club"
-}
-
-fun validarClub(nombre: String, descripcion: String): String? = when {
-    nombre.trim().length < 3 -> "El nombre debe tener al menos 3 letras"
-    nombre.trim().length > 60 -> "El nombre es demasiado largo"
-    descripcion.length > 500 -> "La descripción es demasiado larga"
-    else -> null
-}
+import com.gacelas.comunidad.domain.modelo.*
+import com.gacelas.comunidad.domain.reglas.*
+import com.gacelas.comunidad.domain.repositorio.*
+import com.gacelas.data.remoto.*
 
 private fun JsonObject.texto(k: String) = (this[k] as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
+
 private fun JsonObject.numero(k: String) = (this[k] as? JsonPrimitive)?.takeUnless { it is JsonNull }?.let { it.doubleOrNull ?: it.contentOrNull?.toDoubleOrNull() }
+
 private fun s(v: String) = JsonPrimitive(v)
 
 fun clubDesdeFila(f: JsonObject) = Club(
@@ -118,41 +98,6 @@ class ClubesRepository(private val backend: Backend, val uid: suspend () -> Stri
             )
         }
     }.getOrDefault(emptyList())
-}
-
-data class EstadoEvento(val inscritos: Int, val enEspera: Int, val cupo: Int?, val miEstado: String?, val miPosicion: Int?)
-
-fun textoCupo(e: EstadoEvento): String {
-    val cupo = e.cupo ?: return "${e.inscritos} inscritos"
-    val libres = maxOf(cupo - e.inscritos, 0)
-    return if (libres > 0) "${e.inscritos}/$cupo · $libres ${if (libres == 1) "cupo libre" else "cupos libres"}" else "Lleno · ${e.enEspera} en espera"
-}
-
-data class CorredorEvento(
-    val usuarioId: String, val nombre: String, val distanciaM: Double, val segundos: Int,
-    val lat: Double?, val lng: Double?, val oculto: Boolean, val terminado: Boolean, val puntos: List<Pair<Double, Double>>,
-)
-
-fun clasificacion(c: List<CorredorEvento>) = c.sortedWith(compareByDescending<CorredorEvento> { it.distanciaM }.thenBy { it.segundos })
-
-fun posicionRepeticion(c: CorredorEvento, t: Float): Pair<Double, Double>? =
-    if (c.puntos.isEmpty()) null else c.puntos[minOf(c.puntos.lastIndex, (t * c.puntos.lastIndex).toInt())]
-
-data class DiaCalendario(val dia: Int, val delMes: Boolean, val eventos: List<Evento>, val inicioMs: Long)
-
-/** Semanas (lunes a domingo) del mes con los eventos de cada dia. */
-fun calendarioMes(anio: Int, mes: Int, eventos: List<Evento>, zona: kotlinx.datetime.TimeZone = kotlinx.datetime.TimeZone.currentSystemDefault()): List<List<DiaCalendario>> {
-    // mes base 0 (como Calendar.MONTH).
-    val porDia = eventos.filter { it.inicioMs != null }.groupBy { e -> Fechas.fecha(e.inicioMs!!, zona) }
-    var d = Fechas.lunes(kotlinx.datetime.LocalDate(anio, mes + 1, 1))
-    val semanas = mutableListOf<List<DiaCalendario>>()
-    do {
-        semanas += (0 until 7).map {
-            DiaCalendario(d.dayOfMonth, d.monthNumber == mes + 1, porDia[d].orEmpty(), Fechas.inicio(d, zona))
-                .also { d = d.plus(kotlinx.datetime.DatePeriod(days = 1)) }
-        }
-    } while (d.monthNumber == mes + 1)
-    return semanas
 }
 
 /** Club para el que se va a crear un evento (desde el detalle del club). */

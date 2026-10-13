@@ -1,6 +1,6 @@
 package com.gacelas.comunidad
 
-import com.gacelas.data.eventos.yaPaso
+import com.gacelas.comunidad.domain.reglas.yaPaso
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Sensors
@@ -65,9 +65,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.gacelas.correr.TrazadoRuta
-import com.gacelas.data.eventos.PestanaEventos
-import com.gacelas.data.eventos.filtrarEventos
-import com.gacelas.data.mock.Evento
+import com.gacelas.comunidad.domain.modelo.PestanaEventos
+import com.gacelas.comunidad.domain.reglas.filtrarEventos
+import com.gacelas.comunidad.domain.modelo.Evento
 import com.gacelas.data.mock.MockData
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearMs
@@ -241,7 +241,7 @@ fun EventosScreen(onEvento: (String) -> Unit, onClubes: () -> Unit = {}) {
     val scope = rememberCoroutineScope()
     val (eventos, inscritos) = eventosState()
     var pestana by rememberSaveable { mutableStateOf(PestanaEventos.Proximos) }
-    val clubId = remember { com.gacelas.data.clubes.EventoDeClub.id.also { com.gacelas.data.clubes.EventoDeClub.id = null } }
+    val clubId = remember { com.gacelas.comunidad.data.EventoDeClub.id.also { com.gacelas.comunidad.data.EventoDeClub.id = null } }
     var creando by remember { mutableStateOf(clubId != null) }
     var calendario by rememberSaveable { mutableStateOf(false) }
     val lista = filtrarEventos(eventos, pestana, inscritos)
@@ -361,7 +361,7 @@ fun DetalleEventoScreen(id: String, onAtras: () -> Unit, onEnVivo: () -> Unit = 
     val remoto by androidx.compose.runtime.produceState<Evento?>(null, id) { value = c.clubes?.evento(id) }
     val e = eventos.firstOrNull { it.id == id } ?: remoto ?: MockData.eventos.firstOrNull { it.id == id } ?: MockData.eventos.first()
     val inscrito = e.id in inscritos
-    var estado by remember { mutableStateOf<com.gacelas.data.clubes.EstadoEvento?>(null) }
+    var estado by remember { mutableStateOf<com.gacelas.comunidad.domain.modelo.EstadoEvento?>(null) }
     androidx.compose.runtime.LaunchedEffect(id, inscritos) { estado = c.clubes?.estadoEvento(id) }
     val participantes = estado?.let { e.participantes + it.inscritos } ?: (e.participantes + if (inscrito && !e.creadoPorUsuario) 1 else 0)
     val enEspera = estado?.miEstado == "waitlist"
@@ -405,7 +405,7 @@ fun DetalleEventoScreen(id: String, onAtras: () -> Unit, onEnVivo: () -> Unit = 
                 Text(e.descripcion, style = GType.bodyMd, color = GColors.TextSecondary)
                 androidx.compose.material3.TextButton(onClick = onEnVivo) { Icon(Icons.Filled.Sensors, null, tint = GColors.Danger); Text(if (e.yaPaso()) " Repetición del evento" else " Ver evento en vivo", color = GColors.Danger) }
                 Text("Participantes ($participantes)", style = GType.titleMd, color = GColors.TextPrimary)
-                estado?.let { Text(com.gacelas.data.clubes.textoCupo(it) + if (enEspera) " · estás en la lista de espera (puesto ${it.miPosicion})" else "", style = GType.bodySm, color = GColors.TextSecondary) }
+                estado?.let { Text(com.gacelas.comunidad.domain.reglas.textoCupo(it) + if (enEspera) " · estás en la lista de espera (puesto ${it.miPosicion})" else "", style = GType.bodySm, color = GColors.TextSecondary) }
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     repeat(minOf(participantes, 30)) { AvatarCirculo(36.dp, it) }
                 }

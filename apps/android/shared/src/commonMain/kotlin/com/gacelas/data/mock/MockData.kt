@@ -6,6 +6,7 @@ import com.gacelas.rutas.domain.modelo.Dificultad
 import com.gacelas.shared.fmt
 
 import kotlinx.serialization.Serializable
+import com.gacelas.comunidad.domain.modelo.*
 
 /** Datos de prueba tipados, equivalentes a apps/web/src/mocks/data.ts. Se reemplazaran por Supabase. */
 data class Usuario(val id: String, val nombre: String, val username: String)
@@ -22,33 +23,9 @@ data class Actividad(
     val comentarios: Int,
 )
 
-
-
-@Serializable
-data class Evento(
-    val id: String,
-    val titulo: String,
-    val descripcion: String,
-    val fecha: String,
-    val hora: String,
-    val ubicacion: String,
-    val participantes: Int,
-    val distanciaKm: Int,
-    val pasado: Boolean = false,
-    val creadoPorUsuario: Boolean = false,
-    val inicioMs: Long? = null,
-    val cupo: Int? = null,
-    val tipo: String = "grupal",
-    val clubId: String? = null,
-)
-
 data class Split(val id: Int, val distancia: Double, val ritmo: String, val tiempo: String, val etiqueta: String, val actual: Boolean = false)
 
 data class RutaSugerida(val id: String, val nombre: String, val distanciaKm: Double, val minutos: Int, val elevacionM: Int, val principal: Boolean)
-
-enum class TipoNotificacion { Like, Comentario, Seguidor, Evento, EnVivo, Racha }
-
-data class Notificacion(val id: String, val tipo: TipoNotificacion, val usuario: String, val mensaje: String, val tiempo: String, val leida: Boolean)
 
 object MockData {
     /** Identificador del usuario local para rutas propias. */

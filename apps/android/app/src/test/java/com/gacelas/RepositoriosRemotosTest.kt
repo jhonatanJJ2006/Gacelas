@@ -7,9 +7,9 @@ import com.gacelas.cuenta.domain.modelo.ResultadoAuth
 import com.gacelas.carreras.domain.modelo.Carrera
 import com.gacelas.carreras.domain.modelo.Parcial
 import com.gacelas.carreras.domain.modelo.PuntoGps
-import com.gacelas.data.mock.Evento
+import com.gacelas.comunidad.domain.modelo.Evento
 import com.gacelas.carreras.data.carreraDesdeFila
-import com.gacelas.data.remoto.eventoDesdeFila
+import com.gacelas.comunidad.data.eventoDesdeFila
 import com.gacelas.data.remoto.fila
 import com.gacelas.carreras.data.filaDesdeCarrera
 import com.gacelas.data.remoto.traducirError

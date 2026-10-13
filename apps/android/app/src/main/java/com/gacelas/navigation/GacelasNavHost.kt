@@ -25,7 +25,7 @@ import com.gacelas.correr.CarreraEnCursoScreen
 import com.gacelas.correr.CorrerScreen
 import com.gacelas.correr.CronometroScreen
 import com.gacelas.correr.ResumenPostCarreraScreen
-import com.gacelas.data.mock.TipoNotificacion
+import com.gacelas.comunidad.domain.modelo.TipoNotificacion
 import com.gacelas.inicio.InicioScreen
 import com.gacelas.notificaciones.NotificacionesScreen
 import com.gacelas.perfil.Avatar3DScreen
@@ -181,7 +181,7 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
     composable(Destinos.DETALLE_CLUB) { entry ->
         com.gacelas.comunidad.DetalleClubScreen(
             id = entry.arguments?.getString("id").orEmpty(), onAtras = { nav.popBackStack() },
-            onEvento = { nav.navigate(Destinos.detalleEvento(it)) }, onCrearEvento = { com.gacelas.data.clubes.EventoDeClub.id = it; nav.navigate(Destinos.EVENTOS) },
+            onEvento = { nav.navigate(Destinos.detalleEvento(it)) }, onCrearEvento = { com.gacelas.comunidad.data.EventoDeClub.id = it; nav.navigate(Destinos.EVENTOS) },
         )
     }
     composable(Destinos.EVENTO_EN_VIVO) { entry ->

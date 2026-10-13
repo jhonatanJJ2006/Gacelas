@@ -1,7 +1,7 @@
 package com.gacelas
 
-import com.gacelas.data.envivo.EnVivoRepository
-import com.gacelas.data.envivo.sesionDesdeFila
+import com.gacelas.comunidad.data.EnVivoRepository
+import com.gacelas.comunidad.data.sesionDesdeFila
 import com.gacelas.data.remoto.UsuarioRemoto
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json

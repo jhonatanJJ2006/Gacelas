@@ -1,8 +1,8 @@
 package com.gacelas
 
-import com.gacelas.data.eventos.PestanaEventos
-import com.gacelas.data.eventos.filtrarEventos
-import com.gacelas.data.eventos.yaPaso
+import com.gacelas.comunidad.domain.modelo.PestanaEventos
+import com.gacelas.comunidad.domain.reglas.filtrarEventos
+import com.gacelas.comunidad.domain.reglas.yaPaso
 import com.gacelas.data.mock.MockData
 import com.gacelas.tracking.Unidades
 import org.junit.Assert.assertEquals

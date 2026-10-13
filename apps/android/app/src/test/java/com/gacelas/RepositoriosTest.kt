@@ -7,8 +7,8 @@ import com.gacelas.cuenta.data.LocalAuthRepository
 import com.gacelas.cuenta.domain.modelo.ResultadoAuth
 import com.gacelas.carreras.domain.modelo.Carrera
 import com.gacelas.carreras.data.LocalCarrerasRepository
-import com.gacelas.data.eventos.LocalEventosRepository
-import com.gacelas.data.mock.Evento
+import com.gacelas.comunidad.data.LocalEventosRepository
+import com.gacelas.comunidad.domain.modelo.Evento
 import com.gacelas.rutas.data.LocalRutasRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
