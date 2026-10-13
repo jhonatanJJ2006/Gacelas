@@ -18,7 +18,11 @@ kotlin {
         compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
     }
     val xcf = XCFramework("Shared")
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach {
+    // En CI (-Pgacelas.ios.soloSimulador=true) solo se declara iosSimulatorArm64: evita configurar
+    // y compilar iosX64/iosArm64 cuando unicamente se prueba en el simulador Apple Silicon.
+    val soloSimulador = providers.gradleProperty("gacelas.ios.soloSimulador").orNull == "true"
+    val iosTargets = if (soloSimulador) listOf(iosSimulatorArm64()) else listOf(iosX64(), iosArm64(), iosSimulatorArm64())
+    iosTargets.forEach {
         it.binaries.framework {
             baseName = "Shared"
             isStatic = true
