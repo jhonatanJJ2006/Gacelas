@@ -25,6 +25,8 @@ import com.gacelas.core.sensores.SeguimientoSensores
 import com.gacelas.core.sensores.fuenteRumboNativa
 import com.gacelas.core.sensores.fuenteUbicacionNativa
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.firstOrNull
 import platform.Foundation.NSProcessInfo
 import platform.UIKit.UIViewController
 import androidx.compose.ui.unit.dp
@@ -51,9 +53,17 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                 argumento("--pantalla=ajustes") -> PantallaIos.Ajustes
                 argumento("--pantalla=detalle") -> PantallaIos.Detalle
                 argumento("--pantalla=rutas") -> PantallaIos.Rutas
+                argumento("--pantalla=registro") -> PantallaIos.Registro
+                argumento("--pantalla=recuperar") -> PantallaIos.Recuperar
                 else -> PantallaIos.Bienvenida
             },
         )
+    }
+    // Sesion guardada (Supabase o local): al abrir sin pantalla pedida, entra directo a Inicio como Android.
+    val sinPantalla = remember { NSProcessInfo.processInfo.arguments.none { (it as? String)?.startsWith("--") == true } }
+    LaunchedEffect(Unit) {
+        (com.gacelas.acceso.SesionIos.auth as? com.gacelas.data.remoto.SupabaseAuthRepository)?.let { runCatching { it.restaurar() } }
+        if (sinPantalla && pantalla == PantallaIos.Bienvenida && com.gacelas.acceso.SesionIos.auth.sesion.firstOrNull() != null) pantalla = PantallaIos.Inicio
     }
     if (!enSensores) {
         GacelasTheme {
@@ -61,11 +71,19 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                 PantallaIos.Bienvenida -> BienvenidaC4(
                     version = versionIos(),
                     onSaltar = { pantalla = PantallaIos.Inicio },
-                    onCrearCuenta = { pantalla = PantallaIos.Login },
+                    onCrearCuenta = { pantalla = PantallaIos.Registro },
                     onIniciarSesion = { pantalla = PantallaIos.Login },
-                    botonGoogle = { BotonGoogleVisual(onClick = {}, cargando = false, portada = true) },
+                    botonGoogle = { com.gacelas.acceso.BotonesSocialesIos({ pantalla = PantallaIos.Inicio }, portada = true) },
                 )
-                PantallaIos.Login -> LoginIos(onAtras = { pantalla = PantallaIos.Bienvenida })
+                PantallaIos.Login -> LoginIos(
+                    onAtras = { pantalla = PantallaIos.Bienvenida }, onEntrar = { pantalla = PantallaIos.Inicio },
+                    onRecuperar = { pantalla = PantallaIos.Recuperar }, onRegistro = { pantalla = PantallaIos.Registro },
+                )
+                PantallaIos.Registro -> RegistroIos(
+                    onAtras = { pantalla = PantallaIos.Bienvenida }, onCrear = { pantalla = PantallaIos.Inicio },
+                    onIniciarSesion = { pantalla = PantallaIos.Login },
+                )
+                PantallaIos.Recuperar -> RecuperarIos(onAtras = { pantalla = PantallaIos.Login })
                 PantallaIos.Inicio, PantallaIos.Rutas -> androidx.compose.foundation.layout.Box {
                     ScaffoldPrincipal(
                         if (pantalla == PantallaIos.Rutas) Destinos.RUTAS else Destinos.INICIO,
@@ -120,7 +138,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
     }
 }
 
-private enum class PantallaIos { Bienvenida, Login, Inicio, Carrera, Ajustes, Detalle, Rutas }
+private enum class PantallaIos { Bienvenida, Login, Registro, Recuperar, Inicio, Carrera, Ajustes, Detalle, Rutas }
 
 /** "Versión 0.7.0 (700)", mismo formato que textoVersion() de Android, desde el Info.plist. */
 private fun versionIos(): String {
@@ -135,16 +153,80 @@ private fun versionIos(): String {
  * por ahora valida el formulario con las mismas reglas que Android.
  */
 @Composable
-private fun LoginIos(onAtras: () -> Unit) {
+private fun LoginIos(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: () -> Unit, onRegistro: () -> Unit) {
+    val auth = com.gacelas.acceso.SesionIos.auth
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
+    var cargando by remember { mutableStateOf(false) }
     InicioSesionC4(
-        email = email, password = password, error = error, cargando = false,
+        email = email, password = password, error = error, cargando = cargando,
         onEmail = { email = it; error = null }, onPassword = { password = it; error = null },
-        onEntrar = { error = ValidacionAuth.email(email) ?: if (password.isEmpty()) "Ingresa tu contraseña" else "Iniciar sesión en iOS aún no está disponible" },
-        onAtras = onAtras, onRecuperar = {}, onRegistro = {},
-        botonGoogle = { BotonGoogleVisual(onClick = {}, cargando = false, portada = true, alto = 48.dp) },
+        onEntrar = {
+            if (!cargando) {
+                cargando = true
+                scope.launch {
+                    when (val r = auth.iniciarSesion(email, password)) {
+                        is com.gacelas.data.auth.ResultadoAuth.Ok -> onEntrar()
+                        is com.gacelas.data.auth.ResultadoAuth.Error -> error = r.mensaje
+                    }
+                    cargando = false
+                }
+            }
+        },
+        onAtras = onAtras, onRecuperar = onRecuperar, onRegistro = onRegistro,
+        botonGoogle = { com.gacelas.acceso.BotonesSocialesIos(onEntrar, portada = true, alto = 48.dp) },
+    )
+}
+
+/** Crear cuenta compartida (RegistroContenido) con la misma Auth que Android. */
+@Composable
+private fun RegistroIos(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: () -> Unit) {
+    val auth = com.gacelas.acceso.SesionIos.auth
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    var nombre by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
+    var cargando by remember { mutableStateOf(false) }
+    com.gacelas.acceso.RegistroContenido(
+        nombre = nombre, email = email, password = password, error = error, cargando = cargando,
+        onNombre = { nombre = it; error = null }, onEmail = { email = it; error = null }, onPassword = { password = it; error = null },
+        onCrear = {
+            cargando = true
+            scope.launch {
+                when (val r = auth.registrar(nombre, email, password)) {
+                    is com.gacelas.data.auth.ResultadoAuth.Ok -> onCrear()
+                    is com.gacelas.data.auth.ResultadoAuth.Error -> error = r.mensaje
+                }
+                cargando = false
+            }
+        },
+        onAtras = onAtras, onIniciarSesion = onIniciarSesion,
+        botonGoogle = { com.gacelas.acceso.BotonesSocialesIos(onCrear) },
+    )
+}
+
+/** Recuperar contraseña compartida (RecuperarContenido). */
+@Composable
+private fun RecuperarIos(onAtras: () -> Unit) {
+    val auth = com.gacelas.acceso.SesionIos.auth
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    var email by remember { mutableStateOf("") }
+    var enviado by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+    com.gacelas.acceso.RecuperarContenido(
+        email = email, enviado = enviado, error = error, onEmail = { email = it; error = null },
+        onEnviar = {
+            scope.launch {
+                when (val r = auth.recuperarContrasena(email)) {
+                    is com.gacelas.data.auth.ResultadoAuth.Ok -> enviado = true
+                    is com.gacelas.data.auth.ResultadoAuth.Error -> error = r.mensaje
+                }
+            }
+        },
+        onAtras = onAtras,
     )
 }
 
@@ -154,13 +236,14 @@ private fun LoginIos(onAtras: () -> Unit) {
  */
 @Composable
 private fun InicioIos(onCorrer: () -> Unit) {
+    val perfil by com.gacelas.acceso.SesionIos.auth.sesion.collectAsState(null)
     val ahora = remember { ahoraMs() }
     val evento = remember {
         MockData.eventos.firstOrNull { !it.yaPaso(ahora) } ?: MockData.eventos.maxBy { it.inicioMs ?: 0L }
     }
     com.gacelas.inicio.InicioContenido(
         saludo = com.gacelas.inicio.saludoPorHora(Fechas.hora(ahora)),
-        nombre = "Corredor",
+        nombre = perfil?.nombre?.substringBefore(' ')?.ifBlank { null } ?: "Corredor",
         semana = remember { com.gacelas.data.carreras.Estadisticas.semana(emptyList(), ahora) },
         hoy = Fechas.diaSemana(ahora),
         m = true,
@@ -217,6 +300,7 @@ private fun fechaLarga(ms: Long): String = platform.Foundation.NSDateFormatter()
 /** Ajustes compartidos; guardados en memoria hasta conectar DataStore/sesion en iOS. */
 @Composable
 private fun AjustesIos(onAtras: () -> Unit, onCerrarSesion: () -> Unit) {
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
     var a by remember { mutableStateOf(com.gacelas.data.ajustes.Ajustes()) }
     com.gacelas.ajustes.AjustesContenido(
         a = a, version = versionIos(), guardar = { t -> a = t(a) },
@@ -226,7 +310,7 @@ private fun AjustesIos(onAtras: () -> Unit, onCerrarSesion: () -> Unit) {
                 platform.UIKit.UIApplication.sharedApplication.openURL(it)
             }
         },
-        onCerrarSesion = onCerrarSesion,
+        onCerrarSesion = { scope.launch { com.gacelas.acceso.SesionIos.auth.cerrarSesion(); onCerrarSesion() } },
         // Igual que MapaOfflineAjuste en Android: estado real de la descarga de Loja.
         mapaOffline = {
             val estado by com.gacelas.mapa.MapaOfflineIos.estado.collectAsState()

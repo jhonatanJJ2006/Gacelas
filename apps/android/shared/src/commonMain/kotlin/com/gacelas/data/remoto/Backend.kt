@@ -35,6 +35,9 @@ interface Backend {
     suspend fun registrar(email: String, password: String, datos: JsonObject): UsuarioRemoto?
     suspend fun recuperarContrasena(email: String)
     suspend fun entrarConIdTokenGoogle(idToken: String, nonce: String?): UsuarioRemoto
+    /** Sign in with Apple (iOS): ID token de AuthenticationServices con el nonce original. */
+    suspend fun entrarConIdTokenApple(idToken: String, nonce: String?): UsuarioRemoto =
+        throw ErrorRemoto("El inicio con Apple no está disponible")
     suspend fun salir()
 
     suspend fun select(tabla: String, filtros: Map<String, String>, ordenarPor: String? = null, descendente: Boolean = false): List<JsonObject>
@@ -120,6 +123,15 @@ class SupabaseBackend(url: String, clave: String) : Backend {
             this.nonce = nonce
         }
         aUsuario(cliente.auth.currentUserOrNull() ?: throw ErrorRemoto("No se pudo iniciar sesión con Google"))
+    }
+
+    override suspend fun entrarConIdTokenApple(idToken: String, nonce: String?) = remoto {
+        cliente.auth.signInWith(IDToken) {
+            this.idToken = idToken
+            provider = io.github.jan.supabase.auth.providers.Apple
+            this.nonce = nonce
+        }
+        aUsuario(cliente.auth.currentUserOrNull() ?: throw ErrorRemoto("No se pudo iniciar sesión con Apple"))
     }
 
     override suspend fun salir() = remoto { cliente.auth.signOut() }

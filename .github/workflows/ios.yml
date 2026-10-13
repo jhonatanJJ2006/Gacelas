@@ -33,6 +33,27 @@ jobs:
         run: ./gradlew :shared:iosSimulatorArm64Test --no-daemon
       - name: Xcode 16
         run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)" && xcodebuild -version
+      - name: Claves de build (secrets, nunca en el repo)
+        working-directory: ${{ env.IOS_DIR }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+          GOOGLE_IOS_CLIENT_ID: ${{ secrets.GOOGLE_IOS_CLIENT_ID }}
+        run: |
+          # En xcconfig "//" es comentario: https:// se escribe https:/$()/
+          ESQUEMA=""
+          if [ -n "$GOOGLE_IOS_CLIENT_ID" ]; then ESQUEMA="com.googleusercontent.apps.${GOOGLE_IOS_CLIENT_ID%.apps.googleusercontent.com}"; fi
+          {
+            echo "SUPABASE_URL = ${SUPABASE_URL//\/\//\/\$()\/}"
+            echo "SUPABASE_ANON_KEY = $SUPABASE_ANON_KEY"
+            echo "GOOGLE_WEB_CLIENT_ID = $GOOGLE_WEB_CLIENT_ID"
+            echo "GOOGLE_IOS_CLIENT_ID = $GOOGLE_IOS_CLIENT_ID"
+            if [ -n "$ESQUEMA" ]; then echo "GOOGLE_IOS_URL_SCHEME = $ESQUEMA"; fi
+          } > Secrets.xcconfig
+          for k in SUPABASE_URL SUPABASE_ANON_KEY GOOGLE_WEB_CLIENT_ID GOOGLE_IOS_CLIENT_ID; do
+            if [ -z "${!k}" ]; then echo "::warning::Falta el secret $k: el build iOS usa cuentas locales / sin Google"; fi
+          done
       - name: Generar proyecto Xcode
         working-directory: ${{ env.IOS_DIR }}
         run: brew install xcodegen && xcodegen generate
@@ -59,6 +80,14 @@ jobs:
           xcrun simctl launch "$UDID" com.gacelas.app --pantalla=login
           sleep 8
           xcrun simctl io "$UDID" screenshot shots/login.png
+          xcrun simctl terminate "$UDID" com.gacelas.app || true
+          xcrun simctl launch "$UDID" com.gacelas.app --pantalla=registro
+          sleep 8
+          xcrun simctl io "$UDID" screenshot shots/registro.png
+          xcrun simctl terminate "$UDID" com.gacelas.app || true
+          xcrun simctl launch "$UDID" com.gacelas.app --pantalla=recuperar
+          sleep 8
+          xcrun simctl io "$UDID" screenshot shots/recuperar.png
           xcrun simctl terminate "$UDID" com.gacelas.app || true
           xcrun simctl launch "$UDID" com.gacelas.app --pantalla=inicio
           sleep 8

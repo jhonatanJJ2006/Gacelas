@@ -50,6 +50,8 @@ kotlin {
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            // DataStore en iOS (createWithPath) usa rutas okio.
+            implementation("com.squareup.okio:okio:3.9.1")
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
