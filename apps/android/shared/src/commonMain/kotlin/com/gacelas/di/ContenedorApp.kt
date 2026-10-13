@@ -144,11 +144,11 @@ class ContenedorApp(
     fun detalleRutaViewModel(id: String) = DetalleRutaViewModel(id, explorar)
     fun eventosViewModel() = EventosViewModel(eventos)
     fun clubesViewModel() = ClubesViewModel(clubes)
-    fun feedViewModel() = com.gacelas.comunidad.presentation.FeedViewModel(carreras, auth, ajustes)
+    fun feedViewModel(ajustesRepo: AjustesRepository = ajustes) = com.gacelas.comunidad.presentation.FeedViewModel(carreras, auth, ajustesRepo)
     fun detalleEventoViewModel(id: String) = com.gacelas.comunidad.presentation.DetalleEventoViewModel(id, eventos, clubes)
     fun detalleClubViewModel(id: String) = com.gacelas.comunidad.presentation.DetalleClubViewModel(id, clubes)
     fun eventoEnVivoViewModel(id: String) = com.gacelas.comunidad.presentation.EventoEnVivoViewModel(id, clubes, enVivo)
     fun listaEnVivoViewModel() = com.gacelas.comunidad.presentation.ListaEnVivoViewModel(enVivo)
     fun detalleEnVivoViewModel(id: String) = com.gacelas.comunidad.presentation.DetalleEnVivoViewModel(id, enVivo)
-    fun notificacionesViewModel(ejemplo: List<Notificacion>) = NotificacionesViewModel(notificaciones, ajustes, ejemplo)
+    fun notificacionesViewModel(ejemplo: List<Notificacion>, ajustesRepo: AjustesRepository = ajustes) = NotificacionesViewModel(notificaciones, ajustesRepo, ejemplo)
 }

@@ -55,6 +55,12 @@ case "$GRUPO" in
     # Etapa 4: mapa MapLibre de rutas y estado de la descarga offline de Loja.
     shot rutas-mapa 20 --pantalla=rutas --ver-mapa
     shot ajustes-mapa-offline 45 --pantalla=ajustes ;;
+  comunidad)
+    # Pantallas de comunidad compartidas; sin servidor como las capturas Android (Robolectric).
+    for r in comunidad comunidad/eventos comunidad/eventos/1 notificaciones comunidad/clubes comunidad/clubes/1 \
+             comunidad/eventos/1/en-vivo comunidad/en-vivo comunidad/en-vivo/1; do
+      SIMCTL_CHILD_TZ=America/Guayaquil shot "comunidad-${r//\//_}" 8 --ruta=$r --sin-servidor
+    done ;;
   sensores)
     # Etapa 3: ubicacion simulada (Loja, ~3.3 m/s) y pantalla de sensores.
     ubicacion
