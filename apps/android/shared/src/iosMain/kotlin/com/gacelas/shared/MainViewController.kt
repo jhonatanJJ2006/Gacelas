@@ -330,12 +330,12 @@ private fun AjustesIos(onAtras: () -> Unit, onCerrarSesion: () -> Unit) {
 /** Lista de rutas compartida con las rutas de ejemplo (las remotas llegan con la sesion). */
 @Composable
 private fun RutasIos() {
-    var pestana by remember { mutableStateOf(com.gacelas.data.rutas.PestanaRutas.Explorar) }
+    var pestana by remember { mutableStateOf(com.gacelas.rutas.domain.modelo.PestanaRutas.Explorar) }
     var consulta by remember { mutableStateOf("") }
-    var filtros by remember { mutableStateOf(com.gacelas.data.rutas.FiltrosRuta()) }
+    var filtros by remember { mutableStateOf(com.gacelas.rutas.domain.modelo.FiltrosRuta()) }
     var guardadas by remember { mutableStateOf(emptySet<String>()) }
-    val lista = com.gacelas.data.rutas.aplicarFiltros(
-        com.gacelas.data.rutas.filtrarRutas(MockData.rutas, pestana, guardadas, MockData.ID_USUARIO, consulta), filtros,
+    val lista = com.gacelas.rutas.domain.reglas.aplicarFiltros(
+        com.gacelas.rutas.domain.reglas.filtrarRutas(MockData.rutas, pestana, guardadas, MockData.ID_USUARIO, consulta), filtros,
     )
     com.gacelas.rutas.ListaRutasContenido(
         lista = lista, pestana = pestana, onPestana = { pestana = it }, guardadas = guardadas,

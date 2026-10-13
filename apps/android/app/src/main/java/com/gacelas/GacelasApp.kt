@@ -13,15 +13,15 @@ import com.gacelas.carreras.domain.repositorio.CarrerasRepository
 import com.gacelas.carreras.data.LocalCarrerasRepository
 import com.gacelas.data.eventos.EventosRepository
 import com.gacelas.data.eventos.LocalEventosRepository
-import com.gacelas.data.rutas.LocalRutasRepository
-import com.gacelas.data.rutas.RutasRepository
+import com.gacelas.rutas.data.LocalRutasRepository
+import com.gacelas.rutas.domain.repositorio.RutasRepository
 import com.gacelas.data.remoto.Backend
 import com.gacelas.data.remoto.SupabaseAjustesRepository
 import com.gacelas.data.remoto.SupabaseAuthRepository
 import com.gacelas.data.remoto.SupabaseBackend
 import com.gacelas.carreras.data.SupabaseCarrerasRepository
 import com.gacelas.data.remoto.SupabaseEventosRepository
-import com.gacelas.data.remoto.SupabaseRutasRepository
+import com.gacelas.rutas.data.SupabaseRutasRepository
 import com.gacelas.carreras.domain.SesionCarrera
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,14 +46,14 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null, progra
     /** Notificaciones reales; null sin servidor (se muestran las de ejemplo). */
     val notificaciones: com.gacelas.data.notificaciones.NotificacionesRepository?
     /** Rutas de la comunidad (Fase 4); null sin servidor. */
-    val explorar: com.gacelas.data.rutas.ExplorarRepository?
+    val explorar: com.gacelas.rutas.data.ExplorarRepository?
     /** Clubes y eventos de Fase 5; null sin servidor. */
     val clubes: com.gacelas.data.clubes.ClubesRepository?
 
     /** Descarga los datos de la cuenta y sube lo pendiente. No hace nada sin servidor. */
     val sincronizar: suspend () -> Unit
     /** Rutas guardadas en el celular y cambios pendientes. */
-    val rutasOffline = com.gacelas.data.rutas.RutasOffline(store)
+    val rutasOffline = com.gacelas.rutas.data.RutasOffline(store)
     /** Aviso de version nueva (manifiesto publico en Supabase Storage); null en pruebas o sin servidor. */
     val actualizacion: com.gacelas.data.actualizacion.ActualizacionRepository? =
         (if (android.os.Build.FINGERPRINT == "robolectric") null else com.gacelas.data.actualizacion.ReglasActualizacion.urlManifiesto(BuildConfig.SUPABASE_URL))
@@ -91,7 +91,7 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null, progra
             sincronizar = { remotoAuth.restaurar() }
             enVivo = com.gacelas.data.envivo.EnVivoRepository(backend, uid)
             notificaciones = com.gacelas.data.notificaciones.NotificacionesRepository(backend, uid)
-            val ex = com.gacelas.data.rutas.ExplorarRepository(backend, rutasOffline, programarSincronizacion, uid)
+            val ex = com.gacelas.rutas.data.ExplorarRepository(backend, rutasOffline, programarSincronizacion, uid)
             explorar = ex
             subirPendientes = { c.sincronizar() + ex.subirPendientes() }
             clubes = com.gacelas.data.clubes.ClubesRepository(backend, uid)

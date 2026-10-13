@@ -54,10 +54,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.gacelas.data.mock.Dificultad
-import com.gacelas.data.mock.Ruta
-import com.gacelas.data.rutas.FiltrosRuta
-import com.gacelas.data.rutas.PestanaRutas
+import com.gacelas.rutas.domain.modelo.Dificultad
+import com.gacelas.rutas.domain.modelo.Ruta
+import com.gacelas.rutas.domain.modelo.FiltrosRuta
+import com.gacelas.rutas.domain.modelo.PestanaRutas
 import com.gacelas.tracking.Unidades
 import com.gacelas.ui.components.CampoTexto
 import com.gacelas.ui.components.Pantalla
@@ -111,11 +111,11 @@ fun ListaRutasContenido(
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Pastilla("Cerca de mí", cerca != null, onCerca)
             Pastilla("Toda dificultad", filtros.dificultad == null, { onFiltros(filtros.copy(dificultad = null)) })
-            com.gacelas.data.mock.Dificultad.entries.forEach { d -> Pastilla(d.etiqueta, filtros.dificultad == d, { onFiltros(filtros.copy(dificultad = d)) }) }
+            com.gacelas.rutas.domain.modelo.Dificultad.entries.forEach { d -> Pastilla(d.etiqueta, filtros.dificultad == d, { onFiltros(filtros.copy(dificultad = d)) }) }
         }
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            com.gacelas.data.rutas.FiltroDistancia.entries.forEach { d -> Pastilla(d.etiqueta, filtros.distancia == d, { onFiltros(filtros.copy(distancia = d)) }) }
-            com.gacelas.data.rutas.ETIQUETAS_RUTA.forEach { (k, v) -> Pastilla("#$v", filtros.etiqueta == k, { onFiltros(filtros.copy(etiqueta = if (filtros.etiqueta == k) null else k)) }) }
+            com.gacelas.rutas.domain.modelo.FiltroDistancia.entries.forEach { d -> Pastilla(d.etiqueta, filtros.distancia == d, { onFiltros(filtros.copy(distancia = d)) }) }
+            com.gacelas.rutas.domain.modelo.ETIQUETAS_RUTA.forEach { (k, v) -> Pastilla("#$v", filtros.etiqueta == k, { onFiltros(filtros.copy(etiqueta = if (filtros.etiqueta == k) null else k)) }) }
         }
         if (lista.isEmpty()) {
             Tarjeta {

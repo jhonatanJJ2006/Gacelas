@@ -3,11 +3,11 @@ package com.gacelas
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.work.NetworkType
 import com.gacelas.core.sync.Sincronizacion
-import com.gacelas.data.mock.Dificultad
-import com.gacelas.data.mock.Ruta
-import com.gacelas.data.rutas.Guia
-import com.gacelas.data.rutas.OperacionRuta
-import com.gacelas.data.rutas.RutasOffline
+import com.gacelas.rutas.domain.modelo.Dificultad
+import com.gacelas.rutas.domain.modelo.Ruta
+import com.gacelas.rutas.domain.reglas.Guia
+import com.gacelas.rutas.data.OperacionRuta
+import com.gacelas.rutas.data.RutasOffline
 import com.gacelas.rutas.rutasNavegables
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

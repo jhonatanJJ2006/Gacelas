@@ -19,8 +19,8 @@ import com.gacelas.correr.RelojCarrera
 import com.gacelas.correr.descartarCarrera
 import com.gacelas.correr.empezarCarrera
 import com.gacelas.correr.terminarCarrera
-import com.gacelas.data.rutas.PestanaRutas
-import com.gacelas.data.rutas.filtrarRutas
+import com.gacelas.rutas.domain.modelo.PestanaRutas
+import com.gacelas.rutas.domain.reglas.filtrarRutas
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearMs
 import com.gacelas.tracking.formatearRitmo
@@ -73,7 +73,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.gacelas.data.mock.Dificultad
+import com.gacelas.rutas.domain.modelo.Dificultad
 import com.gacelas.data.mock.MockData
 import com.gacelas.ui.components.BotonPrimario
 import com.gacelas.ui.components.CampoTexto
@@ -98,35 +98,30 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
     val c = contenedor()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val guardadas by c.rutas.guardadas.collectAsState(initial = emptySet())
+    val repo = c.explorar
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.rutas.presentation.ListaRutasViewModel(repo, c.rutas, MockData.ID_USUARIO, MockData.rutas) }
+    val guardadas by vm.guardadas.collectAsState()
     val ajustes by ajustesState()
     val m = ajustes.unidadesMetricas
-    var pestana by rememberSaveable { mutableStateOf(PestanaRutas.Explorar) }
-    var consulta by rememberSaveable { mutableStateOf("") }
-    val repo = c.explorar
-    val remotas by (repo?.rutas ?: remember { kotlinx.coroutines.flow.MutableStateFlow(null) }).collectAsState()
-    LaunchedEffect(repo) { repo?.refrescar() }
-    var filtros by remember { mutableStateOf(com.gacelas.data.rutas.FiltrosRuta()) }
-    var cerca by remember { mutableStateOf<Map<String, Double>?>(null) }
-    val filtradas = com.gacelas.data.rutas.aplicarFiltros(filtrarRutas(remotas ?: MockData.rutas, pestana, guardadas, MockData.ID_USUARIO, consulta), filtros)
-    val lista = cerca?.let { com.gacelas.data.rutas.ordenarPorCercania(filtradas, it) } ?: filtradas
+    val q by vm.consulta.collectAsState()
+    val lista by vm.lista.collectAsState()
     val perfilSesion by com.gacelas.ui.sesionState()
     ListaRutasContenido(
-        lista = lista, pestana = pestana, onPestana = { pestana = it }, guardadas = guardadas,
-        consulta = consulta, onConsulta = { consulta = it }, filtros = filtros, onFiltros = { filtros = it },
-        cerca = cerca,
+        lista = lista, pestana = q.pestana, onPestana = vm::pestana, guardadas = guardadas,
+        consulta = q.texto, onConsulta = vm::buscar, filtros = q.filtros, onFiltros = vm::filtrar,
+        cerca = q.cerca,
         onCerca = {
-            if (cerca != null) cerca = null
+            if (q.cerca != null) vm.quitarCercania()
             else {
                 val u = ultimaUbicacion(context)
                 if (u == null || repo == null) context.aviso("Activa la ubicación para ver rutas cercanas")
-                else scope.launch { cerca = repo.cercanas(u.first, u.second) }
+                else vm.ordenarCerca(u.first, u.second)
             }
         },
         m = m, puedeDibujar = repo != null && perfilSesion != null,
         onBuscar = onBuscar, onRuta = onRuta, onDibujar = onDibujar,
         onAlternarGuardada = { id, guardada ->
-            scope.launch { c.rutas.alternarGuardada(id) }
+            vm.alternarGuardada(id)
             context.aviso(if (guardada) "Ruta quitada de guardadas" else "Ruta guardada")
         },
         mapaRutas = { MapaRutasAgrupadas(lista, onRuta, it) },
@@ -141,9 +136,9 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
     val locales by c.rutasOffline.rutas.collectAsState(initial = emptyList())
     val guardadas by c.rutas.guardadas.collectAsState(initial = emptySet())
     LaunchedEffect(Unit) { c.explorar?.refrescar() }
-    val elegida = remember { com.gacelas.data.rutas.RutaActiva.id }
+    val elegida = remember { com.gacelas.rutas.data.RutaActiva.id }
     val todas = remember(remotas, locales, guardadas) { rutasNavegables(remotas, locales, guardadas, elegida) }
-    var seleccion by rememberSaveable { mutableStateOf(elegida ?: com.gacelas.data.rutas.RutaActiva.navegarId ?: "primary") }
+    var seleccion by rememberSaveable { mutableStateOf(elegida ?: com.gacelas.rutas.data.RutaActiva.navegarId ?: "primary") }
     val sugeridas = todas.filter { consulta.isBlank() || it.nombre.contains(consulta.trim(), ignoreCase = true) }.take(8)
     val trazoSeleccion = todas.firstOrNull { it.id == seleccion }?.trazo.orEmpty().map { org.maplibre.android.geometry.LatLng(it.first, it.second) }
     Box(Modifier.fillMaxSize().background(Color(0xFF090F1A))) {
@@ -183,9 +178,9 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
             }
             BotonPrimario("Comenzar navegación", {
                 val r = todas.firstOrNull { it.id == seleccion }
-                com.gacelas.data.rutas.RutaActiva.navegarId = r?.id
+                com.gacelas.rutas.data.RutaActiva.navegarId = r?.id
                 // Solo las rutas reales de la comunidad registran la corrida al guardar.
-                com.gacelas.data.rutas.RutaActiva.id = r?.id?.takeIf { r.real }
+                com.gacelas.rutas.data.RutaActiva.id = r?.id?.takeIf { r.real }
                 onNavegar()
             }, icono = Icons.Filled.Navigation, enabled = sugeridas.any { it.id == seleccion })
         }
@@ -211,13 +206,13 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: (conCarrera: Boolea
     val remotas by (c.explorar?.rutas ?: remember { kotlinx.coroutines.flow.MutableStateFlow(null) }).collectAsState()
     val locales by c.rutasOffline.rutas.collectAsState(initial = emptyList())
     val guardadas by c.rutas.guardadas.collectAsState(initial = emptySet())
-    val idRuta = rememberSaveable { com.gacelas.data.rutas.RutaActiva.navegarId ?: "primary" }
+    val idRuta = rememberSaveable { com.gacelas.rutas.data.RutaActiva.navegarId ?: "primary" }
     val ruta = remember(remotas, locales, guardadas) { rutasNavegables(remotas, locales, guardadas).firstOrNull { it.id == idRuta } }
     val trazo = ruta?.trazo.orEmpty()
     val plan = remember(trazo) { trazo.map { org.maplibre.android.geometry.LatLng(it.first, it.second) } }
     val ultimo = estado.puntos.lastOrNull()
-    val guia = remember(trazo, ultimo) { com.gacelas.data.rutas.Guia.calcular(trazo, ultimo?.let { it.lat to it.lng }) }
-    val fueraDeRuta = guia != null && ultimo != null && guia.desvioM > com.gacelas.data.rutas.Guia.DESVIO_M
+    val guia = remember(trazo, ultimo) { com.gacelas.rutas.domain.reglas.Guia.calcular(trazo, ultimo?.let { it.lat to it.lng }) }
+    val fueraDeRuta = guia != null && ultimo != null && guia.desvioM > com.gacelas.rutas.domain.reglas.Guia.DESVIO_M
     Box(Modifier.fillMaxSize().background(Color(0xFF090F1A))) {
         val clip = MapaMat.clipPorRitmo(estado.ritmoActualSegKm)
         if (Mapas.configurado()) {

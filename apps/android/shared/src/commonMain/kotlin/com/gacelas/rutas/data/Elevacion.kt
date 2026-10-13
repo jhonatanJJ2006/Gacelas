@@ -1,4 +1,4 @@
-package com.gacelas.data.rutas
+package com.gacelas.rutas.data
 
 import com.gacelas.shared.fmt
 import com.gacelas.shared.rad

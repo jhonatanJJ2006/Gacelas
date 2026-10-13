@@ -1,8 +1,8 @@
 package com.gacelas.rutas
 
 import com.gacelas.data.mock.MockData
-import com.gacelas.data.mock.Ruta
-import com.gacelas.data.rutas.Guia
+import com.gacelas.rutas.domain.modelo.Ruta
+import com.gacelas.rutas.domain.reglas.Guia
 import com.gacelas.ui.components.Mapas
 
 /** Ruta lista para navegar: con su trazo completo (sale de la copia local, sin red). */

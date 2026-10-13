@@ -244,7 +244,7 @@ private fun ControlesMapaIos(vista: UIView?, rumbo: Float, modifier: Modifier) {
 
 /** Salidas de las rutas como circulos tocables (MapaRutasAgrupadas en Android). */
 @Composable
-fun MapaRutasAgrupadasIos(rutas: List<com.gacelas.data.mock.Ruta>, onRuta: (String) -> Unit, modifier: Modifier = Modifier) {
+fun MapaRutasAgrupadasIos(rutas: List<com.gacelas.rutas.domain.modelo.Ruta>, onRuta: (String) -> Unit, modifier: Modifier = Modifier) {
     if (!MapaIos.disponible()) {
         Text("El mapa no está disponible en este dispositivo.", style = GType.bodyMd, color = com.gacelas.ui.theme.GColors.TextSecondary)
         return

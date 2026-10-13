@@ -1,4 +1,4 @@
-package com.gacelas.data.rutas
+package com.gacelas.rutas.data
 
 /** Trazos (lat, lng) de las rutas de ejemplo; Android los dibuja con MapLibre (Mapas.trazos) y la portada C4 mide el "1". */
 object TrazosRutas {

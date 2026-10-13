@@ -29,10 +29,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.gacelas.data.mock.Dificultad
-import com.gacelas.data.mock.Ruta
-import com.gacelas.data.rutas.ETIQUETAS_RUTA
-import com.gacelas.data.rutas.Elevacion
+import com.gacelas.rutas.domain.modelo.Dificultad
+import com.gacelas.rutas.domain.modelo.Ruta
+import com.gacelas.rutas.domain.modelo.ETIQUETAS_RUTA
+import com.gacelas.rutas.data.Elevacion
 import com.gacelas.ui.components.BotonPrimario
 import com.gacelas.ui.components.CampoTexto
 import com.gacelas.ui.components.EncabezadoAtras

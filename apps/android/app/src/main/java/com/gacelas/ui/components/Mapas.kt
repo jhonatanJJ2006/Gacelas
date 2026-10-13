@@ -28,7 +28,7 @@ object Mapas {
     fun configurado(): Boolean = android.os.Build.FINGERPRINT != "robolectric"
 
     val trazos: Map<String, List<LatLng>> =
-        com.gacelas.data.rutas.TrazosRutas.puntos.mapValues { (_, p) -> p.map { (lat, lng) -> LatLng(lat, lng) } }
+        com.gacelas.rutas.data.TrazosRutas.puntos.mapValues { (_, p) -> p.map { (lat, lng) -> LatLng(lat, lng) } }
 
     fun trazo(id: String?): List<LatLng> = id?.removePrefix("ruta-")?.let { trazos[it] } ?: emptyList()
 }

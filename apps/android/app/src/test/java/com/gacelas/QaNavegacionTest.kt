@@ -1,7 +1,7 @@
 package com.gacelas
 
 import com.gacelas.data.mock.MockData
-import com.gacelas.data.rutas.Guia
+import com.gacelas.rutas.domain.reglas.Guia
 import com.gacelas.rutas.rutasNavegables
 import com.gacelas.ui.components.Mapas
 import org.junit.Assert.assertEquals
