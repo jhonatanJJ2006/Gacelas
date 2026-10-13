@@ -149,83 +149,46 @@ private fun versionIos(): String {
 }
 
 /**
- * Login C4 compartido. La sesion real (Supabase) y Google/Apple en iOS llegan en su etapa;
- * por ahora valida el formulario con las mismas reglas que Android.
+ * Login C4 compartido con el mismo LoginViewModel que Android (Supabase o cuentas locales).
  */
 @Composable
 private fun LoginIos(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: () -> Unit, onRegistro: () -> Unit) {
     val auth = com.gacelas.acceso.SesionIos.auth
-    val scope = androidx.compose.runtime.rememberCoroutineScope()
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var error by remember { mutableStateOf<String?>(null) }
-    var cargando by remember { mutableStateOf(false) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.cuenta.presentation.LoginViewModel(auth) }
+    val e by vm.estado.collectAsState()
     InicioSesionC4(
-        email = email, password = password, error = error, cargando = cargando,
-        onEmail = { email = it; error = null }, onPassword = { password = it; error = null },
-        onEntrar = {
-            if (!cargando) {
-                cargando = true
-                scope.launch {
-                    when (val r = auth.iniciarSesion(email, password)) {
-                        is com.gacelas.cuenta.domain.modelo.ResultadoAuth.Ok -> onEntrar()
-                        is com.gacelas.cuenta.domain.modelo.ResultadoAuth.Error -> error = r.mensaje
-                    }
-                    cargando = false
-                }
-            }
-        },
+        email = e.email, password = e.password, error = e.error, cargando = e.cargando,
+        onEmail = vm::email, onPassword = vm::password,
+        onEntrar = { vm.entrar { onEntrar() } },
         onAtras = onAtras, onRecuperar = onRecuperar, onRegistro = onRegistro,
         botonGoogle = { com.gacelas.acceso.BotonesSocialesIos(onEntrar, portada = true, alto = 48.dp) },
     )
 }
 
-/** Crear cuenta compartida (RegistroContenido) con la misma Auth que Android. */
+/** Crear cuenta compartida (RegistroContenido) con el mismo RegistroViewModel que Android. */
 @Composable
 private fun RegistroIos(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: () -> Unit) {
     val auth = com.gacelas.acceso.SesionIos.auth
-    val scope = androidx.compose.runtime.rememberCoroutineScope()
-    var nombre by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var error by remember { mutableStateOf<String?>(null) }
-    var cargando by remember { mutableStateOf(false) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.cuenta.presentation.RegistroViewModel(auth) }
+    val e by vm.estado.collectAsState()
     com.gacelas.acceso.RegistroContenido(
-        nombre = nombre, email = email, password = password, error = error, cargando = cargando,
-        onNombre = { nombre = it; error = null }, onEmail = { email = it; error = null }, onPassword = { password = it; error = null },
-        onCrear = {
-            cargando = true
-            scope.launch {
-                when (val r = auth.registrar(nombre, email, password)) {
-                    is com.gacelas.cuenta.domain.modelo.ResultadoAuth.Ok -> onCrear()
-                    is com.gacelas.cuenta.domain.modelo.ResultadoAuth.Error -> error = r.mensaje
-                }
-                cargando = false
-            }
-        },
+        nombre = e.nombre, email = e.email, password = e.password, error = e.error, cargando = e.cargando,
+        onNombre = vm::nombre, onEmail = vm::email, onPassword = vm::password,
+        onCrear = { vm.crear { onCrear() } },
         onAtras = onAtras, onIniciarSesion = onIniciarSesion,
         botonGoogle = { com.gacelas.acceso.BotonesSocialesIos(onCrear) },
     )
 }
 
-/** Recuperar contraseña compartida (RecuperarContenido). */
+/** Recuperar contraseña compartida (RecuperarContenido) con RecuperarViewModel. */
 @Composable
 private fun RecuperarIos(onAtras: () -> Unit) {
     val auth = com.gacelas.acceso.SesionIos.auth
-    val scope = androidx.compose.runtime.rememberCoroutineScope()
-    var email by remember { mutableStateOf("") }
-    var enviado by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.cuenta.presentation.RecuperarViewModel(auth) }
+    val e by vm.estado.collectAsState()
     com.gacelas.acceso.RecuperarContenido(
-        email = email, enviado = enviado, error = error, onEmail = { email = it; error = null },
-        onEnviar = {
-            scope.launch {
-                when (val r = auth.recuperarContrasena(email)) {
-                    is com.gacelas.cuenta.domain.modelo.ResultadoAuth.Ok -> enviado = true
-                    is com.gacelas.cuenta.domain.modelo.ResultadoAuth.Error -> error = r.mensaje
-                }
-            }
-        },
+        email = e.email, enviado = e.enviado, error = e.error, onEmail = vm::email,
+        onEnviar = vm::enviar,
         onAtras = onAtras,
     )
 }
@@ -298,13 +261,15 @@ private fun fechaLarga(ms: Long): String = platform.Foundation.NSDateFormatter()
     dateFormat = "EEEE d 'de' MMMM, HH:mm"
 }.stringFromDate(NSDate.dateWithTimeIntervalSince1970(ms / 1000.0))
 
-/** Ajustes compartidos; guardados en memoria hasta conectar DataStore/sesion en iOS. */
+/** Ajustes compartidos con AjustesViewModel, guardados en DataStore como en Android. */
 @Composable
 private fun AjustesIos(onAtras: () -> Unit, onCerrarSesion: () -> Unit) {
     val scope = androidx.compose.runtime.rememberCoroutineScope()
-    var a by remember { mutableStateOf(com.gacelas.cuenta.domain.modelo.Ajustes()) }
+    val repo = com.gacelas.acceso.SesionIos.ajustes
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.cuenta.presentation.AjustesViewModel(repo) }
+    val a by vm.ajustes.collectAsState()
     com.gacelas.ajustes.AjustesContenido(
-        a = a, version = versionIos(), guardar = { t -> a = t(a) },
+        a = a, version = versionIos(), guardar = vm::actualizar,
         onAtras = onAtras, onEditarPerfil = {}, onPrivacidad = {}, onNotificaciones = {},
         onSoporte = {
             platform.Foundation.NSURL.URLWithString("mailto:soporte@gacelas.app?subject=Ayuda%20con%20Gacelas")?.let {

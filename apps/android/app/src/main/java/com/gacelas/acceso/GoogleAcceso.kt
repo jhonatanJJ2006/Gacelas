@@ -1,5 +1,6 @@
 package com.gacelas.acceso
 
+import androidx.compose.runtime.collectAsState
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -155,43 +156,23 @@ fun BotonGoogle(
 ) {
     val auth = contenedor().auth
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var error by remember { mutableStateOf<String?>(null) }
-    var fase by remember { mutableStateOf<FaseGoogle?>(null) }
-    val cargando = fase != null
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "acceso-social") { com.gacelas.cuenta.presentation.AccesoSocialViewModel(auth) }
+    val fase by vm.fase.collectAsState()
+    val error by vm.error.collectAsState()
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         BotonGoogleVisual(
             onClick = {
-                error = null
-                if (!auth.googleDisponible) {
-                    error = "El inicio con Google no está disponible en esta versión de la app. Usa tu correo por ahora."
-                    return@BotonGoogleVisual
-                }
-                fase = FaseGoogle.Cuenta
-                scope.launch {
-                    try {
-                        when (val t = GoogleAcceso.pedirToken(context)) {
-                            is TokenGoogle.Error -> error = t.mensaje
-                            is TokenGoogle.Ok -> {
-                                fase = FaseGoogle.Servidor
-                                when (val r = auth.entrarConGoogle(t.idToken, t.nonce)) {
-                                    is ResultadoAuth.Ok -> { fase = FaseGoogle.Perfil; onEntrar() }
-                                    is ResultadoAuth.Error -> error = r.mensaje.ifBlank { "No se pudo iniciar sesión con Google" }
-                                }
-                            }
-                        }
-                    } catch (e: kotlinx.coroutines.CancellationException) {
-                        throw e
-                    } catch (e: Exception) {
-                        Log.e("GoogleAcceso", "Fallo inesperado", e)
-                        error = "No se pudo iniciar sesión con Google (${e.javaClass.simpleName}: ${e.message})"
-                    } finally { fase = null }
-                }
+                vm.entrar(com.gacelas.cuenta.presentation.Proveedor.Google, pedirToken = {
+                    when (val t = GoogleAcceso.pedirToken(context)) {
+                        is TokenGoogle.Ok -> com.gacelas.cuenta.presentation.TokenSocial.Ok(t.idToken, t.nonce)
+                        is TokenGoogle.Error -> com.gacelas.cuenta.presentation.TokenSocial.Error(t.mensaje)
+                    }
+                }, alEntrar = onEntrar)
             },
-            cargando = cargando, portada = portada, alto = alto,
+            cargando = fase != null, portada = portada, alto = alto,
         )
     }
     fase?.let { CargandoGoogle(it) }
-    error?.let { ErrorGoogle(it) { error = null } }
+    error?.let { ErrorGoogle(it.mensaje) { vm.cerrarError() } }
 }
 

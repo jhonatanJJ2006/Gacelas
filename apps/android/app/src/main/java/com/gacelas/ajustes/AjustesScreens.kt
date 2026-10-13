@@ -75,9 +75,8 @@ import kotlin.math.roundToInt
 /** Devuelve una funcion que guarda un cambio de ajustes en DataStore. */
 @Composable
 private fun guardarAjuste(): ((Ajustes) -> Ajustes) -> Unit {
-    val c = contenedor()
-    val scope = rememberCoroutineScope()
-    return { t -> scope.launch { c.ajustes.actualizar(t) } }
+    val vm = com.gacelas.ui.ajustesViewModel()
+    return { t -> vm.actualizar(t) }
 }
 
 @Composable

@@ -1,5 +1,6 @@
 package com.gacelas.acceso
 
+import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -102,27 +103,12 @@ private fun ChipBeneficio(icono: ImageVector, texto: String, modifier: Modifier)
 @Composable
 fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: () -> Unit, onRegistro: () -> Unit) {
     val auth = contenedor().auth
-    val scope = rememberCoroutineScope()
-    var email by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
-    var error by rememberSaveable { mutableStateOf<String?>(null) }
-    var cargando by remember { mutableStateOf(false) }
-    val entrar = {
-        if (!cargando) {
-            cargando = true
-            scope.launch {
-                when (val r = auth.iniciarSesion(email, password)) {
-                    is ResultadoAuth.Ok -> onEntrar()
-                    is ResultadoAuth.Error -> error = r.mensaje
-                }
-                cargando = false
-            }
-        }
-    }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.cuenta.presentation.LoginViewModel(auth) }
+    val e by vm.estado.collectAsState()
     InicioSesionC4(
-        email = email, password = password, error = error, cargando = cargando,
-        onEmail = { email = it; error = null }, onPassword = { password = it; error = null },
-        onEntrar = { entrar() }, onAtras = onAtras, onRecuperar = onRecuperar, onRegistro = onRegistro,
+        email = e.email, password = e.password, error = e.error, cargando = e.cargando,
+        onEmail = vm::email, onPassword = vm::password,
+        onEntrar = { vm.entrar { onEntrar() } }, onAtras = onAtras, onRecuperar = onRecuperar, onRegistro = onRegistro,
         botonGoogle = { BotonGoogle(onEntrar, portada = true, alto = 48.dp) },
     )
 }
@@ -130,26 +116,13 @@ fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: (
 @Composable
 fun RegistroScreen(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: () -> Unit) {
     val auth = contenedor().auth
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    var nombre by rememberSaveable { mutableStateOf("") }
-    var email by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
-    var error by rememberSaveable { mutableStateOf<String?>(null) }
-    var cargando by remember { mutableStateOf(false) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.cuenta.presentation.RegistroViewModel(auth) }
+    val e by vm.estado.collectAsState()
     RegistroContenido(
-        nombre = nombre, email = email, password = password, error = error, cargando = cargando,
-        onNombre = { nombre = it; error = null }, onEmail = { email = it; error = null }, onPassword = { password = it; error = null },
-        onCrear = {
-            cargando = true
-            scope.launch {
-                when (val r = auth.registrar(nombre, email, password)) {
-                    is ResultadoAuth.Ok -> { context.aviso("Cuenta creada"); onCrear() }
-                    is ResultadoAuth.Error -> error = r.mensaje
-                }
-                cargando = false
-            }
-        },
+        nombre = e.nombre, email = e.email, password = e.password, error = e.error, cargando = e.cargando,
+        onNombre = vm::nombre, onEmail = vm::email, onPassword = vm::password,
+        onCrear = { vm.crear { context.aviso("Cuenta creada"); onCrear() } },
         onAtras = onAtras, onIniciarSesion = onIniciarSesion,
         botonGoogle = { BotonGoogle(onCrear) },
     )
@@ -158,21 +131,12 @@ fun RegistroScreen(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: ()
 @Composable
 fun RecuperarContrasenaScreen(onAtras: () -> Unit, enviadoInicial: Boolean = false) {
     val auth = contenedor().auth
-    val scope = rememberCoroutineScope()
-    var email by rememberSaveable { mutableStateOf("") }
-    var enviado by rememberSaveable { mutableStateOf(enviadoInicial) }
-    var error by rememberSaveable { mutableStateOf<String?>(null) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.cuenta.presentation.RecuperarViewModel(auth, enviadoInicial) }
+    val e by vm.estado.collectAsState()
     RecuperarContenido(
-        email = email, enviado = enviado, error = error,
-        onEmail = { email = it; error = null },
-        onEnviar = {
-            scope.launch {
-                when (val r = auth.recuperarContrasena(email)) {
-                    is ResultadoAuth.Ok -> enviado = true
-                    is ResultadoAuth.Error -> error = r.mensaje
-                }
-            }
-        },
+        email = e.email, enviado = e.enviado, error = e.error,
+        onEmail = vm::email,
+        onEnviar = vm::enviar,
         onAtras = onAtras,
     )
 }
