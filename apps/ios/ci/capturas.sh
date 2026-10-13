@@ -2,14 +2,19 @@
 # Capturas del simulador por grupo, para correr los grupos en paralelo (matriz de CI).
 # Uso: capturas.sh <grupo> <ruta/iosApp.app> <dir-salida>
 set -uo pipefail
+T0=$(date +%s); marca() { echo "[capturas +$(( $(date +%s) - T0 ))s] $*"; }
 GRUPO=$1 APP=$2 OUT=$3
 APPID=com.gacelas.app
 mkdir -p "$OUT"
 UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];p=[x for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')];print(next((x['udid'] for x in p if x['name']=='iPhone 16'),p[0]['udid']))")
-xcrun simctl boot "$UDID"; xcrun simctl bootstatus "$UDID" -b
-xcrun simctl install "$UDID" "$APP"
+marca boot; xcrun simctl boot "$UDID"; xcrun simctl bootstatus "$UDID" -b
+marca install
+# Limite de tiempo para comandos simctl que a veces se cuelgan en un simulador recien arrancado.
+limite() { local t=$1; shift; perl -e 'alarm shift; exec @ARGV' "$t" "$@"; }
+limite 120 xcrun simctl install "$UDID" "$APP"
+marca grupo
 xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 || true
-ubicacion() { xcrun simctl privacy "$UDID" grant location-always $APPID || xcrun simctl privacy "$UDID" grant location $APPID; }
+ubicacion() { limite 30 xcrun simctl privacy "$UDID" grant location-always $APPID || limite 30 xcrun simctl privacy "$UDID" grant location $APPID || true; }
 # shot <nombre> <espera> [args...]: lanza, espera, captura y cierra.
 shot() {
   local n=$1 s=$2; shift 2
