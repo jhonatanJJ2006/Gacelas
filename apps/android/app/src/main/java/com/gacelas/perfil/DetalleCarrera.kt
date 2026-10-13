@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -48,15 +49,15 @@ import java.util.Locale
 /** Detalle de una carrera guardada: mapa del recorrido, metricas, parciales, notas y borrar. */
 @Composable
 fun DetalleCarreraScreen(id: String, onAtras: () -> Unit) {
-    val carreras by carrerasState()
-    val c: CarreraGuardada? = carreras.firstOrNull { it.id == id }
+    val repo = contenedor().carreras
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "detalle-$id") { com.gacelas.carreras.presentation.DetalleCarreraViewModel(id, repo) }
+    val estado by vm.estado.collectAsState()
+    val c: CarreraGuardada? = estado.carrera
     val ajustes by ajustesState()
     val m = ajustes.unidadesMetricas
-    val repo = contenedor().carreras
-    val scope = rememberCoroutineScope()
     DetalleCarreraContenido(
         c = c, fecha = c?.let { SimpleDateFormat("EEEE d 'de' MMMM, HH:mm", Locale("es", "EC")).format(Date(it.inicioMs)) }.orEmpty(), m = m,
-        onAtras = onAtras, onEliminar = { scope.launch { repo.eliminar(id) }; onAtras() },
+        onAtras = onAtras, onEliminar = { vm.eliminar(); onAtras() },
         mapa = { carrera ->
             MapaGacelas(carrera.puntos.aLatLng(), Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(16.dp))) {
                 TrazadoRuta(carrera.puntos, Modifier.fillMaxWidth().height(240.dp))
