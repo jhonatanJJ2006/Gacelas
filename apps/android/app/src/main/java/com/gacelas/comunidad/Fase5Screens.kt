@@ -81,7 +81,6 @@ fun ClubesScreen(onAtras: () -> Unit, onClub: (String) -> Unit) {
     val contenedorVm = contenedor()
     val repo = contenedorVm.clubes
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val vm = androidx.lifecycle.viewmodel.compose.viewModel { contenedorVm.clubesViewModel() }
     val datos by vm.datos.collectAsState()
     var creando by remember { mutableStateOf(false) }
@@ -123,11 +122,7 @@ fun ClubesScreen(onAtras: () -> Unit, onClub: (String) -> Unit) {
             },
             confirmButton = {
                 TextButton(onClick = {
-                    scope.launch {
-                        runCatching { repo.crear(nombre, desc, lugar, aprobacion) }
-                            .onSuccess { creando = false; onClub(it) }
-                            .onFailure { context.aviso(it.message ?: "No se pudo crear") }
-                    }
+                    vm.crear(nombre, desc, lugar, aprobacion, onCreado = { creando = false; onClub(it) }, onError = { context.aviso(it) })
                 }) { Text("Crear") }
             },
             dismissButton = { TextButton(onClick = { creando = false }) { Text("Cancelar") } },
@@ -149,42 +144,29 @@ private fun TarjetaClub(c: Club, onClick: () -> Unit) = Tarjeta(onClick = onClic
 
 @Composable
 fun DetalleClubScreen(id: String, onAtras: () -> Unit, onEvento: (String) -> Unit, onCrearEvento: (String) -> Unit) {
-    val repo = contenedor().clubes
+    val cont = contenedor()
+    val repo = cont.clubes
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var club by remember { mutableStateOf<Club?>(null) }
-    var miembros by remember { mutableStateOf(emptyList<MiembroClub>()) }
-    var posts by remember { mutableStateOf(emptyList<PostClub>()) }
-    var eventos by remember { mutableStateOf(emptyList<Evento>()) }
-    var yoId by remember { mutableStateOf<String?>(null) }
-    var texto by remember { mutableStateOf("") }
-    var version by remember { mutableIntStateOf(0) }
-    LaunchedEffect(id, version) {
-        repo ?: return@LaunchedEffect
-        club = runCatching { repo.detalle(id) }.getOrNull()
-        miembros = runCatching { repo.miembros(id) }.getOrDefault(emptyList())
-        posts = repo.posts(id)
-        eventos = repo.eventos(id)
-        yoId = repo.uid()
-    }
-    fun intentar(ok: String, bloque: suspend () -> Unit) = scope.launch {
-        runCatching { bloque() }.onSuccess { context.aviso(ok); version++ }.onFailure { context.aviso(it.message ?: "Algo salió mal") }
-    }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "detalle-club-$id") { cont.detalleClubViewModel(id) }
+    val datos by vm.estado.collectAsState()
+    val texto by vm.texto.collectAsState()
+    val club = datos.club
+    val miembros = datos.miembros
+    val posts = datos.posts
+    val eventos = datos.eventos
+    val aviso: (String) -> Unit = { context.aviso(it) }
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
         EncabezadoAtras(club?.nombre ?: "Club", onAtras)
         if (repo == null) return SinServidor()
         val c = club ?: return Text("Cargando...", color = GColors.TextSecondary, modifier = Modifier.padding(16.dp))
-        val yo = miembros.firstOrNull { it.usuarioId == yoId }
-        val gestiono = yo?.activo == true && puedeGestionar(yo.rol)
+        val yo = datos.yo
+        val gestiono = datos.gestiono
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Tarjeta {
                 Text(c.descripcion.ifBlank { "Sin descripción." }, style = GType.bodyMd, color = GColors.TextSecondary)
                 Text("${c.miembros} ${if (c.miembros == 1) "miembro" else "miembros"} · ${if (c.conAprobacion) "Con aprobación" else "Abierto"}", style = GType.bodySm, color = GColors.TextSecondary)
                 accionClub(yo, c.conAprobacion)?.let { a ->
-                    BotonPrimario(a, {
-                        if (yo == null) intentar(if (c.conAprobacion) "Solicitud enviada" else "Te uniste al club") { repo.unirse(id) }
-                        else if (yo.activo) intentar("Saliste del club") { repo.salir(id) }
-                    }, enabled = yo?.activo != false, icono = null, color = if (yo == null) GColors.Primary else GColors.SurfaceHigh)
+                    BotonPrimario(a, { vm.accionPrincipal(aviso) }, enabled = yo?.activo != false, icono = null, color = if (yo == null) GColors.Primary else GColors.SurfaceHigh)
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -199,15 +181,15 @@ fun DetalleClubScreen(id: String, onAtras: () -> Unit, onEvento: (String) -> Uni
                 pendientes.forEach { m ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(m.nombre, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-                        TextButton(onClick = { intentar("Solicitud aprobada") { repo.aprobar(id, m.usuarioId) } }) { Text("Aprobar", color = GColors.Secondary500) }
-                        TextButton(onClick = { intentar("Solicitud rechazada") { repo.salir(id, m.usuarioId) } }) { Text("Rechazar", color = GColors.TextSecondary) }
+                        TextButton(onClick = { vm.aprobar(m.usuarioId, aviso) }) { Text("Aprobar", color = GColors.Secondary500) }
+                        TextButton(onClick = { vm.rechazar(m.usuarioId, aviso) }) { Text("Rechazar", color = GColors.TextSecondary) }
                     }
                 }
             }
             Text("Publicaciones", style = GType.titleMd, color = GColors.TextPrimary)
             if (yo?.activo == true) {
-                CampoTexto("Escribe al club", texto, { texto = it.take(1000) }, "Escribe algo al club...", lineas = 2)
-                BotonPrimario("Publicar", { if (texto.isNotBlank()) intentar("Publicado") { repo.publicar(id, texto); texto = "" } }, icono = null)
+                CampoTexto("Escribe al club", texto, vm::escribir, "Escribe algo al club...", lineas = 2)
+                BotonPrimario("Publicar", { vm.publicar(aviso) }, icono = null)
             }
             if (posts.isEmpty()) Text(if (yo?.activo == true || !c.conAprobacion) "Aún no hay publicaciones." else "Únete para ver las publicaciones.", style = GType.bodySm, color = GColors.TextSecondary)
             posts.forEach { p -> Tarjeta(padding = 12.dp) { Text(p.nombre, style = GType.labelLg, color = GColors.TextPrimary); Text(p.texto, style = GType.bodyMd, color = GColors.TextSecondary) } }
@@ -216,9 +198,7 @@ fun DetalleClubScreen(id: String, onAtras: () -> Unit, onEvento: (String) -> Uni
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(m.nombre, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
                     Text(m.rol.etiqueta, style = GType.labelMd, color = GColors.TextSecondary)
-                    if (yo?.rol == RolClub.owner && m.rol != RolClub.owner) TextButton(onClick = {
-                        intentar("Rol actualizado") { repo.cambiarRol(id, m.usuarioId, if (m.rol == RolClub.admin) RolClub.member else RolClub.admin) }
-                    }) { Text(if (m.rol == RolClub.admin) "Quitar admin" else "Hacer admin", color = GColors.Primary400) }
+                    if (yo?.rol == RolClub.owner && m.rol != RolClub.owner) TextButton(onClick = { vm.alternarAdmin(m, aviso) }) { Text(if (m.rol == RolClub.admin) "Quitar admin" else "Hacer admin", color = GColors.Primary400) }
                 }
             }
         }
@@ -266,12 +246,9 @@ fun CalendarioEventos(eventos: List<Evento>, inscritos: Set<String>, onEvento: (
 @Composable
 fun EventoEnVivoScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
     val c = contenedor()
-    val repo = c.clubes
-    var corredores by remember { mutableStateOf(emptyList<CorredorEvento>()) }
-    var repeticion by remember { mutableStateOf<Float?>(null) }
-    LaunchedEffect(id) { while (true) { corredores = repo?.corredores(id).orEmpty(); delay(5000) } }
-    LaunchedEffect(repeticion) { val r = repeticion ?: return@LaunchedEffect; if (r < 1f) { delay(80); repeticion = minOf(1f, r + 0.01f) } }
-    val tabla = clasificacion(corredores)
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "evento-en-vivo-$id") { c.eventoEnVivoViewModel(id) }
+    val tabla by vm.tabla.collectAsState()
+    val repeticion by vm.repeticion.collectAsState()
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
         EncabezadoAtras("Evento en vivo", onAtras)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -296,10 +273,10 @@ fun EventoEnVivoScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
                     com.gacelas.ui.components.MapaLibre(Modifier.fillMaxSize().testTag("mapa-evento"), trazos = trazos, circulos = circulos, alListo = { mapaEvento = it })
                 } else Text("El mapa no está disponible en este dispositivo.", color = GColors.TextSecondary, modifier = Modifier.align(Alignment.Center))
             }
-            BotonPrimario("Correr y compartir en el evento", { c.enVivo?.eventoId = id; onCorrer() }, icono = null)
+            BotonPrimario("Correr y compartir en el evento", { vm.correrEnEvento(); onCorrer() }, icono = null)
             if (tabla.any { it.puntos.size > 1 }) {
-                TextButton(onClick = { repeticion = if (repeticion == null || repeticion!! >= 1f) 0f else null }) { Text(if (repeticion == null) "Ver repetición" else "Salir de la repetición", color = GColors.Primary400) }
-                repeticion?.let { r -> Slider(r, { repeticion = it }) }
+                TextButton(onClick = vm::alternarRepeticion) { Text(if (repeticion == null) "Ver repetición" else "Salir de la repetición", color = GColors.Primary400) }
+                repeticion?.let { r -> Slider(r, { vm.mover(it) }) }
             }
             Text("Clasificación", style = GType.titleMd, color = GColors.TextPrimary)
             if (tabla.isEmpty()) Text("Cuando los inscritos compartan en vivo, aparecerán aquí.", style = GType.bodySm, color = GColors.TextSecondary)

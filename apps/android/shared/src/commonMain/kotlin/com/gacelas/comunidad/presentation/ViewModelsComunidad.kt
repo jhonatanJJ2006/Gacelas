@@ -74,4 +74,14 @@ class ClubesViewModel(private val fuente: FuenteClubes?) : ViewModel() {
     fun recargar() {
         viewModelScope.launch { _datos.value = runCatching { fuente?.listar() }.getOrNull() ?: (emptyList<Club>() to emptySet()) }
     }
+
+    /** Crea un club; [onCreado] recibe su id y [onError] el mensaje si falla. */
+    fun crear(nombre: String, descripcion: String, ubicacion: String, conAprobacion: Boolean, onCreado: (String) -> Unit, onError: (String) -> Unit) {
+        val f = fuente ?: return
+        viewModelScope.launch {
+            runCatching { f.crear(nombre, descripcion, ubicacion, conAprobacion) }
+                .onSuccess(onCreado)
+                .onFailure { onError(it.message ?: "No se pudo crear") }
+        }
+    }
 }

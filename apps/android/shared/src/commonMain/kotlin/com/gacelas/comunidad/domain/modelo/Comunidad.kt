@@ -94,3 +94,21 @@ data class SesionEnVivo(
 ) {
     fun activa(ahoraMs: Long = ahoraMs()) = finMs == null && ahoraMs - (ultimaMs ?: inicioMs) < 15 * 60_000L
 }
+
+/** Publicacion del feed: actividad de la comunidad o carrera publica propia. */
+data class Publicacion(
+    val id: String,
+    val autor: String,
+    val propia: Boolean,
+    val indice: Int,
+    val cuando: String,
+    val titulo: String,
+    val distanciaKm: Double,
+    val segundos: Int,
+    val ritmoSegKm: Int?,
+    val likesBase: Int,
+    val comentariosBase: Int,
+    val puntos: List<com.gacelas.carreras.domain.modelo.PuntoGps> = emptyList(),
+)
+
+enum class FiltroFeed(val etiqueta: String) { Todos("Todos"), Comunidad("Comunidad"), Mias("Mis carreras") }

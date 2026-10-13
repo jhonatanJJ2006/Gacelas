@@ -34,6 +34,8 @@ class ClubesRepository(private val backend: Backend, val uid: suspend () -> Stri
         backend.select("profiles", mapOf("id" to id)).firstOrNull()?.let { it.texto("full_name")?.ifBlank { null } ?: it.texto("username") }
     }.getOrNull() ?: "Corredor"
 
+    override suspend fun miId() = uid()
+
     override suspend fun listar(): Pair<List<Club>, Set<String>> {
         val todos = backend.select("clubs", emptyMap(), "members_count", descendente = true).map(::clubDesdeFila)
         val yo = uid()
@@ -41,7 +43,7 @@ class ClubesRepository(private val backend: Backend, val uid: suspend () -> Stri
         return todos to mios
     }
 
-    suspend fun crear(nombre: String, descripcion: String, ubicacion: String, conAprobacion: Boolean): String {
+    override suspend fun crear(nombre: String, descripcion: String, ubicacion: String, conAprobacion: Boolean): String {
         val yo = uid() ?: throw ErrorRemoto("Inicia sesión para crear un club")
         validarClub(nombre, descripcion)?.let { throw ErrorRemoto(it) }
         val id = nuevoUuid()
@@ -50,46 +52,46 @@ class ClubesRepository(private val backend: Backend, val uid: suspend () -> Stri
         return id
     }
 
-    suspend fun detalle(id: String) = backend.select("clubs", mapOf("id" to id)).firstOrNull()?.let(::clubDesdeFila)
+    override suspend fun detalle(id: String): Club? = backend.select("clubs", mapOf("id" to id)).firstOrNull()?.let(::clubDesdeFila)
 
-    suspend fun miembros(id: String): List<MiembroClub> = backend.select("club_members", mapOf("club_id" to id), "created_at").map { f ->
+    override suspend fun miembros(id: String): List<MiembroClub> = backend.select("club_members", mapOf("club_id" to id), "created_at").map { f ->
         val u = f.texto("user_id").orEmpty()
         MiembroClub(u, nombre(u), runCatching { RolClub.valueOf(f.texto("role").orEmpty()) }.getOrDefault(RolClub.member), f.texto("status") == "active")
     }.sortedBy { it.rol.ordinal }
 
-    suspend fun unirse(id: String) {
+    override suspend fun unirse(id: String) {
         val yo = uid() ?: throw ErrorRemoto("Inicia sesión para unirte")
         backend.insert("club_members", listOf(JsonObject(mapOf("club_id" to s(id), "user_id" to s(yo)))))
     }
-    suspend fun salir(id: String, usuario: String? = null) {
+    override suspend fun salir(id: String, usuario: String?) {
         val u = usuario ?: uid() ?: return
         backend.delete("club_members", mapOf("club_id" to id, "user_id" to u))
     }
-    suspend fun aprobar(id: String, usuario: String) = backend.update("club_members", JsonObject(mapOf("status" to s("active"))), mapOf("club_id" to id, "user_id" to usuario))
-    suspend fun cambiarRol(id: String, usuario: String, rol: RolClub) = backend.update("club_members", JsonObject(mapOf("role" to s(rol.name))), mapOf("club_id" to id, "user_id" to usuario))
+    override suspend fun aprobar(id: String, usuario: String) { backend.update("club_members", JsonObject(mapOf("status" to s("active"))), mapOf("club_id" to id, "user_id" to usuario)) }
+    override suspend fun cambiarRol(id: String, usuario: String, rol: RolClub) { backend.update("club_members", JsonObject(mapOf("role" to s(rol.name))), mapOf("club_id" to id, "user_id" to usuario)) }
 
-    suspend fun posts(id: String): List<PostClub> = runCatching {
+    override suspend fun posts(id: String): List<PostClub> = runCatching {
         val filas = backend.select("club_posts", mapOf("club_id" to id), "created_at", descendente = true)
         val nombres = filas.mapNotNull { it.texto("user_id") }.distinct().associateWith { nombre(it) }
         filas.map { PostClub(it.texto("id").orEmpty(), it.texto("user_id").orEmpty(), nombres[it.texto("user_id")] ?: "Corredor", it.texto("body").orEmpty()) }
     }.getOrDefault(emptyList())
 
-    suspend fun publicar(id: String, texto: String) {
+    override suspend fun publicar(id: String, texto: String) {
         val yo = uid() ?: return
         backend.insert("club_posts", listOf(JsonObject(mapOf("club_id" to s(id), "user_id" to s(yo), "body" to s(texto.trim())))))
     }
 
-    suspend fun eventos(id: String): List<Evento> = runCatching { backend.select("events", mapOf("club_id" to id), "starts_at").map(::eventoDesdeFila) }.getOrDefault(emptyList())
-    suspend fun evento(id: String): Evento? = runCatching { backend.select("events", mapOf("id" to id)).firstOrNull()?.let(::eventoDesdeFila) }.getOrNull()
+    override suspend fun eventos(id: String): List<Evento> = runCatching { backend.select("events", mapOf("club_id" to id), "starts_at").map(::eventoDesdeFila) }.getOrDefault(emptyList())
+    override suspend fun evento(id: String): Evento? = runCatching { backend.select("events", mapOf("id" to id)).firstOrNull()?.let(::eventoDesdeFila) }.getOrNull()
 
     // ---- Eventos: cupo y en vivo ----
-    suspend fun estadoEvento(id: String): EstadoEvento? = runCatching {
+    override suspend fun estadoEvento(id: String): EstadoEvento? = runCatching {
         val f = (backend.rpc("evento_estado", JsonObject(mapOf("evento" to s(id)))) as? JsonArray)?.firstOrNull() as? JsonObject ?: return null
         EstadoEvento(f.numero("inscritos")?.toInt() ?: 0, f.numero("en_espera")?.toInt() ?: 0, f.numero("cupo")?.toInt(), f.texto("mi_estado"),
             if (f.texto("mi_estado") == "waitlist") f.numero("mi_posicion")?.toInt() else null)
     }.getOrNull()
 
-    suspend fun corredores(id: String): List<CorredorEvento> = runCatching {
+    override suspend fun corredores(id: String): List<CorredorEvento> = runCatching {
         (backend.rpc("evento_en_vivo", JsonObject(mapOf("evento" to s(id)))) as? JsonArray).orEmpty().mapNotNull { it as? JsonObject }.map { f ->
             CorredorEvento(
                 f.texto("user_id").orEmpty(), f.texto("nombre") ?: "Corredor", f.numero("distance_m") ?: 0.0, f.numero("elapsed_s")?.toInt() ?: 0,

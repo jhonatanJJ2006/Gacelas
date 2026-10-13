@@ -118,3 +118,14 @@ fun filtrarNotificaciones(lista: List<Notificacion>, filtro: String): List<Notif
     else -> lista
 }
 
+
+fun filtrarFeed(lista: List<Publicacion>, filtro: FiltroFeed, ocultas: Set<String>): List<Publicacion> = lista
+    .filter { it.id !in ocultas }
+    .filter {
+        when (filtro) {
+            FiltroFeed.Todos -> true
+            FiltroFeed.Comunidad -> !it.propia
+            FiltroFeed.Mias -> it.propia
+        }
+    }
+
