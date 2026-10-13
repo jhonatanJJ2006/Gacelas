@@ -2,6 +2,7 @@ name: iOS
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
   push:
     branches: [main]
     tags: ['v*']
@@ -13,7 +14,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # Un label distinto de 'capturas' no cancela el run en curso.
+  group: ${{ github.workflow }}-${{ github.ref }}${{ github.event.action == 'labeled' && github.event.label.name != 'capturas' && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: true
 
 env:
@@ -24,10 +26,12 @@ env:
 
 # Grafo:  cambios ─┬─ tests-shared
 #                  ├─ build ── capturas (matriz x3) ── capturas-unir
+#                  │           (capturas solo en push a main, workflow_dispatch o label 'capturas')
 #                  └─ ipa (solo tags v* / release)
 jobs:
   cambios:
     runs-on: ubuntu-latest
+    if: github.event.action != 'labeled' || github.event.label.name == 'capturas'
     outputs:
       ios: ${{ steps.f.outputs.ios == 'true' || github.event_name != 'pull_request' && github.event_name != 'push' || startsWith(github.ref, 'refs/tags/') }}
     steps:
@@ -87,6 +91,23 @@ jobs:
         with:
           path: ${{ env.IOS_DIR }}/build/SourcePackages
           key: spm-${{ runner.os }}-${{ hashFiles('apps/ios/iosApp/project.yml') }}
+      # Framework compartido (salida Kotlin/Native + estado up-to-date de Gradle) y DerivedData de Xcode.
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.ANDROID_DIR }}/shared/build
+            ${{ env.ANDROID_DIR }}/.gradle
+          key: shared-fw-${{ runner.os }}-${{ hashFiles('apps/android/shared/**', 'apps/android/gradle/**', 'apps/android/*.kts') }}
+          restore-keys: shared-fw-${{ runner.os }}-
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.IOS_DIR }}/build/Build
+            ${{ env.IOS_DIR }}/build/Index.noindex
+            ${{ env.IOS_DIR }}/build/ModuleCache.noindex
+            ${{ env.IOS_DIR }}/build/Intermediates.noindex
+          key: deriveddata-${{ runner.os }}-${{ hashFiles('apps/ios/iosApp/**/*.swift', 'apps/ios/iosApp/project.yml', 'apps/android/shared/src/**') }}
+          restore-keys: deriveddata-${{ runner.os }}-
       - name: Xcode 16
         run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)" && xcodebuild -version
       - name: Generar proyecto Xcode
@@ -114,6 +135,10 @@ jobs:
     # mientras se descarga el .app.
     name: Capturas (${{ matrix.grupos }})
     needs: build
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'capturas'))
     runs-on: macos-15
     timeout-minutes: 25
     strategy:
