@@ -68,6 +68,8 @@ import com.gacelas.correr.TrazadoRuta
 import com.gacelas.comunidad.domain.modelo.PestanaEventos
 import com.gacelas.comunidad.domain.reglas.filtrarEventos
 import com.gacelas.comunidad.domain.modelo.Evento
+import com.gacelas.comunidad.domain.modelo.FiltroFeed
+import com.gacelas.comunidad.domain.modelo.Publicacion
 import com.gacelas.data.mock.MockData
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearMs
@@ -91,53 +93,17 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-/** Publicacion del feed: actividad de la comunidad o carrera publica propia. */
-data class Publicacion(
-    val id: String,
-    val autor: String,
-    val propia: Boolean,
-    val indice: Int,
-    val cuando: String,
-    val titulo: String,
-    val distanciaKm: Double,
-    val segundos: Int,
-    val ritmoSegKm: Int?,
-    val likesBase: Int,
-    val comentariosBase: Int,
-    val puntos: List<com.gacelas.carreras.domain.modelo.PuntoGps> = emptyList(),
-)
-
-enum class FiltroFeed(val etiqueta: String) { Todos("Todos"), Comunidad("Comunidad"), Mias("Mis carreras") }
-
-fun filtrarFeed(lista: List<Publicacion>, filtro: FiltroFeed, ocultas: Set<String>): List<Publicacion> = lista
-    .filter { it.id !in ocultas }
-    .filter {
-        when (filtro) {
-            FiltroFeed.Todos -> true
-            FiltroFeed.Comunidad -> !it.propia
-            FiltroFeed.Mias -> it.propia
-        }
-    }
-
 @Composable
 fun FeedScreen(onEventos: () -> Unit, onEnVivo: () -> Unit = {}) {
     val context = LocalContext.current
     val c = contenedor()
-    val scope = rememberCoroutineScope()
-    val ajustes by ajustesState()
-    val carreras by carrerasState()
-    val perfil by sesionState()
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.feedViewModel() }
+    val ajustes by vm.ajustes.collectAsState()
     val m = ajustes.unidadesMetricas
-    var filtro by rememberSaveable { mutableStateOf(FiltroFeed.Todos) }
+    val filtro by vm.filtro.collectAsState()
     var menuFiltro by remember { mutableStateOf(false) }
     var comentando by remember { mutableStateOf<Publicacion?>(null) }
-    val propias = carreras.filter { it.publica }.map {
-        Publicacion("carrera-${it.id}", perfil?.nombre ?: "Tú", true, 0, "Tu carrera", it.titulo, it.distanciaKm, it.segundos, it.ritmoSegKm, 0, 0, it.puntos)
-    }
-    val comunidad = MockData.actividades.mapIndexed { i, a ->
-        Publicacion("act-${a.id}", MockData.usuario(a.usuarioId)?.nombre ?: "", false, i + 1, a.fecha, a.titulo, a.distanciaKm, a.duracionSegundos, a.duracionSegundos.let { s -> (s / a.distanciaKm).toInt() }, a.likes, a.comentarios)
-    }
-    val lista = filtrarFeed(propias + comunidad, filtro, ajustes.ocultas)
+    val lista by vm.publicaciones.collectAsState()
     Pantalla {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Comunidad", style = GType.headlineLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
@@ -146,7 +112,7 @@ fun FeedScreen(onEventos: () -> Unit, onEnVivo: () -> Unit = {}) {
                 IconButton(onClick = { menuFiltro = true }) { Icon(Icons.Filled.FilterList, "Filtrar", tint = GColors.TextSecondary) }
                 DropdownMenu(expanded = menuFiltro, onDismissRequest = { menuFiltro = false }) {
                     FiltroFeed.entries.forEach { f ->
-                        DropdownMenuItem(text = { Text(f.etiqueta) }, onClick = { filtro = f; menuFiltro = false })
+                        DropdownMenuItem(text = { Text(f.etiqueta) }, onClick = { vm.filtro(f); menuFiltro = false })
                     }
                 }
             }
@@ -154,7 +120,7 @@ fun FeedScreen(onEventos: () -> Unit, onEnVivo: () -> Unit = {}) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Pastilla("Feed", true)
             Pastilla("Eventos", false, onEventos)
-            if (filtro != FiltroFeed.Todos) Pastilla(filtro.etiqueta, true, { filtro = FiltroFeed.Todos })
+            if (filtro != FiltroFeed.Todos) Pastilla(filtro.etiqueta, true, { vm.filtro(FiltroFeed.Todos) })
         }
         if (lista.isEmpty()) Tarjeta { Text("No hay publicaciones con este filtro.", style = GType.bodyMd, color = GColors.TextSecondary) }
         lista.forEach { p ->
@@ -176,7 +142,7 @@ fun FeedScreen(onEventos: () -> Unit, onEnVivo: () -> Unit = {}) {
                             DropdownMenuItem(text = { Text("Compartir") }, onClick = { menu = false; context.compartir(texto) })
                             DropdownMenuItem(text = { Text("Ocultar publicación") }, onClick = {
                                 menu = false
-                                scope.launch { c.ajustes.actualizar { it.copy(ocultas = it.ocultas + p.id) } }
+                                vm.ocultar(p.id)
                                 context.aviso("Publicación oculta")
                             })
                         }
@@ -194,7 +160,7 @@ fun FeedScreen(onEventos: () -> Unit, onEnVivo: () -> Unit = {}) {
                 comentarios.takeLast(2).forEach { Text("Tú: $it", style = GType.bodySm, color = GColors.TextSecondary) }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = {
-                        scope.launch { c.ajustes.actualizar { a -> a.copy(likes = if (gusta) a.likes - p.id else a.likes + p.id) } }
+                        vm.alternarLike(p.id)
                     }) {
                         Icon(if (gusta) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder, if (gusta) "Quitar me gusta" else "Me gusta", tint = if (gusta) GColors.Danger else GColors.TextSecondary)
                     }
@@ -214,8 +180,7 @@ fun FeedScreen(onEventos: () -> Unit, onEnVivo: () -> Unit = {}) {
             text = { CampoTexto("Comentario", texto, { texto = it }, "Escribe algo motivador...", lineas = 3) },
             confirmButton = {
                 TextButton(enabled = texto.isNotBlank(), onClick = {
-                    val t = texto.trim()
-                    scope.launch { c.ajustes.actualizar { a -> a.copy(comentarios = a.comentarios + (p.id to (a.comentarios[p.id].orEmpty() + t))) } }
+                    vm.comentar(p.id, texto)
                     comentando = null
                 }) { Text("Publicar") }
             },
@@ -356,13 +321,11 @@ private fun TarjetaEvento(e: Evento, inscrito: Boolean, onClick: () -> Unit, onI
 fun DetalleEventoScreen(id: String, onAtras: () -> Unit, onEnVivo: () -> Unit = {}) {
     val c = contenedor()
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val (eventos, inscritos) = eventosState()
-    val remoto by androidx.compose.runtime.produceState<Evento?>(null, id) { value = c.clubes?.evento(id) }
-    val e = eventos.firstOrNull { it.id == id } ?: remoto ?: MockData.eventos.firstOrNull { it.id == id } ?: MockData.eventos.first()
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "detalle-evento-$id") { c.detalleEventoViewModel(id) }
+    val (_, inscritos) = vm.datos.collectAsState().value
+    val e by vm.evento.collectAsState()
     val inscrito = e.id in inscritos
-    var estado by remember { mutableStateOf<com.gacelas.comunidad.domain.modelo.EstadoEvento?>(null) }
-    androidx.compose.runtime.LaunchedEffect(id, inscritos) { estado = c.clubes?.estadoEvento(id) }
+    val estado by vm.estado.collectAsState()
     val participantes = estado?.let { e.participantes + it.inscritos } ?: (e.participantes + if (inscrito && !e.creadoPorUsuario) 1 else 0)
     val enEspera = estado?.miEstado == "waitlist"
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
@@ -424,11 +387,7 @@ fun DetalleEventoScreen(id: String, onAtras: () -> Unit, onEnVivo: () -> Unit = 
             } else {
                 val lleno = estado?.let { it.cupo.let { c -> c != null && it.inscritos >= c } } == true
                 BotonPrimario(if (inscrito) (if (enEspera) "En lista de espera (toca para salir)" else "Inscrito (toca para cancelar)") else if (lleno) "Unirme a la lista de espera" else "Inscribirme al evento", {
-                    scope.launch {
-                        c.eventos.alternarInscripcion(e.id)
-                        estado = c.clubes?.estadoEvento(e.id)
-                        context.aviso(if (inscrito) "Inscripción cancelada" else if (estado?.miEstado == "waitlist") "Evento lleno: quedaste en la lista de espera" else "Inscripción confirmada")
-                    }
+                    vm.alternarInscripcion { context.aviso(it) }
                 }, icono = Icons.Filled.CheckCircle, color = if (inscrito) GColors.Secondary else GColors.Primary)
             }
         }

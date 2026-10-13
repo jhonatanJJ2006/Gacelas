@@ -51,7 +51,7 @@ fun sesionDesdeFila(f: JsonObject, nombre: String = "Corredor"): SesionEnVivo {
  * Compartir y ver carreras en vivo. Escribe con las funciones live_* de Supabase
  * (backend/migrations/008_live_rpc.sql); la lectura respeta el RLS de live_sessions.
  */
-class EnVivoRepository(private val backend: Backend, private val uid: suspend () -> String?, private val reloj: () -> Long = { com.gacelas.shared.ahoraMs() }) {
+class EnVivoRepository(private val backend: Backend, private val uid: suspend () -> String?, private val reloj: () -> Long = { com.gacelas.shared.ahoraMs() }) : FuenteEnVivo {
     var sesionId: String? = null
         private set
     /** Ultimo envio: true visible, false oculto cerca de casa, null sin envios. */
@@ -60,7 +60,7 @@ class EnVivoRepository(private val backend: Backend, private val uid: suspend ()
     private var ultimoEnvio = 0L
 
     /** Evento elegido para correr en vivo (Fase 5): la sesion se asocia a el. */
-    @Volatile var eventoId: String? = null
+    @Volatile override var eventoId: String? = null
 
     suspend fun iniciar(): String? = runCatching {
         val ev = eventoId
@@ -98,7 +98,7 @@ class EnVivoRepository(private val backend: Backend, private val uid: suspend ()
     }.getOrNull() ?: "Corredor"
 
     /** Sesiones activas que puedo ver, sin la mia. */
-    suspend fun listar(): List<SesionEnVivo> = runCatching {
+    override suspend fun listar(): List<SesionEnVivo> = runCatching {
         val yo = uid()
         backend.select("live_sessions", emptyMap(), "started_at", descendente = true)
             .filter { it.texto("ended_at") == null && it.texto("user_id") != yo }
@@ -106,7 +106,7 @@ class EnVivoRepository(private val backend: Backend, private val uid: suspend ()
             .filter { it.activa(reloj()) }
     }.getOrDefault(emptyList())
 
-    suspend fun leer(id: String): SesionEnVivo? = runCatching {
+    override suspend fun leer(id: String): SesionEnVivo? = runCatching {
         backend.select("live_sessions", mapOf("id" to id)).firstOrNull()?.let { sesionDesdeFila(it, nombre(it.texto("user_id").orEmpty())) }
     }.getOrNull()
 

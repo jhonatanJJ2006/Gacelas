@@ -22,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,15 +59,10 @@ private fun Encabezado(titulo: String, onAtras: () -> Unit) {
 /** Corredores en vivo que puedo ver. Se actualiza cada 10 s. */
 @Composable
 fun ListaEnVivoScreen(onAtras: () -> Unit, onSesion: (String) -> Unit) {
-    val repo = contenedor().enVivo
+    val c = contenedor()
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.listaEnVivoViewModel() }
     val m by ajustesState()
-    var sesiones by remember { mutableStateOf<List<SesionEnVivo>?>(if (repo == null) emptyList() else null) }
-    LaunchedEffect(repo) {
-        while (repo != null) {
-            sesiones = repo.listar()
-            delay(10_000)
-        }
-    }
+    val sesiones by vm.sesiones.collectAsState()
     Pantalla {
         Encabezado("En vivo ahora", onAtras)
         when {
@@ -92,19 +88,12 @@ fun ListaEnVivoScreen(onAtras: () -> Unit, onSesion: (String) -> Unit) {
 /** Mapa en vivo de un corredor. La web usa Supabase Realtime; aqui se consulta cada 5 s. */
 @Composable
 fun DetalleEnVivoScreen(id: String, onAtras: () -> Unit) {
-    val repo = contenedor().enVivo
+    val c = contenedor()
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "en-vivo-$id") { c.detalleEnVivoViewModel(id) }
     val a by ajustesState()
     val m = a.unidadesMetricas
-    var s by remember { mutableStateOf<SesionEnVivo?>(null) }
-    var cargado by remember { mutableStateOf(repo == null) }
-    LaunchedEffect(id, repo) {
-        while (repo != null) {
-            s = repo.leer(id)
-            cargado = true
-            if (s?.activa() == false) break
-            delay(5_000)
-        }
-    }
+    val s by vm.sesion.collectAsState()
+    val cargado by vm.cargado.collectAsState()
     val x = s
     Pantalla {
         Encabezado(x?.nombre ?: "En vivo", onAtras)

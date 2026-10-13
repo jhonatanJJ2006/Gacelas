@@ -30,4 +30,27 @@ interface FuenteNotificaciones {
 /** Clubes: lista con los mios. La implementa data.ClubesRepository. */
 interface FuenteClubes {
     suspend fun listar(): Pair<List<Club>, Set<String>>
+    /** Id del usuario con sesion; null sin sesion. */
+    suspend fun miId(): String? = null
+    suspend fun crear(nombre: String, descripcion: String, ubicacion: String, conAprobacion: Boolean): String = throw UnsupportedOperationException()
+    suspend fun detalle(id: String): Club? = null
+    suspend fun miembros(id: String): List<MiembroClub> = emptyList()
+    suspend fun unirse(id: String) {}
+    suspend fun salir(id: String, usuario: String? = null) {}
+    suspend fun aprobar(id: String, usuario: String) {}
+    suspend fun cambiarRol(id: String, usuario: String, rol: RolClub) {}
+    suspend fun posts(id: String): List<PostClub> = emptyList()
+    suspend fun publicar(id: String, texto: String) {}
+    suspend fun eventos(id: String): List<Evento> = emptyList()
+    suspend fun evento(id: String): Evento? = null
+    suspend fun estadoEvento(id: String): EstadoEvento? = null
+    suspend fun corredores(id: String): List<CorredorEvento> = emptyList()
+}
+
+/** Carreras en vivo que puedo ver (lectura). */
+interface FuenteEnVivo {
+    /** Evento elegido para correr en vivo: la proxima sesion se asocia a el. */
+    var eventoId: String?
+    suspend fun listar(): List<SesionEnVivo>
+    suspend fun leer(id: String): SesionEnVivo?
 }
