@@ -1,7 +1,7 @@
 package com.gacelas
 
-import com.gacelas.data.carreras.CarreraGuardada
-import com.gacelas.data.rachas.Rachas
+import com.gacelas.carreras.domain.modelo.Carrera
+import com.gacelas.carreras.domain.reglas.Rachas
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -9,7 +9,7 @@ import java.util.Calendar
 
 class RachasTest {
     private val ahora = Calendar.getInstance().apply { set(2026, Calendar.OCTOBER, 10, 12, 0, 0) }.timeInMillis
-    private fun hace(dias: Int) = CarreraGuardada(id = "$dias", titulo = "c", inicioMs = Rachas.sumarDias(ahora, -dias), segundos = 1500, distanciaKm = 5.0)
+    private fun hace(dias: Int) = Carrera(id = "$dias", titulo = "c", inicioMs = Rachas.sumarDias(ahora, -dias), segundos = 1500, distanciaKm = 5.0)
 
     @Test fun igualQueLaFuncionSql() {
         val r = Rachas.calcular(listOf(0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11).map(::hace), ahora, 3)

@@ -26,7 +26,7 @@ actual fun fuenteUbicacionNativa(): FuenteUbicacion? =
 
 /**
  * Solo pruebas (argumento --gps-simulado): recorrido por Loja hacia el sur a 3,3 m/s, una lectura por
- * segundo, por el mismo camino que CoreLocation (SeguimientoSensores → RunTracker/Rumbo). Existe porque
+ * segundo, por el mismo camino que CoreLocation (SeguimientoSensores → SesionCarrera/Rumbo). Existe porque
  * el simulador headless de CI solo entrega a un proceso la ubicacion inyectada al arrancar.
  */
 class RecorridoSimulado : FuenteUbicacion {

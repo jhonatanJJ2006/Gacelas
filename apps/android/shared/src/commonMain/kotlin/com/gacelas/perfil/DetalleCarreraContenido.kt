@@ -23,7 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.gacelas.data.carreras.CarreraGuardada
+import com.gacelas.carreras.domain.modelo.Carrera
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearMs
 import com.gacelas.tracking.formatearRitmo
@@ -39,7 +39,7 @@ import com.gacelas.ui.theme.GType
  * octubre, 18:30"); [mapa] dibuja el recorrido (MapLibre en Android); [onEliminar] tras confirmar.
  */
 @Composable
-fun DetalleCarreraContenido(c: CarreraGuardada?, fecha: String, m: Boolean, onAtras: () -> Unit, onEliminar: () -> Unit, mapa: @Composable (CarreraGuardada) -> Unit) {
+fun DetalleCarreraContenido(c: Carrera?, fecha: String, m: Boolean, onAtras: () -> Unit, onEliminar: () -> Unit, mapa: @Composable (Carrera) -> Unit) {
     var confirmar by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary).testTag("detalle-carrera")) {
         EncabezadoAtras(c?.titulo ?: "Carrera", onAtras)

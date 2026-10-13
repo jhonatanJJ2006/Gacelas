@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gacelas.core.sensores.EstadoSensores
 import com.gacelas.core.sensores.Rumbo
-import com.gacelas.tracking.FaseCarrera
+import com.gacelas.carreras.domain.FaseCarrera
 import com.gacelas.tracking.formatearRitmo
 
 /** Pantalla de prueba (etapa 3 de iOS): GPS cada 1 s, rumbo combinado y cronometro compartido. */

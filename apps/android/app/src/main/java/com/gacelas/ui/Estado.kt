@@ -13,7 +13,7 @@ import com.gacelas.Contenedor
 import com.gacelas.GacelasApp
 import com.gacelas.data.ajustes.Ajustes
 import com.gacelas.data.auth.Perfil
-import com.gacelas.data.carreras.CarreraGuardada
+import com.gacelas.carreras.domain.modelo.Carrera
 
 /** Contenedor de dependencias de la app actual. */
 @Composable
@@ -32,15 +32,20 @@ fun ajustesState(): State<Ajustes> {
 fun sesionState(): State<Perfil?> = contenedor().auth.sesion.collectAsState(initial = null)
 
 @Composable
-fun carrerasState(): State<List<CarreraGuardada>> = contenedor().carreras.carreras.collectAsState(initial = emptyList())
+fun carrerasState(): State<List<Carrera>> {
+    // Historial de carreras desde su ViewModel compartido (contexto carreras, MVVM).
+    val repo = contenedor().carreras
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "historial-carreras") { com.gacelas.carreras.presentation.HistorialCarrerasViewModel(repo) }
+    return vm.carreras.collectAsState()
+}
 
 /** Racha vigente calculada con las carreras (misma logica que el servidor). */
 @Composable
-fun rachaState(): com.gacelas.data.rachas.Racha {
+fun rachaState(): com.gacelas.carreras.domain.reglas.Racha {
     val carreras by carrerasState()
     val ajustes by ajustesState()
     return remember(carreras, ajustes.metaSemanal) {
-        com.gacelas.data.rachas.Rachas.calcular(carreras, System.currentTimeMillis(), ajustes.metaSemanal)
+        com.gacelas.carreras.domain.reglas.Rachas.calcular(carreras, System.currentTimeMillis(), ajustes.metaSemanal)
     }
 }
 

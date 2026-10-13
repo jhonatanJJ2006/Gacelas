@@ -1,6 +1,6 @@
 package com.gacelas.ui.components
 
-import com.gacelas.data.carreras.PuntoGps
+import com.gacelas.carreras.domain.modelo.PuntoGps
 import com.gacelas.ui.three.ClipCorredor
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.geometry.LatLngBounds

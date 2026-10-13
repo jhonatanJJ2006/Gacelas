@@ -1,9 +1,9 @@
 package com.gacelas
 
-import com.gacelas.data.carreras.PuntoGps
-import com.gacelas.tracking.FaseCarrera
+import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.carreras.domain.FaseCarrera
 import com.gacelas.tracking.NotificacionCarrera
-import com.gacelas.tracking.RunTracker
+import com.gacelas.carreras.domain.SesionCarrera
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -11,7 +11,7 @@ import org.junit.Test
 
 class NotificacionCarreraTest {
     private var reloj = 0L
-    private val t = RunTracker(reloj = { reloj }, ahora = { 1_000_000L + reloj })
+    private val t = SesionCarrera(reloj = { reloj }, ahora = { 1_000_000L + reloj })
     private fun punto(i: Int) = PuntoGps(-3.99 - i * 0.00003, -79.2, 1_000_000L + reloj, 5f, null)
 
     @Test fun maquinaDeEstadosYNotificacion() {

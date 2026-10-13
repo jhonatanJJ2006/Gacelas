@@ -1,8 +1,8 @@
 package com.gacelas
 
 import com.gacelas.core.sensores.Rumbo
-import com.gacelas.data.carreras.PuntoGps
-import com.gacelas.tracking.RunTracker
+import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.carreras.domain.SesionCarrera
 import com.gacelas.ui.components.ReglasDescarga
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -43,14 +43,14 @@ class BrujulaOfflineTest {
 
     @Test fun alPararseSeBorraElRitmo() {
         var t = 0L
-        val tr = RunTracker(reloj = { t }, ahora = { 1_000L })
+        val tr = SesionCarrera(reloj = { t }, ahora = { 1_000L })
         tr.iniciar()
         for (i in 0..10) { t = i * 4_000L; tr.registrarPunto(PuntoGps(-4.0 + i * 0.0001, -79.2, t, 5f)) }
         assertNotNull(tr.estado.value.ritmoActualSegKm)
         // Quieto: puntos con menos de 2 m de avance durante mas de PARADO_MS.
         t = 44_000; tr.registrarPunto(PuntoGps(-4.0 + 10 * 0.0001, -79.2, t, 5f))
         assertNotNull(tr.estado.value.ritmoActualSegKm)
-        t = 40_000 + RunTracker.PARADO_MS + 1_000; tr.registrarPunto(PuntoGps(-4.0 + 10 * 0.0001 + 0.000005, -79.2, t, 5f))
+        t = 40_000 + SesionCarrera.PARADO_MS + 1_000; tr.registrarPunto(PuntoGps(-4.0 + 10 * 0.0001 + 0.000005, -79.2, t, 5f))
         assertNull(tr.estado.value.ritmoActualSegKm)
     }
 

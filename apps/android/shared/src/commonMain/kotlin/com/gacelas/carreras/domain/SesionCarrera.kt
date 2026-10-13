@@ -178,7 +178,4 @@ class SesionCarrera(
             puntos = e.puntos,
         )
     }
-
-    /** Alias historico de [aCarrera]. */
-    fun aCarreraGuardada(titulo: String, nota: String, publica: Boolean, id: String = nuevoUuid()): Carrera = aCarrera(titulo, nota, publica, id)
 }
