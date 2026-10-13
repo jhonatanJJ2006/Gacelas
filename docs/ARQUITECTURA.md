@@ -36,7 +36,7 @@ graph LR
 | ----------------------- | --------------------- | -------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | Lógica móvil compartida | `apps/android/shared` | Kotlin Multiplatform + Compose Multiplatform | `carreras`, `rutas`, `cuenta` y `comunidad` en capas | Clean Architecture + MVVM, DDD ligero por bounded context                            |
 | Android                 | `apps/android/app`    | Kotlin, Jetpack Compose                      | Shell de plataforma con pantallas propias            | Shell fino: piezas de plataforma para `ContenedorApp`, servicios Android, navegación |
-| iOS                     | `apps/ios/iosApp`     | SwiftUI + framework `shared`                 | Wrapper SwiftUI (3 archivos Swift)                   | Igual; solo integración nativa                                                       |
+| iOS                     | `apps/ios/iosApp`     | SwiftUI + framework `shared`                 | Wrapper SwiftUI; pantallas Compose MP de `shared`    | Igual; solo integración nativa                                                       |
 | Web                     | `apps/web`            | React 18, Vite, TypeScript, Zustand          | Feature folders + `lib/` plano                       | Feature-based con capas por feature                                                  |
 | Backend                 | `backend/migrations`  | Supabase (Postgres, RLS, Storage, Realtime)  | Migraciones SQL numeradas                            | Igual + tests de RLS y tipos generados                                               |
 
@@ -110,6 +110,8 @@ graph TD
 ### Objetivo y pendientes
 
 - Pendiente: APK release firmada y adjunta al mismo Release `v*` (hoy solo hay APK debug).
+- Hecho: pantallas de comunidad (#67, #68), dibujar ruta (#69) y corredor 3D de Inicio (#70) compartidos con iOS, con capturas de paridad.
+- Pendiente: configurar login en iOS (Sign in with Apple / sesión de Supabase en el build).
 - Pendiente: firma iOS y subida a TestFlight (secrets `IOS_CERT_P12`, `IOS_PROFILE`, `ASC_API_KEY` ya previstos en el workflow).
 - Pendiente: workflow de migraciones (validar SQL en Postgres efímero en PR; aplicar en producción solo manualmente o con aprobación).
 - Pendiente: chequeo automático de reglas de dependencias (ver móvil y web).
