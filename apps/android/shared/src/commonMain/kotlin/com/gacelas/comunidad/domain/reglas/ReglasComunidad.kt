@@ -96,3 +96,25 @@ fun haceCuanto(ms: Long?, ahora: Long = ahoraMs()): String {
         else -> "hace ${min / (60 * 24)}d"
     }
 }
+
+/** Notificaciones visibles segun los ajustes de notificaciones y las ya leidas. */
+fun notificacionesVisibles(a: com.gacelas.cuenta.domain.modelo.Ajustes, base: List<Notificacion>): List<Notificacion> = base
+    .filter {
+        when (it.tipo) {
+            TipoNotificacion.Like -> a.notifLikes
+            TipoNotificacion.Comentario -> a.notifComentarios
+            TipoNotificacion.Seguidor -> a.notifSeguidores
+            TipoNotificacion.Evento -> a.notifEventos
+            TipoNotificacion.EnVivo -> a.notifEnVivo
+            TipoNotificacion.Racha -> true
+        }
+    }
+    .map { if (it.id in a.notificacionesLeidas) it.copy(leida = true) else it }
+
+/** Filtra notificaciones segun la pestana activa. */
+fun filtrarNotificaciones(lista: List<Notificacion>, filtro: String): List<Notificacion> = when (filtro) {
+    "Sin leer" -> lista.filter { !it.leida }
+    "En vivo" -> lista.filter { it.tipo == TipoNotificacion.EnVivo }
+    else -> lista
+}
+

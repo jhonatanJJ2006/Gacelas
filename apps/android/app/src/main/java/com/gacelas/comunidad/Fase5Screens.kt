@@ -1,5 +1,6 @@
 package com.gacelas.comunidad
 
+import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -80,9 +81,9 @@ fun ClubesScreen(onAtras: () -> Unit, onClub: (String) -> Unit) {
     val repo = contenedor().clubes
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var datos by remember { mutableStateOf<Pair<List<Club>, Set<String>>?>(null) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.comunidad.presentation.ClubesViewModel(repo) }
+    val datos by vm.datos.collectAsState()
     var creando by remember { mutableStateOf(false) }
-    LaunchedEffect(repo) { datos = runCatching { repo?.listar() }.getOrNull() ?: (emptyList<Club>() to emptySet()) }
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.weight(1f)) { EncabezadoAtras("Clubes", onAtras) }

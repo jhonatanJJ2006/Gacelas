@@ -240,11 +240,12 @@ fun EventosScreen(onEvento: (String) -> Unit, onClubes: () -> Unit = {}) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val (eventos, inscritos) = eventosState()
-    var pestana by rememberSaveable { mutableStateOf(PestanaEventos.Proximos) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.comunidad.presentation.EventosViewModel(c.eventos) }
+    val pestana by vm.pestana.collectAsState()
     val clubId = remember { com.gacelas.comunidad.data.EventoDeClub.id.also { com.gacelas.comunidad.data.EventoDeClub.id = null } }
     var creando by remember { mutableStateOf(clubId != null) }
     var calendario by rememberSaveable { mutableStateOf(false) }
-    val lista = filtrarEventos(eventos, pestana, inscritos)
+    val lista = vm.visibles(eventos, inscritos)
     Pantalla {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Eventos", style = GType.headlineLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
@@ -255,13 +256,13 @@ fun EventosScreen(onEvento: (String) -> Unit, onClubes: () -> Unit = {}) {
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PestanaEventos.entries.forEach { p -> Pastilla(p.etiqueta, p == pestana, { pestana = p }) }
+            PestanaEventos.entries.forEach { p -> Pastilla(p.etiqueta, p == pestana, { vm.pestana(p) }) }
         }
         if (calendario) com.gacelas.comunidad.CalendarioEventos(eventos, inscritos, onEvento)
         if (lista.isEmpty()) Tarjeta { Text(if (pestana == PestanaEventos.MisEventos) "Aún no te inscribes a ningún evento." else "No hay eventos.", style = GType.bodyMd, color = GColors.TextSecondary) }
         lista.forEach { e ->
             TarjetaEvento(e, e.id in inscritos, onClick = { onEvento(e.id) }) {
-                scope.launch { c.eventos.alternarInscripcion(e.id) }
+                vm.alternarInscripcion(e.id)
                 context.aviso(if (e.id in inscritos) "Inscripción cancelada" else "Te inscribiste a ${e.titulo}")
             }
         }
@@ -269,9 +270,8 @@ fun EventosScreen(onEvento: (String) -> Unit, onClubes: () -> Unit = {}) {
     if (creando) {
         DialogoCrearEvento(onCerrar = { creando = false }) { base ->
             val nuevo = base.copy(clubId = clubId)
-            scope.launch { c.eventos.crear(nuevo) }
+            vm.crear(nuevo)
             creando = false
-            pestana = PestanaEventos.MisEventos
             context.aviso("Evento creado")
         }
     }

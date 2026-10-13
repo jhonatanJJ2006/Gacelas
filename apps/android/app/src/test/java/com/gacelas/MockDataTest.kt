@@ -2,7 +2,7 @@ package com.gacelas
 
 import com.gacelas.data.mock.MockData
 import com.gacelas.comunidad.domain.modelo.TipoNotificacion
-import com.gacelas.notificaciones.filtrarNotificaciones
+import com.gacelas.comunidad.domain.reglas.filtrarNotificaciones
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue

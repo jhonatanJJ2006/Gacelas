@@ -29,12 +29,12 @@ fun clubDesdeFila(f: JsonObject) = Club(
     f.texto("requires_approval") == "true", f.numero("members_count")?.toInt() ?: 0,
 )
 
-class ClubesRepository(private val backend: Backend, val uid: suspend () -> String?) {
+class ClubesRepository(private val backend: Backend, val uid: suspend () -> String?) : FuenteClubes {
     private suspend fun nombre(id: String) = runCatching {
         backend.select("profiles", mapOf("id" to id)).firstOrNull()?.let { it.texto("full_name")?.ifBlank { null } ?: it.texto("username") }
     }.getOrNull() ?: "Corredor"
 
-    suspend fun listar(): Pair<List<Club>, Set<String>> {
+    override suspend fun listar(): Pair<List<Club>, Set<String>> {
         val todos = backend.select("clubs", emptyMap(), "members_count", descendente = true).map(::clubDesdeFila)
         val yo = uid()
         val mios = if (yo == null) emptySet() else backend.select("club_members", mapOf("user_id" to yo, "status" to "active")).mapNotNull { it.texto("club_id") }.toSet()

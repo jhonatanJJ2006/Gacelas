@@ -19,3 +19,15 @@ interface EventosRepository {
     suspend fun crear(evento: Evento)
     suspend fun alternarInscripcion(id: String)
 }
+
+/** Notificaciones de la cuenta (servidor). La implementa data.NotificacionesRepository. */
+interface FuenteNotificaciones {
+    val lista: kotlinx.coroutines.flow.StateFlow<List<Notificacion>>
+    suspend fun refrescar()
+    suspend fun marcarLeidas(ids: Collection<String>)
+}
+
+/** Clubes: lista con los mios. La implementa data.ClubesRepository. */
+interface FuenteClubes {
+    suspend fun listar(): Pair<List<Club>, Set<String>>
+}

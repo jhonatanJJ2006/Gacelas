@@ -40,17 +40,17 @@ fun notificacionDesdeFila(f: JsonObject, ahora: Long = ahoraMs()): Notificacion?
 }
 
 /** Notificaciones reales de la cuenta (tabla notifications, RLS solo el dueño). */
-class NotificacionesRepository(private val backend: Backend, private val uid: suspend () -> String?) {
+class NotificacionesRepository(private val backend: Backend, private val uid: suspend () -> String?) : FuenteNotificaciones {
     private val _lista = MutableStateFlow<List<Notificacion>>(emptyList())
-    val lista: StateFlow<List<Notificacion>> = _lista
+    override val lista: StateFlow<List<Notificacion>> = _lista
 
-    suspend fun refrescar() {
+    override suspend fun refrescar() {
         val yo = uid() ?: run { _lista.value = emptyList(); return }
         runCatching { backend.select("notifications", mapOf("user_id" to yo), "created_at", descendente = true) }
             .onSuccess { filas -> _lista.value = filas.mapNotNull { notificacionDesdeFila(it) } }
     }
 
-    suspend fun marcarLeidas(ids: Collection<String>) {
+    override suspend fun marcarLeidas(ids: Collection<String>) {
         if (ids.isEmpty()) return
         _lista.value = _lista.value.map { if (it.id in ids) it.copy(leida = true) else it }
         ids.forEach { id -> runCatching { backend.update("notifications", JsonObject(mapOf("read" to JsonPrimitive(true))), mapOf("id" to id)) } }
