@@ -40,6 +40,8 @@ class ParidadIosTest(private val ruta: String) {
             // Comunidad (compartida con iOS desde comunidad/presentation/ui).
             Destinos.COMUNIDAD, Destinos.EVENTOS, Destinos.detalleEvento("1"), Destinos.NOTIFICACIONES, Destinos.CLUBES,
             Destinos.detalleClub("1"), Destinos.eventoEnVivo("1"), Destinos.EN_VIVO, Destinos.detalleEnVivo("1"),
+            // Rutas: dibujar ruta (DibujarRutaContenido).
+            Destinos.CREAR_RUTA,
         ).map { arrayOf(it) }
     }
 }

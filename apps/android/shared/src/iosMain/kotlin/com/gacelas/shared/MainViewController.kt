@@ -53,6 +53,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                 argumento("--pantalla=ajustes") -> PantallaIos.Ajustes
                 argumento("--pantalla=detalle") -> PantallaIos.Detalle
                 argumento("--pantalla=rutas") -> PantallaIos.Rutas
+                argumento("--pantalla=dibujar") -> PantallaIos.Dibujar
                 argumento("--pantalla=registro") -> PantallaIos.Registro
                 rutaArgumento() != null -> PantallaIos.Comunidad
                 argumento("--pantalla=recuperar") -> PantallaIos.Recuperar
@@ -112,7 +113,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                         sinLeer = MockData.notificaciones.count { !it.leida },
                         onNavegar = navegarPestana,
                     ) {
-                        if (pantalla == PantallaIos.Rutas) RutasIos()
+                        if (pantalla == PantallaIos.Rutas) RutasIos(onDibujar = { pantalla = PantallaIos.Dibujar })
                         else InicioIos(
                             onCorrer = { pantalla = PantallaIos.Carrera },
                             onEventos = { abrirComunidad(Destinos.EVENTOS) },
@@ -151,6 +152,10 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                     } else contenido()
                     CapaAvisoIos()
                 }
+                PantallaIos.Dibujar -> androidx.compose.foundation.layout.Box {
+                    DibujarRutaIos(onAtras = { pantalla = PantallaIos.Rutas }, onCreada = { pantalla = PantallaIos.Rutas })
+                    CapaAvisoIos()
+                }
                 PantallaIos.Carrera -> CarreraIos(panelInicial = argumento("--panel"), onSalir = { pantalla = PantallaIos.Inicio })
             }
         }
@@ -168,7 +173,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
     }
 }
 
-private enum class PantallaIos { Bienvenida, Login, Registro, Recuperar, Inicio, Carrera, Ajustes, Detalle, Rutas, Comunidad }
+private enum class PantallaIos { Bienvenida, Login, Registro, Recuperar, Inicio, Carrera, Ajustes, Detalle, Rutas, Comunidad, Dibujar }
 
 /** --ruta=<ruta de Destinos> (capturas de CI): abre esa pantalla de comunidad, p. ej. --ruta=comunidad/eventos/1. */
 private fun rutaArgumento(): String? =
@@ -328,7 +333,8 @@ private fun AjustesIos(onAtras: () -> Unit, onCerrarSesion: () -> Unit) {
 
 /** Lista de rutas compartida con las rutas de ejemplo (las remotas llegan con la sesion). */
 @Composable
-private fun RutasIos() {
+private fun RutasIos(onDibujar: () -> Unit) {
+    val perfilSesion by com.gacelas.acceso.SesionIos.auth.sesion.collectAsState(null)
     var pestana by remember { mutableStateOf(com.gacelas.rutas.domain.modelo.PestanaRutas.Explorar) }
     var consulta by remember { mutableStateOf("") }
     var filtros by remember { mutableStateOf(com.gacelas.rutas.domain.modelo.FiltrosRuta()) }
@@ -339,10 +345,23 @@ private fun RutasIos() {
     com.gacelas.rutas.ListaRutasContenido(
         lista = lista, pestana = pestana, onPestana = { pestana = it }, guardadas = guardadas,
         consulta = consulta, onConsulta = { consulta = it }, filtros = filtros, onFiltros = { filtros = it },
-        cerca = null, onCerca = {}, m = true, puedeDibujar = false,
-        onBuscar = {}, onRuta = {}, onDibujar = {},
+        // Igual que Android: dibujar solo con servidor y sesion iniciada.
+        cerca = null, onCerca = {}, m = true, puedeDibujar = com.gacelas.acceso.SesionIos.contenedor.explorar != null && perfilSesion != null,
+        onBuscar = {}, onRuta = {}, onDibujar = onDibujar,
         onAlternarGuardada = { id, g -> guardadas = if (g) guardadas - id else guardadas + id },
         mapaRutas = { com.gacelas.mapa.MapaRutasAgrupadasIos(lista, {}, it) },
         verMapaInicial = argumento("--ver-mapa"),
+    )
+}
+
+/** Dibujar ruta compartida con el mismo DibujarRutaViewModel que Android, sobre MapLibre iOS (zoom 15). */
+@Composable
+private fun DibujarRutaIos(onAtras: () -> Unit, onCreada: (String) -> Unit) {
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.acceso.SesionIos.contenedor.dibujarRutaViewModel() }
+    com.gacelas.rutas.presentation.ui.DibujarRutaContenido(
+        vm, onAtras, onCreada, onAviso = AvisoIos::mostrar,
+        mapa = if (!com.gacelas.mapa.MapaIos.disponible()) null else { trazos, circulos, alTocar ->
+            com.gacelas.mapa.MapaLibreIos(androidx.compose.ui.Modifier.fillMaxSize(), trazos = trazos, circulos = circulos, zoom = 15.0, alTocar = alTocar)
+        },
     )
 }
