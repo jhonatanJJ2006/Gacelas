@@ -73,7 +73,9 @@ object SesionIos {
 
     val backend: SupabaseBackend? by lazy {
         val url = claveIos("SUPABASE_URL"); val clave = claveIos("SUPABASE_ANON_KEY")
-        if (url.isBlank() || clave.isBlank()) null else runCatching { SupabaseBackend(url, clave) }.getOrNull()
+        // --sin-servidor (solo capturas de CI): sin Supabase, como las capturas Android (Robolectric).
+        val sinServidor = platform.Foundation.NSProcessInfo.processInfo.arguments.contains("--sin-servidor")
+        if (sinServidor || url.isBlank() || clave.isBlank()) null else runCatching { SupabaseBackend(url, clave) }.getOrNull()
     }
 
     /** Contenedor de dependencias compartido (igual que Android); iOS aun no descarga datos al entrar. */

@@ -54,10 +54,32 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                 argumento("--pantalla=detalle") -> PantallaIos.Detalle
                 argumento("--pantalla=rutas") -> PantallaIos.Rutas
                 argumento("--pantalla=registro") -> PantallaIos.Registro
+                rutaArgumento() != null -> PantallaIos.Comunidad
                 argumento("--pantalla=recuperar") -> PantallaIos.Recuperar
                 else -> PantallaIos.Bienvenida
             },
         )
+    }
+    // Pila de rutas de comunidad (formato Destinos), como el back stack de Navigation en Android.
+    var pilaComunidad by remember { mutableStateOf(listOfNotNull(rutaArgumento())) }
+    fun abrirComunidad(ruta: String) {
+        pilaComunidad = if (pantalla == PantallaIos.Comunidad) pilaComunidad + ruta else listOf(ruta)
+        pantalla = PantallaIos.Comunidad
+    }
+    fun atrasComunidad() {
+        pilaComunidad = pilaComunidad.dropLast(1)
+        if (pilaComunidad.isEmpty()) pantalla = PantallaIos.Inicio
+    }
+    val navegarPestana: (String) -> Unit = {
+        when (it) {
+            Destinos.CORRER -> pantalla = PantallaIos.Carrera
+            Destinos.INICIO -> pantalla = PantallaIos.Inicio
+            Destinos.RUTAS -> pantalla = PantallaIos.Rutas
+            Destinos.PERFIL -> pantalla = PantallaIos.Ajustes
+            // Pestaña Comunidad: reinicia la pila (como irAPestana); notificaciones se apila.
+            Destinos.COMUNIDAD -> { pilaComunidad = listOf(Destinos.COMUNIDAD); pantalla = PantallaIos.Comunidad }
+            Destinos.NOTIFICACIONES -> abrirComunidad(Destinos.NOTIFICACIONES)
+        }
     }
     // Sesion guardada (Supabase o local): al abrir sin pantalla pedida, entra directo a Inicio como Android.
     val sinPantalla = remember { NSProcessInfo.processInfo.arguments.none { (it as? String)?.startsWith("--") == true } }
@@ -88,16 +110,14 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                     ScaffoldPrincipal(
                         if (pantalla == PantallaIos.Rutas) Destinos.RUTAS else Destinos.INICIO,
                         sinLeer = MockData.notificaciones.count { !it.leida },
-                        onNavegar = {
-                            when (it) {
-                                Destinos.CORRER -> pantalla = PantallaIos.Carrera
-                                Destinos.INICIO -> pantalla = PantallaIos.Inicio
-                                Destinos.RUTAS -> pantalla = PantallaIos.Rutas
-                                Destinos.PERFIL -> pantalla = PantallaIos.Ajustes
-                            }
-                        },
+                        onNavegar = navegarPestana,
                     ) {
-                        if (pantalla == PantallaIos.Rutas) RutasIos() else InicioIos(onCorrer = { pantalla = PantallaIos.Carrera })
+                        if (pantalla == PantallaIos.Rutas) RutasIos()
+                        else InicioIos(
+                            onCorrer = { pantalla = PantallaIos.Carrera },
+                            onEventos = { abrirComunidad(Destinos.EVENTOS) },
+                            onEvento = { abrirComunidad(Destinos.detalleEvento(it)) },
+                        )
                     }
                     // Modal de actualizacion V3 (la descarga/instalacion en iOS va por App Store/TestFlight).
                     var modal by remember { mutableStateOf(argumento("--pantalla=modal")) }
@@ -121,6 +141,16 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                         }
                     },
                 )
+                PantallaIos.Comunidad -> androidx.compose.foundation.layout.Box {
+                    val ruta = pilaComunidad.lastOrNull() ?: Destinos.COMUNIDAD
+                    val contenido = @Composable {
+                        ComunidadIos(ruta, navegar = ::abrirComunidad, atras = ::atrasComunidad, onCorrer = { pantalla = PantallaIos.Carrera })
+                    }
+                    if (rutaConBarra(ruta)) {
+                        ScaffoldPrincipal(ruta, sinLeer = MockData.notificaciones.count { !it.leida }, onNavegar = navegarPestana) { contenido() }
+                    } else contenido()
+                    CapaAvisoIos()
+                }
                 PantallaIos.Carrera -> CarreraIos(panelInicial = argumento("--panel"), onSalir = { pantalla = PantallaIos.Inicio })
             }
         }
@@ -138,7 +168,11 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
     }
 }
 
-private enum class PantallaIos { Bienvenida, Login, Registro, Recuperar, Inicio, Carrera, Ajustes, Detalle, Rutas }
+private enum class PantallaIos { Bienvenida, Login, Registro, Recuperar, Inicio, Carrera, Ajustes, Detalle, Rutas, Comunidad }
+
+/** --ruta=<ruta de Destinos> (capturas de CI): abre esa pantalla de comunidad, p. ej. --ruta=comunidad/eventos/1. */
+private fun rutaArgumento(): String? =
+    NSProcessInfo.processInfo.arguments.firstNotNullOfOrNull { (it as? String)?.takeIf { a -> a.startsWith("--ruta=") }?.removePrefix("--ruta=") }
 
 /** "Versión 0.7.0 (700)", mismo formato que textoVersion() de Android, desde el Info.plist. */
 private fun versionIos(): String {
@@ -198,7 +232,7 @@ private fun RecuperarIos(onAtras: () -> Unit) {
  * en Android) llega en su etapa; mientras, la misma imagen de reemplazo que usa Android sin 3D.
  */
 @Composable
-private fun InicioIos(onCorrer: () -> Unit) {
+private fun InicioIos(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String) -> Unit) {
     val perfil by com.gacelas.acceso.SesionIos.auth.sesion.collectAsState(null)
     val ahora = remember { ahoraMs() }
     val evento = remember {
@@ -212,7 +246,7 @@ private fun InicioIos(onCorrer: () -> Unit) {
         m = true,
         racha = remember { com.gacelas.carreras.domain.reglas.Rachas.calcular(emptyList(), ahora) },
         evento = evento,
-        onCorrer = onCorrer, onEventos = {}, onEvento = {},
+        onCorrer = onCorrer, onEventos = onEventos, onEvento = onEvento,
         corredor3D = { com.gacelas.ui.three.Runner3DFallback() },
     )
 }

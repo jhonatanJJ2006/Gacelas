@@ -35,6 +35,11 @@ class ParidadIosTest(private val ruta: String) {
     companion object {
         @JvmStatic
         @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
-        fun rutas(): List<Array<Any>> = listOf(Destinos.BIENVENIDA, Destinos.INICIO_SESION, Destinos.INICIO, Destinos.AJUSTES, Destinos.RUTAS).map { arrayOf(it) }
+        fun rutas(): List<Array<Any>> = listOf(
+            Destinos.BIENVENIDA, Destinos.INICIO_SESION, Destinos.INICIO, Destinos.AJUSTES, Destinos.RUTAS,
+            // Comunidad (compartida con iOS desde comunidad/presentation/ui).
+            Destinos.COMUNIDAD, Destinos.EVENTOS, Destinos.detalleEvento("1"), Destinos.NOTIFICACIONES, Destinos.CLUBES,
+            Destinos.detalleClub("1"), Destinos.eventoEnVivo("1"), Destinos.EN_VIVO, Destinos.detalleEnVivo("1"),
+        ).map { arrayOf(it) }
     }
 }
