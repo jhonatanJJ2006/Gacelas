@@ -57,11 +57,12 @@ jobs:
         with: { distribution: temurin, java-version: '17' }
       - uses: gradle/actions/setup-gradle@v4
         with: { cache-read-only: false }
+      # Una sola entrada ~/.konan (~475 MB) compartida por todos los jobs: el limite de 10 GB de
+      # cache del repo se llenaba y desalojaba konan, volviendo los runs a frio.
       - uses: actions/cache@v4
         with:
           path: ~/.konan
-          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/android/gradle/libs.versions.toml') }}-tests
-          restore-keys: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/android/gradle/libs.versions.toml') }}-
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/android/gradle/libs.versions.toml') }}
       - name: Tests compartidos (simulador)
         working-directory: ${{ env.ANDROID_DIR }}
         run: ./gradlew :shared:iosSimulatorArm64Test --build-cache
@@ -81,8 +82,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.konan
-          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/android/gradle/libs.versions.toml') }}-build
-          restore-keys: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/android/gradle/libs.versions.toml') }}-
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/android/gradle/libs.versions.toml') }}
       - uses: actions/cache@v4
         with:
           path: ${{ env.IOS_DIR }}/build/SourcePackages
@@ -161,8 +161,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.konan
-          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/android/gradle/libs.versions.toml') }}-ipa
-          restore-keys: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/android/gradle/libs.versions.toml') }}-
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/android/gradle/libs.versions.toml') }}
       - name: Xcode 16
         run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)" && xcodebuild -version
       - name: Build .ipa sin firmar
