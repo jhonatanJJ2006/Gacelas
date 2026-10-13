@@ -41,6 +41,9 @@ kotlin {
             api(libs.kotlinx.serialization.json)
             api(libs.kotlinx.coroutines.core)
             api(libs.kotlinx.datetime)
+            // MVVM compartido (ViewModel + viewModelScope en Android e iOS).
+            api(libs.jetbrains.lifecycle.viewmodel)
+            api(libs.jetbrains.lifecycle.viewmodel.compose)
             api(libs.androidx.datastore.preferences.core)
             api(libs.ktor.client.core)
             api(project.dependencies.platform(libs.supabase.bom))
