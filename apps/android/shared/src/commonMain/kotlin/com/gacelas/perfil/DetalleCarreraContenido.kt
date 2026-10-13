@@ -64,7 +64,7 @@ fun DetalleCarreraContenido(c: CarreraGuardada?, fecha: String, m: Boolean, onAt
                 Text("Parciales", style = GType.titleMd, color = GColors.TextPrimary)
                 c.parciales.forEach { p ->
                     Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                        Text("Km ${p.numero}", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
+                        Text(if (p.manual) "Vuelta ${p.numero}" else "Km ${p.numero}", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
                         Text(formatearMs(p.segundos), style = GType.labelLg, color = GColors.TextPrimary)
                     }
                 }
