@@ -70,7 +70,7 @@ class DominioCarrerasTest {
         assertEquals(esperado, r)
     }
 
-        assertEquals(com.gacelas.carreras.domain.reglas.tituloPorHora(1_791_811_800_000L), c.titulo) // depende de la zona horaria del equipo
+    @Test fun sesionCompletaYGuardar() = runTest {
         var reloj = 0L
         val sesion = SesionCarrera(reloj = { reloj }, ahora = { 1_791_811_800_000L })
         sesion.iniciar()
@@ -82,7 +82,7 @@ class DominioCarrerasTest {
         assertEquals(1, fin.parciales.count { it.manual })
         val repo = RepoMemoria()
         val c = GuardarCarrera(sesion, repo)("", "nota", publica = false)
-        assertEquals("Carrera matutina", c.titulo)
+        assertEquals(com.gacelas.carreras.domain.reglas.tituloPorHora(1_791_811_800_000L), c.titulo) // segun la zona horaria del equipo
         assertEquals(c, ObtenerCarrera(repo)(c.id).first())
         EliminarCarrera(repo)(c.id)
         assertNull(ObtenerCarrera(repo)(c.id).first())
