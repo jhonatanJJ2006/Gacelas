@@ -92,18 +92,18 @@ Solo para capacidades de plataforma: sensores (`core/sensores`), fuentes (`ui/th
 | `cuenta`    | No                                                                  | En `data/auth`, `data/ajustes`, `data/notificaciones`        | En `acceso/`, `ajustes/`, `perfil/`            | Pendiente                                                             |
 | `comunidad` | No                                                                  | En `data/clubes` (`Fase5.kt`), `data/eventos`, `data/envivo` | En `apps/android/app/.../comunidad` y `envivo` | Pendiente                                                             |
 
-Otras carpetas de `commonMain` hoy: `correr`, `tracking`, `mapa`, `inicio`, `navigation`, `ui` (tema, componentes, 3D), `core/sensores`, `actualizacion`, `data/remoto` (cliente Supabase compartido), `data/mock`.
+Otras carpetas de `commonMain` hoy: `correr`, `tracking`, `mapa`, `inicio`, `navigation`, `ui` (tema, componentes, 3D), `core/sensores`, `actualizacion`, `acceso`, `ajustes`, `perfil` (UI de cuenta), `data/remoto` (cliente Supabase compartido), `data/clubes`, `data/eventos`, `data/envivo`, `data/notificaciones`, `data/mock`.
 
 Desviaciones detectadas:
 
-- `carreras/domain/SesionCarrera.kt` importa `com.gacelas.tracking.formatearHms` (formato de presentación) desde `domain`. Mover el formateo a `presentation` o la función a `shared`.
+- `carreras/domain/SesionCarrera.kt` importa `com.gacelas.tracking.formatearHms` (formato de presentación) desde `domain` (`tiempoTexto`). Mover el formateo a `presentation` o la función a `shared`.
 - `data/clubes/Fase5.kt` y `data/mock` usan nombres por fase/temporales en lugar de por contexto.
 - Varias pantallas de `apps/android/app` (`comunidad`, `envivo`, `rutas/DetalleRuta.kt`, `perfil/DetalleCarrera.kt`) tienen ViewModels y lógica propia de Android que iOS no comparte.
 
 ## Qué falta para el objetivo
 
-1. Contexto `cuenta`: crear `cuenta/{domain,data,presentation}`; mover `data/auth`, `data/ajustes`, `data/notificaciones` a `cuenta/data` y `acceso`, `ajustes`, `perfil` a `cuenta/presentation/ui`.
-2. Contexto `comunidad`: idem con `data/clubes`, `data/eventos`, `data/envivo` y las pantallas de `apps/android/app/.../comunidad`.
+1. Contexto `cuenta` (capas creadas en #61): mover la UI de `acceso`, `ajustes`, `perfil` a `cuenta/presentation/ui`, `data/notificaciones` a `cuenta/data` y añadir `domain/casosuso` cuando haya lógica más allá del repositorio.
+2. Contexto `comunidad` (en curso): crear `comunidad/{domain,data,presentation}` con `data/clubes`, `data/eventos`, `data/envivo` y las pantallas de `apps/android/app/.../comunidad`.
 3. Mover `ListaRutasContenido.kt` a `rutas/presentation/ui` y las pantallas de carrera (`correr`) a `carreras/presentation/ui`.
 4. Corregir la dependencia `domain -> tracking` de `SesionCarrera`.
 5. Reducir `apps/android/app` a composición, servicios Android y permisos; mover pantallas a `shared` para que iOS las reciba.

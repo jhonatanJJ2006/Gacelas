@@ -1,6 +1,6 @@
 # Arquitectura de Gacelas
 
-Documento de referencia de la arquitectura actual y objetivo. Basado en el código de `main` (commit 9bd51fa, octubre 2026). Detalle por parte:
+Documento de referencia de la arquitectura actual y objetivo. Basado en el código de `main` (commit ee9902e, 13 de octubre de 2026). Detalle por parte:
 
 - App móvil (shared KMP, Android, iOS): [arquitectura/movil.md](arquitectura/movil.md)
 - App web (`apps/web`): [arquitectura/web.md](arquitectura/web.md)
@@ -32,13 +32,13 @@ graph LR
     VER[Vercel] -. despliegue .-> WEB
 ```
 
-| Parte                   | Ubicación             | Tecnología                                   | Estilo actual                                               | Estilo objetivo                                           |
-| ----------------------- | --------------------- | -------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------- |
-| Lógica móvil compartida | `apps/android/shared` | Kotlin Multiplatform + Compose Multiplatform | Mixto: `carreras` y `rutas` ya en capas; resto por pantalla | Clean Architecture + MVVM, DDD ligero por bounded context |
-| Android                 | `apps/android/app`    | Kotlin, Jetpack Compose                      | Shell de plataforma con pantallas propias                   | Shell fino: DI, servicios Android, navegación             |
-| iOS                     | `apps/ios/iosApp`     | SwiftUI + framework `shared`                 | Wrapper SwiftUI (3 archivos Swift)                          | Igual; solo integración nativa                            |
-| Web                     | `apps/web`            | React 18, Vite, TypeScript, Zustand          | Feature folders + `lib/` plano                              | Feature-based con capas por feature                       |
-| Backend                 | `backend/migrations`  | Supabase (Postgres, RLS, Storage, Realtime)  | Migraciones SQL numeradas                                   | Igual + tests de RLS y tipos generados                    |
+| Parte                   | Ubicación             | Tecnología                                   | Estilo actual                                                 | Estilo objetivo                                           |
+| ----------------------- | --------------------- | -------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------- |
+| Lógica móvil compartida | `apps/android/shared` | Kotlin Multiplatform + Compose Multiplatform | `carreras`, `rutas` y `cuenta` en capas; `comunidad` en curso | Clean Architecture + MVVM, DDD ligero por bounded context |
+| Android                 | `apps/android/app`    | Kotlin, Jetpack Compose                      | Shell de plataforma con pantallas propias                     | Shell fino: DI, servicios Android, navegación             |
+| iOS                     | `apps/ios/iosApp`     | SwiftUI + framework `shared`                 | Wrapper SwiftUI (3 archivos Swift)                            | Igual; solo integración nativa                            |
+| Web                     | `apps/web`            | React 18, Vite, TypeScript, Zustand          | Feature folders + `lib/` plano                                | Feature-based con capas por feature                       |
+| Backend                 | `backend/migrations`  | Supabase (Postgres, RLS, Storage, Realtime)  | Migraciones SQL numeradas                                     | Igual + tests de RLS y tipos generados                    |
 
 ## Bounded contexts
 
@@ -92,18 +92,20 @@ graph TD
     PR -->|filtro de rutas iOS| IO[ios.yml]
     IO --> TS[Tests shared iosSimulatorArm64]
     IO --> BS[Build simulador]
-    BS --> CAP[Capturas en simulador]
+    BS -->|solo main, dispatch o label capturas| CAP[Capturas en simulador x3]
     TAG[Tag v* / release] --> IPA[.ipa sin firmar adjunta al Release]
     MAIN[push a main] --> VER[Vercel despliega web]
 ```
 
 ### Estado actual
 
-- Cuatro workflows: `ci.yml` (build, formato, lint de código y de documentación, tests), `web-tests.yml`, `android.yml` (matriz build/test/lint, APK debug como artefacto) e `ios.yml`.
-- Filtros de rutas: cada workflow corre solo si cambian sus carpetas.
-- Releases: un tag `v*` o un Release publicado genera `.ipa` sin firmar y `.app` de simulador y los adjunta al Release (`ios.yml`, job `ipa`). El bucket `app-releases` (migración 013) sirve los binarios y el aviso de actualización en la app (`data/actualizacion`).
-- Web: despliegue en Vercel (`apps/web/vercel.json`).
-- En revisión (PR #57): cachés de konan, DerivedData y framework compartido; capturas de iOS solo en main, `workflow_dispatch` o label `capturas`. Objetivo: menos de 5-6 min por workflow en PR.
+- Cuatro workflows: `ci.yml` (build, formato, lint de código y de documentación, tests; jobs en paralelo), `web-tests.yml`, `android.yml` (matriz build/test/lint en paralelo, APK debug como artefacto) e `ios.yml`.
+- Filtros de rutas: cada workflow corre solo si cambian sus carpetas (en `ios.yml`, job `cambios` con `dorny/paths-filter`).
+- `ios.yml`: `Tests shared (iosSimulatorArm64)` y `Build simulador` corren en paralelo en `macos-15`. Cachés: Gradle (`setup-gradle`), una sola entrada `~/.konan` compartida, SPM, framework compartido (`shared/build` + `.gradle`) y DerivedData de Xcode. En CI solo se compila el target `iosSimulatorArm64`.
+- Capturas del simulador (matriz de 3 grupos + `Unir capturas`): solo en push a `main`, `workflow_dispatch` o PR con label `capturas`. Otros labels no lanzan ni cancelan runs.
+- Tiempos medidos en PR: iOS 4-6.5 min (antes 13-24 min), Android unos 1.5 min, CI web menos de 1 min.
+- Releases: un tag `v*` o un Release publicado genera `.ipa` sin firmar y `.app` de simulador y los adjunta al Release (job `ipa`). El bucket `app-releases` (migración 013) sirve los binarios y el aviso de actualización en la app (`data/actualizacion`).
+- Web: despliegue en Vercel (`apps/web/vercel.json`), con previews por PR.
 
 ### Objetivo y pendientes
 
