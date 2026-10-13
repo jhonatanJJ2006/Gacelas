@@ -181,14 +181,15 @@ private fun CarreraIos(panelInicial: Boolean, onSalir: () -> Unit) {
     val s = remember { SeguimientoSensores(fuenteUbicacionNativa(), fuenteRumboNativa()) }
     DisposableEffect(s) { s.iniciar(carrera = true); onDispose { s.detener() } }
     LaunchedEffect(s) { while (true) { delay(1000); s.tic() } }
-    val real by s.tracker.estado.collectAsState()
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.carreras.presentation.CarreraEnCursoViewModel(s.tracker) }
+    val real by vm.estado.collectAsState()
     // --carrera-muestra (solo capturas de CI): los mismos datos fijos que la captura Android.
     val e = if (argumento("--carrera-muestra")) com.gacelas.correr.CarreraMuestra.estado else real
     com.gacelas.correr.ContenidoCarreraC4(
         com.gacelas.correr.VistaCarrera(e),
-        onPausa = { s.tracker.alternarPausa(); s.tic() },
+        onPausa = { vm.alternarPausa(); s.tic() },
         onStop = { s.tracker.finalizar(); onSalir() },
-        onVuelta = { s.tracker.vuelta() },
+        onVuelta = vm::vuelta,
         onAtras = onSalir,
         panelInicial = panelInicial,
     ) { vista3d, controles, _ ->
