@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+
 package com.gacelas.mapa
 
 import androidx.compose.foundation.background

@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+
 package com.gacelas.mapa
 
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -94,7 +96,6 @@ object MapaOfflineIos {
     fun estiloSinRed(oscuro: Boolean): String? {
         val teselas = teselasGuardadas() ?: return null
         val ruta = NSBundle.mainBundle.pathForResource(if (oscuro) "gacelas-oscuro" else "gacelas-claro", "json") ?: return null
-        @Suppress("CAST_NEVER_SUCCEEDS")
         val json = NSString.stringWithContentsOfFile(ruta, NSUTF8StringEncoding, null) ?: return null
         return ReglasTeselas.fijarTeselas(json, teselas)
     }
