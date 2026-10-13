@@ -110,97 +110,27 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
     var cerca by remember { mutableStateOf<Map<String, Double>?>(null) }
     val filtradas = com.gacelas.data.rutas.aplicarFiltros(filtrarRutas(remotas ?: MockData.rutas, pestana, guardadas, MockData.ID_USUARIO, consulta), filtros)
     val lista = cerca?.let { com.gacelas.data.rutas.ordenarPorCercania(filtradas, it) } ?: filtradas
-    Pantalla {
-        var verMapa by rememberSaveable { mutableStateOf(false) }
-        val perfilSesion by com.gacelas.ui.sesionState()
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Rutas de Loja", style = GType.headlineLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-            IconButton(onClick = { verMapa = !verMapa }) { Icon(if (verMapa) Icons.AutoMirrored.Filled.List else Icons.Filled.Map, if (verMapa) "Ver lista" else "Ver mapa", tint = GColors.TextPrimary) }
-            if (repo != null && perfilSesion != null) IconButton(onClick = onDibujar) { Icon(Icons.Filled.Draw, "Dibujar ruta", tint = GColors.TextPrimary) }
-        }
-        if (verMapa) {
-            MapaRutasAgrupadas(lista, onRuta, Modifier.fillMaxWidth().height(420.dp).clip(RoundedCornerShape(16.dp)))
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PestanaRutas.entries.forEach { p -> Pastilla(if (p == PestanaRutas.Guardadas) "${p.etiqueta} (${guardadas.size})" else p.etiqueta, p == pestana, { pestana = p }) }
-        }
-        CampoTexto("Buscar", consulta, { consulta = it }, "Buscar rutas...", trailing = {
-            IconButton(onClick = onBuscar) { Icon(Icons.Filled.Search, "Abrir buscador en el mapa", tint = GColors.TextSecondary) }
-        })
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Pastilla("Cerca de mí", cerca != null, {
-                if (cerca != null) cerca = null
-                else {
-                    val u = ultimaUbicacion(context)
-                    if (u == null || repo == null) context.aviso("Activa la ubicación para ver rutas cercanas")
-                    else scope.launch { cerca = repo.cercanas(u.first, u.second) }
-                }
-            })
-            Pastilla("Toda dificultad", filtros.dificultad == null, { filtros = filtros.copy(dificultad = null) })
-            com.gacelas.data.mock.Dificultad.entries.forEach { d -> Pastilla(d.etiqueta, filtros.dificultad == d, { filtros = filtros.copy(dificultad = d) }) }
-        }
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            com.gacelas.data.rutas.FiltroDistancia.entries.forEach { d -> Pastilla(d.etiqueta, filtros.distancia == d, { filtros = filtros.copy(distancia = d) }) }
-            com.gacelas.data.rutas.ETIQUETAS_RUTA.forEach { (k, v) -> Pastilla("#$v", filtros.etiqueta == k, { filtros = filtros.copy(etiqueta = if (filtros.etiqueta == k) null else k) }) }
-        }
-        if (lista.isEmpty()) {
-            Tarjeta {
-                Text(
-                    when (pestana) {
-                        PestanaRutas.Guardadas -> "Aún no guardas rutas. Toca el marcador de una ruta para guardarla."
-                        PestanaRutas.MisRutas -> "Todavía no creaste rutas."
-                        PestanaRutas.Explorar -> "No hay rutas que coincidan con la búsqueda."
-                    },
-                    style = GType.bodyMd, color = GColors.TextSecondary,
-                )
+    val perfilSesion by com.gacelas.ui.sesionState()
+    ListaRutasContenido(
+        lista = lista, pestana = pestana, onPestana = { pestana = it }, guardadas = guardadas,
+        consulta = consulta, onConsulta = { consulta = it }, filtros = filtros, onFiltros = { filtros = it },
+        cerca = cerca,
+        onCerca = {
+            if (cerca != null) cerca = null
+            else {
+                val u = ultimaUbicacion(context)
+                if (u == null || repo == null) context.aviso("Activa la ubicación para ver rutas cercanas")
+                else scope.launch { cerca = repo.cercanas(u.first, u.second) }
             }
-        }
-        lista.forEach { ruta ->
-            val guardada = ruta.id in guardadas
-            Tarjeta(padding = 0.dp, onClick = { onRuta(ruta.id) }) {
-                Box(Modifier.fillMaxWidth().height(120.dp).background(Brush.linearGradient(listOf(GColors.MapParks, GColors.SurfaceLow))), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Filled.Route, null, tint = GColors.Primary500.copy(alpha = 0.7f), modifier = Modifier.size(56.dp))
-                    IconButton(
-                        onClick = {
-                            scope.launch { c.rutas.alternarGuardada(ruta.id) }
-                            context.aviso(if (guardada) "Ruta quitada de guardadas" else "Ruta guardada")
-                        },
-                        modifier = Modifier.align(Alignment.TopEnd).padding(8.dp).clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.6f)),
-                    ) {
-                        Icon(if (guardada) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, if (guardada) "Quitar de guardadas" else "Guardar ruta", tint = GColors.Primary500)
-                    }
-                }
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(ruta.nombre, style = GType.titleMd, color = GColors.TextPrimary)
-                    Text(ruta.descripcion, style = GType.bodySm, color = GColors.TextSecondary)
-                    val extra = listOfNotNull(
-                        ruta.valoracion?.let { "★ %.1f (%d)".format(it, ruta.resenas) },
-                        ruta.meGusta.takeIf { it > 0 }?.let { "♥ $it" },
-                        cerca?.get(ruta.id)?.let { "a ${Unidades.texto(it, m, 1)} ${Unidades.etiquetaDistancia(m)}" },
-                        ruta.autorNombre?.let { "por $it" },
-                    )
-                    if (extra.isNotEmpty()) Text(extra.joinToString("  ·  "), style = GType.labelMd, color = GColors.TextSecondary)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Straighten, null, tint = GColors.TextSecondary, modifier = Modifier.size(16.dp))
-                        Text(" ${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}   ", style = GType.bodyMd, color = GColors.TextSecondary)
-                        Icon(Icons.AutoMirrored.Filled.TrendingUp, null, tint = GColors.TextSecondary, modifier = Modifier.size(16.dp))
-                        Text(" ${ruta.elevacionM}m", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
-                        EtiquetaDificultad(ruta.dificultad)
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun EtiquetaDificultad(d: Dificultad) {
-    val color = when (d) {
-        Dificultad.Facil -> GColors.Secondary500
-        Dificultad.Moderado -> GColors.Primary500
-        Dificultad.Dificil -> GColors.Danger
-    }
-    Text(d.etiqueta, style = GType.labelMd, color = color, modifier = Modifier.clip(CircleShape).background(color.copy(alpha = 0.2f)).padding(horizontal = 8.dp, vertical = 2.dp))
+        },
+        m = m, puedeDibujar = repo != null && perfilSesion != null,
+        onBuscar = onBuscar, onRuta = onRuta, onDibujar = onDibujar,
+        onAlternarGuardada = { id, guardada ->
+            scope.launch { c.rutas.alternarGuardada(id) }
+            context.aviso(if (guardada) "Ruta quitada de guardadas" else "Ruta guardada")
+        },
+        mapaRutas = { MapaRutasAgrupadas(lista, onRuta, it) },
+    )
 }
 
 @Composable
