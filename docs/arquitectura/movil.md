@@ -85,27 +85,27 @@ Solo para capacidades de plataforma: sensores (`core/sensores`), fuentes (`ui/th
 
 ## Estado actual
 
-| Contexto    | domain                                                              | data                                                         | presentation                                   | Comentario                                                            |
-| ----------- | ------------------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------- | --------------------------------------------------------------------- |
-| `carreras`  | Sí (`modelo`, `reglas`, `repositorio`, `casosuso`, `SesionCarrera`) | Sí (`Supabase`/`Local`)                                      | Sí (`ViewModelsCarreras.kt`)                   | Migrado (PR de Clean Architecture 1-2)                                |
-| `rutas`     | Sí                                                                  | Sí (incluye offline, trazos, elevación)                      | Sí (`ViewModelsRutas.kt`)                      | Migrado (#60); `ListaRutasContenido.kt` sigue en la raíz del contexto |
-| `cuenta`    | No                                                                  | En `data/auth`, `data/ajustes`, `data/notificaciones`        | En `acceso/`, `ajustes/`, `perfil/`            | Pendiente                                                             |
-| `comunidad` | No                                                                  | En `data/clubes` (`Fase5.kt`), `data/eventos`, `data/envivo` | En `apps/android/app/.../comunidad` y `envivo` | Pendiente                                                             |
+| Contexto    | domain                                                              | data                                                             | presentation                                                          | Comentario                                                            |
+| ----------- | ------------------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `carreras`  | Sí (`modelo`, `reglas`, `repositorio`, `casosuso`, `SesionCarrera`) | Sí (`Supabase`/`Local`)                                          | Sí (`ViewModelsCarreras.kt`)                                          | Migrado (PR de Clean Architecture 1-2)                                |
+| `rutas`     | Sí                                                                  | Sí (incluye offline, trazos, elevación)                          | Sí (`ViewModelsRutas.kt`)                                             | Migrado (#60); `ListaRutasContenido.kt` sigue en la raíz del contexto |
+| `cuenta`    | No                                                                  | En `data/auth`, `data/ajustes`, `data/notificaciones`            | En `acceso/`, `ajustes/`, `perfil/`                                   | Pendiente                                                             |
+| `comunidad` | Sí (`modelo`, `reglas`, `repositorio`)                              | Sí (`Local`/`Supabase` eventos, clubes, en vivo, notificaciones) | Sí (`EventosViewModel`, `NotificacionesViewModel`, `ClubesViewModel`) | Migrado (#63); paquete `com.gacelas.comunidad`                        |
 
-Otras carpetas de `commonMain` hoy: `correr`, `tracking`, `mapa`, `inicio`, `navigation`, `ui` (tema, componentes, 3D), `core/sensores`, `actualizacion`, `acceso`, `ajustes`, `perfil` (UI de cuenta), `data/remoto` (cliente Supabase compartido), `data/clubes`, `data/eventos`, `data/envivo`, `data/notificaciones`, `data/mock`.
+Otras carpetas de `commonMain` hoy: `correr`, `tracking`, `mapa`, `inicio`, `navigation`, `ui` (tema, componentes, 3D), `core/sensores`, `actualizacion`, `acceso`, `ajustes`, `perfil` (UI de cuenta), `data/remoto` (cliente Supabase compartido), `data/mock`.
 
 Desviaciones detectadas:
 
 - `carreras/domain/SesionCarrera.kt` importa `com.gacelas.tracking.formatearHms` (formato de presentación) desde `domain` (`tiempoTexto`). Mover el formateo a `presentation` o la función a `shared`.
-- `data/clubes/Fase5.kt` y `data/mock` usan nombres por fase/temporales en lugar de por contexto.
-- Varias pantallas de `apps/android/app` (`comunidad`, `envivo`, `rutas/DetalleRuta.kt`, `perfil/DetalleCarrera.kt`) tienen ViewModels y lógica propia de Android que iOS no comparte.
+- `data/mock` y pantallas como `Fase5Screens.kt` aún usan nombres por fase/temporales en lugar de por contexto.
+- En `apps/android/app`, el feed, el detalle de evento/club y las pantallas en vivo de comunidad aún no tienen ViewModel en `shared`; tampoco hay pantallas de comunidad en iOS. Otras pantallas Android (`rutas/DetalleRuta.kt`, `perfil/DetalleCarrera.kt`) siguen con lógica propia que iOS no comparte.
 
 ## Qué falta para el objetivo
 
 1. Contexto `cuenta` (capas creadas en #61): mover la UI de `acceso`, `ajustes`, `perfil` a `cuenta/presentation/ui`, `data/notificaciones` a `cuenta/data` y añadir `domain/casosuso` cuando haya lógica más allá del repositorio.
-2. Contexto `comunidad` (en curso): crear `comunidad/{domain,data,presentation}` con `data/clubes`, `data/eventos`, `data/envivo` y las pantallas de `apps/android/app/.../comunidad`.
+2. Contexto `comunidad` (migrado en #63): faltan ViewModels para feed, detalle de evento/club y pantallas en vivo; no hay pantallas de comunidad en iOS aún. Mover esas UI de `apps/android/app/.../comunidad` y `envivo` a `comunidad/presentation/ui` cuando existan.
 3. Mover `ListaRutasContenido.kt` a `rutas/presentation/ui` y las pantallas de carrera (`correr`) a `carreras/presentation/ui`.
 4. Corregir la dependencia `domain -> tracking` de `SesionCarrera`.
 5. Reducir `apps/android/app` a composición, servicios Android y permisos; mover pantallas a `shared` para que iOS las reciba.
 6. Añadir una comprobación automática de capas (por ejemplo un test con Konsist, o un script `rg` en CI que falle si un archivo de `*/domain/*` importa `io.github.jan.supabase`, `io.ktor`, `androidx.compose` o `*.data.*`).
-7. Tests de `domain` y ViewModels para `cuenta` y `comunidad` en `commonTest`.
+7. Tests de `domain` y ViewModels para `cuenta` en `commonTest` (comunidad ya tiene `ComunidadTest`); ampliar cobertura de ViewModels de comunidad cuando se añadan feed, detalle y en vivo.

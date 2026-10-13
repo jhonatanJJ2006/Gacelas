@@ -32,13 +32,13 @@ graph LR
     VER[Vercel] -. despliegue .-> WEB
 ```
 
-| Parte                   | Ubicación             | Tecnología                                   | Estilo actual                                                 | Estilo objetivo                                           |
-| ----------------------- | --------------------- | -------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------- |
-| Lógica móvil compartida | `apps/android/shared` | Kotlin Multiplatform + Compose Multiplatform | `carreras`, `rutas` y `cuenta` en capas; `comunidad` en curso | Clean Architecture + MVVM, DDD ligero por bounded context |
-| Android                 | `apps/android/app`    | Kotlin, Jetpack Compose                      | Shell de plataforma con pantallas propias                     | Shell fino: DI, servicios Android, navegación             |
-| iOS                     | `apps/ios/iosApp`     | SwiftUI + framework `shared`                 | Wrapper SwiftUI (3 archivos Swift)                            | Igual; solo integración nativa                            |
-| Web                     | `apps/web`            | React 18, Vite, TypeScript, Zustand          | Feature folders + `lib/` plano                                | Feature-based con capas por feature                       |
-| Backend                 | `backend/migrations`  | Supabase (Postgres, RLS, Storage, Realtime)  | Migraciones SQL numeradas                                     | Igual + tests de RLS y tipos generados                    |
+| Parte                   | Ubicación             | Tecnología                                   | Estilo actual                                        | Estilo objetivo                                           |
+| ----------------------- | --------------------- | -------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------- |
+| Lógica móvil compartida | `apps/android/shared` | Kotlin Multiplatform + Compose Multiplatform | `carreras`, `rutas`, `cuenta` y `comunidad` en capas | Clean Architecture + MVVM, DDD ligero por bounded context |
+| Android                 | `apps/android/app`    | Kotlin, Jetpack Compose                      | Shell de plataforma con pantallas propias            | Shell fino: DI, servicios Android, navegación             |
+| iOS                     | `apps/ios/iosApp`     | SwiftUI + framework `shared`                 | Wrapper SwiftUI (3 archivos Swift)                   | Igual; solo integración nativa                            |
+| Web                     | `apps/web`            | React 18, Vite, TypeScript, Zustand          | Feature folders + `lib/` plano                       | Feature-based con capas por feature                       |
+| Backend                 | `backend/migrations`  | Supabase (Postgres, RLS, Storage, Realtime)  | Migraciones SQL numeradas                            | Igual + tests de RLS y tipos generados                    |
 
 ## Bounded contexts
 
