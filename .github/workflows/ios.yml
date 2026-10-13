@@ -11,7 +11,6 @@ on:
 
 permissions:
   contents: write
-  actions: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -24,8 +23,7 @@ env:
   ORG_GRADLE_PROJECT_gacelas.ios.soloSimulador: 'true'
 
 # Grafo:  cambios ─┬─ tests-shared
-#                  ├─ build ──────────────┐ (artifact ios-builds)
-#                  ├─ capturas (matriz x3: arrancan el simulador mientras compila build) ── capturas-unir
+#                  ├─ build ── capturas (matriz x3) ── capturas-unir
 #                  └─ ipa (solo tags v* / release)
 jobs:
   cambios:
@@ -110,12 +108,12 @@ jobs:
           path: Gacelas-simulator.app.zip
 
   capturas:
-    # No usa needs: build para arrancar el simulador (~2-3 min en frio) en paralelo con la compilacion;
-    # luego espera al artifact ios-builds de este mismo run. 3 grupos: tests+build+3 = 5 jobs macOS
-    # (limite de concurrencia macOS del plan gratuito).
+    # needs: build. Probado arrancar el simulador en paralelo al build (esperando el artifact),
+    # pero con el limite de 5 runners macOS de la cuenta (compartido con otras ramas) las capturas
+    # ocupaban runners mientras build seguia en cola. El simulador se calienta en segundo plano
+    # mientras se descarga el .app.
     name: Capturas (${{ matrix.grupos }})
-    needs: cambios
-    if: needs.cambios.outputs.ios == 'true'
+    needs: build
     runs-on: macos-15
     timeout-minutes: 25
     strategy:
@@ -127,16 +125,6 @@ jobs:
         with: { sparse-checkout: apps/ios/ci }
       - name: Arrancar simulador (en segundo plano)
         run: apps/ios/ci/capturas.sh boot
-      - name: Esperar build simulador
-        env: { GH_TOKEN: '${{ github.token }}' }
-        run: |
-          for i in $(seq 1 120); do
-            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" --jq '.artifacts[].name' | grep -qx ios-builds && exit 0
-            estado=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs" --jq '.jobs[]|select(.name=="Build simulador")|.conclusion')
-            if [ -n "$estado" ] && [ "$estado" != success ]; then echo "Build simulador: $estado"; exit 1; fi
-            sleep 10
-          done
-          exit 1
       - uses: actions/download-artifact@v4
         with: { name: ios-builds }
       - run: unzip -q Gacelas-simulator.app.zip
