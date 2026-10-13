@@ -49,6 +49,9 @@ targets:
       path: iosApp/Info.plist
       properties:
         CFBundleDisplayName: Gacelas
+        # App en español: los botones del sistema (Sign in with Apple) salen como "Continuar con Apple".
+        CFBundleDevelopmentRegion: es
+        CFBundleLocalizations: [es]
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UILaunchScreen: {}
