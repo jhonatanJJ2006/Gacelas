@@ -6,11 +6,17 @@ set -uo pipefail
 T0=$(date +%s); marca() { echo "[capturas +$(( $(date +%s) - T0 ))s] $*"; }
 APPID=com.gacelas.app
 UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];p=[x for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')];print(next((x['udid'] for x in p if x['name']=='iPhone 16'),p[0]['udid']))")
-if [ "$1" = boot ]; then marca boot; xcrun simctl boot "$UDID"; exit 0; fi
+if [ "$1" = boot ]; then
+  # En segundo plano: arranque + calentamiento (la primera app lanzada en un simulador recien
+  # creado tarda ~2 min mientras el sistema termina de inicializarse).
+  nohup bash -c "xcrun simctl boot $UDID; xcrun simctl bootstatus $UDID -b; xcrun simctl launch $UDID com.apple.Preferences; sleep 20; xcrun simctl terminate $UDID com.apple.Preferences; touch /tmp/sim-listo" > /tmp/sim-boot.log 2>&1 &
+  exit 0
+fi
 APP=$1 OUT=$2; shift 2
 mkdir -p "$OUT"
 xcrun simctl boot "$UDID" 2>/dev/null || true
 marca bootstatus; xcrun simctl bootstatus "$UDID" -b
+[ -f /tmp/sim-boot.log ] && { for i in $(seq 1 60); do [ -f /tmp/sim-listo ] && break; sleep 3; done; cat /tmp/sim-boot.log | tail -5; }
 marca install
 # Limite de tiempo para comandos simctl que a veces se cuelgan en un simulador recien arrancado.
 limite() { local t=$1; shift; perl -e 'alarm shift; exec @ARGV' "$t" "$@"; }

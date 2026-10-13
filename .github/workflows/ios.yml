@@ -121,7 +121,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grupos: ['pantallas carrera', 'mapa', 'sensores']
+        grupos: ['pantallas', 'carrera mapa', 'sensores']
     steps:
       - uses: actions/checkout@v4
         with: { sparse-checkout: apps/ios/ci }
