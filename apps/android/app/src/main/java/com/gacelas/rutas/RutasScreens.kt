@@ -98,35 +98,30 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
     val c = contenedor()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val guardadas by c.rutas.guardadas.collectAsState(initial = emptySet())
+    val repo = c.explorar
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.rutas.presentation.ListaRutasViewModel(repo, c.rutas, MockData.ID_USUARIO, MockData.rutas) }
+    val guardadas by vm.guardadas.collectAsState()
     val ajustes by ajustesState()
     val m = ajustes.unidadesMetricas
-    var pestana by rememberSaveable { mutableStateOf(PestanaRutas.Explorar) }
-    var consulta by rememberSaveable { mutableStateOf("") }
-    val repo = c.explorar
-    val remotas by (repo?.rutas ?: remember { kotlinx.coroutines.flow.MutableStateFlow(null) }).collectAsState()
-    LaunchedEffect(repo) { repo?.refrescar() }
-    var filtros by remember { mutableStateOf(com.gacelas.rutas.domain.modelo.FiltrosRuta()) }
-    var cerca by remember { mutableStateOf<Map<String, Double>?>(null) }
-    val filtradas = com.gacelas.rutas.domain.reglas.aplicarFiltros(filtrarRutas(remotas ?: MockData.rutas, pestana, guardadas, MockData.ID_USUARIO, consulta), filtros)
-    val lista = cerca?.let { com.gacelas.rutas.domain.reglas.ordenarPorCercania(filtradas, it) } ?: filtradas
+    val q by vm.consulta.collectAsState()
+    val lista by vm.lista.collectAsState()
     val perfilSesion by com.gacelas.ui.sesionState()
     ListaRutasContenido(
-        lista = lista, pestana = pestana, onPestana = { pestana = it }, guardadas = guardadas,
-        consulta = consulta, onConsulta = { consulta = it }, filtros = filtros, onFiltros = { filtros = it },
-        cerca = cerca,
+        lista = lista, pestana = q.pestana, onPestana = vm::pestana, guardadas = guardadas,
+        consulta = q.texto, onConsulta = vm::buscar, filtros = q.filtros, onFiltros = vm::filtrar,
+        cerca = q.cerca,
         onCerca = {
-            if (cerca != null) cerca = null
+            if (q.cerca != null) vm.quitarCercania()
             else {
                 val u = ultimaUbicacion(context)
                 if (u == null || repo == null) context.aviso("Activa la ubicación para ver rutas cercanas")
-                else scope.launch { cerca = repo.cercanas(u.first, u.second) }
+                else vm.ordenarCerca(u.first, u.second)
             }
         },
         m = m, puedeDibujar = repo != null && perfilSesion != null,
         onBuscar = onBuscar, onRuta = onRuta, onDibujar = onDibujar,
         onAlternarGuardada = { id, guardada ->
-            scope.launch { c.rutas.alternarGuardada(id) }
+            vm.alternarGuardada(id)
             context.aviso(if (guardada) "Ruta quitada de guardadas" else "Ruta guardada")
         },
         mapaRutas = { MapaRutasAgrupadas(lista, onRuta, it) },

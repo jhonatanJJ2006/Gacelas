@@ -1,5 +1,6 @@
 package com.gacelas.rutas.data
 
+import com.gacelas.rutas.domain.repositorio.ExplorarRutas
 import com.gacelas.rutas.domain.modelo.ResenaRuta
 import com.gacelas.rutas.domain.reglas.trazoParaRuta
 
@@ -63,14 +64,14 @@ class ExplorarRepository(
     /** Se llama al dejar algo pendiente (programa SincronizacionWorker). */
     private val alEncolar: () -> Unit = {},
     private val uid: suspend () -> String?,
-) {
+) : ExplorarRutas {
     private val _rutas = MutableStateFlow<List<Ruta>?>(null)
     /** null hasta cargar o si el servidor falla (se usan las de ejemplo). */
-    val rutas: StateFlow<List<Ruta>?> = _rutas
+    override val rutas: StateFlow<List<Ruta>?> = _rutas
     private val _meGusta = MutableStateFlow<Set<String>>(emptySet())
-    val meGusta: StateFlow<Set<String>> = _meGusta
+    override val meGusta: StateFlow<Set<String>> = _meGusta
 
-    suspend fun refrescar() {
+    override suspend fun refrescar() {
         val yo = uid()
         runCatching { backend.select("routes", emptyMap(), "created_at") }.onSuccess { filas ->
             val lista = filas.map { rutaDesdeFila(it, yo) }
@@ -87,7 +88,7 @@ class ExplorarRepository(
             .onSuccess { f -> _meGusta.value = f.mapNotNull { it.texto("route_id") }.toSet() }
     }
 
-    suspend fun cercanas(lat: Double, lng: Double): Map<String, Double> = runCatching {
+    override suspend fun cercanas(lat: Double, lng: Double): Map<String, Double> = runCatching {
         val r = backend.rpc("rutas_cercanas", JsonObject(mapOf("lat" to JsonPrimitive(lat), "lng" to JsonPrimitive(lng), "radio_km" to JsonPrimitive(50))))
         (r as? JsonArray)?.mapNotNull { e -> (e as? JsonObject)?.let { o -> o.texto("id")?.let { it to (o.numero("distancia_km") ?: 0.0) } } }?.toMap().orEmpty()
     }.getOrDefault(emptyMap())
@@ -141,7 +142,7 @@ class ExplorarRepository(
         return quedan
     }
 
-    suspend fun fotos(id: String): List<String> = runCatching {
+    override suspend fun fotos(id: String): List<String> = runCatching {
         backend.select("route_photos", mapOf("route_id" to id), "created_at", descendente = true).mapNotNull { it.texto("path") }.map { backend.urlPublica("route-photos", it) }
     }.getOrDefault(emptyList())
 
@@ -155,7 +156,7 @@ class ExplorarRepository(
     }
 
     /** (nombre, veces) visibles y total de personas. */
-    suspend fun corredores(id: String): Pair<List<Pair<String, Int>>, Int> = runCatching {
+    override suspend fun corredores(id: String): Pair<List<Pair<String, Int>>, Int> = runCatching {
         val filas = (backend.rpc("corredores_ruta", JsonObject(mapOf("ruta" to JsonPrimitive(id)))) as? JsonArray).orEmpty().mapNotNull { it as? JsonObject }
         filas.map { (it.texto("nombre") ?: it.texto("usuario") ?: "Corredor") to (it.numero("veces")?.toInt() ?: 1) } to (filas.firstOrNull()?.numero("total")?.toInt() ?: 0)
     }.getOrDefault(emptyList<Pair<String, Int>>() to 0)
@@ -175,7 +176,7 @@ class ExplorarRepository(
         else backend.delete("route_likes", mapOf("user_id" to yo, "route_id" to id))
     }
 
-    suspend fun resenas(id: String): List<ResenaRuta> = runCatching {
+    override suspend fun resenas(id: String): List<ResenaRuta> = runCatching {
         backend.select("route_reviews", mapOf("route_id" to id), "created_at", descendente = true).map { f ->
             val u = f.texto("user_id").orEmpty()
             val nombre = runCatching { backend.select("profiles", mapOf("id" to u)).firstOrNull()?.let { it.texto("full_name") ?: it.texto("username") } }.getOrNull()

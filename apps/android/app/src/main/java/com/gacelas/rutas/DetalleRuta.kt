@@ -100,21 +100,20 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
     val perfil by sesionState()
     val ajustes by ajustesState()
     val m = ajustes.unidadesMetricas
-    var resenas by remember { mutableStateOf<List<ResenaRuta>>(emptyList()) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "ruta-$id") { com.gacelas.rutas.presentation.DetalleRutaViewModel(id, repo) }
+    val resenas by vm.resenas.collectAsState()
     var estrellas by remember { mutableIntStateOf(0) }
     var comentario by remember { mutableStateOf("") }
     val sociales = repo != null && remotas != null
-    var fotos by remember { mutableStateOf<List<String>>(emptyList()) }
-    var corredores by remember { mutableStateOf(emptyList<Pair<String, Int>>() to 0) }
+    val fotos by vm.fotos.collectAsState()
+    val corredores by vm.corredores.collectAsState()
     var subiendo by remember { mutableStateOf(false) }
     var compartiendo by remember { mutableStateOf(false) }
     val carrerasRacha by com.gacelas.ui.carrerasState()
     val rachaDias = remember(carrerasRacha, ajustes.metaSemanal) { com.gacelas.carreras.domain.reglas.Rachas.calcular(carrerasRacha, System.currentTimeMillis(), ajustes.metaSemanal).diaria }
     LaunchedEffect(id, sociales) {
         if (!sociales) return@LaunchedEffect
-        resenas = repo!!.resenas(id)
-        fotos = repo.fotos(id)
-        corredores = repo.corredores(id)
+        vm.cargar()
     }
     val elegirFoto = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri == null || repo == null) return@rememberLauncherForActivityResult
@@ -124,7 +123,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
                 val tipo = context.contentResolver.getType(uri) ?: "image/jpeg"
                 val bytes = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { context.contentResolver.openInputStream(uri)!!.use { it.readBytes() } }
                 repo.subirFoto(id, bytes, tipo)
-                fotos = repo.fotos(id)
+                vm.recargarFotos()
             }.onSuccess { context.aviso("Foto subida") }.onFailure { context.aviso(it.message ?: "No se pudo subir la foto") }
             subiendo = false
         }
@@ -218,7 +217,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
                             if (estrellas == 0) context.aviso("Elige de 1 a 5 estrellas")
                             else scope.launch {
                                 runCatching { repo!!.resenar(id, estrellas, comentario) }
-                                    .onSuccess { comentario = ""; resenas = repo!!.resenas(id); context.aviso("¡Gracias por tu reseña!") }
+                                    .onSuccess { comentario = ""; vm.recargarResenas(); context.aviso("¡Gracias por tu reseña!") }
                                     .onFailure { context.aviso(it.message ?: "No se pudo enviar") }
                             }
                         }, icono = null)
