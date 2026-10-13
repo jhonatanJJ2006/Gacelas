@@ -5,10 +5,10 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.gacelas.data.ajustes.AjustesRepository
-import com.gacelas.data.ajustes.LocalAjustesRepository
-import com.gacelas.data.auth.AuthRepository
-import com.gacelas.data.auth.LocalAuthRepository
+import com.gacelas.cuenta.domain.repositorio.AjustesRepository
+import com.gacelas.cuenta.data.LocalAjustesRepository
+import com.gacelas.cuenta.domain.repositorio.AuthRepository
+import com.gacelas.cuenta.data.LocalAuthRepository
 import com.gacelas.carreras.domain.repositorio.CarrerasRepository
 import com.gacelas.carreras.data.LocalCarrerasRepository
 import com.gacelas.data.eventos.EventosRepository
@@ -16,8 +16,8 @@ import com.gacelas.data.eventos.LocalEventosRepository
 import com.gacelas.rutas.data.LocalRutasRepository
 import com.gacelas.rutas.domain.repositorio.RutasRepository
 import com.gacelas.data.remoto.Backend
-import com.gacelas.data.remoto.SupabaseAjustesRepository
-import com.gacelas.data.remoto.SupabaseAuthRepository
+import com.gacelas.cuenta.data.SupabaseAjustesRepository
+import com.gacelas.cuenta.data.SupabaseAuthRepository
 import com.gacelas.data.remoto.SupabaseBackend
 import com.gacelas.carreras.data.SupabaseCarrerasRepository
 import com.gacelas.data.remoto.SupabaseEventosRepository

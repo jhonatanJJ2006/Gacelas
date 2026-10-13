@@ -1,7 +1,7 @@
 package com.gacelas
 
-import com.gacelas.data.ajustes.ConfigIntervalos
-import com.gacelas.data.auth.ValidacionAuth
+import com.gacelas.cuenta.domain.modelo.ConfigIntervalos
+import com.gacelas.cuenta.domain.reglas.ValidacionAuth
 import com.gacelas.carreras.domain.modelo.Carrera
 import com.gacelas.carreras.domain.reglas.Estadisticas
 import com.gacelas.carreras.domain.modelo.PuntoGps

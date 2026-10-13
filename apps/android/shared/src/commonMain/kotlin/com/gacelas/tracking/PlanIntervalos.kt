@@ -1,6 +1,6 @@
 package com.gacelas.tracking
 
-import com.gacelas.data.ajustes.ConfigIntervalos
+import com.gacelas.cuenta.domain.modelo.ConfigIntervalos
 
 enum class FaseIntervalo { Trabajo, Descanso, Terminado }
 

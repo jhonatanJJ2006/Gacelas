@@ -2,6 +2,7 @@
 
 package com.gacelas.acceso
 
+import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,10 +21,10 @@ import androidx.compose.ui.viewinterop.UIKitView
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
-import com.gacelas.data.auth.AuthRepository
-import com.gacelas.data.auth.LocalAuthRepository
-import com.gacelas.data.auth.ResultadoAuth
-import com.gacelas.data.remoto.SupabaseAuthRepository
+import com.gacelas.cuenta.domain.repositorio.AuthRepository
+import com.gacelas.cuenta.data.LocalAuthRepository
+import com.gacelas.cuenta.domain.modelo.ResultadoAuth
+import com.gacelas.cuenta.data.SupabaseAuthRepository
 import com.gacelas.data.remoto.SupabaseBackend
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -78,6 +79,8 @@ object SesionIos {
     }
 
     val auth: AuthRepository by lazy { backend?.let { SupabaseAuthRepository(it, store) } ?: LocalAuthRepository(store) }
+
+    val ajustes: com.gacelas.cuenta.domain.repositorio.AjustesRepository by lazy { com.gacelas.cuenta.data.LocalAjustesRepository(store) }
 }
 
 /** Llamado desde Swift al arrancar. */
@@ -103,29 +106,17 @@ private suspend fun pedir(bloque: (String, AlTokenAcceso) -> Unit): Triple<Strin
 fun BotonesSocialesIos(onEntrar: () -> Unit, portada: Boolean = false, alto: Dp = 52.dp) {
     val auth = SesionIos.auth
     val puente = SesionIos.puente
-    val scope = rememberCoroutineScope()
-    var error by remember { mutableStateOf<Pair<String, String>?>(null) }
-    var fase by remember { mutableStateOf<FaseGoogle?>(null) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "acceso-social") { com.gacelas.cuenta.presentation.AccesoSocialViewModel(auth) }
+    val fase by vm.fase.collectAsState()
+    val error by vm.error.collectAsState()
     val entrar by rememberUpdatedState(onEntrar)
     fun flujo(apple: Boolean) {
-        error = null
-        val titulo = if (apple) "No se pudo entrar con Apple" else "No se pudo entrar con Google"
-        val noDisponible = if (apple) "El inicio con Apple no está disponible en esta versión de la app. Usa tu correo por ahora."
-        else "El inicio con Google no está disponible en esta versión de la app. Usa tu correo por ahora."
-        if (!auth.googleDisponible || puente == null || (!apple && !puente.googleConfigurado())) { error = titulo to noDisponible; return }
-        fase = if (apple) FaseGoogle.Servidor else FaseGoogle.Cuenta
-        scope.launch {
-            try {
-                val (token, nonce, msj) = pedir { h, cb -> if (apple) puente.apple(h, cb) else puente.google(h, cb) }
-                if (token == null) { msj?.let { error = titulo to it }; return@launch }
-                fase = FaseGoogle.Servidor
-                val r = if (apple) auth.entrarConApple(token, nonce) else auth.entrarConGoogle(token, nonce)
-                when (r) {
-                    is ResultadoAuth.Ok -> { fase = FaseGoogle.Perfil; entrar() }
-                    is ResultadoAuth.Error -> error = titulo to r.mensaje.ifBlank { "No se pudo iniciar sesión" }
-                }
-            } finally { fase = null }
-        }
+        val p = if (apple) com.gacelas.cuenta.presentation.Proveedor.Apple else com.gacelas.cuenta.presentation.Proveedor.Google
+        val disponible = auth.googleDisponible && puente != null && (apple || puente.googleConfigurado())
+        vm.entrar(p, disponible, pedirToken = {
+            val (token, nonce, msj) = pedir { h, cb -> if (apple) puente!!.apple(h, cb) else puente!!.google(h, cb) }
+            if (token != null) com.gacelas.cuenta.presentation.TokenSocial.Ok(token, nonce) else com.gacelas.cuenta.presentation.TokenSocial.Error(msj)
+        }, alEntrar = { entrar() })
     }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         BotonGoogleVisual(onClick = { flujo(apple = false) }, cargando = fase != null, portada = portada, alto = alto)
@@ -135,5 +126,5 @@ fun BotonesSocialesIos(onEntrar: () -> Unit, portada: Boolean = false, alto: Dp 
         }
     }
     fase?.let { CargandoGoogle(it) }
-    error?.let { (t, m) -> ErrorGoogle(m, titulo = t) { error = null } }
+    error?.let { ErrorGoogle(it.mensaje, titulo = it.titulo) { vm.cerrarError() } }
 }

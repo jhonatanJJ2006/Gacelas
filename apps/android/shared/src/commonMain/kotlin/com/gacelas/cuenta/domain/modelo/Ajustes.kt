@@ -1,9 +1,5 @@
-package com.gacelas.data.ajustes
+package com.gacelas.cuenta.domain.modelo
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import com.gacelas.data.ValorJson
-import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -41,13 +37,3 @@ data class Ajustes(
     val metaSemanal: Int = 3,
 )
 
-interface AjustesRepository {
-    val ajustes: Flow<Ajustes>
-    suspend fun actualizar(transformar: (Ajustes) -> Ajustes)
-}
-
-class LocalAjustesRepository(store: DataStore<Preferences>) : AjustesRepository {
-    private val valor = ValorJson(store, "ajustes", Ajustes.serializer(), Ajustes())
-    override val ajustes: Flow<Ajustes> = valor.flujo
-    override suspend fun actualizar(transformar: (Ajustes) -> Ajustes) = valor.actualizar(transformar)
-}

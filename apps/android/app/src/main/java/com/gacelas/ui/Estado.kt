@@ -11,8 +11,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.gacelas.Contenedor
 import com.gacelas.GacelasApp
-import com.gacelas.data.ajustes.Ajustes
-import com.gacelas.data.auth.Perfil
+import com.gacelas.cuenta.domain.modelo.Ajustes
+import com.gacelas.cuenta.domain.modelo.Perfil
 import com.gacelas.carreras.domain.modelo.Carrera
 
 /** Contenedor de dependencias de la app actual. */
@@ -24,8 +24,8 @@ fun contenedor(): Contenedor {
 
 @Composable
 fun ajustesState(): State<Ajustes> {
-    val c = contenedor()
-    return c.ajustes.ajustes.collectAsState(initial = Ajustes())
+    val repo = contenedor().ajustes
+    return ajustesViewModel(repo).ajustes.collectAsState()
 }
 
 @Composable
@@ -56,3 +56,8 @@ fun Context.compartir(texto: String) {
     val intent = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, texto)
     startActivity(Intent.createChooser(intent, "Compartir").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 }
+
+/** ViewModel de ajustes compartido (contexto cuenta). */
+@Composable
+fun ajustesViewModel(repo: com.gacelas.cuenta.domain.repositorio.AjustesRepository = contenedor().ajustes): com.gacelas.cuenta.presentation.AjustesViewModel =
+    androidx.lifecycle.viewmodel.compose.viewModel(key = "ajustes") { com.gacelas.cuenta.presentation.AjustesViewModel(repo) }

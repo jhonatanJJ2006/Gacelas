@@ -50,7 +50,7 @@ class RutasOfflineTest {
     }
 
     @Test fun crearSinRedQuedaPendienteYSeSubeAlVolverLaRed() = runBlocking {
-        assertTrue(c.auth.registrar("Jhona Runner", "jhona@utpl.edu.ec", "gacela123") is com.gacelas.data.auth.ResultadoAuth.Ok)
+        assertTrue(c.auth.registrar("Jhona Runner", "jhona@utpl.edu.ec", "gacela123") is com.gacelas.cuenta.domain.modelo.ResultadoAuth.Ok)
         backend.sinRed = true
         val id = c.explorar!!.crear("Mi ruta", "", Dificultad.Facil, emptyList(), trazo, 10, null)
         assertTrue(c.explorar!!.pendiente(id))
