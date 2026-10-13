@@ -67,11 +67,11 @@ jobs:
           # La carrera pide ubicacion: se concede antes para que el aviso del sistema no tape la captura.
           xcrun simctl privacy "$UDID" grant location-always com.gacelas.app || xcrun simctl privacy "$UDID" grant location com.gacelas.app
           xcrun simctl launch "$UDID" com.gacelas.app --pantalla=carrera --carrera-muestra
-          sleep 8
+          sleep 20
           xcrun simctl io "$UDID" screenshot shots/carrera.png
           xcrun simctl terminate "$UDID" com.gacelas.app || true
           xcrun simctl launch "$UDID" com.gacelas.app --pantalla=carrera --carrera-muestra --panel
-          sleep 8
+          sleep 15
           xcrun simctl io "$UDID" screenshot shots/carrera-panel.png
           xcrun simctl terminate "$UDID" com.gacelas.app || true
           xcrun simctl launch "$UDID" com.gacelas.app --pantalla=modal
@@ -84,12 +84,21 @@ jobs:
           xcrun simctl terminate "$UDID" com.gacelas.app || true
           # Misma zona horaria que la captura Android (Loja) para la fecha del detalle.
           SIMCTL_CHILD_TZ=America/Guayaquil xcrun simctl launch "$UDID" com.gacelas.app --pantalla=detalle
-          sleep 8
+          sleep 20
           xcrun simctl io "$UDID" screenshot shots/detalle.png
           xcrun simctl terminate "$UDID" com.gacelas.app || true
           xcrun simctl launch "$UDID" com.gacelas.app --pantalla=rutas
           sleep 8
           xcrun simctl io "$UDID" screenshot shots/rutas.png
+          xcrun simctl terminate "$UDID" com.gacelas.app || true
+          # Etapa 4: mapa MapLibre de rutas agrupadas y estado de la descarga offline de Loja.
+          xcrun simctl launch "$UDID" com.gacelas.app --pantalla=rutas --ver-mapa
+          sleep 20
+          xcrun simctl io "$UDID" screenshot shots/rutas-mapa.png
+          xcrun simctl terminate "$UDID" com.gacelas.app || true
+          xcrun simctl launch "$UDID" com.gacelas.app --pantalla=ajustes
+          sleep 45
+          xcrun simctl io "$UDID" screenshot shots/ajustes-mapa-offline.png
           xcrun simctl terminate "$UDID" com.gacelas.app || true
           # Etapa 3: ubicacion simulada (Loja, ~3.3 m/s hacia el sur) y pantalla de sensores con carrera.
           xcrun simctl privacy "$UDID" grant location-always com.gacelas.app || xcrun simctl privacy "$UDID" grant location com.gacelas.app

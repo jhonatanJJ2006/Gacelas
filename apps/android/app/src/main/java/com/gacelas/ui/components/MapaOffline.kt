@@ -222,31 +222,14 @@ object MapaOffline {
 
 /** Reglas puras de la descarga automatica (probadas en JVM). */
 object ReglasDescarga {
-    private val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+    /** Primera plantilla "tiles" de una TileJSON (compartida con iOS). */
+    fun plantillaTeselas(tilejson: String): String? = com.gacelas.mapa.ReglasTeselas.plantillaTeselas(tilejson)
 
-    /** Primera plantilla "tiles" de una TileJSON. */
-    fun plantillaTeselas(tilejson: String): String? = runCatching {
-        json.parseToJsonElement(tilejson).let { it as kotlinx.serialization.json.JsonObject }["tiles"]
-            .let { it as kotlinx.serialization.json.JsonArray }.first().let { (it as kotlinx.serialization.json.JsonPrimitive).content }
-    }.getOrNull()
-
-    /** Cambia la fuente openmaptiles {url: TileJSON} por {tiles:[plantilla], maxzoom 14}. */
-    fun fijarTeselas(estilo: String, plantilla: String): String? = runCatching {
-        val e = json.parseToJsonElement(estilo) as kotlinx.serialization.json.JsonObject
-        val fuentes = e["sources"] as kotlinx.serialization.json.JsonObject
-        val nuevas = kotlinx.serialization.json.JsonObject(fuentes.mapValues { (k, v) ->
-            if (k != "openmaptiles") v else kotlinx.serialization.json.buildJsonObject {
-                (v as kotlinx.serialization.json.JsonObject).forEach { (kk, vv) -> if (kk != "url") put(kk, vv) }
-                put("tiles", kotlinx.serialization.json.JsonArray(listOf(kotlinx.serialization.json.JsonPrimitive(plantilla))))
-                put("minzoom", kotlinx.serialization.json.JsonPrimitive(0))
-                put("maxzoom", kotlinx.serialization.json.JsonPrimitive(14))
-            }
-        })
-        kotlinx.serialization.json.JsonObject(e + ("sources" to nuevas)).toString()
-    }.getOrNull()
+    /** Cambia la fuente openmaptiles {url: TileJSON} por {tiles:[plantilla], maxzoom 14} (compartida con iOS). */
+    fun fijarTeselas(estilo: String, plantilla: String): String? = com.gacelas.mapa.ReglasTeselas.fijarTeselas(estilo, plantilla)
 
     /** Se descarga sola si falta o quedo incompleta, y solo con wifi (o red no medida). */
-    fun descargarSola(existe: Boolean, completa: Boolean, wifi: Boolean): Boolean = wifi && (!existe || !completa)
+    fun descargarSola(existe: Boolean, completa: Boolean, wifi: Boolean): Boolean = com.gacelas.mapa.ReglasTeselas.descargarSola(existe, completa, wifi)
 
     fun redNoMedida(context: Context): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager ?: return false

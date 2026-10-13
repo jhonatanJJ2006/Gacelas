@@ -95,11 +95,12 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                     fecha = fechaLarga(com.gacelas.correr.CarreraMuestra.guardada.inicioMs), m = true,
                     onAtras = { pantalla = PantallaIos.Inicio }, onEliminar = { pantalla = PantallaIos.Inicio },
                     mapa = { c ->
-                        com.gacelas.correr.TrazadoRuta(
-                            c.puntos,
-                            androidx.compose.ui.Modifier.fillMaxWidth().height(240.dp)
-                                .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp)),
-                        )
+                        // Mismo mapa que DetalleCarrera en Android; sin MapLibre, el trazado de respaldo.
+                        val mod = androidx.compose.ui.Modifier.fillMaxWidth().height(240.dp)
+                            .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                        com.gacelas.mapa.MapaGacelasIos(c.puntos.map { com.gacelas.mapa.Coord(it.lat, it.lng) }, mod) {
+                            com.gacelas.correr.TrazadoRuta(c.puntos, mod)
+                        }
                     },
                 )
                 PantallaIos.Carrera -> CarreraIos(panelInicial = argumento("--panel"), onSalir = { pantalla = PantallaIos.Inicio })
@@ -172,7 +173,7 @@ private fun InicioIos(onCorrer: () -> Unit) {
 
 /**
  * Carrera V1 compartida con el tracker y el GPS reales de iOS (CoreLocation).
- * El mapa MapLibre iOS llega en la etapa 4: mientras, el mismo trazado de respaldo que usa
+ * Mapa MapLibre iOS (etapa 4) como en Android; sin MapLibre, el mismo trazado de respaldo que
  * Android sin MapLibre (TrazadoRuta), con los controles del diseño.
  */
 @Composable
@@ -190,12 +191,19 @@ private fun CarreraIos(panelInicial: Boolean, onSalir: () -> Unit) {
         onVuelta = { s.tracker.vuelta() },
         onAtras = onSalir,
         panelInicial = panelInicial,
-    ) { _, controles, _ ->
+    ) { vista3d, controles, _ ->
         androidx.compose.foundation.layout.Box(
             androidx.compose.ui.Modifier.fillMaxSize().background(com.gacelas.correr.K1.Fondo),
         ) {
-            com.gacelas.correr.TrazadoRuta(e.puntos, androidx.compose.ui.Modifier.fillMaxSize())
-            controles({}, {}, 0f, true)
+            // Igual que CarreraAndroid: MapaGacelas con seguimiento, ruta magenta y los controles C4.
+            com.gacelas.mapa.MapaGacelasIos(
+                e.puntos.map { com.gacelas.mapa.Coord(it.lat, it.lng) }, androidx.compose.ui.Modifier.fillMaxSize(),
+                seguir = true, zoom = 17f, modo3d = vista3d, ritmoSegKm = e.ritmoActualSegKm, adelanteM = 60.0,
+                rutaMagenta = true, avisoArriba = 210.dp, controlesPropios = controles,
+            ) {
+                com.gacelas.correr.TrazadoRuta(e.puntos, androidx.compose.ui.Modifier.fillMaxSize())
+                controles({}, {}, 0f, true)
+            }
         }
     }
 }
@@ -219,11 +227,16 @@ private fun AjustesIos(onAtras: () -> Unit, onCerrarSesion: () -> Unit) {
             }
         },
         onCerrarSesion = onCerrarSesion,
-        // Sin MapLibre iOS todavia (etapa 4): la tarjeta como Android sin mapa configurado.
+        // Igual que MapaOfflineAjuste en Android: estado real de la descarga de Loja.
         mapaOffline = {
+            val estado by com.gacelas.mapa.MapaOfflineIos.estado.collectAsState()
             com.gacelas.ajustes.TarjetaMapaOffline(
-                nombre = "Loja, Ecuador", texto = "Descarga las calles de Loja (OpenStreetMap) para correr sin datos",
-                lista = false, porcentaje = null, disponible = false, onDescargar = {}, onEliminar = {},
+                nombre = com.gacelas.mapa.MapaGacelasConst.LOJA_NOMBRE, texto = com.gacelas.mapa.textoEstadoMapaOffline(estado),
+                lista = estado is com.gacelas.mapa.EstadoMapaOffline.Lista,
+                porcentaje = (estado as? com.gacelas.mapa.EstadoMapaOffline.Descargando)?.porcentaje,
+                disponible = com.gacelas.mapa.MapaIos.disponible(),
+                onDescargar = { com.gacelas.mapa.MapaIos.offline?.descargar() },
+                onEliminar = { com.gacelas.mapa.MapaIos.offline?.eliminar() },
             )
         },
     )
@@ -245,6 +258,7 @@ private fun RutasIos() {
         cerca = null, onCerca = {}, m = true, puedeDibujar = false,
         onBuscar = {}, onRuta = {}, onDibujar = {},
         onAlternarGuardada = { id, g -> guardadas = if (g) guardadas - id else guardadas + id },
-        mapaRutas = {},
+        mapaRutas = { com.gacelas.mapa.MapaRutasAgrupadasIos(lista, {}, it) },
+        verMapaInicial = argumento("--ver-mapa"),
     )
 }

@@ -3,6 +3,11 @@ options:
   bundleIdPrefix: com.gacelas
   deploymentTarget:
     iOS: "15.0"
+packages:
+  # MapLibre Native iOS (mismo motor que el MapLibre Android de la app).
+  MapLibre:
+    url: https://github.com/maplibre/maplibre-gl-native-distribution
+    exactVersion: 6.31.0
 settings:
   base:
     MARKETING_VERSION: "0.7.0"
@@ -20,6 +25,13 @@ targets:
         buildPhase: resources
       - path: ../../android/shared/src/androidMain/res/drawable/ic_google_g.xml
         buildPhase: resources
+      # Estilos Gacelas del mapa: los mismos archivos que Android (app/src/main/assets/mapas).
+      - path: ../../android/app/src/main/assets/mapas/gacelas-oscuro.json
+        buildPhase: resources
+      - path: ../../android/app/src/main/assets/mapas/gacelas-claro.json
+        buildPhase: resources
+    dependencies:
+      - package: MapLibre
     info:
       path: iosApp/Info.plist
       properties:
