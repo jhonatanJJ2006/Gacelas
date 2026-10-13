@@ -10,7 +10,7 @@ packages:
     exactVersion: 6.31.0
   GoogleSignIn:
     url: https://github.com/google/GoogleSignIn-iOS
-    from: 8.0.0
+    exactVersion: 9.2.0
 settings:
   base:
     MARKETING_VERSION: "0.7.0"
