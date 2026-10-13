@@ -16,7 +16,7 @@ import com.gacelas.navigation.Destinos
 import com.gacelas.ui.components.ScaffoldPrincipal
 import com.gacelas.acceso.BotonGoogleVisual
 import com.gacelas.acceso.InicioSesionC4
-import com.gacelas.data.auth.ValidacionAuth
+import com.gacelas.cuenta.domain.reglas.ValidacionAuth
 import com.gacelas.ui.theme.GacelasTheme
 import platform.Foundation.NSBundle
 import platform.Foundation.NSDate
@@ -62,7 +62,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
     // Sesion guardada (Supabase o local): al abrir sin pantalla pedida, entra directo a Inicio como Android.
     val sinPantalla = remember { NSProcessInfo.processInfo.arguments.none { (it as? String)?.startsWith("--") == true } }
     LaunchedEffect(Unit) {
-        (com.gacelas.acceso.SesionIos.auth as? com.gacelas.data.remoto.SupabaseAuthRepository)?.let { runCatching { it.restaurar() } }
+        (com.gacelas.acceso.SesionIos.auth as? com.gacelas.cuenta.data.SupabaseAuthRepository)?.let { runCatching { it.restaurar() } }
         if (sinPantalla && pantalla == PantallaIos.Bienvenida && com.gacelas.acceso.SesionIos.auth.sesion.firstOrNull() != null) pantalla = PantallaIos.Inicio
     }
     if (!enSensores) {
@@ -168,8 +168,8 @@ private fun LoginIos(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: () 
                 cargando = true
                 scope.launch {
                     when (val r = auth.iniciarSesion(email, password)) {
-                        is com.gacelas.data.auth.ResultadoAuth.Ok -> onEntrar()
-                        is com.gacelas.data.auth.ResultadoAuth.Error -> error = r.mensaje
+                        is com.gacelas.cuenta.domain.modelo.ResultadoAuth.Ok -> onEntrar()
+                        is com.gacelas.cuenta.domain.modelo.ResultadoAuth.Error -> error = r.mensaje
                     }
                     cargando = false
                 }
@@ -197,8 +197,8 @@ private fun RegistroIos(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesio
             cargando = true
             scope.launch {
                 when (val r = auth.registrar(nombre, email, password)) {
-                    is com.gacelas.data.auth.ResultadoAuth.Ok -> onCrear()
-                    is com.gacelas.data.auth.ResultadoAuth.Error -> error = r.mensaje
+                    is com.gacelas.cuenta.domain.modelo.ResultadoAuth.Ok -> onCrear()
+                    is com.gacelas.cuenta.domain.modelo.ResultadoAuth.Error -> error = r.mensaje
                 }
                 cargando = false
             }
@@ -221,8 +221,8 @@ private fun RecuperarIos(onAtras: () -> Unit) {
         onEnviar = {
             scope.launch {
                 when (val r = auth.recuperarContrasena(email)) {
-                    is com.gacelas.data.auth.ResultadoAuth.Ok -> enviado = true
-                    is com.gacelas.data.auth.ResultadoAuth.Error -> error = r.mensaje
+                    is com.gacelas.cuenta.domain.modelo.ResultadoAuth.Ok -> enviado = true
+                    is com.gacelas.cuenta.domain.modelo.ResultadoAuth.Error -> error = r.mensaje
                 }
             }
         },
@@ -302,7 +302,7 @@ private fun fechaLarga(ms: Long): String = platform.Foundation.NSDateFormatter()
 @Composable
 private fun AjustesIos(onAtras: () -> Unit, onCerrarSesion: () -> Unit) {
     val scope = androidx.compose.runtime.rememberCoroutineScope()
-    var a by remember { mutableStateOf(com.gacelas.data.ajustes.Ajustes()) }
+    var a by remember { mutableStateOf(com.gacelas.cuenta.domain.modelo.Ajustes()) }
     com.gacelas.ajustes.AjustesContenido(
         a = a, version = versionIos(), guardar = { t -> a = t(a) },
         onAtras = onAtras, onEditarPerfil = {}, onPrivacidad = {}, onNotificaciones = {},

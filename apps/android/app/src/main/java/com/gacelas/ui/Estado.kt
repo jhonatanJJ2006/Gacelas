@@ -11,8 +11,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.gacelas.Contenedor
 import com.gacelas.GacelasApp
-import com.gacelas.data.ajustes.Ajustes
-import com.gacelas.data.auth.Perfil
+import com.gacelas.cuenta.domain.modelo.Ajustes
+import com.gacelas.cuenta.domain.modelo.Perfil
 import com.gacelas.carreras.domain.modelo.Carrera
 
 /** Contenedor de dependencias de la app actual. */

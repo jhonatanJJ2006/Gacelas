@@ -65,7 +65,7 @@ fun iconoNotificacion(tipo: TipoNotificacion): Pair<ImageVector, Color> = when (
 }
 
 /** Notificaciones visibles segun los ajustes de notificaciones y las ya leidas. */
-fun notificacionesVisibles(a: com.gacelas.data.ajustes.Ajustes, base: List<Notificacion> = MockData.notificaciones): List<Notificacion> = base
+fun notificacionesVisibles(a: com.gacelas.cuenta.domain.modelo.Ajustes, base: List<Notificacion> = MockData.notificaciones): List<Notificacion> = base
     .filter {
         when (it.tipo) {
             TipoNotificacion.Like -> a.notifLikes

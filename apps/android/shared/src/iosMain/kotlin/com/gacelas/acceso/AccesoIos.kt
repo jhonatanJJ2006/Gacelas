@@ -20,10 +20,10 @@ import androidx.compose.ui.viewinterop.UIKitView
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
-import com.gacelas.data.auth.AuthRepository
-import com.gacelas.data.auth.LocalAuthRepository
-import com.gacelas.data.auth.ResultadoAuth
-import com.gacelas.data.remoto.SupabaseAuthRepository
+import com.gacelas.cuenta.domain.repositorio.AuthRepository
+import com.gacelas.cuenta.data.LocalAuthRepository
+import com.gacelas.cuenta.domain.modelo.ResultadoAuth
+import com.gacelas.cuenta.data.SupabaseAuthRepository
 import com.gacelas.data.remoto.SupabaseBackend
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine

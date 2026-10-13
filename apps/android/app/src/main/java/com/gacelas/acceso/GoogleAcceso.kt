@@ -51,7 +51,7 @@ import android.util.Log
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.gacelas.BuildConfig
-import com.gacelas.data.auth.ResultadoAuth
+import com.gacelas.cuenta.domain.modelo.ResultadoAuth
 import com.gacelas.ui.contenedor
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType

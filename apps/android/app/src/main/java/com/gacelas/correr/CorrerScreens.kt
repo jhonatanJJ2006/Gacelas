@@ -93,7 +93,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.gacelas.core.location.LocationService
 import com.gacelas.ajustes.permisosCarrera
-import com.gacelas.data.ajustes.ConfigIntervalos
+import com.gacelas.cuenta.domain.modelo.ConfigIntervalos
 import com.gacelas.carreras.domain.modelo.PuntoGps
 import com.gacelas.tracking.Avisos
 import com.gacelas.carreras.domain.EstadoCarrera
@@ -583,7 +583,7 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
     val scope = rememberCoroutineScope()
     var titulo by rememberSaveable { mutableStateOf("") }
     var nota by rememberSaveable { mutableStateOf("") }
-    var publica by rememberSaveable { mutableStateOf(ajustes.visibilidad != com.gacelas.data.ajustes.Visibilidad.Privado) }
+    var publica by rememberSaveable { mutableStateOf(ajustes.visibilidad != com.gacelas.cuenta.domain.modelo.Visibilidad.Privado) }
     var guardando by remember { mutableStateOf(false) }
     val carrerasPrevias by com.gacelas.ui.carrerasState()
     val rachaAntes = remember(carrerasPrevias, ajustes.metaSemanal) { com.gacelas.carreras.domain.reglas.Rachas.calcular(carrerasPrevias, System.currentTimeMillis(), ajustes.metaSemanal) }

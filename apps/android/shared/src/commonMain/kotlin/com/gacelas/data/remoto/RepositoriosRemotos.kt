@@ -6,13 +6,13 @@ import com.gacelas.shared.redondear
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.gacelas.data.ValorJson
-import com.gacelas.data.ajustes.Ajustes
-import com.gacelas.data.ajustes.AjustesRepository
-import com.gacelas.data.ajustes.Visibilidad
-import com.gacelas.data.auth.AuthRepository
-import com.gacelas.data.auth.Perfil
-import com.gacelas.data.auth.ResultadoAuth
-import com.gacelas.data.auth.ValidacionAuth
+import com.gacelas.cuenta.domain.modelo.Ajustes
+import com.gacelas.cuenta.domain.repositorio.AjustesRepository
+import com.gacelas.cuenta.domain.modelo.Visibilidad
+import com.gacelas.cuenta.domain.repositorio.AuthRepository
+import com.gacelas.cuenta.domain.modelo.Perfil
+import com.gacelas.cuenta.domain.modelo.ResultadoAuth
+import com.gacelas.cuenta.domain.reglas.ValidacionAuth
 import com.gacelas.carreras.domain.modelo.Carrera
 import com.gacelas.carreras.domain.repositorio.CarrerasRepository
 import com.gacelas.carreras.domain.modelo.Parcial
@@ -50,20 +50,6 @@ internal fun JsonObject.numero(k: String): Double? = (this[k] as? JsonPrimitive)
 internal fun JsonObject.entero(k: String): Int? = (this[k] as? JsonPrimitive)?.intOrNull ?: numero(k)?.toInt()
 internal fun JsonObject.logico(k: String): Boolean? = (this[k] as? JsonPrimitive)?.booleanOrNull
 
-fun perfilDesdeFila(fila: JsonObject?, u: UsuarioRemoto): Perfil {
-    val nombre = fila?.texto("full_name") ?: u.meta.texto("full_name") ?: u.meta.texto("name") ?: u.email.substringBefore('@')
-    return Perfil(
-        email = u.email,
-        nombre = nombre,
-        username = fila?.texto("username") ?: ValidacionAuth.usernameDesde(nombre, u.email),
-        bio = fila?.texto("bio").orEmpty(),
-        ubicacion = fila?.texto("location") ?: "Loja, Ecuador",
-        edad = fila?.texto("age").orEmpty(),
-        genero = fila?.texto("gender") ?: "Prefiero no decir",
-        fotoPath = fila?.texto("avatar_url") ?: u.meta.texto("avatar_url"),
-    )
-}
-
 /** Fechas ISO 8601 con kotlinx-datetime (multiplataforma). */
 object FechaIso {
     fun formatear(ms: Long): String = com.gacelas.shared.isoUtc(ms)
@@ -74,169 +60,6 @@ object FechaIso {
         if (t.endsWith("Z")) t = t.dropLast(1) + "+00:00"
         if (Regex("[+-]\\d{2}$").containsMatchIn(t)) t += ":00"
         return runCatching { kotlinx.datetime.Instant.parse(t).toEpochMilliseconds() }.getOrNull()
-    }
-}
-
-/** Sesion actual: id de usuario remoto y perfil en cache. */
-@Serializable
-data class SesionRemota(val userId: String, val perfil: Perfil)
-
-class SupabaseAuthRepository(
-    private val backend: Backend,
-    store: DataStore<Preferences>,
-    private val alEntrar: suspend (String) -> Unit = {},
-) : AuthRepository {
-    private val valor = ValorJson(store, "sesion_remota", SesionRemota.serializer().nullable, null)
-    override val sesion: Flow<Perfil?> = kotlinx.coroutines.flow.flow { valor.flujo.collect { emit(it?.perfil) } }
-
-    suspend fun userId(): String? = valor.flujo.first()?.userId
-
-    private suspend fun abrir(u: UsuarioRemoto): ResultadoAuth.Ok {
-        val fila = runCatching { backend.select("profiles", mapOf("id" to u.id)).firstOrNull() }.getOrNull()
-        val perfil = perfilDesdeFila(fila, u)
-        valor.actualizar { SesionRemota(u.id, perfil) }
-        runCatching { alEntrar(u.id) }
-        return ResultadoAuth.Ok(perfil)
-    }
-
-    /** Al abrir la app: confirma la sesion guardada por supabase-kt y refresca el perfil. */
-    suspend fun restaurar() {
-        val u = runCatching { backend.usuarioActual() }.getOrNull()
-        if (u == null) {
-            // Sin red se mantiene la sesion en cache; si el servidor dice que no hay sesion, se cierra.
-            if (runCatching { backend.usuarioActual() }.isSuccess) valor.actualizar { null }
-        } else abrir(u)
-    }
-
-    override suspend fun iniciarSesion(email: String, password: String): ResultadoAuth {
-        ValidacionAuth.email(email)?.let { return ResultadoAuth.Error(it) }
-        if (password.isEmpty()) return ResultadoAuth.Error("Ingresa tu contraseña")
-        return try {
-            abrir(backend.entrarConEmail(email.trim().lowercase(), password))
-        } catch (e: ErrorRemoto) {
-            ResultadoAuth.Error(e.message.orEmpty())
-        }
-    }
-
-    override suspend fun registrar(nombre: String, email: String, password: String): ResultadoAuth {
-        (ValidacionAuth.nombre(nombre) ?: ValidacionAuth.email(email) ?: ValidacionAuth.password(password))?.let { return ResultadoAuth.Error(it) }
-        val clave = email.trim().lowercase()
-        return try {
-            val u = backend.registrar(clave, password, buildJsonObject {
-                put("full_name", nombre.trim())
-                put("username", ValidacionAuth.usernameDesde(nombre, clave))
-            }) ?: return ResultadoAuth.Error("Te enviamos un correo para confirmar tu cuenta. Ábrelo y luego inicia sesión.")
-            abrir(u)
-        } catch (e: ErrorRemoto) {
-            ResultadoAuth.Error(e.message.orEmpty())
-        }
-    }
-
-    override suspend fun recuperarContrasena(email: String): ResultadoAuth {
-        ValidacionAuth.email(email)?.let { return ResultadoAuth.Error(it) }
-        val clave = email.trim().lowercase()
-        return try {
-            backend.recuperarContrasena(clave)
-            ResultadoAuth.Ok(Perfil(clave, "", ""))
-        } catch (e: ErrorRemoto) {
-            // No se revela si el correo existe; solo se avisa del limite de envios.
-            if (e.message.orEmpty().startsWith("Demasiados")) ResultadoAuth.Error(e.message.orEmpty()) else ResultadoAuth.Ok(Perfil(clave, "", ""))
-        }
-    }
-
-    override val googleDisponible: Boolean get() = true
-
-    override suspend fun entrarConGoogle(idToken: String, nonce: String?): ResultadoAuth = try {
-        abrir(backend.entrarConIdTokenGoogle(idToken, nonce))
-    } catch (e: ErrorRemoto) {
-        ResultadoAuth.Error(e.message.orEmpty())
-    }
-
-    override suspend fun entrarConApple(idToken: String, nonce: String?): ResultadoAuth = try {
-        abrir(backend.entrarConIdTokenApple(idToken, nonce))
-    } catch (e: ErrorRemoto) {
-        ResultadoAuth.Error(e.message.orEmpty())
-    }
-
-    override suspend fun actualizarPerfil(perfil: Perfil) {
-        val id = userId() ?: return
-        valor.actualizar { it?.copy(perfil = perfil) }
-        runCatching {
-            backend.update("profiles", buildJsonObject {
-                put("full_name", perfil.nombre)
-                put("username", perfil.username)
-                put("bio", perfil.bio)
-                put("location", perfil.ubicacion)
-                put("age", perfil.edad)
-                put("gender", perfil.genero)
-            }, mapOf("id" to id))
-        }
-    }
-
-    override suspend fun cerrarSesion() {
-        runCatching { backend.salir() }
-        valor.actualizar { null }
-    }
-}
-
-
-/* ---------------- Ajustes, likes y comentarios ---------------- */
-
-private val VIS_A_DB = mapOf(Visibilidad.Publico to "public", Visibilidad.Seguidores to "followers", Visibilidad.Privado to "private")
-
-class SupabaseAjustesRepository(
-    private val backend: Backend,
-    store: DataStore<Preferences>,
-    private val userId: suspend () -> String?,
-) : AjustesRepository {
-    private val valor = ValorJson(store, "ajustes", Ajustes.serializer(), Ajustes())
-    override val ajustes: Flow<Ajustes> = valor.flujo
-
-    suspend fun descargar() {
-        val uid = userId() ?: return
-        val fila = runCatching { backend.select("user_settings", mapOf("user_id" to uid)).firstOrNull() }.getOrNull()
-        val likes = runCatching { backend.select("post_likes", mapOf("user_id" to uid)) }.getOrNull() ?: return
-        val comentarios = runCatching { backend.select("post_comments", mapOf("user_id" to uid), "created_at") }.getOrNull() ?: return
-        val prefs = fila?.get("prefs")?.let { runCatching { jsonGacelas.decodeFromJsonElement(Ajustes.serializer(), it) }.getOrNull() }
-        valor.actualizar { actual ->
-            val base = prefs ?: actual
-            base.copy(
-                visibilidad = VIS_A_DB.entries.firstOrNull { it.value == fila?.texto("visibility") }?.key ?: base.visibilidad,
-                ocultarHogar = fila?.logico("hide_home") ?: base.ocultarHogar,
-                radioHogarM = fila?.entero("home_radius_m") ?: base.radioHogarM,
-                ubicacionPrecisa = fila?.logico("precise_location") ?: base.ubicacionPrecisa,
-                metaSemanal = fila?.entero("weekly_goal_runs") ?: base.metaSemanal,
-                likes = likes.mapNotNull { it.texto("post_id") }.toSet(),
-                comentarios = comentarios.groupBy({ it.texto("post_id").orEmpty() }, { it.texto("body").orEmpty() }),
-            )
-        }
-    }
-
-    override suspend fun actualizar(transformar: (Ajustes) -> Ajustes) {
-        val antes = valor.flujo.first()
-        valor.actualizar(transformar)
-        val nuevos = valor.flujo.first()
-        val uid = userId() ?: return
-        runCatching {
-            val poner = nuevos.likes - antes.likes
-            val quitar = antes.likes - nuevos.likes
-            if (poner.isNotEmpty()) backend.insert("post_likes", poner.map { buildJsonObject { put("user_id", uid); put("post_id", it) } })
-            quitar.forEach { backend.delete("post_likes", mapOf("user_id" to uid, "post_id" to it)) }
-            val filas = nuevos.comentarios.flatMap { (post, lista) ->
-                lista.drop(antes.comentarios[post]?.size ?: 0).map { body -> buildJsonObject { put("user_id", uid); put("post_id", post); put("body", body) } }
-            }
-            if (filas.isNotEmpty()) backend.insert("post_comments", filas)
-            val prefs: JsonElement = jsonGacelas.encodeToJsonElement(Ajustes.serializer(), nuevos.copy(likes = emptySet(), comentarios = emptyMap()))
-            backend.upsert("user_settings", listOf(buildJsonObject {
-                put("user_id", uid)
-                put("visibility", VIS_A_DB.getValue(nuevos.visibilidad))
-                put("hide_home", nuevos.ocultarHogar)
-                put("home_radius_m", nuevos.radioHogarM)
-                put("precise_location", nuevos.ubicacionPrecisa)
-                put("weekly_goal_runs", nuevos.metaSemanal)
-                put("prefs", prefs)
-            }), "user_id")
-        }
     }
 }
 

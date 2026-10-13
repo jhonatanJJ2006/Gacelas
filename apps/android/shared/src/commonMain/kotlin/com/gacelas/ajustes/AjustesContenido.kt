@@ -52,7 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.gacelas.data.ajustes.Ajustes
+import com.gacelas.cuenta.domain.modelo.Ajustes
 import com.gacelas.ui.components.EncabezadoAtras
 import com.gacelas.ui.components.EtiquetaGrupo
 import com.gacelas.ui.components.FilaAjuste

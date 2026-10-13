@@ -1,10 +1,10 @@
 package com.gacelas
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import com.gacelas.data.ajustes.LocalAjustesRepository
-import com.gacelas.data.ajustes.Visibilidad
-import com.gacelas.data.auth.LocalAuthRepository
-import com.gacelas.data.auth.ResultadoAuth
+import com.gacelas.cuenta.data.LocalAjustesRepository
+import com.gacelas.cuenta.domain.modelo.Visibilidad
+import com.gacelas.cuenta.data.LocalAuthRepository
+import com.gacelas.cuenta.domain.modelo.ResultadoAuth
 import com.gacelas.carreras.domain.modelo.Carrera
 import com.gacelas.carreras.data.LocalCarrerasRepository
 import com.gacelas.data.eventos.LocalEventosRepository

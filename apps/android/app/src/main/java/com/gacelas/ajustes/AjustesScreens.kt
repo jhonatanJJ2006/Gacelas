@@ -56,8 +56,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.gacelas.BuildConfig
-import com.gacelas.data.ajustes.Ajustes
-import com.gacelas.data.ajustes.Visibilidad
+import com.gacelas.cuenta.domain.modelo.Ajustes
+import com.gacelas.cuenta.domain.modelo.Visibilidad
 import com.gacelas.ui.ajustesState
 import com.gacelas.ui.aviso
 import com.gacelas.ui.components.EncabezadoAtras
