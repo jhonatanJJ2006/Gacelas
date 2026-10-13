@@ -64,7 +64,7 @@ class ExplorarRepository(
     /** Se llama al dejar algo pendiente (programa SincronizacionWorker). */
     private val alEncolar: () -> Unit = {},
     private val uid: suspend () -> String?,
-) : ExplorarRutas {
+) : ExplorarRutas, com.gacelas.rutas.domain.repositorio.PublicadorRutas {
     private val _rutas = MutableStateFlow<List<Ruta>?>(null)
     /** null hasta cargar o si el servidor falla (se usan las de ejemplo). */
     override val rutas: StateFlow<List<Ruta>?> = _rutas
@@ -93,7 +93,7 @@ class ExplorarRepository(
         (r as? JsonArray)?.mapNotNull { e -> (e as? JsonObject)?.let { o -> o.texto("id")?.let { it to (o.numero("distancia_km") ?: 0.0) } } }?.toMap().orEmpty()
     }.getOrDefault(emptyMap())
 
-    suspend fun crear(nombre: String, descripcion: String, dificultad: Dificultad, etiquetas: List<String>, puntos: List<Pair<Double, Double>>, elevacionM: Int, actividadId: String?, perfil: List<Int> = emptyList(), origen: String = "actividad"): String {
+    override suspend fun crear(nombre: String, descripcion: String, dificultad: Dificultad, etiquetas: List<String>, puntos: List<Pair<Double, Double>>, elevacionM: Int, actividadId: String?, perfil: List<Int>, origen: String): String {
         val yo = uid() ?: throw ErrorRemoto("Inicia sesión para publicar rutas")
         val nueva = RutaNueva(nuevoUuid(), nombre.take(80), descripcion, dificultad, etiquetas, trazoParaRuta(puntos), elevacionM, actividadId, perfil, origen)
         val ok = runCatching { insertar(nueva, yo) }
@@ -112,7 +112,7 @@ class ExplorarRepository(
     }
 
     /** true si la ultima ruta creada quedo pendiente de subir. */
-    suspend fun pendiente(id: String): Boolean = offline?.pendientes?.first()?.any { it.rutaId == id && it.tipo == "crear" } == true
+    override suspend fun pendiente(id: String): Boolean = offline?.pendientes?.first()?.any { it.rutaId == id && it.tipo == "crear" } == true
 
     private suspend fun insertar(n: RutaNueva, yo: String) {
         backend.insert("routes", listOf(JsonObject(mapOf(

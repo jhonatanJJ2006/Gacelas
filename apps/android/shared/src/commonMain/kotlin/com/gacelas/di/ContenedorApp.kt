@@ -141,6 +141,9 @@ class ContenedorApp(
     fun detalleCarreraViewModel(id: String) = DetalleCarreraViewModel(id, carreras)
     fun carreraEnCursoViewModel(sesion: SesionCarrera = tracker) = CarreraEnCursoViewModel(sesion)
     fun listaRutasViewModel(idUsuario: String, ejemplo: List<Ruta>) = ListaRutasViewModel(explorar, rutas, idUsuario, ejemplo)
+    fun dibujarRutaViewModel() = com.gacelas.rutas.presentation.DibujarRutaViewModel(
+        explorar, { com.gacelas.rutas.data.Elevacion.perfil(it) }, { com.gacelas.rutas.data.Elevacion.desnivelPositivo(it) },
+    )
     fun detalleRutaViewModel(id: String) = DetalleRutaViewModel(id, explorar)
     fun eventosViewModel() = EventosViewModel(eventos)
     fun clubesViewModel() = ClubesViewModel(clubes)

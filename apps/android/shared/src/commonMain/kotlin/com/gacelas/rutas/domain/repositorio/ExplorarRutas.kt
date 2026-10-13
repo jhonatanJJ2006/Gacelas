@@ -16,3 +16,13 @@ interface ExplorarRutas {
     /** (nombre, veces) visibles y total de personas. */
     suspend fun corredores(id: String): Pair<List<Pair<String, Int>>, Int>
 }
+
+/** Publicar rutas dibujadas (o de una actividad). La implementa data.ExplorarRepository. */
+interface PublicadorRutas {
+    suspend fun crear(
+        nombre: String, descripcion: String, dificultad: com.gacelas.rutas.domain.modelo.Dificultad, etiquetas: List<String>,
+        puntos: List<Pair<Double, Double>>, elevacionM: Int, actividadId: String?, perfil: List<Int> = emptyList(), origen: String = "actividad",
+    ): String
+    /** true si la ruta quedo en el celular esperando red. */
+    suspend fun pendiente(id: String): Boolean
+}

@@ -87,6 +87,9 @@ final class VistaMapaGacelas: MLNMapView, MLNMapViewDelegate {
         let marco = CGRect(x: p.x - 12, y: p.y - 12, width: 24, height: 24)
         if let id = visibleFeatures(in: marco, styleLayerIdentifiers: [fuenteCirculos]).compactMap({ $0.attribute(forKey: "id") as? String }).first {
             oyente?.tocoCirculo(id: id)
+        } else {
+            let c = convert(p, toCoordinateFrom: self)
+            oyente?.tocoMapa(lat: c.latitude, lng: c.longitude)
         }
     }
 }

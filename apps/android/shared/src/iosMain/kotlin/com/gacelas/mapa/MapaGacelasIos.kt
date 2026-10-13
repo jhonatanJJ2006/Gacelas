@@ -67,6 +67,7 @@ fun MapaLibreIos(
     centro: Coord = MapaGacelasConst.CENTRO_LOJA,
     zoom: Double = 14.0,
     alTocarCirculo: ((String) -> Unit)? = null,
+    alTocar: ((Coord) -> Unit)? = null,
     alGesto: () -> Unit = {},
     alMoverCamara: (Double) -> Unit = {},
     alListo: (UIView) -> Unit = {},
@@ -75,11 +76,13 @@ fun MapaLibreIos(
     val gesto by rememberUpdatedState(alGesto)
     val mover by rememberUpdatedState(alMoverCamara)
     val tocar by rememberUpdatedState(alTocarCirculo)
+    val tocarMapa by rememberUpdatedState(alTocar)
     val oyente = remember {
         object : OyenteMapa {
             override fun gesto() = gesto()
             override fun camara(rumbo: Double) = mover(rumbo)
             override fun tocoCirculo(id: String) { tocar?.invoke(id) }
+            override fun tocoMapa(lat: Double, lng: Double) { tocarMapa?.invoke(Coord(lat, lng)) }
         }
     }
     // Sin red se usa el estilo con las teselas fijas de la region descargada (como Android).

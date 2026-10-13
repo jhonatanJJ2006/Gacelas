@@ -19,6 +19,8 @@ interface OyenteMapa {
     fun camara(rumbo: Double)
     /** Toco un circulo con id (salidas de rutas). */
     fun tocoCirculo(id: String)
+    /** Toco el mapa fuera de un circulo (dibujar ruta). */
+    fun tocoMapa(lat: Double, lng: Double)
 }
 
 /**

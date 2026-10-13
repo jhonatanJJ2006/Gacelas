@@ -60,7 +60,9 @@ case "$GRUPO" in
     for r in comunidad comunidad/eventos comunidad/eventos/1 notificaciones comunidad/clubes comunidad/clubes/1 \
              comunidad/eventos/1/en-vivo comunidad/en-vivo comunidad/en-vivo/1; do
       SIMCTL_CHILD_TZ=America/Guayaquil shot "comunidad-${r//\//_}" 8 --ruta=$r --sin-servidor
-    done ;;
+    done
+    # Dibujar ruta (rutas/crear en Android).
+    shot rutas-crear 12 --pantalla=dibujar --sin-servidor ;;
   sensores)
     # Etapa 3: ubicacion simulada (Loja, ~3.3 m/s) y pantalla de sensores.
     ubicacion

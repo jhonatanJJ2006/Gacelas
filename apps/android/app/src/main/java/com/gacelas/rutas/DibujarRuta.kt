@@ -61,70 +61,22 @@ fun MapaRutasAgrupadas(rutas: List<Ruta>, onRuta: (String) -> Unit, modifier: Mo
     MapaLibre(modifier, circulos = salidas, zoom = 12.0, alTocarCirculo = onRuta)
 }
 
-/** Crear una ruta tocando el mapa punto a punto. */
-@OptIn(ExperimentalLayoutApi::class)
+/** Crear una ruta tocando el mapa punto a punto (UI compartida en shared, MapLibre Android). */
 @Composable
 fun DibujarRutaScreen(onAtras: () -> Unit, onCreada: (String) -> Unit) {
-    val repo = contenedor().explorar
+    val c = contenedor()
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var puntos by remember { mutableStateOf(listOf<LatLng>()) }
-    var nombre by remember { mutableStateOf("") }
-    var descripcion by remember { mutableStateOf("") }
-    var dificultad by remember { mutableStateOf(Dificultad.Moderado) }
-    var etiquetas by remember { mutableStateOf(setOf<String>()) }
-    var guardando by remember { mutableStateOf(false) }
-    val km = puntos.zipWithNext().sumOf { (a, b) -> haversineKm(a, b) }
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
-        EncabezadoAtras("Dibujar ruta", onAtras)
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Box(Modifier.fillMaxWidth().height(340.dp).clip(RoundedCornerShape(16.dp)).background(GColors.SurfaceContainer)) {
-                if (Mapas.configurado()) {
-                    MapaLibre(
-                        Modifier.fillMaxSize(),
-                        trazos = if (puntos.size >= 2) listOf(TrazoMapa(puntos, Color(0xFFF59E0B), 4.5f)) else emptyList(),
-                        circulos = puntos.mapIndexed { i, p -> CirculoMapa(p, if (i == 0) 7f else 4.5f, if (i == 0) Color(0xFF10B981) else Color(0xFFF59E0B), bordeDp = 1.5f) },
-                        zoom = 15.0,
-                        alTocar = { puntos = puntos + it },
-                    )
-                } else Text("El mapa no está disponible en este dispositivo.", color = GColors.TextSecondary, modifier = Modifier.align(Alignment.Center))
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("%.2f km · %d puntos".format(km, puntos.size), style = GType.bodyMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-                TextButton(onClick = { puntos = puntos.dropLast(1) }, enabled = puntos.isNotEmpty()) { Text("Deshacer", color = GColors.Primary400) }
-                TextButton(onClick = { puntos = emptyList() }, enabled = puntos.isNotEmpty()) { Text("Borrar", color = GColors.Primary400) }
-            }
-            Text("Toca el mapa para ir agregando puntos en orden.", style = GType.bodySm, color = GColors.TextSecondary)
-            CampoTexto("Nombre", nombre, { nombre = it.take(80) }, "Nombre de la ruta")
-            CampoTexto("Descripción", descripcion, { descripcion = it.take(500) }, "Descripción (opcional)", lineas = 2)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Dificultad.entries.forEach { d -> Pastilla(d.etiqueta, d == dificultad, { dificultad = d }) } }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                ETIQUETAS_RUTA.forEach { (k, v) -> Pastilla("#$v", k in etiquetas, { etiquetas = if (k in etiquetas) etiquetas - k else etiquetas + k }) }
-            }
-            BotonPrimario(if (guardando) "Publicando..." else "Publicar ruta", {
-                when {
-                    repo == null -> context.aviso("Inicia sesión para publicar rutas")
-                    nombre.trim().length < 3 -> context.aviso("Ponle un nombre de al menos 3 letras")
-                    puntos.size < 2 -> context.aviso("Toca el mapa al menos dos veces")
-                    else -> {
-                        guardando = true
-                        scope.launch {
-                            val pares = puntos.map { it.latitude to it.longitude }
-                            val perfil = Elevacion.perfil(pares)
-                            runCatching { repo.crear(nombre.trim(), descripcion.trim(), dificultad, etiquetas.toList(), pares, Elevacion.desnivelPositivo(perfil), null, perfil, "dibujada") }
-                                .onSuccess { context.aviso(if (repo.pendiente(it)) "Sin conexión: la ruta quedó en el celular y se publicará al volver la red" else "Ruta publicada"); onCreada(it) }
-                                .onFailure { context.aviso(it.message ?: "No se pudo publicar"); guardando = false }
-                        }
-                    }
-                }
-            }, enabled = !guardando, icono = null)
-        }
-    }
-}
-
-private fun haversineKm(a: LatLng, b: LatLng): Double {
-    val r = 6371.0
-    val dLat = Math.toRadians(b.latitude - a.latitude); val dLng = Math.toRadians(b.longitude - a.longitude)
-    val h = Math.sin(dLat / 2).let { it * it } + Math.cos(Math.toRadians(a.latitude)) * Math.cos(Math.toRadians(b.latitude)) * Math.sin(dLng / 2).let { it * it }
-    return 2 * r * Math.asin(Math.sqrt(h))
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.dibujarRutaViewModel() }
+    com.gacelas.rutas.presentation.ui.DibujarRutaContenido(
+        vm, onAtras, onCreada, onAviso = { context.aviso(it) },
+        mapa = if (!Mapas.configurado()) null else { trazos, circulos, alTocar ->
+            MapaLibre(
+                Modifier.fillMaxSize(),
+                trazos = trazos.map { t -> TrazoMapa(t.puntos.map { LatLng(it.lat, it.lng) }, Color(t.argb), t.anchoDp, t.opacidad) },
+                circulos = circulos.map { k -> CirculoMapa(LatLng(k.centro.lat, k.centro.lng), k.radioDp, Color(k.relleno), Color(k.borde), k.bordeDp, k.id) },
+                zoom = 15.0,
+                alTocar = { alTocar(com.gacelas.mapa.Coord(it.latitude, it.longitude)) },
+            )
+        },
+    )
 }
