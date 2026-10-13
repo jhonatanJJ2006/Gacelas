@@ -8,6 +8,9 @@ packages:
   MapLibre:
     url: https://github.com/maplibre/maplibre-gl-native-distribution
     exactVersion: 6.31.0
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    exactVersion: 9.2.0
 settings:
   base:
     MARKETING_VERSION: "0.7.0"
@@ -32,10 +35,23 @@ targets:
         buildPhase: resources
     dependencies:
       - package: MapLibre
+      - package: GoogleSignIn
+        product: GoogleSignIn
+    # Claves del build (Supabase, Google): Config.xcconfig incluye Secrets.xcconfig (gitignored; en CI sale de secrets).
+    configFiles:
+      Debug: Config.xcconfig
+      Release: Config.xcconfig
+    entitlements:
+      path: iosApp/iosApp.entitlements
+      properties:
+        com.apple.developer.applesignin: [Default]
     info:
       path: iosApp/Info.plist
       properties:
         CFBundleDisplayName: Gacelas
+        # App en español: los botones del sistema (Sign in with Apple) salen como "Continuar con Apple".
+        CFBundleDevelopmentRegion: es
+        CFBundleLocalizations: [es]
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UILaunchScreen: {}
@@ -44,6 +60,12 @@ targets:
         NSLocationAlwaysAndWhenInUseUsageDescription: Gacelas sigue registrando tu carrera con la pantalla apagada o en segundo plano.
         NSMotionUsageDescription: Gacelas usa la brújula y el movimiento para orientar el mapa hacia donde miras.
         UIBackgroundModes: [location]
+        SUPABASE_URL: "$(SUPABASE_URL)"
+        SUPABASE_ANON_KEY: "$(SUPABASE_ANON_KEY)"
+        GIDClientID: "$(GOOGLE_IOS_CLIENT_ID)"
+        GIDServerClientID: "$(GOOGLE_WEB_CLIENT_ID)"
+        CFBundleURLTypes:
+          - CFBundleURLSchemes: ["$(GOOGLE_IOS_URL_SCHEME)"]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.gacelas.app

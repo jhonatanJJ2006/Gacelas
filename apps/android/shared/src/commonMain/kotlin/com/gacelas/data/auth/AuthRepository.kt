@@ -44,6 +44,9 @@ interface AuthRepository {
     /** Entra con el ID token de Google obtenido con Credential Manager. */
     suspend fun entrarConGoogle(idToken: String, nonce: String?): ResultadoAuth =
         ResultadoAuth.Error("El inicio con Google no está disponible en esta versión de la app. Usa tu correo por ahora.")
+    /** Entra con el ID token de Sign in with Apple (iOS). */
+    suspend fun entrarConApple(idToken: String, nonce: String?): ResultadoAuth =
+        ResultadoAuth.Error("El inicio con Apple no está disponible en esta versión de la app. Usa tu correo por ahora.")
 }
 
 /** Reglas de validacion de los formularios de acceso. Devuelven el mensaje de error o null. */

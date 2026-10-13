@@ -38,6 +38,8 @@ case "$GRUPO" in
     # Paridad: pantallas compartidas con Android.
     shot bienvenida 12
     shot login 8 --pantalla=login
+    shot registro 8 --pantalla=registro
+    shot recuperar 8 --pantalla=recuperar
     shot inicio 8 --pantalla=inicio
     shot modal 8 --pantalla=modal
     shot ajustes 8 --pantalla=ajustes

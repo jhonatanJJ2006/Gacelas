@@ -74,24 +74,6 @@ import com.gacelas.ui.components.MarcaGacelas
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
-/** Contenedor comun de las pantallas de acceso (sin barra inferior). */
-@Composable
-private fun PantallaAcceso(onAtras: (() -> Unit)?, content: @Composable ColumnScope.() -> Unit) {
-    Column(
-        Modifier.fillMaxSize().background(GColors.BgPrimary).cerrarTecladoAlTocarFuera().statusBarsPadding().navigationBarsPadding()
-            .verticalScroll(rememberScrollState()),
-    ) {
-        if (onAtras != null) {
-            IconButton(onClick = onAtras, modifier = Modifier.padding(8.dp)) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = GColors.TextPrimary)
-            }
-        }
-        Column(Modifier.padding(horizontal = 24.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            content()
-        }
-    }
-}
-
 @Composable
 fun BienvenidaScreen(onSaltar: () -> Unit, onCrearCuenta: () -> Unit, onIniciarSesion: () -> Unit, onEntrarGoogle: () -> Unit = {}) {
     BienvenidaC4(
@@ -115,20 +97,6 @@ private fun ChipBeneficio(icono: ImageVector, texto: String, modifier: Modifier)
         Icon(icono, null, tint = GColors.Primary500)
         Text(texto, style = GType.labelMd, color = GColors.TextSecondary, textAlign = TextAlign.Center)
     }
-}
-
-@Composable
-private fun EncabezadoFormulario(titulo: String, subtitulo: String) {
-    MarcaGacelas()
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(titulo, style = GType.headlineLg, color = GColors.TextPrimary)
-        Text(subtitulo, style = GType.bodyLg, color = GColors.TextSecondary)
-    }
-}
-
-@Composable
-private fun MensajeError(texto: String?) {
-    if (texto != null) Text(texto, style = GType.bodyMd, color = GColors.Danger, modifier = Modifier.testTag("error-acceso"))
 }
 
 @Composable
@@ -169,15 +137,10 @@ fun RegistroScreen(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: ()
     var password by rememberSaveable { mutableStateOf("") }
     var error by rememberSaveable { mutableStateOf<String?>(null) }
     var cargando by remember { mutableStateOf(false) }
-    var verTerminos by remember { mutableStateOf(false) }
-    PantallaAcceso(onAtras) {
-        EncabezadoFormulario("Únete a la manada", "Crea tu cuenta y empieza a correr con la comunidad")
-        CampoTexto("Nombre completo", nombre, { nombre = it; error = null }, "Tu nombre")
-        CampoTexto("Correo electrónico", email, { email = it; error = null }, "tu@email.com", tipo = KeyboardType.Email)
-        CampoTexto("Contraseña", password, { password = it; error = null }, "Mínimo 8 caracteres", password = true,
-            ayuda = "Usa mínimo 8 caracteres con letras y números", onListo = {})
-        MensajeError(error)
-        BotonPrimario(if (cargando) "Creando cuenta..." else "Crear cuenta", {
+    RegistroContenido(
+        nombre = nombre, email = email, password = password, error = error, cargando = cargando,
+        onNombre = { nombre = it; error = null }, onEmail = { email = it; error = null }, onPassword = { password = it; error = null },
+        onCrear = {
             cargando = true
             scope.launch {
                 when (val r = auth.registrar(nombre, email, password)) {
@@ -186,25 +149,10 @@ fun RegistroScreen(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: ()
                 }
                 cargando = false
             }
-        }, enabled = !cargando)
-        Text("Al crear una cuenta, aceptas nuestros Términos de Servicio y Política de Privacidad",
-            style = GType.bodySm, color = GColors.Primary500, textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().clickable { verTerminos = true })
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-            Text("¿Ya tienes cuenta? ", style = GType.bodyMd, color = GColors.TextSecondary)
-            Text("Iniciar sesión", style = GType.labelLg, color = GColors.Primary500, modifier = Modifier.clickable(onClick = onIniciarSesion))
-        }
-        BotonGoogle(onCrear)
-    }
-    if (verTerminos) {
-        AlertDialog(
-            onDismissRequest = { verTerminos = false },
-            confirmButton = { TextButton(onClick = { verTerminos = false }) { Text("Entendido") } },
-            title = { Text("Términos y privacidad") },
-            text = { Text("Tus datos se guardan en tu cuenta de Gacelas y en este teléfono. Tú decides qué carreras son públicas y puedes ocultar la zona de tu casa en Ajustes.") },
-            containerColor = GColors.BgSecondary,
-        )
-    }
+        },
+        onAtras = onAtras, onIniciarSesion = onIniciarSesion,
+        botonGoogle = { BotonGoogle(onCrear) },
+    )
 }
 
 @Composable
@@ -214,31 +162,17 @@ fun RecuperarContrasenaScreen(onAtras: () -> Unit, enviadoInicial: Boolean = fal
     var email by rememberSaveable { mutableStateOf("") }
     var enviado by rememberSaveable { mutableStateOf(enviadoInicial) }
     var error by rememberSaveable { mutableStateOf<String?>(null) }
-    PantallaAcceso(onAtras) {
-        if (enviado) {
-            Column(Modifier.fillMaxWidth().padding(top = 48.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                IconoCirculo(Icons.Filled.MarkEmailRead, GColors.Secondary.copy(alpha = 0.2f), GColors.Secondary500, 96.dp)
-                Text("Revisa tu correo", style = GType.headlineLg, color = GColors.TextPrimary)
-                Text("Te hemos enviado un enlace para restablecer tu contraseña a $email", style = GType.bodyLg, color = GColors.TextSecondary, textAlign = TextAlign.Center)
-                BotonPrimario("Volver al inicio de sesión", onAtras, icono = null)
-            }
-        } else {
-            Column(Modifier.fillMaxWidth().padding(top = 24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                IconoCirculo(Icons.Filled.LockReset, GColors.Primary.copy(alpha = 0.2f), GColors.Primary500, 80.dp)
-                Text("Recuperar contraseña", style = GType.headlineLg, color = GColors.TextPrimary)
-                Text("Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña",
-                    style = GType.bodyLg, color = GColors.TextSecondary, textAlign = TextAlign.Center)
-            }
-            CampoTexto("Correo electrónico", email, { email = it; error = null }, "tu@email.com", tipo = KeyboardType.Email)
-            MensajeError(error)
-            BotonPrimario("Enviar enlace", {
-                scope.launch {
-                    when (val r = auth.recuperarContrasena(email)) {
-                        is ResultadoAuth.Ok -> enviado = true
-                        is ResultadoAuth.Error -> error = r.mensaje
-                    }
+    RecuperarContenido(
+        email = email, enviado = enviado, error = error,
+        onEmail = { email = it; error = null },
+        onEnviar = {
+            scope.launch {
+                when (val r = auth.recuperarContrasena(email)) {
+                    is ResultadoAuth.Ok -> enviado = true
+                    is ResultadoAuth.Error -> error = r.mensaje
                 }
-            })
-        }
-    }
+            }
+        },
+        onAtras = onAtras,
+    )
 }

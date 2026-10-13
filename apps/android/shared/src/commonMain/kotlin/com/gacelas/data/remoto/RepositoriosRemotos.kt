@@ -152,6 +152,12 @@ class SupabaseAuthRepository(
         ResultadoAuth.Error(e.message.orEmpty())
     }
 
+    override suspend fun entrarConApple(idToken: String, nonce: String?): ResultadoAuth = try {
+        abrir(backend.entrarConIdTokenApple(idToken, nonce))
+    } catch (e: ErrorRemoto) {
+        ResultadoAuth.Error(e.message.orEmpty())
+    }
+
     override suspend fun actualizarPerfil(perfil: Perfil) {
         val id = userId() ?: return
         valor.actualizar { it?.copy(perfil = perfil) }

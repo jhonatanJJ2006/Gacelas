@@ -1,14 +1,19 @@
 import SwiftUI
+import GoogleSignIn
 import Shared
 
 @main
 struct iOSApp: App {
     /// Mapa MapLibre y descarga offline de Loja (puente con Shared), antes de la primera pantalla.
     private static let offline = MapaOfflineMapLibre()
-    init() { PuenteMapaKt.registrarMapaIos(puente: PuenteMapLibre(), offline: Self.offline) }
+    private static let acceso = AccesoNativo()
+    init() {
+        PuenteMapaKt.registrarMapaIos(puente: PuenteMapLibre(), offline: Self.offline)
+        AccesoIosKt.registrarAccesoIos(puente: Self.acceso)
+    }
 
     var body: some Scene {
-        WindowGroup { ContentView().ignoresSafeArea() }
+        WindowGroup { ContentView().ignoresSafeArea().onOpenURL { GIDSignIn.sharedInstance.handle($0) } }
     }
 }
 
