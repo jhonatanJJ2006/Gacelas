@@ -10,6 +10,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.ComposeUIViewController
 import com.gacelas.acceso.BienvenidaC4
+import com.gacelas.data.mock.MockData
+import com.gacelas.data.eventos.yaPaso
+import com.gacelas.navigation.Destinos
+import com.gacelas.ui.components.ScaffoldPrincipal
 import com.gacelas.acceso.BotonGoogleVisual
 import com.gacelas.acceso.InicioSesionC4
 import com.gacelas.data.auth.ValidacionAuth
@@ -30,7 +34,15 @@ private fun argumento(a: String) = NSProcessInfo.processInfo.arguments.contains(
 fun MainViewController(): UIViewController = ComposeUIViewController {
     val auto = remember { argumento("--sensores") }
     var enSensores by remember { mutableStateOf(auto) }
-    var pantalla by remember { mutableStateOf(if (argumento("--pantalla=login")) PantallaIos.Login else PantallaIos.Bienvenida) }
+    var pantalla by remember {
+        mutableStateOf(
+            when {
+                argumento("--pantalla=login") -> PantallaIos.Login
+                argumento("--pantalla=inicio") -> PantallaIos.Inicio
+                else -> PantallaIos.Bienvenida
+            },
+        )
+    }
     if (!enSensores) {
         GacelasTheme {
             when (pantalla) {
@@ -42,7 +54,10 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                     botonGoogle = { BotonGoogleVisual(onClick = {}, cargando = false, portada = true) },
                 )
                 PantallaIos.Login -> LoginIos(onAtras = { pantalla = PantallaIos.Bienvenida })
-                PantallaIos.Inicio -> InicioComun(onEmpezar = { enSensores = true })
+                PantallaIos.Inicio -> ScaffoldPrincipal(
+                    Destinos.INICIO, sinLeer = MockData.notificaciones.count { !it.leida },
+                    onNavegar = { if (it == Destinos.CORRER) enSensores = true },
+                ) { InicioIos(onCorrer = { enSensores = true }) }
             }
         }
     } else {
@@ -84,5 +99,28 @@ private fun LoginIos(onAtras: () -> Unit) {
         onEntrar = { error = ValidacionAuth.email(email) ?: if (password.isEmpty()) "Ingresa tu contraseña" else "Iniciar sesión en iOS aún no está disponible" },
         onAtras = onAtras, onRecuperar = {}, onRegistro = {},
         botonGoogle = { BotonGoogleVisual(onClick = {}, cargando = false, portada = true, alto = 48.dp) },
+    )
+}
+
+/**
+ * Inicio compartido. Sin carreras guardadas todavia en iOS (llegan con la sesion). El 3D (SceneView
+ * en Android) llega en su etapa; mientras, la misma imagen de reemplazo que usa Android sin 3D.
+ */
+@Composable
+private fun InicioIos(onCorrer: () -> Unit) {
+    val ahora = remember { ahoraMs() }
+    val evento = remember {
+        MockData.eventos.firstOrNull { !it.yaPaso(ahora) } ?: MockData.eventos.maxBy { it.inicioMs ?: 0L }
+    }
+    com.gacelas.inicio.InicioContenido(
+        saludo = com.gacelas.inicio.saludoPorHora(Fechas.hora(ahora)),
+        nombre = "Corredor",
+        semana = remember { com.gacelas.data.carreras.Estadisticas.semana(emptyList(), ahora) },
+        hoy = Fechas.diaSemana(ahora),
+        m = true,
+        racha = remember { com.gacelas.data.rachas.Rachas.calcular(emptyList(), ahora) },
+        evento = evento,
+        onCorrer = onCorrer, onEventos = {}, onEvento = {},
+        corredor3D = { com.gacelas.ui.three.Runner3DFallback() },
     )
 }

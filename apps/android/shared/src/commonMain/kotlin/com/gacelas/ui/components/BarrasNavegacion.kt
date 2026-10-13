@@ -38,8 +38,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.getValue
 import com.gacelas.navigation.Destinos
-import com.gacelas.notificaciones.notificacionesVisibles
-import com.gacelas.ui.ajustesState
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
@@ -54,10 +52,7 @@ val itemsNav = listOf(
 )
 
 @Composable
-fun BarraSuperior(onNotificaciones: () -> Unit, onPerfil: () -> Unit = {}) {
-    val ajustes by ajustesState()
-    val base by com.gacelas.notificaciones.notificacionesBase()
-    val sinLeer = notificacionesVisibles(ajustes, base).count { !it.leida }
+fun BarraSuperior(sinLeer: Int, onNotificaciones: () -> Unit, onPerfil: () -> Unit = {}) {
     Row(
         Modifier.fillMaxWidth().background(GColors.BgSecondary).statusBarsPadding().height(64.dp).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -109,10 +104,10 @@ fun BarraInferior(rutaActual: String, onNavegar: (String) -> Unit) {
 
 /** Scaffold con barra superior y barra inferior para las pantallas principales. */
 @Composable
-fun ScaffoldPrincipal(rutaActual: String, onNavegar: (String) -> Unit, content: @Composable () -> Unit) {
+fun ScaffoldPrincipal(rutaActual: String, sinLeer: Int, onNavegar: (String) -> Unit, content: @Composable () -> Unit) {
     Scaffold(
         containerColor = GColors.BgPrimary,
-        topBar = { BarraSuperior(onNotificaciones = { onNavegar(Destinos.NOTIFICACIONES) }, onPerfil = { onNavegar(Destinos.PERFIL) }) },
+        topBar = { BarraSuperior(sinLeer, onNotificaciones = { onNavegar(Destinos.NOTIFICACIONES) }, onPerfil = { onNavegar(Destinos.PERFIL) }) },
         bottomBar = { BarraInferior(rutaActual, onNavegar) },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) { content() }

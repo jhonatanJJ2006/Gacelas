@@ -60,6 +60,10 @@ jobs:
           sleep 8
           xcrun simctl io "$UDID" screenshot shots/login.png
           xcrun simctl terminate "$UDID" com.gacelas.app || true
+          xcrun simctl launch "$UDID" com.gacelas.app --pantalla=inicio
+          sleep 8
+          xcrun simctl io "$UDID" screenshot shots/inicio.png
+          xcrun simctl terminate "$UDID" com.gacelas.app || true
           # Etapa 3: ubicacion simulada (Loja, ~3.3 m/s hacia el sur) y pantalla de sensores con carrera.
           xcrun simctl privacy "$UDID" grant location-always com.gacelas.app || xcrun simctl privacy "$UDID" grant location com.gacelas.app
           xcrun simctl launch "$UDID" com.gacelas.app --sensores
