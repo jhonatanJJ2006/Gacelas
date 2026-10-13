@@ -89,9 +89,11 @@ fun ListaRutasContenido(
     onDibujar: () -> Unit,
     onAlternarGuardada: (id: String, guardada: Boolean) -> Unit,
     mapaRutas: @Composable (Modifier) -> Unit,
+    /** Abrir ya en la vista de mapa (capturas de paridad). */
+    verMapaInicial: Boolean = false,
 ) {
     Pantalla {
-        var verMapa by rememberSaveable { mutableStateOf(false) }
+        var verMapa by rememberSaveable { mutableStateOf(verMapaInicial) }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Rutas de Loja", style = GType.headlineLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
             IconButton(onClick = { verMapa = !verMapa }) { Icon(if (verMapa) Icons.AutoMirrored.Filled.List else Icons.Filled.Map, if (verMapa) "Ver lista" else "Ver mapa", tint = GColors.TextPrimary) }
