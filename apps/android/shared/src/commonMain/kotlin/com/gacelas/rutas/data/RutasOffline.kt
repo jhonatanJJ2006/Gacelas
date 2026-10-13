@@ -1,10 +1,12 @@
-package com.gacelas.data.rutas
+package com.gacelas.rutas.data
+
+import com.gacelas.rutas.domain.reglas.Guia
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.gacelas.data.ValorJson
-import com.gacelas.data.mock.Dificultad
-import com.gacelas.data.mock.Ruta
+import com.gacelas.rutas.domain.modelo.Dificultad
+import com.gacelas.rutas.domain.modelo.Ruta
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.Serializable

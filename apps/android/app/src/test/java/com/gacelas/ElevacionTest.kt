@@ -1,7 +1,7 @@
 package com.gacelas
 
-import com.gacelas.data.rutas.Elevacion
-import com.gacelas.data.rutas.ExplorarRepository
+import com.gacelas.rutas.data.Elevacion
+import com.gacelas.rutas.data.ExplorarRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

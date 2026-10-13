@@ -1,4 +1,7 @@
 package com.gacelas.data.mock
+import com.gacelas.rutas.domain.modelo.Ruta
+
+import com.gacelas.rutas.domain.modelo.Dificultad
 
 import com.gacelas.shared.fmt
 
@@ -19,26 +22,7 @@ data class Actividad(
     val comentarios: Int,
 )
 
-enum class Dificultad(val etiqueta: String) { Facil("Fácil"), Moderado("Moderado"), Dificil("Difícil") }
 
-@Serializable
-data class Ruta(
-    val id: String,
-    val nombre: String,
-    val distanciaKm: Double,
-    val dificultad: Dificultad,
-    val elevacionM: Int,
-    val descripcion: String,
-    val autorId: String = "gacelas",
-    val etiquetas: List<String> = emptyList(),
-    val puntos: List<Pair<Double, Double>> = emptyList(),
-    val meGusta: Int = 0,
-    val valoracion: Double? = null,
-    val resenas: Int = 0,
-    val autorNombre: String? = null,
-    val propia: Boolean = false,
-    val perfilElevacion: List<Int> = emptyList(),
-)
 
 @Serializable
 data class Evento(

@@ -10,8 +10,8 @@ import com.gacelas.data.eventos.filtrarEventos
 import com.gacelas.data.eventos.yaPaso
 import com.gacelas.data.mock.MockData.ID_USUARIO
 import com.gacelas.data.mock.MockData
-import com.gacelas.data.rutas.PestanaRutas
-import com.gacelas.data.rutas.filtrarRutas
+import com.gacelas.rutas.domain.modelo.PestanaRutas
+import com.gacelas.rutas.domain.reglas.filtrarRutas
 import com.gacelas.carreras.domain.FaseCarrera
 import com.gacelas.tracking.FaseIntervalo
 import com.gacelas.tracking.PlanIntervalos

@@ -105,7 +105,7 @@ object C4Texto {
 /** Datos reales de la ruta: trazo "1" (Parque Jipiro) de Mapas.trazos; la distancia se calcula. */
 object PortadaRuta {
     const val NOMBRE = "Jipiro"
-    fun km(): Double = com.gacelas.data.rutas.Guia.longitudM(com.gacelas.data.rutas.TrazosRutas.puntos.getValue("1")) / 1000.0
+    fun km(): Double = com.gacelas.rutas.domain.reglas.Guia.longitudM(com.gacelas.rutas.data.TrazosRutas.puntos.getValue("1")) / 1000.0
     fun etiqueta(): String = "$NOMBRE · ${decimales(km(), 1)} KM"
 }
 

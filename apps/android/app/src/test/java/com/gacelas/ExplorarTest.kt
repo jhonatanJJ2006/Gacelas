@@ -1,15 +1,15 @@
 package com.gacelas
 
-import com.gacelas.data.mock.Dificultad
+import com.gacelas.rutas.domain.modelo.Dificultad
 import com.gacelas.data.mock.MockData
-import com.gacelas.data.rutas.ExplorarRepository
-import com.gacelas.data.rutas.FiltroDistancia
-import com.gacelas.data.rutas.FiltrosRuta
-import com.gacelas.data.rutas.aplicarFiltros
-import com.gacelas.data.rutas.ordenarPorCercania
-import com.gacelas.data.rutas.rutaDesdeFila
-import com.gacelas.data.rutas.simplificar
-import com.gacelas.data.rutas.trazoParaRuta
+import com.gacelas.rutas.data.ExplorarRepository
+import com.gacelas.rutas.domain.modelo.FiltroDistancia
+import com.gacelas.rutas.domain.modelo.FiltrosRuta
+import com.gacelas.rutas.domain.reglas.aplicarFiltros
+import com.gacelas.rutas.domain.reglas.ordenarPorCercania
+import com.gacelas.rutas.data.rutaDesdeFila
+import com.gacelas.rutas.domain.reglas.simplificar
+import com.gacelas.rutas.domain.reglas.trazoParaRuta
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive

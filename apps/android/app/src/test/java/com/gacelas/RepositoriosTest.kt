@@ -9,7 +9,7 @@ import com.gacelas.carreras.domain.modelo.Carrera
 import com.gacelas.carreras.data.LocalCarrerasRepository
 import com.gacelas.data.eventos.LocalEventosRepository
 import com.gacelas.data.mock.Evento
-import com.gacelas.data.rutas.LocalRutasRepository
+import com.gacelas.rutas.data.LocalRutasRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

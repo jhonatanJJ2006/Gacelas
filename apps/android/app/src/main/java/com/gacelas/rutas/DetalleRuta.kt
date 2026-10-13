@@ -52,8 +52,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.gacelas.carreras.domain.modelo.PuntoGps
 import com.gacelas.data.mock.MockData
-import com.gacelas.data.rutas.ETIQUETAS_RUTA
-import com.gacelas.data.rutas.ResenaRuta
+import com.gacelas.rutas.domain.modelo.ETIQUETAS_RUTA
+import com.gacelas.rutas.domain.modelo.ResenaRuta
 import com.gacelas.correr.TrazadoRuta
 import com.gacelas.ui.ajustesState
 import com.gacelas.ui.components.BotonPrimario
@@ -167,7 +167,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
             if (ruta.etiquetas.isNotEmpty()) Text(ruta.etiquetas.joinToString("  ") { "#" + (ETIQUETAS_RUTA[it] ?: it) }, style = GType.labelLg, color = GColors.TextPrimary)
             ruta.autorNombre?.let { Text("Creada por $it", style = GType.bodySm, color = GColors.TextSecondary) }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                BotonPrimario("Correr esta ruta", { com.gacelas.data.rutas.RutaActiva.id = id; onCorrer() }, Modifier.weight(1f), icono = Icons.AutoMirrored.Filled.DirectionsRun)
+                BotonPrimario("Correr esta ruta", { com.gacelas.rutas.data.RutaActiva.id = id; onCorrer() }, Modifier.weight(1f), icono = Icons.AutoMirrored.Filled.DirectionsRun)
                 IconButton(onClick = { compartiendo = true }, modifier = Modifier.clip(CircleShape).background(GColors.SurfaceContainer)) { Icon(Icons.Filled.Share, "Compartir ruta", tint = GColors.TextPrimary) }
                 if (sociales) {
                     val activo = id in meGusta

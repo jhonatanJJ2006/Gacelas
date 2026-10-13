@@ -1,4 +1,4 @@
-package com.gacelas.data.rutas
+package com.gacelas.rutas.domain.reglas
 
 import com.gacelas.shared.grados
 import com.gacelas.shared.rad
