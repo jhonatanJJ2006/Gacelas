@@ -82,7 +82,8 @@ jobs:
           sleep 8
           xcrun simctl io "$UDID" screenshot shots/ajustes.png
           xcrun simctl terminate "$UDID" com.gacelas.app || true
-          xcrun simctl launch "$UDID" com.gacelas.app --pantalla=detalle
+          # Misma zona horaria que la captura Android (Loja) para la fecha del detalle.
+          SIMCTL_CHILD_TZ=America/Guayaquil xcrun simctl launch "$UDID" com.gacelas.app --pantalla=detalle
           sleep 8
           xcrun simctl io "$UDID" screenshot shots/detalle.png
           xcrun simctl terminate "$UDID" com.gacelas.app || true

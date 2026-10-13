@@ -19,6 +19,8 @@ import com.gacelas.acceso.InicioSesionC4
 import com.gacelas.data.auth.ValidacionAuth
 import com.gacelas.ui.theme.GacelasTheme
 import platform.Foundation.NSBundle
+import platform.Foundation.NSDate
+import platform.Foundation.dateWithTimeIntervalSince1970
 import com.gacelas.core.sensores.SeguimientoSensores
 import com.gacelas.core.sensores.fuenteRumboNativa
 import com.gacelas.core.sensores.fuenteUbicacionNativa
@@ -202,7 +204,7 @@ private fun CarreraIos(panelInicial: Boolean, onSalir: () -> Unit) {
 private fun fechaLarga(ms: Long): String = platform.Foundation.NSDateFormatter().apply {
     locale = platform.Foundation.NSLocale(localeIdentifier = "es_EC")
     dateFormat = "EEEE d 'de' MMMM, HH:mm"
-}.stringFromDate(platform.Foundation.NSDate.dateWithTimeIntervalSince1970(ms / 1000.0))
+}.stringFromDate(NSDate.dateWithTimeIntervalSince1970(ms / 1000.0))
 
 /** Ajustes compartidos; guardados en memoria hasta conectar DataStore/sesion en iOS. */
 @Composable
