@@ -38,7 +38,7 @@ fun CargandoGoogle(fase: FaseGoogle) {
 
 /** El error se muestra en un dialogo (no se pierde fuera de la tarjeta). */
 @Composable
-fun ErrorGoogle(mensaje: String, onCerrar: () -> Unit, titulo: String = "No se pudo entrar con Google") {
+fun ErrorGoogle(mensaje: String, titulo: String = "No se pudo entrar con Google", onCerrar: () -> Unit) {
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onCerrar,
         confirmButton = { androidx.compose.material3.TextButton(onClick = onCerrar) { Text("Entendido", color = Color(0xFFF59E0B)) } },

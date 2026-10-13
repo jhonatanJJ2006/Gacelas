@@ -135,5 +135,5 @@ fun BotonesSocialesIos(onEntrar: () -> Unit, portada: Boolean = false, alto: Dp 
         }
     }
     fase?.let { CargandoGoogle(it) }
-    error?.let { (t, m) -> ErrorGoogle(m, { error = null }, titulo = t) }
+    error?.let { (t, m) -> ErrorGoogle(m, titulo = t) { error = null } }
 }
