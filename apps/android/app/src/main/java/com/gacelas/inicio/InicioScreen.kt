@@ -1,6 +1,6 @@
 package com.gacelas.inicio
 
-import com.gacelas.data.eventos.yaPaso
+import com.gacelas.comunidad.domain.reglas.yaPaso
 import com.gacelas.ui.components.InsigniaRacha
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

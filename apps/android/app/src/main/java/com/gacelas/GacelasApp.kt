@@ -11,8 +11,8 @@ import com.gacelas.cuenta.domain.repositorio.AuthRepository
 import com.gacelas.cuenta.data.LocalAuthRepository
 import com.gacelas.carreras.domain.repositorio.CarrerasRepository
 import com.gacelas.carreras.data.LocalCarrerasRepository
-import com.gacelas.data.eventos.EventosRepository
-import com.gacelas.data.eventos.LocalEventosRepository
+import com.gacelas.comunidad.domain.repositorio.EventosRepository
+import com.gacelas.comunidad.data.LocalEventosRepository
 import com.gacelas.rutas.data.LocalRutasRepository
 import com.gacelas.rutas.domain.repositorio.RutasRepository
 import com.gacelas.data.remoto.Backend
@@ -20,7 +20,7 @@ import com.gacelas.cuenta.data.SupabaseAjustesRepository
 import com.gacelas.cuenta.data.SupabaseAuthRepository
 import com.gacelas.data.remoto.SupabaseBackend
 import com.gacelas.carreras.data.SupabaseCarrerasRepository
-import com.gacelas.data.remoto.SupabaseEventosRepository
+import com.gacelas.comunidad.data.SupabaseEventosRepository
 import com.gacelas.rutas.data.SupabaseRutasRepository
 import com.gacelas.carreras.domain.SesionCarrera
 import kotlinx.coroutines.CoroutineScope
@@ -42,13 +42,13 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null, progra
     val eventos: EventosRepository
     val tracker = SesionCarrera()
     /** Seguimiento en vivo; null sin servidor. */
-    val enVivo: com.gacelas.data.envivo.EnVivoRepository?
+    val enVivo: com.gacelas.comunidad.data.EnVivoRepository?
     /** Notificaciones reales; null sin servidor (se muestran las de ejemplo). */
-    val notificaciones: com.gacelas.data.notificaciones.NotificacionesRepository?
+    val notificaciones: com.gacelas.comunidad.data.NotificacionesRepository?
     /** Rutas de la comunidad (Fase 4); null sin servidor. */
     val explorar: com.gacelas.rutas.data.ExplorarRepository?
     /** Clubes y eventos de Fase 5; null sin servidor. */
-    val clubes: com.gacelas.data.clubes.ClubesRepository?
+    val clubes: com.gacelas.comunidad.data.ClubesRepository?
 
     /** Descarga los datos de la cuenta y sube lo pendiente. No hace nada sin servidor. */
     val sincronizar: suspend () -> Unit
@@ -89,12 +89,12 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null, progra
             ajustes = a
             eventos = e
             sincronizar = { remotoAuth.restaurar() }
-            enVivo = com.gacelas.data.envivo.EnVivoRepository(backend, uid)
-            notificaciones = com.gacelas.data.notificaciones.NotificacionesRepository(backend, uid)
+            enVivo = com.gacelas.comunidad.data.EnVivoRepository(backend, uid)
+            notificaciones = com.gacelas.comunidad.data.NotificacionesRepository(backend, uid)
             val ex = com.gacelas.rutas.data.ExplorarRepository(backend, rutasOffline, programarSincronizacion, uid)
             explorar = ex
             subirPendientes = { c.sincronizar() + ex.subirPendientes() }
-            clubes = com.gacelas.data.clubes.ClubesRepository(backend, uid)
+            clubes = com.gacelas.comunidad.data.ClubesRepository(backend, uid)
         }
     }
 

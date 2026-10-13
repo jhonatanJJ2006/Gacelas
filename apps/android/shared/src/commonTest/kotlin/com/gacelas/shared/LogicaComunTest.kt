@@ -3,7 +3,7 @@ package com.gacelas.shared
 import com.gacelas.data.actualizacion.Aviso
 import com.gacelas.data.actualizacion.InfoVersion
 import com.gacelas.data.actualizacion.ReglasActualizacion
-import com.gacelas.data.clubes.calendarioMes
+import com.gacelas.comunidad.domain.reglas.calendarioMes
 import com.gacelas.data.remoto.FechaIso
 import com.gacelas.data.remoto.traducirError
 import com.gacelas.carreras.domain.FaseCarrera

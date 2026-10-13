@@ -1,9 +1,9 @@
 package com.gacelas
 
-import com.gacelas.data.mock.TipoNotificacion
-import com.gacelas.data.notificaciones.NotificacionesRepository
-import com.gacelas.data.notificaciones.haceCuanto
-import com.gacelas.data.notificaciones.notificacionDesdeFila
+import com.gacelas.comunidad.domain.modelo.TipoNotificacion
+import com.gacelas.comunidad.data.NotificacionesRepository
+import com.gacelas.comunidad.domain.reglas.haceCuanto
+import com.gacelas.comunidad.data.notificacionDesdeFila
 import com.gacelas.data.remoto.UsuarioRemoto
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json

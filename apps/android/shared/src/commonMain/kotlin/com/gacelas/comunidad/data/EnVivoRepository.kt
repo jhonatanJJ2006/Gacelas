@@ -1,11 +1,10 @@
-package com.gacelas.data.envivo
-
-import com.gacelas.shared.ahoraMs
-import com.gacelas.shared.redondear
-import kotlin.concurrent.Volatile
+package com.gacelas.comunidad.data
 
 import com.gacelas.data.remoto.Backend
 import com.gacelas.data.remoto.FechaIso
+import com.gacelas.shared.ahoraMs
+import com.gacelas.shared.redondear
+import kotlin.concurrent.Volatile
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -14,29 +13,13 @@ import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.jsonPrimitive
-
-data class Coordenada(val lat: Double, val lng: Double)
-
-/** Sesion en vivo tal como la ve un espectador (misma forma que la web, lib/enVivo.ts). */
-data class SesionEnVivo(
-    val id: String,
-    val userId: String,
-    val nombre: String,
-    val publica: Boolean,
-    val inicioMs: Long,
-    val finMs: Long?,
-    /** Posicion oculta mientras esta cerca de casa. */
-    val oculta: Boolean,
-    val ultimaMs: Long?,
-    val posicion: Coordenada?,
-    val puntos: List<Coordenada>,
-    val distanciaKm: Double,
-    val segundos: Int,
-) {
-    fun activa(ahoraMs: Long = ahoraMs()) = finMs == null && ahoraMs - (ultimaMs ?: inicioMs) < 15 * 60_000L
-}
+import com.gacelas.comunidad.domain.modelo.*
+import com.gacelas.comunidad.domain.reglas.*
+import com.gacelas.comunidad.domain.repositorio.*
+import com.gacelas.data.remoto.*
 
 private fun JsonObject.texto(k: String) = (this[k] as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
+
 private fun JsonObject.numero(k: String) = (this[k] as? JsonPrimitive)?.takeUnless { it is JsonNull }?.doubleOrNull
 
 fun sesionDesdeFila(f: JsonObject, nombre: String = "Corredor"): SesionEnVivo {

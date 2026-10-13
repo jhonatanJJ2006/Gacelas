@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.ComposeUIViewController
 import com.gacelas.acceso.BienvenidaC4
 import com.gacelas.data.mock.MockData
-import com.gacelas.data.eventos.yaPaso
+import com.gacelas.comunidad.domain.reglas.yaPaso
 import com.gacelas.navigation.Destinos
 import com.gacelas.ui.components.ScaffoldPrincipal
 import com.gacelas.acceso.BotonGoogleVisual

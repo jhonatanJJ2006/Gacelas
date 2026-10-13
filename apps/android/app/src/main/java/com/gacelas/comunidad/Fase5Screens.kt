@@ -1,5 +1,6 @@
 package com.gacelas.comunidad
 
+import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -43,17 +44,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.gacelas.data.clubes.Club
-import com.gacelas.data.clubes.CorredorEvento
-import com.gacelas.data.clubes.MiembroClub
-import com.gacelas.data.clubes.PostClub
-import com.gacelas.data.clubes.RolClub
-import com.gacelas.data.clubes.accionClub
-import com.gacelas.data.clubes.calendarioMes
-import com.gacelas.data.clubes.clasificacion
-import com.gacelas.data.clubes.posicionRepeticion
-import com.gacelas.data.clubes.puedeGestionar
-import com.gacelas.data.mock.Evento
+import com.gacelas.comunidad.domain.modelo.Club
+import com.gacelas.comunidad.domain.modelo.CorredorEvento
+import com.gacelas.comunidad.domain.modelo.MiembroClub
+import com.gacelas.comunidad.domain.modelo.PostClub
+import com.gacelas.comunidad.domain.modelo.RolClub
+import com.gacelas.comunidad.domain.reglas.accionClub
+import com.gacelas.comunidad.domain.reglas.calendarioMes
+import com.gacelas.comunidad.domain.reglas.clasificacion
+import com.gacelas.comunidad.domain.reglas.posicionRepeticion
+import com.gacelas.comunidad.domain.reglas.puedeGestionar
+import com.gacelas.comunidad.domain.modelo.Evento
 import com.gacelas.ui.aviso
 import com.gacelas.ui.components.BotonPrimario
 import com.gacelas.ui.components.CampoTexto
@@ -80,9 +81,9 @@ fun ClubesScreen(onAtras: () -> Unit, onClub: (String) -> Unit) {
     val repo = contenedor().clubes
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var datos by remember { mutableStateOf<Pair<List<Club>, Set<String>>?>(null) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.comunidad.presentation.ClubesViewModel(repo) }
+    val datos by vm.datos.collectAsState()
     var creando by remember { mutableStateOf(false) }
-    LaunchedEffect(repo) { datos = runCatching { repo?.listar() }.getOrNull() ?: (emptyList<Club>() to emptySet()) }
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.weight(1f)) { EncabezadoAtras("Clubes", onAtras) }

@@ -5,9 +5,9 @@ import com.gacelas.cuenta.domain.reglas.ValidacionAuth
 import com.gacelas.carreras.domain.modelo.Carrera
 import com.gacelas.carreras.domain.reglas.Estadisticas
 import com.gacelas.carreras.domain.modelo.PuntoGps
-import com.gacelas.data.eventos.PestanaEventos
-import com.gacelas.data.eventos.filtrarEventos
-import com.gacelas.data.eventos.yaPaso
+import com.gacelas.comunidad.domain.modelo.PestanaEventos
+import com.gacelas.comunidad.domain.reglas.filtrarEventos
+import com.gacelas.comunidad.domain.reglas.yaPaso
 import com.gacelas.data.mock.MockData.ID_USUARIO
 import com.gacelas.data.mock.MockData
 import com.gacelas.rutas.domain.modelo.PestanaRutas

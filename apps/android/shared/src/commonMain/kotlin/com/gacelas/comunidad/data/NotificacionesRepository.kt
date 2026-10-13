@@ -1,11 +1,8 @@
-package com.gacelas.data.notificaciones
+package com.gacelas.comunidad.data
 
-import com.gacelas.shared.ahoraMs
-
-import com.gacelas.data.mock.Notificacion
-import com.gacelas.data.mock.TipoNotificacion
 import com.gacelas.data.remoto.Backend
 import com.gacelas.data.remoto.FechaIso
+import com.gacelas.shared.ahoraMs
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.json.JsonNull
@@ -13,6 +10,10 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
+import com.gacelas.comunidad.domain.modelo.*
+import com.gacelas.comunidad.domain.reglas.*
+import com.gacelas.comunidad.domain.repositorio.*
+import com.gacelas.data.remoto.*
 
 private fun JsonObject.texto(k: String) = (this[k] as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
 
@@ -24,18 +25,6 @@ fun tipoDesde(t: String?): TipoNotificacion? = when (t) {
     "live" -> TipoNotificacion.EnVivo
     "streak" -> TipoNotificacion.Racha
     else -> null
-}
-
-/** "hace 5 min", "hace 3h", "hace 2d" (igual que la web). */
-fun haceCuanto(ms: Long?, ahora: Long = ahoraMs()): String {
-    if (ms == null) return ""
-    val min = ((ahora - ms) / 60_000).coerceAtLeast(0)
-    return when {
-        min < 1 -> "ahora"
-        min < 60 -> "hace $min min"
-        min < 60 * 24 -> "hace ${min / 60}h"
-        else -> "hace ${min / (60 * 24)}d"
-    }
 }
 
 fun notificacionDesdeFila(f: JsonObject, ahora: Long = ahoraMs()): Notificacion? {
@@ -51,17 +40,17 @@ fun notificacionDesdeFila(f: JsonObject, ahora: Long = ahoraMs()): Notificacion?
 }
 
 /** Notificaciones reales de la cuenta (tabla notifications, RLS solo el dueño). */
-class NotificacionesRepository(private val backend: Backend, private val uid: suspend () -> String?) {
+class NotificacionesRepository(private val backend: Backend, private val uid: suspend () -> String?) : FuenteNotificaciones {
     private val _lista = MutableStateFlow<List<Notificacion>>(emptyList())
-    val lista: StateFlow<List<Notificacion>> = _lista
+    override val lista: StateFlow<List<Notificacion>> = _lista
 
-    suspend fun refrescar() {
+    override suspend fun refrescar() {
         val yo = uid() ?: run { _lista.value = emptyList(); return }
         runCatching { backend.select("notifications", mapOf("user_id" to yo), "created_at", descendente = true) }
             .onSuccess { filas -> _lista.value = filas.mapNotNull { notificacionDesdeFila(it) } }
     }
 
-    suspend fun marcarLeidas(ids: Collection<String>) {
+    override suspend fun marcarLeidas(ids: Collection<String>) {
         if (ids.isEmpty()) return
         _lista.value = _lista.value.map { if (it.id in ids) it.copy(leida = true) else it }
         ids.forEach { id -> runCatching { backend.update("notifications", JsonObject(mapOf("read" to JsonPrimitive(true))), mapOf("id" to id)) } }

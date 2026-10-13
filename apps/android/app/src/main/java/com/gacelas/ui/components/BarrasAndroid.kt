@@ -3,7 +3,7 @@ package com.gacelas.ui.components
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.gacelas.notificaciones.notificacionesBase
-import com.gacelas.notificaciones.notificacionesVisibles
+import com.gacelas.comunidad.domain.reglas.notificacionesVisibles
 import com.gacelas.ui.ajustesState
 
 /** Scaffold principal (compartido) con el contador de notificaciones sin leer de Android. */

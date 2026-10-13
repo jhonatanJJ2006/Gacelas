@@ -16,9 +16,9 @@ import com.gacelas.carreras.domain.modelo.Carrera
 import com.gacelas.carreras.domain.repositorio.CarrerasRepository
 import com.gacelas.carreras.domain.modelo.Parcial
 import com.gacelas.carreras.domain.modelo.PuntoGps
-import com.gacelas.data.eventos.EventosRepository
+import com.gacelas.comunidad.domain.repositorio.EventosRepository
 import com.gacelas.data.jsonGacelas
-import com.gacelas.data.mock.Evento
+import com.gacelas.comunidad.domain.modelo.Evento
 import com.gacelas.rutas.domain.repositorio.RutasRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
