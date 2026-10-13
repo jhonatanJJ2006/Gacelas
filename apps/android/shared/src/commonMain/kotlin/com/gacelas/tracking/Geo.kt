@@ -2,7 +2,7 @@ package com.gacelas.tracking
 
 import com.gacelas.shared.fmt
 
-import com.gacelas.data.carreras.PuntoGps
+import com.gacelas.carreras.domain.modelo.PuntoGps
 
 /** Distancia en metros entre dos coordenadas (formula de haversine). */
 fun haversineM(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Double = com.gacelas.carreras.domain.reglas.Geo.haversineM(lat1, lng1, lat2, lng2)

@@ -2,9 +2,9 @@ package com.gacelas
 
 import com.gacelas.data.ajustes.ConfigIntervalos
 import com.gacelas.data.auth.ValidacionAuth
-import com.gacelas.data.carreras.CarreraGuardada
-import com.gacelas.data.carreras.Estadisticas
-import com.gacelas.data.carreras.PuntoGps
+import com.gacelas.carreras.domain.modelo.Carrera
+import com.gacelas.carreras.domain.reglas.Estadisticas
+import com.gacelas.carreras.domain.modelo.PuntoGps
 import com.gacelas.data.eventos.PestanaEventos
 import com.gacelas.data.eventos.filtrarEventos
 import com.gacelas.data.eventos.yaPaso
@@ -12,10 +12,10 @@ import com.gacelas.data.mock.MockData.ID_USUARIO
 import com.gacelas.data.mock.MockData
 import com.gacelas.data.rutas.PestanaRutas
 import com.gacelas.data.rutas.filtrarRutas
-import com.gacelas.tracking.FaseCarrera
+import com.gacelas.carreras.domain.FaseCarrera
 import com.gacelas.tracking.FaseIntervalo
 import com.gacelas.tracking.PlanIntervalos
-import com.gacelas.tracking.RunTracker
+import com.gacelas.carreras.domain.SesionCarrera
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearHms
 import com.gacelas.tracking.formatearMs
@@ -49,9 +49,9 @@ class GeoTest {
     }
 }
 
-class RunTrackerTest {
+class SesionCarreraTest {
     private var t = 0L
-    private val tracker = RunTracker(reloj = { t }, ahora = { 1_000L })
+    private val tracker = SesionCarrera(reloj = { t }, ahora = { 1_000L })
     /** 0.0001 grados de latitud son ~11.1 m. */
     private fun punto(i: Int, precision: Float = 5f, alt: Double? = null) = PuntoGps(-4.0 + i * 0.0001, -79.2, i * 4_000L, precision, alt)
 
@@ -111,7 +111,7 @@ class RunTrackerTest {
         tracker.registrarPunto(punto(0))
         t = 4_000; tracker.registrarPunto(punto(1))
         assertEquals(FaseCarrera.Terminada, tracker.finalizar().fase)
-        val c = tracker.aCarreraGuardada("Prueba", "nota", publica = false, id = "x")
+        val c = tracker.aCarrera("Prueba", "nota", publica = false, id = "x")
         assertEquals("x", c.id); assertFalse(c.publica); assertEquals(2, c.puntos.size)
         tracker.reiniciar()
         assertEquals(FaseCarrera.Inactiva, tracker.estado.value.fase)
@@ -180,7 +180,7 @@ class FiltrosTest {
 
 class EstadisticasTest {
     private fun ms(y: Int, m: Int, d: Int, h: Int = 7) = Calendar.getInstance().apply { clear(); set(y, m - 1, d, h, 0) }.timeInMillis
-    private fun carrera(ms: Long, km: Double = 5.0) = CarreraGuardada(id = "$ms", titulo = "c", inicioMs = ms, segundos = 1500, distanciaKm = km, desnivelM = 10)
+    private fun carrera(ms: Long, km: Double = 5.0) = Carrera(id = "$ms", titulo = "c", inicioMs = ms, segundos = 1500, distanciaKm = km, desnivelM = 10)
 
     @Test fun semanaYRacha() {
         // Viernes 9 de octubre de 2026

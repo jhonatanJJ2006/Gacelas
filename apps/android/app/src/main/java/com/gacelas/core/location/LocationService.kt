@@ -20,7 +20,7 @@ import androidx.core.content.ContextCompat
 import com.gacelas.GacelasApp
 import com.gacelas.MainActivity
 import com.gacelas.R
-import com.gacelas.data.carreras.PuntoGps
+import com.gacelas.carreras.domain.modelo.PuntoGps
 import com.gacelas.navigation.Destinos
 import com.gacelas.tracking.DestinoPendiente
 import com.gacelas.tracking.NotificacionCarrera
@@ -40,7 +40,7 @@ import com.google.android.gms.location.Priority
 
 /**
  * Servicio en primer plano que recibe la ubicacion con FusedLocationProvider durante una carrera
- * y entrega cada punto a RunTracker. Muestra una notificacion con distancia y tiempo.
+ * y entrega cada punto a SesionCarrera. Muestra una notificacion con distancia y tiempo.
  * TODO: enviar posicion en vivo y lotes de puntos a Supabase cuando exista el backend.
  */
 class LocationService : Service() {
@@ -132,7 +132,7 @@ class LocationService : Service() {
     }
 
     /**
-     * La carrera vive en RunTracker (StateFlow unico): la notificacion se redibuja con cada cambio,
+     * La carrera vive en SesionCarrera (StateFlow unico): la notificacion se redibuja con cada cambio,
      * venga de la app o de los botones, y el servicio cuenta el tiempo aunque la app no este abierta.
      * Si la carrera deja de estar activa, se quita la notificacion y el servicio se detiene.
      */

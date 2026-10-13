@@ -94,13 +94,13 @@ import androidx.compose.ui.unit.dp
 import com.gacelas.core.location.LocationService
 import com.gacelas.ajustes.permisosCarrera
 import com.gacelas.data.ajustes.ConfigIntervalos
-import com.gacelas.data.carreras.PuntoGps
+import com.gacelas.carreras.domain.modelo.PuntoGps
 import com.gacelas.tracking.Avisos
-import com.gacelas.tracking.EstadoCarrera
-import com.gacelas.tracking.FaseCarrera
+import com.gacelas.carreras.domain.EstadoCarrera
+import com.gacelas.carreras.domain.FaseCarrera
 import com.gacelas.tracking.FaseIntervalo
 import com.gacelas.tracking.PlanIntervalos
-import com.gacelas.tracking.RunTracker
+import com.gacelas.carreras.domain.SesionCarrera
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearMs
 import com.gacelas.tracking.formatearRitmo
@@ -122,8 +122,8 @@ import com.google.android.gms.location.Priority
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** Inicia el seguimiento real: RunTracker + servicio de ubicacion en primer plano. */
-fun empezarCarrera(context: Context, tracker: RunTracker) {
+/** Inicia el seguimiento real: SesionCarrera + servicio de ubicacion en primer plano. */
+fun empezarCarrera(context: Context, tracker: SesionCarrera) {
     if (!tracker.estado.value.activa) tracker.iniciar()
     LocationService.iniciar(context)
 }
@@ -134,13 +134,13 @@ private fun terminarEnVivo(context: Context) {
     if (repo.sesionId != null) kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch { repo.terminar() }
 }
 
-fun terminarCarrera(context: Context, tracker: RunTracker) {
+fun terminarCarrera(context: Context, tracker: SesionCarrera) {
     terminarEnVivo(context)
     tracker.finalizar()
     LocationService.detener(context)
 }
 
-fun descartarCarrera(context: Context, tracker: RunTracker) {
+fun descartarCarrera(context: Context, tracker: SesionCarrera) {
     terminarEnVivo(context)
     LocationService.detener(context)
     tracker.reiniciar()
@@ -158,7 +158,7 @@ fun MantenerPantallaEncendida() {
 
 /** Actualiza el tiempo del tracker cada segundo mientras la carrera esta activa. */
 @Composable
-fun RelojCarrera(tracker: RunTracker, estado: EstadoCarrera) {
+fun RelojCarrera(tracker: SesionCarrera, estado: EstadoCarrera) {
     LaunchedEffect(estado.fase) {
         while (estado.fase == FaseCarrera.Corriendo) {
             tracker.actualizarTiempo()
@@ -586,10 +586,10 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
     var publica by rememberSaveable { mutableStateOf(ajustes.visibilidad != com.gacelas.data.ajustes.Visibilidad.Privado) }
     var guardando by remember { mutableStateOf(false) }
     val carrerasPrevias by com.gacelas.ui.carrerasState()
-    val rachaAntes = remember(carrerasPrevias, ajustes.metaSemanal) { com.gacelas.data.rachas.Rachas.calcular(carrerasPrevias, System.currentTimeMillis(), ajustes.metaSemanal) }
+    val rachaAntes = remember(carrerasPrevias, ajustes.metaSemanal) { com.gacelas.carreras.domain.reglas.Rachas.calcular(carrerasPrevias, System.currentTimeMillis(), ajustes.metaSemanal) }
     val rachaDespues = remember(carrerasPrevias, ajustes.metaSemanal) {
         val ahora = System.currentTimeMillis()
-        com.gacelas.data.rachas.Rachas.calcular(carrerasPrevias + com.gacelas.data.carreras.CarreraGuardada(id = "nueva", titulo = "", inicioMs = ahora, segundos = 0, distanciaKm = 0.0), ahora, ajustes.metaSemanal)
+        com.gacelas.carreras.domain.reglas.Rachas.calcular(carrerasPrevias + com.gacelas.carreras.domain.modelo.Carrera(id = "nueva", titulo = "", inicioMs = ahora, segundos = 0, distanciaKm = 0.0), ahora, ajustes.metaSemanal)
     }
     val salirSinGuardar = {
         descartarCarrera(context, tracker)
@@ -655,7 +655,7 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
             } else {
                 guardando = true
                 scope.launch {
-                    val carrera = tracker.aCarreraGuardada(titulo, nota, publica)
+                    val carrera = tracker.aCarrera(titulo, nota, publica)
                     c.carreras.guardar(carrera)
                     com.gacelas.data.rutas.RutaActiva.id?.let { r ->
                         com.gacelas.data.rutas.RutaActiva.id = null
@@ -695,7 +695,7 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
 
 /** Boton "Compartir en vivo": envia la posicion cada 5 s mientras se corre. */
 @Composable
-internal fun BotonCompartirEnVivo(tracker: com.gacelas.tracking.RunTracker) {
+internal fun BotonCompartirEnVivo(tracker: com.gacelas.carreras.domain.SesionCarrera) {
     val repo = contenedor().enVivo ?: return
     val perfil by com.gacelas.ui.sesionState()
     if (perfil == null) return

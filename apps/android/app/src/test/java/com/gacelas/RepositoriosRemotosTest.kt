@@ -4,14 +4,14 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.gacelas.acceso.GoogleAcceso
 import com.gacelas.data.ajustes.Visibilidad
 import com.gacelas.data.auth.ResultadoAuth
-import com.gacelas.data.carreras.CarreraGuardada
-import com.gacelas.data.carreras.Parcial
-import com.gacelas.data.carreras.PuntoGps
+import com.gacelas.carreras.domain.modelo.Carrera
+import com.gacelas.carreras.domain.modelo.Parcial
+import com.gacelas.carreras.domain.modelo.PuntoGps
 import com.gacelas.data.mock.Evento
-import com.gacelas.data.remoto.carreraDesdeFila
+import com.gacelas.carreras.data.carreraDesdeFila
 import com.gacelas.data.remoto.eventoDesdeFila
 import com.gacelas.data.remoto.fila
-import com.gacelas.data.remoto.filaDesdeCarrera
+import com.gacelas.carreras.data.filaDesdeCarrera
 import com.gacelas.data.remoto.traducirError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +37,7 @@ class RepositoriosRemotosTest {
 
     @After fun cerrar() = scope.cancel()
 
-    private fun carrera(id: String, inicio: Long = 1_700_000_000_000) = CarreraGuardada(
+    private fun carrera(id: String, inicio: Long = 1_700_000_000_000) = Carrera(
         id = id, titulo = "Carrera $id", nota = "suave", inicioMs = inicio, segundos = 1500, distanciaKm = 5.25, desnivelM = 40,
         parciales = listOf(Parcial(1, 1.0, 300)), puntos = listOf(PuntoGps(-3.99, -79.2, inicio)),
     )

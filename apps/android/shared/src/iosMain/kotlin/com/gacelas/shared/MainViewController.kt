@@ -244,10 +244,10 @@ private fun InicioIos(onCorrer: () -> Unit) {
     com.gacelas.inicio.InicioContenido(
         saludo = com.gacelas.inicio.saludoPorHora(Fechas.hora(ahora)),
         nombre = perfil?.nombre?.substringBefore(' ')?.ifBlank { null } ?: "Corredor",
-        semana = remember { com.gacelas.data.carreras.Estadisticas.semana(emptyList(), ahora) },
+        semana = remember { com.gacelas.carreras.domain.reglas.Estadisticas.semana(emptyList(), ahora) },
         hoy = Fechas.diaSemana(ahora),
         m = true,
-        racha = remember { com.gacelas.data.rachas.Rachas.calcular(emptyList(), ahora) },
+        racha = remember { com.gacelas.carreras.domain.reglas.Rachas.calcular(emptyList(), ahora) },
         evento = evento,
         onCorrer = onCorrer, onEventos = {}, onEvento = {},
         corredor3D = { com.gacelas.ui.three.Runner3DFallback() },

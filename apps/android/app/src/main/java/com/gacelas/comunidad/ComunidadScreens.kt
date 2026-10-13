@@ -104,7 +104,7 @@ data class Publicacion(
     val ritmoSegKm: Int?,
     val likesBase: Int,
     val comentariosBase: Int,
-    val puntos: List<com.gacelas.data.carreras.PuntoGps> = emptyList(),
+    val puntos: List<com.gacelas.carreras.domain.modelo.PuntoGps> = emptyList(),
 )
 
 enum class FiltroFeed(val etiqueta: String) { Todos("Todos"), Comunidad("Comunidad"), Mias("Mis carreras") }

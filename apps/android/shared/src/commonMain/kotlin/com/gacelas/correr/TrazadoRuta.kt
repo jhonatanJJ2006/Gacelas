@@ -7,7 +7,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import com.gacelas.data.carreras.PuntoGps
+import com.gacelas.carreras.domain.modelo.PuntoGps
 import com.gacelas.ui.theme.GColors
 
 /** Dibuja el recorrido GPS normalizado al tamano disponible. */

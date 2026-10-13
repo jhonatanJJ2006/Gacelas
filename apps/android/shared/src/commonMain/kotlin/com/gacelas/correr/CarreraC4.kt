@@ -69,8 +69,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.gacelas.ui.theme.SpaceGrotesk
-import com.gacelas.data.carreras.Parcial
-import com.gacelas.tracking.EstadoCarrera
+import com.gacelas.carreras.domain.modelo.Parcial
+import com.gacelas.carreras.domain.EstadoCarrera
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearMs
 import com.gacelas.tracking.formatearRitmo

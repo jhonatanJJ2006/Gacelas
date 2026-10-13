@@ -5,8 +5,8 @@ import com.gacelas.data.ajustes.LocalAjustesRepository
 import com.gacelas.data.ajustes.Visibilidad
 import com.gacelas.data.auth.LocalAuthRepository
 import com.gacelas.data.auth.ResultadoAuth
-import com.gacelas.data.carreras.CarreraGuardada
-import com.gacelas.data.carreras.LocalCarrerasRepository
+import com.gacelas.carreras.domain.modelo.Carrera
+import com.gacelas.carreras.data.LocalCarrerasRepository
 import com.gacelas.data.eventos.LocalEventosRepository
 import com.gacelas.data.mock.Evento
 import com.gacelas.data.rutas.LocalRutasRepository
@@ -52,8 +52,8 @@ class RepositoriosTest {
 
     @Test fun carreras_guardarYEliminar() = runBlocking {
         val repo = LocalCarrerasRepository(store)
-        repo.guardar(CarreraGuardada(id = "a", titulo = "A", inicioMs = 1, segundos = 60, distanciaKm = 0.2))
-        repo.guardar(CarreraGuardada(id = "b", titulo = "B", inicioMs = 2, segundos = 60, distanciaKm = 0.2))
+        repo.guardar(Carrera(id = "a", titulo = "A", inicioMs = 1, segundos = 60, distanciaKm = 0.2))
+        repo.guardar(Carrera(id = "b", titulo = "B", inicioMs = 2, segundos = 60, distanciaKm = 0.2))
         assertEquals(listOf("b", "a"), repo.carreras.first().map { it.id })
         repo.eliminar("a")
         assertEquals(listOf("b"), repo.carreras.first().map { it.id })

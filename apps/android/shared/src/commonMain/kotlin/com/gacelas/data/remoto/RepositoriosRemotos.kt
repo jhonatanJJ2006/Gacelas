@@ -13,10 +13,10 @@ import com.gacelas.data.auth.AuthRepository
 import com.gacelas.data.auth.Perfil
 import com.gacelas.data.auth.ResultadoAuth
 import com.gacelas.data.auth.ValidacionAuth
-import com.gacelas.data.carreras.CarreraGuardada
-import com.gacelas.data.carreras.CarrerasRepository
-import com.gacelas.data.carreras.Parcial
-import com.gacelas.data.carreras.PuntoGps
+import com.gacelas.carreras.domain.modelo.Carrera
+import com.gacelas.carreras.domain.repositorio.CarrerasRepository
+import com.gacelas.carreras.domain.modelo.Parcial
+import com.gacelas.carreras.domain.modelo.PuntoGps
 import com.gacelas.data.eventos.EventosRepository
 import com.gacelas.data.jsonGacelas
 import com.gacelas.data.mock.Evento
@@ -178,12 +178,6 @@ class SupabaseAuthRepository(
         valor.actualizar { null }
     }
 }
-
-/* Carreras: com.gacelas.carreras.data.SupabaseCarrerasRepository (alias abajo). */
-typealias OperacionPendiente = com.gacelas.carreras.data.OperacionPendiente
-typealias SupabaseCarrerasRepository = com.gacelas.carreras.data.SupabaseCarrerasRepository
-fun filaDesdeCarrera(c: CarreraGuardada, userId: String): JsonObject = com.gacelas.carreras.data.filaDesdeCarrera(c, userId)
-fun carreraDesdeFila(f: JsonObject, puntos: List<PuntoGps>): CarreraGuardada = com.gacelas.carreras.data.carreraDesdeFila(f, puntos)
 
 /* ---------------- Rutas ---------------- */
 

@@ -37,7 +37,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import com.gacelas.data.carreras.Estadisticas
+import com.gacelas.carreras.domain.reglas.Estadisticas
 import com.gacelas.data.mock.MockData
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearRitmo

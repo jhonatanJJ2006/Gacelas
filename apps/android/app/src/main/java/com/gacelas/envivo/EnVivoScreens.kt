@@ -31,7 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.gacelas.correr.TrazadoRuta
-import com.gacelas.data.carreras.PuntoGps
+import com.gacelas.carreras.domain.modelo.PuntoGps
 import com.gacelas.data.envivo.SesionEnVivo
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearHms

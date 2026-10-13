@@ -1,8 +1,8 @@
 package com.gacelas.core.sensores
 
-import com.gacelas.data.carreras.PuntoGps
-import com.gacelas.tracking.EstadoCarrera
-import com.gacelas.tracking.RunTracker
+import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.carreras.domain.EstadoCarrera
+import com.gacelas.carreras.domain.SesionCarrera
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,13 +53,13 @@ data class EstadoSensores(
 )
 
 /**
- * Une GPS + rumbo con la logica compartida: cada lectura va a [RunTracker.registrarPunto] y el rumbo
+ * Une GPS + rumbo con la logica compartida: cada lectura va a [SesionCarrera.registrarPunto] y el rumbo
  * se combina con [Rumbo.combinar] (mismos umbrales que Android).
  */
 class SeguimientoSensores(
     private val ubicacion: FuenteUbicacion?,
     private val brujula: FuenteRumbo?,
-    val tracker: RunTracker = RunTracker(),
+    val tracker: SesionCarrera = SesionCarrera(),
 ) {
     private val _estado = MutableStateFlow(EstadoSensores())
     val estado: StateFlow<EstadoSensores> = _estado.asStateFlow()

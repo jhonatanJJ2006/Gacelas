@@ -9,8 +9,8 @@ import com.gacelas.data.ajustes.AjustesRepository
 import com.gacelas.data.ajustes.LocalAjustesRepository
 import com.gacelas.data.auth.AuthRepository
 import com.gacelas.data.auth.LocalAuthRepository
-import com.gacelas.data.carreras.CarrerasRepository
-import com.gacelas.data.carreras.LocalCarrerasRepository
+import com.gacelas.carreras.domain.repositorio.CarrerasRepository
+import com.gacelas.carreras.data.LocalCarrerasRepository
 import com.gacelas.data.eventos.EventosRepository
 import com.gacelas.data.eventos.LocalEventosRepository
 import com.gacelas.data.rutas.LocalRutasRepository
@@ -19,10 +19,10 @@ import com.gacelas.data.remoto.Backend
 import com.gacelas.data.remoto.SupabaseAjustesRepository
 import com.gacelas.data.remoto.SupabaseAuthRepository
 import com.gacelas.data.remoto.SupabaseBackend
-import com.gacelas.data.remoto.SupabaseCarrerasRepository
+import com.gacelas.carreras.data.SupabaseCarrerasRepository
 import com.gacelas.data.remoto.SupabaseEventosRepository
 import com.gacelas.data.remoto.SupabaseRutasRepository
-import com.gacelas.tracking.RunTracker
+import com.gacelas.carreras.domain.SesionCarrera
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -40,7 +40,7 @@ class Contenedor(store: DataStore<Preferences>, backend: Backend? = null, progra
     val rutas: RutasRepository
     val ajustes: AjustesRepository
     val eventos: EventosRepository
-    val tracker = RunTracker()
+    val tracker = SesionCarrera()
     /** Seguimiento en vivo; null sin servidor. */
     val enVivo: com.gacelas.data.envivo.EnVivoRepository?
     /** Notificaciones reales; null sin servidor (se muestran las de ejemplo). */

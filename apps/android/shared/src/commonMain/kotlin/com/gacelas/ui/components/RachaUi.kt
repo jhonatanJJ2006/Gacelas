@@ -25,9 +25,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.gacelas.data.carreras.CarreraGuardada
-import com.gacelas.data.rachas.Racha
-import com.gacelas.data.rachas.Rachas
+import com.gacelas.carreras.domain.modelo.Carrera
+import com.gacelas.carreras.domain.reglas.Racha
+import com.gacelas.carreras.domain.reglas.Rachas
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
@@ -51,7 +51,7 @@ fun InsigniaRacha(r: Racha, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun TarjetaRacha(r: Racha, carreras: List<CarreraGuardada>) {
+fun TarjetaRacha(r: Racha, carreras: List<Carrera>) {
     val ahora = com.gacelas.shared.ahoraMs()
     val semanas = Rachas.mapaCalor(carreras, ahora)
     val max = maxOf(1.0, semanas.flatten().maxOf { it.km })

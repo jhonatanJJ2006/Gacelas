@@ -6,8 +6,8 @@ import com.gacelas.data.actualizacion.ReglasActualizacion
 import com.gacelas.data.clubes.calendarioMes
 import com.gacelas.data.remoto.FechaIso
 import com.gacelas.data.remoto.traducirError
-import com.gacelas.tracking.FaseCarrera
-import com.gacelas.tracking.RunTracker
+import com.gacelas.carreras.domain.FaseCarrera
+import com.gacelas.carreras.domain.SesionCarrera
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearHms
 import com.gacelas.tracking.formatearRitmo
@@ -48,7 +48,7 @@ class LogicaComunTest {
 
     @Test fun cronometroConPausa() {
         var t = 0L
-        val r = RunTracker(reloj = { t }, ahora = { 1_000L })
+        val r = SesionCarrera(reloj = { t }, ahora = { 1_000L })
         r.iniciar(); t = 10_000; r.pausar(); t = 50_000; r.reanudar(); t = 65_000; r.actualizarTiempo()
         assertEquals(25, r.estado.value.segundos)
         assertEquals(FaseCarrera.Corriendo, r.estado.value.fase)

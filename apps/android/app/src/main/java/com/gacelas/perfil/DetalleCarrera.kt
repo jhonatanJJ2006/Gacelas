@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.gacelas.data.carreras.CarreraGuardada
+import com.gacelas.carreras.domain.modelo.Carrera
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearMs
 import com.gacelas.tracking.formatearRitmo
@@ -52,7 +52,7 @@ fun DetalleCarreraScreen(id: String, onAtras: () -> Unit) {
     val repo = contenedor().carreras
     val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "detalle-$id") { com.gacelas.carreras.presentation.DetalleCarreraViewModel(id, repo) }
     val estado by vm.estado.collectAsState()
-    val c: CarreraGuardada? = estado.carrera
+    val c: Carrera? = estado.carrera
     val ajustes by ajustesState()
     val m = ajustes.unidadesMetricas
     DetalleCarreraContenido(

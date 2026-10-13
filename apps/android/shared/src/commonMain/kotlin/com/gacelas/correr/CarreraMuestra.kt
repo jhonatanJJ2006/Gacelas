@@ -1,11 +1,11 @@
 package com.gacelas.correr
 
-import com.gacelas.data.carreras.CarreraGuardada
-import com.gacelas.data.carreras.Parcial
+import com.gacelas.carreras.domain.modelo.Carrera
+import com.gacelas.carreras.domain.modelo.Parcial
 import com.gacelas.data.actualizacion.InfoVersion
-import com.gacelas.tracking.EstadoCarrera
-import com.gacelas.tracking.FaseCarrera
-import com.gacelas.data.carreras.PuntoGps
+import com.gacelas.carreras.domain.EstadoCarrera
+import com.gacelas.carreras.domain.FaseCarrera
+import com.gacelas.carreras.domain.modelo.PuntoGps
 import kotlin.math.sin
 
 /** Carrera fija para las capturas de paridad Android/iOS (los mismos valores que CarreraC4Test). */
@@ -17,7 +17,7 @@ object CarreraMuestra {
     )
 
     /** La misma carrera ya guardada (detalle de carrera). 12 oct 2026, 06:30 en Loja. */
-    val guardada = CarreraGuardada(
+    val guardada = Carrera(
         id = "muestra", titulo = "Carrera matutina", nota = "Buen ritmo por el Jipiro.", inicioMs = 1_791_811_800_000L,
         segundos = estado.segundos, distanciaKm = estado.distanciaKm, desnivelM = estado.desnivelM.toInt(),
         parciales = estado.parciales, puntos = estado.puntos,
