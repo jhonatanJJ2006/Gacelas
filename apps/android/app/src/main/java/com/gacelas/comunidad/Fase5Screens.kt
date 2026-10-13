@@ -78,10 +78,11 @@ private fun SinServidor() = Text("Los clubes necesitan conexión con el servidor
 
 @Composable
 fun ClubesScreen(onAtras: () -> Unit, onClub: (String) -> Unit) {
-    val repo = contenedor().clubes
+    val contenedorVm = contenedor()
+    val repo = contenedorVm.clubes
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.comunidad.presentation.ClubesViewModel(repo) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { contenedorVm.clubesViewModel() }
     val datos by vm.datos.collectAsState()
     var creando by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {

@@ -240,7 +240,7 @@ fun EventosScreen(onEvento: (String) -> Unit, onClubes: () -> Unit = {}) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val (eventos, inscritos) = eventosState()
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.comunidad.presentation.EventosViewModel(c.eventos) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.eventosViewModel() }
     val pestana by vm.pestana.collectAsState()
     val clubId = remember { com.gacelas.comunidad.data.EventoDeClub.id.also { com.gacelas.comunidad.data.EventoDeClub.id = null } }
     var creando by remember { mutableStateOf(clubId != null) }

@@ -22,9 +22,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import com.gacelas.cuenta.domain.repositorio.AuthRepository
-import com.gacelas.cuenta.data.LocalAuthRepository
 import com.gacelas.cuenta.domain.modelo.ResultadoAuth
-import com.gacelas.cuenta.data.SupabaseAuthRepository
 import com.gacelas.data.remoto.SupabaseBackend
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -78,9 +76,13 @@ object SesionIos {
         if (url.isBlank() || clave.isBlank()) null else runCatching { SupabaseBackend(url, clave) }.getOrNull()
     }
 
-    val auth: AuthRepository by lazy { backend?.let { SupabaseAuthRepository(it, store) } ?: LocalAuthRepository(store) }
+    /** Contenedor de dependencias compartido (igual que Android); iOS aun no descarga datos al entrar. */
+    val contenedor: com.gacelas.di.ContenedorApp by lazy { com.gacelas.di.ContenedorApp(store, backend, descargarAlEntrar = false) }
 
-    val ajustes: com.gacelas.cuenta.domain.repositorio.AjustesRepository by lazy { com.gacelas.cuenta.data.LocalAjustesRepository(store) }
+    val auth: AuthRepository get() = contenedor.auth
+
+    /** iOS guarda los ajustes solo en el dispositivo por ahora. */
+    val ajustes: com.gacelas.cuenta.domain.repositorio.AjustesRepository get() = contenedor.ajustesLocales
 }
 
 /** Llamado desde Swift al arrancar. */
@@ -106,7 +108,7 @@ private suspend fun pedir(bloque: (String, AlTokenAcceso) -> Unit): Triple<Strin
 fun BotonesSocialesIos(onEntrar: () -> Unit, portada: Boolean = false, alto: Dp = 52.dp) {
     val auth = SesionIos.auth
     val puente = SesionIos.puente
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "acceso-social") { com.gacelas.cuenta.presentation.AccesoSocialViewModel(auth) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "acceso-social") { SesionIos.contenedor.accesoSocialViewModel(auth) }
     val fase by vm.fase.collectAsState()
     val error by vm.error.collectAsState()
     val entrar by rememberUpdatedState(onEntrar)

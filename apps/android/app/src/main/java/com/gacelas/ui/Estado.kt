@@ -34,8 +34,8 @@ fun sesionState(): State<Perfil?> = contenedor().auth.sesion.collectAsState(init
 @Composable
 fun carrerasState(): State<List<Carrera>> {
     // Historial de carreras desde su ViewModel compartido (contexto carreras, MVVM).
-    val repo = contenedor().carreras
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "historial-carreras") { com.gacelas.carreras.presentation.HistorialCarrerasViewModel(repo) }
+    val c = contenedor()
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "historial-carreras") { c.historialCarrerasViewModel() }
     return vm.carreras.collectAsState()
 }
 
@@ -59,5 +59,7 @@ fun Context.compartir(texto: String) {
 
 /** ViewModel de ajustes compartido (contexto cuenta). */
 @Composable
-fun ajustesViewModel(repo: com.gacelas.cuenta.domain.repositorio.AjustesRepository = contenedor().ajustes): com.gacelas.cuenta.presentation.AjustesViewModel =
-    androidx.lifecycle.viewmodel.compose.viewModel(key = "ajustes") { com.gacelas.cuenta.presentation.AjustesViewModel(repo) }
+fun ajustesViewModel(repo: com.gacelas.cuenta.domain.repositorio.AjustesRepository = contenedor().ajustes): com.gacelas.cuenta.presentation.AjustesViewModel {
+    val c = contenedor()
+    return androidx.lifecycle.viewmodel.compose.viewModel(key = "ajustes") { c.ajustesViewModel(repo) }
+}

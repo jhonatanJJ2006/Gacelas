@@ -5,24 +5,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.gacelas.cuenta.domain.repositorio.AjustesRepository
-import com.gacelas.cuenta.data.LocalAjustesRepository
-import com.gacelas.cuenta.domain.repositorio.AuthRepository
-import com.gacelas.cuenta.data.LocalAuthRepository
-import com.gacelas.carreras.domain.repositorio.CarrerasRepository
-import com.gacelas.carreras.data.LocalCarrerasRepository
-import com.gacelas.comunidad.domain.repositorio.EventosRepository
-import com.gacelas.comunidad.data.LocalEventosRepository
-import com.gacelas.rutas.data.LocalRutasRepository
-import com.gacelas.rutas.domain.repositorio.RutasRepository
 import com.gacelas.data.remoto.Backend
-import com.gacelas.cuenta.data.SupabaseAjustesRepository
-import com.gacelas.cuenta.data.SupabaseAuthRepository
 import com.gacelas.data.remoto.SupabaseBackend
-import com.gacelas.carreras.data.SupabaseCarrerasRepository
-import com.gacelas.comunidad.data.SupabaseEventosRepository
-import com.gacelas.rutas.data.SupabaseRutasRepository
-import com.gacelas.carreras.domain.SesionCarrera
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -30,88 +14,26 @@ import kotlinx.coroutines.launch
 
 private val Context.almacenGacelas: DataStore<Preferences> by preferencesDataStore(name = "gacelas")
 
-/**
- * Contenedor simple de dependencias. Con Supabase configurado usa los repositorios remotos
- * (con DataStore como cache); si no, todo queda en el dispositivo.
- */
-class Contenedor(store: DataStore<Preferences>, backend: Backend? = null, programarSincronizacion: () -> Unit = {}) {
-    val auth: AuthRepository
-    val carreras: CarrerasRepository
-    val rutas: RutasRepository
-    val ajustes: AjustesRepository
-    val eventos: EventosRepository
-    val tracker = SesionCarrera()
-    /** Seguimiento en vivo; null sin servidor. */
-    val enVivo: com.gacelas.comunidad.data.EnVivoRepository?
-    /** Notificaciones reales; null sin servidor (se muestran las de ejemplo). */
-    val notificaciones: com.gacelas.comunidad.data.NotificacionesRepository?
-    /** Rutas de la comunidad (Fase 4); null sin servidor. */
-    val explorar: com.gacelas.rutas.data.ExplorarRepository?
-    /** Clubes y eventos de Fase 5; null sin servidor. */
-    val clubes: com.gacelas.comunidad.data.ClubesRepository?
+/** El contenedor de dependencias es el compartido (shared commonMain, com.gacelas.di). */
+typealias Contenedor = com.gacelas.di.ContenedorApp
 
-    /** Descarga los datos de la cuenta y sube lo pendiente. No hace nada sin servidor. */
-    val sincronizar: suspend () -> Unit
-    /** Rutas guardadas en el celular y cambios pendientes. */
-    val rutasOffline = com.gacelas.rutas.data.RutasOffline(store)
-    /** Aviso de version nueva (manifiesto publico en Supabase Storage); null en pruebas o sin servidor. */
-    val actualizacion: com.gacelas.data.actualizacion.ActualizacionRepository? =
-        (if (android.os.Build.FINGERPRINT == "robolectric") null else com.gacelas.data.actualizacion.ReglasActualizacion.urlManifiesto(BuildConfig.SUPABASE_URL))
-            ?.let { com.gacelas.data.actualizacion.ActualizacionRepository(store, it, BuildConfig.VERSION_CODE) }
-    /** Sube carreras y rutas pendientes; devuelve cuantas operaciones quedan (lo usa SincronizacionWorker). */
-    val subirPendientes: suspend () -> Int
+/** Supabase solo se usa si local.properties trae la URL y la clave. */
+fun backendConfigurado(): Backend? =
+    // En las pruebas (Robolectric) nunca se usa el proyecto real.
+    if (android.os.Build.FINGERPRINT != "robolectric" && BuildConfig.SUPABASE_URL.isNotBlank() && BuildConfig.SUPABASE_ANON_KEY.isNotBlank())
+        runCatching { SupabaseBackend(BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_ANON_KEY) }.getOrNull()
+    else null
 
-    init {
-        if (backend == null) {
-            auth = LocalAuthRepository(store)
-            carreras = LocalCarrerasRepository(store)
-            rutas = LocalRutasRepository(store)
-            ajustes = LocalAjustesRepository(store)
-            eventos = LocalEventosRepository(store)
-            sincronizar = {}
-            subirPendientes = { 0 }
-            enVivo = null
-            notificaciones = null
-            explorar = null
-            clubes = null
-        } else {
-            lateinit var remotoAuth: SupabaseAuthRepository
-            val uid: suspend () -> String? = { remotoAuth.userId() }
-            val c = SupabaseCarrerasRepository(backend, store, uid, programarSincronizacion)
-            val r = SupabaseRutasRepository(backend, store, uid, rutasOffline, programarSincronizacion)
-            val a = SupabaseAjustesRepository(backend, store, uid)
-            val e = SupabaseEventosRepository(backend, store, uid)
-            val descargarTodo: suspend () -> Unit = { c.descargar(); r.descargar(); a.descargar(); e.descargar() }
-            remotoAuth = SupabaseAuthRepository(backend, store) { descargarTodo() }
-            auth = remotoAuth
-            carreras = c
-            rutas = r
-            ajustes = a
-            eventos = e
-            sincronizar = { remotoAuth.restaurar() }
-            enVivo = com.gacelas.comunidad.data.EnVivoRepository(backend, uid)
-            notificaciones = com.gacelas.comunidad.data.NotificacionesRepository(backend, uid)
-            val ex = com.gacelas.rutas.data.ExplorarRepository(backend, rutasOffline, programarSincronizacion, uid)
-            explorar = ex
-            subirPendientes = { c.sincronizar() + ex.subirPendientes() }
-            clubes = com.gacelas.comunidad.data.ClubesRepository(backend, uid)
-        }
-    }
-
-    companion object {
-        /** Supabase solo se usa si local.properties trae la URL y la clave. */
-        fun backendConfigurado(): Backend? =
-            // En las pruebas (Robolectric) nunca se usa el proyecto real.
-            if (android.os.Build.FINGERPRINT != "robolectric" && BuildConfig.SUPABASE_URL.isNotBlank() && BuildConfig.SUPABASE_ANON_KEY.isNotBlank())
-                runCatching { SupabaseBackend(BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_ANON_KEY) }.getOrNull()
-            else null
-    }
-}
+/** Aviso de version nueva (manifiesto publico en Supabase Storage); null en pruebas o sin servidor. */
+private fun actualizacionAndroid(store: DataStore<Preferences>): com.gacelas.data.actualizacion.ActualizacionRepository? =
+    (if (android.os.Build.FINGERPRINT == "robolectric") null else com.gacelas.data.actualizacion.ReglasActualizacion.urlManifiesto(BuildConfig.SUPABASE_URL))
+        ?.let { com.gacelas.data.actualizacion.ActualizacionRepository(store, it, BuildConfig.VERSION_CODE) }
 
 class GacelasApp : Application() {
     private val alcance = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val contenedor: Contenedor by lazy {
-        Contenedor(applicationContext.almacenGacelas, Contenedor.backendConfigurado()) { com.gacelas.core.sync.Sincronizacion.programar(this) }
+        val store = applicationContext.almacenGacelas
+        Contenedor(store, backendConfigurado(), actualizacion = actualizacionAndroid(store)) { com.gacelas.core.sync.Sincronizacion.programar(this) }
     }
 
     override fun onCreate() {

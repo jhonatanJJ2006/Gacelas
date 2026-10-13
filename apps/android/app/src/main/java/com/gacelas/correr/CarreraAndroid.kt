@@ -20,8 +20,9 @@ import com.gacelas.ui.contenedor
 @Composable
 fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
     val context = LocalContext.current
-    val tracker = contenedor().tracker
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.carreras.presentation.CarreraEnCursoViewModel(tracker) }
+    val c = contenedor()
+    val tracker = c.tracker
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.carreraEnCursoViewModel(tracker) }
     val estado by vm.estado.collectAsState()
     val ajustes by ajustesState()
     var confirmar by remember { mutableStateOf(false) }

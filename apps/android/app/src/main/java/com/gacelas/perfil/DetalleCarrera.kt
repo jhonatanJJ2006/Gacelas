@@ -49,8 +49,9 @@ import java.util.Locale
 /** Detalle de una carrera guardada: mapa del recorrido, metricas, parciales, notas y borrar. */
 @Composable
 fun DetalleCarreraScreen(id: String, onAtras: () -> Unit) {
-    val repo = contenedor().carreras
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "detalle-$id") { com.gacelas.carreras.presentation.DetalleCarreraViewModel(id, repo) }
+    val contenedorVm = contenedor()
+    val repo = contenedorVm.carreras
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "detalle-$id") { contenedorVm.detalleCarreraViewModel(id) }
     val estado by vm.estado.collectAsState()
     val c: Carrera? = estado.carrera
     val ajustes by ajustesState()
