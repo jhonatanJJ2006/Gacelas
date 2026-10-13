@@ -12,7 +12,6 @@ import com.gacelas.carreras.domain.reglas.ReglasRitmo
 import com.gacelas.carreras.domain.reglas.tituloPorHora
 import com.gacelas.shared.ahoraMs
 import com.gacelas.shared.nuevoUuid
-import com.gacelas.tracking.formatearHms
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,7 +33,6 @@ data class EstadoCarrera(
     val activa: Boolean get() = fase == FaseCarrera.Corriendo || fase == FaseCarrera.Pausada
     val pausada: Boolean get() = fase == FaseCarrera.Pausada
     val ritmoPromedioSegKm: Int? get() = Ritmo.promedio(segundos, Distancia(distanciaKm))?.segPorKm
-    val tiempoTexto: String get() = formatearHms(segundos)
 }
 
 /**

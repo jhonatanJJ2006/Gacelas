@@ -154,7 +154,7 @@ private fun versionIos(): String {
 @Composable
 private fun LoginIos(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: () -> Unit, onRegistro: () -> Unit) {
     val auth = com.gacelas.acceso.SesionIos.auth
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.cuenta.presentation.LoginViewModel(auth) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.acceso.SesionIos.contenedor.loginViewModel(auth) }
     val e by vm.estado.collectAsState()
     InicioSesionC4(
         email = e.email, password = e.password, error = e.error, cargando = e.cargando,
@@ -169,7 +169,7 @@ private fun LoginIos(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: () 
 @Composable
 private fun RegistroIos(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: () -> Unit) {
     val auth = com.gacelas.acceso.SesionIos.auth
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.cuenta.presentation.RegistroViewModel(auth) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.acceso.SesionIos.contenedor.registroViewModel(auth) }
     val e by vm.estado.collectAsState()
     com.gacelas.acceso.RegistroContenido(
         nombre = e.nombre, email = e.email, password = e.password, error = e.error, cargando = e.cargando,
@@ -184,7 +184,7 @@ private fun RegistroIos(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesio
 @Composable
 private fun RecuperarIos(onAtras: () -> Unit) {
     val auth = com.gacelas.acceso.SesionIos.auth
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.cuenta.presentation.RecuperarViewModel(auth) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.acceso.SesionIos.contenedor.recuperarViewModel(a = auth) }
     val e by vm.estado.collectAsState()
     com.gacelas.acceso.RecuperarContenido(
         email = e.email, enviado = e.enviado, error = e.error, onEmail = vm::email,
@@ -227,7 +227,7 @@ private fun CarreraIos(panelInicial: Boolean, onSalir: () -> Unit) {
     val s = remember { SeguimientoSensores(fuenteUbicacionNativa(), fuenteRumboNativa()) }
     DisposableEffect(s) { s.iniciar(carrera = true); onDispose { s.detener() } }
     LaunchedEffect(s) { while (true) { delay(1000); s.tic() } }
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.carreras.presentation.CarreraEnCursoViewModel(s.tracker) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.acceso.SesionIos.contenedor.carreraEnCursoViewModel(s.tracker) }
     val real by vm.estado.collectAsState()
     // --carrera-muestra (solo capturas de CI): los mismos datos fijos que la captura Android.
     val e = if (argumento("--carrera-muestra")) com.gacelas.correr.CarreraMuestra.estado else real
@@ -266,7 +266,7 @@ private fun fechaLarga(ms: Long): String = platform.Foundation.NSDateFormatter()
 private fun AjustesIos(onAtras: () -> Unit, onCerrarSesion: () -> Unit) {
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     val repo = com.gacelas.acceso.SesionIos.ajustes
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.cuenta.presentation.AjustesViewModel(repo) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.acceso.SesionIos.contenedor.ajustesViewModel(repo) }
     val a by vm.ajustes.collectAsState()
     com.gacelas.ajustes.AjustesContenido(
         a = a, version = versionIos(), guardar = vm::actualizar,

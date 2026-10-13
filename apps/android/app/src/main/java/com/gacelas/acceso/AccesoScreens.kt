@@ -102,8 +102,9 @@ private fun ChipBeneficio(icono: ImageVector, texto: String, modifier: Modifier)
 
 @Composable
 fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: () -> Unit, onRegistro: () -> Unit) {
-    val auth = contenedor().auth
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.cuenta.presentation.LoginViewModel(auth) }
+    val c = contenedor()
+    val auth = c.auth
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.loginViewModel(auth) }
     val e by vm.estado.collectAsState()
     InicioSesionC4(
         email = e.email, password = e.password, error = e.error, cargando = e.cargando,
@@ -115,9 +116,10 @@ fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: (
 
 @Composable
 fun RegistroScreen(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: () -> Unit) {
-    val auth = contenedor().auth
+    val c = contenedor()
+    val auth = c.auth
     val context = LocalContext.current
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.cuenta.presentation.RegistroViewModel(auth) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.registroViewModel(auth) }
     val e by vm.estado.collectAsState()
     RegistroContenido(
         nombre = e.nombre, email = e.email, password = e.password, error = e.error, cargando = e.cargando,
@@ -130,8 +132,9 @@ fun RegistroScreen(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: ()
 
 @Composable
 fun RecuperarContrasenaScreen(onAtras: () -> Unit, enviadoInicial: Boolean = false) {
-    val auth = contenedor().auth
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.cuenta.presentation.RecuperarViewModel(auth, enviadoInicial) }
+    val c = contenedor()
+    val auth = c.auth
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.recuperarViewModel(enviadoInicial, auth) }
     val e by vm.estado.collectAsState()
     RecuperarContenido(
         email = e.email, enviado = e.enviado, error = e.error,

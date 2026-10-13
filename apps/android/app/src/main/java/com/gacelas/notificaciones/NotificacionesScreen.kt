@@ -69,7 +69,7 @@ fun iconoNotificacion(tipo: TipoNotificacion): Pair<ImageVector, Color> = when (
 @Composable
 fun NotificacionesScreen(onAtras: () -> Unit, onAbrir: (Notificacion) -> Unit = {}) {
     val c = contenedor()
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.comunidad.presentation.NotificacionesViewModel(c.notificaciones, c.ajustes, MockData.notificaciones) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.notificacionesViewModel(MockData.notificaciones) }
     val filtro by vm.filtro.collectAsState()
     val lista by vm.lista.collectAsState()
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {

@@ -99,7 +99,7 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val repo = c.explorar
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.rutas.presentation.ListaRutasViewModel(repo, c.rutas, MockData.ID_USUARIO, MockData.rutas) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.listaRutasViewModel(MockData.ID_USUARIO, MockData.rutas) }
     val guardadas by vm.guardadas.collectAsState()
     val ajustes by ajustesState()
     val m = ajustes.unidadesMetricas

@@ -154,9 +154,10 @@ fun BotonGoogle(
     portada: Boolean = false,
     alto: androidx.compose.ui.unit.Dp = 52.dp,
 ) {
-    val auth = contenedor().auth
+    val c = contenedor()
+    val auth = c.auth
     val context = LocalContext.current
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "acceso-social") { com.gacelas.cuenta.presentation.AccesoSocialViewModel(auth) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "acceso-social") { c.accesoSocialViewModel(auth) }
     val fase by vm.fase.collectAsState()
     val error by vm.error.collectAsState()
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {

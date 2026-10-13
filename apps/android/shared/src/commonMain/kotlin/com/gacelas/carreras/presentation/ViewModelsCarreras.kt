@@ -56,3 +56,6 @@ class CarreraEnCursoViewModel(private val sesion: SesionCarrera) : ViewModel() {
 class HistorialCarrerasViewModel(repo: CarrerasRepository) : ViewModel() {
     val carreras: StateFlow<List<Carrera>> = repo.carreras.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 }
+
+/** Tiempo de la carrera como "hh:mm:ss" (formato de presentacion, fuera del dominio). */
+val com.gacelas.carreras.domain.EstadoCarrera.tiempoTexto: String get() = com.gacelas.tracking.formatearHms(segundos)

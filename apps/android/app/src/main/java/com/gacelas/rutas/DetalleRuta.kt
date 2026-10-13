@@ -100,7 +100,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
     val perfil by sesionState()
     val ajustes by ajustesState()
     val m = ajustes.unidadesMetricas
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "ruta-$id") { com.gacelas.rutas.presentation.DetalleRutaViewModel(id, repo) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel(key = "ruta-$id") { c.detalleRutaViewModel(id) }
     val resenas by vm.resenas.collectAsState()
     var estrellas by remember { mutableIntStateOf(0) }
     var comentario by remember { mutableStateOf("") }

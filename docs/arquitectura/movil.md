@@ -6,7 +6,7 @@ Volver a [ARQUITECTURA.md](../ARQUITECTURA.md).
 
 ```mermaid
 graph TD
-    APP[apps/android/app<br/>Android: Activity, servicios, DI] --> SH
+    APP[apps/android/app<br/>Android: Activity, servicios, plataforma] --> SH
     IOS[apps/ios/iosApp<br/>SwiftUI wrapper] -->|framework Shared| SH
     subgraph SH[apps/android/shared - Kotlin Multiplatform]
         CM[commonMain] --> EXP[expect]
@@ -48,8 +48,9 @@ graph LR
     UC --> P[domain/repositorio<br/>interfaces]
     D[data<br/>Supabase / Local] -.implementa.-> P
     D --> R
-    DI[app / iOS: composición] --> D
+    DI[di/ContenedorApp<br/>composición compartida] --> D
     DI --> VM
+    PL[app / iOS: piezas de plataforma] --> DI
 ```
 
 ### Reglas de dependencias
@@ -62,7 +63,11 @@ graph LR
 | `androidMain` / `iosMain`    | cualquier capa de `commonMain`                                                                            | otros source sets                                                      |
 | `apps/android/app`, `iosApp` | `shared` completo (punto de composición)                                                                  | contener reglas de negocio                                             |
 
-- La inyección es manual por constructor. El ensamblado (crear `Supabase<X>Repository` y pasarlo a los ViewModels) ocurre en el punto de entrada de cada plataforma. Si crece, evaluar Koin en un ADR.
+- La inyección es manual por constructor, sin librería de DI. El ensamblado vive en un contenedor compartido: `shared/src/commonMain/kotlin/com/gacelas/di/ContenedorApp.kt`. Crea los repositorios (`Supabase<X>Repository` si hay backend, `Local<X>Repository` si no), la `SesionCarrera` en curso y expone fábricas de ViewModels (`loginViewModel()`, `listaRutasViewModel(...)`, `carreraEnCursoViewModel()`, etc.) que las pantallas usan dentro de `viewModel { ... }`.
+- Las piezas de plataforma entran por parámetro del constructor: `store` (DataStore), `backend` (Supabase ya configurado o `null`), `actualizacion` (aviso de versión, solo Android) y `programarSincronizacion` (WorkManager en Android).
+- Android: `GacelasApp` crea un único `ContenedorApp` (alias `Contenedor`) y las pantallas lo obtienen con `contenedor()`; `LocationService` y `MainActivity` usan el mismo `tracker`.
+- iOS: `SesionIos` (iosMain) crea el `ContenedorApp` con el DataStore de Documents y las claves de `Info.plist`; `MainViewController()` (usado por el wrapper SwiftUI de `apps/ios/iosApp`) toma de ahí repositorios y ViewModels. iOS guarda los ajustes solo en local (`ajustesLocales`) y aún no descarga datos al iniciar sesión (`descargarAlEntrar = false`).
+- Si crece, evaluar Koin en un ADR.
 - Los ViewModels exponen `StateFlow<UiState>` inmutable y reciben acciones como funciones; la UI no llama a repositorios.
 
 ### expect/actual
@@ -92,11 +97,10 @@ Solo para capacidades de plataforma: sensores (`core/sensores`), fuentes (`ui/th
 | `cuenta`    | No                                                                  | En `data/auth`, `data/ajustes`, `data/notificaciones`            | En `acceso/`, `ajustes/`, `perfil/`                                   | Pendiente                                                             |
 | `comunidad` | Sí (`modelo`, `reglas`, `repositorio`)                              | Sí (`Local`/`Supabase` eventos, clubes, en vivo, notificaciones) | Sí (`EventosViewModel`, `NotificacionesViewModel`, `ClubesViewModel`) | Migrado (#63); paquete `com.gacelas.comunidad`                        |
 
-Otras carpetas de `commonMain` hoy: `correr`, `tracking`, `mapa`, `inicio`, `navigation`, `ui` (tema, componentes, 3D), `core/sensores`, `actualizacion`, `acceso`, `ajustes`, `perfil` (UI de cuenta), `data/remoto` (cliente Supabase compartido), `data/mock`.
+Otras carpetas de `commonMain` hoy: `di` (contenedor de dependencias), `correr`, `tracking`, `mapa`, `inicio`, `navigation`, `ui` (tema, componentes, 3D), `core/sensores`, `actualizacion`, `acceso`, `ajustes`, `perfil` (UI de cuenta), `data/remoto` (cliente Supabase compartido), `data/mock`.
 
 Desviaciones detectadas:
 
-- `carreras/domain/SesionCarrera.kt` importa `com.gacelas.tracking.formatearHms` (formato de presentación) desde `domain` (`tiempoTexto`). Mover el formateo a `presentation` o la función a `shared`.
 - `data/mock` y pantallas como `Fase5Screens.kt` aún usan nombres por fase/temporales en lugar de por contexto.
 - En `apps/android/app`, el feed, el detalle de evento/club y las pantallas en vivo de comunidad aún no tienen ViewModel en `shared`; tampoco hay pantallas de comunidad en iOS. Otras pantallas Android (`rutas/DetalleRuta.kt`, `perfil/DetalleCarrera.kt`) siguen con lógica propia que iOS no comparte.
 
@@ -105,7 +109,6 @@ Desviaciones detectadas:
 1. Contexto `cuenta` (capas creadas en #61): mover la UI de `acceso`, `ajustes`, `perfil` a `cuenta/presentation/ui`, `data/notificaciones` a `cuenta/data` y añadir `domain/casosuso` cuando haya lógica más allá del repositorio.
 2. Contexto `comunidad` (migrado en #63): faltan ViewModels para feed, detalle de evento/club y pantallas en vivo; no hay pantallas de comunidad en iOS aún. Mover esas UI de `apps/android/app/.../comunidad` y `envivo` a `comunidad/presentation/ui` cuando existan.
 3. Mover `ListaRutasContenido.kt` a `rutas/presentation/ui` y las pantallas de carrera (`correr`) a `carreras/presentation/ui`.
-4. Corregir la dependencia `domain -> tracking` de `SesionCarrera`.
-5. Reducir `apps/android/app` a composición, servicios Android y permisos; mover pantallas a `shared` para que iOS las reciba.
-6. Añadir una comprobación automática de capas (por ejemplo un test con Konsist, o un script `rg` en CI que falle si un archivo de `*/domain/*` importa `io.github.jan.supabase`, `io.ktor`, `androidx.compose` o `*.data.*`).
-7. Tests de `domain` y ViewModels para `cuenta` en `commonTest` (comunidad ya tiene `ComunidadTest`); ampliar cobertura de ViewModels de comunidad cuando se añadan feed, detalle y en vivo.
+4. Reducir `apps/android/app` a composición, servicios Android y permisos; mover pantallas a `shared` para que iOS las reciba.
+5. Añadir una comprobación automática de capas (por ejemplo un test con Konsist, o un script `rg` en CI que falle si un archivo de `*/domain/*` importa `io.github.jan.supabase`, `io.ktor`, `androidx.compose` o `*.data.*`).
+6. Tests de `domain` y ViewModels para `cuenta` en `commonTest` (comunidad ya tiene `ComunidadTest`); ampliar cobertura de ViewModels de comunidad cuando se añadan feed, detalle y en vivo.
