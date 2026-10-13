@@ -11,6 +11,10 @@ packages:
   GoogleSignIn:
     url: https://github.com/google/GoogleSignIn-iOS
     exactVersion: 9.2.0
+  # Carga del corredor 3D (mismo GLB que Android) en SceneKit.
+  GLTFKit2:
+    url: https://github.com/warrenm/GLTFKit2
+    exactVersion: 0.5.15
 settings:
   base:
     MARKETING_VERSION: "0.7.0"
@@ -33,10 +37,14 @@ targets:
         buildPhase: resources
       - path: ../../android/app/src/main/assets/mapas/gacelas-claro.json
         buildPhase: resources
+      # Corredor 3D: el mismo modelo animado que Android (app/src/main/assets/models).
+      - path: ../../android/app/src/main/assets/models/gacelas-runner-animated.glb
+        buildPhase: resources
     dependencies:
       - package: MapLibre
       - package: GoogleSignIn
         product: GoogleSignIn
+      - package: GLTFKit2
     # Claves del build (Supabase, Google): Config.xcconfig incluye Secrets.xcconfig (gitignored; en CI sale de secrets).
     configFiles:
       Debug: Config.xcconfig

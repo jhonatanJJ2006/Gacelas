@@ -10,6 +10,7 @@ struct iOSApp: App {
     init() {
         PuenteMapaKt.registrarMapaIos(puente: PuenteMapLibre(), offline: Self.offline)
         AccesoIosKt.registrarAccesoIos(puente: Self.acceso)
+        Runner3DIosKt.registrarCorredor3DIos(puente: Corredor3DSceneKit())
     }
 
     var body: some Scene {

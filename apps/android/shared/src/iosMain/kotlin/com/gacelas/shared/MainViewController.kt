@@ -233,8 +233,8 @@ private fun RecuperarIos(onAtras: () -> Unit) {
 }
 
 /**
- * Inicio compartido. Sin carreras guardadas todavia en iOS (llegan con la sesion). El 3D (SceneView
- * en Android) llega en su etapa; mientras, la misma imagen de reemplazo que usa Android sin 3D.
+ * Inicio compartido. Sin carreras guardadas todavia en iOS (llegan con la sesion). El corredor 3D usa el
+ * mismo GLB, clip y camara que Android (SceneKit en lugar de SceneView); sin modelo, la imagen de reemplazo.
  */
 @Composable
 private fun InicioIos(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String) -> Unit) {
@@ -252,7 +252,8 @@ private fun InicioIos(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (St
         racha = remember { com.gacelas.carreras.domain.reglas.Rachas.calcular(emptyList(), ahora) },
         evento = evento,
         onCorrer = onCorrer, onEventos = onEventos, onEvento = onEvento,
-        corredor3D = { com.gacelas.ui.three.Runner3DFallback() },
+        // Igual que InicioScreen (Android): Idle girando, camara (0, 0.3, 4.4).
+        corredor3D = { com.gacelas.ui.three.Runner3DIos(com.gacelas.ui.three.ClipCorredorIos.Idle, autoRotar = true, camara = Triple(0.0, 0.3, 4.4)) },
     )
 }
 
