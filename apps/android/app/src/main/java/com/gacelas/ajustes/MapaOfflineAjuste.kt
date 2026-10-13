@@ -30,25 +30,11 @@ fun MapaOfflineAjuste() {
     val estado by MapaOffline.estado.collectAsState()
     val disponible = Mapas.configurado()
     LaunchedEffect(disponible) { if (disponible) MapaOffline.consultar(context) }
-    Tarjeta(Modifier.testTag("mapa-offline")) {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text("Mapa sin conexión: ${MapaOffline.LOJA.nombre}", style = GType.bodyLg, color = GColors.TextPrimary)
-                    Text(
-                        textoEstadoMapa(estado),
-                        style = GType.bodySm, color = GColors.TextSecondary,
-                    )
-                }
-                when (estado) {
-                    is EstadoDescarga.Lista -> TextButton(onClick = { MapaOffline.eliminar(context) }) { Text("Eliminar", color = GColors.Danger) }
-                    is EstadoDescarga.Descargando -> Unit
-                    else -> TextButton(onClick = { MapaOffline.descargar(context) }, enabled = disponible) { Text("Descargar", color = GColors.Primary400) }
-                }
-            }
-            (estado as? EstadoDescarga.Descargando)?.let { LinearProgressIndicator(progress = { it.porcentaje / 100f }, modifier = Modifier.fillMaxWidth()) }
-        }
-    }
+    TarjetaMapaOffline(
+        nombre = MapaOffline.LOJA.nombre, texto = textoEstadoMapa(estado), lista = estado is EstadoDescarga.Lista,
+        porcentaje = (estado as? EstadoDescarga.Descargando)?.porcentaje, disponible = disponible,
+        onDescargar = { MapaOffline.descargar(context) }, onEliminar = { MapaOffline.eliminar(context) },
+    )
 }
 
 /** Texto del estado de la descarga. El porcentaje va fuera del patron de format: un "%" suelto lo rompia (crash en v0.6.x). */

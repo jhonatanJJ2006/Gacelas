@@ -72,14 +72,6 @@ import com.gacelas.ui.theme.GType
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-@Composable
-private fun PantallaConEncabezado(titulo: String, onAtras: () -> Unit, content: @Composable () -> Unit) {
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
-        EncabezadoAtras(titulo, onAtras)
-        Pantalla(Modifier.weight(1f).navigationBarsPadding()) { content() }
-    }
-}
-
 /** Devuelve una funcion que guarda un cambio de ajustes en DataStore. */
 @Composable
 private fun guardarAjuste(): ((Ajustes) -> Ajustes) -> Unit {
@@ -100,87 +92,16 @@ fun AjustesPreferenciasScreen(
     val c = contenedor()
     val scope = rememberCoroutineScope()
     val a by ajustesState()
-    val guardar = guardarAjuste()
-    var dialogo by remember { mutableStateOf<String?>(null) }
-    PantallaConEncabezado("Ajustes", onAtras) {
-        EtiquetaGrupo("Cuenta")
-        Tarjeta(padding = 0.dp) { FilaAjuste(Icons.Filled.Person, "Editar perfil", onClick = onEditarPerfil) }
-        EtiquetaGrupo("Privacidad")
-        Tarjeta(padding = 0.dp) {
-            FilaAjuste(Icons.Filled.Lock, "Privacidad y ubicación", onClick = onPrivacidad)
-            FilaAjuste(Icons.Filled.Notifications, "Notificaciones", onClick = onNotificaciones)
-        }
-        EtiquetaGrupo("General")
-        Tarjeta(padding = 0.dp) {
-            FilaInterruptor(Icons.Filled.DarkMode, "Modo oscuro", if (a.modoOscuro) "Activado" else "Tema claro activo", checked = a.modoOscuro, onChange = { v -> guardar { it.copy(modoOscuro = v) } })
-            FilaInterruptor(Icons.Filled.Straighten, "Unidades métricas", if (a.unidadesMetricas) "Kilómetros y metros" else "Millas", checked = a.unidadesMetricas, onChange = { v -> guardar { it.copy(unidadesMetricas = v) } })
-        }
-        EtiquetaGrupo("Mapa")
-        MapaOfflineAjuste()
-        EtiquetaGrupo("Rachas")
-        Tarjeta {
-            androidx.compose.foundation.layout.Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                androidx.compose.foundation.layout.Column(Modifier.weight(1f)) {
-                    Text("Meta semanal", style = GType.bodyLg, color = GColors.TextPrimary)
-                    Text("Carreras por semana para mantener la racha semanal", style = GType.bodySm, color = GColors.TextSecondary)
-                }
-                IconButton(onClick = { guardar { it.copy(metaSemanal = (it.metaSemanal - 1).coerceAtLeast(1)) } }) {
-                    Icon(Icons.Filled.Remove, "Menos carreras por semana", tint = GColors.Primary500)
-                }
-                Text("${a.metaSemanal}", style = GType.titleMd, color = GColors.TextPrimary)
-                IconButton(onClick = { guardar { it.copy(metaSemanal = (it.metaSemanal + 1).coerceAtMost(7)) } }) {
-                    Icon(Icons.Filled.Add, "Más carreras por semana", tint = GColors.Primary500)
-                }
-            }
-        }
-        EtiquetaGrupo("Información")
-        Tarjeta(padding = 0.dp) {
-            FilaAjuste(Icons.Filled.Info, "Acerca de", com.gacelas.actualizacion.textoVersion(), onClick = { dialogo = "acerca" })
-            FilaAjuste(Icons.AutoMirrored.Filled.Help, "Ayuda y soporte", onClick = { dialogo = "ayuda" })
-        }
-        Tarjeta(padding = 0.dp, fondo = GColors.Danger.copy(alpha = 0.1f), borde = GColors.Danger.copy(alpha = 0.4f)) {
-            FilaAjuste(Icons.AutoMirrored.Filled.Logout, "Cerrar sesión", colorIcono = GColors.Danger, onClick = { dialogo = "salir" }, trailing = {})
-        }
-    }
-    when (dialogo) {
-        "acerca" -> AlertDialog(
-            onDismissRequest = { dialogo = null },
-            confirmButton = { TextButton(onClick = { dialogo = null }) { Text("Cerrar") } },
-            title = { Text("Gacelas Loja") },
-            text = { Text("${com.gacelas.actualizacion.textoVersion()}. App del grupo de running Gacelas de Loja, Ecuador. Graba tus carreras con GPS, descubre rutas y entrena con la comunidad.") },
-            containerColor = GColors.BgSecondary,
-        )
-        "ayuda" -> AlertDialog(
-            onDismissRequest = { dialogo = null },
-            confirmButton = {
-                TextButton(onClick = {
-                    dialogo = null
-                    val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:soporte@gacelas.app")).putExtra(Intent.EXTRA_SUBJECT, "Ayuda con Gacelas")
-                    runCatching { context.startActivity(intent) }.onFailure { context.aviso("No hay app de correo instalada") }
-                }) { Text("Escribir a soporte") }
-            },
-            dismissButton = { TextButton(onClick = { dialogo = null }) { Text("Cerrar") } },
-            title = { Text("Ayuda y soporte") },
-            text = { Text("Para grabar una carrera toca el botón central Correr y da permiso de ubicación. Las carreras se guardan en tu teléfono y aparecen en Perfil e Inicio.") },
-            containerColor = GColors.BgSecondary,
-        )
-        "salir" -> AlertDialog(
-            onDismissRequest = { dialogo = null },
-            confirmButton = {
-                TextButton(onClick = {
-                    dialogo = null
-                    scope.launch {
-                        c.auth.cerrarSesion()
-                        onCerrarSesion()
-                    }
-                }) { Text("Cerrar sesión", color = GColors.Danger) }
-            },
-            dismissButton = { TextButton(onClick = { dialogo = null }) { Text("Cancelar") } },
-            title = { Text("¿Cerrar sesión?") },
-            text = { Text("Tus carreras siguen guardadas en este dispositivo.") },
-            containerColor = GColors.BgSecondary,
-        )
-    }
+    AjustesContenido(
+        a = a, version = com.gacelas.actualizacion.textoVersion(), guardar = guardarAjuste(),
+        onAtras = onAtras, onEditarPerfil = onEditarPerfil, onPrivacidad = onPrivacidad, onNotificaciones = onNotificaciones,
+        onSoporte = {
+            val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:soporte@gacelas.app")).putExtra(Intent.EXTRA_SUBJECT, "Ayuda con Gacelas")
+            runCatching { context.startActivity(intent) }.onFailure { context.aviso("No hay app de correo instalada") }
+        },
+        onCerrarSesion = { scope.launch { c.auth.cerrarSesion(); onCerrarSesion() } },
+        mapaOffline = { MapaOfflineAjuste() },
+    )
 }
 
 private fun Visibilidad.titulo() = when (this) { Visibilidad.Publico -> "Público"; Visibilidad.Seguidores -> "Solo seguidores"; Visibilidad.Privado -> "Privado" }

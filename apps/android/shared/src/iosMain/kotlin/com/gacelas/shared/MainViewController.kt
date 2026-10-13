@@ -28,6 +28,9 @@ import platform.UIKit.UIViewController
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.draw.clip
 
 /** Argumento de lanzamiento (CI): abre directamente la pantalla de sensores con una carrera en curso. */
 private fun argumento(a: String) = NSProcessInfo.processInfo.arguments.contains(a)
@@ -42,6 +45,10 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                 argumento("--pantalla=login") -> PantallaIos.Login
                 argumento("--pantalla=inicio") -> PantallaIos.Inicio
                 argumento("--pantalla=carrera") -> PantallaIos.Carrera
+                argumento("--pantalla=modal") -> PantallaIos.Inicio
+                argumento("--pantalla=ajustes") -> PantallaIos.Ajustes
+                argumento("--pantalla=detalle") -> PantallaIos.Detalle
+                argumento("--pantalla=rutas") -> PantallaIos.Rutas
                 else -> PantallaIos.Bienvenida
             },
         )
@@ -57,10 +64,42 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                     botonGoogle = { BotonGoogleVisual(onClick = {}, cargando = false, portada = true) },
                 )
                 PantallaIos.Login -> LoginIos(onAtras = { pantalla = PantallaIos.Bienvenida })
-                PantallaIos.Inicio -> ScaffoldPrincipal(
-                    Destinos.INICIO, sinLeer = MockData.notificaciones.count { !it.leida },
-                    onNavegar = { if (it == Destinos.CORRER) pantalla = PantallaIos.Carrera },
-                ) { InicioIos(onCorrer = { pantalla = PantallaIos.Carrera }) }
+                PantallaIos.Inicio, PantallaIos.Rutas -> androidx.compose.foundation.layout.Box {
+                    ScaffoldPrincipal(
+                        if (pantalla == PantallaIos.Rutas) Destinos.RUTAS else Destinos.INICIO,
+                        sinLeer = MockData.notificaciones.count { !it.leida },
+                        onNavegar = {
+                            when (it) {
+                                Destinos.CORRER -> pantalla = PantallaIos.Carrera
+                                Destinos.INICIO -> pantalla = PantallaIos.Inicio
+                                Destinos.RUTAS -> pantalla = PantallaIos.Rutas
+                                Destinos.PERFIL -> pantalla = PantallaIos.Ajustes
+                            }
+                        },
+                    ) {
+                        if (pantalla == PantallaIos.Rutas) RutasIos() else InicioIos(onCorrer = { pantalla = PantallaIos.Carrera })
+                    }
+                    // Modal de actualizacion V3 (la descarga/instalacion en iOS va por App Store/TestFlight).
+                    var modal by remember { mutableStateOf(argumento("--pantalla=modal")) }
+                    if (modal && pantalla == PantallaIos.Inicio) com.gacelas.actualizacion.ContenidoModal(
+                        "0.6.9", com.gacelas.correr.CarreraMuestra.version, obligatoria = false,
+                        fase = com.gacelas.actualizacion.Fase.Info, bytes = com.gacelas.correr.CarreraMuestra.version.apkBytes,
+                        onActualizar = {}, onMasTarde = { modal = false }, onPermiso = {},
+                    )
+                }
+                PantallaIos.Ajustes -> AjustesIos(onAtras = { pantalla = PantallaIos.Inicio }, onCerrarSesion = { pantalla = PantallaIos.Bienvenida })
+                PantallaIos.Detalle -> com.gacelas.perfil.DetalleCarreraContenido(
+                    c = com.gacelas.correr.CarreraMuestra.guardada,
+                    fecha = fechaLarga(com.gacelas.correr.CarreraMuestra.guardada.inicioMs), m = true,
+                    onAtras = { pantalla = PantallaIos.Inicio }, onEliminar = { pantalla = PantallaIos.Inicio },
+                    mapa = { c ->
+                        com.gacelas.correr.TrazadoRuta(
+                            c.puntos,
+                            androidx.compose.ui.Modifier.fillMaxWidth().height(240.dp)
+                                .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp)),
+                        )
+                    },
+                )
                 PantallaIos.Carrera -> CarreraIos(panelInicial = argumento("--panel"), onSalir = { pantalla = PantallaIos.Inicio })
             }
         }
@@ -78,7 +117,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
     }
 }
 
-private enum class PantallaIos { Bienvenida, Login, Inicio, Carrera }
+private enum class PantallaIos { Bienvenida, Login, Inicio, Carrera, Ajustes, Detalle, Rutas }
 
 /** "Versión 0.7.0 (700)", mismo formato que textoVersion() de Android, desde el Info.plist. */
 private fun versionIos(): String {
@@ -157,4 +196,53 @@ private fun CarreraIos(panelInicial: Boolean, onSalir: () -> Unit) {
             controles({}, {}, 0f, true)
         }
     }
+}
+
+/** "lunes 12 de octubre, 06:30" como SimpleDateFormat de Android (es-EC). */
+private fun fechaLarga(ms: Long): String = platform.Foundation.NSDateFormatter().apply {
+    locale = platform.Foundation.NSLocale(localeIdentifier = "es_EC")
+    dateFormat = "EEEE d 'de' MMMM, HH:mm"
+}.stringFromDate(platform.Foundation.NSDate.dateWithTimeIntervalSince1970(ms / 1000.0))
+
+/** Ajustes compartidos; guardados en memoria hasta conectar DataStore/sesion en iOS. */
+@Composable
+private fun AjustesIos(onAtras: () -> Unit, onCerrarSesion: () -> Unit) {
+    var a by remember { mutableStateOf(com.gacelas.data.ajustes.Ajustes()) }
+    com.gacelas.ajustes.AjustesContenido(
+        a = a, version = versionIos(), guardar = { t -> a = t(a) },
+        onAtras = onAtras, onEditarPerfil = {}, onPrivacidad = {}, onNotificaciones = {},
+        onSoporte = {
+            platform.Foundation.NSURL.URLWithString("mailto:soporte@gacelas.app?subject=Ayuda%20con%20Gacelas")?.let {
+                platform.UIKit.UIApplication.sharedApplication.openURL(it)
+            }
+        },
+        onCerrarSesion = onCerrarSesion,
+        // Sin MapLibre iOS todavia (etapa 4): la tarjeta como Android sin mapa configurado.
+        mapaOffline = {
+            com.gacelas.ajustes.TarjetaMapaOffline(
+                nombre = "Loja, Ecuador", texto = "Descarga las calles de Loja (OpenStreetMap) para correr sin datos",
+                lista = false, porcentaje = null, disponible = false, onDescargar = {}, onEliminar = {},
+            )
+        },
+    )
+}
+
+/** Lista de rutas compartida con las rutas de ejemplo (las remotas llegan con la sesion). */
+@Composable
+private fun RutasIos() {
+    var pestana by remember { mutableStateOf(com.gacelas.data.rutas.PestanaRutas.Explorar) }
+    var consulta by remember { mutableStateOf("") }
+    var filtros by remember { mutableStateOf(com.gacelas.data.rutas.FiltrosRuta()) }
+    var guardadas by remember { mutableStateOf(emptySet<String>()) }
+    val lista = com.gacelas.data.rutas.aplicarFiltros(
+        com.gacelas.data.rutas.filtrarRutas(MockData.rutas, pestana, guardadas, MockData.ID_USUARIO, consulta), filtros,
+    )
+    com.gacelas.rutas.ListaRutasContenido(
+        lista = lista, pestana = pestana, onPestana = { pestana = it }, guardadas = guardadas,
+        consulta = consulta, onConsulta = { consulta = it }, filtros = filtros, onFiltros = { filtros = it },
+        cerca = null, onCerca = {}, m = true, puedeDibujar = false,
+        onBuscar = {}, onRuta = {}, onDibujar = {},
+        onAlternarGuardada = { id, g -> guardadas = if (g) guardadas - id else guardadas + id },
+        mapaRutas = {},
+    )
 }

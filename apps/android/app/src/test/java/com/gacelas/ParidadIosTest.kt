@@ -35,6 +35,6 @@ class ParidadIosTest(private val ruta: String) {
     companion object {
         @JvmStatic
         @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
-        fun rutas(): List<Array<Any>> = listOf(Destinos.BIENVENIDA, Destinos.INICIO_SESION, Destinos.INICIO).map { arrayOf(it) }
+        fun rutas(): List<Array<Any>> = listOf(Destinos.BIENVENIDA, Destinos.INICIO_SESION, Destinos.INICIO, Destinos.AJUSTES, Destinos.RUTAS).map { arrayOf(it) }
     }
 }

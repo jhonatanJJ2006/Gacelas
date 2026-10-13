@@ -54,47 +54,13 @@ fun DetalleCarreraScreen(id: String, onAtras: () -> Unit) {
     val m = ajustes.unidadesMetricas
     val repo = contenedor().carreras
     val scope = rememberCoroutineScope()
-    var confirmar by remember { mutableStateOf(false) }
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary).testTag("detalle-carrera")) {
-        EncabezadoAtras(c?.titulo ?: "Carrera", onAtras)
-        if (c == null) {
-            Text("Esta carrera ya no está.", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.padding(16.dp))
-            return
-        }
-        Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(SimpleDateFormat("EEEE d 'de' MMMM, HH:mm", Locale("es", "EC")).format(Date(c.inicioMs)), style = GType.bodyMd, color = GColors.TextSecondary)
-            if (c.puntos.size >= 2) {
-                MapaGacelas(c.puntos.aLatLng(), Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(16.dp))) {
-                    TrazadoRuta(c.puntos, Modifier.fillMaxWidth().height(240.dp))
-                }
+    DetalleCarreraContenido(
+        c = c, fecha = c?.let { SimpleDateFormat("EEEE d 'de' MMMM, HH:mm", Locale("es", "EC")).format(Date(it.inicioMs)) }.orEmpty(), m = m,
+        onAtras = onAtras, onEliminar = { scope.launch { repo.eliminar(id) }; onAtras() },
+        mapa = { carrera ->
+            MapaGacelas(carrera.puntos.aLatLng(), Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(16.dp))) {
+                TrazadoRuta(carrera.puntos, Modifier.fillMaxWidth().height(240.dp))
             }
-            Tarjeta {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                    Metrica(Unidades.texto(c.distanciaKm, m), Unidades.etiquetaDistancia(m), color = GColors.Primary500)
-                    Metrica(formatearMs(c.segundos), "Tiempo")
-                    Metrica(formatearRitmo(Unidades.ritmo(c.ritmoSegKm, m)), Unidades.etiquetaRitmo(m))
-                    Metrica("${c.desnivelM} m", "Desnivel")
-                }
-            }
-            if (c.parciales.isNotEmpty()) Tarjeta {
-                Text("Parciales", style = GType.titleMd, color = GColors.TextPrimary)
-                c.parciales.forEach { p ->
-                    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                        Text("Km ${p.numero}", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
-                        Text(formatearMs(p.segundos), style = GType.labelLg, color = GColors.TextPrimary)
-                    }
-                }
-            }
-            if (c.nota.isNotBlank()) Tarjeta { Text(c.nota, style = GType.bodyMd, color = GColors.TextPrimary) }
-            Text(if (c.publica) "Pública" else "Privada", style = GType.bodySm, color = GColors.TextSecondary)
-            BotonSecundario("Eliminar carrera", { confirmar = true }, Modifier.fillMaxWidth(), color = GColors.Danger)
-        }
-    }
-    if (confirmar) AlertDialog(
-        onDismissRequest = { confirmar = false },
-        title = { Text("¿Eliminar esta carrera?") },
-        text = { Text("Se quita de tu historial y de tu cuenta. No se puede deshacer.") },
-        confirmButton = { TextButton(onClick = { confirmar = false; scope.launch { repo.eliminar(id) }; onAtras() }) { Text("Eliminar", color = GColors.Danger) } },
-        dismissButton = { TextButton(onClick = { confirmar = false }) { Text("Cancelar") } },
+        },
     )
 }
