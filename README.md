@@ -108,7 +108,7 @@ La documentación completa está en la carpeta `docs/`:
 - **[FREE_TIER_BUDGET.md](docs/FREE_TIER_BUDGET.md)**: Presupuesto tier gratuito
 - **[ROADMAP.md](docs/ROADMAP.md)**: Hoja de ruta del producto
 - **[CONTRIBUTING.md](docs/CONTRIBUTING.md)**: Guía de contribución
-- **[adr/](docs/adr/)**: Decisiones arquitectónicas
+- **[adr/](docs/adr/)**: Decisiones arquitectónicas, incluida la capacidad y el perfil free
 
 ## Stack Tecnológico
 
