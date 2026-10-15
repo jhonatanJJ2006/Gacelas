@@ -72,9 +72,9 @@ gacelas/
 │   └── android/          # Kotlin + Jetpack Compose
 ├── packages/
 │   └── shared-types/     # Tipos compartidos
-├── backend/
-│   ├── migrations/       # Migraciones SQL
-│   └── functions/        # Supabase Edge Functions
+├── supabase/
+│   └── migrations/       # Migraciones SQL
+├── backend/              # Variables de entorno de Supabase
 ├── docs/                 # Documentación
 ├── .github/
 │   └── workflows/        # CI/CD
@@ -86,8 +86,8 @@ gacelas/
 - **apps/web**: Frontend web, solo navegador
 - **apps/android**: App móvil nativa Android
 - **packages/shared-types**: Tipos TypeScript compartidos entre web y backend
-- **backend/migrations**: Schema SQL, ejecución secuencial
-- **backend/functions**: Lógica serverless en Deno
+- **supabase/migrations**: Schema SQL, ejecución secuencial con Supabase CLI
+- **backend**: Variables de entorno del proyecto Supabase. No es el camino caliente de GPS
 - **docs**: Documentación en Markdown
 
 ## Flujo de Trabajo Git

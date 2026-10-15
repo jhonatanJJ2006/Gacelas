@@ -663,13 +663,11 @@ WHERE
 
 ## Migraciones
 
-Las migraciones se encuentran en `backend/migrations/` y se ejecutan en orden numérico:
+Las migraciones se encuentran en `supabase/migrations/` y se ejecutan en orden numérico:
 
-1. `001_initial_schema.sql`: Tablas base
-2. `002_add_postgis.sql`: Habilitar extensión PostGIS
-3. `003_create_indexes.sql`: Índices de performance
-4. `004_enable_rls.sql`: Row Level Security policies
-5. `005_create_functions.sql`: Funciones auxiliares
+1. `001_initial_schema.sql`: Tablas base, PostGIS, indices y RLS
+
+Las migraciones siguientes se agregan en el mismo directorio, en orden numerico. No se aplican contra el proyecto free desde CI.
 
 ## Próximos Pasos
 
