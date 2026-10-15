@@ -1,0 +1,33 @@
+{
+  "designCapacity": {
+    "concurrentSessions": 3000,
+    "livePublishers": 500,
+    "eventViewers": 1000
+  },
+  "free": {
+    "id": "free",
+    "maxRealtimeConnections": 150,
+    "platformRealtimeConnections": 200,
+    "maxMessagesPerSecond": 80,
+    "platformMessagesPerSecond": 100,
+    "maxMessagesPerMonth": 2000000,
+    "maxChannelsPerClient": 1,
+    "positionIntervalMs": 5000,
+    "maxBatchPoints": 50,
+    "minPointIntervalMs": 1000,
+    "allowPositionPolling": false
+  },
+  "pro": {
+    "id": "pro",
+    "maxRealtimeConnections": 500,
+    "platformRealtimeConnections": 500,
+    "maxMessagesPerSecond": 400,
+    "platformMessagesPerSecond": 500,
+    "maxMessagesPerMonth": 5000000,
+    "maxChannelsPerClient": 1,
+    "positionIntervalMs": 5000,
+    "maxBatchPoints": 50,
+    "minPointIntervalMs": 1000,
+    "allowPositionPolling": false
+  }
+}
