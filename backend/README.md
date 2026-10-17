@@ -33,7 +33,7 @@ Las migraciones se ejecutan en orden numérico:
 ```
 supabase/migrations/
 ├── 001_initial_schema.sql       # Schema base (profiles, activities, track_points)
-├── 002_capacity.sql             # Lotes, resumenes y bloqueo de insert directo
+├── 015_capacity.sql             # Lotes, resumenes y bloqueo de insert directo
 └── ...                          # Migraciones siguientes, en orden numerico
 ```
 

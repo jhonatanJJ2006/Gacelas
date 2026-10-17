@@ -666,7 +666,7 @@ WHERE
 Las migraciones se encuentran en `supabase/migrations/` y se ejecutan en orden numérico:
 
 1. `001_initial_schema.sql`: Tablas base, PostGIS, indices y RLS
-2. `002_capacity.sql`: RPC `append_track_batch`, resumenes y bloqueo de insert directo en `track_points`
+2. `015_capacity.sql`: RPC `append_track_batch`, resumenes y bloqueo de insert directo en `track_points`
 
 Las migraciones siguientes se agregan en el mismo directorio, en orden numerico. No se aplican contra el proyecto free desde CI.
 
