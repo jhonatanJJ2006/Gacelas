@@ -21,9 +21,9 @@ gacelas/
 │   └── android/      # Aplicación Android (Kotlin + Jetpack Compose)
 ├── packages/
 │   └── shared-types/ # Tipos compartidos TypeScript/Kotlin
-├── backend/
-│   ├── migrations/   # Migraciones de base de datos
-│   └── functions/    # Funciones serverless
+├── supabase/
+│   └── migrations/   # Schema SQL versionado para Supabase CLI
+├── backend/          # Variables de entorno y notas del proyecto Supabase
 ├── docs/             # Documentación extensa
 │   ├── adr/          # Architecture Decision Records
 │   ├── DESIGN.md
