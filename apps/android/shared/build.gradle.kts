@@ -8,56 +8,59 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-/**
- * Modulo compartido Android/iOS (Kotlin Multiplatform + Compose Multiplatform).
- * Etapa 1: logica pura (rumbo, formatos, reglas de actualizacion) y la UI de arranque de iOS.
- * Las siguientes etapas mueven aqui rutas, cronometro, Supabase y pantallas.
- */
 kotlin {
     androidTarget {
         compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) }
     }
     val xcf = XCFramework("Shared")
-    // En CI (-Pgacelas.ios.soloSimulador=true) solo se declara iosSimulatorArm64: evita configurar
-    // y compilar iosX64/iosArm64 cuando unicamente se prueba en el simulador Apple Silicon.
     val soloSimulador = providers.gradleProperty("gacelas.ios.soloSimulador").orNull == "true"
-    val iosTargets = if (soloSimulador) listOf(iosSimulatorArm64()) else listOf(iosX64(), iosArm64(), iosSimulatorArm64())
+    val iosTargets =
+        if (soloSimulador) listOf(iosSimulatorArm64()) else listOf(iosX64(), iosArm64(), iosSimulatorArm64())
     iosTargets.forEach {
         it.binaries.framework {
             baseName = "Shared"
             isStatic = true
             xcf.add(this)
+            export(project(":core:comun"))
+            export(project(":core:datos"))
+            export(project(":core:ui"))
+            export(project(":contextos:carreras:presentation"))
+            export(project(":contextos:rutas:presentation"))
+            export(project(":contextos:cuenta:presentation"))
+            export(project(":contextos:comunidad:presentation"))
         }
     }
-
     compilerOptions { optIn.add("kotlin.uuid.ExperimentalUuidApi") }
+
     sourceSets {
         commonMain.dependencies {
+            api(project(":core:comun"))
+            api(project(":core:datos"))
+            api(project(":core:ui"))
+            api(project(":contextos:carreras:domain"))
+            api(project(":contextos:carreras:data"))
+            api(project(":contextos:carreras:presentation"))
+            api(project(":contextos:rutas:domain"))
+            api(project(":contextos:rutas:data"))
+            api(project(":contextos:rutas:presentation"))
+            api(project(":contextos:cuenta:domain"))
+            api(project(":contextos:cuenta:data"))
+            api(project(":contextos:cuenta:presentation"))
+            api(project(":contextos:comunidad:domain"))
+            api(project(":contextos:comunidad:data"))
+            api(project(":contextos:comunidad:presentation"))
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.ui)
-            implementation(compose.materialIconsExtended)
-            api(libs.kotlinx.serialization.json)
-            api(libs.kotlinx.coroutines.core)
-            api(libs.kotlinx.datetime)
-            // MVVM compartido (ViewModel + viewModelScope en Android e iOS).
+            api(libs.androidx.datastore.preferences.core)
             api(libs.jetbrains.lifecycle.viewmodel)
             api(libs.jetbrains.lifecycle.viewmodel.compose)
-            api(libs.androidx.datastore.preferences.core)
-            api(libs.ktor.client.core)
-            api(project.dependencies.platform(libs.supabase.bom))
-            api(libs.supabase.auth)
-            api(libs.supabase.postgrest)
-            api(libs.supabase.storage)
         }
         androidMain.dependencies {
-            implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.activity.compose)
         }
         iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
-            // DataStore en iOS (createWithPath) usa rutas okio.
             implementation("com.squareup.okio:okio:3.9.1")
         }
         commonTest.dependencies {

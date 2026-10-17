@@ -1,0 +1,1 @@
+-- Copia de referencia de datos de ejemplo (ver migracion 014 aplicada en entornos existentes).

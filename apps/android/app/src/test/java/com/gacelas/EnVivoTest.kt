@@ -1,6 +1,6 @@
 package com.gacelas
 
-import com.gacelas.comunidad.data.EnVivoRepository
+import com.gacelas.comunidad.data.SupabaseEnVivoRepository
 import com.gacelas.comunidad.data.sesionDesdeFila
 import com.gacelas.data.remoto.UsuarioRemoto
 import kotlinx.coroutines.runBlocking
@@ -44,7 +44,7 @@ class EnVivoTest {
     @Test fun compartirEnviaCada5sYTermina() = runBlocking {
         val b = FakeBackend().apply { actual = UsuarioRemoto("u-1", "a@b.c") }
         var ahora = 0L
-        val r = EnVivoRepository(b, { "u-1" }) { ahora }
+        val r = SupabaseEnVivoRepository(b, { "u-1" }) { ahora }
         val id = r.iniciar()
         assertNotNull(id)
         ahora = 10_000

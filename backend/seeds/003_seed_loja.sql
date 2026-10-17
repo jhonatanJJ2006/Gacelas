@@ -1,0 +1,2 @@
+-- Copia de referencia de datos de ejemplo (ver migracion 003 aplicada en entornos existentes).
+-- Para entornos nuevos sin historial de migraciones con seed embebido, aplicar despues del esquema.

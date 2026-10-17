@@ -1,7 +1,7 @@
 package com.gacelas
 
 import com.gacelas.rutas.data.Elevacion
-import com.gacelas.rutas.data.ExplorarRepository
+import com.gacelas.rutas.data.SupabaseExplorarRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -25,7 +25,7 @@ class ElevacionTest {
 
     @Test fun subeFotoEnMiCarpeta() = runBlocking {
         val b = FakeBackend().apply { actual = com.gacelas.data.remoto.UsuarioRemoto("u-1", "a@b.c") }
-        val repo = ExplorarRepository(b) { "u-1" }
+        val repo = SupabaseExplorarRepository(b) { "u-1" }
         repo.subirFoto("ruta-1", ByteArray(10), "image/png")
         val clave = b.archivos.keys.single()
         val yo = "u-1"

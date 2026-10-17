@@ -1,0 +1,41 @@
+package com.gacelas.buildlogic
+
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.getByType
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+
+class GacelasKmpComposePlugin : Plugin<Project> {
+    override fun apply(target: Project) {
+        with(target) {
+            pluginManager.apply("org.jetbrains.kotlin.multiplatform")
+            pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
+            pluginManager.apply("org.jetbrains.compose")
+            configureGacelasKmpAndroid(gacelasAndroidNamespace())
+            configureGacelasKmpTargets()
+            val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+            extensions.configure<KotlinMultiplatformExtension> {
+                sourceSets.commonMain.configure {
+                    dependencies {
+                        implementation(project(":core:ui"))
+                        implementation(compose.runtime)
+                        implementation(compose.foundation)
+                        implementation(compose.material3)
+                        implementation(compose.ui)
+                        implementation(compose.materialIconsExtended)
+                        implementation(libs.findLibrary("jetbrains-lifecycle-viewmodel").get())
+                        implementation(libs.findLibrary("jetbrains-lifecycle-viewmodel-compose").get())
+                    }
+                }
+                sourceSets.androidMain.configure {
+                    dependencies {
+                        implementation(libs.findLibrary("androidx-activity-compose").get())
+                    }
+                }
+            }
+            configureGacelasKmpTestDeps()
+        }
+    }
+}

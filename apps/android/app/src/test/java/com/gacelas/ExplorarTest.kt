@@ -2,7 +2,7 @@ package com.gacelas
 
 import com.gacelas.rutas.domain.modelo.Dificultad
 import com.gacelas.data.mock.MockData
-import com.gacelas.rutas.data.ExplorarRepository
+import com.gacelas.rutas.data.SupabaseExplorarRepository
 import com.gacelas.rutas.domain.modelo.FiltroDistancia
 import com.gacelas.rutas.domain.modelo.FiltrosRuta
 import com.gacelas.rutas.domain.reglas.aplicarFiltros
@@ -49,7 +49,7 @@ class ExplorarTest {
     @Test fun meGustaYResenas() = runBlocking {
         val b = FakeBackend().apply { actual = com.gacelas.data.remoto.UsuarioRemoto("u-1", "a@b.c") }
         b.tablas["routes"] = mutableListOf(Json.parseToJsonElement("""{"id":"r1","name":"Ruta","distance_km":1,"difficulty":"Fácil","likes_count":0}""").jsonObject)
-        val r = ExplorarRepository(b) { "u-1" }
+        val r = SupabaseExplorarRepository(b) { "u-1" }
         r.refrescar()
         assertEquals(1, r.rutas.value!!.size)
         r.alternarMeGusta("r1")

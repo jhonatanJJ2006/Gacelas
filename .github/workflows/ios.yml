@@ -43,6 +43,9 @@ jobs:
             ios:
               - 'apps/ios/**'
               - 'apps/android/shared/**'
+              - 'apps/android/core/**'
+              - 'apps/android/contextos/**'
+              - 'apps/android/build-logic/**'
               - 'apps/android/app/src/main/assets/mapas/**'
               - 'apps/android/gradle/**'
               - 'apps/android/*.kts'
