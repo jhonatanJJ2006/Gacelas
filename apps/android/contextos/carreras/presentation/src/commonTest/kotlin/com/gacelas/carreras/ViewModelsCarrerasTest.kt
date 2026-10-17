@@ -3,7 +3,9 @@ package com.gacelas.carreras
 import com.gacelas.carreras.domain.SesionCarrera
 import com.gacelas.carreras.domain.FaseCarrera
 import com.gacelas.carreras.domain.modelo.Carrera
+import com.gacelas.carreras.domain.repositorio.CarrerasRepository
 import com.gacelas.carreras.presentation.CarreraEnCursoViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import com.gacelas.carreras.presentation.DetalleCarreraViewModel
 import com.gacelas.carreras.presentation.HistorialCarrerasViewModel
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +20,12 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+
+private class RepoMemoria : CarrerasRepository {
+    override val carreras = MutableStateFlow<List<Carrera>>(emptyList())
+    override suspend fun guardar(carrera: Carrera) { carreras.value = listOf(carrera) + carreras.value.filterNot { it.id == carrera.id } }
+    override suspend fun eliminar(id: String) { carreras.value = carreras.value.filterNot { it.id == id } }
+}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ViewModelsCarrerasTest {

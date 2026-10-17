@@ -1,5 +1,6 @@
 package com.gacelas.carreras
 
+import com.gacelas.carreras.domain.FaseCarrera
 import com.gacelas.carreras.domain.SesionCarrera
 import com.gacelas.carreras.domain.casosuso.EliminarCarrera
 import com.gacelas.carreras.domain.casosuso.GuardarCarrera
@@ -29,6 +30,14 @@ class RepoMemoria : CarrerasRepository {
 }
 
 class DominioCarrerasTest {
+    @Test fun cronometroConPausa() {
+        var t = 0L
+        val r = SesionCarrera(reloj = { t }, ahora = { 1_000L })
+        r.iniciar(); t = 10_000; r.pausar(); t = 50_000; r.reanudar(); t = 65_000; r.actualizarTiempo()
+        assertEquals(25, r.estado.value.segundos)
+        assertEquals(FaseCarrera.Corriendo, r.estado.value.fase)
+    }
+
     @Test fun valueObjects() {
         assertEquals(2340.0, Distancia(2.34).metros, 1e-9)
         assertEquals(2, (Distancia(1.5) + Distancia(0.6)).kmCompletos)

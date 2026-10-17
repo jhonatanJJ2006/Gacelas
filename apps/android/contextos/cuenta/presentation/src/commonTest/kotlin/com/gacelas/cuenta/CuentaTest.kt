@@ -90,7 +90,7 @@ class CuentaTest {
         vm.entrar(Proveedor.Apple, pedirToken = { TokenSocial.Ok("t2", "n") }, alEntrar = { entradas++ })
         assertEquals("apple:t2", auth.ultimoToken)
         vm.entrar(Proveedor.Google, pedirToken = { TokenSocial.Error(null) }, alEntrar = {})
-        assertNull(vm.error.value) // cancelado: sin aviso
+        assertNull(vm.error.value)
         vm.entrar(Proveedor.Google, pedirToken = { TokenSocial.Ok("malo", null) }, alEntrar = {})
         assertEquals("No se pudo iniciar sesión con Google", vm.error.value?.mensaje)
         vm.cerrarError(); assertNull(vm.error.value)

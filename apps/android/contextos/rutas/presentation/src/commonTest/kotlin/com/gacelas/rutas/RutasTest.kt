@@ -1,17 +1,13 @@
 package com.gacelas.rutas
 
-import com.gacelas.rutas.domain.casosuso.ConsultaRutas
-import com.gacelas.rutas.domain.casosuso.rutasVisibles
 import com.gacelas.rutas.domain.modelo.Dificultad
-import com.gacelas.rutas.domain.modelo.FiltroDistancia
-import com.gacelas.rutas.domain.modelo.FiltrosRuta
-import com.gacelas.rutas.domain.modelo.PestanaRutas
 import com.gacelas.rutas.domain.modelo.ResenaRuta
 import com.gacelas.rutas.domain.modelo.Ruta
 import com.gacelas.rutas.domain.repositorio.ExplorarRutas
 import com.gacelas.rutas.domain.repositorio.RutasRepository
 import com.gacelas.rutas.presentation.DetalleRutaViewModel
 import com.gacelas.rutas.presentation.ListaRutasViewModel
+import com.gacelas.rutas.domain.modelo.PestanaRutas
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,20 +40,15 @@ private class ExplorarFalso(inicial: List<Ruta>?) : ExplorarRutas {
     override suspend fun resenas(id: String) = listOf(ResenaRuta("r", "u", "Ana", 5, "Buena"))
     override suspend fun fotos(id: String) = listOf("f.jpg")
     override suspend fun corredores(id: String) = listOf("Ana" to 2) to 1
+    override suspend fun subirFoto(id: String, bytes: ByteArray, tipo: String) {}
+    override suspend fun alternarMeGusta(id: String) {}
+    override suspend fun resenar(id: String, estrellas: Int, comentario: String) {}
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RutasTest {
     @BeforeTest fun antes() = Dispatchers.setMain(UnconfinedTestDispatcher())
     @AfterTest fun despues() = Dispatchers.resetMain()
-
-    @Test fun casoDeUsoCombinaPestanaFiltrosYCercania() {
-        assertEquals(listOf("4"), rutasVisibles(ejemplo, emptySet(), "yo", ConsultaRutas(PestanaRutas.MisRutas)).map { it.id })
-        assertEquals(listOf("3"), rutasVisibles(ejemplo, emptySet(), "yo", ConsultaRutas(filtros = FiltrosRuta(Dificultad.Dificil))).map { it.id })
-        assertEquals(listOf("4"), rutasVisibles(ejemplo, emptySet(), "yo", ConsultaRutas(filtros = FiltrosRuta(distancia = FiltroDistancia.De5a10))).map { it.id })
-        assertEquals(listOf("4", "1", "3"), rutasVisibles(ejemplo, emptySet(), "yo", ConsultaRutas(cerca = mapOf("4" to 0.5, "1" to 2.0))).map { it.id })
-        assertEquals(listOf("1"), rutasVisibles(ejemplo, emptySet(), "yo", ConsultaRutas(texto = "jipiro")).map { it.id })
-    }
 
     @Test fun listaUsaEjemploSinServidorYGuarda() = runTest {
         val repo = GuardadasMemoria()

@@ -5,8 +5,8 @@ import com.gacelas.comunidad.domain.modelo.Evento
 import com.gacelas.comunidad.domain.modelo.Notificacion
 import com.gacelas.comunidad.domain.modelo.PestanaEventos
 import com.gacelas.comunidad.domain.modelo.TipoNotificacion
-import com.gacelas.comunidad.domain.repositorio.EventosRepository
 import com.gacelas.comunidad.domain.repositorio.ClubesRepository
+import com.gacelas.comunidad.domain.repositorio.EventosRepository
 import com.gacelas.comunidad.domain.repositorio.NotificacionesRepository
 import com.gacelas.comunidad.presentation.ClubesViewModel
 import com.gacelas.comunidad.presentation.EventosViewModel
