@@ -1,7 +1,7 @@
 package com.gacelas
 
 import com.gacelas.comunidad.domain.modelo.TipoNotificacion
-import com.gacelas.comunidad.data.NotificacionesRepository
+import com.gacelas.comunidad.data.SupabaseNotificacionesRepository
 import com.gacelas.comunidad.domain.reglas.haceCuanto
 import com.gacelas.comunidad.data.notificacionDesdeFila
 import com.gacelas.data.remoto.UsuarioRemoto
@@ -36,7 +36,7 @@ class NotificacionesRemotasTest {
             Json.parseToJsonElement("""{"id":"n1","user_id":"u-1","type":"live","actor_name":"Ana","message":"está corriendo","read":false,"created_at":"2026-10-11T05:00:00Z"}""").jsonObject,
             Json.parseToJsonElement("""{"id":"n2","user_id":"u-2","type":"live","actor_name":"X","message":"ajena","read":false,"created_at":"2026-10-11T05:00:00Z"}""").jsonObject,
         )
-        val r = NotificacionesRepository(b) { "u-1" }
+        val r = SupabaseNotificacionesRepository(b) { "u-1" }
         r.refrescar()
         assertEquals(1, r.lista.value.size)
         r.marcarLeidas(listOf("n1"))

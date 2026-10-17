@@ -1,0 +1,47 @@
+name: Base de datos
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/db.yml'
+  workflow_dispatch:
+
+jobs:
+  migraciones-y-tipos:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: supabase/postgres:15.8.1.060
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Aplicar migraciones
+        env:
+          PGPASSWORD: postgres
+        run: |
+          for f in backend/migrations/*.sql; do
+            echo "Aplicando $f"
+            psql -h localhost -U postgres -d postgres -f "$f" || exit 1
+          done
+      - name: pgTAP (placeholder)
+        env:
+          PGPASSWORD: postgres
+        run: |
+          for f in backend/tests/rls/*.sql; do
+            psql -h localhost -U postgres -d postgres -f "$f" || true
+          done
+      - uses: supabase/setup-cli@v1
+      - name: Generar tipos TypeScript
+        run: |
+          supabase gen types typescript --db-url "postgresql://postgres:postgres@localhost:5432/postgres" > apps/web/src/shared/supabase/tipos.gen.ts
+      - name: Verificar tipos generados
+        run: test -s apps/web/src/shared/supabase/tipos.gen.ts

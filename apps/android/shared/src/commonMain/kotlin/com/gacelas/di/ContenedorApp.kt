@@ -9,10 +9,9 @@ import com.gacelas.carreras.domain.repositorio.CarrerasRepository
 import com.gacelas.carreras.presentation.CarreraEnCursoViewModel
 import com.gacelas.carreras.presentation.DetalleCarreraViewModel
 import com.gacelas.carreras.presentation.HistorialCarrerasViewModel
-import com.gacelas.comunidad.data.ClubesRepository
-import com.gacelas.comunidad.data.EnVivoRepository
-import com.gacelas.comunidad.data.LocalEventosRepository
-import com.gacelas.comunidad.data.NotificacionesRepository
+import com.gacelas.comunidad.domain.repositorio.ClubesRepository
+import com.gacelas.comunidad.domain.repositorio.EnVivoRepository
+import com.gacelas.comunidad.domain.repositorio.NotificacionesRepository
 import com.gacelas.comunidad.data.SupabaseEventosRepository
 import com.gacelas.comunidad.domain.modelo.Notificacion
 import com.gacelas.comunidad.domain.repositorio.EventosRepository
@@ -32,7 +31,7 @@ import com.gacelas.cuenta.presentation.RecuperarViewModel
 import com.gacelas.cuenta.presentation.RegistroViewModel
 import com.gacelas.data.actualizacion.ActualizacionRepository
 import com.gacelas.data.remoto.Backend
-import com.gacelas.rutas.data.ExplorarRepository
+import com.gacelas.rutas.domain.repositorio.ExplorarRepository
 import com.gacelas.rutas.data.LocalRutasRepository
 import com.gacelas.rutas.data.RutasOffline
 import com.gacelas.rutas.data.SupabaseRutasRepository
@@ -99,7 +98,7 @@ class ContenedorApp(
             carreras = LocalCarrerasRepository(store)
             rutas = LocalRutasRepository(store)
             ajustes = LocalAjustesRepository(store)
-            eventos = LocalEventosRepository(store)
+            eventos = ModuloComunidad.eventosLocal(store)
             sincronizar = {}
             subirPendientes = { 0 }
             enVivo = null
@@ -112,7 +111,7 @@ class ContenedorApp(
             val c = SupabaseCarrerasRepository(backend, store, uid, programarSincronizacion)
             val r = SupabaseRutasRepository(backend, store, uid, rutasOffline, programarSincronizacion)
             val a = SupabaseAjustesRepository(backend, store, uid)
-            val e = SupabaseEventosRepository(backend, store, uid)
+            val e = ModuloComunidad.eventosRemoto(backend, store, uid)
             val descargarTodo: suspend () -> Unit = { c.descargar(); r.descargar(); a.descargar(); e.descargar() }
             remotoAuth = if (descargarAlEntrar) SupabaseAuthRepository(backend, store) { descargarTodo() } else SupabaseAuthRepository(backend, store)
             auth = remotoAuth
@@ -121,12 +120,12 @@ class ContenedorApp(
             ajustes = a
             eventos = e
             sincronizar = { remotoAuth.restaurar() }
-            enVivo = EnVivoRepository(backend, uid)
-            notificaciones = NotificacionesRepository(backend, uid)
-            val ex = ExplorarRepository(backend, rutasOffline, programarSincronizacion, uid)
+            enVivo = ModuloComunidad.enVivo(backend, uid)
+            notificaciones = ModuloComunidad.notificaciones(backend, uid)
+            val ex = ModuloRutas.explorar(backend, rutasOffline, programarSincronizacion, uid)
             explorar = ex
             subirPendientes = { c.sincronizar() + ex.subirPendientes() }
-            clubes = ClubesRepository(backend, uid)
+            clubes = ModuloComunidad.clubes(backend, uid)
         }
     }
 

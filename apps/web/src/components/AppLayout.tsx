@@ -1,7 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { notificacionesVisibles } from '../lib/filtros'
 import { useApp } from '../store/app'
-import { FotoPerfil } from '../features/perfil/Perfil'
+import { FotoPerfil } from '../features/cuenta/ui/perfil/Perfil'
 
 export function AppLayout() {
   const location = useLocation()

@@ -34,10 +34,10 @@ graph LR
 
 | Parte                   | Ubicación             | Tecnología                                   | Estilo actual                                        | Estilo objetivo                                                                      |
 | ----------------------- | --------------------- | -------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Lógica móvil compartida | `apps/android/shared` | Kotlin Multiplatform + Compose Multiplatform | `carreras`, `rutas`, `cuenta` y `comunidad` en capas | Clean Architecture + MVVM, DDD ligero por bounded context                            |
+| Lógica móvil compartida | `apps/android/shared` + modulos `core/*` y `contextos/*` | Kotlin Multiplatform + Compose Multiplatform | Modulos Gradle por capa y bounded context | Clean Architecture + MVVM, DDD ligero (ver ADR 002)                            |
 | Android                 | `apps/android/app`    | Kotlin, Jetpack Compose                      | Shell de plataforma con pantallas propias            | Shell fino: piezas de plataforma para `ContenedorApp`, servicios Android, navegación |
 | iOS                     | `apps/ios/iosApp`     | SwiftUI + framework `shared`                 | Wrapper SwiftUI; pantallas Compose MP de `shared`    | Igual; solo integración nativa                                                       |
-| Web                     | `apps/web`            | React 18, Vite, TypeScript, Zustand          | Feature folders + `lib/` plano                       | Feature-based con capas por feature                                                  |
+| Web                     | `apps/web`            | React 18, Vite, TypeScript, Zustand          | `src/app`, `src/shared`, features con domain/application/ui | Feature-based con capas y ESLint boundaries                                      |
 | Backend                 | `backend/migrations`  | Supabase (Postgres, RLS, Storage, Realtime)  | Migraciones SQL numeradas                            | Igual + tests de RLS y tipos generados                                               |
 
 ## Bounded contexts
