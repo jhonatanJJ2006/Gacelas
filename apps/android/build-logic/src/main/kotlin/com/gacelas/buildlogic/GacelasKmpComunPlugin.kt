@@ -20,6 +20,7 @@ class GacelasKmpComunPlugin : Plugin<Project> {
                         implementation(libs.findLibrary("kotlinx-coroutines-core").get())
                         implementation(libs.findLibrary("kotlinx-datetime").get())
                         implementation(libs.findLibrary("kotlinx-serialization-json").get())
+                        implementation(libs.findLibrary("ktor-client-core").get())
                     }
                 }
             }

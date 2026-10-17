@@ -60,7 +60,7 @@ fun tryOpenChannel(
 fun canSendPosition(
     lastSentAtMs: Long?,
     nowMs: Long,
-    intervalMs: Long = CapacityContract.POSITION_INTERVAL_MS,
+    intervalMs: Long = CapacityContract.POSITION_INTERVAL_MS.toLong(),
 ): Boolean {
     if (lastSentAtMs == null) return true
     return nowMs - lastSentAtMs >= intervalMs

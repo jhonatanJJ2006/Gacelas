@@ -20,11 +20,11 @@ class GacelasKmpComposePlugin : Plugin<Project> {
                 sourceSets.commonMain.configure {
                     dependencies {
                         implementation(project(":core:ui"))
-                        implementation(compose.runtime)
-                        implementation(compose.foundation)
-                        implementation(compose.material3)
-                        implementation(compose.ui)
-                        implementation(compose.materialIconsExtended)
+                        implementation(libs.findLibrary("compose-runtime").get())
+                        implementation(libs.findLibrary("compose-foundation").get())
+                        implementation(libs.findLibrary("compose-material3").get())
+                        implementation(libs.findLibrary("compose-ui").get())
+                        implementation(libs.findLibrary("compose-material-icons-extended").get())
                         implementation(libs.findLibrary("jetbrains-lifecycle-viewmodel").get())
                         implementation(libs.findLibrary("jetbrains-lifecycle-viewmodel-compose").get())
                     }

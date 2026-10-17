@@ -5,6 +5,5 @@ plugins {
 kotlin {
     sourceSets.commonMain.dependencies {
         implementation(project(":core:comun"))
-        implementation(project(":core:datos"))
     }
 }

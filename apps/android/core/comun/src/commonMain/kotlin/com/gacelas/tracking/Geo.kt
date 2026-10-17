@@ -1,13 +1,22 @@
 package com.gacelas.tracking
 
 import com.gacelas.shared.fmt
+import com.gacelas.shared.rad
+import kotlin.math.asin
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 
-import com.gacelas.carreras.domain.modelo.PuntoGps
+private const val RADIO_TIERRA_M = 6_371_000.0
 
 /** Distancia en metros entre dos coordenadas (formula de haversine). */
-fun haversineM(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Double = com.gacelas.carreras.domain.reglas.Geo.haversineM(lat1, lng1, lat2, lng2)
-
-fun haversineM(a: PuntoGps, b: PuntoGps): Double = com.gacelas.carreras.domain.reglas.Geo.haversineM(a, b)
+fun haversineM(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Double {
+    val dLat = rad(lat2 - lat1)
+    val dLng = rad(lng2 - lng1)
+    val a = sin(dLat / 2).pow(2) + cos(rad(lat1)) * cos(rad(lat2)) * sin(dLng / 2).pow(2)
+    return 2 * RADIO_TIERRA_M * asin(sqrt(a.coerceIn(0.0, 1.0)))
+}
 
 /** Formatea un ritmo en segundos por km como m:ss. */
 fun formatearRitmo(segKm: Int?): String = if (segKm == null || segKm <= 0 || segKm > 59 * 60) "--:--" else "%d:%02d".fmt(segKm / 60, segKm % 60)
@@ -24,7 +33,6 @@ object Unidades {
     fun ritmo(segKm: Int?, metricas: Boolean): Int? = segKm?.let { if (metricas) it else (it * KM_POR_MILLA).toInt() }
     fun etiquetaRitmo(metricas: Boolean) = if (metricas) "/km" else "/mi"
     fun texto(km: Double, metricas: Boolean, decimales: Int = 2): String {
-        // Bajo 1 km/mi siempre 2 decimales: con 1 decimal una carrera de 0.05 km salia "0.1".
         val d = distancia(km, metricas)
         val dec = if (d < 1.0) maxOf(decimales, 2) else decimales
         return "%.${dec}f".fmt(d)

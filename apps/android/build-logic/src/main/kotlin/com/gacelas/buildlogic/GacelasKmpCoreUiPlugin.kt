@@ -10,6 +10,7 @@ class GacelasKmpCoreUiPlugin : Plugin<Project> {
         with(target) {
             pluginManager.apply("org.jetbrains.kotlin.multiplatform")
             pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
+            pluginManager.apply("org.jetbrains.kotlin.plugin.serialization")
             pluginManager.apply("org.jetbrains.compose")
             configureGacelasKmpAndroid("com.gacelas.core.ui")
             configureGacelasKmpTargets()
@@ -18,11 +19,12 @@ class GacelasKmpCoreUiPlugin : Plugin<Project> {
                 sourceSets.commonMain.configure {
                     dependencies {
                         implementation(project(":core:comun"))
-                        implementation(compose.runtime)
-                        implementation(compose.foundation)
-                        implementation(compose.material3)
-                        implementation(compose.ui)
-                        implementation(compose.materialIconsExtended)
+                        implementation(libs.findLibrary("compose-runtime").get())
+                        implementation(libs.findLibrary("compose-foundation").get())
+                        implementation(libs.findLibrary("compose-material3").get())
+                        implementation(libs.findLibrary("compose-ui").get())
+                        implementation(libs.findLibrary("compose-material-icons-extended").get())
+                        implementation(libs.findLibrary("kotlinx-serialization-json").get())
                     }
                 }
                 sourceSets.androidMain.configure {
