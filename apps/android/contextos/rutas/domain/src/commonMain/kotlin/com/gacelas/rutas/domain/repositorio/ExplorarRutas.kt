@@ -15,6 +15,9 @@ interface ExplorarRutas {
     suspend fun fotos(id: String): List<String>
     /** (nombre, veces) visibles y total de personas. */
     suspend fun corredores(id: String): Pair<List<Pair<String, Int>>, Int>
+    suspend fun subirFoto(id: String, bytes: ByteArray, tipo: String)
+    suspend fun alternarMeGusta(id: String)
+    suspend fun resenar(id: String, estrellas: Int, comentario: String)
 }
 
 /** Publicar rutas dibujadas (o de una actividad). La implementa data.SupabaseExplorarRepository. */

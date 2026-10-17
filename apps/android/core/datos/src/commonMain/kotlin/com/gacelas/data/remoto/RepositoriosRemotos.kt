@@ -45,13 +45,13 @@ import kotlinx.serialization.json.put
  * Las carreras sin conexion quedan en una cola y se suben al volver la red.
  */
 
-internal fun JsonObject.texto(k: String): String? = (this[k] as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
+fun JsonObject.texto(k: String): String? = (this[k] as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
 
-internal fun JsonObject.numero(k: String): Double? = (this[k] as? JsonPrimitive)?.doubleOrNull
+fun JsonObject.numero(k: String): Double? = (this[k] as? JsonPrimitive)?.doubleOrNull
 
-internal fun JsonObject.entero(k: String): Int? = (this[k] as? JsonPrimitive)?.intOrNull ?: numero(k)?.toInt()
+fun JsonObject.entero(k: String): Int? = (this[k] as? JsonPrimitive)?.intOrNull ?: numero(k)?.toInt()
 
-internal fun JsonObject.logico(k: String): Boolean? = (this[k] as? JsonPrimitive)?.booleanOrNull
+fun JsonObject.logico(k: String): Boolean? = (this[k] as? JsonPrimitive)?.booleanOrNull
 
 /** Fechas ISO 8601 con kotlinx-datetime (multiplataforma). */
 object FechaIso {

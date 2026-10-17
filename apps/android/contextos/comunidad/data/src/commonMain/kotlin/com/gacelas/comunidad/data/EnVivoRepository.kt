@@ -52,17 +52,16 @@ fun sesionDesdeFila(f: JsonObject, nombre: String = "Corredor"): SesionEnVivo {
  * (backend/migrations/008_live_rpc.sql); la lectura respeta el RLS de live_sessions.
  */
 class SupabaseEnVivoRepository(private val backend: Backend, private val uid: suspend () -> String?, private val reloj: () -> Long = { com.gacelas.shared.ahoraMs() }) : EnVivoRepository {
-    var sesionId: String? = null
+    override var sesionId: String? = null
         private set
-    /** Ultimo envio: true visible, false oculto cerca de casa, null sin envios. */
-    var visible: Boolean? = null
+    override var visible: Boolean? = null
         private set
     private var ultimoEnvio = 0L
 
     /** Evento elegido para correr en vivo (Fase 5): la sesion se asocia a el. */
     @Volatile override var eventoId: String? = null
 
-    suspend fun iniciar(): String? = runCatching {
+    override suspend fun iniciar(): String? = runCatching {
         val ev = eventoId
         val r = if (ev != null) backend.rpc("live_iniciar_evento", JsonObject(mapOf("evento" to kotlinx.serialization.json.JsonPrimitive(ev))))
         else backend.rpc("live_iniciar", JsonObject(emptyMap()))
@@ -70,7 +69,7 @@ class SupabaseEnVivoRepository(private val backend: Backend, private val uid: su
     }.getOrNull()?.also { sesionId = it; ultimoEnvio = 0L; visible = null }
 
     /** Envia como mucho cada 5 s. Devuelve true si se envio. */
-    suspend fun enviar(lat: Double, lng: Double, distanciaKm: Double, segundos: Int): Boolean {
+    override suspend fun enviar(lat: Double, lng: Double, distanciaKm: Double, segundos: Int): Boolean {
         val id = sesionId ?: return false
         val ahora = reloj()
         if (ahora - ultimoEnvio < INTERVALO_MS) return false
@@ -85,7 +84,7 @@ class SupabaseEnVivoRepository(private val backend: Backend, private val uid: su
         }.getOrDefault(false)
     }
 
-    suspend fun terminar() {
+    override suspend fun terminar() {
         val id = sesionId ?: return
         sesionId = null
         eventoId = null

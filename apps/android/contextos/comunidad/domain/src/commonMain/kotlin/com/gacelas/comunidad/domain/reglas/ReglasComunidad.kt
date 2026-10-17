@@ -1,33 +1,23 @@
 package com.gacelas.comunidad.domain.reglas
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import com.gacelas.data.ValorJson
-import com.gacelas.data.remoto.Backend
-import com.gacelas.data.remoto.ErrorRemoto
-import com.gacelas.data.remoto.FechaIso
-import com.gacelas.comunidad.data.eventoDesdeFila
+import com.gacelas.comunidad.domain.modelo.CorredorEvento
+import com.gacelas.comunidad.domain.modelo.DiaCalendario
+import com.gacelas.comunidad.domain.modelo.EstadoEvento
+import com.gacelas.comunidad.domain.modelo.Evento
+import com.gacelas.comunidad.domain.modelo.FiltroFeed
+import com.gacelas.comunidad.domain.modelo.MiembroClub
+import com.gacelas.comunidad.domain.modelo.Notificacion
+import com.gacelas.comunidad.domain.modelo.PestanaEventos
+import com.gacelas.comunidad.domain.modelo.Publicacion
+import com.gacelas.comunidad.domain.modelo.RolClub
+import com.gacelas.comunidad.domain.modelo.TipoNotificacion
+import com.gacelas.cuenta.domain.modelo.Ajustes
 import com.gacelas.shared.Fechas
 import com.gacelas.shared.ahoraMs
-import com.gacelas.shared.nuevoUuid
-import kotlin.concurrent.Volatile
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.SetSerializer
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.doubleOrNull
-import com.gacelas.comunidad.domain.modelo.*
-import com.gacelas.comunidad.domain.repositorio.*
 
 fun puedeGestionar(rol: RolClub?) = rol == RolClub.owner || rol == RolClub.admin
 
@@ -58,25 +48,19 @@ fun posicionRepeticion(c: CorredorEvento, t: Float): Pair<Double, Double>? =
     if (c.puntos.isEmpty()) null else c.puntos[minOf(c.puntos.lastIndex, (t * c.puntos.lastIndex).toInt())]
 
 /** Semanas (lunes a domingo) del mes con los eventos de cada dia. */
-fun calendarioMes(anio: Int, mes: Int, eventos: List<Evento>, zona: kotlinx.datetime.TimeZone = kotlinx.datetime.TimeZone.currentSystemDefault()): List<List<DiaCalendario>> {
-    // mes base 0 (como Calendar.MONTH).
+fun calendarioMes(anio: Int, mes: Int, eventos: List<Evento>, zona: TimeZone = TimeZone.currentSystemDefault()): List<List<DiaCalendario>> {
     val porDia = eventos.filter { it.inicioMs != null }.groupBy { e -> Fechas.fecha(e.inicioMs!!, zona) }
-    var d = Fechas.lunes(kotlinx.datetime.LocalDate(anio, mes + 1, 1))
+    var d = Fechas.lunes(LocalDate(anio, mes + 1, 1))
     val semanas = mutableListOf<List<DiaCalendario>>()
     do {
         semanas += (0 until 7).map {
             DiaCalendario(d.dayOfMonth, d.monthNumber == mes + 1, porDia[d].orEmpty(), Fechas.inicio(d, zona))
-                .also { d = d.plus(kotlinx.datetime.DatePeriod(days = 1)) }
+                .also { d = d.plus(DatePeriod(days = 1)) }
         }
     } while (d.monthNumber == mes + 1)
     return semanas
 }
 
-/**
- * Si el evento ya empezo, con la hora de ahora. `pasado` venia fijo (datos de ejemplo) o calculado al
- * descargar, asi que el evento Jipiro del sabado 11 de octubre seguia en "Proximos". inicioMs es un
- * instante absoluto (America/Guayaquil = UTC-5 en el servidor), no depende de la zona del telefono.
- */
 fun Evento.yaPaso(ahoraMs: Long = ahoraMs()): Boolean = inicioMs?.let { it < ahoraMs } ?: pasado
 
 fun filtrarEventos(eventos: List<Evento>, pestana: PestanaEventos, inscritos: Set<String>, ahoraMs: Long = ahoraMs()): List<Evento> = when (pestana) {
@@ -98,7 +82,7 @@ fun haceCuanto(ms: Long?, ahora: Long = ahoraMs()): String {
 }
 
 /** Notificaciones visibles segun los ajustes de notificaciones y las ya leidas. */
-fun notificacionesVisibles(a: com.gacelas.cuenta.domain.modelo.Ajustes, base: List<Notificacion>): List<Notificacion> = base
+fun notificacionesVisibles(a: Ajustes, base: List<Notificacion>): List<Notificacion> = base
     .filter {
         when (it.tipo) {
             TipoNotificacion.Like -> a.notifLikes
@@ -118,7 +102,6 @@ fun filtrarNotificaciones(lista: List<Notificacion>, filtro: String): List<Notif
     else -> lista
 }
 
-
 fun filtrarFeed(lista: List<Publicacion>, filtro: FiltroFeed, ocultas: Set<String>): List<Publicacion> = lista
     .filter { it.id !in ocultas }
     .filter {
@@ -128,4 +111,3 @@ fun filtrarFeed(lista: List<Publicacion>, filtro: FiltroFeed, ocultas: Set<Strin
             FiltroFeed.Mias -> it.propia
         }
     }
-

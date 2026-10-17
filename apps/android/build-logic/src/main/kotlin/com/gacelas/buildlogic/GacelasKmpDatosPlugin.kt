@@ -21,6 +21,7 @@ class GacelasKmpDatosPlugin : Plugin<Project> {
                         implementation(project(":core:comun"))
                         implementation(project(":core:datos"))
                         implementation(libs.findLibrary("kotlinx-coroutines-core").get())
+                        implementation(libs.findLibrary("kotlinx-datetime").get())
                         implementation(libs.findLibrary("kotlinx-serialization-json").get())
                         implementation(libs.findLibrary("androidx-datastore-preferences-core").get())
                     }

@@ -1,43 +1,23 @@
 package com.gacelas.cuenta.data
 
-import com.gacelas.shared.ahoraMs
-import com.gacelas.shared.redondear
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import com.gacelas.data.ValorJson
-import com.gacelas.cuenta.domain.modelo.Ajustes
-import com.gacelas.cuenta.domain.repositorio.AjustesRepository
-import com.gacelas.cuenta.domain.modelo.Visibilidad
-import com.gacelas.cuenta.domain.repositorio.AuthRepository
 import com.gacelas.cuenta.domain.modelo.Perfil
 import com.gacelas.cuenta.domain.modelo.ResultadoAuth
 import com.gacelas.cuenta.domain.reglas.ValidacionAuth
-import com.gacelas.carreras.domain.modelo.Carrera
-import com.gacelas.carreras.domain.repositorio.CarrerasRepository
-import com.gacelas.carreras.domain.modelo.Parcial
-import com.gacelas.carreras.domain.modelo.PuntoGps
-import com.gacelas.comunidad.domain.repositorio.EventosRepository
-import com.gacelas.data.jsonGacelas
-import com.gacelas.comunidad.domain.modelo.Evento
-import com.gacelas.rutas.domain.repositorio.RutasRepository
+import com.gacelas.cuenta.domain.repositorio.AuthRepository
+import com.gacelas.data.ValorJson
+import com.gacelas.data.remoto.Backend
+import com.gacelas.data.remoto.ErrorRemoto
+import com.gacelas.data.remoto.UsuarioRemoto
+import com.gacelas.data.remoto.texto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.SetSerializer
 import kotlinx.serialization.builtins.nullable
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.put
-import com.gacelas.data.remoto.*
 
 fun perfilDesdeFila(fila: JsonObject?, u: UsuarioRemoto): Perfil {
     val nombre = fila?.texto("full_name") ?: u.meta.texto("full_name") ?: u.meta.texto("name") ?: u.email.substringBefore('@')
@@ -154,5 +134,3 @@ class SupabaseAuthRepository(
         valor.actualizar { null }
     }
 }
-
-

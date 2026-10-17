@@ -53,6 +53,7 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.ui)
+            implementation(libs.compose.material.icons.extended)
             api(libs.androidx.datastore.preferences.core)
             api(libs.jetbrains.lifecycle.viewmodel)
             api(libs.jetbrains.lifecycle.viewmodel.compose)

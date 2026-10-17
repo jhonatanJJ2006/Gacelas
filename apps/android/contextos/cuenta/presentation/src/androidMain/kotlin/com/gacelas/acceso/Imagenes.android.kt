@@ -3,7 +3,7 @@ package com.gacelas.acceso
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
-import com.gacelas.shared.R
+import com.gacelas.cuenta.presentation.R
 
 @Composable
 actual fun imagenGacelas(imagen: ImagenGacelas): Painter = painterResource(

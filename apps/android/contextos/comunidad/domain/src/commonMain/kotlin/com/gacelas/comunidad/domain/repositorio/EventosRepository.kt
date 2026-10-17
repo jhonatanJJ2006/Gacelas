@@ -1,16 +1,16 @@
 package com.gacelas.comunidad.domain.repositorio
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import com.gacelas.data.ValorJson
-import com.gacelas.shared.ahoraMs
+import com.gacelas.comunidad.domain.modelo.Club
+import com.gacelas.comunidad.domain.modelo.CorredorEvento
+import com.gacelas.comunidad.domain.modelo.EstadoEvento
+import com.gacelas.comunidad.domain.modelo.Evento
+import com.gacelas.comunidad.domain.modelo.MiembroClub
+import com.gacelas.comunidad.domain.modelo.Notificacion
+import com.gacelas.comunidad.domain.modelo.PostClub
+import com.gacelas.comunidad.domain.modelo.RolClub
+import com.gacelas.comunidad.domain.modelo.SesionEnVivo
 import kotlinx.coroutines.flow.Flow
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.SetSerializer
-import kotlinx.serialization.builtins.serializer
-import com.gacelas.comunidad.domain.modelo.*
-import com.gacelas.comunidad.domain.reglas.*
+import kotlinx.coroutines.flow.StateFlow
 
 /** Eventos creados por el usuario e inscripciones. Hoy local; preparado para Supabase. */
 interface EventosRepository {
@@ -22,7 +22,7 @@ interface EventosRepository {
 
 /** Notificaciones de la cuenta (servidor). La implementa data.SupabaseNotificacionesRepository. */
 interface NotificacionesRepository {
-    val lista: kotlinx.coroutines.flow.StateFlow<List<Notificacion>>
+    val lista: StateFlow<List<Notificacion>>
     suspend fun refrescar()
     suspend fun marcarLeidas(ids: Collection<String>)
 }
@@ -30,7 +30,6 @@ interface NotificacionesRepository {
 /** Clubes: lista con los mios. La implementa data.SupabaseClubesRepository. */
 interface ClubesRepository {
     suspend fun listar(): Pair<List<Club>, Set<String>>
-    /** Id del usuario con sesion; null sin sesion. */
     suspend fun miId(): String? = null
     suspend fun crear(nombre: String, descripcion: String, ubicacion: String, conAprobacion: Boolean): String = throw UnsupportedOperationException()
     suspend fun detalle(id: String): Club? = null
@@ -47,10 +46,15 @@ interface ClubesRepository {
     suspend fun corredores(id: String): List<CorredorEvento> = emptyList()
 }
 
-/** Carreras en vivo que puedo ver (lectura). */
+/** Carreras en vivo: compartir posicion y ver sesiones de otros. */
 interface EnVivoRepository {
-    /** Evento elegido para correr en vivo: la proxima sesion se asocia a el. */
     var eventoId: String?
+    val sesionId: String?
+    /** Ultimo envio: true visible, false oculto cerca de casa, null sin envios. */
+    val visible: Boolean?
+    suspend fun iniciar(): String?
+    suspend fun enviar(lat: Double, lng: Double, distanciaKm: Double, segundos: Int): Boolean
+    suspend fun terminar()
     suspend fun listar(): List<SesionEnVivo>
     suspend fun leer(id: String): SesionEnVivo?
 }

@@ -1,36 +1,8 @@
 package com.gacelas.comunidad.domain.modelo
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import com.gacelas.data.ValorJson
-import com.gacelas.data.remoto.Backend
-import com.gacelas.data.remoto.ErrorRemoto
-import com.gacelas.data.remoto.FechaIso
-import com.gacelas.comunidad.data.eventoDesdeFila
-import com.gacelas.rutas.domain.modelo.Dificultad
-import com.gacelas.rutas.domain.modelo.Ruta
-import com.gacelas.shared.Fechas
+import com.gacelas.carreras.domain.modelo.PuntoGps
 import com.gacelas.shared.ahoraMs
-import com.gacelas.shared.fmt
-import com.gacelas.shared.nuevoUuid
-import com.gacelas.shared.redondear
-import kotlin.concurrent.Volatile
-import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.plus
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.SetSerializer
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.jsonPrimitive
-import com.gacelas.comunidad.domain.reglas.*
-import com.gacelas.comunidad.domain.repositorio.*
 
 @Serializable
 data class Evento(
@@ -108,7 +80,7 @@ data class Publicacion(
     val ritmoSegKm: Int?,
     val likesBase: Int,
     val comentariosBase: Int,
-    val puntos: List<com.gacelas.carreras.domain.modelo.PuntoGps> = emptyList(),
+    val puntos: List<PuntoGps> = emptyList(),
 )
 
 enum class FiltroFeed(val etiqueta: String) { Todos("Todos"), Comunidad("Comunidad"), Mias("Mis carreras") }

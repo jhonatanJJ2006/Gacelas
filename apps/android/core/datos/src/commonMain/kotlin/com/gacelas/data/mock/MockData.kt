@@ -1,12 +1,12 @@
 package com.gacelas.data.mock
-import com.gacelas.rutas.domain.modelo.Ruta
 
+import com.gacelas.comunidad.domain.modelo.Evento
+import com.gacelas.comunidad.domain.modelo.Notificacion
+import com.gacelas.comunidad.domain.modelo.TipoNotificacion
 import com.gacelas.rutas.domain.modelo.Dificultad
-
+import com.gacelas.rutas.domain.modelo.Ruta
 import com.gacelas.shared.fmt
-
 import kotlinx.serialization.Serializable
-import com.gacelas.comunidad.domain.modelo.*
 
 /** Datos de prueba tipados, equivalentes a apps/web/src/mocks/data.ts. Se reemplazaran por Supabase. */
 data class Usuario(val id: String, val nombre: String, val username: String)

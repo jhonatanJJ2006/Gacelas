@@ -127,7 +127,7 @@ class SupabaseExplorarRepository(
     }
 
     /** Sube rutas creadas y corridas registradas sin red. Devuelve cuantas operaciones quedan. */
-    suspend fun subirPendientes(): Int {
+    override suspend fun subirPendientes(): Int {
         val local = offline ?: return 0
         val yo = uid() ?: return local.pendientes.first().size
         val quedan = local.procesar { op ->
@@ -146,7 +146,7 @@ class SupabaseExplorarRepository(
         backend.select("route_photos", mapOf("route_id" to id), "created_at", descendente = true).mapNotNull { it.texto("path") }.map { backend.urlPublica("route-photos", it) }
     }.getOrDefault(emptyList())
 
-    suspend fun subirFoto(id: String, bytes: ByteArray, tipo: String) {
+    override suspend fun subirFoto(id: String, bytes: ByteArray, tipo: String) {
         val yo = uid() ?: throw ErrorRemoto("Inicia sesión para subir fotos")
         if (bytes.size > 5 * 1024 * 1024) throw ErrorRemoto("La foto pesa más de 5 MB")
         val ext = when (tipo) { "image/png" -> "png"; "image/webp" -> "webp"; else -> "jpg" }
@@ -161,13 +161,13 @@ class SupabaseExplorarRepository(
         filas.map { (it.texto("nombre") ?: it.texto("usuario") ?: "Corredor") to (it.numero("veces")?.toInt() ?: 1) } to (filas.firstOrNull()?.numero("total")?.toInt() ?: 0)
     }.getOrDefault(emptyList<Pair<String, Int>>() to 0)
 
-    suspend fun registrarCorrida(rutaId: String, actividadId: String) {
+    override suspend fun registrarCorrida(rutaId: String, actividadId: String) {
         val yo = uid() ?: return
         runCatching { backend.insert("route_runs", listOf(JsonObject(mapOf("route_id" to JsonPrimitive(rutaId), "user_id" to JsonPrimitive(yo), "activity_id" to JsonPrimitive(actividadId))))) }
             .onFailure { offline?.let { it.encolar(OperacionRuta("corrida", rutaId, actividadId = actividadId)); alEncolar() } }
     }
 
-    suspend fun alternarMeGusta(id: String) {
+    override suspend fun alternarMeGusta(id: String) {
         val yo = uid() ?: throw ErrorRemoto("Inicia sesión para dar me gusta")
         val activo = id !in _meGusta.value
         _meGusta.value = if (activo) _meGusta.value + id else _meGusta.value - id
@@ -184,7 +184,7 @@ class SupabaseExplorarRepository(
         }
     }.getOrDefault(emptyList())
 
-    suspend fun resenar(id: String, estrellas: Int, comentario: String) {
+    override suspend fun resenar(id: String, estrellas: Int, comentario: String) {
         val yo = uid() ?: throw ErrorRemoto("Inicia sesión para reseñar")
         require(estrellas in 1..5)
         backend.upsert("route_reviews", listOf(JsonObject(mapOf(

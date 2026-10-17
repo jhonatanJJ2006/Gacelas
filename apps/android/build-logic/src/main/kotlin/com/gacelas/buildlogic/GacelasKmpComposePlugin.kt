@@ -19,7 +19,9 @@ class GacelasKmpComposePlugin : Plugin<Project> {
             extensions.configure<KotlinMultiplatformExtension> {
                 sourceSets.commonMain.configure {
                     dependencies {
+                        implementation(project(":core:comun"))
                         implementation(project(":core:ui"))
+                        implementation(libs.findLibrary("kotlinx-datetime").get())
                         implementation(libs.findLibrary("compose-runtime").get())
                         implementation(libs.findLibrary("compose-foundation").get())
                         implementation(libs.findLibrary("compose-material3").get())

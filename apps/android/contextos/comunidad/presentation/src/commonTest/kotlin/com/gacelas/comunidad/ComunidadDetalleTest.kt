@@ -156,6 +156,11 @@ class ComunidadDetalleTest {
         )
         val enVivo = object : EnVivoRepository {
             override var eventoId: String? = null
+            override val sesionId: String? = null
+            override val visible: Boolean? = null
+            override suspend fun iniciar(): String? = null
+            override suspend fun enviar(lat: Double, lng: Double, distanciaKm: Double, segundos: Int) = false
+            override suspend fun terminar() {}
             override suspend fun listar() = emptyList<SesionEnVivo>()
             override suspend fun leer(id: String): SesionEnVivo? = null
         }
@@ -186,6 +191,11 @@ class ComunidadDetalleTest {
         val terminada = SesionEnVivo("x", "u", "Ana", true, 0, 10, false, 10, null, emptyList(), 1.0, 60)
         val fuente = object : EnVivoRepository {
             override var eventoId: String? = null
+            override val sesionId: String? = null
+            override val visible: Boolean? = null
+            override suspend fun iniciar(): String? = null
+            override suspend fun enviar(lat: Double, lng: Double, distanciaKm: Double, segundos: Int) = false
+            override suspend fun terminar() {}
             override suspend fun listar() = listOf(terminada)
             override suspend fun leer(id: String) = terminada
         }
