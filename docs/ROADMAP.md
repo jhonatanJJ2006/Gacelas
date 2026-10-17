@@ -4,6 +4,10 @@
 
 Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y escalando features según feedback de usuarios reales.
 
+## Capacidad y perfil free
+
+El codigo se prepara para 3.000 sesiones concurrentes. Mientras el proyecto siga en el plan Free de Supabase, el runtime usa el perfil free: 150 conexiones Realtime de las 200 permitidas, un canal vivo por cliente y sin polling de posiciones. Trescientas personas en vivo a la vez no caben en ese plan. La decision esta en [ADR 002](adr/002-capacity-and-free-profile.md).
+
 ## Fases 0, 1 y 2: Completadas
 
 Movidas a [plans/completados](plans/completados/). Ver [plans/README.md](plans/README.md).

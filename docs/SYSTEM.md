@@ -4,6 +4,14 @@
 
 Gacelas es una aplicación distribuida con arquitectura cliente-servidor, optimizada para streaming de datos de ubicación en tiempo real con restricciones de tier gratuito.
 
+## Perfil de capacidad
+
+La capacidad objetivo del codigo es 3.000 sesiones concurrentes, 500 corredores emitiendo y un evento de hasta 1.000 espectadores. El runtime actual es el perfil free y no intenta superar los topes de la plataforma.
+
+En free hay 200 conexiones Realtime, 100 mensajes por segundo y 2 millones de mensajes al mes. La app reserva 150 conexiones, abre como maximo un canal vivo por cliente y, si el cupo esta lleno, no abre otro socket ni hace polling de posiciones. Los puntos GPS no se insertan desde el cliente ni se escuchan con Postgres Changes. Entran por el RPC `append_track_batch` y el feed lee `activity_summaries`.
+
+El detalle y la puerta de salida a un plan de pago estan en [ADR 002](adr/002-capacity-and-free-profile.md).
+
 ```mermaid
 graph TB
     subgraph "Cliente Móvil (Android)"
