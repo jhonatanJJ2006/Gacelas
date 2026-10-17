@@ -1,0 +1,7 @@
+*.glb filter=lfs diff=lfs merge=lfs -text
+
+# La web se despliega en Vercel, que no descarga objetos LFS: el modelo de la web va como archivo normal
+apps/web/public/models/*.glb -filter -diff -merge binary
+
+# Android tampoco usa LFS para el modelo: si el build no descarga LFS, el APK llevaba un puntero de texto y el 3D no cargaba
+apps/android/app/src/main/assets/models/*.glb -filter -diff -merge binary

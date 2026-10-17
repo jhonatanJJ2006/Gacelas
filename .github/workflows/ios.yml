@@ -1,0 +1,254 @@
+name: iOS
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+  push:
+    branches: [main]
+    tags: ['v*']
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  # Un label distinto de 'capturas' no cancela el run en curso.
+  group: ${{ github.workflow }}-${{ github.ref }}${{ github.event.action == 'labeled' && github.event.label.name != 'capturas' && format('-{0}', github.run_id) || '' }}
+  cancel-in-progress: true
+
+env:
+  ANDROID_DIR: apps/android
+  IOS_DIR: apps/ios/iosApp
+  # CI solo declara/compila iosSimulatorArm64 (el .ipa de release usa todos los targets).
+  ORG_GRADLE_PROJECT_gacelas.ios.soloSimulador: 'true'
+
+# Grafo:  cambios ─┬─ tests-shared
+#                  ├─ build ── capturas (matriz x3) ── capturas-unir
+#                  │           (capturas solo en push a main, workflow_dispatch o label 'capturas')
+#                  └─ ipa (solo tags v* / release)
+jobs:
+  cambios:
+    runs-on: ubuntu-latest
+    if: github.event.action != 'labeled' || github.event.label.name == 'capturas'
+    outputs:
+      ios: ${{ steps.f.outputs.ios == 'true' || github.event_name != 'pull_request' && github.event_name != 'push' || startsWith(github.ref, 'refs/tags/') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: f
+        with:
+          filters: |
+            ios:
+              - 'apps/ios/**'
+              - 'apps/android/shared/**'
+              - 'apps/android/app/src/main/assets/mapas/**'
+              - 'apps/android/gradle/**'
+              - 'apps/android/*.kts'
+              - 'apps/android/gradle.properties'
+              - '.github/workflows/ios.yml'
+
+  tests-shared:
+    name: Tests shared (iosSimulatorArm64)
+    needs: cambios
+    if: needs.cambios.outputs.ios == 'true'
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { cache-read-only: false }
+      # Una sola entrada ~/.konan (~475 MB) compartida por todos los jobs: el limite de 10 GB de
+      # cache del repo se llenaba y desalojaba konan, volviendo los runs a frio.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/android/gradle/libs.versions.toml') }}
+      - name: Tests compartidos (simulador)
+        working-directory: ${{ env.ANDROID_DIR }}
+        run: ./gradlew :shared:iosSimulatorArm64Test --build-cache
+
+  build:
+    name: Build simulador
+    needs: cambios
+    if: needs.cambios.outputs.ios == 'true'
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { cache-read-only: false }
+      - uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/android/gradle/libs.versions.toml') }}
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.IOS_DIR }}/build/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('apps/ios/iosApp/project.yml') }}
+      # Framework compartido (salida Kotlin/Native + estado up-to-date de Gradle) y DerivedData de Xcode.
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.ANDROID_DIR }}/shared/build
+            ${{ env.ANDROID_DIR }}/.gradle
+          key: shared-fw-${{ runner.os }}-${{ hashFiles('apps/android/shared/**', 'apps/android/gradle/**', 'apps/android/*.kts') }}
+          restore-keys: shared-fw-${{ runner.os }}-
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.IOS_DIR }}/build/Build
+            ${{ env.IOS_DIR }}/build/Index.noindex
+            ${{ env.IOS_DIR }}/build/ModuleCache.noindex
+            ${{ env.IOS_DIR }}/build/Intermediates.noindex
+          key: deriveddata-${{ runner.os }}-${{ hashFiles('apps/ios/iosApp/**/*.swift', 'apps/ios/iosApp/project.yml', 'apps/android/shared/src/**') }}
+          restore-keys: deriveddata-${{ runner.os }}-
+      - name: Xcode 16
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)" && xcodebuild -version
+      - name: Claves de build (secrets, nunca en el repo)
+        working-directory: ${{ env.IOS_DIR }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+          GOOGLE_IOS_CLIENT_ID: ${{ secrets.GOOGLE_IOS_CLIENT_ID }}
+        run: |
+          # En xcconfig "//" es comentario: https:// se escribe https:/$()/
+          ESQUEMA=""
+          if [ -n "$GOOGLE_IOS_CLIENT_ID" ]; then ESQUEMA="com.googleusercontent.apps.${GOOGLE_IOS_CLIENT_ID%.apps.googleusercontent.com}"; fi
+          {
+            echo "SUPABASE_URL = ${SUPABASE_URL//\/\//\/\$()\/}"
+            echo "SUPABASE_ANON_KEY = $SUPABASE_ANON_KEY"
+            echo "GOOGLE_WEB_CLIENT_ID = $GOOGLE_WEB_CLIENT_ID"
+            echo "GOOGLE_IOS_CLIENT_ID = $GOOGLE_IOS_CLIENT_ID"
+            if [ -n "$ESQUEMA" ]; then echo "GOOGLE_IOS_URL_SCHEME = $ESQUEMA"; fi
+          } > Secrets.xcconfig
+          for k in SUPABASE_URL SUPABASE_ANON_KEY GOOGLE_WEB_CLIENT_ID GOOGLE_IOS_CLIENT_ID; do
+            if [ -z "${!k}" ]; then echo "::warning::Falta el secret $k: el build iOS usa cuentas locales / sin Google"; fi
+          done
+      - name: Generar proyecto Xcode
+        working-directory: ${{ env.IOS_DIR }}
+        run: command -v xcodegen || brew install xcodegen; xcodegen generate
+      - name: Build simulador
+        working-directory: ${{ env.IOS_DIR }}
+        run: |
+          xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build -clonedSourcePackagesDirPath build/SourcePackages \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=YES COMPILER_INDEX_STORE_ENABLE=NO CODE_SIGNING_ALLOWED=NO build
+      - name: Empaquetar .app simulador
+        working-directory: ${{ env.IOS_DIR }}
+        run: cd build/Build/Products/Debug-iphonesimulator && zip -qry $GITHUB_WORKSPACE/Gacelas-simulator.app.zip iosApp.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-builds
+          path: Gacelas-simulator.app.zip
+
+  capturas:
+    # needs: build. Probado arrancar el simulador en paralelo al build (esperando el artifact),
+    # pero con el limite de 5 runners macOS de la cuenta (compartido con otras ramas) las capturas
+    # ocupaban runners mientras build seguia en cola. El simulador se calienta en segundo plano
+    # mientras se descarga el .app.
+    name: Capturas (${{ matrix.grupos }})
+    needs: build
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'capturas'))
+    runs-on: macos-15
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        grupos: ['pantallas', 'carrera mapa', 'sensores', 'comunidad']
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: apps/ios/ci }
+      - name: Arrancar simulador (en segundo plano)
+        run: apps/ios/ci/capturas.sh boot
+      - uses: actions/download-artifact@v4
+        with: { name: ios-builds }
+      - run: unzip -q Gacelas-simulator.app.zip
+      - name: Capturas en simulador
+        run: apps/ios/ci/capturas.sh iosApp.app shots ${{ matrix.grupos }}
+      - uses: actions/upload-artifact@v4
+        with: { name: "ios-shots-${{ strategy.job-index }}", path: shots }
+
+  capturas-unir:
+    name: Unir capturas
+    needs: capturas
+    if: always() && needs.capturas.result != 'skipped'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/upload-artifact/merge@v4
+        with:
+          name: ios-simulator-screenshots
+          pattern: ios-shots-*
+          delete-merged: true
+
+  ipa:
+    name: .ipa sin firmar
+    needs: [cambios, build]
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
+    runs-on: macos-15
+    timeout-minutes: 40
+    env:
+      ORG_GRADLE_PROJECT_gacelas.ios.soloSimulador: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/android/gradle/libs.versions.toml') }}
+      - name: Xcode 16
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)" && xcodebuild -version
+      - name: Claves de build (secrets, nunca en el repo)
+        working-directory: ${{ env.IOS_DIR }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
+          GOOGLE_IOS_CLIENT_ID: ${{ secrets.GOOGLE_IOS_CLIENT_ID }}
+        run: |
+          # En xcconfig "//" es comentario: https:// se escribe https:/$()/
+          ESQUEMA=""
+          if [ -n "$GOOGLE_IOS_CLIENT_ID" ]; then ESQUEMA="com.googleusercontent.apps.${GOOGLE_IOS_CLIENT_ID%.apps.googleusercontent.com}"; fi
+          {
+            echo "SUPABASE_URL = ${SUPABASE_URL//\/\//\/\$()\/}"
+            echo "SUPABASE_ANON_KEY = $SUPABASE_ANON_KEY"
+            echo "GOOGLE_WEB_CLIENT_ID = $GOOGLE_WEB_CLIENT_ID"
+            echo "GOOGLE_IOS_CLIENT_ID = $GOOGLE_IOS_CLIENT_ID"
+            if [ -n "$ESQUEMA" ]; then echo "GOOGLE_IOS_URL_SCHEME = $ESQUEMA"; fi
+          } > Secrets.xcconfig
+          for k in SUPABASE_URL SUPABASE_ANON_KEY GOOGLE_WEB_CLIENT_ID GOOGLE_IOS_CLIENT_ID; do
+            if [ -z "${!k}" ]; then echo "::warning::Falta el secret $k: el build iOS usa cuentas locales / sin Google"; fi
+          done
+      - name: Build .ipa sin firmar
+        working-directory: ${{ env.IOS_DIR }}
+        # Etapa TestFlight: importar certificado/perfil desde secrets
+        # (IOS_CERT_P12, IOS_CERT_PASSWORD, IOS_PROFILE, ASC_API_KEY) y usar xcodebuild archive + exportArchive.
+        run: |
+          command -v xcodegen || brew install xcodegen; xcodegen generate
+          xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+          mkdir -p Payload && cp -R build/Build/Products/Release-iphoneos/iosApp.app Payload/
+          zip -qry $GITHUB_WORKSPACE/Gacelas-unsigned.ipa Payload
+      - uses: actions/download-artifact@v4
+        with: { name: ios-builds }
+      - uses: actions/upload-artifact@v4
+        with: { name: ios-ipa, path: Gacelas-unsigned.ipa }
+      - name: Adjuntar a GitHub Release
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          TAG=${{ github.event.release.tag_name || github.ref_name }}
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TAG" --notes "Build iOS"
+          gh release upload "$TAG" Gacelas-unsigned.ipa Gacelas-simulator.app.zip --clobber

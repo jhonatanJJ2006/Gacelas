@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gacelas - Running Collective Loja</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Space Grotesk & Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-container": "#00374d",
+            "error-container": "#93000a",
+            "on-surface": "#dfe2ee",
+            "on-tertiary": "#00354a",
+            "inverse-primary": "#9d4300",
+            "on-primary-fixed": "#341100",
+            "tertiary-fixed-dim": "#7bd0ff",
+            "background": "#0f131c",
+            "surface": "#0f131c",
+            "surface-container-lowest": "#0a0e16",
+            "on-secondary-container": "#aeb9d0",
+            "on-primary-container": "#582200",
+            "secondary-fixed-dim": "#bcc7de",
+            "outline": "#a78b7d",
+            "secondary": "#bcc7de",
+            "surface-dim": "#0f131c",
+            "primary-fixed-dim": "#ffb690",
+            "on-error": "#690005",
+            "primary-fixed": "#ffdbca",
+            "tertiary-container": "#00a6df",
+            "on-surface-variant": "#e0c0b1",
+            "on-primary": "#552100",
+            "surface-tint": "#ffb690",
+            "surface-container-highest": "#31353e",
+            "on-secondary-fixed-variant": "#3c475a",
+            "surface-variant": "#31353e",
+            "primary-container": "#f97316",
+            "surface-container-low": "#181c24",
+            "secondary-container": "#3e495d",
+            "tertiary-fixed": "#c4e7ff",
+            "outline-variant": "#584237",
+            "on-background": "#dfe2ee",
+            "surface-bright": "#353942",
+            "primary": "#ffb690",
+            "on-secondary": "#263143",
+            "surface-container-high": "#262a33",
+            "surface-container": "#1c2028",
+            "on-tertiary-fixed-variant": "#004c69",
+            "on-secondary-fixed": "#111c2d",
+            "inverse-on-surface": "#2c3039",
+            "secondary-fixed": "#d8e3fb",
+            "error": "#ffb4ab",
+            "on-error-container": "#ffdad6",
+            "on-tertiary-fixed": "#001e2c",
+            "on-primary-fixed-variant": "#783200",
+            "inverse-surface": "#dfe2ee",
+            "tertiary": "#7bd0ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin": "1.25rem",
+            "space-md": "1rem",
+            "space-lg": "1.5rem",
+            "space-xl": "2.5rem",
+            "space-sm": "0.5rem",
+            "margin-desktop": "3rem",
+            "gutter": "1rem",
+            "gutter-tablet": "1.5rem",
+            "gutter-desktop": "2rem",
+            "margin-tablet": "2rem",
+            "space-xs": "0.25rem"
+          },
+          "fontFamily": {
+            "headline-lg-mobile": ["Space Grotesk"],
+            "label-caps": ["Inter"],
+            "label-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-lg": ["Space Grotesk"],
+            "headline-md": ["Space Grotesk"],
+            "metric-numeral-md": ["Space Grotesk"],
+            "metric-numeral-lg": ["Space Grotesk"],
+            "headline-sm": ["Space Grotesk"],
+            "label-md": ["Inter"],
+            "display-hero-mobile": ["Space Grotesk"],
+            "display-hero": ["Space Grotesk"]
+          },
+          "fontSize": {
+            "headline-lg-mobile": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-caps": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "body-md": ["15px", { "lineHeight": "22px", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+            "body-lg": ["17px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "headline-lg": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "metric-numeral-md": ["28px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "metric-numeral-lg": ["44px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "600" }],
+            "label-md": ["13px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "display-hero-mobile": ["36px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "display-hero": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "700" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.85;
+        filter: drop-shadow(0 0 12px rgba(249, 115, 22, 0.7));
+      }
+      50% {
+        transform: scale(1.08);
+        opacity: 1;
+        filter: drop-shadow(0 0 24px rgba(249, 115, 22, 1));
+      }
+    }
+
+    @keyframes ripple {
+      0% {
+        r: 4px;
+        opacity: 0.9;
+      }
+      100% {
+        r: 16px;
+        opacity: 0;
+      }
+    }
+
+    .pulse-glow-path {
+      animation: pulseGlow 4s ease-in-out infinite;
+    }
+    
+    .ripple-ring {
+      animation: ripple 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+      transform-origin: center;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-x-hidden selection:bg-primary-container selection:text-surface-container-lowest">
+<!-- Container Principal Mobile / Responsive Lock -->
+<div class="relative min-h-screen w-full max-w-md mx-auto flex flex-col justify-between overflow-hidden shadow-2xl bg-surface-container-lowest border-x border-white/5">
+<!-- MAPA NOCTURNO ESTILIZADO DE LOJA (CANVAS VECTORIAL Y AMBIENTAL) -->
+<div class="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden" data-location="Loja, Ecuador" style="">
+<!-- Topografía de fondo sutil y gradiente de niebla andina -->
+<div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(0,166,223,0.08)_0%,_rgba(11,15,23,0)_70%)]"></div>
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_45%_42%,_rgba(171,6,96,0.14)_0%,_rgba(11,15,23,0)_60%)]"></div>
+<!-- SVG: Red urbana minimalista de Loja, Río Malacatos y Ruta Glowing -->
+<svg class="w-full h-full object-cover" fill="none" viewbox="0 0 420 840" xmlns="http://www.w3.org/2000/svg"><defs>
+<!-- Gradiente de Resplandor Magenta Cinético -->
+<lineargradient id="routeGlowGrad" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#D6338A"></stop>
+<stop offset="50%" stop-color="#AB0660"></stop>
+<stop offset="100%" stop-color="#8C1263"></stop>
+</lineargradient>
+<!-- Filtro Neon Glow Profundo Magenta -->
+<filter height="160%" id="neonBlur" width="160%" x="-30%" y="-30%">
+<fegaussianblur result="blur1" stddeviation="5"></fegaussianblur>
+<fegaussianblur result="blur2" stddeviation="11"></fegaussianblur>
+<femerge>
+<femergenode in="blur2"></femergenode>
+<femergenode in="blur1"></femergenode>
+<femergenode in="SourceGraphic"></femergenode>
+</femerge>
+</filter>
+<filter height="140%" id="softAura" width="140%" x="-20%" y="-20%">
+<fegaussianblur result="blur" stddeviation="3"></fegaussianblur>
+<femerge>
+<femergenode in="blur"></femergenode>
+<femergenode in="SourceGraphic"></femergenode>
+</femerge>
+</filter>
+</defs>
+<!-- Topografía de montaña / Curvas de nivel andinas (Valle de Loja) -->
+<g fill="none" stroke="rgba(255, 255, 255, 0.025)" stroke-width="1">
+<path d="M-30,120 Q120,90 280,140 T460,90"></path>
+<path d="M-40,210 Q90,160 230,220 T480,170"></path>
+<path d="M-20,330 Q140,290 310,340 T450,290"></path>
+<path d="M-50,470 Q80,410 240,480 T470,410"></path>
+<path d="M-20,590 Q110,540 290,610 T460,560"></path>
+</g>
+<!-- Río Malacatos & Río Zamora -->
+<path d="M 218, -10 C 215, 120 185, 220 190, 310 C 196, 400 178, 510 185, 620 C 192, 710 180, 800 184, 860" filter="url(#softAura)" stroke="#00A6DF" stroke-linecap="round" stroke-opacity="0.22" stroke-width="2.5"></path>
+<path d="M 250, 40 C 240, 110 220, 180 216, 260" stroke="#7BD0FF" stroke-dasharray="3 3" stroke-opacity="0.18" stroke-width="1.2"></path>
+<!-- Cuadrícula Urbana / Calles de Loja -->
+<g stroke="rgba(188, 199, 222, 0.09)" stroke-linecap="round" stroke-width="1.2">
+<line stroke-opacity="0.12" x1="140" x2="140" y1="50" y2="720"></line>
+<line stroke-opacity="0.14" x1="168" x2="168" y1="40" y2="740"></line>
+<line stroke-opacity="0.1" x1="240" x2="240" y1="80" y2="700"></line>
+<line stroke-opacity="0.08" x1="272" x2="272" y1="110" y2="680"></line>
+<line stroke-opacity="0.06" x1="310" x2="310" y1="130" y2="620"></line>
+<line stroke-opacity="0.1" x1="90" x2="340" y1="180" y2="180"></line>
+<line stroke-opacity="0.14" x1="100" x2="350" y1="230" y2="230"></line>
+<line stroke-opacity="0.12" x1="80" x2="360" y1="280" y2="280"></line>
+<line stroke-opacity="0.16" x1="110" x2="340" y1="330" y2="330"></line>
+<line stroke-opacity="0.12" x1="90" x2="370" y1="380" y2="380"></line>
+<line stroke-opacity="0.1" x1="120" x2="350" y1="430" y2="430"></line>
+<line stroke-opacity="0.09" x1="100" x2="330" y1="490" y2="490"></line>
+<line stroke-opacity="0.07" x1="130" x2="320" y1="540" y2="540"></line>
+</g>
+<!-- Bloques y Manzanas tenues -->
+<rect fill="rgba(255,255,255,0.02)" height="40" rx="2" width="20" x="145" y="235"></rect>
+<rect fill="rgba(255,255,255,0.025)" height="40" rx="2" width="30" x="172" y="235"></rect>
+<rect fill="rgba(255,255,255,0.015)" height="40" rx="2" width="20" x="145" y="285"></rect>
+<rect fill="rgba(255,255,255,0.02)" height="40" rx="2" width="22" x="245" y="285"></rect>
+<rect fill="rgba(171,6,96,0.04)" height="38" rx="2" width="40" x="172" y="335"></rect>
+<!-- Hitos Iconográficos Minimalistas -->
+<circle cx="168" cy="180" fill="#D6338A" fill-opacity="0.8" r="3"></circle>
+<circle cx="168" cy="180" r="7" stroke="#D6338A" stroke-dasharray="2 2" stroke-opacity="0.4" stroke-width="0.8"></circle>
+<text fill="#BCC7DE" fill-opacity="0.6" font-family="Inter" font-size="8" font-weight="600" letter-spacing="0.06em" x="178" y="184">PUERTA DE LA CIUDAD</text>
+<circle cx="218" cy="90" fill="#7BD0FF" fill-opacity="0.6" r="3"></circle>
+<text fill="#BCC7DE" fill-opacity="0.5" font-family="Inter" font-size="8" font-weight="500" letter-spacing="0.06em" x="228" y="94">PARQUE RECREACIONAL JIPIRO</text>
+<!-- TRAZO PRINCIPAL DE LA RUTA: Glow Runner 'GACELAS' (Recorrido Loja Nocturna) en Magenta -->
+<path d="M 168,180 C 160,240 135,280 155,330 C 172,370 248,350 252,420 C 255,475 190,490 192,545 C 194,570 215,595 240,610" fill="none" filter="url(#neonBlur)" stroke="#D6338A" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.22" stroke-width="12"></path>
+<path d="M 168,180 C 160,240 135,280 155,330 C 172,370 248,350 252,420 C 255,475 190,490 192,545 C 194,570 215,595 240,610" fill="none" stroke="#AB0660" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.55" stroke-width="5"></path>
+<path class="pulse-glow-path" d="M 168,180 C 160,240 135,280 155,330 C 172,370 248,350 252,420 C 255,475 190,490 192,545 C 194,570 215,595 240,610" fill="none" stroke="url(#routeGlowGrad)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.8"></path>
+<!-- Punto Inicial (Start) con Ripple Radar Magenta -->
+<circle class="ripple-ring" cx="168" cy="180" fill="none" opacity="0.7" r="12" stroke="#D6338A" stroke-width="1"></circle>
+<circle cx="168" cy="180" fill="#FFFFFF" r="4.5"></circle>
+<circle cx="168" cy="180" fill="#AB0660" r="2.5"></circle>
+<!-- Marcador Flotante Checkpoint de Ritmo Telemetría: 1.8 KM (Parque Jipiro) -->
+<g transform="translate(252, 412)">
+<rect fill="#131926" fill-opacity="0.9" height="22" rx="11" stroke="rgba(214, 51, 138, 0.45)" stroke-width="1" width="64" x="-32" y="-28"></rect>
+<circle cx="-20" cy="-17" fill="#D6338A" r="2.5"></circle>
+<text fill="#DFE2EE" font-family="Space Grotesk" font-size="9" font-weight="700" letter-spacing="0.02em" x="-12" y="-13">1.8 KM</text>
+<circle cx="0" cy="8" fill="#D6338A" filter="url(#softAura)" r="4"></circle>
+<circle cx="0" cy="8" fill="#FFFFFF" r="2"></circle>
+</g>
+<!-- Runner Position Marker Magenta -->
+<g transform="translate(240, 610)">
+<circle cx="0" cy="0" fill="rgba(214,51,138,0.2)" r="16"></circle>
+<circle cx="0" cy="0" fill="#AB0660" filter="url(#softAura)" r="7"></circle>
+<circle cx="0" cy="0" fill="#FFFFFF" r="3"></circle>
+</g></svg>
+</div>
+<!-- HEADER SUPERIOR: BRANDING EDITORIAL & TELEMETRÍA ANDINA -->
+<header class="relative z-10 pt-8 px-margin flex items-center justify-between"><div class="flex items-center space-x-2"><button class="w-8 h-8 rounded-full bg-surface-container/80 border border-white/10 flex items-center justify-center text-white hover:bg-surface-container-high transition-colors cursor-pointer mr-1" type="button"><span class="material-symbols-outlined text-[19px]">arrow_back</span></button><div class="flex items-center space-x-space-sm"><div class="w-8 h-8 rounded-lg bg-[#D97706] border border-white/10 backdrop-blur-md flex items-center justify-center text-white shadow-[0_2px_12px_rgba(217,119,6,0.4)]"><span class="material-symbols-outlined text-[19px]" style="font-variation-settings: 'FILL' 1;">directions_run</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-white uppercase font-bold">Gacelas</span><span class="font-label-caps text-[9px] tracking-[0.14em] text-secondary uppercase -mt-1 font-semibold">Loja Running Co.</span></div></div></div><div class="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-surface-container/75 border border-white/10 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.3)]"><span class="w-1.5 h-1.5 rounded-full bg-[#D6338A] shadow-[0_0_8px_#D6338A]"></span><span class="font-label-caps text-label-caps text-on-surface font-semibold tracking-wider whitespace-nowrap">Jipiro · 1.8 KM</span></div></header>
+<!-- ZONA MEDIA: DISCRETO RESPIRO ATMOSFÉRICO PARA EL MAPA -->
+<div class="relative z-10 flex-1 flex flex-col justify-end px-margin pb-3 pointer-events-none">
+<!-- Indicador Flotante Contextual de Loja -->
+<div class="inline-flex items-center space-x-2 self-start px-2.5 py-1 rounded-full bg-surface-container-lowest/70 border border-white/5 backdrop-blur-sm pointer-events-auto">
+<span class="w-1.5 h-1.5 rounded-full bg-[#D6338A] animate-ping"></span>
+<span class="font-label-caps text-[10px] text-secondary tracking-widest uppercase">Av. Orillas del Zamora</span>
+</div>
+</div>
+<!-- PARTE INFERIOR: TARJETA AERO-GLASSMORPHISM PULIDA -->
+<section class="relative z-20 w-full px-margin pb-8 pt-2"><div class="relative overflow-hidden rounded-[28px] bg-[#131926]/90 backdrop-blur-xl border border-white/10 p-6 shadow-[0_16px_40px_rgba(0,0,0,0.65)] flex flex-col"><div class="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div><div class="mb-5"><h1 class="font-headline-lg-mobile text-[24px] text-white font-extrabold tracking-tight mb-1.5">Bienvenido de vuelta</h1><p class="font-body-sm text-body-sm text-[#e0c0b1]/80">Inicia sesión para seguir corriendo</p></div><form class="flex flex-col space-y-4"><div class="flex flex-col space-y-1.5"><label class="font-label-caps text-label-caps text-secondary uppercase font-semibold tracking-wider">Correo electrónico</label><div class="relative flex items-center"><span class="material-symbols-outlined text-secondary/70 absolute left-3.5 text-[18px] pointer-events-none">mail</span><input autocomplete="email" class="w-full h-12 pl-10 pr-4 bg-surface-container/90 border border-white/10 rounded-xl text-white placeholder-secondary/50 font-body-sm text-body-sm focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706] transition-colors" placeholder="tu@email.com" type="email"/></div></div><div class="flex flex-col space-y-1.5"><div class="flex items-center justify-between"><label class="font-label-caps text-label-caps text-secondary uppercase font-semibold tracking-wider">Contraseña</label><a class="font-label-caps text-[11px] text-[#F59E0B] hover:text-[#d97706] transition-colors font-medium" href="#forgot">¿Olvidaste tu contraseña?</a></div><div class="relative flex items-center"><span class="material-symbols-outlined text-secondary/70 absolute left-3.5 text-[18px] pointer-events-none">lock</span><input autocomplete="current-password" class="w-full h-12 pl-10 pr-10 bg-surface-container/90 border border-white/10 rounded-xl text-white placeholder-secondary/50 font-body-sm text-body-sm focus:outline-none focus:border-[#D97706] focus:ring-1 focus:ring-[#D97706] transition-colors" placeholder="••••••••" type="password"/><button class="absolute right-3.5 text-secondary/70 hover:text-white transition-colors cursor-pointer flex items-center" type="button"><span class="material-symbols-outlined text-[18px]">visibility</span></button></div></div><button class="w-full h-12 py-3 px-6 rounded-full bg-[#D97706] hover:bg-[#b45309] text-white font-headline-sm text-[16px] font-bold flex items-center justify-center space-x-2 shadow-[0_4px_20px_rgba(217,119,6,0.38)] active:scale-[0.98] transition-all duration-150 cursor-pointer mt-1" type="submit"><span>Iniciar sesión</span><span class="material-symbols-outlined text-[19px]">arrow_forward</span></button></form><div class="flex items-center my-4"><div class="flex-1 h-px bg-white/10"></div><span class="px-3 font-body-sm text-[12px] text-secondary/60">o</span><div class="flex-1 h-px bg-white/10"></div></div><button class="w-full h-12 px-6 rounded-full bg-surface-container hover:bg-surface-container-high active:scale-[0.98] border border-white/10 transition-all duration-150 flex items-center justify-center space-x-3 cursor-pointer shadow-sm text-white" type="button"><svg class="w-5 h-5 flex-shrink-0" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"></path><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"></path></svg><span class="font-medium text-body-md text-white tracking-normal whitespace-nowrap">Continuar con Google</span></button><div class="mt-4 pt-2.5 border-t border-white/5 flex items-center justify-center"><p class="font-body-sm text-body-sm text-secondary">¿No tienes cuenta? <a class="text-[#F59E0B] hover:text-[#d97706] font-semibold transition-colors duration-150 inline-flex items-center ml-1 underline decoration-[#F59E0B]/40 underline-offset-4" href="#signup">Crear cuenta</a></p></div></div><div class="mt-3 flex flex-col items-center justify-center space-y-2"><div class="w-32 h-1 bg-white/20 rounded-full"></div></div></section>
+</div>
+</body></html>

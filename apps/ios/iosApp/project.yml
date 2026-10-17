@@ -1,0 +1,90 @@
+name: iosApp
+options:
+  bundleIdPrefix: com.gacelas
+  deploymentTarget:
+    iOS: "15.0"
+packages:
+  # MapLibre Native iOS (mismo motor que el MapLibre Android de la app).
+  MapLibre:
+    url: https://github.com/maplibre/maplibre-gl-native-distribution
+    exactVersion: 6.31.0
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    exactVersion: 9.2.0
+  # Carga del corredor 3D (mismo GLB que Android) en SceneKit.
+  GLTFKit2:
+    url: https://github.com/warrenm/GLTFKit2
+    exactVersion: 0.5.15
+settings:
+  base:
+    MARKETING_VERSION: "0.7.0"
+    CURRENT_PROJECT_VERSION: "700"
+targets:
+  iosApp:
+    type: application
+    platform: iOS
+    sources:
+      - iosApp
+      # Mismas imagenes que Android (shared/src/androidMain/res), copiadas al bundle.
+      - path: ../../android/shared/src/androidMain/res/drawable-nodpi/mapa_stitch_bienvenida.webp
+        buildPhase: resources
+      - path: ../../android/shared/src/androidMain/res/drawable-nodpi/mapa_stitch_login.webp
+        buildPhase: resources
+      - path: ../../android/shared/src/androidMain/res/drawable/ic_google_g.xml
+        buildPhase: resources
+      # Estilos Gacelas del mapa: los mismos archivos que Android (app/src/main/assets/mapas).
+      - path: ../../android/app/src/main/assets/mapas/gacelas-oscuro.json
+        buildPhase: resources
+      - path: ../../android/app/src/main/assets/mapas/gacelas-claro.json
+        buildPhase: resources
+      # Corredor 3D: el mismo modelo animado que Android (app/src/main/assets/models).
+      - path: ../../android/app/src/main/assets/models/gacelas-runner-animated.glb
+        buildPhase: resources
+    dependencies:
+      - package: MapLibre
+      - package: GoogleSignIn
+        product: GoogleSignIn
+      - package: GLTFKit2
+    # Claves del build (Supabase, Google): Config.xcconfig incluye Secrets.xcconfig (gitignored; en CI sale de secrets).
+    configFiles:
+      Debug: Config.xcconfig
+      Release: Config.xcconfig
+    entitlements:
+      path: iosApp/iosApp.entitlements
+      properties:
+        com.apple.developer.applesignin: [Default]
+    info:
+      path: iosApp/Info.plist
+      properties:
+        CFBundleDisplayName: Gacelas
+        # App en español: los botones del sistema (Sign in with Apple) salen como "Continuar con Apple".
+        CFBundleDevelopmentRegion: es
+        CFBundleLocalizations: [es]
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        UILaunchScreen: {}
+        CADisableMinimumFrameDurationOnPhone: true
+        NSLocationWhenInUseUsageDescription: Gacelas usa tu ubicación para medir distancia, ritmo y ruta de tus carreras.
+        NSLocationAlwaysAndWhenInUseUsageDescription: Gacelas sigue registrando tu carrera con la pantalla apagada o en segundo plano.
+        NSMotionUsageDescription: Gacelas usa la brújula y el movimiento para orientar el mapa hacia donde miras.
+        UIBackgroundModes: [location]
+        SUPABASE_URL: "$(SUPABASE_URL)"
+        SUPABASE_ANON_KEY: "$(SUPABASE_ANON_KEY)"
+        GIDClientID: "$(GOOGLE_IOS_CLIENT_ID)"
+        GIDServerClientID: "$(GOOGLE_WEB_CLIENT_ID)"
+        CFBundleURLTypes:
+          - CFBundleURLSchemes: ["$(GOOGLE_IOS_URL_SCHEME)"]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.gacelas.app
+        FRAMEWORK_SEARCH_PATHS: "$(SRCROOT)/../../android/shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
+        OTHER_LDFLAGS: ["$(inherited)", "-framework", "Shared"]
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        # Firma: se añadirá con secretos (DEVELOPMENT_TEAM, perfil) en la etapa TestFlight
+        CODE_SIGN_STYLE: Automatic
+    preBuildScripts:
+      - name: Compilar Shared (KMP)
+        basedOnDependencyAnalysis: false
+        script: |
+          cd "$SRCROOT/../../android"
+          ./gradlew :shared:embedAndSignAppleFrameworkForXcode

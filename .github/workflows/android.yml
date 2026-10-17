@@ -1,0 +1,80 @@
+name: Android
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'apps/android/**'
+      - 'apps/web/public/models/**'
+      - '.github/workflows/android.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/android/**'
+      - '.github/workflows/android.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Tres jobs en paralelo (build, test, lint) en lugar de uno secuencial.
+jobs:
+  android:
+    name: Android ${{ matrix.tarea.nombre }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        tarea:
+          # lint: 13 errores previos (NewApi java.time con minSdk 24, etc.) que nunca corrieron en CI.
+          # No bloquea hasta corregirlos o fijar lint-baseline.xml; el reporte se sube como artefacto.
+          - { nombre: build, gradle: assembleDebug, lfs: true }
+          - { nombre: test, gradle: testDebugUnitTest, lfs: false }
+          - { nombre: lint, gradle: lintDebug, lfs: false }
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: ${{ matrix.tarea.lfs }}
+
+      - name: Verificar modelo 3D (no puntero LFS)
+        if: matrix.tarea.lfs
+        run: |
+          size=$(stat -c %s app/src/main/assets/models/gacelas-runner-animated.glb)
+          echo "Tamano del GLB: $size bytes"
+          test "$size" -gt 100000
+
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
+      - name: Crear local.properties de CI
+        run: cp local.properties.example local.properties
+
+      - name: Gradle ${{ matrix.tarea.gradle }}
+        continue-on-error: ${{ matrix.tarea.nombre == 'lint' }}
+        run: ./gradlew ${{ matrix.tarea.gradle }} --build-cache
+
+      - name: Subir APK
+        if: matrix.tarea.nombre == 'build'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gacelas-debug-apk
+          path: apps/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+      - name: Subir reportes
+        if: always() && matrix.tarea.nombre != 'build'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-reportes-${{ matrix.tarea.nombre }}
+          path: |
+            apps/android/app/build/reports/
+            apps/android/app/build/test-results/
+          retention-days: 7

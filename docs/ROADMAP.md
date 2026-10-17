@@ -8,254 +8,25 @@ Gacelas se desarrollará en fases iterativas, comenzando con un MVP funcional y 
 
 El codigo se prepara para 3.000 sesiones concurrentes. Mientras el proyecto siga en el plan Free de Supabase, el runtime usa el perfil free: 150 conexiones Realtime de las 200 permitidas, un canal vivo por cliente y sin polling de posiciones. Trescientas personas en vivo a la vez no caben en ese plan. La decision esta en [ADR 002](adr/002-capacity-and-free-profile.md).
 
-## Fase 0: Arquitectura e Infraestructura (ACTUAL)
+## Fases 0, 1 y 2: Completadas
 
-**Duración estimada**: Setup inicial  
-**Estado**: Completado
-
-### Objetivos
-
-- [x] Definir arquitectura del sistema
-- [x] Seleccionar stack tecnológico (Supabase + React + Kotlin)
-- [x] Crear estructura de monorepo
-- [x] Documentar diseño, reglas de negocio, modelo de datos
-- [x] Documentar seguridad, privacidad, presupuesto de tier gratuito
-- [x] Establecer guías de contribución
-
-### Entregables
-
-- [x] Documentación completa en `/docs`
-- [x] ADR de decisiones arquitectónicas
-- [x] Scaffolding de apps (web y Android)
-- [x] README con instrucciones de setup
+Movidas a [plans/completados](plans/completados/). Ver [plans/README.md](plans/README.md).
 
 ---
 
-## Fase 1: MVP - Funcionalidad Core (SIGUIENTE)
+## Fase 3: Live Tracking en Tiempo Real: Completada
 
-**Objetivo**: Aplicación funcional mínima para grabar actividades y verlas en mapa.
-
-### 1.1 Backend Setup
-
-**Tareas**:
-
-- [ ] Crear proyecto en Supabase
-- [ ] Ejecutar migraciones de base de datos (schema inicial)
-- [ ] Habilitar PostGIS para geoespacial
-- [ ] Configurar Row Level Security (RLS) policies básicas
-- [ ] Crear índices para performance
-- [ ] Configurar Supabase Auth (email + password)
-- [ ] Crear tablas: `users`, `profiles`, `activities`, `track_points`
-
-**Criterios de aceptación**:
-
-- Base de datos accesible desde apps
-- Autenticación funcional
-- Queries geoespaciales funcionan correctamente
-
-### 1.2 Web App - Básico
-
-**Features**:
-
-- [ ] Autenticación (login, registro, logout)
-- [ ] Página de inicio con mapa
-- [ ] Ver listado de actividades propias
-- [ ] Ver detalle de actividad en mapa
-- [ ] Perfil de usuario básico
-
-**Tecnologías**:
-
-- React 18 + TypeScript
-- Vite para build
-- Tailwind CSS
-- Google Maps JavaScript API
-- Supabase Client
-
-**Criterios de aceptación**:
-
-- Usuario puede registrarse y autenticarse
-- Usuario puede ver sus actividades en mapa
-
-### 1.3 Android App - Grabación de Actividades
-
-**Features**:
-
-- [ ] Autenticación (login, registro)
-- [ ] Pantalla de grabación con mapa
-- [ ] Iniciar/pausar/detener actividad
-- [ ] Location Service en foreground
-- [ ] Guardar track points en lotes (batch)
-- [ ] Mostrar métricas en tiempo real (distancia, tiempo, pace)
-- [ ] Pantalla de resumen post-actividad
-- [ ] Guardar actividad en Supabase
-
-**Tecnologías**:
-
-- Kotlin + Jetpack Compose
-- Fused Location Provider
-- Google Maps SDK Android
-- Supabase Kotlin SDK
-- Hilt para DI
-
-**Criterios de aceptación**:
-
-- Usuario puede grabar una actividad completa
-- Track points se guardan correctamente
-- Métricas calculadas son precisas
-- Funciona en background con pantalla apagada
-
-### 1.4 Despliegue
-
-**Tareas**:
-
-- [ ] Deploy web a Vercel/Netlify
-- [ ] Configurar domain custom (opcional)
-- [ ] APK de Android para testing interno
-- [ ] Configurar Google Maps API keys
-- [ ] Health check para mantener Supabase activo
-
-**Entregables**:
-
-- Web app pública accesible
-- APK descargable para testers
-- Guía de instalación
+Ver [plans/completados/fase-3-live-tracking.md](plans/completados/fase-3-live-tracking.md).
 
 ---
 
-## Fase 2: Social y Comunidad
+## Fase 4: Rutas y Exploración: Completada
 
-**Objetivo**: Transformar la app en una plataforma social para runners.
-
-### 2.1 Follows y Feed
-
-**Features**:
-
-- [ ] Buscar usuarios por username
-- [ ] Enviar/aceptar solicitudes de seguimiento
-- [ ] Feed de actividades de seguidos
-- [ ] Likes en actividades
-- [ ] Comentarios en actividades
-- [ ] Notificaciones básicas
-
-**Implementación**:
-
-- Tablas: `follows`, `activity_likes`, `comments`, `notifications`
-- RLS policies para privacidad
-- Realtime subscriptions para feed actualizado
-
-### 2.2 Perfil Mejorado
-
-**Features**:
-
-- [ ] Perfil público con stats
-- [ ] Total de km, actividades, racha
-- [ ] Gráficos de progreso semanal/mensual
-- [ ] Configuración de privacidad (public/followers/private)
-- [ ] Editar avatar y bio
-
-**Implementación**:
-
-- Queries agregadas con `SUM`, `AVG`, `COUNT`
-- Supabase Storage para avatares
-
-### 2.3 Web - Vista de Comunidad
-
-**Features**:
-
-- [ ] Feed social responsive
-- [ ] Tarjetas de actividad con mini-mapa
-- [ ] Perfiles de otros usuarios
-- [ ] Lista de seguidores/siguiendo
-- [ ] Buscador de usuarios
+Ver [plans/completados/fase-4-rutas.md](plans/completados/fase-4-rutas.md).
 
 ---
 
-## Fase 3: Live Tracking en Tiempo Real
-
-**Objetivo**: Compartir ubicación en vivo durante actividades.
-
-### 3.1 Backend - Realtime
-
-**Features**:
-
-- [ ] Supabase Realtime Broadcast setup
-- [ ] Tabla `live_sharing_settings`
-- [ ] Edge Function para verificar permisos de visualización
-- [ ] Channels por actividad: `live:activity:{id}`
-
-### 3.2 Android - Compartir en Vivo
-
-**Features**:
-
-- [ ] Botón "Compartir en vivo" durante actividad
-- [ ] Selector de audiencia (seguidores, club, link público)
-- [ ] Broadcast de posición cada 5 segundos
-- [ ] Indicador visual de "broadcasting"
-- [ ] Auto-stop al terminar actividad
-
-### 3.3 Web & Android - Ver en Vivo
-
-**Features**:
-
-- [ ] Notificación "X está corriendo ahora"
-- [ ] Vista de mapa en vivo con posición actualizada
-- [ ] Métricas en tiempo real del corredor
-- [ ] Animación suave de transición de marcador
-
-### 3.4 Privacidad
-
-**Features**:
-
-- [ ] Home zone fuzzing (primeros/últimos 300m)
-- [ ] Configurar ubicación de casa en perfil
-- [ ] Permisos granulares de visualización
-
----
-
-## Fase 4: Rutas y Exploración
-
-**Objetivo**: Descubrir y compartir rutas populares.
-
-### 4.1 Creación de Rutas
-
-**Features**:
-
-- [ ] Guardar actividad como ruta pública
-- [ ] Dibujar ruta manualmente en mapa
-- [ ] Asignar nombre, descripción, dificultad
-- [ ] Tags (scenic, flat, urban, trail, etc.)
-- [ ] Calcular elevación con API externa
-
-**Implementación**:
-
-- Tablas: `routes`, `route_points`
-- Douglas-Peucker para simplificar puntos
-- PostGIS para cálculos de distancia
-
-### 4.2 Exploración de Rutas
-
-**Features**:
-
-- [ ] Mapa con rutas cercanas (clusters)
-- [ ] Filtros: distancia, dificultad, tipo
-- [ ] Búsqueda por ubicación o ciudad
-- [ ] Vista de detalle con elevación gráfica
-- [ ] Guardar ruta para más tarde
-- [ ] Botón "Correr esta ruta" (inicia actividad con ruta cargada)
-
-### 4.3 Social en Rutas
-
-**Features**:
-
-- [ ] Dar like a rutas
-- [ ] Comentarios y reviews
-- [ ] Rating (1-5 estrellas)
-- [ ] Fotos de la ruta
-- [ ] Ver quién ha corrido esta ruta
-
----
-
-## Fase 5: Eventos y Clubes
+## Fase 5: Eventos y Clubes (completada)
 
 **Objetivo**: Facilitar carreras grupales y comunidades organizadas.
 
@@ -263,11 +34,11 @@ El codigo se prepara para 3.000 sesiones concurrentes. Mientras el proyecto siga
 
 **Features**:
 
-- [ ] Crear club (nombre, descripción, ubicación)
-- [ ] Unirse a club (público o con aprobación)
-- [ ] Roles: owner, admin, member
-- [ ] Feed del club (posts, actividades de miembros)
-- [ ] Eventos del club
+- [x] Crear club (nombre, descripción, ubicación)
+- [x] Unirse a club (público o con aprobación)
+- [x] Roles: owner, admin, member
+- [x] Feed del club (posts, actividades de miembros)
+- [x] Eventos del club
 
 **Implementación**:
 
@@ -278,12 +49,12 @@ El codigo se prepara para 3.000 sesiones concurrentes. Mientras el proyecto siga
 
 **Features**:
 
-- [ ] Crear evento (carrera grupal, race, entrenamiento)
-- [ ] Definir fecha, hora, punto de encuentro
-- [ ] Ruta planificada (opcional)
-- [ ] Límite de participantes
-- [ ] Inscripción y lista de espera
-- [ ] Calendario de eventos
+- [x] Crear evento (carrera grupal, race, entrenamiento)
+- [x] Definir fecha, hora, punto de encuentro
+- [x] Ruta planificada (opcional)
+- [x] Límite de participantes
+- [x] Inscripción y lista de espera
+- [x] Calendario de eventos
 
 **Implementación**:
 
@@ -294,10 +65,10 @@ El codigo se prepara para 3.000 sesiones concurrentes. Mientras el proyecto siga
 
 **Features**:
 
-- [ ] Vista de mapa con TODOS los participantes en tiempo real
-- [ ] Leaderboard en vivo (quién va primero)
-- [ ] Ver track individual de cada participante
-- [ ] Replay del evento después de terminar
+- [x] Vista de mapa con TODOS los participantes en tiempo real
+- [x] Leaderboard en vivo (quién va primero)
+- [x] Ver track individual de cada participante
+- [x] Replay del evento después de terminar
 
 **Implementación**:
 
@@ -547,17 +318,17 @@ El codigo se prepara para 3.000 sesiones concurrentes. Mientras el proyecto siga
 
 ## Cronograma Tentativo
 
-| Fase    | Features Principales            | Duración Estimada      | Estado              |
-| ------- | ------------------------------- | ---------------------- | ------------------- |
-| Fase 0  | Arquitectura e infraestructura  | Setup inicial          | Completo            |
-| Fase 1  | MVP - Grabación y visualización | Implementación         | Siguiente           |
-| Fase 2  | Feed social y follows           | Desarrollo incremental | Pendiente Pendiente |
-| Fase 3  | Live tracking                   | Desarrollo incremental | Pendiente Pendiente |
-| Fase 4  | Rutas y exploración             | Desarrollo incremental | Pendiente Pendiente |
-| Fase 5  | Eventos y clubes                | Desarrollo incremental | Pendiente Pendiente |
-| Fase 6  | Análisis avanzados              | Desarrollo incremental | Pendiente Pendiente |
-| Fase 7  | Gamificación                    | Desarrollo incremental | Pendiente Pendiente |
-| Fase 8+ | Monetización y escala           | Futuro                 | Ideas futuras       |
+| Fase    | Features Principales            | Duración Estimada      | Estado        |
+| ------- | ------------------------------- | ---------------------- | ------------- |
+| Fase 0  | Arquitectura e infraestructura  | Setup inicial          | Completo      |
+| Fase 1  | MVP - Grabación y visualización | Implementación         | Completo      |
+| Fase 2  | Feed social y follows           | Desarrollo incremental | Completo      |
+| Fase 3  | Live tracking                   | Desarrollo incremental | Completa      |
+| Fase 4  | Rutas y exploración             | Desarrollo incremental | Completa      |
+| Fase 5  | Eventos y clubes                | Desarrollo incremental | Pendiente     |
+| Fase 6  | Análisis avanzados              | Desarrollo incremental | Pendiente     |
+| Fase 7  | Gamificación                    | Desarrollo incremental | Pendiente     |
+| Fase 8+ | Monetización y escala           | Futuro                 | Ideas futuras |
 
 **Nota**: La implementación es iterativa. Las fases pueden superponerse o reordenarse según feedback de usuarios reales.
 
@@ -565,6 +336,6 @@ El codigo se prepara para 3.000 sesiones concurrentes. Mientras el proyecto siga
 
 ## Siguiente Paso Inmediato
 
-**Siguiente paso**: Comenzar Fase 1.1: Configurar proyecto en Supabase y ejecutar migraciones.
+**Siguiente paso**: Fase 5, eventos y clubes.
 
 Ver [CONTRIBUTING.md](CONTRIBUTING.md) para comenzar a contribuir al desarrollo.

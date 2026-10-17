@@ -33,6 +33,7 @@ gacelas/
 │   ├── BUSINESS_RULES.md
 │   ├── SECURITY_PRIVACY.md
 │   ├── FREE_TIER_BUDGET.md
+│   ├── TESTING.md
 │   └── ROADMAP.md
 └── .github/
     └── workflows/    # CI/CD
