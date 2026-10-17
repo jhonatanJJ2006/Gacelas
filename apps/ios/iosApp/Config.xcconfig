@@ -1,0 +1,8 @@
+// Claves de build. Los valores reales van en Secrets.xcconfig (gitignored; ver Secrets.example.xcconfig).
+// Nunca pongas claves aquí: el repositorio es público.
+SUPABASE_URL =
+SUPABASE_ANON_KEY =
+GOOGLE_WEB_CLIENT_ID =
+GOOGLE_IOS_CLIENT_ID =
+GOOGLE_IOS_URL_SCHEME = com.gacelas.app.sin-google
+#include? "Secrets.xcconfig"

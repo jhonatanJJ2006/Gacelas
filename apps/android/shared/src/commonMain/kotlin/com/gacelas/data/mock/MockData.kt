@@ -1,0 +1,87 @@
+package com.gacelas.data.mock
+import com.gacelas.rutas.domain.modelo.Ruta
+
+import com.gacelas.rutas.domain.modelo.Dificultad
+
+import com.gacelas.shared.fmt
+
+import kotlinx.serialization.Serializable
+import com.gacelas.comunidad.domain.modelo.*
+
+/** Datos de prueba tipados, equivalentes a apps/web/src/mocks/data.ts. Se reemplazaran por Supabase. */
+data class Usuario(val id: String, val nombre: String, val username: String)
+
+data class Actividad(
+    val id: String,
+    val usuarioId: String,
+    val titulo: String,
+    val distanciaKm: Double,
+    val duracionSegundos: Int,
+    val ritmo: String,
+    val fecha: String,
+    val likes: Int,
+    val comentarios: Int,
+)
+
+data class Split(val id: Int, val distancia: Double, val ritmo: String, val tiempo: String, val etiqueta: String, val actual: Boolean = false)
+
+data class RutaSugerida(val id: String, val nombre: String, val distanciaKm: Double, val minutos: Int, val elevacionM: Int, val principal: Boolean)
+
+object MockData {
+    /** Identificador del usuario local para rutas propias. */
+    const val ID_USUARIO = "0"
+
+    val usuarios = listOf(
+        Usuario("1", "María López", "maria_runs"),
+        Usuario("2", "Carlos Ruiz", "carlos_runner"),
+        Usuario("3", "Ana Martínez", "ana_trails"),
+    )
+
+    val usuarioActual = Usuario(ID_USUARIO, "Jhonatan Runner", "jhonatan_runs")
+
+    val actividades = listOf(
+        Actividad("1", "1", "Carrera matutina", 5.2, 1714, "5:30", "hace 2h", 23, 5),
+        Actividad("2", "2", "Entrenamiento de intervalos", 8.5, 2720, "5:20", "hace 4h", 18, 3),
+    )
+
+    val rutas = listOf(
+        Ruta("1", "Parque Jipiro", 1.8, Dificultad.Facil, 45, "Ruta panorámica alrededor del Parque Jipiro, ideal para principiantes.", etiquetas = listOf("parque", "plana", "urbana")),
+        Ruta("2", "Río Zamora", 2.2, Dificultad.Moderado, 120, "Ruta junto al río con algunas subidas moderadas."),
+        Ruta("3", "Cerro Villonaco", 4.4, Dificultad.Dificil, 380, "Ruta de montaña desafiante con vistas espectaculares de Loja."),
+        Ruta("4", "Campus UTPL - San Cayetano", 6.1, Dificultad.Moderado, 150, "Mi ruta de entrenamiento entre el campus y San Cayetano.", autorId = ID_USUARIO),
+    )
+
+    val eventos = listOf(
+        Evento("1", "Carrera Parque Jipiro", "Carrera grupal de 10km por el Parque Jipiro. Todos los niveles bienvenidos.", "Sábado 11 de Octubre", "6:00 AM", "Parque Jipiro, Loja", 15, 10, inicioMs = 1791716400000),
+        Evento("2", "Trail Running Podocarpus", "Aventura de trail running en el Parque Nacional Podocarpus.", "Domingo 19 de Octubre", "7:00 AM", "Entrada Cajanuma", 8, 15, inicioMs = 1792411200000),
+        Evento("3", "Entrenamiento Intervalos Villonaco", "Series en la base del Cerro Villonaco.", "Miércoles 15 de Octubre", "6:30 AM", "Base Cerro Villonaco", 12, 8, inicioMs = 1792063800000),
+        Evento("4", "Fondo dominical Zamora", "Fondo suave de 12 km junto al río Zamora.", "Domingo 28 de Septiembre", "6:30 AM", "Parque Lineal La Tebaida", 21, 12, pasado = true, inicioMs = 1790595000000),
+    )
+
+    val splits = listOf(
+        Split(5, 5.42, "4:52", "02:18", "En curso actual", actual = true),
+        Split(4, 1.0, "5:12", "05:12", "Subida San Cayetano"),
+        Split(3, 1.0, "4:48", "04:48", "Mejor vuelta"),
+        Split(2, 1.0, "5:20", "05:20", "Av. Universitaria"),
+        Split(1, 1.0, "5:08", "05:08", "Inicio Jipiro"),
+    )
+
+    val rutasSugeridas = listOf(
+        RutaSugerida("primary", "Jipiro → Puerta → Zamora Huayco", 8.5, 45, 120, principal = true),
+        RutaSugerida("alt", "Ruta Universitaria Directa", 6.8, 36, 85, principal = false),
+    )
+
+    val notificaciones = listOf(
+        Notificacion("1", TipoNotificacion.EnVivo, "María López", "está corriendo ahora", "hace 5 min", false),
+        Notificacion("2", TipoNotificacion.Like, "Carlos Ruiz", "le dio like a tu carrera matutina", "hace 1h", false),
+        Notificacion("3", TipoNotificacion.Comentario, "Ana Martínez", "comentó en tu actividad: \"Excelente ritmo\"", "hace 2h", true),
+        Notificacion("4", TipoNotificacion.Seguidor, "Pedro Sánchez", "comenzó a seguirte", "hace 3h", true),
+        Notificacion("5", TipoNotificacion.Evento, "Gacelas Loja", "Nuevo evento: Carrera Parque Jipiro", "hace 1d", true),
+    )
+
+    fun usuario(id: String): Usuario? = usuarios.firstOrNull { it.id == id }
+
+    fun evento(id: String): Evento? = eventos.firstOrNull { it.id == id }
+
+    fun duracionTexto(segundos: Int): String = "%d:%02d".fmt(segundos / 60, segundos % 60)
+}
