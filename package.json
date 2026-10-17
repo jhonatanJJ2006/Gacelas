@@ -11,7 +11,7 @@
     "lint:docs": "node scripts/lint-docs.js",
     "format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:fix": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
-    "test:unit": "pnpm --filter @gacelas/web test:unit",
+    "test:unit": "pnpm -r --if-present test:unit",
     "type-check": "pnpm --filter @gacelas/web type-check"
   },
   "devDependencies": {
