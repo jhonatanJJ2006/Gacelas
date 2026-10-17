@@ -34,11 +34,11 @@ graph LR
 
 | Parte                   | Ubicación             | Tecnología                                   | Estilo actual                                        | Estilo objetivo                                                                      |
 | ----------------------- | --------------------- | -------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Lógica móvil compartida | `apps/android/shared` + modulos `core/*` y `contextos/*` | Kotlin Multiplatform + Compose Multiplatform | Modulos Gradle por capa y bounded context | Clean Architecture + MVVM, DDD ligero (ver ADR 002)                            |
+| Lógica móvil compartida | `apps/android/shared` + modulos `core/*` y `contextos/*` | Kotlin Multiplatform + Compose Multiplatform | Modulos Gradle por capa y bounded context | Clean Architecture + MVVM, DDD ligero (ver [ADR 003](adr/003-arquitectura-modular.md)) |
 | Android                 | `apps/android/app`    | Kotlin, Jetpack Compose                      | Shell de plataforma con pantallas propias            | Shell fino: piezas de plataforma para `ContenedorApp`, servicios Android, navegación |
 | iOS                     | `apps/ios/iosApp`     | SwiftUI + framework `shared`                 | Wrapper SwiftUI; pantallas Compose MP de `shared`    | Igual; solo integración nativa                                                       |
 | Web                     | `apps/web`            | React 18, Vite, TypeScript, Zustand          | `src/app`, `src/shared`, features con domain/application/ui | Feature-based con capas y ESLint boundaries                                      |
-| Backend                 | `backend/migrations`  | Supabase (Postgres, RLS, Storage, Realtime)  | Migraciones SQL numeradas                            | Igual + tests de RLS y tipos generados                                               |
+| Backend                 | `supabase/migrations` | Supabase (Postgres, RLS, Storage, Realtime)  | Migraciones SQL numeradas                            | Igual + tests de RLS y tipos generados                                               |
 
 ## Bounded contexts
 

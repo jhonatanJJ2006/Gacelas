@@ -3,7 +3,9 @@ name: Base de datos
 on:
   pull_request:
     paths:
-      - 'backend/**'
+      - 'supabase/**'
+      - 'backend/seeds/**'
+      - 'backend/tests/**'
       - '.github/workflows/db.yml'
   workflow_dispatch:
 
@@ -28,7 +30,7 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: |
-          for f in backend/migrations/*.sql; do
+          for f in supabase/migrations/*.sql; do
             echo "Aplicando $f"
             psql -h localhost -U postgres -d postgres -f "$f" || exit 1
           done
