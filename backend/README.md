@@ -1,6 +1,6 @@
 # Backend / Database
 
-Configuración de Supabase y migraciones SQL.
+Configuración de Supabase. El schema versionado vive en `supabase/migrations/` y se aplica con Supabase CLI. Esta carpeta solo guarda variables de entorno y notas. El camino caliente de GPS no pasa por Edge Functions.
 
 ## Setup de Supabase
 
@@ -14,7 +14,7 @@ Configuración de Supabase y migraciones SQL.
 2. **Ejecutar migraciones**:
    - Opción 1: Usar SQL Editor en dashboard de Supabase
      - SQL Editor - New Query
-     - Copiar contenido de `migrations/001_initial_schema.sql`
+     - Copiar, en orden, los archivos de `supabase/migrations/`
      - Run
 
    - Opción 2: Usar Supabase CLI (recomendado para producción)
@@ -31,12 +31,10 @@ Configuración de Supabase y migraciones SQL.
 Las migraciones se ejecutan en orden numérico:
 
 ```
-migrations/
+supabase/migrations/
 ├── 001_initial_schema.sql       # Schema base (profiles, activities, track_points)
-├── 002_add_routes.sql          # (Futuro) Rutas compartidas
-├── 003_add_social.sql          # (Futuro) Follows, comments, likes
-├── 004_add_clubs_events.sql    # (Futuro) Clubes y eventos
-└── ...
+├── 015_capacity.sql             # Lotes, resumenes y bloqueo de insert directo
+└── ...                          # Migraciones siguientes, en orden numerico
 ```
 
 ## Environment Variables
