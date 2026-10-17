@@ -3,8 +3,25 @@ name: CI
 on:
   push:
     branches: [main, develop]
+    paths:
+      # Web/backend/docs. Kotlin y Swift no afectan a este CI; sus .md/.json si (prettier).
+      - '**'
+      - '!apps/android/**'
+      - '!apps/ios/**'
+      - 'apps/**/*.md'
+      - 'apps/**/*.json'
   pull_request:
     branches: [main, develop]
+    paths:
+      - '**'
+      - '!apps/android/**'
+      - '!apps/ios/**'
+      - 'apps/**/*.md'
+      - 'apps/**/*.json'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:

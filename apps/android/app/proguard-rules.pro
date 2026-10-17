@@ -1,27 +1,22 @@
-# Proguard rules for Gacelas
+# Reglas de Proguard para Gacelas
 -keep class com.gacelas.** { *; }
+# Filament / SceneView usan JNI
+-keep class com.google.android.filament.** { *; }
 
-# Supabase
+# Filament / SceneView usan JNI y reflexion.
+-keep class com.google.android.filament.** { *; }
+-keep class io.github.sceneview.** { *; }
+# Modelos serializados en DataStore.
+-keepclassmembers @kotlinx.serialization.Serializable class com.gacelas.** { *; }
+-keep class com.gacelas.**$$serializer { *; }
+-keepclassmembers class com.gacelas.** { *** Companion; kotlinx.serialization.KSerializer serializer(...); }
+-dontwarn org.slf4j.**
+# Supabase (supabase-kt) y Ktor: serializadores y motor HTTP que se cargan por reflexion.
 -keep class io.github.jan.supabase.** { *; }
-
-# Ktor
 -keep class io.ktor.** { *; }
-
-# Kotlinx Serialization
--keepattributes *Annotation*, InnerClasses
--dontnote kotlinx.serialization.AnnotationsKt
-
--keepclassmembers class kotlinx.serialization.json.** {
-    *** Companion;
-}
--keepclasseswithmembers class kotlinx.serialization.json.** {
-    kotlinx.serialization.KSerializer serializer(...);
-}
-
--keep,includedescriptorclasses class com.gacelas.**$$serializer { *; }
--keepclassmembers class com.gacelas.** {
-    *** Companion;
-}
--keepclasseswithmembers class com.gacelas.** {
-    kotlinx.serialization.KSerializer serializer(...);
-}
+-keepclassmembers class io.github.jan.supabase.** { *** Companion; kotlinx.serialization.KSerializer serializer(...); }
+-dontwarn io.ktor.**
+-dontwarn io.github.jan.supabase.**
+# Credential Manager con Google.
+-keep class androidx.credentials.playservices.** { *; }
+-keep class com.google.android.libraries.identity.googleid.** { *; }
