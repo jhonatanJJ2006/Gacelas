@@ -51,3 +51,11 @@ coverage/
 
 # Misc
 .turbo/
+
+# Playwright
+apps/web/test-results/
+apps/web/playwright-report/
+apps/android/.kotlin/
+
+# Claves de build iOS (nunca commitear)
+apps/ios/iosApp/Secrets.xcconfig

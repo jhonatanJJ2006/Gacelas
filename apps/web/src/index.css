@@ -3,6 +3,48 @@
 @tailwind utilities;
 
 :root {
+  --c-surface: 12 19 34;
+  --c-surface-dim: 12 19 34;
+  --c-surface-bright: 50 57 73;
+  --c-surface-variant: 46 53 69;
+  --c-surface-container: 25 31 47;
+  --c-surface-container-low: 20 27 43;
+  --c-surface-container-high: 35 42 58;
+  --c-surface-container-highest: 46 53 69;
+  --c-surface-container-lowest: 7 14 29;
+  --c-background: 12 19 34;
+  --c-bg-primary: 17 24 39;
+  --c-bg-secondary: 31 41 55;
+  --c-text-primary: 249 250 251;
+  --c-text-secondary: 156 163 175;
+  --c-border-subtle: 55 65 81;
+  --c-on-surface: 220 226 247;
+  --c-on-background: 220 226 247;
+}
+
+/* Tema claro: se activa al desactivar el modo oscuro en Ajustes. */
+.tema-claro {
+  --c-surface: 248 250 252;
+  --c-surface-dim: 241 245 249;
+  --c-surface-bright: 255 255 255;
+  --c-surface-variant: 226 232 240;
+  --c-surface-container: 255 255 255;
+  --c-surface-container-low: 241 245 249;
+  --c-surface-container-high: 226 232 240;
+  --c-surface-container-highest: 203 213 225;
+  --c-surface-container-lowest: 255 255 255;
+  --c-background: 248 250 252;
+  --c-bg-primary: 248 250 252;
+  --c-bg-secondary: 255 255 255;
+  --c-text-primary: 17 24 39;
+  --c-text-secondary: 75 85 99;
+  --c-border-subtle: 209 213 219;
+  --c-on-surface: 31 41 55;
+  --c-on-background: 31 41 55;
+  color-scheme: light;
+}
+
+:root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -22,4 +64,30 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+/* Escritorio: los elementos fijos de cada pantalla respetan la barra lateral. */
+@media (min-width: 1024px) {
+  .shell-escritorio .fixed.inset-x-0 {
+    left: 260px;
+  }
+  .shell-escritorio .contenedor-escritorio {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Respeta "reducir movimiento" del sistema. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
