@@ -1,6 +1,8 @@
 package com.gacelas.comunidad.domain.repositorio
 
 import com.gacelas.comunidad.domain.modelo.Club
+import com.gacelas.comunidad.domain.modelo.ComentarioFeed
+import com.gacelas.comunidad.domain.modelo.Publicacion
 import com.gacelas.comunidad.domain.modelo.CorredorEvento
 import com.gacelas.comunidad.domain.modelo.EstadoEvento
 import com.gacelas.comunidad.domain.modelo.Evento
@@ -57,4 +59,15 @@ interface EnVivoRepository {
     suspend fun terminar()
     suspend fun listar(): List<SesionEnVivo>
     suspend fun leer(id: String): SesionEnVivo?
+}
+
+/** Feed social desde Supabase (RPC feed_comunidad, post_likes, post_comments, follows). */
+interface FeedRepository {
+    /** Publicaciones visibles para el usuario; null si no hay sesion o red. */
+    suspend fun publicaciones(): List<Publicacion>?
+    suspend fun alternarMeGusta(id: String, activo: Boolean)
+    suspend fun comentarios(id: String): List<ComentarioFeed>
+    suspend fun comentar(id: String, texto: String)
+    suspend fun siguiendo(): Set<String>
+    suspend fun alternarSeguir(id: String): Set<String>
 }

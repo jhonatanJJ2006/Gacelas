@@ -211,6 +211,12 @@ describe('feed con publicaciones reales', () => {
       },
     ])
     expect(feed).toHaveLength(1)
-    expect(feed[0]).toMatchObject({ id: 'r-x', autorId: 'u2', tiempo: 'hace 1h', ritmoSegKm: 300 })
+    expect(feed[0]).toMatchObject({
+      id: 'x',
+      autorId: 'u2',
+      tiempo: 'hace 1h',
+      ritmoSegKm: 300,
+      remota: true,
+    })
   })
 })

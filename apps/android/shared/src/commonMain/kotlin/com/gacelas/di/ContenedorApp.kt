@@ -82,6 +82,7 @@ class ContenedorApp(
 
     /** Clubes y eventos de Fase 5; null sin servidor. */
     val clubes: ClubesRepository?
+    val feed: com.gacelas.comunidad.domain.repositorio.FeedRepository?
 
     /** Descarga los datos de la cuenta y sube lo pendiente. No hace nada sin servidor. */
     val sincronizar: suspend () -> Unit
@@ -105,6 +106,7 @@ class ContenedorApp(
             notificaciones = null
             explorar = null
             clubes = null
+            feed = null
         } else {
             lateinit var remotoAuth: SupabaseAuthRepository
             val uid: suspend () -> String? = { remotoAuth.userId() }
@@ -126,6 +128,7 @@ class ContenedorApp(
             explorar = ex
             subirPendientes = { c.sincronizar() + ex.subirPendientes() }
             clubes = ModuloComunidad.clubes(backend, uid)
+            feed = com.gacelas.comunidad.data.SupabaseFeedRepository(backend, uid)
         }
     }
 
@@ -146,7 +149,7 @@ class ContenedorApp(
     fun detalleRutaViewModel(id: String) = DetalleRutaViewModel(id, explorar)
     fun eventosViewModel() = EventosViewModel(eventos)
     fun clubesViewModel() = ClubesViewModel(clubes)
-    fun feedViewModel(ajustesRepo: AjustesRepository = ajustes) = com.gacelas.comunidad.presentation.FeedViewModel(carreras, auth, ajustesRepo)
+    fun feedViewModel(ajustesRepo: AjustesRepository = ajustes) = com.gacelas.comunidad.presentation.FeedViewModel(carreras, auth, ajustesRepo, feed = feed)
     fun detalleEventoViewModel(id: String) = com.gacelas.comunidad.presentation.DetalleEventoViewModel(id, eventos, clubes)
     fun detalleClubViewModel(id: String) = com.gacelas.comunidad.presentation.DetalleClubViewModel(id, clubes)
     fun eventoEnVivoViewModel(id: String) = com.gacelas.comunidad.presentation.EventoEnVivoViewModel(id, clubes, enVivo)

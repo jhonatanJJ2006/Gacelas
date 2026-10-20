@@ -45,6 +45,10 @@ export function DetalleClub() {
   useEffect(() => {
     void cargar()
   }, [cargar, sesion])
+  useEffect(() => {
+    if (!id || !sesion) return
+    return clubes.escucharPosts(id, () => void cargar())
+  }, [id, sesion, cargar])
 
   if (club === undefined) return <main className="p-6 text-text-secondary">Cargando…</main>
   if (club === null)

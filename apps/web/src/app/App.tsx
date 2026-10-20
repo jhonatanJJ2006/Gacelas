@@ -14,17 +14,25 @@ const Registro = lazy(() =>
   import('../features/cuenta/ui/acceso/Registro').then((m) => ({ default: m.Registro }))
 )
 const RecuperarContrasena = lazy(() =>
-  import('../features/cuenta/ui/acceso/RecuperarContrasena').then((m) => ({ default: m.RecuperarContrasena }))
+  import('../features/cuenta/ui/acceso/RecuperarContrasena').then((m) => ({
+    default: m.RecuperarContrasena,
+  }))
 )
 const NuevaContrasena = lazy(() =>
-  import('../features/cuenta/ui/acceso/NuevaContrasena').then((m) => ({ default: m.NuevaContrasena }))
+  import('../features/cuenta/ui/acceso/NuevaContrasena').then((m) => ({
+    default: m.NuevaContrasena,
+  }))
 )
 const PermisosUbicacion = lazy(() =>
-  import('../features/cuenta/ui/ajustes/PermisosUbicacion').then((m) => ({ default: m.PermisosUbicacion }))
+  import('../features/cuenta/ui/ajustes/PermisosUbicacion').then((m) => ({
+    default: m.PermisosUbicacion,
+  }))
 )
 
 const Inicio = lazy(() => import('../features/inicio/Inicio').then((m) => ({ default: m.Inicio })))
-const Correr = lazy(() => import('../features/carreras/ui/Correr').then((m) => ({ default: m.Correr })))
+const Correr = lazy(() =>
+  import('../features/carreras/ui/Correr').then((m) => ({ default: m.Correr }))
+)
 const CarreraEnCurso = lazy(() =>
   import('../features/carreras/ui/CarreraEnCurso').then((m) => ({ default: m.CarreraEnCurso }))
 )
@@ -32,7 +40,9 @@ const Cronometro = lazy(() =>
   import('../features/carreras/ui/Cronometro').then((m) => ({ default: m.Cronometro }))
 )
 const ResumenPostCarrera = lazy(() =>
-  import('../features/carreras/ui/ResumenPostCarrera').then((m) => ({ default: m.ResumenPostCarrera }))
+  import('../features/carreras/ui/ResumenPostCarrera').then((m) => ({
+    default: m.ResumenPostCarrera,
+  }))
 )
 
 const ListaRutas = lazy(() =>
@@ -77,7 +87,9 @@ const ListaEnVivo = lazy(() =>
 const DetalleEnVivo = lazy(() =>
   import('../features/comunidad/EnVivo').then((m) => ({ default: m.DetalleEnVivo }))
 )
-const Perfil = lazy(() => import('../features/cuenta/ui/perfil/Perfil').then((m) => ({ default: m.Perfil })))
+const Perfil = lazy(() =>
+  import('../features/cuenta/ui/perfil/Perfil').then((m) => ({ default: m.Perfil }))
+)
 const EditarPerfil = lazy(() =>
   import('../features/cuenta/ui/perfil/EditarPerfil').then((m) => ({ default: m.EditarPerfil }))
 )
@@ -86,10 +98,14 @@ const Avatar3D = lazy(() =>
 )
 
 const AjustesPreferencias = lazy(() =>
-  import('../features/cuenta/ui/ajustes/AjustesPreferencias').then((m) => ({ default: m.AjustesPreferencias }))
+  import('../features/cuenta/ui/ajustes/AjustesPreferencias').then((m) => ({
+    default: m.AjustesPreferencias,
+  }))
 )
 const PrivacidadUbicacion = lazy(() =>
-  import('../features/cuenta/ui/ajustes/PrivacidadUbicacion').then((m) => ({ default: m.PrivacidadUbicacion }))
+  import('../features/cuenta/ui/ajustes/PrivacidadUbicacion').then((m) => ({
+    default: m.PrivacidadUbicacion,
+  }))
 )
 const ConfiguracionNotificaciones = lazy(() =>
   import('../features/cuenta/ui/ajustes/ConfiguracionNotificaciones').then((m) => ({
@@ -97,7 +113,9 @@ const ConfiguracionNotificaciones = lazy(() =>
   }))
 )
 const Notificaciones = lazy(() =>
-  import('../features/cuenta/ui/notificaciones/Notificaciones').then((m) => ({ default: m.Notificaciones }))
+  import('../features/cuenta/ui/notificaciones/Notificaciones').then((m) => ({
+    default: m.Notificaciones,
+  }))
 )
 
 function LoadingFallback() {

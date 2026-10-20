@@ -1,3 +1,4 @@
+import { unirEventos } from '../../lib/eventos'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { CalendarioEventos } from './CalendarioEventos'
@@ -35,7 +36,7 @@ export function Eventos() {
   })
   const [error, setError] = useState<string | null>(null)
   const [aviso, mostrarAviso] = useAviso()
-  const eventos = filtrarEventos([...creados, ...eventosMock], pestana, inscritos)
+  const eventos = filtrarEventos(unirEventos(creados, eventosMock), pestana, inscritos)
 
   const guardar = async () => {
     const err = validarEvento(form)
@@ -134,7 +135,7 @@ export function Eventos() {
 
       {vista === 'calendario' && (
         <div className="px-margin lg:px-0 pb-6">
-          <CalendarioEventos eventos={[...creados, ...eventosMock]} inscritos={inscritos} />
+          <CalendarioEventos eventos={unirEventos(creados, eventosMock)} inscritos={inscritos} />
         </div>
       )}
       <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6 lg:space-y-0">

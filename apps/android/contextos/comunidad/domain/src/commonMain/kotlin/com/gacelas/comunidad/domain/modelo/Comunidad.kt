@@ -81,6 +81,17 @@ data class Publicacion(
     val likesBase: Int,
     val comentariosBase: Int,
     val puntos: List<PuntoGps> = emptyList(),
+    /** Id del autor en Supabase (publicaciones reales). */
+    val autorId: String? = null,
+    /** true si viene de la base: likes y comentarios se guardan en post_likes/post_comments. */
+    val remota: Boolean = false,
+    /** Me gusta del usuario actual (solo remotas). */
+    val meGusta: Boolean = false,
+    val inicioMs: Long = 0L,
+    val clienteId: String? = null,
 )
 
-enum class FiltroFeed(val etiqueta: String) { Todos("Todos"), Comunidad("Comunidad"), Mias("Mis carreras") }
+/** Comentario de una publicacion del feed (post_comments). */
+data class ComentarioFeed(val id: String, val autorId: String, val autor: String, val texto: String)
+
+enum class FiltroFeed(val etiqueta: String) { Todos("Para ti"), Siguiendo("Siguiendo"), Comunidad("Comunidad"), Mias("Mis carreras") }

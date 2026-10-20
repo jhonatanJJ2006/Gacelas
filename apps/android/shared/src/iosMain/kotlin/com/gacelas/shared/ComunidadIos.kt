@@ -92,7 +92,7 @@ fun ComunidadIos(ruta: String, navegar: (String) -> Unit, atras: () -> Unit, onC
             FeedContenido(vm, onEventos = { navegar(Destinos.EVENTOS) }, onEnVivo = { navegar(Destinos.EN_VIVO) }, onCompartir = ::compartirIos, onAviso = AvisoIos::mostrar)
         }
         ruta == Destinos.EVENTOS -> {
-            val flujo = remember(c) { combine(c.eventos.creados, c.eventos.inscritos) { cr, ins -> (MockData.eventos + cr) to ins } }
+            val flujo = remember(c) { combine(c.eventos.creados, c.eventos.inscritos) { cr, ins -> com.gacelas.comunidad.domain.reglas.unirEventos(cr, MockData.eventos) to ins } }
             val (eventos, inscritos) = flujo.collectAsState(MockData.eventos to emptySet()).value
             val vm = viewModel { c.eventosViewModel() }
             val clubId = remember { EventoDeClub.id.also { EventoDeClub.id = null } }

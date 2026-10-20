@@ -9,6 +9,7 @@ import { compartir, useAviso } from '../../hooks'
 import { formatearMs, formatearRitmo, Unidades } from '../../lib/geo'
 import { useApp } from '../../store/app'
 import { construirFeed, filtrarFeed, type FiltroFeed, type Publicacion } from '../../lib/logica'
+import type { ComentarioPublicacion } from '../../data/repositorios'
 
 export function Feed() {
   const [enVivo, setEnVivo] = useState<SesionEnVivo[]>([])
@@ -39,23 +40,65 @@ export function Feed() {
   const [texto, setTexto] = useState('')
   const [aviso, mostrarAviso] = useAviso()
 
+  const feedSocial = useApp((s) => s.feedSocial)
+  const alternarMeGustaPost = useApp((s) => s.alternarMeGustaPost)
+  const comentarPost = useApp((s) => s.comentarPost)
+  const comentariosPost = useApp((s) => s.comentariosPost)
+  const suscribirFeed = useApp((s) => s.suscribirFeed)
+  const refrescarFeed = useApp((s) => s.refrescarFeed)
+  const [hilo, setHilo] = useState<ComentarioPublicacion[]>([])
+
+  // Feed real: se refresca al entrar y con cada cambio en la base (realtime).
+  useEffect(() => {
+    if (!sesion) return
+    void refrescarFeed()
+    return suscribirFeed()
+  }, [sesion, refrescarFeed, suscribirFeed])
+
   const posts = filtrarFeed(
-    construirFeed(carreras, sesion?.nombre ?? 'Tú', Date.now(), remotas),
+    construirFeed(carreras, sesion?.nombre ?? 'Tú', Date.now(), remotas, feedSocial),
     filtro,
-    ajustes.ocultas
+    ajustes.ocultas,
+    siguiendo
   )
 
-  const alternarLike = (id: string) =>
-    void actualizar((a) => ({
-      likes: a.likes.includes(id) ? a.likes.filter((x) => x !== id) : [...a.likes, id],
-    }))
+  const meGustaDe = (p: Publicacion) =>
+    p.remota ? Boolean(p.meGusta) : ajustes.likes.includes(p.id)
+  const likesDe = (p: Publicacion) =>
+    p.remota ? p.likes : p.likes + (ajustes.likes.includes(p.id) ? 1 : 0)
+  const comentariosLocales = (p: Publicacion) => (p.remota ? [] : (ajustes.comentarios[p.id] ?? []))
 
-  const enviarComentario = () => {
-    if (!comentando || !texto.trim()) return
-    const id = comentando.id
+  const alternarLike = (p: Publicacion) => {
+    if (p.remota) {
+      alternarMeGustaPost(p.id).catch(() => mostrarAviso('No se pudo guardar el aplauso'))
+      return
+    }
     void actualizar((a) => ({
-      comentarios: { ...a.comentarios, [id]: [...(a.comentarios[id] ?? []), texto.trim()] },
+      likes: a.likes.includes(p.id) ? a.likes.filter((x) => x !== p.id) : [...a.likes, p.id],
     }))
+  }
+
+  const abrirComentarios = (p: Publicacion) => {
+    setComentando(p)
+    setHilo([])
+    if (p.remota) void comentariosPost(p.id).then(setHilo)
+  }
+
+  const enviarComentario = async (p: Publicacion | null = comentando, cuerpo = texto) => {
+    if (!p || !cuerpo.trim()) return
+    if (p.remota) {
+      try {
+        await comentarPost(p.id, cuerpo.trim())
+        if (comentando?.id === p.id) setHilo(await comentariosPost(p.id))
+      } catch {
+        return mostrarAviso('No se pudo publicar el comentario')
+      }
+    } else {
+      const id = p.id
+      void actualizar((a) => ({
+        comentarios: { ...a.comentarios, [id]: [...(a.comentarios[id] ?? []), cuerpo.trim()] },
+      }))
+    }
     setTexto('')
     mostrarAviso('Comentario publicado')
   }
@@ -69,12 +112,19 @@ export function Feed() {
     else if (r === 'error') mostrarAviso('No se pudo compartir')
   }
 
+  const pestanas: { id: FiltroFeed; etiqueta: string }[] = [
+    { id: 'Todos', etiqueta: 'Para ti' },
+    { id: 'Siguiendo', etiqueta: 'Siguiendo' },
+  ]
+
   return (
     <div className="contenedor-escritorio lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8 lg:items-start">
       <div className="flex flex-col w-full min-w-0">
-        <div className="px-margin pt-space-md pb-space-sm lg:px-0 lg:pb-6">
+        <div className="px-margin pt-space-md pb-space-sm lg:px-0 lg:pb-4">
           <div className="flex items-center justify-between mb-4 relative">
-            <h1 className="font-headline-md text-headline-md text-text-primary">Comunidad</h1>
+            <div>
+              <h1 className="font-headline-md text-headline-md text-text-primary">Comunidad</h1>
+            </div>
             <div className="flex-1" />
             <button
               onClick={() => navigate('/comunidad/corredores')}
@@ -96,7 +146,7 @@ export function Feed() {
                 role="menu"
                 className="absolute right-0 top-12 z-30 bg-bg-secondary border border-border-subtle rounded-xl shadow-xl overflow-hidden"
               >
-                {(['Todos', 'Comunidad', 'Mías'] as FiltroFeed[]).map((f) => (
+                {(['Todos', 'Siguiendo', 'Comunidad', 'Mías'] as FiltroFeed[]).map((f) => (
                   <button
                     key={f}
                     role="menuitemradio"
@@ -114,6 +164,38 @@ export function Feed() {
             )}
           </div>
 
+          <nav
+            aria-label="Secciones de comunidad"
+            className="flex p-1 mb-4 rounded-full bg-surface-container border border-border-subtle"
+          >
+            {pestanas.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setFiltro(t.id)}
+                aria-current={filtro === t.id ? 'page' : undefined}
+                className={`flex-1 h-10 rounded-full font-label-md text-label-md transition-colors ${
+                  filtro === t.id
+                    ? 'bg-bg-primary text-primary shadow'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                {t.etiqueta}
+              </button>
+            ))}
+            <button
+              onClick={() => navigate('/comunidad/clubes')}
+              className="flex-1 h-10 rounded-full font-label-md text-label-md text-text-secondary hover:text-text-primary"
+            >
+              Clubes
+            </button>
+            <button
+              onClick={() => navigate('/comunidad/eventos')}
+              className="flex-1 h-10 rounded-full font-label-md text-label-md text-text-secondary hover:text-text-primary"
+            >
+              Eventos
+            </button>
+          </nav>
+
           {enVivo.length > 0 && (
             <Link
               to="/comunidad/en-vivo"
@@ -130,49 +212,61 @@ export function Feed() {
             </Link>
           )}
 
-          <div className="flex gap-2 mb-4">
-            <span
-              className="px-4 py-2 rounded-full font-label-md text-label-md bg-primary-600 text-bg-primary"
-              aria-current="page"
-            >
-              Feed
+          <button
+            onClick={() => navigate('/correr')}
+            className="w-full flex items-center gap-3 p-3 rounded-2xl bg-surface-container border border-border-subtle text-left hover:border-primary/50 transition-colors"
+          >
+            <span className="w-10 h-10 rounded-full bg-primary-600/30 flex items-center justify-center text-primary-400 font-bold">
+              {(sesion?.nombre ?? 'T').charAt(0)}
             </span>
-            <button
-              onClick={() => navigate('/comunidad/eventos')}
-              className="px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container text-text-secondary hover:text-text-primary"
-            >
-              Eventos
-            </button>
-            {filtro !== 'Todos' && (
-              <span className="px-3 py-2 text-label-md text-text-secondary">Filtro: {filtro}</span>
-            )}
-          </div>
+            <span className="flex-1 text-body-md text-text-secondary">
+              Comparte tu entrenamiento: sal a correr y publícalo.
+            </span>
+            <span className="px-4 h-9 rounded-full bg-primary text-on-primary font-label-md text-label-md flex items-center">
+              Correr
+            </span>
+          </button>
+          {filtro !== 'Todos' && filtro !== 'Siguiendo' && (
+            <p className="mt-3 text-label-md text-text-secondary">Filtro: {filtro}</p>
+          )}
         </div>
 
-        <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:grid lg:grid-cols-1 xl:grid-cols-2 lg:gap-6 lg:space-y-0 lg:items-start">
+        <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:space-y-6">
           {posts.length === 0 && (
-            <p className="text-center text-text-secondary py-8 lg:col-span-full">
-              {filtro === 'Mías' ? 'Aún no tienes carreras públicas.' : 'No hay publicaciones.'}
+            <p className="text-center text-text-secondary py-8">
+              {filtro === 'Mías'
+                ? 'Aún no tienes carreras públicas.'
+                : filtro === 'Siguiendo'
+                  ? 'Las carreras de quienes sigues aparecerán aquí. Busca corredores para seguir.'
+                  : 'No hay publicaciones todavía.'}
             </p>
           )}
           {posts.map((post) => {
-            const meGusta = ajustes.likes.includes(post.id)
-            const misComentarios = ajustes.comentarios[post.id] ?? []
+            const meGusta = meGustaDe(post)
+            const locales = comentariosLocales(post)
             return (
               <article
                 key={post.id}
                 className="bg-surface-container rounded-2xl border border-border-subtle overflow-hidden"
                 data-testid="publicacion"
               >
-                <div className="p-4 flex items-center gap-3 border-b border-border-subtle relative">
-                  <div className="w-10 h-10 rounded-full bg-primary-600/30 flex items-center justify-center text-primary-400 font-bold">
-                    {post.autor.charAt(0)}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-body-md text-body-md text-text-primary font-semibold">
+                <header className="p-4 flex items-center gap-3 relative">
+                  {post.avatar ? (
+                    <img
+                      src={post.avatar}
+                      alt=""
+                      className="w-11 h-11 rounded-full object-cover border-2 border-primary/60"
+                    />
+                  ) : (
+                    <div className="w-11 h-11 rounded-full bg-primary-600/30 border-2 border-primary/60 flex items-center justify-center text-primary-400 font-bold">
+                      {post.autor.charAt(0)}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-body-md text-body-md text-text-primary font-semibold truncate">
                       {post.autor}
                     </p>
-                    <p className="font-body-sm text-body-sm text-text-secondary">
+                    <p className="font-body-sm text-body-sm text-text-secondary truncate">
                       {post.titulo} · {post.tiempo}
                     </p>
                   </div>
@@ -214,9 +308,9 @@ export function Feed() {
                       </button>
                     </div>
                   )}
-                </div>
+                </header>
 
-                <div className="h-48 bg-gradient-to-br from-primary-600/20 to-secondary-600/20 flex items-center justify-center">
+                <div className="mx-4 h-48 lg:h-64 rounded-xl overflow-hidden bg-gradient-to-br from-primary-600/20 to-secondary-600/20 flex items-center justify-center">
                   {post.puntos.length > 1 ? (
                     <TrazadoRuta puntos={post.puntos} className="w-full h-full p-4" />
                   ) : (
@@ -227,34 +321,35 @@ export function Feed() {
                 </div>
 
                 <div className="p-4">
-                  <div className="grid grid-cols-3 gap-4 mb-4">
-                    <div className="text-center">
-                      <div className="font-headline-sm text-headline-sm text-primary">
-                        {Unidades.texto(post.distanciaKm, m, 1)}
+                  <div className="grid grid-cols-3 gap-2 mb-4 p-3 rounded-xl bg-bg-primary/40 border border-border-subtle">
+                    <div>
+                      <div className="font-label-sm text-label-sm text-text-secondary">
+                        Distancia
                       </div>
-                      <div className="font-label-md text-label-md text-text-secondary">
-                        {Unidades.etiquetaDistancia(m)}
-                      </div>
-                    </div>
-                    <div className="text-center">
                       <div className="font-headline-sm text-headline-sm text-text-primary">
-                        {formatearMs(post.segundos)}
+                        {Unidades.texto(post.distanciaKm, m, 1)}{' '}
+                        <span className="text-label-sm text-text-secondary">
+                          {Unidades.etiquetaDistancia(m)}
+                        </span>
                       </div>
-                      <div className="font-label-md text-label-md text-text-secondary">tiempo</div>
                     </div>
-                    <div className="text-center">
-                      <div className="font-headline-sm text-headline-sm text-secondary">
+                    <div>
+                      <div className="font-label-sm text-label-sm text-text-secondary">Ritmo</div>
+                      <div className="font-headline-sm text-headline-sm text-primary">
                         {formatearRitmo(Unidades.ritmo(post.ritmoSegKm, m))}
                       </div>
-                      <div className="font-label-md text-label-md text-text-secondary">
-                        {Unidades.etiquetaRitmo(m)}
+                    </div>
+                    <div>
+                      <div className="font-label-sm text-label-sm text-text-secondary">Tiempo</div>
+                      <div className="font-headline-sm text-headline-sm text-text-primary">
+                        {formatearMs(post.segundos)}
                       </div>
                     </div>
                   </div>
 
-                  {misComentarios.length > 0 && (
+                  {locales.length > 0 && (
                     <ul className="mb-3 space-y-1">
-                      {misComentarios.map((c, i) => (
+                      {locales.map((c, i) => (
                         <li key={i} className="text-body-sm text-text-secondary">
                           <strong className="text-text-primary">Tú:</strong> {c}
                         </li>
@@ -262,28 +357,26 @@ export function Feed() {
                     </ul>
                   )}
 
-                  <div className="flex items-center gap-6 pt-3 border-t border-border-subtle">
+                  <div className="flex items-center gap-4 pt-3 border-t border-border-subtle">
                     <button
-                      onClick={() => alternarLike(post.id)}
+                      onClick={() => alternarLike(post)}
                       aria-pressed={meGusta}
                       aria-label={meGusta ? 'Quitar me gusta' : 'Me gusta'}
-                      className={`min-h-11 min-w-11 flex items-center gap-2 transition-colors ${meGusta ? 'text-danger' : 'text-text-secondary hover:text-primary'}`}
+                      className={`min-h-11 px-3 rounded-full flex items-center gap-2 transition-colors ${meGusta ? 'bg-primary/15 text-primary' : 'text-text-secondary hover:text-primary'}`}
                     >
                       <span className="material-symbols-outlined">
                         {meGusta ? 'favorite' : 'favorite_border'}
                       </span>
-                      <span className="font-label-md text-label-md">
-                        {post.likes + (meGusta ? 1 : 0)}
-                      </span>
+                      <span className="font-label-md text-label-md">{likesDe(post)}</span>
                     </button>
                     <button
-                      onClick={() => setComentando(post)}
+                      onClick={() => abrirComentarios(post)}
                       aria-label="Comentar"
                       className="min-h-11 min-w-11 flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors"
                     >
                       <span className="material-symbols-outlined">chat_bubble_outline</span>
                       <span className="font-label-md text-label-md">
-                        {post.comentarios + misComentarios.length}
+                        {post.comentarios + locales.length}
                       </span>
                     </button>
                     <button
@@ -307,18 +400,29 @@ export function Feed() {
           acciones={
             <>
               <BotonTexto onClick={() => setComentando(null)}>Cerrar</BotonTexto>
-              <BotonTexto onClick={enviarComentario} disabled={!texto.trim()}>
+              <BotonTexto onClick={() => void enviarComentario()} disabled={!texto.trim()}>
                 Publicar
               </BotonTexto>
             </>
           }
         >
+          {hilo.length > 0 && (
+            <ul className="mb-3 max-h-60 overflow-y-auto space-y-2" aria-label="Comentarios">
+              {hilo.map((c) => (
+                <li key={c.id} className="text-body-sm">
+                  <strong className="text-text-primary">{c.autor}:</strong>{' '}
+                  <span className="text-text-secondary">{c.texto}</span>
+                </li>
+              ))}
+            </ul>
+          )}
           <textarea
             aria-label="Comentario"
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
             rows={3}
-            placeholder="Escribe un comentario..."
+            maxLength={1000}
+            placeholder="Escribe un aplauso o comentario..."
             className="w-full px-3 py-2 bg-surface-container border border-border-subtle rounded-lg text-text-primary resize-none"
           />
         </Dialogo>

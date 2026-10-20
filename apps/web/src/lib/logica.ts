@@ -23,9 +23,16 @@ export interface Publicacion {
   likes: number
   comentarios: number
   puntos: PuntoGps[]
+  /** true si el usuario actual le dio me gusta (solo feed real). */
+  meGusta?: boolean
+  /** true si la publicacion existe en Supabase (se puede dar me gusta y comentar). */
+  remota?: boolean
+  avatar?: string | null
+  /** Inicio de la carrera (ordenar el feed). */
+  inicioMs?: number
 }
 
-export type FiltroFeed = 'Todos' | 'Comunidad' | 'Mías'
+export type FiltroFeed = 'Todos' | 'Siguiendo' | 'Comunidad' | 'Mías'
 
 export const tiempoRelativo = (ms: number, ahora: number) => {
   if (!Number.isFinite(ms)) return ''
@@ -71,16 +78,19 @@ export function construirFeed(
   carreras: CarreraGuardada[],
   nombre: string,
   ahora: number,
-  remotas: PublicacionRemota[] = []
+  remotas: PublicacionRemota[] = [],
+  social = false
 ): Publicacion[] {
+  const subidas = new Set(remotas.map((r) => r.clienteId).filter(Boolean) as string[])
   const propias: Publicacion[] = carreras
-    .filter((c) => c.publica)
+    .filter((c) => c.publica && !subidas.has(c.id))
     .map((c) => ({
       id: `c-${c.id}`,
       autor: nombre,
       propia: true,
       titulo: c.titulo,
       tiempo: tiempoRelativo(c.inicioMs, ahora),
+      inicioMs: c.inicioMs,
       distanciaKm: c.distanciaKm,
       segundos: c.segundos,
       ritmoSegKm: c.distanciaKm > 0.01 ? Math.floor(c.segundos / c.distanciaKm) : null,
@@ -88,41 +98,62 @@ export function construirFeed(
       comentarios: 0,
       puntos: c.puntos,
     }))
-  const comunidad: Publicacion[] = actividadesMock.map((a) => ({
-    id: `a-${a.id}`,
-    autor: usuarioPorId(a.usuarioId)?.nombre ?? 'Corredor',
-    propia: false,
-    titulo: a.titulo,
-    tiempo: a.fecha,
-    distanciaKm: a.distanciaKm,
-    segundos: a.duracionSegundos,
-    ritmoSegKm: ritmoTexto(a.ritmo),
-    likes: a.likes,
-    comentarios: a.comentarios,
-    puntos: [],
-  }))
   const reales: Publicacion[] = remotas.map((r) => ({
-    id: `r-${r.id}`,
-    autor: r.autor,
-    autorId: r.autorId,
-    propia: false,
+    id: r.id,
+    autor: r.propia ? nombre : r.autor,
+    autorId: r.propia ? undefined : r.autorId,
+    propia: Boolean(r.propia),
     titulo: r.titulo,
     tiempo: tiempoRelativo(r.inicioMs, ahora),
+    inicioMs: r.inicioMs,
     distanciaKm: r.distanciaKm,
     segundos: r.segundos,
     ritmoSegKm: r.distanciaKm > 0.01 ? Math.floor(r.segundos / r.distanciaKm) : null,
     likes: r.likes,
     comentarios: r.comentarios,
     puntos: r.puntos,
+    meGusta: Boolean(r.meGusta),
+    remota: true,
+    avatar: r.avatar ?? null,
   }))
-  // Con publicaciones reales de la comunidad no se mezclan las de ejemplo.
-  return [...propias, ...(reales.length ? reales : comunidad)]
+  // Con backend (social) el feed es solo de la base: nunca se mezclan publicaciones de ejemplo.
+  const comunidad: Publicacion[] =
+    social || reales.length
+      ? []
+      : actividadesMock.map((a, i) => ({
+          id: `a-${a.id}`,
+          autor: usuarioPorId(a.usuarioId)?.nombre ?? 'Corredor',
+          propia: false,
+          titulo: a.titulo,
+          tiempo: a.fecha,
+          inicioMs: ahora - (i + 7) * 86_400_000,
+          distanciaKm: a.distanciaKm,
+          segundos: a.duracionSegundos,
+          ritmoSegKm: ritmoTexto(a.ritmo),
+          likes: a.likes,
+          comentarios: a.comentarios,
+          puntos: [],
+        }))
+  return [...propias, ...reales, ...comunidad].sort((x, y) => (y.inicioMs ?? 0) - (x.inicioMs ?? 0))
 }
 
-export function filtrarFeed(lista: Publicacion[], filtro: FiltroFeed, ocultas: string[]) {
+export function filtrarFeed(
+  lista: Publicacion[],
+  filtro: FiltroFeed,
+  ocultas: string[],
+  siguiendo: string[] = []
+) {
   return lista
     .filter((p) => !ocultas.includes(p.id))
-    .filter((p) => (filtro === 'Mías' ? p.propia : filtro === 'Comunidad' ? !p.propia : true))
+    .filter((p) =>
+      filtro === 'Mías'
+        ? p.propia
+        : filtro === 'Comunidad'
+          ? !p.propia
+          : filtro === 'Siguiendo'
+            ? Boolean(p.autorId && siguiendo.includes(p.autorId))
+            : true
+    )
 }
 
 /** Estimacion simple: alrededor de 1 kcal por kg y km, con 70 kg de referencia. */

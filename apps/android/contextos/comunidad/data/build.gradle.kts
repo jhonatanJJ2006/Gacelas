@@ -5,5 +5,6 @@ plugins {
 kotlin {
     sourceSets.commonMain.dependencies {
         implementation(project(":contextos:comunidad:domain"))
+        implementation(project(":contextos:carreras:domain"))
     }
 }

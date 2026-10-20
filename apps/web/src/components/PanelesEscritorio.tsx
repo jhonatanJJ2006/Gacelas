@@ -1,3 +1,4 @@
+import { unirEventos } from '../lib/eventos'
 import { Link } from 'react-router-dom'
 import { formatearHms, formatearRitmo, Unidades } from '../lib/geo'
 import { kmPorSemana, rankingSemanal, recordsPersonales } from '../lib/paneles'
@@ -108,7 +109,9 @@ export function MetaSemanal({ km, metaKm = 30 }: { km: number; metaKm?: number }
 
 export function ProximosEventos() {
   const creados = useApp((s) => s.eventosCreados)
-  const lista = [...creados, ...eventosMock].filter((e) => !e.pasado).slice(0, 3)
+  const lista = unirEventos(creados, eventosMock)
+    .filter((e) => !e.pasado)
+    .slice(0, 3)
   return (
     <section className={tarjeta} data-testid="panel-eventos">
       <h2 className="font-title-md text-title-md text-text-primary mb-3">Próximos eventos</h2>

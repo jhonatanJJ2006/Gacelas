@@ -102,12 +102,19 @@ fun filtrarNotificaciones(lista: List<Notificacion>, filtro: String): List<Notif
     else -> lista
 }
 
-fun filtrarFeed(lista: List<Publicacion>, filtro: FiltroFeed, ocultas: Set<String>): List<Publicacion> = lista
+fun filtrarFeed(lista: List<Publicacion>, filtro: FiltroFeed, ocultas: Set<String>, siguiendo: Set<String> = emptySet()): List<Publicacion> = lista
     .filter { it.id !in ocultas }
     .filter {
         when (filtro) {
             FiltroFeed.Todos -> true
+            FiltroFeed.Siguiendo -> it.autorId != null && it.autorId in siguiendo
             FiltroFeed.Comunidad -> !it.propia
             FiltroFeed.Mias -> it.propia
         }
     }
+
+/** Une eventos de la base con los de ejemplo sin duplicar ids (gana la base). */
+fun unirEventos(base: List<Evento>, ejemplo: List<Evento>): List<Evento> {
+    val ids = base.map { it.id }.toSet()
+    return base + ejemplo.filter { it.id !in ids }
+}

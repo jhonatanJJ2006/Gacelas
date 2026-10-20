@@ -18,6 +18,7 @@ import {
   type NotificacionesRepository,
   type ComunidadRepository,
   type PublicacionRemota,
+  type ComentarioPublicacion,
   type CorredorPublico,
   type RachasRepository,
   type Repositorios,
@@ -534,16 +535,23 @@ export class SupabaseEventosRepository implements EventosRepository {
   async creados() {
     const user = await usuario(this.sb)
     if (!user) return this.local.creados()
-    const { data, error } = await this.sb
-      .from('events')
-      .select('*')
-      .not('created_by', 'is', null)
-      .order('created_at', { ascending: false })
-      .limit(100)
+    // Todos los eventos de la base (los de Loja sembrados y los creados por usuarios).
+    const [{ data, error }, conteo] = await Promise.all([
+      this.sb.from('events').select('*').order('starts_at', { ascending: true }).limit(200),
+      Promise.resolve()
+        .then(() => this.sb.rpc('participantes_eventos'))
+        .catch(() => ({ data: null })),
+    ])
     if (error) return this.local.creados()
+    const otros = new Map(
+      ((conteo.data ?? []) as Fila[]).map((c) => [String(c.event_id), Number(c.otros ?? 0)])
+    )
     return escribir(
       'eventos-creados',
-      ((data ?? []) as Fila[]).map((f) => eventoDesdeFila(f, user.id))
+      ((data ?? []) as Fila[]).map((f) => {
+        const e = eventoDesdeFila(f, user.id)
+        return otros.has(e.id) ? { ...e, participantes: otros.get(e.id)! } : e
+      })
     )
   }
 
@@ -849,6 +857,37 @@ export class SupabaseNotificacionesRepository implements NotificacionesRepositor
   }
 }
 
+/** Fila de la RPC feed_comunidad a publicacion del feed. */
+export function publicacionDesdeFilaFeed(f: Fila): PublicacionRemota {
+  return {
+    id: String(f.id),
+    autorId: String(f.user_id),
+    autor: (f.autor as string) || 'Corredor',
+    titulo: (f.title as string) || 'Carrera',
+    inicioMs: Date.parse(f.start_time as string),
+    distanciaKm: Number(f.distance_meters ?? 0) / 1000,
+    segundos: Number(f.duration_seconds ?? 0),
+    likes: Number(f.likes_count ?? 0),
+    comentarios: Number(f.comments_count ?? 0),
+    puntos: Array.isArray(f.public_points) ? (f.public_points as PublicacionRemota['puntos']) : [],
+    clienteId: (f.client_id as string) ?? null,
+    avatar: (f.avatar_url as string) ?? null,
+    meGusta: Boolean(f.me_gusta),
+    sigo: Boolean(f.sigo),
+    propia: Boolean(f.propia),
+  }
+}
+
+export function comentarioDesdeFila(f: Fila): ComentarioPublicacion {
+  return {
+    id: String(f.id),
+    autorId: String(f.user_id),
+    autor: (f.autor as string) || 'Corredor',
+    texto: String(f.body ?? ''),
+    creadoMs: Date.parse(f.created_at as string),
+  }
+}
+
 export class SupabaseComunidadRepository implements ComunidadRepository {
   private sb: SupabaseClient
   constructor(sb: SupabaseClient) {
@@ -857,36 +896,38 @@ export class SupabaseComunidadRepository implements ComunidadRepository {
   async publicaciones(): Promise<PublicacionRemota[]> {
     const user = await usuario(this.sb)
     if (!user) return []
-    const { data, error } = await this.sb
-      .from('activities')
-      .select(
-        'id,user_id,title,start_time,distance_meters,duration_seconds,likes_count,comments_count,public_points'
-      )
-      .eq('is_public', true)
-      .neq('user_id', user.id)
-      .order('start_time', { ascending: false })
-      .limit(30)
-    if (error || !data?.length) return []
-    const filas = data as Fila[]
-    const ids = Array.from(new Set(filas.map((f) => f.user_id as string)))
-    const { data: perfiles } = await this.sb.from('profiles').select('id,full_name').in('id', ids)
-    const nombres = new Map(
-      ((perfiles ?? []) as Fila[]).map((p) => [p.id as string, p.full_name as string])
-    )
-    return filas.map((f) => ({
-      id: f.id as string,
-      autorId: f.user_id as string,
-      autor: nombres.get(f.user_id as string) || 'Corredor',
-      titulo: (f.title as string) || 'Carrera',
-      inicioMs: Date.parse(f.start_time as string),
-      distanciaKm: Number(f.distance_meters ?? 0) / 1000,
-      segundos: Number(f.duration_seconds ?? 0),
-      likes: Number(f.likes_count ?? 0),
-      comentarios: Number(f.comments_count ?? 0),
-      puntos: Array.isArray(f.public_points)
-        ? (f.public_points as PublicacionRemota['puntos'])
-        : [],
-    }))
+    const { data, error } = await this.sb.rpc('feed_comunidad', { p_limite: 40 })
+    if (error || !data) return []
+    return (data as Fila[]).map(publicacionDesdeFilaFeed)
+  }
+  async alternarMeGusta(postId: string, activo: boolean) {
+    const user = await usuario(this.sb)
+    if (!user) return
+    const { error } = activo
+      ? await this.sb.from('post_likes').insert({ user_id: user.id, post_id: postId })
+      : await this.sb.from('post_likes').delete().eq('user_id', user.id).eq('post_id', postId)
+    if (error && error.code !== '23505') throw new Error(traducirError(error.message))
+  }
+  async comentarios(postId: string): Promise<ComentarioPublicacion[]> {
+    const { data, error } = await this.sb.rpc('comentarios_publicacion', { p_post: postId })
+    if (error || !data) return []
+    return (data as Fila[]).map(comentarioDesdeFila)
+  }
+  async comentar(postId: string, texto: string) {
+    const user = await usuario(this.sb)
+    if (!user) throw new Error('Inicia sesión para comentar')
+    const { error } = await this.sb
+      .from('post_comments')
+      .insert({ user_id: user.id, post_id: postId, body: texto.trim() })
+    if (error) throw new Error(traducirError(error.message))
+  }
+  suscribir(alCambiar: () => void) {
+    if (typeof this.sb.channel !== 'function') return () => undefined
+    const canal = this.sb.channel(`feed-${Math.random().toString(36).slice(2)}`)
+    for (const table of ['activities', 'post_likes', 'post_comments', 'follows'])
+      canal.on('postgres_changes', { event: '*', schema: 'public', table }, () => alCambiar())
+    canal.subscribe()
+    return () => void this.sb.removeChannel(canal)
   }
   async buscar(consulta: string): Promise<CorredorPublico[]> {
     const user = await usuario(this.sb)
