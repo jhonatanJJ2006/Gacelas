@@ -1,3 +1,4 @@
+import { unirEventos } from '../../lib/eventos'
 import { InsigniaRacha } from '../../components/Racha'
 import { useEsEscritorio } from '../../lib/useEsEscritorio'
 import { MetaSemanal, RankingSemanal } from '../../components/PanelesEscritorio'
@@ -26,7 +27,7 @@ export function Inicio() {
   const ahora = Date.now()
   const semana = useMemo(() => resumenSemana(carreras, ahora), [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
   const hoy = (new Date(ahora).getDay() + 6) % 7
-  const proximo = filtrarEventos([...creados, ...eventosMock], 'Próximos', inscritos)[0]
+  const proximo = filtrarEventos(unirEventos(creados, eventosMock), 'Próximos', inscritos)[0]
   const fecha = new Date(ahora).toLocaleDateString('es-EC', {
     weekday: 'long',
     day: 'numeric',

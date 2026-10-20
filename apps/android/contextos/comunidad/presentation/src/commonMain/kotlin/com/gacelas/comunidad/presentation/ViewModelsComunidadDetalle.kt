@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.gacelas.carreras.domain.modelo.Carrera
 import com.gacelas.carreras.domain.repositorio.CarrerasRepository
 import com.gacelas.comunidad.domain.modelo.Club
+import com.gacelas.comunidad.domain.modelo.ComentarioFeed
 import com.gacelas.comunidad.domain.modelo.CorredorEvento
 import com.gacelas.comunidad.domain.modelo.EstadoEvento
 import com.gacelas.comunidad.domain.modelo.Evento
@@ -18,6 +19,7 @@ import com.gacelas.comunidad.domain.reglas.clasificacion
 import com.gacelas.comunidad.domain.reglas.filtrarFeed
 import com.gacelas.comunidad.domain.reglas.puedeGestionar
 import com.gacelas.comunidad.domain.repositorio.EventosRepository
+import com.gacelas.comunidad.domain.repositorio.FeedRepository
 import com.gacelas.comunidad.domain.repositorio.ClubesRepository
 import com.gacelas.comunidad.domain.repositorio.EnVivoRepository
 import com.gacelas.cuenta.domain.modelo.Ajustes
@@ -36,11 +38,21 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/** Carreras publicas propias primero y luego la actividad de la comunidad (ejemplo). */
-fun publicacionesFeed(carreras: List<Carrera>, nombre: String?, actividades: List<Actividad> = MockData.actividades): List<Publicacion> {
-    val propias = carreras.filter { it.publica }.map {
-        Publicacion("carrera-${it.id}", nombre ?: "Tú", true, 0, "Tu carrera", it.titulo, it.distanciaKm, it.segundos, it.ritmoSegKm, 0, 0, it.puntos)
+/**
+ * Feed: con [remotas] (Supabase) solo datos reales: las publicaciones de la base mas las carreras
+ * propias que aun no se subieron, por fecha. Sin servidor, carreras propias y actividad de ejemplo.
+ */
+fun publicacionesFeed(
+    carreras: List<Carrera>,
+    nombre: String?,
+    actividades: List<Actividad> = MockData.actividades,
+    remotas: List<Publicacion>? = null,
+): List<Publicacion> {
+    val subidas = remotas.orEmpty().mapNotNull { it.clienteId }.toSet()
+    val propias = carreras.filter { it.publica && it.id !in subidas }.map {
+        Publicacion("carrera-${it.id}", nombre ?: "Tú", true, 0, "Tu carrera", it.titulo, it.distanciaKm, it.segundos, it.ritmoSegKm, 0, 0, it.puntos, inicioMs = it.inicioMs)
     }
+    if (remotas != null) return (propias + remotas).sortedByDescending { it.inicioMs }
     val comunidad = actividades.mapIndexed { i, a ->
         Publicacion(
             "act-${a.id}", MockData.usuario(a.usuarioId)?.nombre ?: "", false, i + 1, a.fecha, a.titulo, a.distanciaKm,
@@ -50,32 +62,92 @@ fun publicacionesFeed(carreras: List<Carrera>, nombre: String?, actividades: Lis
     return propias + comunidad
 }
 
-/** Feed de comunidad: filtro, me gusta, comentarios y publicaciones ocultas (guardados en ajustes). */
+/** Feed de comunidad: filtro, aplausos, comentarios, seguir y ocultar. Con [feed] lee y escribe en Supabase. */
 class FeedViewModel(
     carreras: CarrerasRepository,
     auth: AuthRepository,
     private val ajustesRepo: AjustesRepository,
     actividades: List<Actividad> = MockData.actividades,
+    private val feed: FeedRepository? = null,
+    private val intervaloMs: Long = 20_000L,
 ) : ViewModel() {
     private val _filtro = MutableStateFlow(FiltroFeed.Todos)
     val filtro: StateFlow<FiltroFeed> = _filtro.asStateFlow()
     val ajustes: StateFlow<Ajustes> = ajustesRepo.ajustes.stateIn(viewModelScope, SharingStarted.Eagerly, Ajustes())
-    private val base = combine(carreras.carreras, auth.sesion) { c, p -> publicacionesFeed(c, p?.nombre, actividades) }
+    private val remotas = MutableStateFlow<List<Publicacion>?>(null)
+    private val _siguiendo = MutableStateFlow<Set<String>>(emptySet())
+    val siguiendo: StateFlow<Set<String>> = _siguiendo.asStateFlow()
+    private val _cargando = MutableStateFlow(false)
+    val cargando: StateFlow<Boolean> = _cargando.asStateFlow()
+    /** true si el feed viene de la base (sin ejemplos). */
+    val social: Boolean get() = remotas.value != null
+
+    private val base = combine(carreras.carreras, auth.sesion, remotas) { c, p, r -> publicacionesFeed(c, p?.nombre, actividades, r) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, publicacionesFeed(emptyList(), null, actividades))
 
     /** Publicaciones visibles con el filtro elegido. */
-    val publicaciones: StateFlow<List<Publicacion>> = combine(base, _filtro, ajustes) { b, f, a -> filtrarFeed(b, f, a.ocultas) }
+    val publicaciones: StateFlow<List<Publicacion>> = combine(base, _filtro, ajustes, _siguiendo) { b, f, a, sg -> filtrarFeed(b, f, a.ocultas, sg) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, filtrarFeed(base.value, FiltroFeed.Todos, emptySet()))
+
+    init {
+        if (feed != null) {
+            viewModelScope.launch { auth.sesion.collect { refrescar() } }
+            if (intervaloMs > 0) viewModelScope.launch {
+                while (true) { delay(intervaloMs); refrescar() }
+            }
+        }
+    }
+
+    /** Vuelve a leer el feed y los seguidos desde la base. */
+    fun refrescar() {
+        val f = feed ?: return
+        viewModelScope.launch {
+            _cargando.value = true
+            f.publicaciones()?.let { remotas.value = it }
+            _siguiendo.value = f.siguiendo()
+            _cargando.value = false
+        }
+    }
 
     fun filtro(f: FiltroFeed) { _filtro.value = f }
     fun ocultar(id: String) { viewModelScope.launch { ajustesRepo.actualizar { it.copy(ocultas = it.ocultas + id) } } }
-    fun alternarLike(id: String) {
+
+    private fun remota(id: String) = remotas.value?.firstOrNull { it.id == id }
+
+    fun alternarLike(id: String, onError: (String) -> Unit = {}) {
+        val p = remota(id)
+        if (p != null && feed != null) {
+            val activo = !p.meGusta
+            val antes = remotas.value
+            remotas.value = antes?.map { if (it.id == id) it.copy(meGusta = activo, likesBase = (it.likesBase + if (activo) 1 else -1).coerceAtLeast(0)) else it }
+            viewModelScope.launch {
+                runCatching { feed.alternarMeGusta(id, activo) }.onFailure { remotas.value = antes; onError("No se pudo guardar el aplauso") }
+            }
+            return
+        }
         viewModelScope.launch { ajustesRepo.actualizar { a -> a.copy(likes = if (id in a.likes) a.likes - id else a.likes + id) } }
     }
-    fun comentar(id: String, texto: String) {
+
+    fun comentar(id: String, texto: String, onError: (String) -> Unit = {}) {
         val t = texto.trim()
         if (t.isEmpty()) return
+        if (remota(id) != null && feed != null) {
+            viewModelScope.launch {
+                runCatching { feed.comentar(id, t) }
+                    .onSuccess { remotas.value = remotas.value?.map { if (it.id == id) it.copy(comentariosBase = it.comentariosBase + 1) else it } }
+                    .onFailure { onError("No se pudo publicar el comentario") }
+            }
+            return
+        }
         viewModelScope.launch { ajustesRepo.actualizar { a -> a.copy(comentarios = a.comentarios + (id to (a.comentarios[id].orEmpty() + t))) } }
+    }
+
+    /** Comentarios de todos en una publicacion real (vacio para las locales). */
+    suspend fun comentarios(id: String): List<ComentarioFeed> = if (remota(id) != null) feed?.comentarios(id).orEmpty() else emptyList()
+
+    fun alternarSeguir(id: String) {
+        val f = feed ?: return
+        viewModelScope.launch { runCatching { f.alternarSeguir(id) }.onSuccess { _siguiendo.value = it } }
     }
 }
 
@@ -87,7 +159,7 @@ class DetalleEventoViewModel(
     private val ejemplo: List<Evento> = MockData.eventos,
 ) : ViewModel() {
     /** Eventos (ejemplo + creados) e inscripciones, como en la lista de eventos. */
-    val datos: StateFlow<Pair<List<Evento>, Set<String>>> = combine(eventos.creados, eventos.inscritos) { cr, ins -> (ejemplo + cr) to ins }
+    val datos: StateFlow<Pair<List<Evento>, Set<String>>> = combine(eventos.creados, eventos.inscritos) { cr, ins -> com.gacelas.comunidad.domain.reglas.unirEventos(cr, ejemplo) to ins }
         .stateIn(viewModelScope, SharingStarted.Eagerly, ejemplo to emptySet())
     private val remoto = MutableStateFlow<Evento?>(null)
     private val _estado = MutableStateFlow<EstadoEvento?>(null)

@@ -58,7 +58,8 @@ import io.github.sceneview.math.Position
 
 @Composable
 fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String) -> Unit = { onEventos() }) {
-    val evento = MockData.eventos.firstOrNull { !it.yaPaso() } ?: MockData.eventos.maxBy { it.inicioMs ?: 0L }
+    val (todos, _) = com.gacelas.comunidad.eventosState()
+    val evento = todos.filter { !it.yaPaso() }.minByOrNull { it.inicioMs ?: Long.MAX_VALUE } ?: todos.maxBy { it.inicioMs ?: 0L }
     val perfil by sesionState()
     val carreras by carrerasState()
     val ajustes by ajustesState()

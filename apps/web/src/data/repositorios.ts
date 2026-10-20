@@ -68,6 +68,20 @@ export interface PublicacionRemota {
   likes: number
   comentarios: number
   puntos: CarreraGuardada['puntos']
+  /** id local de la carrera (client_id) para no duplicar la copia local. */
+  clienteId?: string | null
+  avatar?: string | null
+  meGusta?: boolean
+  sigo?: boolean
+  propia?: boolean
+}
+
+export interface ComentarioPublicacion {
+  id: string
+  autorId: string
+  autor: string
+  texto: string
+  creadoMs: number
 }
 
 export interface CorredorPublico {
@@ -83,6 +97,11 @@ export interface ComunidadRepository {
   buscar(consulta: string): Promise<CorredorPublico[]>
   /** Carreras publicas de otros corredores. */
   publicaciones(): Promise<PublicacionRemota[]>
+  alternarMeGusta(postId: string, activo: boolean): Promise<void>
+  comentarios(postId: string): Promise<ComentarioPublicacion[]>
+  comentar(postId: string, texto: string): Promise<void>
+  /** Avisa cuando cambian carreras, likes, comentarios o seguidos. Devuelve la baja. */
+  suscribir?(alCambiar: () => void): () => void
   siguiendo(): Promise<string[]>
   alternarSeguir(id: string): Promise<string[]>
 }

@@ -21,18 +21,18 @@ import kotlinx.coroutines.flow.combine
 // el contenedor, los avisos (Toast) y el menu de compartir de Android.
 
 @Composable
-fun FeedScreen(onEventos: () -> Unit, onEnVivo: () -> Unit = {}) {
+fun FeedScreen(onEventos: () -> Unit, onEnVivo: () -> Unit = {}, onClubes: (() -> Unit)? = null) {
     val context = LocalContext.current
     val c = contenedor()
     val vm = viewModel { c.feedViewModel() }
-    FeedContenido(vm, onEventos, onEnVivo, onCompartir = { context.compartir(it) }, onAviso = { context.aviso(it) })
+    FeedContenido(vm, onEventos, onEnVivo, onCompartir = { context.compartir(it) }, onAviso = { context.aviso(it) }, onClubes = onClubes.takeIf { c.clubes != null })
 }
 
 /** Eventos de ejemplo mas los creados por el usuario. */
 @Composable
 fun eventosState(): Pair<List<Evento>, Set<String>> {
     val c = contenedor()
-    val flujo = remember(c) { combine(c.eventos.creados, c.eventos.inscritos) { cr, ins -> (MockData.eventos + cr) to ins } }
+    val flujo = remember(c) { combine(c.eventos.creados, c.eventos.inscritos) { cr, ins -> com.gacelas.comunidad.domain.reglas.unirEventos(cr, MockData.eventos) to ins } }
     val estado by flujo.collectAsState(initial = MockData.eventos to emptySet())
     return estado
 }

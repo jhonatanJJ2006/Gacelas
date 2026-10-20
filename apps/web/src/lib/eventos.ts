@@ -149,3 +149,9 @@ const COLORES = [
   '#F97316',
 ]
 export const colorCorredor = (i: number) => COLORES[i % COLORES.length]
+
+/** Une eventos de la base con los de ejemplo sin duplicar ids (gana la base). */
+export function unirEventos(base: Evento[], ejemplo: Evento[]): Evento[] {
+  const ids = new Set(base.map((e) => e.id))
+  return [...base, ...ejemplo.filter((e) => !ids.has(e.id))]
+}

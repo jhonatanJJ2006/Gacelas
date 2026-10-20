@@ -54,9 +54,16 @@ class SupabaseEventosRepository(
 
     suspend fun descargar() {
         val uid = userId() ?: return
-        // Igual que la web: todos los eventos creados por la comunidad (los de ejemplo vienen en MockData).
+        // Igual que la web: todos los eventos de la base (sembrados de Loja y creados por usuarios),
+        // con participantes reales (base + inscritos, sin contar al usuario).
+        val otros = runCatching { backend.rpc("participantes_eventos", buildJsonObject { }) }.getOrNull()
+            .let { it as? kotlinx.serialization.json.JsonArray }.orEmpty()
+            .mapNotNull { it as? JsonObject }
+            .mapNotNull { f -> f.texto("event_id")?.let { id -> id to (f.entero("otros") ?: 0) } }.toMap()
         runCatching { backend.select("events", emptyMap(), "starts_at") }.getOrNull()?.let { filas ->
-            creadosValor.actualizar { filas.filter { it.texto("created_by") != null }.map { eventoDesdeFila(it, uid) } }
+            creadosValor.actualizar {
+                filas.map { eventoDesdeFila(it, uid) }.map { e -> otros[e.id]?.let { e.copy(participantes = it) } ?: e }
+            }
         }
         runCatching { backend.select("event_rsvps", mapOf("user_id" to uid)) }.getOrNull()?.let { filas ->
             inscritosValor.actualizar { filas.mapNotNull { it.texto("event_id") }.toSet() }

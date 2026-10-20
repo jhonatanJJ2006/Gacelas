@@ -143,7 +143,7 @@ private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
     conBarra(nav, Destinos.RUTAS) {
         ListaRutasScreen(onBuscar = { nav.navigate(Destinos.BUSCADOR_RUTAS) }, onRuta = { nav.navigate(Destinos.detalleRuta(it)) }, onDibujar = { nav.navigate(Destinos.CREAR_RUTA) })
     }
-    conBarra(nav, Destinos.COMUNIDAD) { FeedScreen(onEventos = { nav.navigate(Destinos.EVENTOS) }, onEnVivo = { nav.navigate(Destinos.EN_VIVO) }) }
+    conBarra(nav, Destinos.COMUNIDAD) { FeedScreen(onEventos = { nav.navigate(Destinos.EVENTOS) }, onEnVivo = { nav.navigate(Destinos.EN_VIVO) }, onClubes = { nav.navigate(Destinos.CLUBES) }) }
     conBarra(nav, Destinos.EVENTOS) { EventosScreen(onEvento = { nav.navigate(Destinos.detalleEvento(it)) }, onClubes = { nav.navigate(Destinos.CLUBES) }) }
     conBarra(nav, Destinos.PERFIL) {
         PerfilScreen(

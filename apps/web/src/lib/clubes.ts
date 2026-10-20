@@ -172,6 +172,20 @@ export const clubes = {
       await sb().from('club_members').update({ role: rol }).eq('club_id', id).eq('user_id', usuario)
     )
   },
+  /** Avisa cuando cambian las publicaciones del club (realtime). Devuelve la baja. */
+  escucharPosts(id: string, alCambiar: () => void): () => void {
+    const cliente = obtenerSupabase()
+    if (!cliente || typeof cliente.channel !== 'function') return () => undefined
+    const canal = cliente
+      .channel(`club-posts-${id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'club_posts', filter: `club_id=eq.${id}` },
+        () => alCambiar()
+      )
+      .subscribe()
+    return () => void cliente.removeChannel(canal)
+  },
   async posts(id: string): Promise<PostClub[]> {
     const filas = ok(
       await sb()

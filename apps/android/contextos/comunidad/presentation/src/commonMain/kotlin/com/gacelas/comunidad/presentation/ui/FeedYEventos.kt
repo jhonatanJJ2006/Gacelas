@@ -49,16 +49,28 @@ import com.gacelas.ui.theme.GType
 // Pantallas de comunidad compartidas por Android e iOS (antes en apps/android/app/.../comunidad).
 
 @Composable
-fun FeedContenido(vm: FeedViewModel, onEventos: () -> Unit, onEnVivo: () -> Unit, onCompartir: (String) -> Unit, onAviso: (String) -> Unit) {
+fun FeedContenido(
+    vm: FeedViewModel,
+    onEventos: () -> Unit,
+    onEnVivo: () -> Unit,
+    onCompartir: (String) -> Unit,
+    onAviso: (String) -> Unit,
+    onClubes: (() -> Unit)? = null,
+) {
     val ajustes by vm.ajustes.collectAsState()
     val m = ajustes.unidadesMetricas
     val filtro by vm.filtro.collectAsState()
+    val siguiendo by vm.siguiendo.collectAsState()
     var menuFiltro by remember { mutableStateOf(false) }
     var comentando by remember { mutableStateOf<Publicacion?>(null) }
     val lista by vm.publicaciones.collectAsState()
     Pantalla {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Comunidad", style = GType.headlineLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+            Column(Modifier.weight(1f)) {
+                Text("GACELAS LOJA", style = GType.labelMd, color = GColors.Primary500)
+                Text("Comunidad", style = GType.headlineLg, color = GColors.TextPrimary)
+            }
+            IconButton(onClick = { vm.refrescar() }) { Icon(Icons.Filled.Refresh, "Actualizar", tint = GColors.TextSecondary) }
             IconButton(onClick = onEnVivo) { Icon(Icons.Filled.Sensors, "Corredores en vivo", tint = GColors.Danger) }
             Box {
                 IconButton(onClick = { menuFiltro = true }) { Icon(Icons.Filled.FilterList, "Filtrar", tint = GColors.TextSecondary) }
@@ -69,24 +81,57 @@ fun FeedContenido(vm: FeedViewModel, onEventos: () -> Unit, onEnVivo: () -> Unit
                 }
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Pastilla("Feed", true)
-            Pastilla("Eventos", false, onEventos)
-            if (filtro != FiltroFeed.Todos) Pastilla(filtro.etiqueta, true, { vm.filtro(FiltroFeed.Todos) })
+        // Pestanas segmentadas como en Stitch: Para ti, Siguiendo, Clubes, Eventos.
+        Row(
+            Modifier.fillMaxWidth().clip(CircleShape).background(GColors.SurfaceContainer).padding(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            @Composable
+            fun Segmento(texto: String, activo: Boolean, onClick: () -> Unit) {
+                Box(
+                    Modifier.weight(1f).height(40.dp).clip(CircleShape)
+                        .background(if (activo) GColors.BgPrimary else GColors.SurfaceContainer)
+                        .clickable(onClick = onClick),
+                    contentAlignment = Alignment.Center,
+                ) { Text(texto, style = GType.labelLg, color = if (activo) GColors.Primary500 else GColors.TextSecondary) }
+            }
+            Segmento("Para ti", filtro == FiltroFeed.Todos) { vm.filtro(FiltroFeed.Todos) }
+            Segmento("Siguiendo", filtro == FiltroFeed.Siguiendo) { vm.filtro(FiltroFeed.Siguiendo) }
+            if (onClubes != null) Segmento("Clubes", false, onClubes)
+            Segmento("Eventos", false, onEventos)
         }
-        if (lista.isEmpty()) Tarjeta { Text("No hay publicaciones con este filtro.", style = GType.bodyMd, color = GColors.TextSecondary) }
+        if (filtro == FiltroFeed.Comunidad || filtro == FiltroFeed.Mias) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Pastilla(filtro.etiqueta, true, { vm.filtro(FiltroFeed.Todos) }) }
+        }
+        if (lista.isEmpty()) Tarjeta {
+            Text(
+                when (filtro) {
+                    FiltroFeed.Siguiendo -> "Las carreras de quienes sigues aparecerán aquí."
+                    FiltroFeed.Mias -> "Aún no tienes carreras públicas."
+                    else -> "No hay publicaciones todavía."
+                },
+                style = GType.bodyMd, color = GColors.TextSecondary,
+            )
+        }
         lista.forEach { p ->
-            val gusta = p.id in ajustes.likes
-            val comentarios = ajustes.comentarios[p.id].orEmpty()
+            val gusta = if (p.remota) p.meGusta else p.id in ajustes.likes
+            val likes = if (p.remota) p.likesBase else p.likesBase + if (gusta) 1 else 0
+            val locales = if (p.remota) emptyList() else ajustes.comentarios[p.id].orEmpty()
             var menu by remember { mutableStateOf(false) }
             val texto = "${p.titulo}: ${Unidades.texto(p.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)} en ${formatearMs(p.segundos)} con Gacelas Loja"
             Tarjeta {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    AvatarCirculo(40.dp, p.indice)
+                    AvatarCirculo(44.dp, p.indice)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(p.autor, style = GType.labelLg, color = GColors.TextPrimary)
-                        Text(p.cuando, style = GType.bodySm, color = GColors.TextSecondary)
+                        Text("${p.titulo} · ${p.cuando}", style = GType.bodySm, color = GColors.TextSecondary)
+                    }
+                    p.autorId?.let { autor ->
+                        val sigo = autor in siguiendo
+                        TextButton(onClick = { vm.alternarSeguir(autor) }) {
+                            Text(if (sigo) "Siguiendo" else "Seguir", color = if (sigo) GColors.TextSecondary else GColors.Primary500, style = GType.labelLg)
+                        }
                     }
                     Box {
                         IconButton(onClick = { menu = true }) { Icon(Icons.Filled.MoreVert, "Más opciones", tint = GColors.TextSecondary) }
@@ -100,25 +145,25 @@ fun FeedContenido(vm: FeedViewModel, onEventos: () -> Unit, onEnVivo: () -> Unit
                         }
                     }
                 }
-                Text(p.titulo, style = GType.titleMd, color = GColors.TextPrimary)
-                Box(Modifier.fillMaxWidth().height(140.dp).clip(RoundedCornerShape(12.dp)).background(Brush.linearGradient(listOf(GColors.MapParks, GColors.SurfaceLow))), contentAlignment = Alignment.Center) {
+                Box(Modifier.fillMaxWidth().height(170.dp).clip(RoundedCornerShape(12.dp)).background(Brush.linearGradient(listOf(GColors.MapParks, GColors.SurfaceLow))), contentAlignment = Alignment.Center) {
                     if (p.puntos.size >= 2) TrazadoRuta(p.puntos, Modifier.fillMaxSize()) else Icon(Icons.Filled.Route, null, tint = GColors.Primary500, modifier = Modifier.size(56.dp))
                 }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                    Metrica(Unidades.texto(p.distanciaKm, m, 1), Unidades.etiquetaDistancia(m), color = GColors.Primary500)
-                    Metrica(formatearMs(p.segundos), "tiempo")
-                    Metrica(formatearRitmo(Unidades.ritmo(p.ritmoSegKm, m)), Unidades.etiquetaRitmo(m), color = GColors.Secondary500)
+                Row(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceLow).padding(vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                ) {
+                    Metrica(Unidades.texto(p.distanciaKm, m, 1), "Distancia (${Unidades.etiquetaDistancia(m)})")
+                    Metrica(formatearRitmo(Unidades.ritmo(p.ritmoSegKm, m)), "Ritmo", color = GColors.Primary500)
+                    Metrica(formatearMs(p.segundos), "Tiempo")
                 }
-                comentarios.takeLast(2).forEach { Text("Tú: $it", style = GType.bodySm, color = GColors.TextSecondary) }
+                locales.takeLast(2).forEach { Text("Tú: $it", style = GType.bodySm, color = GColors.TextSecondary) }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = {
-                        vm.alternarLike(p.id)
-                    }) {
-                        Icon(if (gusta) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder, if (gusta) "Quitar me gusta" else "Me gusta", tint = if (gusta) GColors.Danger else GColors.TextSecondary)
+                    IconButton(onClick = { vm.alternarLike(p.id, onAviso) }) {
+                        Icon(if (gusta) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder, if (gusta) "Quitar me gusta" else "Me gusta", tint = if (gusta) GColors.Primary500 else GColors.TextSecondary)
                     }
-                    Text("${p.likesBase + if (gusta) 1 else 0}", style = GType.labelLg, color = GColors.TextSecondary)
+                    Text("$likes", style = GType.labelLg, color = GColors.TextSecondary)
                     IconButton(onClick = { comentando = p }) { Icon(Icons.AutoMirrored.Outlined.Chat, "Comentar", tint = GColors.TextSecondary) }
-                    Text("${p.comentariosBase + comentarios.size}", style = GType.labelLg, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
+                    Text("${p.comentariosBase + locales.size}", style = GType.labelLg, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
                     IconButton(onClick = { onCompartir(texto) }) { Icon(Icons.Filled.Share, "Compartir", tint = GColors.TextSecondary) }
                 }
             }
@@ -126,13 +171,21 @@ fun FeedContenido(vm: FeedViewModel, onEventos: () -> Unit, onEnVivo: () -> Unit
     }
     comentando?.let { p ->
         var texto by remember(p.id) { mutableStateOf("") }
+        val hilo by produceState(emptyList<com.gacelas.comunidad.domain.modelo.ComentarioFeed>(), p.id) { value = vm.comentarios(p.id) }
         AlertDialog(
             onDismissRequest = { comentando = null },
-            title = { Text("Comentar") },
-            text = { CampoTexto("Comentario", texto, { texto = it }, "Escribe algo motivador...", lineas = 3) },
+            title = { Text("Comentarios") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(Modifier.heightIn(max = 220.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        hilo.forEach { c -> Text("${c.autor}: ${c.texto}", style = GType.bodySm, color = GColors.TextPrimary) }
+                    }
+                    CampoTexto("Comentario", texto, { texto = it }, "Escribe un aplauso o comentario...", lineas = 3)
+                }
+            },
             confirmButton = {
                 TextButton(enabled = texto.isNotBlank(), onClick = {
-                    vm.comentar(p.id, texto)
+                    vm.comentar(p.id, texto, onAviso)
                     comentando = null
                 }) { Text("Publicar") }
             },
