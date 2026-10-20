@@ -164,6 +164,60 @@ export async function instalarFakeSupabase(context: BrowserContext): Promise<Est
     return json(route, 404, { msg: 'no implementado' })
   }
 
+  // Publicacion de otra corredora para el feed (lo que devolveria la RPC feed_comunidad).
+  const MARIA = 'u-maria'
+  tabla('profiles').push({ id: MARIA, full_name: 'María López', username: 'maria_runs' })
+  const semillaFeed: Fila[] = [
+    {
+      id: '00000000-0000-4000-8000-000000000001',
+      user_id: MARIA,
+      client_id: 'maria-1',
+      title: 'Carrera matutina',
+      start_time: new Date(Date.now() - 2 * 3_600_000).toISOString(),
+      distance_meters: 5200,
+      duration_seconds: 1714,
+      is_public: true,
+      public_points: [],
+    },
+  ]
+
+  function rpc(route: Route, nombre: string, cuerpo: Fila, cab: Record<string, string>) {
+    const yo = usuarioDeToken(cab.authorization)?.id
+    if (nombre === 'feed_comunidad') {
+      const filas = [...semillaFeed, ...tabla('activities')]
+        .filter((a) => a.is_public)
+        .map((a) => {
+          const id = String(a.id)
+          const likes = tabla('post_likes').filter((l) => l.post_id === id)
+          const perfil = tabla('profiles').find((p) => p.id === a.user_id)
+          return {
+            ...a,
+            autor: perfil?.full_name ?? 'Corredor',
+            avatar_url: null,
+            likes_count: likes.length,
+            comments_count: tabla('post_comments').filter((c) => c.post_id === id).length,
+            me_gusta: likes.some((l) => l.user_id === yo),
+            sigo: tabla('follows').some(
+              (f) => f.follower_id === yo && f.following_id === a.user_id
+            ),
+            propia: a.user_id === yo,
+          }
+        })
+      return json(route, 200, filas)
+    }
+    if (nombre === 'comentarios_publicacion')
+      return json(
+        route,
+        200,
+        tabla('post_comments')
+          .filter((c) => c.post_id === cuerpo.p_post)
+          .map((c) => ({ ...c, autor: 'Corredor' }))
+      )
+    if (nombre === 'participantes_eventos') return json(route, 200, [])
+    // Otras RPC: mismo comportamiento que antes (sin cuerpo).
+    return route.fulfill({ status: 201, headers: { 'access-control-allow-origin': '*' } })
+  }
+
   async function rest(
     route: Route,
     t: string,
@@ -172,6 +226,7 @@ export async function instalarFakeSupabase(context: BrowserContext): Promise<Est
     cuerpo: unknown,
     cab: Record<string, string>
   ) {
+    if (t.startsWith('rpc/')) return rpc(route, t.slice(4), (cuerpo ?? {}) as Fila, cab)
     const filtros = [...url.searchParams.entries()].filter(
       ([k, v]) =>
         !['select', 'order', 'on_conflict', 'limit'].includes(k) &&
