@@ -14,6 +14,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import com.gacelas.cuenta.domain.modelo.ConfigAvatar
 import com.gacelas.carreras.domain.reglas.Estadisticas
+import com.gacelas.carreras.domain.reglas.EstadisticasPerfil
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearHms
 import com.gacelas.tracking.formatearMs
@@ -117,52 +118,79 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
     val m = ajustes.unidadesMetricas
     val mes = remember(carreras) { Estadisticas.mes(carreras, System.currentTimeMillis()) }
     val fecha = remember { SimpleDateFormat("d MMM, HH:mm", Locale("es", "EC")) }
+    val social by com.gacelas.ui.socialState()
+    val hist = remember(carreras) { EstadisticasPerfil.historico(carreras) }
+    val meses = remember(carreras) { EstadisticasPerfil.kmMensual(carreras, System.currentTimeMillis()) }
+    val recs = remember(carreras) { EstadisticasPerfil.records(carreras) }
+    val meds = remember(carreras) { EstadisticasPerfil.medallas(carreras) }
     Pantalla {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            FotoPerfil(perfil?.fotoPath, 80.dp)
-            Spacer(Modifier.width(16.dp))
-            Column(Modifier.weight(1f)) {
+        Box(Modifier.fillMaxWidth()) {
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                FotoPerfil(perfil?.fotoPath, 96.dp)
+                Spacer(Modifier.height(8.dp))
                 Text(perfil?.nombre ?: MockData.usuarioActual.nombre, style = GType.headlineMd, color = GColors.TextPrimary)
                 Text("@${perfil?.username ?: MockData.usuarioActual.username}", style = GType.bodyMd, color = GColors.TextSecondary)
+                perfil?.ubicacion?.takeIf { it.isNotBlank() }?.let { Text(it, style = GType.bodySm, color = GColors.TextSecondary) }
                 perfil?.bio?.takeIf { it.isNotBlank() }?.let { Text(it, style = GType.bodySm, color = GColors.TextSecondary) }
+                Text(
+                    "Club Gacelas Loja", style = GType.labelMd, color = GColors.TextSecondary,
+                    modifier = Modifier.padding(top = 6.dp).clip(CircleShape).background(GColors.SurfaceContainer).padding(horizontal = 12.dp, vertical = 4.dp),
+                )
             }
-            IconButton(onClick = onEditar, modifier = Modifier.clip(CircleShape).background(GColors.SurfaceContainer)) {
+            IconButton(onClick = onEditar, modifier = Modifier.align(Alignment.TopEnd).clip(CircleShape).background(GColors.SurfaceContainer)) {
                 Icon(Icons.Filled.Edit, "Editar perfil", tint = GColors.Primary500)
             }
         }
-        Tarjeta {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                Metrica("${carreras.size}", "Carreras", color = GColors.Primary500)
-                Metrica("${carreras.count { it.publica }}", "Públicas")
-                Metrica(Unidades.texto(carreras.sumOf { it.distanciaKm }, m, 1), "${Unidades.etiquetaDistancia(m)} totales")
+        Contadores(carreras.size, social.seguidores, social.siguiendo)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(GColors.Primary).clickable(onClick = onAvatar).padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Filled.Person, null, tint = GColors.OnPrimary, modifier = Modifier.size(18.dp))
+                Text(" Editar avatar 3D", style = GType.labelLg, color = GColors.OnPrimary)
+            }
+            Row(
+                Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceContainer).clickable(onClick = onAjustes).padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Filled.Settings, null, tint = GColors.TextPrimary, modifier = Modifier.size(18.dp))
+                Text(" Configuración", style = GType.labelLg, color = GColors.TextPrimary)
             }
         }
         TarjetaRacha(com.gacelas.ui.rachaState(), carreras)
+        EstadisticasHistoricas(hist, m)
+        KilometrajeMensual(meses, m)
         Tarjeta {
-            Text("Estadísticas del mes", style = GType.titleMd, color = GColors.TextPrimary)
-            FilaEstadistica(Icons.Filled.Straighten, "Distancia total", "${Unidades.texto(mes.km, m, 1)} ${Unidades.etiquetaDistancia(m)}")
-            FilaEstadistica(Icons.Filled.Schedule, "Tiempo total", formatearHms(mes.segundos))
-            FilaEstadistica(Icons.AutoMirrored.Filled.TrendingUp, "Elevación", "${mes.desnivelM} m")
+            Text("Este mes", style = GType.titleMd, color = GColors.TextPrimary)
+            Row(Modifier.fillMaxWidth()) {
+                Metrica("${Unidades.texto(mes.km, m, 1)} ${Unidades.etiquetaDistancia(m)}", "Distancia", Modifier.weight(1f), color = GColors.Primary500)
+                Metrica(formatearHms(mes.segundos), "Tiempo", Modifier.weight(1f), color = GColors.Secondary500)
+                Metrica("${mes.desnivelM} m", "Elevación", Modifier.weight(1f))
+            }
         }
-        Tarjeta(padding = 0.dp) {
-            FilaAjuste(Icons.Filled.Person, "Personalizar avatar 3D", onClick = onAvatar)
-            FilaAjuste(Icons.Filled.Settings, "Ajustes y preferencias", onClick = onAjustes)
+        Records(recs)
+        Medallero(meds)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Actividades recientes", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+            Text("${carreras.size} en total", style = GType.labelMd, color = GColors.TextSecondary)
         }
-        Text("Actividad reciente", style = GType.titleMd, color = GColors.TextPrimary)
         if (carreras.isEmpty()) {
             Tarjeta { Text("Todavía no guardas carreras. Toca el botón Correr para grabar la primera.", style = GType.bodyMd, color = GColors.TextSecondary) }
         }
         carreras.take(20).forEach { c ->
             Tarjeta(Modifier.clickable { onCarrera(c.id) }.testTag("carrera-${c.id}")) {
-                Row {
-                    Text(c.titulo, style = GType.labelLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-                    Text(fecha.format(Date(c.inicioMs)), style = GType.bodySm, color = GColors.TextSecondary)
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("${Unidades.texto(c.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}", style = GType.bodyMd, color = GColors.Primary500)
-                    Text(formatearMs(c.segundos), style = GType.bodyMd, color = GColors.TextSecondary)
-                    Text("${formatearRitmo(Unidades.ritmo(c.ritmoSegKm, m))} ${Unidades.etiquetaRitmo(m)}", style = GType.bodyMd, color = GColors.TextSecondary)
+                Row(verticalAlignment = Alignment.Top) {
+                    Column(Modifier.weight(1f)) {
+                        Text(c.titulo, style = GType.labelLg, color = GColors.TextPrimary)
+                        Text(fecha.format(Date(c.inicioMs)), style = GType.bodySm, color = GColors.TextSecondary)
+                    }
                     if (!c.publica) Text("Privada", style = GType.bodySm, color = GColors.TextSecondary)
+                }
+                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(GColors.SurfaceHigh).padding(vertical = 8.dp)) {
+                    Metrica("${Unidades.texto(c.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}", "Distancia", Modifier.weight(1f))
+                    Metrica("${formatearRitmo(Unidades.ritmo(c.ritmoSegKm, m))} ${Unidades.etiquetaRitmo(m)}", "Ritmo", Modifier.weight(1f))
+                    Metrica(formatearMs(c.segundos), "Tiempo", Modifier.weight(1f))
                 }
             }
         }

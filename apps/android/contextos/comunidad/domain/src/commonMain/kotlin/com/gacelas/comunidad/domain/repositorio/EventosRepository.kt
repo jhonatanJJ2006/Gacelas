@@ -70,4 +70,6 @@ interface FeedRepository {
     suspend fun comentar(id: String, texto: String)
     suspend fun siguiendo(): Set<String>
     suspend fun alternarSeguir(id: String): Set<String>
+    /** Numero de corredores que siguen al usuario. */
+    suspend fun seguidores(): Int = 0
 }

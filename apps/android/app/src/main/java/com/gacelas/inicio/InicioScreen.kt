@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import com.gacelas.carreras.domain.reglas.Estadisticas
 import com.gacelas.data.mock.MockData
@@ -57,8 +58,13 @@ import com.gacelas.ui.three.Runner3D
 import io.github.sceneview.math.Position
 
 @Composable
-fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String) -> Unit = { onEventos() }) {
-    val (todos, _) = com.gacelas.comunidad.eventosState()
+fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String) -> Unit = { onEventos() }, onComunidad: () -> Unit = {}) {
+    val (unidos, inscritos) = com.gacelas.comunidad.eventosState()
+    val cont = com.gacelas.ui.contenedor()
+    val creados by cont.eventos.creados.collectAsState(initial = emptyList())
+    // Con Supabase los eventos vienen de la base; los de ejemplo solo sin backend.
+    val todos = if (cont.feed != null && creados.isNotEmpty()) creados else unidos
+    val social by com.gacelas.ui.socialState()
     val evento = todos.filter { !it.yaPaso() }.minByOrNull { it.inicioMs ?: Long.MAX_VALUE } ?: todos.maxBy { it.inicioMs ?: 0L }
     val perfil by sesionState()
     val carreras by carrerasState()
@@ -74,5 +80,19 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
         saludo = saludo, nombre = nombre, semana = semana, hoy = hoy, m = m, racha = com.gacelas.ui.rachaState(), evento = evento,
         onCorrer = onCorrer, onEventos = onEventos, onEvento = onEvento,
         corredor3D = { Runner3D(ClipCorredor.Idle, autoRotar = true, camara = Position(0f, 0.3f, 4.4f)) },
+        totales = remember(carreras) { com.gacelas.carreras.domain.reglas.EstadisticasPerfil.totalesSemana(carreras, ahora) },
+        meta = ajustes.metaSemanal,
+        rango = remember { rangoSemana(ahora) },
+        reto = remember(carreras) { com.gacelas.carreras.domain.reglas.EstadisticasPerfil.retoMes(carreras, ahora) },
+        amigos = social.amigos,
+        inscrito = evento.id in inscritos,
+        onComunidad = onComunidad,
     )
+}
+
+/** "19 - 25 oct" de la semana en curso (lunes a domingo). */
+fun rangoSemana(ahoraMs: Long): String {
+    val lunes = com.gacelas.shared.Fechas.fecha(Estadisticas.inicioSemana(ahoraMs))
+    val domingo = com.gacelas.shared.Fechas.fecha(com.gacelas.shared.Fechas.sumarDias(Estadisticas.inicioSemana(ahoraMs), 6))
+    return "${lunes.dayOfMonth} - ${domingo.dayOfMonth} ${com.gacelas.carreras.domain.reglas.EstadisticasPerfil.MESES_CORTOS[domingo.monthNumber - 1].lowercase()}"
 }

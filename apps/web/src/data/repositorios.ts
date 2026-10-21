@@ -104,6 +104,8 @@ export interface ComunidadRepository {
   suscribir?(alCambiar: () => void): () => void
   siguiendo(): Promise<string[]>
   alternarSeguir(id: string): Promise<string[]>
+  /** Numero de corredores que siguen al usuario. */
+  seguidores?(): Promise<number>
 }
 
 export interface RachasRepository {

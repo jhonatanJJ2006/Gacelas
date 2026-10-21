@@ -188,6 +188,12 @@ export function ListaRutas() {
           />
         </div>
       )}
+      <div className="px-margin pb-2 lg:px-0" data-testid="encabezado-lista-rutas">
+        <h2 className="font-title-md text-title-md text-text-primary">Rutas locales de Loja</h2>
+        <p className="font-body-sm text-body-sm text-text-secondary">
+          {rutas.length} {rutas.length === 1 ? 'sendero' : 'senderos'}
+        </p>
+      </div>
       <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6 lg:space-y-0">
         {rutas.length === 0 && (
           <p
@@ -236,15 +242,7 @@ export function ListaRutas() {
                     )}
                     {ruta.autorNombre && <span>por {ruta.autorNombre}</span>}
                   </div>
-                  <div className="flex items-center gap-4 text-text-secondary">
-                    <span className="font-label-md text-label-md flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px]">straighten</span>
-                      {Unidades.texto(ruta.distanciaKm, m, 1)} {Unidades.etiquetaDistancia(m)}
-                    </span>
-                    <span className="font-label-md text-label-md flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px]">trending_up</span>
-                      {ruta.elevacionM}m
-                    </span>
+                  <div className="mb-2">
                     <span
                       className={`font-label-md text-label-md px-2 py-0.5 rounded-full ${
                         ruta.dificultad === 'Fácil'
@@ -257,6 +255,35 @@ export function ListaRutas() {
                       {ruta.dificultad}
                     </span>
                   </div>
+                  <div
+                    className="grid grid-cols-3 rounded-lg bg-surface-container-high py-2 text-center"
+                    data-testid="metricas-ruta"
+                  >
+                    <div>
+                      <div className="text-[11px] text-text-secondary">Distancia</div>
+                      <div className="font-label-lg text-label-lg text-text-primary">
+                        {Unidades.texto(ruta.distanciaKm, m, 1)} {Unidades.etiquetaDistancia(m)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[11px] text-text-secondary">Desnivel</div>
+                      <div className="font-label-lg text-label-lg text-text-primary">
+                        +{ruta.elevacionM} m
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[11px] text-text-secondary">Valoración</div>
+                      <div className="font-label-lg text-label-lg text-primary">
+                        {ruta.valoracion != null
+                          ? `${ruta.valoracion.toFixed(1)} (${ruta.resenas ?? 0})`
+                          : '--'}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="mt-3 inline-flex items-center gap-1 rounded-lg bg-surface-container-high px-3 py-2 font-label-md text-label-md text-text-primary">
+                    <span className="material-symbols-outlined text-[16px]">info</span>
+                    Ver detalles
+                  </span>
                 </div>
               </Link>
               <button

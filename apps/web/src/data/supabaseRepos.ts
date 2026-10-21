@@ -956,6 +956,15 @@ export class SupabaseComunidadRepository implements ComunidadRepository {
     const { data } = await this.sb.from('follows').select('following_id').eq('follower_id', user.id)
     return ((data ?? []) as Fila[]).map((f) => f.following_id as string)
   }
+  async seguidores() {
+    const user = await usuario(this.sb)
+    if (!user) return 0
+    const { count } = await this.sb
+      .from('follows')
+      .select('follower_id', { count: 'exact', head: true })
+      .eq('following_id', user.id)
+    return count ?? 0
+  }
   async alternarSeguir(id: string) {
     const user = await usuario(this.sb)
     if (!user) return []

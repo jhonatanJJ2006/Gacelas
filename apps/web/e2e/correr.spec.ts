@@ -44,6 +44,11 @@ test.describe('Correr con GPS simulado', () => {
     await expect(page.getByTestId('total-carreras')).toHaveText('1')
     await expect(page.getByTestId('racha-diaria')).toHaveText('1 día')
     await expect(page.getByTestId('mapa-calor')).toBeVisible()
+    await expect(page.getByTestId('estadisticas-historicas')).toContainText('1 carreras')
+    await expect(page.getByTestId('km-mensual')).toBeVisible()
+    await expect(page.getByTestId('records')).toContainText('1K')
+    await expect(page.getByTestId('medallero').locator('[data-lograda="true"]')).toHaveCount(1)
+    await expect(page.getByTestId('total-seguidores')).toHaveText('0')
     await page.reload()
     await expect(page.getByText('Prueba e2e')).toBeVisible()
     await page.getByRole('link', { name: 'Prueba e2e' }).click()
@@ -51,6 +56,9 @@ test.describe('Correr con GPS simulado', () => {
     await expect(page).toHaveURL(/\/perfil\/carrera\//)
     await page.goto('/inicio')
     await expect(page.getByTestId('racha')).toContainText('1')
+    await expect(page.getByTestId('semana-atletica')).toContainText('Meta semanal')
+    await expect(page.getByTestId('reto-mes')).toContainText('Termina en')
+    await expect(page.getByTestId('amigos-en-ruta')).toBeVisible()
   })
 
   test('cronómetro: vueltas, intervalos y metrónomo', async ({ page }) => {

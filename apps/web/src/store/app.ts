@@ -64,6 +64,8 @@ export interface EstadoApp {
   rachaServidor: Racha | null
   refrescarRacha(): Promise<void>
   siguiendo: string[]
+  /** Corredores que siguen al usuario (Supabase). */
+  seguidores: number
   alternarSeguir(id: string): Promise<void>
   buscarCorredores(consulta: string): Promise<CorredorPublico[]>
   marcarNotificacionesLeidas(ids: string[]): Promise<void>
@@ -112,11 +114,12 @@ export const useApp = create<EstadoApp>((set, get) => ({
   feedSocial: false,
   async refrescarFeed() {
     if (!repos.comunidad || !get().sesion) return set({ feedSocial: false, publicaciones: [] })
-    const [publicaciones, siguiendo] = await Promise.all([
+    const [publicaciones, siguiendo, seguidores] = await Promise.all([
       repos.comunidad.publicaciones().catch(() => get().publicaciones),
       repos.comunidad.siguiendo().catch(() => get().siguiendo),
+      repos.comunidad.seguidores?.().catch(() => get().seguidores) ?? get().seguidores,
     ])
-    set({ publicaciones, siguiendo, feedSocial: true })
+    set({ publicaciones, siguiendo, seguidores, feedSocial: true })
   },
   async alternarMeGustaPost(id) {
     if (!repos.comunidad) return
@@ -160,6 +163,7 @@ export const useApp = create<EstadoApp>((set, get) => ({
   },
   rachaServidor: null,
   siguiendo: [],
+  seguidores: 0,
   rutas: rutasMock,
   rutasMeGusta: [],
   rutasSociales: false,

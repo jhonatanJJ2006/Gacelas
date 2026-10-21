@@ -102,6 +102,11 @@ class SupabaseFeedRepository(
             .getOrDefault(emptySet())
     }
 
+    override suspend fun seguidores(): Int {
+        val yo = uid() ?: return 0
+        return runCatching { backend.select("follows", mapOf("following_id" to yo)).size }.getOrDefault(0)
+    }
+
     override suspend fun alternarSeguir(id: String): Set<String> {
         val yo = uid() ?: return emptySet()
         if (id in siguiendo()) backend.delete("follows", mapOf("follower_id" to yo, "following_id" to id))

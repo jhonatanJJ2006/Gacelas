@@ -63,3 +63,22 @@ fun ajustesViewModel(repo: com.gacelas.cuenta.domain.repositorio.AjustesReposito
     val c = contenedor()
     return androidx.lifecycle.viewmodel.compose.viewModel(key = "ajustes") { c.ajustesViewModel(repo) }
 }
+
+/** Datos sociales reales de Supabase para Inicio y Perfil (amigos en ruta, seguidores, siguiendo). */
+data class Social(
+    val amigos: List<com.gacelas.comunidad.domain.modelo.Publicacion> = emptyList(),
+    val seguidores: Int = 0,
+    val siguiendo: Int = 0,
+)
+
+@Composable
+fun socialState(): State<Social> {
+    val feed = contenedor().feed
+    val perfil by sesionState()
+    return androidx.compose.runtime.produceState(Social(), feed, perfil?.email) {
+        val f = feed ?: return@produceState
+        val sig = f.siguiendo()
+        val pubs = f.publicaciones().orEmpty()
+        value = Social(pubs.filter { !it.propia && it.autorId != null && it.autorId in sig }.take(3), f.seguidores(), sig.size)
+    }
+}
