@@ -43,7 +43,7 @@ import com.gacelas.ui.components.Tarjeta
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
-private val COLORES = listOf(0xFFF59E0B, 0xFF10B981, 0xFF3B82F6, 0xFFEF4444, 0xFFA855F7, 0xFFEC4899, 0xFF14B8A6, 0xFFF97316)
+private val COLORES = listOf(0xFFA855F7, 0xFF10B981, 0xFF3B82F6, 0xFFEF4444, 0xFFA855F7, 0xFFEC4899, 0xFF14B8A6, 0xFFF97316)
 fun colorCorredorArgb(i: Int): Long = COLORES[i % COLORES.size]
 fun colorCorredor(i: Int) = Color(colorCorredorArgb(i))
 

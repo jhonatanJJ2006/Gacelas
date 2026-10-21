@@ -80,10 +80,11 @@ Inspirada en el amanecer ecuatoriano (hora favorita para correr) y la agilidad d
 #### Colores Primarios
 
 ```css
---primary-600: #d97706; /* Naranja amanecer - Principal */
---primary-700: #b45309; /* Naranja oscuro - Hover */
---primary-500: #f59e0b; /* Naranja claro - Backgrounds */
---primary-400: #fbbf24; /* Dorado - Acentos */
+/* Paleta morada Social Run Loja (detalle en docs/PALETA.md) */
+--primary-600: #7b1fa2; /* Morado - Botones principales */
+--primary-700: #5e1781; /* Morado oscuro - Hover y degradados */
+--primary-500: #a855f7; /* Morado medio */
+--primary-400: #c084fc; /* Lavanda - Acentos, rutas y textos destacados */
 ```
 
 #### Colores Secundarios
@@ -246,14 +247,14 @@ Sistema base-8:
 - Carreteras: Gris claro (#E5E7EB)
 - Parques: Verde suave (#D1FAE5)
 - Agua: Azul claro (#BFDBFE)
-- Rutas dibujadas: Naranja (#D97706), 4px grosor
+- Rutas dibujadas: Morado (#7B1FA2), 4px grosor
 
 ### Dark Mode Map Style
 
 - Carreteras: Gris oscuro (#374151)
 - Parques: Verde oscuro (#064E3B)
 - Agua: Azul oscuro (#1E3A8A)
-- Rutas dibujadas: Naranja brillante (#F59E0B), 4px grosor
+- Rutas dibujadas: Lavanda (#C084FC), 4px grosor
 
 Estilos JSON para Google Maps disponibles en: `apps/web/src/assets/map-styles/`
 

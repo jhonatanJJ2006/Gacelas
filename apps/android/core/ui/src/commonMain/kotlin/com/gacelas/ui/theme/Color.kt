@@ -5,21 +5,25 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 
-/** Tokens de color equivalentes a apps/web/tailwind.config.js. */
+/** Tokens de color equivalentes a apps/web/tailwind.config.js. Paleta morada Social Run Loja (docs/PALETA.md). */
 object GColors {
     /** Tema claro activo. Se lee como estado de Compose, asi la UI se recompone al cambiarlo. */
     var claro by mutableStateOf(false)
 
-    val Primary = Color(0xFFD97706)
-    val Primary400 = Color(0xFFFBBF24)
-    val Primary500 = Color(0xFFF59E0B)
-    val Primary700 = Color(0xFFB45309)
-    val PrimaryLight = Color(0xFFFFB77D)
-    val PrimaryContainer = Color(0xFFD97707)
-    val OnPrimary = Color(0xFF4D2600)
+    val Primary = Color(0xFF7B1FA2)
+    val Primary400 = Color(0xFFC084FC)
+    val Primary500 = Color(0xFFC084FC)
+    val Primary700 = Color(0xFF5E1781)
+    val PrimaryLight = Color(0xFFE9D5FF)
+    val PrimaryContainer = Color(0xFF7B1FA2)
+    val OnPrimary = Color(0xFFFFFFFF)
     /** Texto sobre superficies de color (botones). */
+    val Primary600 = Color(0xFF5E1781)
+    val PrimaryFixed = Color(0xFFF3E8FF)
+    val PrimaryFixedDim = Color(0xFFA855F7)
+    val InversePrimary = Color(0xFFE9D5FF)
     val SobreColor = Color(0xFFF9FAFB)
-    val OnPrimaryContainer = Color(0xFF432100)
+    val OnPrimaryContainer = Color(0xFFFFFFFF)
 
     val Secondary = Color(0xFF059669)
     val Secondary500 = Color(0xFF10B981)

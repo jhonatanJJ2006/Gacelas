@@ -51,7 +51,7 @@ import kotlinx.coroutines.delay
 import platform.UIKit.UIView
 import kotlin.math.pow
 
-private const val NARANJA = 0xFFFF6A13
+private const val NARANJA = 0xFFC084FC
 private const val MAGENTA = 0xFFD6338A
 private fun conAlfa(argb: Long, a: Float) = ((a * 255).toLong().coerceIn(0, 255) shl 24) or (argb and 0xFFFFFF)
 

@@ -54,7 +54,7 @@ import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 
-private val NARANJA = Color(0xFFFF6A13)
+private val NARANJA = Color(0xFFC084FC)
 private val MAGENTA = Color(0xFFD6338A)
 
 /**

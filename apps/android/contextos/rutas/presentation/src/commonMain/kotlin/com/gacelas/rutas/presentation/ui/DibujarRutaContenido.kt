@@ -59,8 +59,8 @@ fun DibujarRutaContenido(
             Box(Modifier.fillMaxWidth().height(340.dp).clip(RoundedCornerShape(16.dp)).background(GColors.SurfaceContainer)) {
                 if (mapa != null) {
                     mapa(
-                        if (puntos.size >= 2) listOf(TrazoComun(puntos, 0xFFF59E0B, 4.5f)) else emptyList(),
-                        puntos.mapIndexed { i, p -> CirculoComun(p, if (i == 0) 7f else 4.5f, if (i == 0) 0xFF10B981 else 0xFFF59E0B, bordeDp = 1.5f) },
+                        if (puntos.size >= 2) listOf(TrazoComun(puntos, 0xFFA855F7, 4.5f)) else emptyList(),
+                        puntos.mapIndexed { i, p -> CirculoComun(p, if (i == 0) 7f else 4.5f, if (i == 0) 0xFF10B981 else 0xFFA855F7, bordeDp = 1.5f) },
                     ) { vm.agregar(it.lat, it.lng) }
                 } else Text("El mapa no está disponible en este dispositivo.", color = GColors.TextSecondary, modifier = Modifier.align(Alignment.Center))
             }

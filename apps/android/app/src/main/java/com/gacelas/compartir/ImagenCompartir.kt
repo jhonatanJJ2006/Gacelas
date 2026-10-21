@@ -15,7 +15,7 @@ import com.gacelas.R
 
 /** Dibuja la imagen de marca (misma composicion que la web) en un Bitmap. */
 object ImagenCompartir {
-    private const val NARANJA = 0xFFF59E0B.toInt()
+    private const val NARANJA = 0xFFA855F7.toInt()
     private const val GRIS = 0xFF94A3B8.toInt()
     private const val BLANCO = 0xFFFFFFFF.toInt()
 

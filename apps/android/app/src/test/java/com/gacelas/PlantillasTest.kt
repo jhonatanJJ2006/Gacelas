@@ -35,7 +35,7 @@ class PlantillasTest {
         assertEquals(1.6f, Colocacion(2f, -1f, 9f).limitada().escala)
     }
 
-    @Test fun plantillasTransparentesConTrazoNaranja() {
+    @Test fun plantillasTransparentesConTrazoMorado() {
         val dir = File("build/plantillas").apply { mkdirs() }
         Plantilla.entries.forEach { p ->
             val b = Plantillas.generar(d, p, HANDLE_GACELAS)
@@ -43,7 +43,7 @@ class PlantillasTest {
             assertEquals(0, Color.alpha(b.getPixel(0, 0)))
             assertEquals(0, Color.alpha(b.getPixel(b.width - 1, b.height - 1)))
             val px = IntArray(b.width * b.height).also { b.getPixels(it, 0, b.width, 0, 0, b.width, b.height) }
-            assertTrue("$p sin trazo", px.count { Color.alpha(it) > 200 && Color.red(it) > 230 && Color.green(it) in 80..130 && Color.blue(it) < 60 } > 200)
+            assertTrue("$p sin trazo", px.count { Color.alpha(it) > 200 && Color.red(it) in 170..215 && Color.green(it) in 110..155 && Color.blue(it) > 230 } > 200)
             assertTrue("$p mayormente transparente", px.count { Color.alpha(it) == 0 } > px.size * 0.7)
             File(dir, "${p.name}.png").outputStream().use { b.compress(Bitmap.CompressFormat.PNG, 100, it) }
             val foto = Bitmap.createBitmap(400, 300, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.rgb(40, 90, 160)) }

@@ -82,11 +82,11 @@ object K1 {
     val Fondo = Color(0xFF0A0E16)
     val Tarjeta = Color(0xFF131926)
     val Secondary = Color(0xFFBCC7DE)
-    val Naranja = Color(0xFFD97706)
+    val Naranja = Color(0xFF7B1FA2)
     val Magenta = Color(0xFFD6338A)
     val Rojo = Color(0xFFE5484D)
     val Verde = Color(0xFF10B981)
-    val Ambar = Color(0xFFF59E0B)
+    val Ambar = Color(0xFFA855F7)
     fun b(a: Float) = Color.White.copy(alpha = a)
 }
 

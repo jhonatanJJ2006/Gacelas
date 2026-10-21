@@ -31,7 +31,7 @@ import com.gacelas.carreras.domain.reglas.Rachas
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
-private val Aviso = Color(0xFFF59E0B)
+private val Aviso = Color(0xFFA855F7)
 
 private fun plural(n: Int, uno: String, varios: String) = "$n ${if (n == 1) uno else varios}"
 
