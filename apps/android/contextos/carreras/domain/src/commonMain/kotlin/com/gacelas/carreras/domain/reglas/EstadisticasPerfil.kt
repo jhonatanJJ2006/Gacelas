@@ -60,7 +60,7 @@ object EstadisticasPerfil {
     }
 
     fun mejorRacha(carreras: List<Carrera>): Int {
-        val dias = carreras.map { Fechas.fecha(it.inicioMs) }.toSortedSet()
+        val dias = carreras.map { Fechas.fecha(it.inicioMs) }.distinct().sorted()
         var mejor = 0
         var actual = 0
         var previo: LocalDate? = null
