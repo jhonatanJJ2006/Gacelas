@@ -80,6 +80,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -218,6 +219,24 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
         precision!! <= 30f -> "Señal media (±${precision!!.toInt()} m)"
         else -> "Señal débil (±${precision!!.toInt()} m)"
     }
+    val ajustesCorrer by ajustesState()
+    var cuenta by remember { mutableStateOf<Int?>(null) }
+    LaunchedEffect(cuenta) {
+        val n = cuenta ?: return@LaunchedEffect
+        kotlinx.coroutines.delay(1000)
+        if (n <= 1) { cuenta = null; empezarCarrera(context, tracker); onEmpezar() } else cuenta = n - 1
+    }
+    cuenta?.let { n ->
+        PantallaCompleta {
+            Column(Modifier.fillMaxWidth().padding(top = 120.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text("Prepárate, arrancamos en", style = GType.bodyLg, color = GColors.TextSecondary)
+                Text("$n", style = GType.headlineLg.copy(fontSize = androidx.compose.ui.unit.TextUnit(96f, androidx.compose.ui.unit.TextUnitType.Sp)), color = GColors.Primary500,
+                    modifier = Modifier.testTag("cuenta-regresiva"))
+                TextButton(onClick = { cuenta = null; empezarCarrera(context, tracker); onEmpezar() }) { Text("Empezar ya") }
+            }
+        }
+        return
+    }
     PantallaCompleta {
         BotonCerrar(onCerrar)
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -255,8 +274,8 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
                         context.aviso("Notificaciones bloqueadas: no verás la carrera en la barra de Android")
                         if (com.gacelas.core.notificaciones.PermisoNotificaciones.sePuedePedir(context)) activarNotificaciones()
                     }
-                    empezarCarrera(context, tracker)
-                    onEmpezar()
+                    if (ajustesCorrer.cuentaRegresivaSeg > 0) cuenta = ajustesCorrer.cuentaRegresivaSeg
+                    else { empezarCarrera(context, tracker); onEmpezar() }
                 }
             })
             Text(if (permiso) "Toca para comenzar" else "Toca para dar permiso de ubicación", style = GType.labelLg, color = GColors.TextSecondary)
@@ -321,7 +340,7 @@ fun CronometroScreen(onAtras: () -> Unit, onFin: () -> Unit) {
     var modo by rememberSaveable { mutableStateOf(ModoCrono.Libre) }
     MantenerPantallaEncendida()
     RelojCarrera(tracker, estado)
-    val objetivoSeg = 300
+    val objetivoSeg = ajustes.ritmoObjetivoSeg
     val ritmo = estado.ritmoActualSegKm ?: estado.ritmoPromedioSegKm
     val progreso = (estado.segundos / 3600f).coerceIn(0f, 1f)
     PantallaCompleta {

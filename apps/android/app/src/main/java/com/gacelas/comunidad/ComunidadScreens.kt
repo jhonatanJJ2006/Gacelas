@@ -94,7 +94,10 @@ fun eventosState(): Pair<List<Evento>, Set<String>> {
 fun EventosScreen(onEvento: (String) -> Unit, onClubes: () -> Unit = {}) {
     val c = contenedor()
     val context = LocalContext.current
-    val (eventos, inscritos) = eventosState()
+    val (unidos, inscritos) = eventosState()
+    val creados by c.eventos.creados.collectAsState(initial = emptyList())
+    // Con Supabase la lista sale solo de la base; los de ejemplo quedan para el modo sin backend.
+    val eventos = if (c.feed != null) creados else unidos
     val vm = viewModel { c.eventosViewModel() }
     val clubId = remember { EventoDeClub.id.also { EventoDeClub.id = null } }
     EventosContenido(vm, eventos, inscritos, conClubes = c.clubes != null, clubId = clubId, onEvento = onEvento, onClubes = onClubes, onAviso = { context.aviso(it) })

@@ -1,6 +1,8 @@
 package com.gacelas.ajustes
 
 import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.filled.Leaderboard
+import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import android.content.Intent
@@ -8,6 +10,7 @@ import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,6 +54,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -100,7 +104,25 @@ fun AjustesPreferenciasScreen(
         },
         onCerrarSesion = { scope.launch { c.auth.cerrarSesion(); onCerrarSesion() } },
         mapaOffline = { MapaOfflineAjuste() },
+        cabecera = { CabeceraAjustes(onEditarPerfil) },
     )
+}
+
+@Composable
+private fun CabeceraAjustes(onEditarPerfil: () -> Unit) {
+    val perfil by com.gacelas.ui.sesionState()
+    val carreras by com.gacelas.ui.carrerasState()
+    val km = carreras.sumOf { it.distanciaKm }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        com.gacelas.perfil.FotoPerfil(perfil?.fotoPath, 56.dp)
+        Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
+            Text(perfil?.nombre ?: "Corredor", style = GType.titleMd, color = GColors.TextPrimary)
+            com.gacelas.comunidad.presentation.ui.InsigniaNivel(com.gacelas.comunidad.domain.modelo.nivelCorredor(km))
+            perfil?.email?.let { Text(it, style = GType.bodySm, color = GColors.TextSecondary) }
+            Text("Sede Loja • ${km.roundToInt()} km totales", style = GType.bodySm, color = GColors.Secondary500, modifier = Modifier.testTag("ajustes-km"))
+        }
+        TextButton(onClick = onEditarPerfil) { Text("Editar perfil", color = GColors.Primary) }
+    }
 }
 
 private fun Visibilidad.titulo() = when (this) { Visibilidad.Publico -> "Público"; Visibilidad.Seguidores -> "Solo seguidores"; Visibilidad.Privado -> "Privado" }
@@ -117,6 +139,14 @@ fun PrivacidadUbicacionScreen(onAtras: () -> Unit) {
     val guardar = guardarAjuste()
     var radio by remember(a.radioHogarM) { mutableStateOf(a.radioHogarM.toFloat()) }
     PantallaConEncabezado("Privacidad y Ubicación", onAtras) {
+        Tarjeta(fondo = GColors.Primary.copy(alpha = 0.1f), borde = GColors.Primary.copy(alpha = 0.4f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Filled.Shield, null, tint = GColors.Primary500)
+                Text("  Privacidad activa por defecto", style = GType.labelLg, color = GColors.Primary500)
+            }
+            Text("Tus recorridos no revelan el punto exacto de tu residencia. Tu ubicación en vivo permanece desactivada hasta que decidas compartirla.",
+                style = GType.bodySm, color = GColors.TextSecondary)
+        }
         EtiquetaGrupo("Visibilidad del perfil")
         Visibilidad.entries.forEach { v ->
             val activo = v == a.visibilidad
@@ -134,6 +164,11 @@ fun PrivacidadUbicacionScreen(onAtras: () -> Unit) {
                 Text(v.descripcion(), style = GType.bodySm, color = GColors.TextSecondary, modifier = Modifier.padding(top = 4.dp))
             }
         }
+        EtiquetaGrupo("Visibilidad de actividades")
+        Tarjeta(padding = 0.dp) {
+            FilaInterruptor(Icons.Filled.MonitorHeart, "Ocultar datos biométricos", "Pulsaciones y cadencia ocultas en resúmenes públicos", a.ocultarBiometricos, { v -> guardar { it.copy(ocultarBiometricos = v) } })
+            FilaInterruptor(Icons.Filled.Leaderboard, "Aparecer en rankings y retos", "Figurar en el top semanal de altimetría y distancia de Loja", a.aparecerRankings, { v -> guardar { it.copy(aparecerRankings = v) } })
+        }
         EtiquetaGrupo("Ubicación GPS")
         Tarjeta(padding = 0.dp) {
             FilaInterruptor(Icons.Filled.MyLocation, "Ubicación precisa", "Graba tu ubicación exacta durante carreras", a.ubicacionPrecisa, { v -> guardar { it.copy(ubicacionPrecisa = v) } })
@@ -143,18 +178,26 @@ fun PrivacidadUbicacionScreen(onAtras: () -> Unit) {
             FilaInterruptor(Icons.Filled.Home, "Ocultar ubicación de casa", "Difumina los puntos de inicio/fin cerca de tu casa", a.ocultarHogar, { v -> guardar { it.copy(ocultarHogar = v) } })
             if (a.ocultarHogar) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(200, 500, 1000).forEach { r ->
+                            val activo = a.radioHogarM == r
+                            Text(if (r >= 1000) "1 km" else "$r m", style = GType.labelMd, color = if (activo) GColors.Primary500 else GColors.TextSecondary,
+                                modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp)).border(1.dp, if (activo) GColors.Primary else GColors.BorderSubtle, RoundedCornerShape(8.dp))
+                                    .clickable { guardar { it.copy(radioHogarM = r) } }.padding(vertical = 8.dp).testTag("radio-$r"), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                        }
+                    }
                     Row {
                         Text("Radio de protección", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
                         Text("${radio.roundToInt()}m", style = GType.labelLg, color = GColors.Primary500)
                     }
                     Slider(
-                        value = radio, onValueChange = { radio = (it / 50f).roundToInt() * 50f }, valueRange = 100f..500f, steps = 7,
+                        value = radio, onValueChange = { radio = (it / 50f).roundToInt() * 50f }, valueRange = 100f..1000f, steps = 17,
                         onValueChangeFinished = { guardar { it.copy(radioHogarM = radio.roundToInt()) } },
                         colors = SliderDefaults.colors(thumbColor = GColors.Primary, activeTrackColor = GColors.Primary, inactiveTrackColor = GColors.SurfaceHigh),
                     )
                     Row {
                         Text("100m", style = GType.bodySm, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
-                        Text("500m", style = GType.bodySm, color = GColors.TextSecondary)
+                        Text("1 km", style = GType.bodySm, color = GColors.TextSecondary)
                     }
                 }
             }
@@ -211,5 +254,34 @@ fun ConfiguracionNotificacionesScreen(onAtras: () -> Unit) {
                 Text("  Configuración optimizada", style = GType.labelLg, color = GColors.Info)
             }
         }
+    }
+}
+
+
+/** Reto mensual y preferencias de alertas dentro de la bandeja de notificaciones (Stitch). */
+@Composable
+fun ExtraNotificaciones() {
+    val a by ajustesState()
+    val guardar = guardarAjuste()
+    val carreras by com.gacelas.ui.carrerasState()
+    val reto = remember(carreras) { com.gacelas.carreras.domain.reglas.EstadisticasPerfil.retoMes(carreras, System.currentTimeMillis()) }
+    val pct = (reto.km / reto.metaKm).coerceIn(0.0, 1.0)
+    EtiquetaGrupo("Esta semana")
+    Tarjeta(modifier = Modifier.testTag("reto-notificacion")) {
+        Text("Progreso de reto mensual", style = GType.titleMd, color = GColors.TextPrimary)
+        Text(reto.titulo, style = GType.bodySm, color = GColors.TextSecondary)
+        Row {
+            Text("${"%.1f".format(reto.km)} de ${reto.metaKm.roundToInt()} km acumulados", style = GType.labelMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+            Text("${(pct * 100).roundToInt()}%", style = GType.labelMd, color = GColors.Primary500)
+        }
+        androidx.compose.material3.LinearProgressIndicator(progress = { pct.toFloat() }, modifier = Modifier.fillMaxWidth(), color = GColors.Primary, trackColor = GColors.SurfaceHigh)
+        Text("Cierra en ${reto.diasRestantes} días", style = GType.bodySm, color = GColors.TextSecondary)
+    }
+    EtiquetaGrupo("Preferencias de alertas")
+    Tarjeta(padding = 0.dp) {
+        FilaInterruptor(Icons.Filled.Event, "Eventos del club", "Quedadas en Jipiro, Vilcabamba y Zamora", a.notifEventos, { v -> guardar { it.copy(notifEventos = v) } })
+        FilaInterruptor(Icons.Filled.Favorite, "Comentarios y aplausos", "Interacción social de compañeros de ruta", a.notifComentarios && a.notifLikes, { v -> guardar { it.copy(notifComentarios = v, notifLikes = v) } })
+        FilaInterruptor(Icons.Filled.PersonAdd, "Nuevos seguidores", "Corredores que empiezan a seguirte", a.notifSeguidores, { v -> guardar { it.copy(notifSeguidores = v) } })
+        FilaInterruptor(Icons.Filled.Sensors, "Corredores en vivo", "Aviso cuando alguien que sigues sale a correr", a.notifEnVivo, { v -> guardar { it.copy(notifEnVivo = v) } })
     }
 }

@@ -23,6 +23,26 @@ import com.gacelas.ui.components.Pantalla
 import com.gacelas.ui.theme.GacelasTheme
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.Rule
+import org.junit.rules.TemporaryFolder
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import com.gacelas.ajustes.AjustesContenido
+import com.gacelas.comunidad.data.LocalEventosRepository
+import com.gacelas.comunidad.domain.modelo.Evento
+import com.gacelas.comunidad.domain.modelo.Publicacion
+import com.gacelas.comunidad.domain.modelo.ComentarioFeed
+import com.gacelas.comunidad.domain.repositorio.FeedRepository
+import com.gacelas.comunidad.presentation.EventosViewModel
+import com.gacelas.comunidad.presentation.FeedViewModel
+import com.gacelas.comunidad.presentation.ui.EventosContenido
+import com.gacelas.comunidad.presentation.ui.FeedContenido
+import com.gacelas.carreras.data.LocalCarrerasRepository
+import com.gacelas.cuenta.data.LocalAjustesRepository
+import com.gacelas.cuenta.data.LocalAuthRepository
+import com.gacelas.cuenta.domain.modelo.Ajustes
+import androidx.compose.material3.Text
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -78,5 +98,49 @@ class ParidadSeccionesTest {
             }
         }
         compose.onRoot().captureRoboImage("$dir/paridad/rutas-lista.png")
+    }
+
+    @get:Rule val carpeta = TemporaryFolder()
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val store by lazy { PreferenceDataStoreFactory.create(scope = scope) { carpeta.newFile("p.preferences_pb") } }
+
+    @Test fun ajustes() {
+        compose.setContent {
+            GacelasTheme {
+                AjustesContenido(Ajustes(), "1.0.0", {}, {}, {}, {}, {}, {}, {}, mapaOffline = {}, cabecera = { Text("Jhona • Gacela Intermedia • Sede Loja • 42 km totales") })
+            }
+        }
+        compose.onRoot().captureRoboImage("$dir/paridad/ajustes.png")
+    }
+
+    @Test fun eventos() {
+        val vm = EventosViewModel(LocalEventosRepository(store))
+        val lista = listOf(
+            Evento("e1", "Vuelta al Parque Jipiro", "", "sábado 25 de octubre", "06:30", "Torre Eiffel, Parque Jipiro", 42, 10, inicioMs = System.currentTimeMillis() + 86_400_000L * 4, cupo = 80),
+            Evento("e2", "Fondo Zamora Huayco 15K", "", "domingo 26 de octubre", "06:00", "Puente Zamora Huayco", 28, 15, inicioMs = System.currentTimeMillis() + 86_400_000L * 5, cupo = 50, tipo = "entrenamiento"),
+            Evento("e3", "Carrera 10K Fiestas de Loja", "", "martes 18 de noviembre", "07:00", "Puerta de la Ciudad", 120, 10, inicioMs = System.currentTimeMillis() + 86_400_000L * 28, cupo = 200, tipo = "carrera"),
+        )
+        compose.setContent { GacelasTheme { EventosContenido(vm, lista, emptySet(), true, null, {}, {}, {}) } }
+        compose.onRoot().captureRoboImage("$dir/paridad/eventos.png")
+    }
+
+    @Test fun feed() {
+        val pub = Publicacion("p1", "María López", false, 1, "hace 2 h", "Fondo Jipiro", 8.4, 2580, 307, 12, 3,
+            puntos = CarreraMuestra.guardada.puntos, remota = true, desnivelM = 42, compartidos = 2, autorKm = 180.0,
+            ultimoComentario = "Carlos" to "Qué buen ritmo en la subida")
+        val repo = object : FeedRepository {
+            override suspend fun publicaciones() = listOf(pub)
+            override suspend fun alternarMeGusta(id: String, activo: Boolean) {}
+            override suspend fun comentarios(id: String) = emptyList<ComentarioFeed>()
+            override suspend fun comentar(id: String, texto: String) {}
+            override suspend fun siguiendo() = emptySet<String>()
+            override suspend fun alternarSeguir(id: String) = emptySet<String>()
+        }
+        val vm = FeedViewModel(LocalCarrerasRepository(store), LocalAuthRepository(store), LocalAjustesRepository(store), emptyList(), repo, intervaloMs = 0)
+        vm.refrescar()
+        repeat(200) { if (vm.publicaciones.value.none { it.id == "p1" }) { org.robolectric.shadows.ShadowLooper.idleMainLooper(); Thread.sleep(20) } }
+        println("feed publicaciones=" + vm.publicaciones.value.map { it.id })
+        compose.setContent { GacelasTheme { FeedContenido(vm, {}, {}, {}, {}, eventoClub = MockData.eventos.first()) } }
+        compose.onRoot().captureRoboImage("$dir/paridad/feed.png")
     }
 }

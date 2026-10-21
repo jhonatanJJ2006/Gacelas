@@ -35,5 +35,16 @@ data class Ajustes(
     val ocultas: Set<String> = emptySet(),
     /** Carreras por semana para mantener la racha semanal. */
     val metaSemanal: Int = 3,
+    /** Ritmo objetivo del pacer en segundos por km. */
+    val ritmoObjetivoSeg: Int = 330,
+    val autopausa: Boolean = true,
+    val anunciosVoz: Boolean = true,
+    /** Segundos de cuenta regresiva antes de arrancar el GPS (0 = sin cuenta). */
+    val cuentaRegresivaSeg: Int = 3,
+    val idioma: String = "es-EC",
+    val ocultarBiometricos: Boolean = false,
+    val aparecerRankings: Boolean = true,
+    /** Nivel que el corredor declaro al registrarse. */
+    val nivelDeclarado: String = "principiante",
 )
 

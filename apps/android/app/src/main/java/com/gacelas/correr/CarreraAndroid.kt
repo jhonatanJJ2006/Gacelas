@@ -28,6 +28,7 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
     var confirmar by remember { mutableStateOf(false) }
     MantenerPantallaEncendida()
     RelojCarrera(tracker, estado)
+    PreferenciasCarrera(estado, ajustes) { if (!estado.pausada) vm.alternarPausa() }
     ContenidoCarreraC4(
         VistaCarrera(estado, ajustes.unidadesMetricas),
         onPausa = vm::alternarPausa,
