@@ -65,10 +65,16 @@ export function Correr() {
         aria-label="Cuenta regresiva"
       >
         <span className="text-body-md text-text-secondary">Prepárate, arrancamos en</span>
-        <span className="font-mono text-[96px] leading-none text-primary" data-testid="cuenta-regresiva">
+        <span
+          className="font-mono text-[96px] leading-none text-primary"
+          data-testid="cuenta-regresiva"
+        >
           {cuenta}
         </span>
-        <button onClick={arrancar} className="px-4 py-2 rounded-xl bg-surface-container text-text-primary">
+        <button
+          onClick={arrancar}
+          className="px-4 py-2 rounded-xl bg-surface-container text-text-primary"
+        >
           Empezar ya
         </button>
       </div>

@@ -123,8 +123,16 @@ export function AjustesPreferencias() {
       </div>
 
       <Seccion titulo="Preferencias de carrera" etiqueta="Entrenamiento">
-        <Fila icono="straighten" titulo="Unidades de distancia" descripcion="Sistema métrico para rutas andinas">
-          <div role="group" aria-label="Unidades de distancia" className="flex rounded-lg bg-surface-container-highest p-0.5">
+        <Fila
+          icono="straighten"
+          titulo="Unidades de distancia"
+          descripcion="Sistema métrico para rutas andinas"
+        >
+          <div
+            role="group"
+            aria-label="Unidades de distancia"
+            className="flex rounded-lg bg-surface-container-highest p-0.5"
+          >
             {[
               ['km', true],
               ['mi', false],
@@ -140,7 +148,11 @@ export function AjustesPreferencias() {
             ))}
           </div>
         </Fila>
-        <Fila icono="speed" titulo="Objetivo de ritmo (Pacer)" descripcion="Ritmo objetivo predeterminado">
+        <Fila
+          icono="speed"
+          titulo="Objetivo de ritmo (Pacer)"
+          descripcion="Ritmo objetivo predeterminado"
+        >
           <select
             aria-label="Ritmo objetivo"
             value={ritmo}
@@ -155,13 +167,33 @@ export function AjustesPreferencias() {
           </select>
           <span className="sr-only">{ritmoTxt}</span>
         </Fila>
-        <Fila icono="motion_photos_paused" titulo="Autopausa" descripcion="Detener al parar en semáforos o cruces">
-          <Interruptor etiqueta="Autopausa" activo={ajustes.autopausa} onCambiar={(v) => void actualizar({ autopausa: v })} />
+        <Fila
+          icono="motion_photos_paused"
+          titulo="Autopausa"
+          descripcion="Detener al parar en semáforos o cruces"
+        >
+          <Interruptor
+            etiqueta="Autopausa"
+            activo={ajustes.autopausa}
+            onCambiar={(v) => void actualizar({ autopausa: v })}
+          />
         </Fila>
-        <Fila icono="record_voice_over" titulo="Anuncios de voz" descripcion={`Métricas audibles cada 1 ${m ? 'km' : 'mi'}`}>
-          <Interruptor etiqueta="Anuncios de voz" activo={ajustes.anunciosVoz} onCambiar={(v) => void actualizar({ anunciosVoz: v })} />
+        <Fila
+          icono="record_voice_over"
+          titulo="Anuncios de voz"
+          descripcion={`Métricas audibles cada 1 ${m ? 'km' : 'mi'}`}
+        >
+          <Interruptor
+            etiqueta="Anuncios de voz"
+            activo={ajustes.anunciosVoz}
+            onCambiar={(v) => void actualizar({ anunciosVoz: v })}
+          />
         </Fila>
-        <Fila icono="timer" titulo="Cuenta regresiva de inicio" descripcion="Tiempo antes de arrancar el GPS">
+        <Fila
+          icono="timer"
+          titulo="Cuenta regresiva de inicio"
+          descripcion="Tiempo antes de arrancar el GPS"
+        >
           <select
             aria-label="Cuenta regresiva"
             value={ajustes.cuentaRegresivaSeg}
@@ -178,7 +210,11 @@ export function AjustesPreferencias() {
       </Seccion>
 
       <Seccion titulo="Apariencia" etiqueta="Interfaz">
-        <Fila icono="dark_mode" titulo="Tema" descripcion="Optimizado para salidas nocturnas y al alba">
+        <Fila
+          icono="dark_mode"
+          titulo="Tema"
+          descripcion="Optimizado para salidas nocturnas y al alba"
+        >
           <button
             onClick={() => void actualizar({ modoOscuro: !ajustes.modoOscuro })}
             aria-label="Cambiar tema"
@@ -187,7 +223,11 @@ export function AjustesPreferencias() {
             {ajustes.modoOscuro ? 'Oscuro' : 'Claro'}
           </button>
         </Fila>
-        <Fila icono="language" titulo="Idioma de la aplicación" descripcion="Configuración regional">
+        <Fila
+          icono="language"
+          titulo="Idioma de la aplicación"
+          descripcion="Configuración regional"
+        >
           <select
             aria-label="Idioma"
             value={ajustes.idioma}
@@ -201,7 +241,11 @@ export function AjustesPreferencias() {
       </Seccion>
 
       <Seccion titulo="Rachas" etiqueta="Constancia">
-        <Fila icono="local_fire_department" titulo="Meta semanal" descripcion="Carreras por semana para mantener la racha">
+        <Fila
+          icono="local_fire_department"
+          titulo="Meta semanal"
+          descripcion="Carreras por semana para mantener la racha"
+        >
           <select
             aria-label="Meta semanal de carreras"
             value={ajustes.metaSemanal}
@@ -220,7 +264,12 @@ export function AjustesPreferencias() {
       <Seccion titulo="Cuenta" etiqueta="Seguridad y dispositivos">
         <Enlace to="/ajustes/privacidad" icono="lock" texto="Privacidad y ubicación" />
         <Enlace to="/ajustes/notificaciones" icono="notifications" texto="Notificaciones" />
-        <Boton onClick={() => setDialogo('acerca')} icono="info" texto="Acerca de" detalle={`v${VERSION_APP}`} />
+        <Boton
+          onClick={() => setDialogo('acerca')}
+          icono="info"
+          texto="Acerca de"
+          detalle={`v${VERSION_APP}`}
+        />
         <Boton onClick={() => setDialogo('ayuda')} icono="help" texto="Ayuda y soporte" />
       </Seccion>
       <section>

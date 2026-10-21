@@ -27,8 +27,7 @@ export function Registro() {
     if (r.ok) {
       void actualizarAjustes({ nivelDeclarado: nivel })
       navigate('/permisos-ubicacion', { replace: true })
-    }
-    else setError(r.error)
+    } else setError(r.error)
   }
 
   return (

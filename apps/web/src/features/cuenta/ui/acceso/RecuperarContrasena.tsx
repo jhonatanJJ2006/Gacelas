@@ -27,8 +27,7 @@ export function RecuperarContrasena() {
     if (r.ok) {
       setSubmitted(true)
       setEspera(45)
-    }
-    else setError(r.error)
+    } else setError(r.error)
   }
 
   if (submitted) {
@@ -56,8 +55,8 @@ export function RecuperarContrasena() {
             </h1>
             <p className="text-text-secondary text-sm mb-4">
               Te hemos enviado un enlace para restablecer tu contraseña a{' '}
-              <span className="text-text-primary font-medium">{email}</span>. Si no lo encuentras
-              en unos instantes, revisa la carpeta de spam.
+              <span className="text-text-primary font-medium">{email}</span>. Si no lo encuentras en
+              unos instantes, revisa la carpeta de spam.
             </p>
             <div className="w-full flex items-center justify-between p-3 mb-8 rounded-xl bg-surface-container border border-border-subtle text-sm">
               <span className="text-text-secondary">¿No recibiste el correo?</span>

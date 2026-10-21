@@ -62,7 +62,9 @@ export function Notificaciones() {
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
             <div>
-              <h1 className="font-headline-md text-headline-md text-text-primary">Notificaciones</h1>
+              <h1 className="font-headline-md text-headline-md text-text-primary">
+                Notificaciones
+              </h1>
               <p className="text-body-sm text-text-secondary hidden sm:block">
                 Actualizaciones de ruta, club y rendimiento
               </p>

@@ -174,7 +174,9 @@ export function Eventos() {
               aria-pressed={inscrito}
               className={`px-4 py-2 font-label-lg text-label-lg rounded-lg transition-colors flex items-center gap-1 ${inscrito ? 'bg-surface-container-high text-text-primary' : 'bg-primary-600 hover:bg-primary-700 text-on-primary'}`}
             >
-              {i === 0 && <span className="material-symbols-outlined text-[18px]">check_circle</span>}
+              {i === 0 && (
+                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+              )}
               {inscrito ? 'Inscrito' : 'Inscribirse'}
             </button>
           )
@@ -194,21 +196,33 @@ export function Eventos() {
                       <span className="material-symbols-outlined text-[14px]">star</span>Evento
                       principal
                     </span>
-                    <span className={`px-2 py-0.5 rounded-md text-label-sm ${evento.pasado ? 'bg-surface-container-high text-text-secondary' : 'bg-success/15 text-success'}`}>
-                      {evento.pasado ? 'Finalizado' : lleno ? 'Lista de espera' : 'Inscripción abierta'}
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-label-sm ${evento.pasado ? 'bg-surface-container-high text-text-secondary' : 'bg-success/15 text-success'}`}
+                    >
+                      {evento.pasado
+                        ? 'Finalizado'
+                        : lleno
+                          ? 'Lista de espera'
+                          : 'Inscripción abierta'}
                     </span>
                   </div>
                   <Link to={`/comunidad/eventos/${evento.id}`} className="block space-y-1">
-                    <h2 className="font-headline-sm text-headline-sm text-text-primary">{evento.titulo}</h2>
+                    <h2 className="font-headline-sm text-headline-sm text-text-primary">
+                      {evento.titulo}
+                    </h2>
                     {evento.creadoPorUsuario && (
                       <span className="text-label-sm text-primary">Organizas tú</span>
                     )}
                     <p className="flex items-center gap-2 text-text-secondary text-body-sm capitalize">
-                      <span className="material-symbols-outlined text-[18px] text-primary">schedule</span>
+                      <span className="material-symbols-outlined text-[18px] text-primary">
+                        schedule
+                      </span>
                       {evento.fecha} • {evento.hora}
                     </p>
                     <p className="flex items-center gap-2 text-text-secondary text-body-sm">
-                      <span className="material-symbols-outlined text-[18px] text-primary">location_on</span>
+                      <span className="material-symbols-outlined text-[18px] text-primary">
+                        location_on
+                      </span>
                       {evento.ubicacion}
                     </p>
                   </Link>
@@ -216,7 +230,11 @@ export function Eventos() {
                     {[
                       ['Distancia', `${evento.distanciaKm} km`, 'text-primary'],
                       ['Tipo', TIPOS_EVENTO[evento.tipo ?? 'grupal'], 'text-text-primary'],
-                      ['Desnivel', ruta ? `+${Math.round(ruta.elevacionM)} m` : '--', 'text-success'],
+                      [
+                        'Desnivel',
+                        ruta ? `+${Math.round(ruta.elevacionM)} m` : '--',
+                        'text-success',
+                      ],
                     ].map(([t, v, c]) => (
                       <div key={t} className="rounded-xl bg-surface-container-high p-2 text-center">
                         <div className="text-label-sm text-text-secondary">{t}</div>
@@ -239,19 +257,21 @@ export function Eventos() {
               className="bg-surface-container rounded-2xl border border-border-subtle p-4 space-y-3 hover:border-primary-600/50 transition-colors"
               data-testid="evento"
             >
-              {i === 1 && (
-                <h3 className="sr-only">Más eventos locales</h3>
-              )}
+              {i === 1 && <h3 className="sr-only">Más eventos locales</h3>}
               <Link to={`/comunidad/eventos/${evento.id}`} className="flex gap-3">
                 <div className="w-14 shrink-0 rounded-xl border border-border-subtle bg-surface-container-high flex flex-col items-center justify-center py-1">
                   <span className="text-label-sm text-primary uppercase">
-                    {fecha ? fecha.toLocaleDateString('es-EC', { weekday: 'short' }).replace('.', '') : '--'}
+                    {fecha
+                      ? fecha.toLocaleDateString('es-EC', { weekday: 'short' }).replace('.', '')
+                      : '--'}
                   </span>
                   <span className="font-headline-sm text-headline-sm text-text-primary leading-none">
                     {fecha ? fecha.getDate() : '--'}
                   </span>
                   <span className="text-label-sm text-text-secondary uppercase">
-                    {fecha ? fecha.toLocaleDateString('es-EC', { month: 'short' }).replace('.', '') : ''}
+                    {fecha
+                      ? fecha.toLocaleDateString('es-EC', { month: 'short' }).replace('.', '')
+                      : ''}
                   </span>
                 </div>
                 <div className="min-w-0 flex-1">
@@ -268,8 +288,8 @@ export function Eventos() {
                     <span className="text-label-sm text-primary">Organizas tú</span>
                   )}
                   <p className="text-body-sm text-text-secondary">
-                    {evento.distanciaKm} km{ruta ? ` • +${Math.round(ruta.elevacionM)} m desnivel` : ''}
-                    
+                    {evento.distanciaKm} km
+                    {ruta ? ` • +${Math.round(ruta.elevacionM)} m desnivel` : ''}
                   </p>
                 </div>
               </Link>

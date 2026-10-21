@@ -54,7 +54,6 @@ export function CarreraEnCurso() {
       tracker.alternarPausa()
     }, 15_000)
     return () => clearTimeout(t)
-     
   }, [autopausa, e.fase, e.puntos.length])
 
   if (!estaActiva(e))

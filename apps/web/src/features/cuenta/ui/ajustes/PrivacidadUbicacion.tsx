@@ -184,7 +184,9 @@ export function PrivacidadUbicacion() {
         >
           <span className="material-symbols-outlined text-primary">download</span>
           <span className="flex-1">
-            <span className="block text-text-primary font-semibold">Descargar mis datos y rutas</span>
+            <span className="block text-text-primary font-semibold">
+              Descargar mis datos y rutas
+            </span>
             <span className="block text-body-sm text-text-secondary">
               Exporta tus carreras en un archivo JSON
             </span>
