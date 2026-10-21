@@ -69,6 +69,17 @@ export interface Ajustes {
   ocultas: string[]
   /** Carreras por semana para mantener la racha semanal. */
   metaSemanal: number
+  /** Ritmo objetivo del pacer en segundos por km. */
+  ritmoObjetivoSeg: number
+  autopausa: boolean
+  anunciosVoz: boolean
+  /** Segundos de cuenta regresiva antes de arrancar el GPS (0 = sin cuenta). */
+  cuentaRegresivaSeg: number
+  idioma: 'es-EC' | 'en'
+  ocultarBiometricos: boolean
+  aparecerRankings: boolean
+  /** Nivel que el corredor declaró al registrarse. */
+  nivelDeclarado: 'principiante' | 'intermedio' | 'avanzado'
 }
 
 export const AJUSTES_POR_DEFECTO: Ajustes = {
@@ -92,4 +103,12 @@ export const AJUSTES_POR_DEFECTO: Ajustes = {
   comentarios: {},
   ocultas: [],
   metaSemanal: 3,
+  ritmoObjetivoSeg: 330,
+  autopausa: true,
+  anunciosVoz: true,
+  cuentaRegresivaSeg: 3,
+  idioma: 'es-EC',
+  ocultarBiometricos: false,
+  aparecerRankings: true,
+  nivelDeclarado: 'principiante',
 }

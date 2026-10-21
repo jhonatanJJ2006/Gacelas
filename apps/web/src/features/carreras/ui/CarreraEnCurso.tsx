@@ -32,6 +32,31 @@ export function CarreraEnCurso() {
       void enviarPosicion(ultimo, e.distanciaKm, e.segundos)
   }, [compartiendo, e.fase, ultimo, e.distanciaKm, e.segundos])
 
+  const voz = useApp((s) => s.ajustes.anunciosVoz)
+  const autopausa = useApp((s) => s.ajustes.autopausa)
+  const tramo = Math.floor(m ? e.distanciaKm : e.distanciaKm / 1.609)
+  useEffect(() => {
+    if (!voz || tramo < 1 || typeof speechSynthesis === 'undefined') return
+    const u = new SpeechSynthesisUtterance(
+      `${tramo} ${m ? 'kilómetros' : 'millas'}. Tiempo ${formatearHms(e.segundos)}.`
+    )
+    u.lang = 'es-EC'
+    speechSynthesis.speak(u)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tramo, voz])
+  // Autopausa: sin puntos GPS nuevos durante 15 s mientras corre, la carrera se pausa.
+  const [autoPausada, setAutoPausada] = useState(false)
+  useEffect(() => {
+    if (e.fase === 'corriendo') setAutoPausada(false)
+    if (!autopausa || e.fase !== 'corriendo') return
+    const t = setTimeout(() => {
+      setAutoPausada(true)
+      tracker.alternarPausa()
+    }, 15_000)
+    return () => clearTimeout(t)
+     
+  }, [autopausa, e.fase, e.puntos.length])
+
   if (!estaActiva(e))
     return <Navigate to={e.fase === 'terminada' ? '/correr/resumen' : '/correr'} replace />
 
@@ -139,7 +164,7 @@ export function CarreraEnCurso() {
               <span
                 className={`w-2 h-2 rounded-full ${pausada ? 'bg-text-secondary' : 'bg-secondary animate-pulse'}`}
               />
-              {pausada ? 'En pausa' : 'En curso'}
+              {pausada ? (autoPausada ? 'Autopausa' : 'En pausa') : 'En curso'}
             </span>
             {e.ultimaPrecisionM != null && <span>GPS ±{Math.round(e.ultimaPrecisionM)} m</span>}
           </div>
@@ -219,7 +244,7 @@ export function CarreraEnCurso() {
               <span
                 className={`w-2 h-2 rounded-full ${pausada ? 'bg-text-secondary' : 'bg-secondary animate-pulse'}`}
               ></span>
-              {pausada ? 'En pausa' : 'En curso'}
+              {pausada ? (autoPausada ? 'Autopausa' : 'En pausa') : 'En curso'}
             </span>
             {e.ultimaPrecisionM != null && (
               <span className="text-xs text-text-secondary">

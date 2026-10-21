@@ -5,15 +5,22 @@ test.describe('Ajustes, perfil y notificaciones', () => {
 
   test('modo claro y unidades persisten', async ({ page }) => {
     await page.goto('/ajustes')
-    await page.getByRole('switch', { name: 'Modo oscuro' }).click()
+    await page.getByRole('button', { name: 'Cambiar tema' }).click()
     await expect(page.locator('html')).toHaveClass(/tema-claro/)
-    await page.getByRole('switch', { name: 'Unidades métricas' }).click()
+    await page.getByRole('button', { name: 'mi', exact: true }).click()
+    await page.getByRole('switch', { name: 'Anuncios de voz' }).click()
+    await page.getByLabel('Cuenta regresiva').selectOption('10')
     await page.reload()
     await expect(page.locator('html')).toHaveClass(/tema-claro/)
-    await expect(page.getByRole('switch', { name: 'Unidades métricas' })).toHaveAttribute(
+    await expect(page.getByRole('button', { name: 'mi', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    )
+    await expect(page.getByRole('switch', { name: 'Anuncios de voz' })).toHaveAttribute(
       'aria-checked',
       'false'
     )
+    await expect(page.getByLabel('Cuenta regresiva')).toHaveValue('10')
     await page.goto('/rutas')
     await expect(page.getByText(/ mi/).first()).toBeVisible()
   })

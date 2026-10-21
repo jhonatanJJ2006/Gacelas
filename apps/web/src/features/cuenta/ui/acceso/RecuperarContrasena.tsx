@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../../../../store/app'
 import { MensajeError } from '../../../../components/ui'
@@ -9,11 +9,25 @@ export function RecuperarContrasena() {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const recuperar = useApp((s) => s.recuperarContrasena)
+  const [espera, setEspera] = useState(0)
+  useEffect(() => {
+    if (espera <= 0) return
+    const t = setTimeout(() => setEspera(espera - 1), 1000)
+    return () => clearTimeout(t)
+  }, [espera])
+  const reenviar = async () => {
+    const r = await recuperar(email)
+    if (r.ok) setEspera(45)
+    else setError(r.error)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const r = await recuperar(email)
-    if (r.ok) setSubmitted(true)
+    if (r.ok) {
+      setSubmitted(true)
+      setEspera(45)
+    }
     else setError(r.error)
   }
 
@@ -40,10 +54,22 @@ export function RecuperarContrasena() {
             <h1 className="text-text-primary font-headline-lg text-2xl font-bold mb-3">
               Revisa tu correo
             </h1>
-            <p className="text-text-secondary text-sm mb-8">
+            <p className="text-text-secondary text-sm mb-4">
               Te hemos enviado un enlace para restablecer tu contraseña a{' '}
-              <span className="text-text-primary font-medium">{email}</span>
+              <span className="text-text-primary font-medium">{email}</span>. Si no lo encuentras
+              en unos instantes, revisa la carpeta de spam.
             </p>
+            <div className="w-full flex items-center justify-between p-3 mb-8 rounded-xl bg-surface-container border border-border-subtle text-sm">
+              <span className="text-text-secondary">¿No recibiste el correo?</span>
+              <button
+                onClick={() => void reenviar()}
+                disabled={espera > 0}
+                className="px-3 py-1 rounded-lg bg-primary-600/15 text-primary font-semibold disabled:opacity-60"
+              >
+                {espera > 0 ? `Reenviar en 0:${String(espera).padStart(2, '0')}` : 'Reenviar'}
+              </button>
+            </div>
+            <MensajeError mensaje={error} />
 
             <button
               onClick={() => navigate('/inicio-sesion')}
