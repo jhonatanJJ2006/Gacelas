@@ -65,6 +65,15 @@ export interface PublicacionRemota {
   inicioMs: number
   distanciaKm: number
   segundos: number
+  /** Desnivel positivo (m). */
+  desnivelM?: number
+  /** URLs publicas de las fotos de la publicacion. */
+  imagenes?: string[]
+  compartidos?: number
+  compartida?: boolean
+  /** Km publicos acumulados del autor (nivel). */
+  autorKm?: number
+  ultimoComentario?: { autor: string; texto: string } | null
   likes: number
   comentarios: number
   puntos: CarreraGuardada['puntos']
@@ -106,6 +115,10 @@ export interface ComunidadRepository {
   alternarSeguir(id: string): Promise<string[]>
   /** Numero de corredores que siguen al usuario. */
   seguidores?(): Promise<number>
+  /** Compartir (repost) o dejar de compartir una carrera publica. */
+  alternarCompartida?(postId: string, activo: boolean): Promise<void>
+  /** Sube fotos a una carrera propia; devuelve las URLs publicas. */
+  subirFotos?(postId: string, archivos: File[]): Promise<string[]>
 }
 
 export interface RachasRepository {

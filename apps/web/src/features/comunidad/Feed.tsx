@@ -3,13 +3,16 @@ import { useEsEscritorio } from '../../lib/useEsEscritorio'
 import { ProximosEventos, RankingSemanal } from '../../components/PanelesEscritorio'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { TrazadoRuta } from '../../components/TrazadoRuta'
 import { Aviso, BotonTexto, Dialogo } from '../../components/ui'
 import { compartir, useAviso } from '../../hooks'
 import { formatearMs, formatearRitmo, Unidades } from '../../lib/geo'
 import { useApp } from '../../store/app'
 import { construirFeed, filtrarFeed, type FiltroFeed, type Publicacion } from '../../lib/logica'
 import type { ComentarioPublicacion } from '../../data/repositorios'
+import { Fragment } from 'react'
+import { kmPorAutor, nivelCorredor } from '../../lib/logica'
+import { filtrarEventos } from '../../lib/filtros'
+import { Carrusel, InsigniaNivel, TarjetaClub } from './PostSocial'
 
 export function Feed() {
   const [enVivo, setEnVivo] = useState<SesionEnVivo[]>([])
@@ -47,6 +50,13 @@ export function Feed() {
   const suscribirFeed = useApp((s) => s.suscribirFeed)
   const refrescarFeed = useApp((s) => s.refrescarFeed)
   const [hilo, setHilo] = useState<ComentarioPublicacion[]>([])
+  const alternarCompartidaPost = useApp((s) => s.alternarCompartidaPost)
+  const subirFotosPost = useApp((s) => s.subirFotosPost)
+  const creados = useApp((s) => s.eventosCreados)
+  const inscritos = useApp((s) => s.inscritos)
+  const alternarInscripcion = useApp((s) => s.alternarInscripcion)
+  const [fotosPara, setFotosPara] = useState<string | null>(null)
+  const [rapido, setRapido] = useState<Record<string, string>>({})
 
   // Feed real: se refresca al entrar y con cada cambio en la base (realtime).
   useEffect(() => {
@@ -61,6 +71,25 @@ export function Feed() {
     ajustes.ocultas,
     siguiendo
   )
+
+  const kms = kmPorAutor(posts)
+  const nivelDe = (p: Publicacion) =>
+    nivelCorredor(p.autorKm ?? kms.get(p.propia ? 'yo' : (p.autorId ?? p.autor)) ?? 0)
+  const eventoClub = feedSocial ? filtrarEventos(creados, 'Próximos', inscritos)[0] : undefined
+  const repostear = (p: Publicacion) => {
+    if (!p.remota) return mostrarAviso('Publica la carrera para poder compartirla')
+    alternarCompartidaPost(p.id).catch(() => mostrarAviso('No se pudo compartir'))
+  }
+  const subirFotos = async (id: string, archivos: FileList | null) => {
+    setFotosPara(null)
+    if (!archivos?.length) return
+    try {
+      await subirFotosPost(id, Array.from(archivos))
+      mostrarAviso('Fotos publicadas')
+    } catch {
+      mostrarAviso('No se pudieron subir las fotos')
+    }
+  }
 
   const meGustaDe = (p: Publicacion) =>
     p.remota ? Boolean(p.meGusta) : ajustes.likes.includes(p.id)
@@ -241,154 +270,250 @@ export function Feed() {
                   : 'No hay publicaciones todavía.'}
             </p>
           )}
-          {posts.map((post) => {
+          {posts.map((post, indice) => {
             const meGusta = meGustaDe(post)
             const locales = comentariosLocales(post)
             return (
-              <article
-                key={post.id}
-                className="bg-surface-container rounded-2xl border border-border-subtle overflow-hidden"
-                data-testid="publicacion"
-              >
-                <header className="p-4 flex items-center gap-3 relative">
-                  {post.avatar ? (
-                    <img
-                      src={post.avatar}
-                      alt=""
-                      className="w-11 h-11 rounded-full object-cover border-2 border-primary/60"
-                    />
-                  ) : (
-                    <div className="w-11 h-11 rounded-full bg-primary-600/30 border-2 border-primary/60 flex items-center justify-center text-primary-400 font-bold">
-                      {post.autor.charAt(0)}
+              <Fragment key={post.id}>
+                {indice === 1 && eventoClub && (
+                  <TarjetaClub
+                    evento={eventoClub}
+                    inscrito={inscritos.includes(eventoClub.id)}
+                    onAlternar={() => void alternarInscripcion(eventoClub.id)}
+                  />
+                )}
+                <article
+                  className="bg-surface-container rounded-2xl border border-border-subtle overflow-hidden"
+                  data-testid="publicacion"
+                >
+                  <header className="p-4 flex items-center gap-3 relative">
+                    {post.avatar ? (
+                      <img
+                        src={post.avatar}
+                        alt=""
+                        className="w-11 h-11 rounded-full object-cover border-2 border-primary/60"
+                      />
+                    ) : (
+                      <div className="w-11 h-11 rounded-full bg-primary-600/30 border-2 border-primary/60 flex items-center justify-center text-primary-400 font-bold">
+                        {post.autor.charAt(0)}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-body-md text-body-md text-text-primary font-semibold truncate flex items-center gap-2">
+                        <span className="truncate">{post.autor}</span>
+                        <InsigniaNivel nivel={nivelDe(post)} />
+                      </p>
+                      <p className="font-body-sm text-body-sm text-text-secondary truncate">
+                        {post.titulo} · {post.tiempo}
+                      </p>
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-body-md text-body-md text-text-primary font-semibold truncate">
-                      {post.autor}
-                    </p>
-                    <p className="font-body-sm text-body-sm text-text-secondary truncate">
-                      {post.titulo} · {post.tiempo}
-                    </p>
-                  </div>
-                  {post.autorId && (
-                    <button
-                      onClick={() => void alternarSeguir(post.autorId!)}
-                      aria-pressed={siguiendo.includes(post.autorId)}
-                      className={`h-9 px-4 rounded-full text-sm font-semibold transition-colors ${
-                        siguiendo.includes(post.autorId)
-                          ? 'bg-surface-container-high text-text-primary border border-border-subtle'
-                          : 'bg-primary-600 text-on-primary hover:bg-primary-700'
-                      }`}
-                    >
-                      {siguiendo.includes(post.autorId) ? 'Siguiendo' : 'Seguir'}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setMenuPost(menuPost === post.id ? null : post.id)}
-                    aria-label="Más opciones"
-                    className="w-11 h-11 -mr-2 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary"
-                  >
-                    <span className="material-symbols-outlined">more_vert</span>
-                  </button>
-                  {menuPost === post.id && (
-                    <div
-                      role="menu"
-                      className="absolute right-4 top-14 z-30 bg-bg-secondary border border-border-subtle rounded-xl shadow-xl overflow-hidden"
-                    >
+                    {post.autorId && (
                       <button
-                        role="menuitem"
-                        onClick={() => {
-                          void actualizar((a) => ({ ocultas: [...a.ocultas, post.id] }))
-                          setMenuPost(null)
-                          mostrarAviso('Publicación oculta')
-                        }}
-                        className="block w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-container"
+                        onClick={() => void alternarSeguir(post.autorId!)}
+                        aria-pressed={siguiendo.includes(post.autorId)}
+                        className={`h-9 px-4 rounded-full text-sm font-semibold transition-colors ${
+                          siguiendo.includes(post.autorId)
+                            ? 'bg-surface-container-high text-text-primary border border-border-subtle'
+                            : 'bg-primary-600 text-on-primary hover:bg-primary-700'
+                        }`}
                       >
-                        Ocultar publicación
+                        {siguiendo.includes(post.autorId) ? 'Siguiendo' : 'Seguir'}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setMenuPost(menuPost === post.id ? null : post.id)}
+                      aria-label="Más opciones"
+                      className="w-11 h-11 -mr-2 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary"
+                    >
+                      <span className="material-symbols-outlined">more_vert</span>
+                    </button>
+                    {menuPost === post.id && (
+                      <div
+                        role="menu"
+                        className="absolute right-4 top-14 z-30 bg-bg-secondary border border-border-subtle rounded-xl shadow-xl overflow-hidden"
+                      >
+                        {post.propia && post.remota && (
+                          <label
+                            role="menuitem"
+                            className="block w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-container cursor-pointer"
+                          >
+                            Agregar fotos
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              multiple
+                              className="sr-only"
+                              aria-label="Agregar fotos"
+                              onClick={() => setFotosPara(post.id)}
+                              onChange={(e) => {
+                                setMenuPost(null)
+                                void subirFotos(fotosPara ?? post.id, e.target.files)
+                              }}
+                            />
+                          </label>
+                        )}
+                        <button
+                          role="menuitem"
+                          onClick={() => {
+                            void actualizar((a) => ({ ocultas: [...a.ocultas, post.id] }))
+                            setMenuPost(null)
+                            mostrarAviso('Publicación oculta')
+                          }}
+                          className="block w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-container"
+                        >
+                          Ocultar publicación
+                        </button>
+                      </div>
+                    )}
+                  </header>
+
+                  <Carrusel
+                    imagenes={post.imagenes ?? []}
+                    puntos={post.puntos}
+                    desnivelM={post.desnivelM}
+                  />
+
+                  <div className="p-4">
+                    <div className="grid grid-cols-4 gap-2 mb-4 p-3 rounded-xl bg-bg-primary/40 border border-border-subtle">
+                      <div>
+                        <div className="font-label-sm text-label-sm text-text-secondary">
+                          Distancia
+                        </div>
+                        <div className="font-headline-sm text-headline-sm text-text-primary">
+                          {Unidades.texto(post.distanciaKm, m, 1)}{' '}
+                          <span className="text-label-sm text-text-secondary">
+                            {Unidades.etiquetaDistancia(m)}
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-label-sm text-label-sm text-text-secondary">Ritmo</div>
+                        <div className="font-headline-sm text-headline-sm text-primary">
+                          {formatearRitmo(Unidades.ritmo(post.ritmoSegKm, m))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-label-sm text-label-sm text-text-secondary">
+                          Tiempo
+                        </div>
+                        <div className="font-headline-sm text-headline-sm text-text-primary">
+                          {formatearMs(post.segundos)}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="font-label-sm text-label-sm text-text-secondary">
+                          Elevación
+                        </div>
+                        <div
+                          className="font-headline-sm text-headline-sm text-secondary"
+                          data-testid="desnivel-post"
+                        >
+                          +{post.desnivelM ?? 0}
+                          <span className="text-label-sm text-text-secondary"> m</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {locales.length > 0 && (
+                      <ul className="mb-3 space-y-1">
+                        {locales.map((c, i) => (
+                          <li key={i} className="text-body-sm text-text-secondary">
+                            <strong className="text-text-primary">Tú:</strong> {c}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    <div className="flex items-center gap-4 pt-3 border-t border-border-subtle">
+                      <button
+                        onClick={() => alternarLike(post)}
+                        aria-pressed={meGusta}
+                        aria-label={meGusta ? 'Quitar me gusta' : 'Me gusta'}
+                        className={`min-h-11 px-3 rounded-full flex items-center gap-2 transition-colors ${meGusta ? 'bg-primary/15 text-primary' : 'text-text-secondary hover:text-primary'}`}
+                      >
+                        <span className="material-symbols-outlined">
+                          {meGusta ? 'favorite' : 'favorite_border'}
+                        </span>
+                        <span className="font-label-md text-label-md">{likesDe(post)}</span>
+                      </button>
+                      <button
+                        onClick={() => abrirComentarios(post)}
+                        aria-label="Comentar"
+                        className="min-h-11 min-w-11 flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors"
+                      >
+                        <span className="material-symbols-outlined">chat_bubble_outline</span>
+                        <span className="font-label-md text-label-md">
+                          {post.comentarios + locales.length}
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => repostear(post)}
+                        aria-pressed={Boolean(post.compartida)}
+                        aria-label={
+                          post.compartida ? 'Dejar de compartir' : 'Compartir en mi perfil'
+                        }
+                        className={`min-h-11 px-3 rounded-full flex items-center gap-2 transition-colors ${post.compartida ? 'bg-secondary/15 text-secondary' : 'text-text-secondary hover:text-secondary'}`}
+                      >
+                        <span className="material-symbols-outlined">repeat</span>
+                        <span className="font-label-md text-label-md">{post.compartidos ?? 0}</span>
+                      </button>
+                      <button
+                        onClick={() => void compartirPost(post)}
+                        aria-label="Compartir"
+                        className="min-h-11 min-w-11 justify-center flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors ml-auto"
+                      >
+                        <span className="material-symbols-outlined">share</span>
                       </button>
                     </div>
-                  )}
-                </header>
-
-                <div className="mx-4 h-48 lg:h-64 rounded-xl overflow-hidden bg-gradient-to-br from-primary-600/20 to-secondary-600/20 flex items-center justify-center">
-                  {post.puntos.length > 1 ? (
-                    <TrazadoRuta puntos={post.puntos} className="w-full h-full p-4" />
-                  ) : (
-                    <span className="material-symbols-outlined text-[64px] text-primary">
-                      route
-                    </span>
-                  )}
-                </div>
-
-                <div className="p-4">
-                  <div className="grid grid-cols-3 gap-2 mb-4 p-3 rounded-xl bg-bg-primary/40 border border-border-subtle">
-                    <div>
-                      <div className="font-label-sm text-label-sm text-text-secondary">
-                        Distancia
-                      </div>
-                      <div className="font-headline-sm text-headline-sm text-text-primary">
-                        {Unidades.texto(post.distanciaKm, m, 1)}{' '}
-                        <span className="text-label-sm text-text-secondary">
-                          {Unidades.etiquetaDistancia(m)}
+                    {post.ultimoComentario && (
+                      <button
+                        onClick={() => abrirComentarios(post)}
+                        className="mt-3 w-full text-left rounded-xl bg-bg-primary/40 border border-border-subtle p-3"
+                        data-testid="vista-comentario"
+                      >
+                        <span className="text-body-sm">
+                          <strong className="text-text-primary">
+                            {post.ultimoComentario.autor}
+                          </strong>{' '}
+                          <span className="text-text-secondary">{post.ultimoComentario.texto}</span>
                         </span>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-label-sm text-label-sm text-text-secondary">Ritmo</div>
-                      <div className="font-headline-sm text-headline-sm text-primary">
-                        {formatearRitmo(Unidades.ritmo(post.ritmoSegKm, m))}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-label-sm text-label-sm text-text-secondary">Tiempo</div>
-                      <div className="font-headline-sm text-headline-sm text-text-primary">
-                        {formatearMs(post.segundos)}
-                      </div>
-                    </div>
+                        {post.comentarios > 1 && (
+                          <span className="block text-[11px] text-primary mt-1">
+                            Ver los {post.comentarios} comentarios
+                          </span>
+                        )}
+                      </button>
+                    )}
+                    <form
+                      className="mt-3 flex gap-2"
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        const t = rapido[post.id] ?? ''
+                        if (!t.trim()) return
+                        void enviarComentario(post, t).then(() =>
+                          setRapido((r) => ({ ...r, [post.id]: '' }))
+                        )
+                      }}
+                    >
+                      <input
+                        value={rapido[post.id] ?? ''}
+                        onChange={(e) => setRapido((r) => ({ ...r, [post.id]: e.target.value }))}
+                        placeholder="Escribe un aplauso o comentario..."
+                        aria-label={`Comentar ${post.titulo}`}
+                        maxLength={1000}
+                        className="flex-1 h-10 rounded-full bg-bg-primary/40 border border-border-subtle px-4 text-body-sm text-text-primary placeholder:text-text-secondary"
+                      />
+                      <button
+                        type="submit"
+                        aria-label="Enviar comentario"
+                        className="w-10 h-10 rounded-full bg-primary-600 text-on-primary flex items-center justify-center"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">send</span>
+                      </button>
+                    </form>
                   </div>
-
-                  {locales.length > 0 && (
-                    <ul className="mb-3 space-y-1">
-                      {locales.map((c, i) => (
-                        <li key={i} className="text-body-sm text-text-secondary">
-                          <strong className="text-text-primary">Tú:</strong> {c}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  <div className="flex items-center gap-4 pt-3 border-t border-border-subtle">
-                    <button
-                      onClick={() => alternarLike(post)}
-                      aria-pressed={meGusta}
-                      aria-label={meGusta ? 'Quitar me gusta' : 'Me gusta'}
-                      className={`min-h-11 px-3 rounded-full flex items-center gap-2 transition-colors ${meGusta ? 'bg-primary/15 text-primary' : 'text-text-secondary hover:text-primary'}`}
-                    >
-                      <span className="material-symbols-outlined">
-                        {meGusta ? 'favorite' : 'favorite_border'}
-                      </span>
-                      <span className="font-label-md text-label-md">{likesDe(post)}</span>
-                    </button>
-                    <button
-                      onClick={() => abrirComentarios(post)}
-                      aria-label="Comentar"
-                      className="min-h-11 min-w-11 flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors"
-                    >
-                      <span className="material-symbols-outlined">chat_bubble_outline</span>
-                      <span className="font-label-md text-label-md">
-                        {post.comentarios + locales.length}
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => void compartirPost(post)}
-                      aria-label="Compartir"
-                      className="min-h-11 min-w-11 justify-center flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors ml-auto"
-                    >
-                      <span className="material-symbols-outlined">share</span>
-                    </button>
-                  </div>
-                </div>
-              </article>
+                </article>
+              </Fragment>
             )
           })}
         </div>

@@ -10,7 +10,8 @@ import { resumenSemana, retoMes, totalesSemana, inicioSemana } from '../../lib/e
 import { AmigosEnRuta, SemanaAtletica, TarjetaEvento, TarjetaReto } from './SeccionesInicio'
 import { eventosMock } from '../../mocks/data'
 import { useApp } from '../../store/app'
-import { saludo } from '../../lib/logica'
+import { nivelCorredor, saludo } from '../../lib/logica'
+import { InsigniaNivel } from '../comunidad/PostSocial'
 
 const Runner3D = lazy(() =>
   import('../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
@@ -81,7 +82,10 @@ export function Inicio() {
               {semana.carreras} {semana.carreras === 1 ? 'carrera' : 'carreras'} esta semana
             </span>
           </div>
-          <InsigniaRacha compacta />
+          <div className="flex items-center gap-2">
+            <InsigniaNivel nivel={nivelCorredor(carreras.reduce((t, c) => t + c.distanciaKm, 0))} />
+            <InsigniaRacha compacta />
+          </div>
         </div>
 
         <div className="relative w-full h-[430px] lg:h-[560px] bg-surface-container-lowest">

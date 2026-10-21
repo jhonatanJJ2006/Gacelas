@@ -178,6 +178,7 @@ export async function instalarFakeSupabase(context: BrowserContext): Promise<Est
       duration_seconds: 1714,
       is_public: true,
       public_points: [],
+      elevation_gain_meters: 42,
     },
   ]
 
@@ -201,6 +202,16 @@ export async function instalarFakeSupabase(context: BrowserContext): Promise<Est
               (f) => f.follower_id === yo && f.following_id === a.user_id
             ),
             propia: a.user_id === yo,
+            elevation_gain: Number(a.elevation_gain_meters ?? 0),
+            images: [],
+            reposts_count: tabla('post_reposts').filter((r) => r.activity_id === id).length,
+            reposteada: tabla('post_reposts').some((r) => r.activity_id === id && r.user_id === yo),
+            autor_km: 0,
+            ultimo_comentario: (() => {
+              const c = tabla('post_comments').filter((x) => x.post_id === id)
+              const u = c[c.length - 1]
+              return u ? { autor: 'Corredor', texto: u.body } : null
+            })(),
           }
         })
       return json(route, 200, filas)
