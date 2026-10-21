@@ -33,6 +33,12 @@ export function CarreraEnCurso() {
   }, [compartiendo, e.fase, ultimo, e.distanciaKm, e.segundos])
 
   const voz = useApp((s) => s.ajustes.anunciosVoz)
+  const actualizar = useApp((s) => s.actualizarAjustes)
+  const [bloqueo, setBloqueo] = useState(false)
+  const altitud = (() => {
+    const a = [...e.puntos].reverse().find((p) => p.altitudM != null)?.altitudM
+    return a == null ? null : Math.round(a)
+  })()
   const autopausa = useApp((s) => s.ajustes.autopausa)
   const tramo = Math.floor(m ? e.distanciaKm : e.distanciaKm / 1.609)
   useEffect(() => {
@@ -237,60 +243,74 @@ export function CarreraEnCurso() {
 
         {barra}
 
-        <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 pt-20 pb-10">
-          <div className="mb-4 text-center">
-            <span className="font-label-lg text-label-lg text-primary uppercase tracking-wider flex items-center justify-center gap-2">
-              <span
-                className={`w-2 h-2 rounded-full ${pausada ? 'bg-text-secondary' : 'bg-secondary animate-pulse'}`}
-              ></span>
-              {pausada ? (autoPausada ? 'Autopausa' : 'En pausa') : 'En curso'}
-            </span>
+        <div className="relative z-10 flex flex-col gap-3 px-4 pt-20 pb-6 max-w-md mx-auto w-full">
+          <div className="flex items-center justify-between rounded-2xl bg-surface-container/70 border border-border-subtle px-4 py-3">
+            <div>
+              <span className="font-label-lg text-label-lg text-primary uppercase tracking-wider flex items-center gap-2">
+                <span
+                  className={`w-2 h-2 rounded-full ${pausada ? 'bg-text-secondary' : 'bg-secondary animate-pulse'}`}
+                ></span>
+                {pausada ? (autoPausada ? 'Autopausa' : 'En pausa') : 'En curso'}
+              </span>
+              {altitud != null && (
+                <span className="text-body-sm text-text-secondary" data-testid="altitud">
+                  {altitud.toLocaleString('es-EC')} msnm
+                </span>
+              )}
+            </div>
             {e.ultimaPrecisionM != null && (
-              <span className="text-xs text-text-secondary">
+              <span className="text-label-md text-secondary flex items-center gap-1">
+                <span className="material-symbols-outlined text-[18px]">satellite_alt</span>
                 GPS ±{Math.round(e.ultimaPrecisionM)} m
               </span>
             )}
           </div>
 
-          <div className="bg-surface-container/60 backdrop-blur-xl border border-border-subtle rounded-3xl p-8 mb-6 shadow-2xl w-full max-w-md">
-            <div className="text-center mb-6">
-              <div
-                className="font-metric-huge text-metric-huge text-primary leading-none mb-2"
-                data-testid="distancia"
-              >
-                {Unidades.texto(e.distanciaKm, m)}
-              </div>
-              <div className="font-headline-sm text-headline-sm text-text-secondary uppercase tracking-wider">
-                {m ? 'Kilómetros' : 'Millas'}
-              </div>
+          <div className="rounded-3xl bg-surface-container/60 border border-border-subtle p-6 text-center">
+            <div className="text-label-md text-text-secondary uppercase tracking-widest mb-1">
+              Distancia recorrida
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <div
-                  className="font-headline-lg text-headline-lg text-text-primary leading-none mb-1"
-                  data-testid="tiempo"
-                >
-                  {formatearHms(e.segundos)}
-                </div>
-                <div className="font-label-md text-label-md text-text-secondary uppercase">
-                  Tiempo
-                </div>
-              </div>
-              <div className="text-center">
-                <div
-                  className="font-headline-lg text-headline-lg text-text-primary leading-none mb-1"
-                  data-testid="ritmo"
-                >
-                  {formatearRitmo(Unidades.ritmo(e.ritmoActualSegKm, m))}
-                </div>
-                <div className="font-label-md text-label-md text-text-secondary uppercase">
-                  Ritmo {Unidades.etiquetaRitmo(m)}
-                </div>
-              </div>
+            <div
+              className="font-metric-huge text-metric-huge text-primary leading-none"
+              data-testid="distancia"
+            >
+              {Unidades.texto(e.distanciaKm, m)}
             </div>
+            <div className="font-headline-sm text-headline-sm text-text-secondary uppercase tracking-wider">
+              {m ? 'Kilómetros' : 'Millas'}
+            </div>
+            <span className="inline-flex items-center gap-1 mt-2 px-3 py-1 rounded-full bg-success/15 text-success text-label-md">
+              <span className="material-symbols-outlined text-[16px]">trending_up</span>+
+              {Math.round(e.desnivelM)} m desnivel positivo
+            </span>
           </div>
 
-          <div className="w-full max-w-md h-40 mb-6 rounded-2xl bg-surface-container/40 border border-border-subtle p-2">
+          <div className="grid grid-cols-2 gap-3">
+            <Metrica
+              titulo="Ritmo actual"
+              detalle={`min ${Unidades.etiquetaRitmo(m)}`}
+              testid="ritmo"
+            >
+              {formatearRitmo(Unidades.ritmo(e.ritmoActualSegKm, m))}
+            </Metrica>
+            <Metrica titulo="Tiempo" detalle="transcurrido" testid="tiempo">
+              {formatearHms(e.segundos)}
+            </Metrica>
+            {/* Sin sensor de pulso conectado: el bloque queda oculto hasta tener una fuente real. */}
+            <div hidden data-testid="pulsaciones" aria-hidden="true">
+              <Metrica titulo="Pulsaciones" detalle="bpm">
+                --
+              </Metrica>
+            </div>
+            <Metrica titulo="Ritmo promedio" detalle={`min ${Unidades.etiquetaRitmo(m)}`}>
+              {formatearRitmo(Unidades.ritmo(ritmoPromedio(e), m))}
+            </Metrica>
+            <Metrica titulo="Calorías" detalle="kcal estimadas">
+              {caloriasEstimadas(e.distanciaKm)}
+            </Metrica>
+          </div>
+
+          <div className="w-full h-44 rounded-2xl bg-surface-container/40 border border-border-subtle p-2">
             <MapaGoogle
               puntos={e.puntos}
               seguir
@@ -299,51 +319,93 @@ export function CarreraEnCurso() {
             />
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex justify-between">
             <button
-              onClick={() => tracker.alternarPausa()}
-              aria-label={pausada ? 'Reanudar' : 'Pausar'}
-              className="w-16 h-16 rounded-full bg-surface-container border-2 border-border-subtle flex items-center justify-center text-text-primary hover:bg-surface-container-high transition-all shadow-lg"
+              onClick={() => setBloqueo(true)}
+              className="h-10 px-4 rounded-full bg-surface-container text-text-secondary flex items-center gap-2 text-label-md"
             >
-              <span className="material-symbols-outlined text-[32px]">
-                {pausada ? 'play_arrow' : 'pause'}
+              <span className="material-symbols-outlined text-[18px]">lock</span>Bloquear toque
+            </button>
+            <button
+              onClick={() => void actualizar({ anunciosVoz: !voz })}
+              aria-pressed={voz}
+              className={`h-10 px-4 rounded-full flex items-center gap-2 text-label-md ${voz ? 'bg-primary-600/15 text-primary' : 'bg-surface-container text-text-secondary'}`}
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                {voz ? 'volume_up' : 'volume_off'}
               </span>
+              Voz cada 1 {m ? 'km' : 'mi'}
             </button>
-            <button
-              onClick={terminar}
-              aria-label="Terminar carrera"
-              className="w-16 h-16 rounded-full bg-danger/20 border-2 border-danger flex items-center justify-center text-danger hover:bg-danger/30 transition-all shadow-lg"
-            >
-              <span className="material-symbols-outlined text-[32px]">stop</span>
-            </button>
+          </div>
+
+          <div className="grid grid-cols-[1fr_1.4fr] gap-3">
+            <div className="text-center">
+              <button
+                onClick={terminar}
+                aria-label="Terminar carrera"
+                className="w-full h-16 rounded-2xl bg-danger/15 border border-danger/40 text-danger flex items-center justify-center gap-2 font-semibold"
+              >
+                <span className="material-symbols-outlined">stop_circle</span>Terminar
+              </button>
+            </div>
+            <div className="text-center">
+              <button
+                onClick={() => tracker.alternarPausa()}
+                aria-label={pausada ? 'Reanudar' : 'Pausar'}
+                className="w-full h-16 rounded-2xl bg-primary-600 text-on-primary flex items-center justify-center gap-2 text-title-md font-bold shadow-lg"
+              >
+                <span className="material-symbols-outlined text-[28px]">
+                  {pausada ? 'play_arrow' : 'pause'}
+                </span>
+                {pausada ? 'Reanudar' : 'Pausar'}
+              </button>
+              {autopausa && (
+                <span className="text-body-sm text-text-secondary">Auto-pausa activa</span>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-surface-container-high border-t border-border-subtle p-4">
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <div className="font-headline-sm text-headline-sm text-text-primary">
-              {formatearRitmo(Unidades.ritmo(ritmoPromedio(e), m))}
-            </div>
-            <div className="font-label-md text-label-md text-text-secondary">Promedio</div>
-          </div>
-          <div>
-            <div className="font-headline-sm text-headline-sm text-text-primary">
-              {Math.round(e.desnivelM)} m
-            </div>
-            <div className="font-label-md text-label-md text-text-secondary">Desnivel</div>
-          </div>
-          <div>
-            <div className="font-headline-sm text-headline-sm text-text-primary">
-              {caloriasEstimadas(e.distanciaKm)}
-            </div>
-            <div className="font-label-md text-label-md text-text-secondary">kcal est.</div>
-          </div>
+      {bloqueo && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center pb-16"
+          data-testid="bloqueo-toque"
+        >
+          <button
+            onClick={() => setBloqueo(false)}
+            className="h-12 px-6 rounded-full bg-surface-container text-text-primary flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined">lock_open</span>Desbloquear
+          </button>
         </div>
-      </div>
-
+      )}
       {dialogo}
+    </div>
+  )
+}
+
+function Metrica({
+  titulo,
+  detalle,
+  testid,
+  children,
+}: {
+  titulo: string
+  detalle: string
+  testid?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="rounded-2xl bg-surface-container/60 border border-border-subtle p-4">
+      <div className="text-label-md text-text-secondary uppercase">{titulo}</div>
+      <div
+        className="font-headline-lg text-headline-lg text-text-primary leading-tight tabular-nums"
+        data-testid={testid}
+      >
+        {children}
+      </div>
+      <div className="text-body-sm text-text-secondary">{detalle}</div>
     </div>
   )
 }

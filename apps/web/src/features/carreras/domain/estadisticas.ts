@@ -192,6 +192,23 @@ export function records(carreras: CarreraGuardada[]): RecordPersonal[] {
   })
 }
 
+/** Distancia con record personal nuevo tras sumar [nueva] (la mas larga), o null. */
+export function nuevoRecord(
+  previas: CarreraGuardada[],
+  nueva: Pick<CarreraGuardada, 'distanciaKm' | 'segundos'> & {
+    parciales?: CarreraGuardada['parciales']
+  }
+): RecordPersonal | null {
+  const antes = records(previas)
+  const despues = records([...previas, nueva as CarreraGuardada])
+  let mejor: RecordPersonal | null = null
+  despues.forEach((r, i) => {
+    const a = antes[i].segundos
+    if (r.segundos != null && (a == null || r.segundos < a)) mejor = r
+  })
+  return mejor
+}
+
 /** Mayor numero de dias seguidos con carrera en todo el historial. */
 export function mejorRacha(carreras: CarreraGuardada[]): number {
   const dias = [...new Set(carreras.map((c) => inicioDia(c.inicioMs)))].sort((x, y) => x - y)

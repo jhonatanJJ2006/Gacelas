@@ -255,6 +255,16 @@ export function opcionesBuscador(consulta: string, rutaPreferida: string | null)
   return preferida && !filtradas.includes(preferida) ? [preferida, ...filtradas] : filtradas
 }
 
+/** Etiqueta de una alternativa: Óptima (la más corta), Plano (menos desnivel) o Trail (más desnivel). */
+export function etiquetaOpcion(o: Opcion, todas: Opcion[]): 'Óptima' | 'Plano' | 'Trail' | null {
+  if (todas.length < 2) return null
+  const min = (f: (x: Opcion) => number) => todas.reduce((a, b) => (f(b) < f(a) ? b : a))
+  if (min((x) => x.distance) === o) return 'Óptima'
+  if (min((x) => x.elevation) === o) return 'Plano'
+  if (min((x) => -x.elevation) === o) return 'Trail'
+  return null
+}
+
 /** Indicaciones simplificadas segun la distancia recorrida (sin mapas todavia). */
 export function indicacion(distanciaKm: number): { metros: number; texto: string } {
   const pasos = [

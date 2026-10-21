@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { MensajeError } from '../../../../components/ui'
 import { useApp } from '../../../../store/app'
 import { FotoPerfil } from './Perfil'
@@ -22,6 +22,16 @@ export function EditarPerfil() {
   const [genero, setGenero] = useState(sesion?.genero ?? 'Prefiero no decir')
   const [foto, setFoto] = useState<string | null>(sesion?.foto ?? null)
   const [error, setError] = useState<string | null>(null)
+  const ajustes = useApp((s) => s.ajustes)
+  const actualizarAjustes = useApp((s) => s.actualizarAjustes)
+  const [fis, setFis] = useState({
+    pesoKg: ajustes.pesoKg?.toString() ?? '',
+    alturaCm: ajustes.alturaCm?.toString() ?? '',
+  })
+  const [nivel, setNivel] = useState(ajustes.nivelDeclarado)
+  const [favorita, setFavorita] = useState(ajustes.distanciaFavorita)
+  const [metaKm, setMetaKm] = useState(ajustes.metaKmSemana)
+  const [dias, setDias] = useState(ajustes.metaSemanal)
 
   if (!sesion) return <Navigate to="/bienvenida" replace />
 
@@ -49,6 +59,18 @@ export function EditarPerfil() {
         edad,
         genero,
         foto,
+      })
+      const num = (v: string, min: number, max: number) => {
+        const n = Number(v)
+        return v.trim() && n >= min && n <= max ? Math.round(n) : null
+      }
+      await actualizarAjustes({
+        pesoKg: num(fis.pesoKg, 25, 250),
+        alturaCm: num(fis.alturaCm, 100, 230),
+        nivelDeclarado: nivel,
+        distanciaFavorita: favorita,
+        metaKmSemana: metaKm,
+        metaSemanal: dias,
       })
     } catch (e) {
       return fallar(e instanceof Error ? e.message : 'No se pudo guardar el perfil')
@@ -212,6 +234,128 @@ export function EditarPerfil() {
             </div>
           </div>
         </div>
+        <Link
+          to="/perfil/avatar"
+          className="flex items-center justify-center gap-2 h-11 rounded-xl border border-primary/50 text-primary font-semibold"
+        >
+          <span className="material-symbols-outlined">view_in_ar</span>Personalizar avatar 3D
+        </Link>
+
+        <section className="bg-surface-container rounded-2xl p-4 space-y-3">
+          <div className="flex justify-between items-baseline">
+            <h2 className="font-title-md text-title-md text-text-primary">Datos fisiológicos</h2>
+            <span className="text-body-sm text-text-secondary">Privado</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {(
+              [
+                ['pesoKg', 'Peso (kg)', '68'],
+                ['alturaCm', 'Altura (cm)', '174'],
+              ] as const
+            ).map(([k, t, ph]) => (
+              <label key={k} className="block">
+                <span className="block text-sm text-text-secondary mb-1">{t}</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  aria-label={t}
+                  placeholder={ph}
+                  value={fis[k]}
+                  onChange={(e) =>
+                    setFis({ ...fis, [k]: e.target.value.replace(/[^\d]/g, '').slice(0, 3) })
+                  }
+                  className={entrada}
+                />
+              </label>
+            ))}
+          </div>
+        </section>
+
+        <section className="bg-surface-container rounded-2xl p-4 space-y-3">
+          <h2 className="font-title-md text-title-md text-text-primary">Perfil atlético</h2>
+          <div className="space-y-2" role="radiogroup" aria-label="Nivel de corredor">
+            {(
+              [
+                ['principiante', 'Principiante', '0 a 5 km por salida'],
+                ['intermedio', 'Intermedio', '5 a 15 km de fondo'],
+                ['avanzado', 'Avanzado', '+15 km fondo y ultra trail'],
+              ] as const
+            ).map(([id, t, d]) => (
+              <button
+                key={id}
+                role="radio"
+                aria-checked={nivel === id}
+                onClick={() => setNivel(id)}
+                className={`w-full flex items-center justify-between p-3 rounded-xl border text-left ${nivel === id ? 'border-primary bg-primary-600/10' : 'border-border-subtle'}`}
+              >
+                <span>
+                  <span className="block text-text-primary font-semibold">{t}</span>
+                  <span className="block text-body-sm text-text-secondary">{d}</span>
+                </span>
+                <span className="material-symbols-outlined text-primary">
+                  {nivel === id ? 'radio_button_checked' : 'radio_button_unchecked'}
+                </span>
+              </button>
+            ))}
+          </div>
+          <div>
+            <span className="block text-sm text-text-secondary mb-1">Distancia favorita</span>
+            <div className="grid grid-cols-4 gap-2">
+              {(['5K', '10K', '21K', '42K'] as const).map((d) => (
+                <button
+                  key={d}
+                  aria-pressed={favorita === d}
+                  onClick={() => setFavorita(d)}
+                  className={`h-10 rounded-lg border text-label-md ${favorita === d ? 'border-primary bg-primary-600/15 text-primary' : 'border-border-subtle text-text-secondary'}`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-surface-container rounded-2xl p-4 space-y-3">
+          <h2 className="font-title-md text-title-md text-text-primary">
+            Objetivos de entrenamiento
+          </h2>
+          <label className="block">
+            <span className="flex justify-between text-sm text-text-secondary mb-1">
+              <span>Meta de kilometraje</span>
+              <span className="text-primary font-semibold" data-testid="meta-km">
+                {metaKm} km / semana
+              </span>
+            </span>
+            <input
+              type="range"
+              min={5}
+              max={80}
+              step={5}
+              aria-label="Meta de kilometraje semanal"
+              value={metaKm}
+              onChange={(e) => setMetaKm(Number(e.target.value))}
+              className="w-full accent-primary-600"
+            />
+          </label>
+          <div>
+            <span className="block text-sm text-text-secondary mb-1">
+              Días de entrenamiento por semana
+            </span>
+            <div className="grid grid-cols-7 gap-1">
+              {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                <button
+                  key={n}
+                  aria-pressed={dias === n}
+                  aria-label={`${n} días por semana`}
+                  onClick={() => setDias(n)}
+                  className={`h-9 rounded-lg text-label-md ${dias === n ? 'bg-primary-600 text-on-primary' : 'bg-surface-container-high text-text-secondary'}`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
         <MensajeError mensaje={error} />
       </main>
     </div>

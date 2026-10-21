@@ -45,6 +45,11 @@ export interface ConfigAvatar {
   lentes: boolean
   reloj: boolean
   audifonos: boolean
+  /** Rasgos guardados; el modelo GLB actual tiene una sola textura y aun no los pinta. */
+  complexion?: 'hombre' | 'mujer'
+  tonoPiel?: number
+  peinado?: 'corto' | 'coleta' | 'rapado'
+  colorShorts?: number
 }
 
 export interface Ajustes {
@@ -80,6 +85,12 @@ export interface Ajustes {
   aparecerRankings: boolean
   /** Nivel que el corredor declaró al registrarse. */
   nivelDeclarado: 'principiante' | 'intermedio' | 'avanzado'
+  /** Datos fisiologicos privados (solo los ve su dueno en user_settings). */
+  pesoKg: number | null
+  alturaCm: number | null
+  distanciaFavorita: '5K' | '10K' | '21K' | '42K'
+  /** Meta de kilometraje semanal. */
+  metaKmSemana: number
 }
 
 export const AJUSTES_POR_DEFECTO: Ajustes = {
@@ -111,4 +122,8 @@ export const AJUSTES_POR_DEFECTO: Ajustes = {
   ocultarBiometricos: false,
   aparecerRankings: true,
   nivelDeclarado: 'principiante',
+  pesoKg: null,
+  alturaCm: null,
+  distanciaFavorita: '10K',
+  metaKmSemana: 25,
 }

@@ -299,10 +299,12 @@ export function Feed() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="font-body-md text-body-md text-text-primary font-semibold truncate flex items-center gap-2">
-                        <span className="truncate">{post.autor}</span>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                        <span className="font-body-md text-body-md text-text-primary font-semibold truncate max-w-full">
+                          {post.autor}
+                        </span>
                         <InsigniaNivel nivel={nivelDe(post)} />
-                      </p>
+                      </div>
                       <p className="font-body-sm text-body-sm text-text-secondary truncate">
                         {post.titulo} · {post.tiempo}
                       </p>

@@ -10,6 +10,13 @@ const Runner3D = lazy(() =>
 
 const EQUIPACIONES = ['bg-primary-600', 'bg-secondary-600', 'bg-danger', 'bg-tertiary']
 const NOMBRES_EQUIPACION = ['Naranja', 'Verde', 'Rojo', 'Celeste']
+const TONOS = ['#f5d0b5', '#e0ac85', '#c68863', '#8d5a3b', '#5c3a24']
+const SHORTS: [string, string][] = [
+  ['#111827', 'Negro'],
+  ['#7b1fa2', 'Morado'],
+  ['#1e3a8a', 'Azul'],
+  ['#e5e7eb', 'Blanco'],
+]
 const ESTILOS = [
   { id: 'Dinámico', icono: 'directions_run', animacion: 'Run' },
   { id: 'Relajado', icono: 'self_improvement', animacion: 'Idle' },
@@ -96,6 +103,72 @@ export function Avatar3D() {
         </div>
 
         <div className="px-margin py-6 space-y-4 bg-surface lg:flex-1 lg:px-0 lg:py-0">
+          <section aria-label="Rasgos del corredor" className="space-y-3">
+            <h2 className="font-label-lg text-label-lg text-text-secondary uppercase">
+              1. Género y complexión
+            </h2>
+            <div className="grid grid-cols-2 gap-2">
+              {(['hombre', 'mujer'] as const).map((c) => (
+                <button
+                  key={c}
+                  aria-pressed={(avatar.complexion ?? 'hombre') === c}
+                  onClick={() => cambiar({ complexion: c })}
+                  className={`h-11 rounded-xl border capitalize ${(avatar.complexion ?? 'hombre') === c ? 'border-primary bg-primary-600 text-on-primary' : 'border-border-subtle text-text-secondary'}`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+            <h2 className="font-label-lg text-label-lg text-text-secondary uppercase">
+              2. Tono de piel
+            </h2>
+            <div className="flex gap-3">
+              {TONOS.map((t, i) => (
+                <button
+                  key={t}
+                  aria-label={`Tono de piel ${i + 1}`}
+                  aria-pressed={(avatar.tonoPiel ?? 1) === i}
+                  onClick={() => cambiar({ tonoPiel: i })}
+                  style={{ background: t }}
+                  className={`w-10 h-10 rounded-full border-2 ${(avatar.tonoPiel ?? 1) === i ? 'border-primary' : 'border-transparent'}`}
+                />
+              ))}
+            </div>
+            <h2 className="font-label-lg text-label-lg text-text-secondary uppercase">
+              3. Cabello y peinado
+            </h2>
+            <div className="grid grid-cols-3 gap-2">
+              {(
+                [
+                  ['corto', 'Corto runner'],
+                  ['coleta', 'Coleta'],
+                  ['rapado', 'Rapado'],
+                ] as const
+              ).map(([id, t]) => (
+                <button
+                  key={id}
+                  aria-pressed={(avatar.peinado ?? 'corto') === id}
+                  onClick={() => cambiar({ peinado: id })}
+                  className={`h-10 rounded-lg border text-label-md ${(avatar.peinado ?? 'corto') === id ? 'border-primary bg-primary-600/15 text-primary' : 'border-border-subtle text-text-secondary'}`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+            <h2 className="font-label-lg text-label-lg text-text-secondary uppercase">4. Shorts</h2>
+            <div className="flex gap-3">
+              {SHORTS.map(([c, n], i) => (
+                <button
+                  key={n}
+                  aria-label={`Shorts ${n}`}
+                  aria-pressed={(avatar.colorShorts ?? 0) === i}
+                  onClick={() => cambiar({ colorShorts: i })}
+                  style={{ background: c }}
+                  className={`w-10 h-10 rounded-lg border-2 ${(avatar.colorShorts ?? 0) === i ? 'border-primary' : 'border-transparent'}`}
+                />
+              ))}
+            </div>
+          </section>
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="font-body-md text-body-md text-text-primary font-medium">

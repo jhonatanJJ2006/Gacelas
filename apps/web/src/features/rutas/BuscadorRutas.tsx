@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Unidades } from '../../lib/geo'
 import { useApp } from '../../store/app'
-import { opcionesBuscador } from '../../lib/logica'
+import { etiquetaOpcion, opcionesBuscador } from '../../lib/logica'
 import { MapaGoogle } from '../../components/MapaGoogle'
 import { trazoDeOpcion } from '../../lib/mapas'
 
@@ -17,6 +17,12 @@ export function BuscadorRutas() {
   )
   const routes = opcionesBuscador(searchQuery, rutaParam)
   const seleccionada = routes.find((r) => r.id === selectedRoute) ?? null
+  const rutas = useApp((s) => s.rutas)
+  const guardadas = useApp((s) => s.rutasGuardadas)
+  const alternarGuardada = useApp((s) => s.alternarRutaGuardada)
+  const destinos = rutas.slice(0, 4).map((r) => r.nombre)
+  const rutaId = seleccionada?.id.startsWith('ruta-') ? seleccionada.id.slice(5) : null
+  const guardada = rutaId != null && guardadas.includes(rutaId)
 
   return (
     <main className="w-full min-h-screen bg-[#070b13] flex flex-col relative">
@@ -98,95 +104,149 @@ export function BuscadorRutas() {
       </div>
 
       <div className="relative z-30 flex-1 flex flex-col">
-        <div className="pt-12 px-4">
-          <button
-            onClick={() => navigate('/rutas')}
-            aria-label="Volver"
-            className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white shadow-lg"
-          >
-            <span className="material-symbols-outlined">arrow_back</span>
-          </button>
+        <div className="pt-6 px-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/rutas')}
+              aria-label="Volver"
+              className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white shadow-lg"
+            >
+              <span className="material-symbols-outlined">arrow_back</span>
+            </button>
+            <span className="px-3 py-1 rounded-full bg-black/60 text-white text-label-md flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-success" />
+              Loja • GPS
+            </span>
+          </div>
+          <div className="rounded-2xl bg-[#0f1625]/95 border border-white/10 p-3 space-y-2 shadow-xl">
+            <div className="flex items-center gap-3">
+              <span className="w-3 h-3 rounded-full bg-success shrink-0" />
+              <div className="flex-1 h-11 px-3 rounded-xl bg-[#141c2e] text-white flex items-center justify-between">
+                <span>Mi ubicación</span>
+                <span className="text-label-sm text-success">GPS</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="w-3 h-3 rounded-sm bg-primary shrink-0" />
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="¿A dónde quieres correr?"
+                  aria-label="Destino"
+                  className="w-full h-11 pl-3 pr-9 bg-[#141c2e] border border-primary/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-primary"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    aria-label="Borrar destino"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">close</span>
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
+              {destinos.map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setSearchQuery(d)}
+                  className="px-3 py-1.5 rounded-lg bg-[#141c2e] text-slate-300 text-label-md whitespace-nowrap flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-[16px]">place</span>
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="flex-1" />
 
-        <div className="bg-gradient-to-t from-[#070b13] via-[#070b13]/95 to-transparent p-6 pb-8">
-          <div className="mb-4">
-            <div className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="¿A dónde quieres correr?"
-                className="w-full h-14 pl-14 pr-4 bg-[#141c2e] border-2 border-[#1f2b45] rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:border-[#7B1FA2] transition-colors"
-              />
-              <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 text-[24px]">
-                search
+        <div className="rounded-t-3xl bg-[#0f1625]/95 border-t border-white/10 p-5 pb-8">
+          {seleccionada && (
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <div className="text-label-md text-primary uppercase">Ruta seleccionada</div>
+                <div className="text-white font-semibold">{seleccionada.name}</div>
+              </div>
+              <span className="px-2 py-1 rounded-lg bg-success/15 text-success text-label-md">
+                {seleccionada.duration} min estimado
               </span>
             </div>
-          </div>
-
-          <div className="space-y-3 max-h-[40vh] overflow-y-auto">
+          )}
+          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 max-h-[40vh]">
             {routes.length === 0 && (
-              <p className="text-slate-400 text-sm text-center">No hay rutas con ese nombre.</p>
+              <p className="text-slate-400 text-sm text-center w-full">
+                No hay rutas con ese nombre.
+              </p>
             )}
-            {routes.map((route) => (
-              <button
-                key={route.id}
-                onClick={() => setSelectedRoute(route.id)}
-                aria-pressed={selectedRoute === route.id}
-                className={`w-full p-4 rounded-2xl border-2 transition-all ${
-                  selectedRoute === route.id
-                    ? route.color === 'primary'
-                      ? 'bg-[#7B1FA2]/10 border-[#7B1FA2]'
-                      : 'bg-[#10B981]/10 border-[#10B981]'
-                    : 'bg-[#141c2e] border-[#1f2b45] hover:border-[#334155]'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-white font-semibold text-left">{route.name}</h2>
-                  <span
-                    className={`material-symbols-outlined ${
-                      selectedRoute === route.id
-                        ? route.color === 'primary'
-                          ? 'text-[#7B1FA2]'
-                          : 'text-[#10B981]'
-                        : 'text-slate-500'
-                    }`}
-                  >
-                    {selectedRoute === route.id ? 'check_circle' : 'radio_button_unchecked'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-slate-400">
-                  <span className="flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[16px]">straighten</span>
-                    {Unidades.texto(route.distance, m, 1)} {Unidades.etiquetaDistancia(m)}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[16px]">schedule</span>
+            {routes.map((route) => {
+              const activa = selectedRoute === route.id
+              const etiqueta = etiquetaOpcion(route, routes)
+              return (
+                <button
+                  key={route.id}
+                  onClick={() => setSelectedRoute(route.id)}
+                  aria-pressed={activa}
+                  className={`min-w-[150px] p-3 rounded-2xl border-2 text-left transition-all ${
+                    activa ? 'bg-primary-600/10 border-primary' : 'bg-[#141c2e] border-[#1f2b45]'
+                  }`}
+                >
+                  {etiqueta && (
+                    <span className="inline-block mb-1 px-2 py-0.5 rounded-md bg-primary-600/20 text-primary text-[10px] font-bold uppercase">
+                      {etiqueta}
+                    </span>
+                  )}
+                  <h2 className="text-white font-semibold text-sm">{route.name}</h2>
+                  <div className="text-xs text-slate-400">
+                    {Unidades.texto(route.distance, m, 1)} {Unidades.etiquetaDistancia(m)} •{' '}
                     {route.duration} min
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[16px]">trending_up</span>
-                    {route.elevation}m
-                  </span>
-                </div>
-              </button>
-            ))}
+                  </div>
+                  <div className="flex justify-between text-xs mt-2 border-t border-white/10 pt-1">
+                    <span className="text-slate-300">
+                      {route.distance > 0
+                        ? `${Math.floor((route.duration * 60) / route.distance / 60)}:${String(
+                            Math.round(((route.duration * 60) / route.distance) % 60)
+                          ).padStart(2, '0')}/km`
+                        : '--'}
+                    </span>
+                    <span className="text-success">+{route.elevation}m</span>
+                  </div>
+                </button>
+              )
+            })}
           </div>
 
-          <button
-            onClick={() =>
-              seleccionada &&
-              navigate('/rutas/navegacion', {
-                state: { ruta: seleccionada.name, trazoId: seleccionada.id },
-              })
-            }
-            disabled={!seleccionada}
-            className="w-full mt-6 h-14 bg-gradient-to-r from-[#7B1FA2] to-[#A855F7] hover:from-[#5E1781] hover:to-[#7B1FA2] text-white font-bold rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
-          >
-            Comenzar navegación
-          </button>
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={() =>
+                seleccionada &&
+                navigate('/rutas/navegacion', {
+                  state: { ruta: seleccionada.name, trazoId: seleccionada.id },
+                })
+              }
+              disabled={!seleccionada}
+              className="flex-1 h-14 bg-gradient-to-r from-[#7B1FA2] to-[#A855F7] text-white font-bold rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined">play_circle</span>
+              Confirmar y comenzar navegación
+            </button>
+            {rutaId && (
+              <button
+                onClick={() => void alternarGuardada(rutaId)}
+                aria-pressed={guardada}
+                aria-label={guardada ? 'Quitar de guardadas' : 'Guardar ruta'}
+                className="w-14 h-14 rounded-2xl bg-[#141c2e] border border-white/10 text-primary flex items-center justify-center"
+              >
+                <span className="material-symbols-outlined">
+                  {guardada ? 'bookmark_added' : 'bookmark'}
+                </span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </main>
