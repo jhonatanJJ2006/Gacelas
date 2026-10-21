@@ -43,4 +43,10 @@ class EstadisticasPerfilTest {
         assertEquals(10, r.diasRestantes)
         assertEquals("Hace 35 min", EstadisticasPerfil.haceTiempo(ahora - 35 * 60_000L, ahora))
     }
+
+    @kotlin.test.Test fun nuevoRecordDetectaLaDistanciaMasLarga() {
+        val c = com.gacelas.carreras.domain.modelo.Carrera(id = "n", titulo = "", inicioMs = 0, segundos = 1500, distanciaKm = 5.2)
+        kotlin.test.assertEquals("5K", EstadisticasPerfil.nuevoRecord(emptyList(), c)?.etiqueta)
+        kotlin.test.assertNull(EstadisticasPerfil.nuevoRecord(listOf(c.copy(id = "a", segundos = 1300)), c))
+    }
 }

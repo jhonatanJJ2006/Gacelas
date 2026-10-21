@@ -52,6 +52,12 @@ object EstadisticasPerfil {
         }
     }
 
+    /** Distancia mas larga con record personal nuevo tras sumar [nueva], o null (igual que la web). */
+    fun nuevoRecord(previas: List<Carrera>, nueva: Carrera): RecordPersonal? {
+        val antes = records(previas)
+        return records(previas + nueva).withIndex().lastOrNull { (i, r) -> r.segundos != null && (antes[i].segundos == null || r.segundos < antes[i].segundos!!) }?.value
+    }
+
     fun records(carreras: List<Carrera>): List<RecordPersonal> = DISTANCIAS.map { (etiqueta, km) ->
         val tiempos = carreras.filter { it.distanciaKm >= km && it.segundos > 0 }
             .map { kotlin.math.round(it.segundos / it.distanciaKm * km).toInt() }.toMutableList()

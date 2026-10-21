@@ -52,6 +52,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.ViewInAr
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Edit
@@ -207,7 +208,7 @@ private fun FilaEstadistica(icono: ImageVector, etiqueta: String, valor: String)
 }
 
 @Composable
-fun EditarPerfilScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
+fun EditarPerfilScreen(onAtras: () -> Unit, onGuardar: () -> Unit, onAvatar: () -> Unit = {}) {
     val c = contenedor()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -227,6 +228,13 @@ fun EditarPerfilScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
     var edad by rememberSaveable(p.email) { mutableStateOf(p.edad) }
     var genero by rememberSaveable(p.email) { mutableStateOf(p.genero) }
     var foto by rememberSaveable(p.email) { mutableStateOf(p.fotoPath) }
+    val ajustes by ajustesState()
+    var peso by rememberSaveable(p.email) { mutableStateOf(ajustes.pesoKg?.let { it.toInt().toString() }.orEmpty()) }
+    var altura by rememberSaveable(p.email) { mutableStateOf(ajustes.alturaCm?.toString().orEmpty()) }
+    var nivel by rememberSaveable(p.email) { mutableStateOf(ajustes.nivelDeclarado) }
+    var favorita by rememberSaveable(p.email) { mutableStateOf(ajustes.distanciaFavorita) }
+    var metaKm by rememberSaveable(p.email) { mutableIntStateOf(ajustes.metaKmSemana) }
+    var dias by rememberSaveable(p.email) { mutableIntStateOf(ajustes.metaSemanal) }
     var error by remember { mutableStateOf<String?>(null) }
     val selector = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
@@ -244,6 +252,13 @@ fun EditarPerfilScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
             username.trim().removePrefix("@").length < 3 -> error = "El usuario debe tener al menos 3 caracteres"
             else -> scope.launch {
                 c.auth.actualizarPerfil(p.copy(nombre = nombre.trim(), username = username.trim().removePrefix("@"), ubicacion = ubicacion.trim(), bio = bio, edad = edad, genero = genero, fotoPath = foto))
+                c.ajustes.actualizar {
+                    it.copy(
+                        pesoKg = peso.toDoubleOrNull()?.takeIf { v -> v in 25.0..250.0 }?.let { v -> kotlin.math.round(v) },
+                        alturaCm = altura.toIntOrNull()?.takeIf { v -> v in 100..230 },
+                        nivelDeclarado = nivel, distanciaFavorita = favorita, metaKmSemana = metaKm, metaSemanal = dias,
+                    )
+                }
                 context.aviso("Perfil actualizado")
                 onGuardar()
             }
@@ -274,6 +289,37 @@ fun EditarPerfilScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
                 listOf("Masculino", "Femenino", "Otro").forEach { Pastilla(it, it == genero, { genero = it }) }
             }
             Pastilla("Prefiero no decir", genero == "Prefiero no decir", { genero = "Prefiero no decir" })
+            Tarjeta(Modifier.clickable(onClick = onAvatar)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.ViewInAr, null, tint = GColors.Primary500)
+                    Text("  Personalizar avatar 3D", style = GType.labelLg, color = GColors.TextPrimary)
+                }
+            }
+            EtiquetaGrupo("Datos fisiológicos (Privado)")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(Modifier.weight(1f)) { CampoTexto("Peso (kg)", peso, { peso = it.filter { ch -> ch.isDigit() || ch == '.' }.take(5) }, "70", tipo = KeyboardType.Decimal) }
+                Box(Modifier.weight(1f)) { CampoTexto("Altura (cm)", altura, { altura = it.filter(Char::isDigit).take(3) }, "170", tipo = KeyboardType.Number) }
+            }
+            EtiquetaGrupo("Perfil atlético")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("principiante" to "Principiante", "intermedio" to "Intermedio", "avanzado" to "Avanzado").forEach { (k, t) -> Pastilla(t, k == nivel, { nivel = k }) }
+            }
+            Text("Distancia favorita", style = GType.labelLg, color = GColors.TextSecondary)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("5K", "10K", "21K", "42K").forEach { d -> Pastilla(d, d == favorita, { favorita = d }) }
+            }
+            EtiquetaGrupo("Objetivos")
+            Text("Meta semanal: $metaKm km", style = GType.labelLg, color = GColors.TextPrimary)
+            androidx.compose.material3.Slider(metaKm.toFloat(), { metaKm = it.toInt() }, valueRange = 5f..150f, modifier = Modifier.testTag("meta-km"))
+            Text("Días por semana", style = GType.labelLg, color = GColors.TextSecondary)
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                (1..7).forEach { d ->
+                    Box(
+                        Modifier.size(38.dp).clip(CircleShape).background(if (d == dias) GColors.Primary else GColors.SurfaceContainer).clickable { dias = d },
+                        contentAlignment = Alignment.Center,
+                    ) { Text("$d", style = GType.labelLg, color = GColors.TextPrimary) }
+                }
+            }
             error?.let { Text(it, style = GType.bodyMd, color = GColors.Danger) }
             BotonPrimario("Guardar cambios", guardar, icono = null)
         }
@@ -293,9 +339,13 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
     var lentes by remember(guardado) { mutableStateOf(guardado.lentes) }
     var reloj by remember(guardado) { mutableStateOf(guardado.reloj) }
     var audifonos by remember(guardado) { mutableStateOf(guardado.audifonos) }
+    var complexion by remember(guardado) { mutableStateOf(guardado.complexion ?: "hombre") }
+    var tonoPiel by remember(guardado) { mutableIntStateOf(guardado.tonoPiel ?: 0) }
+    var peinado by remember(guardado) { mutableStateOf(guardado.peinado ?: "corto") }
+    var colorShorts by remember(guardado) { mutableIntStateOf(guardado.colorShorts ?: 0) }
     val guardar: () -> Unit = {
         scope.launch {
-            c.ajustes.actualizar { it.copy(avatar = ConfigAvatar(equipacion, estilo, lentes, reloj, audifonos)) }
+            c.ajustes.actualizar { it.copy(avatar = ConfigAvatar(equipacion, estilo, lentes, reloj, audifonos, complexion, tonoPiel, peinado, colorShorts)) }
             context.aviso("Avatar guardado")
             onGuardar()
         }
@@ -319,6 +369,30 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
                             Box(Modifier.size(44.dp).clip(CircleShape).background(c)
                                 .border(3.dp, if (i == equipacion) GColors.TextPrimary else Color.Transparent, CircleShape)
                                 .clickable { equipacion = i })
+                        }
+                    }
+                }
+                // Rasgos guardados; el modelo GLB actual tiene una sola textura y aun no los pinta.
+                EtiquetaGrupo("Género y complexión")
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("hombre" to "Hombre", "mujer" to "Mujer").forEach { (k, t) -> Pastilla(t, k == complexion, { complexion = k }) }
+                }
+                EtiquetaGrupo("Tono de piel")
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    TONOS_PIEL.forEachIndexed { i, t ->
+                        Box(Modifier.size(40.dp).clip(CircleShape).background(t).border(3.dp, if (i == tonoPiel) GColors.Primary else Color.Transparent, CircleShape).clickable { tonoPiel = i })
+                    }
+                }
+                EtiquetaGrupo("Cabello y peinado")
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("corto" to "Corto runner", "coleta" to "Coleta", "rapado" to "Rapado").forEach { (k, t) -> Pastilla(t, k == peinado, { peinado = k }) }
+                }
+                EtiquetaGrupo("Shorts")
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    COLORES_SHORTS.forEachIndexed { i, (col, n) ->
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Box(Modifier.size(40.dp).clip(CircleShape).background(col).border(3.dp, if (i == colorShorts) GColors.Primary else Color.Transparent, CircleShape).clickable { colorShorts = i })
+                            Text(n, style = GType.labelMd, color = GColors.TextSecondary)
                         }
                     }
                 }
@@ -350,3 +424,6 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
         }
     }
 }
+
+private val TONOS_PIEL = listOf(Color(0xFFF5D0B5), Color(0xFFE0AC85), Color(0xFFC68863), Color(0xFF8D5A3B), Color(0xFF5C3A24))
+private val COLORES_SHORTS = listOf(Color(0xFF111827) to "Negro", Color(0xFF7B1FA2) to "Morado", Color(0xFF1E3A8A) to "Azul", Color(0xFFE5E7EB) to "Blanco")

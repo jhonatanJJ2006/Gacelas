@@ -31,7 +31,7 @@ class ParidadCarreraTest {
         val e = CarreraMuestra.estado
         compose.setContent {
             GacelasTheme {
-                ContenidoCarreraC4(VistaCarrera(e), onPausa = {}, onStop = {}, onVuelta = {}, onAtras = {}, panelInicial = panel) { _, controles, _ ->
+                ContenidoCarreraC4(VistaCarrera(e), onPausa = {}, onStop = {}, onVuelta = {}, onAtras = {}, panelInicial = panel, vozActiva = true, onVoz = {}, autopausa = true) { _, controles, _ ->
                     Box(Modifier.fillMaxSize().background(K1.Fondo)) {
                         TrazadoRuta(e.puntos, Modifier.fillMaxSize())
                         controles({}, {}, 0f, true)
