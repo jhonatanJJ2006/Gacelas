@@ -1,5 +1,7 @@
 package com.gacelas.acceso
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.border
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -114,6 +116,8 @@ fun RegistroContenido(
     onAtras: () -> Unit,
     onIniciarSesion: () -> Unit,
     botonGoogle: @Composable () -> Unit,
+    nivel: String = "principiante",
+    onNivel: (String) -> Unit = {},
 ) {
     var verTerminos by remember { mutableStateOf(false) }
     PantallaAcceso(onAtras) {
@@ -121,7 +125,27 @@ fun RegistroContenido(
         CampoTexto("Nombre completo", nombre, onNombre, "Tu nombre")
         CampoTexto("Correo electrónico", email, onEmail, "tu@email.com", tipo = KeyboardType.Email)
         CampoTexto("Contraseña", password, onPassword, "Mínimo 8 caracteres", password = true,
+ 
             ayuda = "Usa mínimo 8 caracteres con letras y números", onListo = {})
+        val fuerza = listOf(Regex(".{8,}"), Regex("[A-Za-z]"), Regex("\\d"), Regex("[^A-Za-z0-9]")).count { it.containsMatchIn(password) }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            (0 until 4).forEach { i ->
+                Box(Modifier.weight(1f).height(4.dp).clip(RoundedCornerShape(2.dp))
+                    .background(if (i < fuerza) (if (fuerza >= 3) GColors.Secondary500 else GColors.Primary) else GColors.SurfaceHigh))
+            }
+        }
+        Text("Nivel de corredor", style = GType.labelLg, color = GColors.TextPrimary)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf(Triple("principiante", "Principiante", "0 - 5 km"), Triple("intermedio", "Intermedio", "5 - 15 km"), Triple("avanzado", "Avanzado", "+15 km / Trail")).forEach { (id, t, d) ->
+                val activo = nivel == id
+                Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(if (activo) GColors.Primary.copy(alpha = 0.15f) else GColors.SurfaceContainer)
+                    .border(1.dp, if (activo) GColors.Primary else GColors.BorderSubtle, RoundedCornerShape(12.dp)).clickable { onNivel(id) }.padding(8.dp).testTag("nivel-$id"),
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(t, style = GType.labelMd, color = GColors.TextPrimary)
+                    Text(d, style = GType.bodySm, color = GColors.TextSecondary)
+                }
+            }
+        }
         MensajeError(error)
         BotonPrimario(if (cargando) "Creando cuenta..." else "Crear cuenta", onCrear, enabled = !cargando)
         Text("Al crear una cuenta, aceptas nuestros Términos de Servicio y Política de Privacidad",
@@ -154,12 +178,20 @@ fun RecuperarContenido(
     onEnviar: () -> Unit,
     onAtras: () -> Unit,
 ) {
+    var espera by remember { mutableStateOf(0) }
+    LaunchedEffect(enviado) { if (enviado) espera = 45 }
+    LaunchedEffect(espera) { if (espera > 0) { kotlinx.coroutines.delay(1000); espera -= 1 } }
     PantallaAcceso(onAtras) {
         if (enviado) {
             Column(Modifier.fillMaxWidth().padding(top = 48.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 IconoCirculo(Icons.Filled.MarkEmailRead, GColors.Secondary.copy(alpha = 0.2f), GColors.Secondary500, 96.dp)
                 Text("Revisa tu correo", style = GType.headlineLg, color = GColors.TextPrimary)
                 Text("Te hemos enviado un enlace para restablecer tu contraseña a $email", style = GType.bodyLg, color = GColors.TextSecondary, textAlign = TextAlign.Center)
+                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceContainer).padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("¿No recibiste el correo?", style = GType.bodySm, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
+                    Text(if (espera > 0) "Reenviar en 0:${espera.toString().padStart(2, '0')}" else "Reenviar", style = GType.labelMd, color = GColors.Primary500,
+                        modifier = Modifier.clickable(enabled = espera == 0) { onEnviar(); espera = 45 }.padding(4.dp).testTag("reenviar"))
+                }
                 BotonPrimario("Volver al inicio de sesión", onAtras, icono = null)
             }
         } else {

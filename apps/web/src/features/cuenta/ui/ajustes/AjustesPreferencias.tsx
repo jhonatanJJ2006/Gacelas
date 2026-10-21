@@ -3,9 +3,41 @@ import { Link, useNavigate } from 'react-router-dom'
 import { BotonTexto, Dialogo } from '../../../../components/ui'
 import { descartarCarrera } from '../../../../store/carrera'
 import { useApp } from '../../../../store/app'
-import { FilaInterruptor, PantallaAjustes, Seccion } from './Comunes'
+import type { ReactNode } from 'react'
+import { Interruptor } from '../../../../components/ui'
+import { nivelCorredor } from '../../../../lib/logica'
+import { InsigniaNivel } from '../../../comunidad/PostSocial'
+import { FotoPerfil } from '../perfil/Perfil'
+import { PantallaAjustes, Seccion } from './Comunes'
 
 export const VERSION_APP = '1.0.0'
+
+function Fila({
+  icono,
+  titulo,
+  descripcion,
+  children,
+}: {
+  icono: string
+  titulo: string
+  descripcion: string
+  children: ReactNode
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 px-4 py-3 bg-surface-container rounded-xl">
+      <div className="flex items-center gap-3 min-w-0">
+        <span className="w-9 h-9 rounded-lg bg-surface-container-highest flex items-center justify-center material-symbols-outlined text-[20px] text-text-secondary">
+          {icono}
+        </span>
+        <div className="min-w-0">
+          <div className="font-body-md text-body-md text-text-primary font-semibold">{titulo}</div>
+          <p className="font-body-sm text-body-sm text-text-secondary">{descripcion}</p>
+        </div>
+      </div>
+      {children}
+    </div>
+  )
+}
 
 function Enlace({ to, icono, texto }: { to: string; icono: string; texto: string }) {
   return (
@@ -58,47 +90,167 @@ export function AjustesPreferencias() {
   const [dialogo, setDialogo] = useState<'acerca' | 'ayuda' | 'salir' | null>(null)
   const cerrar = () => setDialogo(null)
 
+  const sesion = useApp((s) => s.sesion)
+  const carreras = useApp((s) => s.carreras)
+  const km = carreras.reduce((a, c) => a + c.distanciaKm, 0)
+  const nombre = sesion?.nombre ?? 'Corredor'
+  const m = ajustes.unidadesMetricas
+  const ritmo = ajustes.ritmoObjetivoSeg
+  const ritmoTxt = `${String(Math.floor(ritmo / 60)).padStart(2, '0')}:${String(ritmo % 60).padStart(2, '0')}`
+
   return (
-    <PantallaAjustes titulo="Ajustes" volverA="/perfil">
-      <Seccion titulo="Cuenta">
-        <Enlace to="/perfil/editar" icono="person" texto="Editar perfil" />
-      </Seccion>
-      <Seccion titulo="Privacidad">
-        <Enlace to="/ajustes/privacidad" icono="lock" texto="Privacidad y ubicación" />
-        <Enlace to="/ajustes/notificaciones" icono="notifications" texto="Notificaciones" />
-      </Seccion>
-      <Seccion titulo="General">
-        <FilaInterruptor
-          icono="dark_mode"
-          titulo="Modo oscuro"
-          descripcion={ajustes.modoOscuro ? 'Activado' : 'Tema claro activo'}
-          activo={ajustes.modoOscuro}
-          onCambiar={(v) => void actualizar({ modoOscuro: v })}
-        />
-        <FilaInterruptor
+    <PantallaAjustes titulo="Ajustes" subtitulo="Club Gacelas Loja • 2,100 msnm" volverA="/perfil">
+      <div className="flex items-center gap-4 p-4 bg-surface-container rounded-2xl border border-border-subtle">
+        <FotoPerfil foto={sesion?.foto} nombre={nombre} className="w-14 h-14" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-title-md text-title-md text-text-primary truncate">{nombre}</span>
+            <InsigniaNivel nivel={nivelCorredor(km)} />
+          </div>
+          {sesion?.email && (
+            <p className="text-body-sm text-text-secondary truncate">{sesion.email}</p>
+          )}
+          <p className="text-body-sm text-success" data-testid="ajustes-km">
+            Sede Loja • {Math.round(km)} km totales
+          </p>
+        </div>
+        <Link
+          to="/perfil/editar"
+          className="px-3 py-2 rounded-lg bg-primary-600/15 text-primary text-label-md font-semibold"
+        >
+          Editar perfil
+        </Link>
+      </div>
+
+      <Seccion titulo="Preferencias de carrera" etiqueta="Entrenamiento">
+        <Fila
           icono="straighten"
-          titulo="Unidades métricas"
-          descripcion={ajustes.unidadesMetricas ? 'Kilómetros y metros' : 'Millas'}
-          activo={ajustes.unidadesMetricas}
-          onCambiar={(v) => void actualizar({ unidadesMetricas: v })}
-        />
+          titulo="Unidades de distancia"
+          descripcion="Sistema métrico para rutas andinas"
+        >
+          <div
+            role="group"
+            aria-label="Unidades de distancia"
+            className="flex rounded-lg bg-surface-container-highest p-0.5"
+          >
+            {[
+              ['km', true],
+              ['mi', false],
+            ].map(([t, v]) => (
+              <button
+                key={String(t)}
+                aria-pressed={m === v}
+                onClick={() => void actualizar({ unidadesMetricas: v as boolean })}
+                className={`px-3 py-1 rounded-md text-label-md font-semibold ${m === v ? 'bg-primary-600 text-on-primary' : 'text-text-secondary'}`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </Fila>
+        <Fila
+          icono="speed"
+          titulo="Objetivo de ritmo (Pacer)"
+          descripcion="Ritmo objetivo predeterminado"
+        >
+          <select
+            aria-label="Ritmo objetivo"
+            value={ritmo}
+            onChange={(e) => void actualizar({ ritmoObjetivoSeg: Number(e.target.value) })}
+            className="rounded-lg bg-surface-container-highest text-primary font-mono px-2 py-1 border border-border-subtle"
+          >
+            {Array.from({ length: 25 }, (_, i) => 210 + i * 15).map((s) => (
+              <option key={s} value={s}>
+                {`${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} /${m ? 'km' : 'mi'}`}
+              </option>
+            ))}
+          </select>
+          <span className="sr-only">{ritmoTxt}</span>
+        </Fila>
+        <Fila
+          icono="motion_photos_paused"
+          titulo="Autopausa"
+          descripcion="Detener al parar en semáforos o cruces"
+        >
+          <Interruptor
+            etiqueta="Autopausa"
+            activo={ajustes.autopausa}
+            onCambiar={(v) => void actualizar({ autopausa: v })}
+          />
+        </Fila>
+        <Fila
+          icono="record_voice_over"
+          titulo="Anuncios de voz"
+          descripcion={`Métricas audibles cada 1 ${m ? 'km' : 'mi'}`}
+        >
+          <Interruptor
+            etiqueta="Anuncios de voz"
+            activo={ajustes.anunciosVoz}
+            onCambiar={(v) => void actualizar({ anunciosVoz: v })}
+          />
+        </Fila>
+        <Fila
+          icono="timer"
+          titulo="Cuenta regresiva de inicio"
+          descripcion="Tiempo antes de arrancar el GPS"
+        >
+          <select
+            aria-label="Cuenta regresiva"
+            value={ajustes.cuentaRegresivaSeg}
+            onChange={(e) => void actualizar({ cuentaRegresivaSeg: Number(e.target.value) })}
+            className="rounded-lg bg-surface-container-highest text-success font-mono px-2 py-1 border border-border-subtle"
+          >
+            {[0, 3, 5, 10].map((n) => (
+              <option key={n} value={n}>
+                {n === 0 ? 'Sin cuenta' : `${n} seg`}
+              </option>
+            ))}
+          </select>
+        </Fila>
       </Seccion>
-      <Seccion titulo="Rachas">
-        <label className="flex items-center justify-between gap-4 px-4 min-h-[56px]">
-          <span className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-primary">local_fire_department</span>
-            <span>
-              <span className="block text-text-primary">Meta semanal</span>
-              <span className="block text-body-sm text-text-secondary">
-                Carreras por semana para mantener la racha semanal
-              </span>
-            </span>
-          </span>
+
+      <Seccion titulo="Apariencia" etiqueta="Interfaz">
+        <Fila
+          icono="dark_mode"
+          titulo="Tema"
+          descripcion="Optimizado para salidas nocturnas y al alba"
+        >
+          <button
+            onClick={() => void actualizar({ modoOscuro: !ajustes.modoOscuro })}
+            aria-label="Cambiar tema"
+            className="px-3 py-1 rounded-lg bg-surface-container-highest text-primary text-label-md font-semibold"
+          >
+            {ajustes.modoOscuro ? 'Oscuro' : 'Claro'}
+          </button>
+        </Fila>
+        <Fila
+          icono="language"
+          titulo="Idioma de la aplicación"
+          descripcion="Configuración regional"
+        >
+          <select
+            aria-label="Idioma"
+            value={ajustes.idioma}
+            onChange={(e) => void actualizar({ idioma: e.target.value as 'es-EC' | 'en' })}
+            className="rounded-lg bg-surface-container-highest text-text-primary px-2 py-1 border border-border-subtle"
+          >
+            <option value="es-EC">Español (Ecuador)</option>
+            <option value="en">English</option>
+          </select>
+        </Fila>
+      </Seccion>
+
+      <Seccion titulo="Rachas" etiqueta="Constancia">
+        <Fila
+          icono="local_fire_department"
+          titulo="Meta semanal"
+          descripcion="Carreras por semana para mantener la racha"
+        >
           <select
             aria-label="Meta semanal de carreras"
             value={ajustes.metaSemanal}
             onChange={(e) => void actualizar({ metaSemanal: Number(e.target.value) })}
-            className="min-h-[44px] min-w-[72px] rounded-xl bg-surface-container-highest text-text-primary px-3 border border-border-subtle"
+            className="rounded-lg bg-surface-container-highest text-text-primary px-2 py-1 border border-border-subtle"
           >
             {[1, 2, 3, 4, 5, 6, 7].map((n) => (
               <option key={n} value={n}>
@@ -106,9 +258,12 @@ export function AjustesPreferencias() {
               </option>
             ))}
           </select>
-        </label>
+        </Fila>
       </Seccion>
-      <Seccion titulo="Información">
+
+      <Seccion titulo="Cuenta" etiqueta="Seguridad y dispositivos">
+        <Enlace to="/ajustes/privacidad" icono="lock" texto="Privacidad y ubicación" />
+        <Enlace to="/ajustes/notificaciones" icono="notifications" texto="Notificaciones" />
         <Boton
           onClick={() => setDialogo('acerca')}
           icono="info"

@@ -1,5 +1,7 @@
 package com.gacelas.rutas
 
+import androidx.compose.ui.platform.testTag
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Draw
@@ -129,6 +131,10 @@ fun ListaRutasContenido(
                 )
             }
         }
+        Column(Modifier.testTag("encabezado-lista-rutas")) {
+            Text("Rutas locales de Loja", style = GType.titleMd, color = GColors.TextPrimary)
+            Text("${lista.size} ${if (lista.size == 1) "sendero" else "senderos"}", style = GType.bodySm, color = GColors.TextSecondary)
+        }
         lista.forEach { ruta ->
             val guardada = ruta.id in guardadas
             Tarjeta(padding = 0.dp, onClick = { onRuta(ruta.id) }) {
@@ -151,12 +157,25 @@ fun ListaRutasContenido(
                         ruta.autorNombre?.let { "por $it" },
                     )
                     if (extra.isNotEmpty()) Text(extra.joinToString("  ·  "), style = GType.labelMd, color = GColors.TextSecondary)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Straighten, null, tint = GColors.TextSecondary, modifier = Modifier.size(16.dp))
-                        Text(" ${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}   ", style = GType.bodyMd, color = GColors.TextSecondary)
-                        Icon(Icons.AutoMirrored.Filled.TrendingUp, null, tint = GColors.TextSecondary, modifier = Modifier.size(16.dp))
-                        Text(" ${ruta.elevacionM}m", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
-                        EtiquetaDificultad(ruta.dificultad)
+                    EtiquetaDificultad(ruta.dificultad)
+                    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(GColors.SurfaceHigh).padding(vertical = 8.dp).testTag("metricas-ruta")) {
+                        listOf(
+                            "Distancia" to "${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}",
+                            "Desnivel" to "+${ruta.elevacionM} m",
+                            "Valoración" to (ruta.valoracion?.let { "${decimalLocal(it)} (${ruta.resenas})" } ?: "--"),
+                        ).forEachIndexed { i, (t, v) ->
+                            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(t, style = GType.bodySm, color = GColors.TextSecondary)
+                                Text(v, style = GType.labelLg, color = if (i == 2) GColors.Primary400 else GColors.TextPrimary)
+                            }
+                        }
+                    }
+                    Row(
+                        Modifier.clip(RoundedCornerShape(8.dp)).background(GColors.SurfaceHigh).padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Filled.Info, null, tint = GColors.TextPrimary, modifier = Modifier.size(16.dp))
+                        Text(" Ver detalles", style = GType.labelMd, color = GColors.TextPrimary)
                     }
                 }
             }

@@ -4,10 +4,12 @@ import { Interruptor } from '../../../../components/ui'
 
 export function PantallaAjustes({
   titulo,
+  subtitulo,
   volverA,
   children,
 }: {
   titulo: string
+  subtitulo?: string
   volverA: string
   children: ReactNode
 }) {
@@ -23,7 +25,10 @@ export function PantallaAjustes({
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
-          <h1 className="font-headline-md text-headline-md text-text-primary">{titulo}</h1>
+          <div>
+            <h1 className="font-headline-md text-headline-md text-text-primary">{titulo}</h1>
+            {subtitulo && <p className="text-body-sm text-text-secondary">{subtitulo}</p>}
+          </div>
         </div>
       </header>
       <main className="flex-1 px-margin py-6 space-y-6 pb-24 lg:max-w-3xl lg:mx-auto lg:w-full lg:py-10">
@@ -33,10 +38,21 @@ export function PantallaAjustes({
   )
 }
 
-export function Seccion({ titulo, children }: { titulo: string; children: ReactNode }) {
+export function Seccion({
+  titulo,
+  etiqueta,
+  children,
+}: {
+  titulo: string
+  etiqueta?: string
+  children: ReactNode
+}) {
   return (
     <section>
-      <h2 className="font-title-md text-title-md text-text-primary mb-3">{titulo}</h2>
+      <div className="flex items-baseline justify-between mb-3">
+        <h2 className="font-title-md text-title-md text-text-primary">{titulo}</h2>
+        {etiqueta && <span className="text-body-sm text-text-secondary">{etiqueta}</span>}
+      </div>
       <div className="space-y-2">{children}</div>
     </section>
   )

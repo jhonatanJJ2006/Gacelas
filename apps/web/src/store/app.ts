@@ -56,6 +56,8 @@ export interface EstadoApp {
   feedSocial: boolean
   refrescarFeed(): Promise<void>
   alternarMeGustaPost(id: string): Promise<void>
+  alternarCompartidaPost(id: string): Promise<void>
+  subirFotosPost(id: string, archivos: File[]): Promise<void>
   comentarPost(id: string, texto: string): Promise<void>
   comentariosPost(id: string): Promise<ComentarioPublicacion[]>
   /** Escucha cambios del feed en tiempo real; devuelve la baja. */
@@ -64,6 +66,8 @@ export interface EstadoApp {
   rachaServidor: Racha | null
   refrescarRacha(): Promise<void>
   siguiendo: string[]
+  /** Corredores que siguen al usuario (Supabase). */
+  seguidores: number
   alternarSeguir(id: string): Promise<void>
   buscarCorredores(consulta: string): Promise<CorredorPublico[]>
   marcarNotificacionesLeidas(ids: string[]): Promise<void>
@@ -112,11 +116,45 @@ export const useApp = create<EstadoApp>((set, get) => ({
   feedSocial: false,
   async refrescarFeed() {
     if (!repos.comunidad || !get().sesion) return set({ feedSocial: false, publicaciones: [] })
-    const [publicaciones, siguiendo] = await Promise.all([
+    const [publicaciones, siguiendo, seguidores] = await Promise.all([
       repos.comunidad.publicaciones().catch(() => get().publicaciones),
       repos.comunidad.siguiendo().catch(() => get().siguiendo),
+      repos.comunidad.seguidores?.().catch(() => get().seguidores) ?? get().seguidores,
     ])
-    set({ publicaciones, siguiendo, feedSocial: true })
+    set({ publicaciones, siguiendo, seguidores, feedSocial: true })
+  },
+  async alternarCompartidaPost(id) {
+    if (!repos.comunidad?.alternarCompartida) return
+    const antes = get().publicaciones
+    const p = antes.find((x) => x.id === id)
+    if (!p) return
+    const activo = !p.compartida
+    set({
+      publicaciones: antes.map((x) =>
+        x.id === id
+          ? {
+              ...x,
+              compartida: activo,
+              compartidos: Math.max(0, (x.compartidos ?? 0) + (activo ? 1 : -1)),
+            }
+          : x
+      ),
+    })
+    try {
+      await repos.comunidad.alternarCompartida(id, activo)
+    } catch (e) {
+      set({ publicaciones: antes })
+      throw e
+    }
+  },
+  async subirFotosPost(id, archivos) {
+    if (!repos.comunidad?.subirFotos) return
+    const urls = await repos.comunidad.subirFotos(id, archivos)
+    set({
+      publicaciones: get().publicaciones.map((x) =>
+        x.id === id ? { ...x, imagenes: [...(x.imagenes ?? []), ...urls] } : x
+      ),
+    })
   },
   async alternarMeGustaPost(id) {
     if (!repos.comunidad) return
@@ -160,6 +198,7 @@ export const useApp = create<EstadoApp>((set, get) => ({
   },
   rachaServidor: null,
   siguiendo: [],
+  seguidores: 0,
   rutas: rutasMock,
   rutasMeGusta: [],
   rutasSociales: false,

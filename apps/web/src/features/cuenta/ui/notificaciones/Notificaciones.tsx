@@ -8,6 +8,8 @@ import {
 import type { Notificacion } from '../../../../mocks/data'
 import { useApp } from '../../../../store/app'
 import { destinoNotificacion } from '../../../../lib/logica'
+import { retoMes } from '../../../../lib/estadisticas'
+import { FilaInterruptor } from '../ajustes/Comunes'
 
 export function Notificaciones() {
   const navigate = useNavigate()
@@ -16,6 +18,11 @@ export function Notificaciones() {
   const marcar = useApp((s) => s.marcarNotificacionesLeidas)
   const [filtro, setFiltro] = useState<FiltroNotificaciones>('Todas')
   const notificaciones = filtrarNotificaciones(notificacionesVisibles(ajustes, lista), filtro)
+  const actualizar = useApp((s) => s.actualizarAjustes)
+  const carreras = useApp((s) => s.carreras)
+  const reto = retoMes(carreras, Date.now())
+  const pctReto = Math.min(100, Math.round((reto.km / reto.metaKm) * 100))
+  const nuevas = lista.filter((n) => !n.leida).length
 
   const marcarTodas = () => void marcar(lista.filter((n) => !n.leida).map((n) => n.id))
   const abrir = (n: Notificacion) => {
@@ -54,7 +61,14 @@ export function Notificaciones() {
             >
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
-            <h1 className="font-headline-md text-headline-md text-text-primary">Notificaciones</h1>
+            <div>
+              <h1 className="font-headline-md text-headline-md text-text-primary">
+                Notificaciones
+              </h1>
+              <p className="text-body-sm text-text-secondary hidden sm:block">
+                Actualizaciones de ruta, club y rendimiento
+              </p>
+            </div>
           </div>
           <button
             onClick={marcarTodas}
@@ -74,7 +88,7 @@ export function Notificaciones() {
                 role="tab"
                 aria-selected={filtro === f}
                 onClick={() => setFiltro(f)}
-                className={`px-4 py-2 rounded-full font-label-md text-label-md ${filtro === f ? 'bg-primary-600 text-bg-primary' : 'bg-surface-container text-text-secondary hover:text-text-primary'}`}
+                className={`px-4 py-2 rounded-full font-label-md text-label-md ${filtro === f ? 'bg-primary-600 text-on-primary' : 'bg-surface-container text-text-secondary hover:text-text-primary'}`}
               >
                 {f}
               </button>
@@ -82,7 +96,18 @@ export function Notificaciones() {
           </div>
         </div>
 
-        <div className="divide-y divide-border-subtle">
+        <div className="px-margin flex items-center justify-between mb-2">
+          <span className="text-label-md text-primary uppercase tracking-wide flex items-center gap-2">
+            Recientes
+            {nuevas > 0 && (
+              <span className="px-2 py-0.5 rounded-full bg-primary-600/20 text-primary normal-case">
+                {nuevas} {nuevas === 1 ? 'nueva' : 'nuevas'}
+              </span>
+            )}
+          </span>
+          <span className="text-body-sm text-text-secondary">Loja, Ecuador</span>
+        </div>
+        <div className="px-margin space-y-2">
           {notificaciones.length === 0 && (
             <p className="px-margin py-8 text-center text-text-secondary">No hay notificaciones.</p>
           )}
@@ -93,12 +118,12 @@ export function Notificaciones() {
                 key={notif.id}
                 onClick={() => abrir(notif)}
                 data-testid="notificacion"
-                className={`w-full px-margin py-4 flex items-start gap-3 hover:bg-surface-container transition-colors text-left ${
-                  !notif.leida ? 'bg-surface-container/50' : ''
+                className={`w-full px-4 py-4 rounded-2xl border flex items-start gap-3 hover:bg-surface-container-high transition-colors text-left bg-surface-container ${
+                  !notif.leida ? 'border-primary-600/40' : 'border-border-subtle'
                 }`}
               >
                 <div
-                  className={`w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0 ${color}`}
+                  className={`w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center shrink-0 ${color}`}
                 >
                   <span className="material-symbols-outlined text-[20px]">{icon}</span>
                 </div>
@@ -118,6 +143,71 @@ export function Notificaciones() {
             )
           })}
         </div>
+
+        <section className="px-margin mt-6" data-testid="reto-notificacion">
+          <h2 className="text-label-md text-primary uppercase tracking-wide mb-2">Esta semana</h2>
+          <div className="p-4 rounded-2xl bg-surface-container border border-border-subtle space-y-2">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-primary">flag</span>
+              <div>
+                <div className="font-title-sm text-title-sm text-text-primary">
+                  Progreso de reto mensual
+                </div>
+                <div className="text-body-sm text-text-secondary">{reto.titulo}</div>
+              </div>
+            </div>
+            <div className="flex justify-between text-label-md">
+              <span className="text-text-primary">
+                {reto.km.toFixed(1)} de {reto.metaKm} km acumulados
+              </span>
+              <span className="text-primary">{pctReto}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-surface-container-highest overflow-hidden">
+              <div className="h-full bg-primary-600" style={{ width: `${pctReto}%` }} />
+            </div>
+            <div className="flex justify-between text-body-sm text-text-secondary">
+              <span>Faltan {Math.max(0, reto.metaKm - reto.km).toFixed(1)} km</span>
+              <span>Cierra en {reto.diasRestantes} días</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="px-margin mt-6 space-y-2">
+          <div className="flex justify-between items-baseline">
+            <h2 className="text-label-md text-primary uppercase tracking-wide">
+              Preferencias de alertas
+            </h2>
+            <span className="text-body-sm text-text-secondary">Ajustes directos</span>
+          </div>
+          <FilaInterruptor
+            icono="event"
+            titulo="Eventos del club"
+            descripcion="Quedadas en Jipiro, Vilcabamba y Zamora"
+            activo={ajustes.notifEventos}
+            onCambiar={(v) => void actualizar({ notifEventos: v })}
+          />
+          <FilaInterruptor
+            icono="forum"
+            titulo="Comentarios y aplausos"
+            descripcion="Interacción social de compañeros de ruta"
+            activo={ajustes.notifComentarios && ajustes.notifLikes}
+            onCambiar={(v) => void actualizar({ notifComentarios: v, notifLikes: v })}
+          />
+          <FilaInterruptor
+            icono="person_add"
+            titulo="Nuevos seguidores"
+            descripcion="Corredores que empiezan a seguirte"
+            activo={ajustes.notifSeguidores}
+            onCambiar={(v) => void actualizar({ notifSeguidores: v })}
+          />
+          <FilaInterruptor
+            icono="sensors"
+            titulo="Corredores en vivo"
+            descripcion="Aviso cuando alguien que sigues sale a correr"
+            activo={ajustes.notifEnVivo}
+            onCambiar={(v) => void actualizar({ notifEnVivo: v })}
+          />
+        </section>
       </main>
     </div>
   )

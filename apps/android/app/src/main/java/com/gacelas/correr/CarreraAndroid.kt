@@ -26,8 +26,11 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
     val estado by vm.estado.collectAsState()
     val ajustes by ajustesState()
     var confirmar by remember { mutableStateOf(false) }
+    val ajustesVm = com.gacelas.ui.ajustesViewModel()
+    val guardarVoz: ((com.gacelas.cuenta.domain.modelo.Ajustes) -> com.gacelas.cuenta.domain.modelo.Ajustes) -> Unit = { t -> ajustesVm.actualizar(t) }
     MantenerPantallaEncendida()
     RelojCarrera(tracker, estado)
+    PreferenciasCarrera(estado, ajustes) { if (!estado.pausada) vm.alternarPausa() }
     ContenidoCarreraC4(
         VistaCarrera(estado, ajustes.unidadesMetricas),
         onPausa = vm::alternarPausa,
@@ -35,6 +38,9 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
         onVuelta = vm::vuelta,
         onAtras = { confirmar = true },
         extraCabecera = { BotonCompartirEnVivo(tracker) },
+        vozActiva = ajustes.anunciosVoz,
+        onVoz = { guardarVoz { it.copy(anunciosVoz = !it.anunciosVoz) } },
+        autopausa = ajustes.autopausa,
         mapa = { vista3d, controles, panelAbierto ->
             if (Mapas.configurado()) MapaGacelas(
                 estado.puntos.aLatLng(), Modifier.fillMaxSize(), seguir = true, zoom = 17f, modo3d = vista3d,

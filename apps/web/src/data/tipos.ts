@@ -45,6 +45,11 @@ export interface ConfigAvatar {
   lentes: boolean
   reloj: boolean
   audifonos: boolean
+  /** Rasgos guardados; el modelo GLB actual tiene una sola textura y aun no los pinta. */
+  complexion?: 'hombre' | 'mujer'
+  tonoPiel?: number
+  peinado?: 'corto' | 'coleta' | 'rapado'
+  colorShorts?: number
 }
 
 export interface Ajustes {
@@ -69,6 +74,23 @@ export interface Ajustes {
   ocultas: string[]
   /** Carreras por semana para mantener la racha semanal. */
   metaSemanal: number
+  /** Ritmo objetivo del pacer en segundos por km. */
+  ritmoObjetivoSeg: number
+  autopausa: boolean
+  anunciosVoz: boolean
+  /** Segundos de cuenta regresiva antes de arrancar el GPS (0 = sin cuenta). */
+  cuentaRegresivaSeg: number
+  idioma: 'es-EC' | 'en'
+  ocultarBiometricos: boolean
+  aparecerRankings: boolean
+  /** Nivel que el corredor declaró al registrarse. */
+  nivelDeclarado: 'principiante' | 'intermedio' | 'avanzado'
+  /** Datos fisiologicos privados (solo los ve su dueno en user_settings). */
+  pesoKg: number | null
+  alturaCm: number | null
+  distanciaFavorita: '5K' | '10K' | '21K' | '42K'
+  /** Meta de kilometraje semanal. */
+  metaKmSemana: number
 }
 
 export const AJUSTES_POR_DEFECTO: Ajustes = {
@@ -92,4 +114,16 @@ export const AJUSTES_POR_DEFECTO: Ajustes = {
   comentarios: {},
   ocultas: [],
   metaSemanal: 3,
+  ritmoObjetivoSeg: 330,
+  autopausa: true,
+  anunciosVoz: true,
+  cuentaRegresivaSeg: 3,
+  idioma: 'es-EC',
+  ocultarBiometricos: false,
+  aparecerRankings: true,
+  nivelDeclarado: 'principiante',
+  pesoKg: null,
+  alturaCm: null,
+  distanciaFavorita: '10K',
+  metaKmSemana: 25,
 }

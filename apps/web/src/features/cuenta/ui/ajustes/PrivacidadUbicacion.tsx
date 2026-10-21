@@ -30,9 +30,32 @@ export function PrivacidadUbicacion() {
   const [radio, setRadio] = useState(ajustes.radioHogarM)
   useEffect(() => setRadio(ajustes.radioHogarM), [ajustes.radioHogarM])
   const guardarRadio = () => void actualizar({ radioHogarM: radio })
+  const carreras = useApp((s) => s.carreras)
+  const descargar = () => {
+    const blob = new Blob([JSON.stringify({ carreras }, null, 2)], { type: 'application/json' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = 'gacelas-mis-datos.json'
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }
 
   return (
-    <PantallaAjustes titulo="Privacidad y Ubicación" volverA="/ajustes">
+    <PantallaAjustes
+      titulo="Privacidad y Ubicación"
+      subtitulo="Gacelas Loja • Club oficial"
+      volverA="/ajustes"
+    >
+      <div className="flex gap-3 p-4 rounded-2xl bg-primary-600/10 border border-primary-600/40">
+        <span className="material-symbols-outlined text-primary">shield</span>
+        <div>
+          <p className="font-title-sm text-title-sm text-primary">Privacidad activa por defecto</p>
+          <p className="text-body-sm text-text-secondary">
+            Tus recorridos no revelan el punto exacto de tu residencia. Tu ubicación en vivo
+            permanece desactivada hasta que decidas compartirla.
+          </p>
+        </div>
+      </div>
       <Seccion titulo="Visibilidad del perfil">
         <div role="radiogroup" aria-label="Visibilidad del perfil" className="space-y-2">
           {OPCIONES.map((o) => {
@@ -63,6 +86,23 @@ export function PrivacidadUbicacion() {
         </div>
       </Seccion>
 
+      <Seccion titulo="Visibilidad de actividades">
+        <FilaInterruptor
+          icono="monitor_heart"
+          titulo="Ocultar datos biométricos"
+          descripcion="Pulsaciones y cadencia ocultas en resúmenes públicos"
+          activo={ajustes.ocultarBiometricos}
+          onCambiar={(v) => void actualizar({ ocultarBiometricos: v })}
+        />
+        <FilaInterruptor
+          icono="leaderboard"
+          titulo="Aparecer en rankings y retos"
+          descripcion="Figurar en el top semanal de altimetría y distancia de Loja"
+          activo={ajustes.aparecerRankings}
+          onCambiar={(v) => void actualizar({ aparecerRankings: v })}
+        />
+      </Seccion>
+
       <Seccion titulo="Ubicación GPS">
         <FilaInterruptor
           icono="my_location"
@@ -82,7 +122,20 @@ export function PrivacidadUbicacion() {
           onCambiar={(v) => void actualizar({ ocultarHogar: v })}
         />
         {ajustes.ocultarHogar && (
-          <div className="px-4 py-3 bg-surface-container rounded-xl">
+          <div className="px-4 py-3 bg-surface-container rounded-xl space-y-3">
+            <div className="flex gap-2" aria-label="Radios sugeridos">
+              {[200, 500, 1000].map((r) => (
+                <button
+                  key={r}
+                  aria-pressed={ajustes.radioHogarM === r}
+                  onClick={() => void actualizar({ radioHogarM: r })}
+                  className={`flex-1 py-2 rounded-lg border text-label-md ${ajustes.radioHogarM === r ? 'border-primary-600 bg-primary-600/15 text-primary' : 'border-border-subtle text-text-secondary'}`}
+                >
+                  {r >= 1000 ? `${r / 1000} km` : `${r} m`}
+                  {r === 200 ? ' (recomendado)' : ''}
+                </button>
+              ))}
+            </div>
             <div className="flex justify-between mb-2">
               <label htmlFor="radio-hogar" className="text-body-md text-text-secondary">
                 Radio de protección
@@ -95,7 +148,7 @@ export function PrivacidadUbicacion() {
               id="radio-hogar"
               type="range"
               min={100}
-              max={500}
+              max={1000}
               step={50}
               value={radio}
               onChange={(e) => setRadio(Number(e.target.value))}
@@ -106,7 +159,7 @@ export function PrivacidadUbicacion() {
             />
             <div className="flex justify-between text-body-sm text-text-secondary">
               <span>100m</span>
-              <span>500m</span>
+              <span>1 km</span>
             </div>
           </div>
         )}
@@ -123,6 +176,23 @@ export function PrivacidadUbicacion() {
             Tu privacidad está protegida
           </p>
         </div>
+      </Seccion>
+      <Seccion titulo="Gestión de datos de la cuenta">
+        <button
+          onClick={descargar}
+          className="w-full flex items-center gap-3 px-4 py-3 bg-surface-container rounded-xl text-left hover:bg-surface-container-high"
+        >
+          <span className="material-symbols-outlined text-primary">download</span>
+          <span className="flex-1">
+            <span className="block text-text-primary font-semibold">
+              Descargar mis datos y rutas
+            </span>
+            <span className="block text-body-sm text-text-secondary">
+              Exporta tus carreras en un archivo JSON
+            </span>
+          </span>
+          <span className="material-symbols-outlined text-text-secondary">chevron_right</span>
+        </button>
       </Seccion>
     </PantallaAjustes>
   )

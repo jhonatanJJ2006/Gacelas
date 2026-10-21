@@ -89,7 +89,25 @@ data class Publicacion(
     val meGusta: Boolean = false,
     val inicioMs: Long = 0L,
     val clienteId: String? = null,
+    /** Desnivel positivo (m). */
+    val desnivelM: Int = 0,
+    /** URLs publicas de las fotos. */
+    val imagenes: List<String> = emptyList(),
+    val compartidos: Int = 0,
+    val compartida: Boolean = false,
+    /** Km publicos acumulados del autor (nivel); null si no viene del servidor. */
+    val autorKm: Double? = null,
+    /** Ultimo comentario (autor, texto) para la vista previa. */
+    val ultimoComentario: Pair<String, String>? = null,
 )
+
+/** Nivel del corredor segun km acumulados (misma regla que la web nivelCorredor). */
+fun nivelCorredor(km: Double): String = when {
+    km >= 500 -> "Gacela Élite"
+    km >= 150 -> "Gacela Avanzada"
+    km >= 30 -> "Gacela Intermedia"
+    else -> "Gacela Principiante"
+}
 
 /** Comentario de una publicacion del feed (post_comments). */
 data class ComentarioFeed(val id: String, val autorId: String, val autor: String, val texto: String)

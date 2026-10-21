@@ -13,7 +13,7 @@ fun iconoNotificacion(tipo: com.gacelas.comunidad.domain.modelo.TipoNotificacion
 fun NotificacionesScreen(onAtras: () -> Unit, onAbrir: (Notificacion) -> Unit = {}) {
     val c = contenedor()
     val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.notificacionesViewModel(MockData.notificaciones) }
-    NotificacionesContenido(vm, onAtras, onAbrir)
+    NotificacionesContenido(vm, onAtras, onAbrir, extra = { com.gacelas.ajustes.ExtraNotificaciones() })
 }
 
 /** Notificaciones de la cuenta si hay servidor; si no, las de ejemplo. Se refrescan al mostrarse. */

@@ -114,7 +114,7 @@ export function DibujarRuta() {
                   role="radio"
                   aria-checked={dificultad === d}
                   onClick={() => setDificultad(d)}
-                  className={`flex-1 min-h-[40px] rounded-full text-sm font-semibold ${dificultad === d ? 'bg-primary-600 text-bg-primary' : 'bg-surface-container text-text-secondary'}`}
+                  className={`flex-1 min-h-[40px] rounded-full text-sm font-semibold ${dificultad === d ? 'bg-primary-600 text-on-primary' : 'bg-surface-container text-text-secondary'}`}
                 >
                   {d}
                 </button>
@@ -128,7 +128,7 @@ export function DibujarRuta() {
                   onClick={() =>
                     setEtiquetas((x) => (x.includes(k) ? x.filter((y) => y !== k) : [...x, k]))
                   }
-                  className={`min-h-[36px] px-3 rounded-full text-sm ${etiquetas.includes(k) ? 'bg-secondary-600 text-bg-primary' : 'bg-surface-container text-text-secondary'}`}
+                  className={`min-h-[36px] px-3 rounded-full text-sm ${etiquetas.includes(k) ? 'bg-secondary-600 text-on-primary' : 'bg-surface-container text-text-secondary'}`}
                 >
                   #{v}
                 </button>
@@ -143,7 +143,7 @@ export function DibujarRuta() {
               onClick={() => void publicar()}
               disabled={guardando}
               data-testid="publicar-dibujada"
-              className="w-full h-12 rounded-xl bg-primary-600 text-bg-primary font-semibold disabled:opacity-60"
+              className="w-full h-12 rounded-xl bg-primary-600 text-on-primary font-semibold disabled:opacity-60"
             >
               {guardando ? 'Publicando…' : 'Publicar ruta'}
             </button>

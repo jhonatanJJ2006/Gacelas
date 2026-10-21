@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { MensajeError } from '../../../components/ui'
 import { estaActiva } from '../../../lib/runTracker'
@@ -36,15 +36,49 @@ export function Correr() {
     }
   }, [precisa])
 
+  const cuentaSeg = useApp((s) => s.ajustes.cuentaRegresivaSeg ?? 0)
+  const [cuenta, setCuenta] = useState<number | null>(null)
+  useEffect(() => {
+    if (cuenta === null) return
+    const t = setTimeout(() => (cuenta <= 1 ? arrancarRef.current() : setCuenta(cuenta - 1)), 1000)
+    return () => clearTimeout(t)
+  }, [cuenta])
+  const arrancarRef = useRef(() => {})
+
   if (estaActiva(tracker.estado)) return <Navigate to="/correr/en-curso" replace />
 
-  const handleStart = () => {
+  const arrancar = () => {
+    setCuenta(null)
     setErrorCarrera(null)
     empezarSeguimiento({ precisa, onError: setErrorCarrera })
     navigate('/correr/en-curso')
   }
+  const handleStart = () => (cuentaSeg > 0 ? setCuenta(cuentaSeg) : arrancar())
 
+  arrancarRef.current = arrancar
   const listo = gps.tipo === 'listo'
+  if (cuenta !== null)
+    return (
+      <div
+        className="fixed inset-0 z-50 bg-surface flex flex-col items-center justify-center gap-6"
+        role="timer"
+        aria-label="Cuenta regresiva"
+      >
+        <span className="text-body-md text-text-secondary">Prepárate, arrancamos en</span>
+        <span
+          className="font-mono text-[96px] leading-none text-primary"
+          data-testid="cuenta-regresiva"
+        >
+          {cuenta}
+        </span>
+        <button
+          onClick={arrancar}
+          className="px-4 py-2 rounded-xl bg-surface-container text-text-primary"
+        >
+          Empezar ya
+        </button>
+      </div>
+    )
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -126,9 +160,9 @@ export function Correr() {
         <button
           onClick={handleStart}
           aria-label="Comenzar carrera"
-          className="w-24 h-24 rounded-full bg-primary-600 hover:bg-primary-700 active:scale-95 shadow-[0_12px_28px_-4px_rgba(217,119,6,0.5)] flex items-center justify-center transition-all"
+          className="w-24 h-24 rounded-full bg-primary-600 hover:bg-primary-700 active:scale-95 shadow-[0_12px_28px_-4px_rgba(123,31,162,0.5)] flex items-center justify-center transition-all"
         >
-          <span className="material-symbols-outlined text-[48px] text-bg-primary">play_arrow</span>
+          <span className="material-symbols-outlined text-[48px] text-on-primary">play_arrow</span>
         </button>
 
         <p className="font-label-lg text-label-lg text-text-secondary mt-6">

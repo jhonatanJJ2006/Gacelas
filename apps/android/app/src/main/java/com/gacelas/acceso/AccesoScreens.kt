@@ -121,12 +121,15 @@ fun RegistroScreen(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: ()
     val context = LocalContext.current
     val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.registroViewModel(auth) }
     val e by vm.estado.collectAsState()
+    val ajustesVm = com.gacelas.ui.ajustesViewModel()
+    var nivel by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf("principiante") }
     RegistroContenido(
         nombre = e.nombre, email = e.email, password = e.password, error = e.error, cargando = e.cargando,
         onNombre = vm::nombre, onEmail = vm::email, onPassword = vm::password,
-        onCrear = { vm.crear { context.aviso("Cuenta creada"); onCrear() } },
+        onCrear = { vm.crear { ajustesVm.actualizar { it.copy(nivelDeclarado = nivel) }; context.aviso("Cuenta creada"); onCrear() } },
         onAtras = onAtras, onIniciarSesion = onIniciarSesion,
         botonGoogle = { BotonGoogle(onCrear) },
+        nivel = nivel, onNivel = { nivel = it },
     )
 }
 

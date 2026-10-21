@@ -34,15 +34,15 @@ export function PerfilElevacion({
       >
         <defs>
           <linearGradient id="g-elev" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#F59E0B" stopOpacity="0.5" />
-            <stop offset="1" stopColor="#F59E0B" stopOpacity="0" />
+            <stop offset="0" stopColor="#A855F7" stopOpacity="0.5" />
+            <stop offset="1" stopColor="#A855F7" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d={`${linea} L${W},${H} L0,${H} Z`} fill="url(#g-elev)" />
         <path
           d={linea}
           fill="none"
-          stroke="#F59E0B"
+          stroke="#A855F7"
           strokeWidth="3"
           vectorEffect="non-scaling-stroke"
         />

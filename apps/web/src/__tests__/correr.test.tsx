@@ -9,6 +9,7 @@ describe('grabar una carrera con GPS', () => {
   let gps: ReturnType<typeof instalarGpsFalso>
   beforeEach(() => {
     prepararApp()
+    useApp.setState((s) => ({ ajustes: { ...s.ajustes, cuentaRegresivaSeg: 0 } }))
     gps = instalarGpsFalso()
   })
   afterEach(() => descartarCarrera())
@@ -20,6 +21,17 @@ describe('grabar una carrera con GPS', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Comenzar carrera' }))
     expect(await screen.findByText('En curso')).toBeInTheDocument()
     expect(gps.geo.watchPosition).toHaveBeenCalled()
+  })
+
+  it('cuenta regresiva de ajustes antes de arrancar el GPS', async () => {
+    useApp.setState((s) => ({ ajustes: { ...s.ajustes, cuentaRegresivaSeg: 3 } }))
+    renderRuta('/correr')
+    await screen.findByText('GPS Activado')
+    await userEvent.click(screen.getByRole('button', { name: 'Comenzar carrera' }))
+    expect(screen.getByTestId('cuenta-regresiva')).toHaveTextContent('3')
+    expect(gps.geo.watchPosition).not.toHaveBeenCalled()
+    await userEvent.click(screen.getByRole('button', { name: 'Empezar ya' }))
+    expect(await screen.findByText('En curso')).toBeInTheDocument()
   })
 
   it('Correr avisa si el GPS falla', async () => {

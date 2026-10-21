@@ -67,7 +67,8 @@ class NavGraphTest {
             GacelasTheme { GacelasNavHost(nav, inicio = Destinos.INICIO, sesionActiva = true) }
         }
         compose.runOnIdle { nav.navigate(Destinos.AJUSTES) }
-        compose.onNodeWithText("Unidades métricas").assertExists()
+        compose.onNodeWithText("Unidades de distancia").assertExists()
+        compose.onNodeWithText("Autopausa").assertExists()
         compose.onNodeWithText("Cerrar sesión").performScrollTo().performClick()
         compose.onNodeWithText("¿Cerrar sesión?").assertExists()
     }

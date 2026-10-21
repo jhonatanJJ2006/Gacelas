@@ -1,6 +1,8 @@
 package com.gacelas.rutas
 
+import androidx.compose.ui.platform.testTag
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Draw
 import androidx.compose.foundation.background
@@ -141,10 +143,33 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
     var seleccion by rememberSaveable { mutableStateOf(elegida ?: com.gacelas.rutas.data.RutaActiva.navegarId ?: "primary") }
     val sugeridas = todas.filter { consulta.isBlank() || it.nombre.contains(consulta.trim(), ignoreCase = true) }.take(8)
     val trazoSeleccion = todas.firstOrNull { it.id == seleccion }?.trazo.orEmpty().map { org.maplibre.android.geometry.LatLng(it.first, it.second) }
+    val scope = rememberCoroutineScope()
+    val actual = todas.firstOrNull { it.id == seleccion }
     Box(Modifier.fillMaxSize().background(Color(0xFF090F1A))) {
         MapaGacelas(trazoSeleccion, Modifier.fillMaxSize(), zoom = 14f) { MapaPlaceholder(rutaPrincipal = seleccion == "primary") }
-        IconButton(onClick = onAtras, modifier = Modifier.statusBarsPadding().padding(12.dp).clip(CircleShape).background(GColors.BgSecondary)) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Atrás", tint = GColors.TextPrimary)
+        Column(Modifier.statusBarsPadding().padding(12.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color(0xFF0F1626)).padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconButton(onClick = onAtras) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Atrás", tint = GColors.TextPrimary) }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Filled.MyLocation, null, tint = GColors.Primary500, modifier = Modifier.size(16.dp))
+                        Text("  Mi ubicación GPS", style = GType.bodyMd, color = GColors.TextPrimary)
+                    }
+                    CampoTexto("Destino", consulta, { consulta = it }, "¿A dónde quieres correr?", trailing = {
+                        if (consulta.isNotEmpty()) IconButton(onClick = { consulta = "" }) { Icon(Icons.Filled.Close, "Borrar destino", tint = GColors.TextSecondary) }
+                        else Icon(Icons.Filled.Search, null, tint = GColors.TextSecondary)
+                    })
+                }
+            }
+            androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(todas.take(4).size) { i ->
+                    val r = todas[i]
+                    com.gacelas.ui.components.Pastilla(r.nombre, consulta == r.nombre, { consulta = r.nombre; seleccion = r.id })
+                }
+            }
         }
         Column(
             Modifier.align(Alignment.BottomCenter).fillMaxWidth().clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
@@ -152,39 +177,60 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Box(Modifier.align(Alignment.CenterHorizontally).width(40.dp).height(4.dp).clip(CircleShape).background(GColors.BorderSubtle))
-            CampoTexto("Destino", consulta, { consulta = it }, "¿A dónde quieres correr?", trailing = { Icon(Icons.Filled.Search, null, tint = GColors.TextSecondary) })
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("Ruta seleccionada", style = GType.labelMd, color = GColors.TextSecondary)
+                    Text(actual?.nombre ?: "Elige una ruta", style = GType.headlineSm, color = GColors.TextPrimary)
+                }
+                actual?.let { Text("${it.minutos} min estimado", style = GType.labelLg, color = GColors.Primary500) }
+            }
             if (sugeridas.isEmpty()) Text("Sin rutas para \"$consulta\". Prueba con Jipiro o Universitaria.", style = GType.bodyMd, color = GColors.TextSecondary)
-            sugeridas.forEach { r ->
-                val activa = seleccion == r.id
-                val color = if (r.principal) GColors.Primary else GColors.Secondary500
-                Column(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(if (activa) color.copy(alpha = 0.1f) else Color(0xFF141C2E))
-                        .border(2.dp, if (activa) color else Color(0xFF1F2B45), RoundedCornerShape(16.dp)).clickable { seleccion = r.id }.padding(14.dp),
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(r.nombre, style = GType.labelLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-                        Icon(if (activa) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked, null, tint = if (activa) color else GColors.TextSecondary)
-                    }
-                    Spacer(Modifier.height(6.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Straighten, null, tint = GColors.TextSecondary, modifier = Modifier.size(14.dp))
-                        Text(" ${"%.1f".format(r.distanciaKm)} km   ", style = GType.bodySm, color = GColors.TextSecondary)
-                        Icon(Icons.Filled.Schedule, null, tint = GColors.TextSecondary, modifier = Modifier.size(14.dp))
-                        Text(" ${r.minutos} min   ", style = GType.bodySm, color = GColors.TextSecondary)
-                        Icon(Icons.AutoMirrored.Filled.TrendingUp, null, tint = GColors.TextSecondary, modifier = Modifier.size(14.dp))
-                        Text(" ${r.elevacionM}m", style = GType.bodySm, color = GColors.TextSecondary)
+            androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                items(sugeridas.size) { i ->
+                    val r = sugeridas[i]
+                    val activa = seleccion == r.id
+                    val etiqueta = etiquetaOpcion(r, sugeridas)
+                    Column(
+                        Modifier.width(170.dp).clip(RoundedCornerShape(16.dp)).background(if (activa) GColors.Primary.copy(alpha = 0.12f) else Color(0xFF141C2E))
+                            .border(2.dp, if (activa) GColors.Primary else Color(0xFF1F2B45), RoundedCornerShape(16.dp)).clickable { seleccion = r.id }.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        etiqueta?.let { Text(it.uppercase(), style = GType.labelMd, color = if (activa) GColors.Primary500 else GColors.Secondary500) }
+                        Text(r.nombre, style = GType.labelLg, color = GColors.TextPrimary, maxLines = 1)
+                        Text("${"%.1f".format(r.distanciaKm)} km · ${r.minutos} min", style = GType.bodySm, color = GColors.TextSecondary)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.AutoMirrored.Filled.TrendingUp, null, tint = GColors.TextSecondary, modifier = Modifier.size(14.dp))
+                            Text(" ${r.elevacionM} m", style = GType.bodySm, color = GColors.TextSecondary)
+                        }
                     }
                 }
             }
-            BotonPrimario("Comenzar navegación", {
-                val r = todas.firstOrNull { it.id == seleccion }
-                com.gacelas.rutas.data.RutaActiva.navegarId = r?.id
-                // Solo las rutas reales de la comunidad registran la corrida al guardar.
-                com.gacelas.rutas.data.RutaActiva.id = r?.id?.takeIf { r.real }
-                onNavegar()
-            }, icono = Icons.Filled.Navigation, enabled = sugeridas.any { it.id == seleccion })
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.weight(1f)) {
+                    BotonPrimario("Confirmar y comenzar navegación", {
+                        com.gacelas.rutas.data.RutaActiva.navegarId = actual?.id
+                        // Solo las rutas reales de la comunidad registran la corrida al guardar.
+                        com.gacelas.rutas.data.RutaActiva.id = actual?.id?.takeIf { actual.real }
+                        onNavegar()
+                    }, icono = Icons.Filled.Navigation, enabled = sugeridas.any { it.id == seleccion })
+                }
+                val guardada = actual?.id in guardadas
+                IconButton(
+                    onClick = { actual?.let { r -> scope.launch { c.rutas.alternarGuardada(r.id) } } },
+                    modifier = Modifier.clip(CircleShape).background(GColors.BgSecondary).testTag("guardar-ruta"),
+                ) { Icon(if (guardada) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, if (guardada) "Quitar de guardadas" else "Guardar ruta", tint = GColors.Primary500) }
+            }
         }
     }
+}
+
+/** Etiqueta de la alternativa: la mas corta es Optima, la de menos desnivel Plano y la de mas, Trail (igual que la web). */
+internal fun etiquetaOpcion(o: RutaNavegable, todas: List<RutaNavegable>): String? {
+    if (todas.size < 2) return null
+    if (todas.minBy { it.distanciaKm } === o) return "Óptima"
+    if (todas.minBy { it.elevacionM } === o) return "Plano"
+    if (todas.maxBy { it.elevacionM } === o) return "Trail"
+    return null
 }
 
 @Composable

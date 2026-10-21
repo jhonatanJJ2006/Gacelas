@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react'
 import { type Coordenada } from '../lib/mapas'
 import { rumboReciente, tramosPorRitmo } from '../lib/mapaEstilo'
+import { combinar, useRumboSensor } from '../lib/rumbo'
+import { haversineM } from '../shared/lib/geo'
 import {
   BotonSeguir,
   MapaBase,
@@ -47,7 +49,18 @@ export function MapaGoogle({
 }) {
   const tramos = useMemo(() => tramosPorRitmo(puntos), [puntos])
   const ultimo = puntos[puntos.length - 1] ?? null
-  const rumbo = useMemo(() => rumboReciente(puntos), [puntos])
+  const rumboGps = useMemo(() => rumboReciente(puntos), [puntos])
+  const rumboSensor = useRumboSensor(seguir)
+  const ultimoPunto = puntos[puntos.length - 1]
+  const penultimo = puntos[puntos.length - 2]
+  const velocidad =
+    ultimoPunto?.tiempoMs != null &&
+    penultimo?.tiempoMs != null &&
+    ultimoPunto.tiempoMs > penultimo.tiempoMs
+      ? haversineM(penultimo.lat, penultimo.lng, ultimoPunto.lat, ultimoPunto.lng) /
+        ((ultimoPunto.tiempoMs - penultimo.tiempoMs) / 1000)
+      : null
+  const rumbo = combinar(rumboSensor, rumboGps ?? null, velocidad)
   const [siguiendo, setSiguiendo] = useState(true)
   const [sin3d, setSin3d] = useState(false)
   const dejar = useCallback(() => setSiguiendo(false), [])

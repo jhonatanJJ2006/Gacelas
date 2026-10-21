@@ -82,11 +82,11 @@ object K1 {
     val Fondo = Color(0xFF0A0E16)
     val Tarjeta = Color(0xFF131926)
     val Secondary = Color(0xFFBCC7DE)
-    val Naranja = Color(0xFFD97706)
+    val Naranja = Color(0xFF7B1FA2)
     val Magenta = Color(0xFFD6338A)
     val Rojo = Color(0xFFE5484D)
     val Verde = Color(0xFF10B981)
-    val Ambar = Color(0xFFF59E0B)
+    val Ambar = Color(0xFFA855F7)
     fun b(a: Float) = Color.White.copy(alpha = a)
 }
 
@@ -125,8 +125,14 @@ fun ContenidoCarreraC4(
     onAtras: () -> Unit,
     panelInicial: Boolean = false,
     extraCabecera: @Composable () -> Unit = {},
+    vozActiva: Boolean = false,
+    onVoz: (() -> Unit)? = null,
+    autopausa: Boolean = false,
+    /** Pulsaciones; null mientras no haya un sensor real conectado (el bloque queda oculto). */
+    pulsaciones: Int? = null,
     mapa: @Composable (vista3d: Boolean, controles: ControlesMapaC4, panelAbierto: Boolean) -> Unit,
 ) {
+    var bloqueo by rememberSaveable { mutableStateOf(false) }
     val e = vista.estado
     val m = vista.metricas
     var panel by rememberSaveable { mutableStateOf(panelInicial) }
@@ -204,6 +210,12 @@ fun ContenidoCarreraC4(
                 val gps = e.ultimaPrecisionM
                 Chip("GPS", gps?.let { "±${it.toInt()} m" } ?: "--", punto = when { gps == null -> K1.Secondary; gps < 15f -> K1.Verde; else -> K1.Ambar }, tag = "chip-gps")
             }
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)) {
+                Chip("Kcal", "${(e.distanciaKm * 62).toInt()}")
+                e.puntos.lastOrNull { it.altitudM != null }?.altitudM?.let { Chip("Altitud", "${it.toInt()} msnm") }
+                // Sin fuente real de pulso el chip no se muestra.
+                pulsaciones?.let { Chip("Pulso", "$it bpm", tag = "chip-pulso") }
+            }
             if (e.puntos.size < 2) Text(
                 if (e.pausada) "Carrera en pausa" else "Esperando señal GPS. Muévete al aire libre.",
                 style = TextStyle(fontFamily = Inter, fontSize = 12.sp), color = K1.Secondary, textAlign = TextAlign.Center,
@@ -211,6 +223,18 @@ fun ContenidoCarreraC4(
             )
         }
 
+        Row(
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().navigationBarsPadding().padding(horizontal = 16.dp).padding(bottom = if (bajo) 92.dp else 112.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text("Bloquear toque", style = TextStyle(fontFamily = Inter, fontSize = 12.sp, fontWeight = FontWeight.SemiBold), color = Color.White,
+                modifier = Modifier.clip(CircleShape).background(Color(0xFF1A2233)).border(1.dp, Color.White.copy(alpha = 0.12f), CircleShape).clickable { bloqueo = true }.padding(horizontal = 14.dp, vertical = 8.dp).testTag("boton-bloqueo"))
+            if (onVoz != null) Text(if (vozActiva) "Voz cada 1 km" else "Voz apagada", style = TextStyle(fontFamily = Inter, fontSize = 12.sp, fontWeight = FontWeight.SemiBold),
+                color = if (vozActiva) K1.Naranja else K1.Secondary,
+                modifier = Modifier.clip(CircleShape).background(Color(0xFF1A2233)).border(1.dp, Color.White.copy(alpha = 0.12f), CircleShape).clickable(onClick = onVoz).padding(horizontal = 14.dp, vertical = 8.dp).testTag("boton-voz"))
+        }
+        if (autopausa) Text("Auto-pausa activa", style = TextStyle(fontFamily = Inter, fontSize = 11.sp), color = K1.Secondary,
+            modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 4.dp))
         // Controles abajo: stop rojo 56 + pausa naranja h64.
         Row(
             Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = if (bajo) 16.dp else 28.dp),
@@ -232,6 +256,11 @@ fun ContenidoCarreraC4(
             }
         }
 
+        if (bloqueo) Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.45f))
+            .clickable(remember { MutableInteractionSource() }, indication = null) {}.testTag("bloqueo-toque")) {
+            Text("Desbloquear", style = TextStyle(fontFamily = num, fontSize = 16.sp, fontWeight = FontWeight.Bold), color = Color.White,
+                modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 48.dp).clip(CircleShape).background(K1.Fondo).clickable { bloqueo = false }.padding(horizontal = 24.dp, vertical = 12.dp))
+        }
         // Panel del cronometro.
         AnimatedVisibility(panel, enter = fadeIn(tween(250)), exit = fadeOut(tween(200))) {
             Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.40f))

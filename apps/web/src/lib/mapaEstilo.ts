@@ -1,7 +1,7 @@
 /** Estilo y matematicas del mapa Gacelas (estilo Uber: oscuro, limpio, acentos naranja). */
 import type { Coordenada } from './mapas'
 
-export const NARANJA = '#FF6A13'
+export const NARANJA = '#C084FC'
 export const VERDE = '#10B981'
 
 /** Paleta: tierra azul marino/carbon, vias apagadas, sin POIs ni transporte, etiquetas sutiles. */

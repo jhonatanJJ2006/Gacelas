@@ -15,14 +15,19 @@ export function Registro() {
   const [cargando, setCargando] = useState(false)
   const [legal, setLegal] = useState<'terminos' | 'privacidad' | null>(null)
   const registrar = useApp((s) => s.registrar)
+  const actualizarAjustes = useApp((s) => s.actualizarAjustes)
+  const [nivel, setNivel] = useState<'principiante' | 'intermedio' | 'avanzado'>('principiante')
+  const fuerza = [/.{8,}/, /[A-Za-z]/, /\d/, /[^A-Za-z0-9]/].filter((r) => r.test(password)).length
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setCargando(true)
     const r = await registrar(nombre, email, password)
     setCargando(false)
-    if (r.ok) navigate('/permisos-ubicacion', { replace: true })
-    else setError(r.error)
+    if (r.ok) {
+      void actualizarAjustes({ nivelDeclarado: nivel })
+      navigate('/permisos-ubicacion', { replace: true })
+    } else setError(r.error)
   }
 
   return (
@@ -125,17 +130,52 @@ export function Registro() {
                 required
                 minLength={8}
               />
+              <div className="flex gap-1 mt-2" aria-label={`Fuerza de la clave ${fuerza} de 4`}>
+                {[0, 1, 2, 3].map((i) => (
+                  <span
+                    key={i}
+                    className={`h-1 flex-1 rounded-full ${i < fuerza ? (fuerza >= 3 ? 'bg-success' : 'bg-primary-600') : 'bg-surface-container-highest'}`}
+                  />
+                ))}
+              </div>
               <p className="text-xs text-text-secondary mt-1">
                 Usa mínimo 8 caracteres con letras y números
+                {password && (fuerza >= 3 ? ' • Segura' : ' • Débil')}
               </p>
             </div>
+
+            <fieldset>
+              <legend className="block text-sm font-medium text-text-primary mb-1.5">
+                Nivel de corredor
+              </legend>
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  [
+                    ['principiante', 'Principiante', '0 - 5 km'],
+                    ['intermedio', 'Intermedio', '5 - 15 km'],
+                    ['avanzado', 'Avanzado', '+15 km / Trail'],
+                  ] as const
+                ).map(([id, t, d]) => (
+                  <button
+                    type="button"
+                    key={id}
+                    aria-pressed={nivel === id}
+                    onClick={() => setNivel(id)}
+                    className={`p-2 rounded-xl border text-center ${nivel === id ? 'border-primary-600 bg-primary-600/15' : 'border-border-subtle bg-surface-container'}`}
+                  >
+                    <span className="block text-sm text-text-primary font-semibold">{t}</span>
+                    <span className="block text-xs text-text-secondary">{d}</span>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
 
             <MensajeError mensaje={error} />
 
             <button
               type="submit"
               disabled={cargando}
-              className="w-full h-12 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all cursor-pointer mt-6"
+              className="w-full h-12 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-on-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition-all cursor-pointer mt-6"
             >
               <span>{cargando ? 'Creando...' : 'Crear cuenta'}</span>
               <span className="material-symbols-outlined text-[20px]">arrow_forward</span>

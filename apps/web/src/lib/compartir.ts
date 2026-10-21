@@ -123,7 +123,7 @@ export async function generarImagen(d: DatosCompartir, formato: FormatoCompartir
   await document.fonts?.ready
   const fuente = (peso: number, px: number) =>
     `${peso} ${px}px Inter, "Segoe UI", Roboto, sans-serif`
-  const naranja = '#F59E0B'
+  const naranja = '#A855F7'
 
   if (formato === 'sticker') {
     // Fondo transparente: solo trazo + metricas en una tarjeta redondeada.

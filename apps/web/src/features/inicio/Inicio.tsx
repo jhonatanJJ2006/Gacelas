@@ -2,20 +2,20 @@ import { unirEventos } from '../../lib/eventos'
 import { InsigniaRacha } from '../../components/Racha'
 import { useEsEscritorio } from '../../lib/useEsEscritorio'
 import { MetaSemanal, RankingSemanal } from '../../components/PanelesEscritorio'
-import { lazy, Suspense, useMemo } from 'react'
+import { lazy, Suspense, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { filtrarEventos } from '../../lib/filtros'
 import { formatearRitmo, Unidades } from '../../lib/geo'
-import { resumenSemana } from '../../lib/estadisticas'
+import { resumenSemana, retoMes, totalesSemana, inicioSemana } from '../../lib/estadisticas'
+import { AmigosEnRuta, SemanaAtletica, TarjetaEvento, TarjetaReto } from './SeccionesInicio'
 import { eventosMock } from '../../mocks/data'
 import { useApp } from '../../store/app'
-import { saludo } from '../../lib/logica'
+import { nivelCorredor, saludo } from '../../lib/logica'
+import { InsigniaNivel } from '../comunidad/PostSocial'
 
 const Runner3D = lazy(() =>
   import('../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
 )
-
-const META_DIAS = 5
 
 export function Inicio() {
   const escritorio = useEsEscritorio()
@@ -27,7 +27,22 @@ export function Inicio() {
   const ahora = Date.now()
   const semana = useMemo(() => resumenSemana(carreras, ahora), [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
   const hoy = (new Date(ahora).getDay() + 6) % 7
-  const proximo = filtrarEventos(unirEventos(creados, eventosMock), 'Próximos', inscritos)[0]
+  const feedSocial = useApp((s) => s.feedSocial)
+  const publicaciones = useApp((s) => s.publicaciones)
+  const refrescarFeed = useApp((s) => s.refrescarFeed)
+  const meta = useApp((s) => s.ajustes.metaSemanal) ?? 3
+  useEffect(() => {
+    if (sesion) void refrescarFeed()
+  }, [sesion, refrescarFeed])
+  const totales = useMemo(() => totalesSemana(carreras, ahora), [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
+  const reto = useMemo(() => retoMes(carreras, ahora), [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
+  const amigos = publicaciones.filter((p) => p.sigo && !p.propia).slice(0, 3)
+  const lunes = new Date(inicioSemana(ahora))
+  const domingo = new Date(lunes.getTime() + 6 * 86_400_000)
+  const rango = `${lunes.getDate()} - ${domingo.getDate()} ${domingo.toLocaleDateString('es-EC', { month: 'short' }).replace('.', '')}`
+  // Con Supabase los eventos vienen de la base; los de ejemplo solo sin backend.
+  const eventos = feedSocial ? creados : unirEventos(creados, eventosMock)
+  const proximo = filtrarEventos(eventos, 'Próximos', inscritos)[0]
   const fecha = new Date(ahora).toLocaleDateString('es-EC', {
     weekday: 'long',
     day: 'numeric',
@@ -67,7 +82,10 @@ export function Inicio() {
               {semana.carreras} {semana.carreras === 1 ? 'carrera' : 'carreras'} esta semana
             </span>
           </div>
-          <InsigniaRacha compacta />
+          <div className="flex items-center gap-2">
+            <InsigniaNivel nivel={nivelCorredor(carreras.reduce((t, c) => t + c.distanciaKm, 0))} />
+            <InsigniaRacha compacta />
+          </div>
         </div>
 
         <div className="relative w-full h-[430px] lg:h-[560px] bg-surface-container-lowest">
@@ -128,55 +146,32 @@ export function Inicio() {
 
         <Link
           to="/correr"
-          className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.98] rounded-2xl p-6 flex items-center justify-between shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all"
+          className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.98] rounded-2xl p-6 flex items-center justify-between shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition-all"
         >
           <div className="flex flex-col">
-            <span className="font-headline-sm text-headline-sm text-bg-primary font-bold">
+            <span className="font-headline-sm text-headline-sm text-on-primary font-bold">
               Empezar a correr
             </span>
-            <span className="font-body-md text-body-md text-bg-primary mt-1">
+            <span className="font-body-md text-body-md text-on-primary mt-1">
               Graba tu siguiente carrera
             </span>
           </div>
           <div className="w-14 h-14 rounded-full bg-bg-primary/20 flex items-center justify-center">
-            <span className="material-symbols-outlined text-[32px] text-bg-primary">
+            <span className="material-symbols-outlined text-[32px] text-on-primary">
               play_arrow
             </span>
           </div>
         </Link>
       </section>
 
-      <section className="space-y-space-md lg:col-span-5">
-        <div className="flex items-center justify-between">
-          <h2 className="font-title-md text-title-md text-text-primary">Semana atlética</h2>
-          <span className="font-label-md text-label-md text-text-secondary">
-            {semana.diasCorridos.size} de {META_DIAS} días
-          </span>
-        </div>
-
-        <div className="flex gap-2">
-          {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day, index) => (
-            <div
-              key={day}
-              data-corrido={semana.diasCorridos.has(index)}
-              className={`flex-1 aspect-square rounded-xl flex flex-col items-center justify-center ${
-                semana.diasCorridos.has(index)
-                  ? 'bg-secondary-600/20 border-2 border-secondary-600'
-                  : index === hoy
-                    ? 'bg-surface-container border-2 border-primary-600'
-                    : 'bg-surface-container border border-border-subtle'
-              }`}
-            >
-              <span className="font-label-md text-label-md text-text-primary">{day}</span>
-              {semana.diasCorridos.has(index) && (
-                <span className="material-symbols-outlined text-[16px] text-secondary-500 mt-1">
-                  check_circle
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
+      <SemanaAtletica
+        semana={totales}
+        dias={semana.diasCorridos}
+        hoy={hoy}
+        metaCarreras={meta}
+        rango={rango}
+        m={m}
+      />
 
       <section className="space-y-space-md lg:col-span-5">
         <div className="flex items-center justify-between">
@@ -188,40 +183,16 @@ export function Inicio() {
             Ver todos
           </Link>
         </div>
-
         {proximo ? (
-          <Link
-            to={`/comunidad/eventos/${proximo.id}`}
-            className="block bg-surface-container rounded-2xl border border-border-subtle overflow-hidden"
-          >
-            <div className="h-32 bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
-              <span className="material-symbols-outlined text-[64px] text-white">event</span>
-            </div>
-            <div className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined text-[16px] text-primary-500">
-                  calendar_today
-                </span>
-                <span className="font-label-md text-label-md text-text-secondary">
-                  {proximo.fecha}, {proximo.hora}
-                </span>
-              </div>
-              <h3 className="font-title-md text-title-md text-text-primary mb-1">
-                {proximo.titulo}
-              </h3>
-              <p className="font-body-sm text-body-sm text-text-secondary mb-3">
-                {proximo.descripcion}
-              </p>
-              <span className="font-label-md text-label-md text-text-secondary">
-                {proximo.participantes + (inscritos.includes(proximo.id) ? 1 : 0)} corredores
-                {inscritos.includes(proximo.id) ? ' (tú incluido)' : ''}
-              </span>
-            </div>
-          </Link>
+          <TarjetaEvento evento={proximo} inscrito={inscritos.includes(proximo.id)} />
         ) : (
           <p className="text-text-secondary">No hay encuentros próximos.</p>
         )}
       </section>
+
+      <TarjetaReto reto={reto} m={m} />
+
+      <AmigosEnRuta lista={amigos} m={m} />
       {escritorio && (
         <div className="lg:col-span-12 grid grid-cols-2 gap-6">
           <MetaSemanal km={semana.km} />

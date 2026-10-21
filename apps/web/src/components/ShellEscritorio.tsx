@@ -48,7 +48,7 @@ export function ShellEscritorio() {
           className="hidden lg:flex fixed inset-y-0 left-0 z-[60] w-[260px] flex-col bg-bg-secondary border-r border-border-subtle"
         >
           <Link to="/inicio" className="flex items-center gap-3 px-6 h-20 shrink-0">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-[0_8px_24px_-4px_rgba(217,119,6,0.45)]">
+            <div className="h-10 w-10 rounded-xl bg-primary-600 flex items-center justify-center shadow-[0_8px_24px_-4px_rgba(123,31,162,0.45)]">
               <span className="material-symbols-outlined text-on-primary">directions_run</span>
             </div>
             <div className="flex flex-col leading-tight">
@@ -80,7 +80,7 @@ export function ShellEscritorio() {
                   <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
                   <span className="flex-1">{item.label}</span>
                   {item.path === '/notificaciones' && sinLeer > 0 && (
-                    <span className="min-w-6 h-6 px-1.5 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center justify-center">
+                    <span className="min-w-6 h-6 px-1.5 rounded-full bg-primary-600 text-on-primary text-xs font-bold flex items-center justify-center">
                       {sinLeer}
                     </span>
                   )}
@@ -91,7 +91,7 @@ export function ShellEscritorio() {
           <div className="p-4 border-t border-border-subtle">
             <Link
               to="/correr"
-              className="mb-4 h-12 rounded-xl bg-primary text-on-primary font-bold flex items-center justify-center gap-2 hover:bg-primary-700 transition-colors"
+              className="mb-4 h-12 rounded-xl bg-primary-600 text-on-primary font-bold flex items-center justify-center gap-2 hover:bg-primary-700 transition-colors"
             >
               <span className="material-symbols-outlined">play_arrow</span>
               Empezar a correr
@@ -100,7 +100,7 @@ export function ShellEscritorio() {
               {sesion?.foto ? (
                 <FotoPerfil foto={sesion.foto} nombre={sesion.nombre} className="h-10 w-10" />
               ) : (
-                <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold">
+                <div className="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center text-on-primary font-bold">
                   {(sesion?.nombre ?? 'G').slice(0, 1).toUpperCase()}
                 </div>
               )}

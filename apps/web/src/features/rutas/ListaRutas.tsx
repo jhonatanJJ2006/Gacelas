@@ -50,7 +50,7 @@ export function ListaRutas() {
   const chip = (activo: boolean) =>
     `shrink-0 min-h-[40px] px-3 rounded-full font-label-md text-label-md border transition-colors ${
       activo
-        ? 'bg-primary-600 text-bg-primary border-primary-600'
+        ? 'bg-primary-600 text-on-primary border-primary-600'
         : 'bg-surface-container text-text-secondary border-border-subtle hover:text-text-primary'
     }`
 
@@ -83,7 +83,7 @@ export function ListaRutas() {
             <Link
               to="/rutas/buscar"
               aria-label="Planificar ruta"
-              className="w-10 h-10 rounded-full bg-primary-600 text-bg-primary flex items-center justify-center shadow-lg"
+              className="w-10 h-10 rounded-full bg-primary-600 text-on-primary flex items-center justify-center shadow-lg"
             >
               <span className="material-symbols-outlined">directions</span>
             </Link>
@@ -99,7 +99,7 @@ export function ListaRutas() {
               onClick={() => setPestana(tab)}
               className={`px-4 py-2 rounded-full font-label-md text-label-md transition-colors ${
                 tab === pestana
-                  ? 'bg-primary-600 text-bg-primary'
+                  ? 'bg-primary-600 text-on-primary'
                   : 'bg-surface-container text-text-secondary hover:text-text-primary'
               }`}
             >
@@ -188,6 +188,12 @@ export function ListaRutas() {
           />
         </div>
       )}
+      <div className="px-margin pb-2 lg:px-0" data-testid="encabezado-lista-rutas">
+        <h2 className="font-title-md text-title-md text-text-primary">Rutas locales de Loja</h2>
+        <p className="font-body-sm text-body-sm text-text-secondary">
+          {rutas.length} {rutas.length === 1 ? 'sendero' : 'senderos'}
+        </p>
+      </div>
       <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6 lg:space-y-0">
         {rutas.length === 0 && (
           <p
@@ -236,15 +242,7 @@ export function ListaRutas() {
                     )}
                     {ruta.autorNombre && <span>por {ruta.autorNombre}</span>}
                   </div>
-                  <div className="flex items-center gap-4 text-text-secondary">
-                    <span className="font-label-md text-label-md flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px]">straighten</span>
-                      {Unidades.texto(ruta.distanciaKm, m, 1)} {Unidades.etiquetaDistancia(m)}
-                    </span>
-                    <span className="font-label-md text-label-md flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px]">trending_up</span>
-                      {ruta.elevacionM}m
-                    </span>
+                  <div className="mb-2">
                     <span
                       className={`font-label-md text-label-md px-2 py-0.5 rounded-full ${
                         ruta.dificultad === 'Fácil'
@@ -257,6 +255,35 @@ export function ListaRutas() {
                       {ruta.dificultad}
                     </span>
                   </div>
+                  <div
+                    className="grid grid-cols-3 rounded-lg bg-surface-container-high py-2 text-center"
+                    data-testid="metricas-ruta"
+                  >
+                    <div>
+                      <div className="text-[11px] text-text-secondary">Distancia</div>
+                      <div className="font-label-lg text-label-lg text-text-primary">
+                        {Unidades.texto(ruta.distanciaKm, m, 1)} {Unidades.etiquetaDistancia(m)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[11px] text-text-secondary">Desnivel</div>
+                      <div className="font-label-lg text-label-lg text-text-primary">
+                        +{ruta.elevacionM} m
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[11px] text-text-secondary">Valoración</div>
+                      <div className="font-label-lg text-label-lg text-primary">
+                        {ruta.valoracion != null
+                          ? `${ruta.valoracion.toFixed(1)} (${ruta.resenas ?? 0})`
+                          : '--'}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="mt-3 inline-flex items-center gap-1 rounded-lg bg-surface-container-high px-3 py-2 font-label-md text-label-md text-text-primary">
+                    <span className="material-symbols-outlined text-[16px]">info</span>
+                    Ver detalles
+                  </span>
                 </div>
               </Link>
               <button

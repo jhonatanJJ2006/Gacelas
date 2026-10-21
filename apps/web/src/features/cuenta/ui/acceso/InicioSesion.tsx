@@ -117,7 +117,7 @@ export function InicioSesion() {
             <button
               type="submit"
               disabled={cargando}
-              className="w-full h-12 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all cursor-pointer disabled:opacity-60"
+              className="w-full h-12 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-on-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition-all cursor-pointer disabled:opacity-60"
             >
               <span>{cargando ? 'Entrando...' : 'Iniciar sesión'}</span>
               <span className="material-symbols-outlined text-[20px]">arrow_forward</span>

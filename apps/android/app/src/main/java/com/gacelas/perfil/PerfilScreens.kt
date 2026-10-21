@@ -14,6 +14,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import com.gacelas.cuenta.domain.modelo.ConfigAvatar
 import com.gacelas.carreras.domain.reglas.Estadisticas
+import com.gacelas.carreras.domain.reglas.EstadisticasPerfil
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearHms
 import com.gacelas.tracking.formatearMs
@@ -51,6 +52,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.ViewInAr
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Edit
@@ -117,52 +119,79 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
     val m = ajustes.unidadesMetricas
     val mes = remember(carreras) { Estadisticas.mes(carreras, System.currentTimeMillis()) }
     val fecha = remember { SimpleDateFormat("d MMM, HH:mm", Locale("es", "EC")) }
+    val social by com.gacelas.ui.socialState()
+    val hist = remember(carreras) { EstadisticasPerfil.historico(carreras) }
+    val meses = remember(carreras) { EstadisticasPerfil.kmMensual(carreras, System.currentTimeMillis()) }
+    val recs = remember(carreras) { EstadisticasPerfil.records(carreras) }
+    val meds = remember(carreras) { EstadisticasPerfil.medallas(carreras) }
     Pantalla {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            FotoPerfil(perfil?.fotoPath, 80.dp)
-            Spacer(Modifier.width(16.dp))
-            Column(Modifier.weight(1f)) {
+        Box(Modifier.fillMaxWidth()) {
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                FotoPerfil(perfil?.fotoPath, 96.dp)
+                Spacer(Modifier.height(8.dp))
                 Text(perfil?.nombre ?: MockData.usuarioActual.nombre, style = GType.headlineMd, color = GColors.TextPrimary)
                 Text("@${perfil?.username ?: MockData.usuarioActual.username}", style = GType.bodyMd, color = GColors.TextSecondary)
+                perfil?.ubicacion?.takeIf { it.isNotBlank() }?.let { Text(it, style = GType.bodySm, color = GColors.TextSecondary) }
                 perfil?.bio?.takeIf { it.isNotBlank() }?.let { Text(it, style = GType.bodySm, color = GColors.TextSecondary) }
+                Text(
+                    "Club Gacelas Loja", style = GType.labelMd, color = GColors.TextSecondary,
+                    modifier = Modifier.padding(top = 6.dp).clip(CircleShape).background(GColors.SurfaceContainer).padding(horizontal = 12.dp, vertical = 4.dp),
+                )
             }
-            IconButton(onClick = onEditar, modifier = Modifier.clip(CircleShape).background(GColors.SurfaceContainer)) {
+            IconButton(onClick = onEditar, modifier = Modifier.align(Alignment.TopEnd).clip(CircleShape).background(GColors.SurfaceContainer)) {
                 Icon(Icons.Filled.Edit, "Editar perfil", tint = GColors.Primary500)
             }
         }
-        Tarjeta {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                Metrica("${carreras.size}", "Carreras", color = GColors.Primary500)
-                Metrica("${carreras.count { it.publica }}", "Públicas")
-                Metrica(Unidades.texto(carreras.sumOf { it.distanciaKm }, m, 1), "${Unidades.etiquetaDistancia(m)} totales")
+        Contadores(carreras.size, social.seguidores, social.siguiendo)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(GColors.Primary).clickable(onClick = onAvatar).padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Filled.Person, null, tint = GColors.OnPrimary, modifier = Modifier.size(18.dp))
+                Text(" Editar avatar 3D", style = GType.labelLg, color = GColors.OnPrimary)
+            }
+            Row(
+                Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceContainer).clickable(onClick = onAjustes).padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Filled.Settings, null, tint = GColors.TextPrimary, modifier = Modifier.size(18.dp))
+                Text(" Configuración", style = GType.labelLg, color = GColors.TextPrimary)
             }
         }
         TarjetaRacha(com.gacelas.ui.rachaState(), carreras)
+        EstadisticasHistoricas(hist, m)
+        KilometrajeMensual(meses, m)
         Tarjeta {
-            Text("Estadísticas del mes", style = GType.titleMd, color = GColors.TextPrimary)
-            FilaEstadistica(Icons.Filled.Straighten, "Distancia total", "${Unidades.texto(mes.km, m, 1)} ${Unidades.etiquetaDistancia(m)}")
-            FilaEstadistica(Icons.Filled.Schedule, "Tiempo total", formatearHms(mes.segundos))
-            FilaEstadistica(Icons.AutoMirrored.Filled.TrendingUp, "Elevación", "${mes.desnivelM} m")
+            Text("Este mes", style = GType.titleMd, color = GColors.TextPrimary)
+            Row(Modifier.fillMaxWidth()) {
+                Metrica("${Unidades.texto(mes.km, m, 1)} ${Unidades.etiquetaDistancia(m)}", "Distancia", Modifier.weight(1f), color = GColors.Primary500)
+                Metrica(formatearHms(mes.segundos), "Tiempo", Modifier.weight(1f), color = GColors.Secondary500)
+                Metrica("${mes.desnivelM} m", "Elevación", Modifier.weight(1f))
+            }
         }
-        Tarjeta(padding = 0.dp) {
-            FilaAjuste(Icons.Filled.Person, "Personalizar avatar 3D", onClick = onAvatar)
-            FilaAjuste(Icons.Filled.Settings, "Ajustes y preferencias", onClick = onAjustes)
+        Records(recs)
+        Medallero(meds)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Actividades recientes", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+            Text("${carreras.size} en total", style = GType.labelMd, color = GColors.TextSecondary)
         }
-        Text("Actividad reciente", style = GType.titleMd, color = GColors.TextPrimary)
         if (carreras.isEmpty()) {
             Tarjeta { Text("Todavía no guardas carreras. Toca el botón Correr para grabar la primera.", style = GType.bodyMd, color = GColors.TextSecondary) }
         }
         carreras.take(20).forEach { c ->
             Tarjeta(Modifier.clickable { onCarrera(c.id) }.testTag("carrera-${c.id}")) {
-                Row {
-                    Text(c.titulo, style = GType.labelLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-                    Text(fecha.format(Date(c.inicioMs)), style = GType.bodySm, color = GColors.TextSecondary)
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Text("${Unidades.texto(c.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}", style = GType.bodyMd, color = GColors.Primary500)
-                    Text(formatearMs(c.segundos), style = GType.bodyMd, color = GColors.TextSecondary)
-                    Text("${formatearRitmo(Unidades.ritmo(c.ritmoSegKm, m))} ${Unidades.etiquetaRitmo(m)}", style = GType.bodyMd, color = GColors.TextSecondary)
+                Row(verticalAlignment = Alignment.Top) {
+                    Column(Modifier.weight(1f)) {
+                        Text(c.titulo, style = GType.labelLg, color = GColors.TextPrimary)
+                        Text(fecha.format(Date(c.inicioMs)), style = GType.bodySm, color = GColors.TextSecondary)
+                    }
                     if (!c.publica) Text("Privada", style = GType.bodySm, color = GColors.TextSecondary)
+                }
+                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(GColors.SurfaceHigh).padding(vertical = 8.dp)) {
+                    Metrica("${Unidades.texto(c.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}", "Distancia", Modifier.weight(1f))
+                    Metrica("${formatearRitmo(Unidades.ritmo(c.ritmoSegKm, m))} ${Unidades.etiquetaRitmo(m)}", "Ritmo", Modifier.weight(1f))
+                    Metrica(formatearMs(c.segundos), "Tiempo", Modifier.weight(1f))
                 }
             }
         }
@@ -179,7 +208,7 @@ private fun FilaEstadistica(icono: ImageVector, etiqueta: String, valor: String)
 }
 
 @Composable
-fun EditarPerfilScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
+fun EditarPerfilScreen(onAtras: () -> Unit, onGuardar: () -> Unit, onAvatar: () -> Unit = {}) {
     val c = contenedor()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -199,6 +228,13 @@ fun EditarPerfilScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
     var edad by rememberSaveable(p.email) { mutableStateOf(p.edad) }
     var genero by rememberSaveable(p.email) { mutableStateOf(p.genero) }
     var foto by rememberSaveable(p.email) { mutableStateOf(p.fotoPath) }
+    val ajustes by ajustesState()
+    var peso by rememberSaveable(p.email) { mutableStateOf(ajustes.pesoKg?.let { it.toInt().toString() }.orEmpty()) }
+    var altura by rememberSaveable(p.email) { mutableStateOf(ajustes.alturaCm?.toString().orEmpty()) }
+    var nivel by rememberSaveable(p.email) { mutableStateOf(ajustes.nivelDeclarado) }
+    var favorita by rememberSaveable(p.email) { mutableStateOf(ajustes.distanciaFavorita) }
+    var metaKm by rememberSaveable(p.email) { mutableIntStateOf(ajustes.metaKmSemana) }
+    var dias by rememberSaveable(p.email) { mutableIntStateOf(ajustes.metaSemanal) }
     var error by remember { mutableStateOf<String?>(null) }
     val selector = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
@@ -216,6 +252,13 @@ fun EditarPerfilScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
             username.trim().removePrefix("@").length < 3 -> error = "El usuario debe tener al menos 3 caracteres"
             else -> scope.launch {
                 c.auth.actualizarPerfil(p.copy(nombre = nombre.trim(), username = username.trim().removePrefix("@"), ubicacion = ubicacion.trim(), bio = bio, edad = edad, genero = genero, fotoPath = foto))
+                c.ajustes.actualizar {
+                    it.copy(
+                        pesoKg = peso.toDoubleOrNull()?.takeIf { v -> v in 25.0..250.0 }?.let { v -> kotlin.math.round(v) },
+                        alturaCm = altura.toIntOrNull()?.takeIf { v -> v in 100..230 },
+                        nivelDeclarado = nivel, distanciaFavorita = favorita, metaKmSemana = metaKm, metaSemanal = dias,
+                    )
+                }
                 context.aviso("Perfil actualizado")
                 onGuardar()
             }
@@ -246,6 +289,37 @@ fun EditarPerfilScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
                 listOf("Masculino", "Femenino", "Otro").forEach { Pastilla(it, it == genero, { genero = it }) }
             }
             Pastilla("Prefiero no decir", genero == "Prefiero no decir", { genero = "Prefiero no decir" })
+            Tarjeta(Modifier.clickable(onClick = onAvatar)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.ViewInAr, null, tint = GColors.Primary500)
+                    Text("  Personalizar avatar 3D", style = GType.labelLg, color = GColors.TextPrimary)
+                }
+            }
+            EtiquetaGrupo("Datos fisiológicos (Privado)")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(Modifier.weight(1f)) { CampoTexto("Peso (kg)", peso, { peso = it.filter { ch -> ch.isDigit() || ch == '.' }.take(5) }, "70", tipo = KeyboardType.Decimal) }
+                Box(Modifier.weight(1f)) { CampoTexto("Altura (cm)", altura, { altura = it.filter(Char::isDigit).take(3) }, "170", tipo = KeyboardType.Number) }
+            }
+            EtiquetaGrupo("Perfil atlético")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("principiante" to "Principiante", "intermedio" to "Intermedio", "avanzado" to "Avanzado").forEach { (k, t) -> Pastilla(t, k == nivel, { nivel = k }) }
+            }
+            Text("Distancia favorita", style = GType.labelLg, color = GColors.TextSecondary)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("5K", "10K", "21K", "42K").forEach { d -> Pastilla(d, d == favorita, { favorita = d }) }
+            }
+            EtiquetaGrupo("Objetivos")
+            Text("Meta semanal: $metaKm km", style = GType.labelLg, color = GColors.TextPrimary)
+            androidx.compose.material3.Slider(metaKm.toFloat(), { metaKm = it.toInt() }, valueRange = 5f..150f, modifier = Modifier.testTag("meta-km"))
+            Text("Días por semana", style = GType.labelLg, color = GColors.TextSecondary)
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                (1..7).forEach { d ->
+                    Box(
+                        Modifier.size(38.dp).clip(CircleShape).background(if (d == dias) GColors.Primary else GColors.SurfaceContainer).clickable { dias = d },
+                        contentAlignment = Alignment.Center,
+                    ) { Text("$d", style = GType.labelLg, color = GColors.TextPrimary) }
+                }
+            }
             error?.let { Text(it, style = GType.bodyMd, color = GColors.Danger) }
             BotonPrimario("Guardar cambios", guardar, icono = null)
         }
@@ -265,9 +339,13 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
     var lentes by remember(guardado) { mutableStateOf(guardado.lentes) }
     var reloj by remember(guardado) { mutableStateOf(guardado.reloj) }
     var audifonos by remember(guardado) { mutableStateOf(guardado.audifonos) }
+    var complexion by remember(guardado) { mutableStateOf(guardado.complexion ?: "hombre") }
+    var tonoPiel by remember(guardado) { mutableIntStateOf(guardado.tonoPiel ?: 0) }
+    var peinado by remember(guardado) { mutableStateOf(guardado.peinado ?: "corto") }
+    var colorShorts by remember(guardado) { mutableIntStateOf(guardado.colorShorts ?: 0) }
     val guardar: () -> Unit = {
         scope.launch {
-            c.ajustes.actualizar { it.copy(avatar = ConfigAvatar(equipacion, estilo, lentes, reloj, audifonos)) }
+            c.ajustes.actualizar { it.copy(avatar = ConfigAvatar(equipacion, estilo, lentes, reloj, audifonos, complexion, tonoPiel, peinado, colorShorts)) }
             context.aviso("Avatar guardado")
             onGuardar()
         }
@@ -291,6 +369,30 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
                             Box(Modifier.size(44.dp).clip(CircleShape).background(c)
                                 .border(3.dp, if (i == equipacion) GColors.TextPrimary else Color.Transparent, CircleShape)
                                 .clickable { equipacion = i })
+                        }
+                    }
+                }
+                // Rasgos guardados; el modelo GLB actual tiene una sola textura y aun no los pinta.
+                EtiquetaGrupo("Género y complexión")
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("hombre" to "Hombre", "mujer" to "Mujer").forEach { (k, t) -> Pastilla(t, k == complexion, { complexion = k }) }
+                }
+                EtiquetaGrupo("Tono de piel")
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    TONOS_PIEL.forEachIndexed { i, t ->
+                        Box(Modifier.size(40.dp).clip(CircleShape).background(t).border(3.dp, if (i == tonoPiel) GColors.Primary else Color.Transparent, CircleShape).clickable { tonoPiel = i })
+                    }
+                }
+                EtiquetaGrupo("Cabello y peinado")
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("corto" to "Corto runner", "coleta" to "Coleta", "rapado" to "Rapado").forEach { (k, t) -> Pastilla(t, k == peinado, { peinado = k }) }
+                }
+                EtiquetaGrupo("Shorts")
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    COLORES_SHORTS.forEachIndexed { i, (col, n) ->
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Box(Modifier.size(40.dp).clip(CircleShape).background(col).border(3.dp, if (i == colorShorts) GColors.Primary else Color.Transparent, CircleShape).clickable { colorShorts = i })
+                            Text(n, style = GType.labelMd, color = GColors.TextSecondary)
                         }
                     }
                 }
@@ -322,3 +424,6 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
         }
     }
 }
+
+private val TONOS_PIEL = listOf(Color(0xFFF5D0B5), Color(0xFFE0AC85), Color(0xFFC68863), Color(0xFF8D5A3B), Color(0xFF5C3A24))
+private val COLORES_SHORTS = listOf(Color(0xFF111827) to "Negro", Color(0xFF7B1FA2) to "Morado", Color(0xFF1E3A8A) to "Azul", Color(0xFFE5E7EB) to "Blanco")
