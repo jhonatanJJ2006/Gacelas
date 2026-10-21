@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearRitmo
@@ -77,6 +78,8 @@ fun InicioContenido(
     amigos: List<com.gacelas.comunidad.domain.modelo.Publicacion> = emptyList(),
     inscrito: Boolean = false,
     onComunidad: () -> Unit = {},
+    /** Nivel del corredor ("Gacela Intermedia"); null lo oculta. */
+    nivel: String? = null,
 ) {
     Pantalla {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
@@ -99,7 +102,16 @@ fun InicioContenido(
                     Box(Modifier.size(8.dp).clip(CircleShape).background(GColors.Secondary500))
                     Text("  AUTOPILOT ACTIVO", style = GType.labelMd, color = GColors.Secondary500)
                 }
-                InsigniaRacha(racha, Modifier.align(Alignment.TopEnd).padding(12.dp))
+                Row(Modifier.align(Alignment.TopEnd).padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    nivel?.let {
+                        Text(
+                            it, style = GType.labelMd, color = GColors.Secondary500,
+                            modifier = Modifier.clip(CircleShape).background(GColors.Secondary.copy(alpha = 0.2f)).padding(horizontal = 8.dp, vertical = 4.dp).testTag("insignia-nivel"),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                    }
+                    InsigniaRacha(racha)
+                }
             }
             Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceAround) {
                 Metrica("${semana.diasCorridos.size}", "Días", color = GColors.TextPrimary)

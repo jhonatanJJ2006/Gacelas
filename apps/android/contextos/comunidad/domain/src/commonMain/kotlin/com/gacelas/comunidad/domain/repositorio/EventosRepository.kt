@@ -72,4 +72,8 @@ interface FeedRepository {
     suspend fun alternarSeguir(id: String): Set<String>
     /** Numero de corredores que siguen al usuario. */
     suspend fun seguidores(): Int = 0
+    /** Compartir (repost) o dejar de compartir una carrera publica. */
+    suspend fun alternarCompartida(id: String, activo: Boolean) {}
+    /** Sube una foto a una carrera propia (post-images) y devuelve su URL publica. */
+    suspend fun subirFoto(id: String, bytes: ByteArray, tipo: String, posicion: Int): String = throw UnsupportedOperationException()
 }

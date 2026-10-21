@@ -87,6 +87,7 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
         amigos = social.amigos,
         inscrito = evento.id in inscritos,
         onComunidad = onComunidad,
+        nivel = com.gacelas.comunidad.domain.modelo.nivelCorredor(carreras.sumOf { it.distanciaKm }),
     )
 }
 

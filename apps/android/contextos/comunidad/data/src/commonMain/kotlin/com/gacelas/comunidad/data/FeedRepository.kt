@@ -25,7 +25,7 @@ private fun JsonObject.num(k: String) = (this[k] as? JsonPrimitive)?.takeUnless 
 private fun JsonObject.bool(k: String) = (this[k] as? JsonPrimitive)?.takeUnless { it is JsonNull }?.booleanOrNull ?: false
 
 /** Fila de la RPC feed_comunidad a publicacion del feed (mismo contrato que la web). */
-fun publicacionDesdeFilaFeed(f: JsonObject, nombrePropio: String? = null, ahora: Long = ahoraMs()): Publicacion {
+fun publicacionDesdeFilaFeed(f: JsonObject, nombrePropio: String? = null, ahora: Long = ahoraMs(), url: (String) -> String = { it }): Publicacion {
     val inicio = f.txt("start_time")?.let { runCatching { FechaIso.leer(it) }.getOrNull() } ?: 0L
     val km = (f.num("distance_meters") ?: 0.0) / 1000.0
     val seg = f.num("duration_seconds")?.toInt() ?: 0
@@ -54,6 +54,14 @@ fun publicacionDesdeFilaFeed(f: JsonObject, nombrePropio: String? = null, ahora:
         meGusta = f.bool("me_gusta"),
         inicioMs = inicio,
         clienteId = f.txt("client_id"),
+        desnivelM = f.num("elevation_gain")?.toInt() ?: 0,
+        imagenes = (f["images"] as? JsonArray).orEmpty().mapNotNull { (it as? JsonPrimitive)?.contentOrNull?.let(url) },
+        compartidos = f.num("reposts_count")?.toInt() ?: 0,
+        compartida = f.bool("reposteada"),
+        autorKm = f.num("autor_km"),
+        ultimoComentario = (f["ultimo_comentario"] as? JsonObject)?.let { c ->
+            c.txt("texto")?.let { (c.txt("autor")?.ifBlank { null } ?: "Corredor") to it }
+        },
     )
 }
 
@@ -72,7 +80,10 @@ class SupabaseFeedRepository(
         uid() ?: return null
         val r = runCatching { backend.rpc("feed_comunidad", buildJsonObject { put("p_limite", 40) }) }.getOrNull() ?: return null
         val yo = nombrePropio()
-        return filas(r).map { publicacionDesdeFilaFeed(it, yo) }
+        val url = { ruta: String ->
+            if (ruta.startsWith("http")) ruta else backend.urlPublica(ruta.substringBefore('/'), ruta.substringAfter('/'))
+        }
+        return filas(r).map { publicacionDesdeFilaFeed(it, yo, url = url) }
     }
 
     override suspend fun alternarMeGusta(id: String, activo: Boolean) {
@@ -100,6 +111,27 @@ class SupabaseFeedRepository(
         val yo = uid() ?: return emptySet()
         return runCatching { backend.select("follows", mapOf("follower_id" to yo)).mapNotNull { it.txt("following_id") }.toSet() }
             .getOrDefault(emptySet())
+    }
+
+    override suspend fun alternarCompartida(id: String, activo: Boolean) {
+        val yo = uid() ?: throw ErrorRemoto("Inicia sesión para compartir")
+        if (activo) {
+            runCatching { backend.insert("post_reposts", listOf(buildJsonObject { put("user_id", yo); put("activity_id", id) })) }
+                .onFailure { if (it.message?.contains("duplicate", true) != true) throw it }
+        } else {
+            backend.delete("post_reposts", mapOf("user_id" to yo, "activity_id" to id))
+        }
+    }
+
+    override suspend fun subirFoto(id: String, bytes: ByteArray, tipo: String, posicion: Int): String {
+        val yo = uid() ?: throw ErrorRemoto("Inicia sesión para subir fotos")
+        val ext = if ("png" in tipo) "png" else if ("webp" in tipo) "webp" else "jpg"
+        val ruta = "$yo/$id/${ahoraMs()}-$posicion.$ext"
+        val url = backend.subirArchivo("post-images", ruta, bytes, tipo)
+        backend.insert("post_images", listOf(buildJsonObject {
+            put("activity_id", id); put("user_id", yo); put("path", "post-images/$ruta"); put("position", posicion)
+        }))
+        return url
     }
 
     override suspend fun seguidores(): Int {
