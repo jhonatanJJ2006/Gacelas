@@ -90,6 +90,9 @@ const DetalleEnVivo = lazy(() =>
 const Perfil = lazy(() =>
   import('../features/cuenta/ui/perfil/Perfil').then((m) => ({ default: m.Perfil }))
 )
+const DetalleCarrera = lazy(() =>
+  import('../features/cuenta/ui/perfil/DetalleCarrera').then((m) => ({ default: m.DetalleCarrera }))
+)
 const EditarPerfil = lazy(() =>
   import('../features/cuenta/ui/perfil/EditarPerfil').then((m) => ({ default: m.EditarPerfil }))
 )
@@ -200,6 +203,7 @@ export function AppRoutes() {
             <Route path="/comunidad/en-vivo/:id" element={<DetalleEnVivo />} />
 
             <Route path="/perfil/editar" element={<EditarPerfil />} />
+            <Route path="/perfil/carrera/:id" element={<DetalleCarrera />} />
             <Route path="/perfil/avatar" element={<Avatar3D />} />
 
             <Route path="/ajustes" element={<AjustesPreferencias />} />

@@ -112,7 +112,7 @@ export function Eventos() {
               setCreando(true)
             }}
             aria-label="Crear evento"
-            className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-bg-primary hover:bg-primary-700 transition-colors shadow-lg"
+            className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-on-primary hover:bg-primary-700 transition-colors shadow-lg"
           >
             <span className="material-symbols-outlined">add</span>
           </button>
@@ -125,7 +125,7 @@ export function Eventos() {
               role="tab"
               aria-selected={pestana === p}
               onClick={() => setPestana(p)}
-              className={`px-4 py-2 rounded-full font-label-md text-label-md ${pestana === p ? 'bg-primary-600 text-bg-primary' : 'bg-surface-container text-text-secondary hover:text-text-primary'}`}
+              className={`px-4 py-2 rounded-full font-label-md text-label-md ${pestana === p ? 'bg-primary-600 text-on-primary' : 'bg-surface-container text-text-secondary hover:text-text-primary'}`}
             >
               {p}
             </button>
@@ -205,7 +205,7 @@ export function Eventos() {
                       mostrarAviso(inscrito ? 'Inscripción cancelada' : 'Te inscribiste')
                     }}
                     aria-pressed={inscrito}
-                    className={`px-4 py-2 font-label-lg text-label-lg rounded-lg transition-colors ${inscrito ? 'bg-surface-container-high text-text-primary' : 'bg-primary-600 hover:bg-primary-700 text-bg-primary'}`}
+                    className={`px-4 py-2 font-label-lg text-label-lg rounded-lg transition-colors ${inscrito ? 'bg-surface-container-high text-text-primary' : 'bg-primary-600 hover:bg-primary-700 text-on-primary'}`}
                   >
                     {inscrito ? 'Inscrito' : 'Inscribirse'}
                   </button>

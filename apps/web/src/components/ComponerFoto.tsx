@@ -17,7 +17,7 @@ import {
 } from '../lib/plantillas'
 
 const chip = (activo: boolean) =>
-  `min-h-[40px] px-3 rounded-full text-sm font-semibold whitespace-nowrap ${activo ? 'bg-primary-600 text-bg-primary' : 'bg-surface-container text-text-secondary'}`
+  `min-h-[40px] px-3 rounded-full text-sm font-semibold whitespace-nowrap ${activo ? 'bg-primary-600 text-on-primary' : 'bg-surface-container text-text-secondary'}`
 
 /** Compositor estilo Strava: tu foto + plantilla transparente que se arrastra y escala. */
 export function ComponerFoto({ datos }: { datos: DatosCompartir }) {
@@ -182,7 +182,7 @@ export function ComponerFoto({ datos }: { datos: DatosCompartir }) {
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={() => void compartir()}
-          className="col-span-2 h-12 rounded-xl bg-primary-600 text-bg-primary font-semibold flex items-center justify-center gap-2"
+          className="col-span-2 h-12 rounded-xl bg-primary-600 text-on-primary font-semibold flex items-center justify-center gap-2"
         >
           <span className="material-symbols-outlined">ios_share</span>Compartir
         </button>

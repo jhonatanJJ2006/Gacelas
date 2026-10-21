@@ -240,7 +240,7 @@ export function ResumenPostCarrera() {
                         onClick={() => setDificultad(d)}
                         className={`flex-1 min-h-[40px] rounded-full text-sm font-semibold ${
                           dificultad === d
-                            ? 'bg-primary-600 text-bg-primary'
+                            ? 'bg-primary-600 text-on-primary'
                             : 'bg-surface text-text-secondary'
                         }`}
                       >
@@ -261,7 +261,7 @@ export function ResumenPostCarrera() {
                         }
                         className={`min-h-[36px] px-3 rounded-full text-sm ${
                           etiquetas.includes(k)
-                            ? 'bg-secondary-600 text-bg-primary'
+                            ? 'bg-secondary-600 text-on-primary'
                             : 'bg-surface text-text-secondary'
                         }`}
                       >
@@ -284,7 +284,7 @@ export function ResumenPostCarrera() {
           <button
             onClick={guardar}
             disabled={guardando}
-            className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all disabled:opacity-60"
+            className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-on-primary font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition-all disabled:opacity-60"
           >
             <span className="material-symbols-outlined text-[20px]">save</span>
             <span>Guardar carrera</span>

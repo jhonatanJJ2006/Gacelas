@@ -45,7 +45,7 @@ export function Avatar3D() {
           </h1>
           <button
             onClick={() => void guardar()}
-            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-bg-primary font-label-lg text-label-lg rounded-lg transition-colors"
+            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-on-primary font-label-lg text-label-lg rounded-lg transition-colors"
           >
             Guardar
           </button>

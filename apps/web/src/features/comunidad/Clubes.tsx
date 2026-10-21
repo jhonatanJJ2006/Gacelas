@@ -91,7 +91,7 @@ export function Clubes() {
             }}
             aria-label="Crear club"
             data-testid="crear-club"
-            className="w-11 h-11 rounded-full bg-primary-600 text-bg-primary flex items-center justify-center"
+            className="w-11 h-11 rounded-full bg-primary-600 text-on-primary flex items-center justify-center"
           >
             <span className="material-symbols-outlined">add</span>
           </button>

@@ -12,7 +12,7 @@ function Linea({ puntos }: { puntos: Coordenada[] }) {
     if (!mapa) return
     const linea = new google.maps.Polyline({
       path: puntos,
-      strokeColor: '#F59E0B',
+      strokeColor: '#A855F7',
       strokeWeight: 4,
       map: mapa,
     })
@@ -24,7 +24,7 @@ function Linea({ puntos }: { puntos: Coordenada[] }) {
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
             scale: i === 0 || i === puntos.length - 1 ? 7 : 4,
-            fillColor: i === 0 ? '#10B981' : '#F59E0B',
+            fillColor: i === 0 ? '#10B981' : '#A855F7',
             fillOpacity: 1,
             strokeColor: '#fff',
             strokeWeight: 2,

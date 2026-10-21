@@ -76,7 +76,7 @@ export function EditarPerfil() {
           <h1 className="font-headline-md text-headline-md text-text-primary">Editar perfil</h1>
           <button
             onClick={() => void handleGuardar()}
-            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-bg-primary font-label-lg text-label-lg rounded-lg transition-colors"
+            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-on-primary font-label-lg text-label-lg rounded-lg transition-colors"
           >
             Guardar
           </button>
@@ -90,7 +90,7 @@ export function EditarPerfil() {
             <button
               onClick={() => archivo.current?.click()}
               aria-label="Elegir foto"
-              className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-bg-primary shadow-lg"
+              className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-on-primary shadow-lg"
             >
               <span className="material-symbols-outlined text-[18px]">camera_alt</span>
             </button>

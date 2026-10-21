@@ -50,7 +50,7 @@ export function ListaRutas() {
   const chip = (activo: boolean) =>
     `shrink-0 min-h-[40px] px-3 rounded-full font-label-md text-label-md border transition-colors ${
       activo
-        ? 'bg-primary-600 text-bg-primary border-primary-600'
+        ? 'bg-primary-600 text-on-primary border-primary-600'
         : 'bg-surface-container text-text-secondary border-border-subtle hover:text-text-primary'
     }`
 
@@ -83,7 +83,7 @@ export function ListaRutas() {
             <Link
               to="/rutas/buscar"
               aria-label="Planificar ruta"
-              className="w-10 h-10 rounded-full bg-primary-600 text-bg-primary flex items-center justify-center shadow-lg"
+              className="w-10 h-10 rounded-full bg-primary-600 text-on-primary flex items-center justify-center shadow-lg"
             >
               <span className="material-symbols-outlined">directions</span>
             </Link>
@@ -99,7 +99,7 @@ export function ListaRutas() {
               onClick={() => setPestana(tab)}
               className={`px-4 py-2 rounded-full font-label-md text-label-md transition-colors ${
                 tab === pestana
-                  ? 'bg-primary-600 text-bg-primary'
+                  ? 'bg-primary-600 text-on-primary'
                   : 'bg-surface-container text-text-secondary hover:text-text-primary'
               }`}
             >

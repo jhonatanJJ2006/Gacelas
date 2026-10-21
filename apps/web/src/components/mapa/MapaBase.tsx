@@ -326,7 +326,7 @@ export function RutaPlan({ camino }: { camino: Coordenada[] }) {
       }),
       new google.maps.Polyline({
         path: camino,
-        strokeColor: '#ffd2b3',
+        strokeColor: '#F3E8FF',
         strokeOpacity: 0.55,
         strokeWeight: 8,
         map: mapa,

@@ -74,7 +74,7 @@ export function Notificaciones() {
                 role="tab"
                 aria-selected={filtro === f}
                 onClick={() => setFiltro(f)}
-                className={`px-4 py-2 rounded-full font-label-md text-label-md ${filtro === f ? 'bg-primary-600 text-bg-primary' : 'bg-surface-container text-text-secondary hover:text-text-primary'}`}
+                className={`px-4 py-2 rounded-full font-label-md text-label-md ${filtro === f ? 'bg-primary-600 text-on-primary' : 'bg-surface-container text-text-secondary hover:text-text-primary'}`}
               >
                 {f}
               </button>

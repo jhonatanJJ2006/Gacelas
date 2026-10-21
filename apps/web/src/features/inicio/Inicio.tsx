@@ -128,18 +128,18 @@ export function Inicio() {
 
         <Link
           to="/correr"
-          className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.98] rounded-2xl p-6 flex items-center justify-between shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all"
+          className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.98] rounded-2xl p-6 flex items-center justify-between shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition-all"
         >
           <div className="flex flex-col">
-            <span className="font-headline-sm text-headline-sm text-bg-primary font-bold">
+            <span className="font-headline-sm text-headline-sm text-on-primary font-bold">
               Empezar a correr
             </span>
-            <span className="font-body-md text-body-md text-bg-primary mt-1">
+            <span className="font-body-md text-body-md text-on-primary mt-1">
               Graba tu siguiente carrera
             </span>
           </div>
           <div className="w-14 h-14 rounded-full bg-bg-primary/20 flex items-center justify-center">
-            <span className="material-symbols-outlined text-[32px] text-bg-primary">
+            <span className="material-symbols-outlined text-[32px] text-on-primary">
               play_arrow
             </span>
           </div>

@@ -34,8 +34,8 @@ export function BuscadorRutas() {
                 </pattern>
                 <linearGradient id="routeGlow" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#10B981" />
-                  <stop offset="50%" stopColor="#F59E0B" />
-                  <stop offset="100%" stopColor="#D97706" />
+                  <stop offset="50%" stopColor="#A855F7" />
+                  <stop offset="100%" stopColor="#7B1FA2" />
                 </linearGradient>
               </defs>
 
@@ -69,7 +69,7 @@ export function BuscadorRutas() {
                 <path
                   d="M 330,210 C 310,260 270,320 280,380 C 290,450 270,520 310,570 C 330,590 350,610 380,620"
                   fill="none"
-                  stroke="#D97706"
+                  stroke="#7B1FA2"
                   strokeWidth="8"
                   strokeLinecap="round"
                   opacity="0.95"
@@ -87,7 +87,7 @@ export function BuscadorRutas() {
                 />
               )}
 
-              <circle cx="330" cy="210" r="12" fill="#D97706" opacity="0.9">
+              <circle cx="330" cy="210" r="12" fill="#7B1FA2" opacity="0.9">
                 <animate attributeName="r" values="12;16;12" dur="2s" repeatCount="indefinite" />
               </circle>
 
@@ -118,7 +118,7 @@ export function BuscadorRutas() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="¿A dónde quieres correr?"
-                className="w-full h-14 pl-14 pr-4 bg-[#141c2e] border-2 border-[#1f2b45] rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:border-[#D97706] transition-colors"
+                className="w-full h-14 pl-14 pr-4 bg-[#141c2e] border-2 border-[#1f2b45] rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:border-[#7B1FA2] transition-colors"
               />
               <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 text-[24px]">
                 search
@@ -138,7 +138,7 @@ export function BuscadorRutas() {
                 className={`w-full p-4 rounded-2xl border-2 transition-all ${
                   selectedRoute === route.id
                     ? route.color === 'primary'
-                      ? 'bg-[#D97706]/10 border-[#D97706]'
+                      ? 'bg-[#7B1FA2]/10 border-[#7B1FA2]'
                       : 'bg-[#10B981]/10 border-[#10B981]'
                     : 'bg-[#141c2e] border-[#1f2b45] hover:border-[#334155]'
                 }`}
@@ -149,7 +149,7 @@ export function BuscadorRutas() {
                     className={`material-symbols-outlined ${
                       selectedRoute === route.id
                         ? route.color === 'primary'
-                          ? 'text-[#D97706]'
+                          ? 'text-[#7B1FA2]'
                           : 'text-[#10B981]'
                         : 'text-slate-500'
                     }`}
@@ -183,7 +183,7 @@ export function BuscadorRutas() {
               })
             }
             disabled={!seleccionada}
-            className="w-full mt-6 h-14 bg-gradient-to-r from-[#D97706] to-[#F59E0B] hover:from-[#B45309] hover:to-[#D97706] text-white font-bold rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+            className="w-full mt-6 h-14 bg-gradient-to-r from-[#7B1FA2] to-[#A855F7] hover:from-[#5E1781] hover:to-[#7B1FA2] text-white font-bold rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
           >
             Comenzar navegación
           </button>

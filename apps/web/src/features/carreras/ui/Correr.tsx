@@ -126,9 +126,9 @@ export function Correr() {
         <button
           onClick={handleStart}
           aria-label="Comenzar carrera"
-          className="w-24 h-24 rounded-full bg-primary-600 hover:bg-primary-700 active:scale-95 shadow-[0_12px_28px_-4px_rgba(217,119,6,0.5)] flex items-center justify-center transition-all"
+          className="w-24 h-24 rounded-full bg-primary-600 hover:bg-primary-700 active:scale-95 shadow-[0_12px_28px_-4px_rgba(123,31,162,0.5)] flex items-center justify-center transition-all"
         >
-          <span className="material-symbols-outlined text-[48px] text-bg-primary">play_arrow</span>
+          <span className="material-symbols-outlined text-[48px] text-on-primary">play_arrow</span>
         </button>
 
         <p className="font-label-lg text-label-lg text-text-secondary mt-6">

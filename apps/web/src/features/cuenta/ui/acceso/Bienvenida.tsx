@@ -59,7 +59,7 @@ export function Bienvenida() {
               />
               <path
                 d="M0,150 L60,110 L130,135 L200,90 L280,140 L360,100 L400,130"
-                stroke="#F59E0B"
+                stroke="#A855F7"
                 strokeLinecap="round"
                 strokeOpacity="0.4"
                 strokeWidth="1.5"
@@ -98,7 +98,7 @@ export function Bienvenida() {
             aria-label="Progreso de introducción: Paso 1 de 3"
             className="flex items-center justify-center md:justify-start gap-2 mb-3 short:mb-2"
           >
-            <div className="h-2 w-8 rounded-full bg-primary-600 shadow-[0_0_10px_rgba(217,119,6,0.6)]"></div>
+            <div className="h-2 w-8 rounded-full bg-primary-600 shadow-[0_0_10px_rgba(123,31,162,0.6)]"></div>
             <div className="h-2 w-2 rounded-full bg-border-subtle"></div>
             <div className="h-2 w-2 rounded-full bg-border-subtle"></div>
           </div>
@@ -131,7 +131,7 @@ export function Bienvenida() {
           <div className="w-full max-w-sm mx-auto md:mx-0 md:max-w-none flex flex-col gap-2">
             <button
               onClick={() => navigate('/registro')}
-              className="w-full h-12 short:h-11 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all cursor-pointer"
+              className="w-full h-12 short:h-11 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-on-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition-all cursor-pointer"
               type="button"
             >
               <span>Crear cuenta</span>

@@ -222,7 +222,7 @@ export function Feed() {
             <span className="flex-1 text-body-md text-text-secondary">
               Comparte tu entrenamiento: sal a correr y publícalo.
             </span>
-            <span className="px-4 h-9 rounded-full bg-primary text-on-primary font-label-md text-label-md flex items-center">
+            <span className="px-4 h-9 rounded-full bg-primary-600 text-on-primary font-label-md text-label-md flex items-center">
               Correr
             </span>
           </button>
@@ -277,7 +277,7 @@ export function Feed() {
                       className={`h-9 px-4 rounded-full text-sm font-semibold transition-colors ${
                         siguiendo.includes(post.autorId)
                           ? 'bg-surface-container-high text-text-primary border border-border-subtle'
-                          : 'bg-primary text-on-primary hover:bg-primary-700'
+                          : 'bg-primary-600 text-on-primary hover:bg-primary-700'
                       }`}
                     >
                       {siguiendo.includes(post.autorId) ? 'Siguiendo' : 'Seguir'}

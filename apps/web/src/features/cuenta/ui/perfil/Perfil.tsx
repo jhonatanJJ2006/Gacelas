@@ -28,7 +28,7 @@ export function FotoPerfil({
     )
   return (
     <div
-      className={`${className} rounded-full bg-gradient-to-br from-primary-600 to-primary-400 border-2 border-primary-600 flex items-center justify-center text-bg-primary text-2xl font-bold`}
+      className={`${className} rounded-full bg-gradient-to-br from-primary-600 to-primary-400 border-2 border-primary-600 flex items-center justify-center text-on-primary text-2xl font-bold`}
       aria-label="Foto de perfil"
     >
       {nombre.charAt(0).toUpperCase()}
@@ -189,9 +189,12 @@ export function Perfil() {
               data-testid="carrera-guardada"
             >
               <div className="flex items-center justify-between mb-2 gap-2">
-                <span className="font-body-md text-body-md text-text-primary font-semibold truncate">
+                <Link
+                  to={`/perfil/carrera/${c.id}`}
+                  className="font-body-md text-body-md text-text-primary font-semibold truncate hover:text-primary-400"
+                >
                   {c.titulo}
-                </span>
+                </Link>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="font-body-sm text-body-sm text-text-secondary">
                     {new Date(c.inicioMs).toLocaleString('es-EC', {

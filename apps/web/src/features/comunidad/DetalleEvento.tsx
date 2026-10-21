@@ -180,7 +180,7 @@ export function DetalleEvento() {
             className={`w-full h-14 active:scale-[0.98] font-bold text-base rounded-xl flex items-center justify-center gap-2 transition-all ${
               inscrito
                 ? 'bg-surface-container-high text-text-primary border border-border-subtle'
-                : 'bg-primary-600 hover:bg-primary-700 text-bg-primary shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)]'
+                : 'bg-primary-600 hover:bg-primary-700 text-on-primary shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)]'
             }`}
           >
             <span className="material-symbols-outlined text-[20px]">
