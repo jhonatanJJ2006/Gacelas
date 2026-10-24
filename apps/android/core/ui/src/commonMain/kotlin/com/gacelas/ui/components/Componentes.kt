@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -128,19 +129,23 @@ fun BotonPrimario(
     enabled: Boolean = true,
     color: Color = GColors.Primary,
 ) {
+    Box(modifier.fillMaxWidth().height(56.dp)) {
+        // Sombra solida desplazada en violeta, firma visual C2.
+        if (enabled) Box(Modifier.matchParentSize().offset(5.dp, 5.dp).clip(FormaBotonC2).background(GColors.C2Violeta))
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.fillMaxWidth().height(56.dp),
-        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+        shape = FormaBotonC2,
         colors = ButtonDefaults.buttonColors(containerColor = color, contentColor = GColors.SobreColor),
     ) {
-        Text(texto, style = GType.labelLg.copy(fontSize = GType.bodyLg.fontSize))
+        Text(texto.uppercase(), style = GType.labelLg.copy(fontSize = GType.bodyLg.fontSize, fontWeight = androidx.compose.ui.text.font.FontWeight.Black, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic))
         if (icono != null) {
             Spacer(Modifier.width(8.dp))
             Icon(icono, contentDescription = null)
         }
     }
+}
 }
 
 @Composable
@@ -159,9 +164,9 @@ fun Tarjeta(
     padding: Dp = 16.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val shape = RoundedCornerShape(16.dp)
+    val shape = FormaC2
     var m = modifier.fillMaxWidth().clip(shape).background(fondo)
-    if (borde != null) m = m.border(BorderStroke(1.dp, borde), shape)
+    if (borde != null && borde != GColors.BorderSubtle) m = m.border(BorderStroke(1.dp, borde), shape)
     if (onClick != null) m = m.clickable(onClick = onClick)
     Column(m.padding(padding), verticalArrangement = Arrangement.spacedBy(8.dp), content = content)
 }
@@ -292,15 +297,15 @@ fun FilaInterruptor(icono: ImageVector, titulo: String, descripcion: String? = n
 @Composable
 fun Pastilla(texto: String, activo: Boolean, onClick: () -> Unit = {}, icono: ImageVector? = null) {
     Row(
-        Modifier.clip(CircleShape)
-            .background(if (activo) GColors.Primary else GColors.SurfaceContainer)
+        Modifier.clip(RoundedCornerShape(2.dp))
+            .background(if (activo) GColors.C2Violeta else GColors.C2S2)
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         if (icono != null) Icon(icono, null, Modifier.size(16.dp), tint = if (activo) GColors.BgPrimary else GColors.TextSecondary)
-        Text(texto, style = GType.labelMd, color = if (activo) GColors.BgPrimary else GColors.TextSecondary)
+        Text(texto.uppercase(), style = GType.labelMd.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = if (activo) GColors.BgPrimary else GColors.TextSecondary)
     }
 }
 
@@ -328,5 +333,26 @@ fun AvatarCirculo(tamano: Dp = 40.dp, indice: Int = 0) {
 fun IconoCirculo(icono: ImageVector, fondo: Color, tint: Color, tamano: Dp = 48.dp) {
     Box(Modifier.size(tamano).clip(CircleShape).background(fondo), contentAlignment = Alignment.Center) {
         Icon(icono, null, tint = tint, modifier = Modifier.size(tamano / 2))
+    }
+}
+
+/** Forma C2 de tarjeta: esquinas de 4 dp y corte diagonal abajo a la derecha. */
+val FormaC2: androidx.compose.ui.graphics.Shape = androidx.compose.foundation.shape.CutCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomEnd = 18.dp, bottomStart = 0.dp)
+
+/** Forma C2 de boton principal: paralelogramo con cortes diagonales. */
+val FormaBotonC2: androidx.compose.ui.graphics.Shape = androidx.compose.foundation.shape.CutCornerShape(topStart = 10.dp, bottomEnd = 10.dp)
+
+/** Etiqueta C2: mayusculas, violeta, espaciado amplio. */
+@Composable
+fun EtiquetaC2(texto: String, modifier: Modifier = Modifier, color: Color = GColors.C2Violeta) {
+    Text(texto.uppercase(), style = GType.labelMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold, letterSpacing = androidx.compose.ui.unit.TextUnit(0.12f, androidx.compose.ui.unit.TextUnitType.Em)), color = color, modifier = modifier)
+}
+
+/** Metrica C2 compacta: numero Anton pequeno y etiqueta en mayusculas. */
+@Composable
+fun MetricaC2(valor: String, etiqueta: String, modifier: Modifier = Modifier, color: Color = GColors.TextPrimary) {
+    Column(modifier) {
+        Text(etiqueta.uppercase(), style = GType.labelMd.copy(fontSize = androidx.compose.ui.unit.TextUnit(10f, androidx.compose.ui.unit.TextUnitType.Sp), fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold), color = GColors.C2Muted)
+        Text(valor, style = GType.headlineSm, color = color)
     }
 }

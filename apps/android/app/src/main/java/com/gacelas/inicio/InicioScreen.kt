@@ -58,7 +58,7 @@ import com.gacelas.ui.three.Runner3D
 import io.github.sceneview.math.Position
 
 @Composable
-fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String) -> Unit = { onEventos() }, onComunidad: () -> Unit = {}) {
+fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String) -> Unit = { onEventos() }, onComunidad: () -> Unit = {}, onRutas: () -> Unit = {}) {
     val (unidos, inscritos) = com.gacelas.comunidad.eventosState()
     val cont = com.gacelas.ui.contenedor()
     val creados by cont.eventos.creados.collectAsState(initial = emptyList())
@@ -87,6 +87,8 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
         amigos = social.amigos,
         inscrito = evento.id in inscritos,
         onComunidad = onComunidad,
+        rutaSugerida = remember(carreras) { rutaSugerida(carreras.map { it.distanciaKm }) },
+        onRutas = onRutas,
         nivel = com.gacelas.comunidad.domain.modelo.nivelCorredor(carreras.sumOf { it.distanciaKm }),
     )
 }
@@ -96,4 +98,10 @@ fun rangoSemana(ahoraMs: Long): String {
     val lunes = com.gacelas.shared.Fechas.fecha(Estadisticas.inicioSemana(ahoraMs))
     val domingo = com.gacelas.shared.Fechas.fecha(com.gacelas.shared.Fechas.sumarDias(Estadisticas.inicioSemana(ahoraMs), 6))
     return "${lunes.dayOfMonth} - ${domingo.dayOfMonth} ${com.gacelas.carreras.domain.reglas.EstadisticasPerfil.MESES_CORTOS[domingo.monthNumber - 1].lowercase()}"
+}
+
+/** Sugiere la ruta del catalogo cuya distancia se acerca mas a la media de las ultimas carreras (5 km sin historial). */
+fun rutaSugerida(distancias: List<Double>): com.gacelas.rutas.domain.modelo.Ruta? {
+    val objetivo = distancias.takeLast(5).takeIf { it.isNotEmpty() }?.average() ?: 5.0
+    return com.gacelas.data.mock.MockData.rutas.minByOrNull { kotlin.math.abs(it.distanciaKm - objetivo) }
 }
