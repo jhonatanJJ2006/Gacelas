@@ -56,7 +56,6 @@ export function Feed() {
   const inscritos = useApp((s) => s.inscritos)
   const alternarInscripcion = useApp((s) => s.alternarInscripcion)
   const [fotosPara, setFotosPara] = useState<string | null>(null)
-  const [rapido, setRapido] = useState<Record<string, string>>({})
 
   // Feed real: se refresca al entrar y con cada cambio en la base (realtime).
   useEffect(() => {
@@ -147,7 +146,7 @@ export function Feed() {
   ]
 
   return (
-    <div className="contenedor-escritorio lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8 lg:items-start">
+    <div className="contenedor-escritorio lg:grid lg:grid-cols-[minmax(0,600px)_340px] lg:justify-center lg:gap-8 lg:items-start">
       <div className="flex flex-col w-full min-w-0">
         <div className="px-margin pt-space-md pb-space-sm lg:px-0 lg:pb-4">
           <div className="flex items-center justify-between mb-4 relative">
@@ -371,55 +370,32 @@ export function Feed() {
                     )}
                   </header>
 
-                  <Carrusel
-                    imagenes={post.imagenes ?? []}
-                    puntos={post.puntos}
-                    desnivelM={post.desnivelM}
-                  />
-
                   <div className="pl-[68px] pr-4 pt-2">
-                    <div className="grid grid-cols-4 gap-2 mb-2">
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wide text-c2-muted truncate">
-                          Distancia
-                        </div>
-                        <div className="font-semibold text-[14px] text-text-primary">
-                          {Unidades.texto(post.distanciaKm, m, 1)}{' '}
-                          <span className="text-label-sm text-text-secondary">
-                            {Unidades.etiquetaDistancia(m)}
-                          </span>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wide text-c2-muted truncate">
-                          Ritmo
-                        </div>
-                        <div className="font-semibold text-[14px] text-primary">
-                          {formatearRitmo(Unidades.ritmo(post.ritmoSegKm, m))}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wide text-c2-muted truncate">
-                          Tiempo
-                        </div>
-                        <div className="font-semibold text-[14px] text-text-primary">
-                          {formatearMs(post.segundos)}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wide text-c2-muted truncate">
-                          Elevación
-                        </div>
-                        <div
-                          className="font-semibold text-[14px] text-secondary"
-                          data-testid="desnivel-post"
-                        >
-                          +{post.desnivelM ?? 0}
-                          <span className="text-label-sm text-text-secondary"> m</span>
-                        </div>
-                      </div>
+                    <div
+                      className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-1 font-display italic text-[15px] tabular-nums"
+                      data-testid="metricas-post"
+                    >
+                      <span className="text-c2-violeta">
+                        {Unidades.texto(post.distanciaKm, m, 1)}
+                        <span className="font-sans not-italic text-[11px] text-c2-muted">
+                          {Unidades.etiquetaDistancia(m)}
+                        </span>
+                      </span>
+                      <span className="text-text-primary">
+                        {formatearRitmo(Unidades.ritmo(post.ritmoSegKm, m))}
+                      </span>
+                      <span className="text-text-primary">{formatearMs(post.segundos)}</span>
+                      <span className="text-c2-cielo" data-testid="desnivel-post">
+                        +{post.desnivelM ?? 0}
+                        <span className="font-sans not-italic text-[11px] text-c2-muted">m</span>
+                      </span>
                     </div>
 
+                    <Carrusel
+                      imagenes={post.imagenes ?? []}
+                      puntos={post.puntos}
+                      desnivelM={post.desnivelM}
+                    />
                     {locales.length > 0 && (
                       <ul className="mb-3 space-y-1">
                         {locales.map((c, i) => (
@@ -430,7 +406,7 @@ export function Feed() {
                       </ul>
                     )}
 
-                    <div className="flex items-center gap-4 pt-3 border-t border-border-subtle">
+                    <div className="flex items-center gap-4 pt-1 [&_.material-symbols-outlined]:text-[18px]">
                       <button
                         onClick={() => alternarLike(post)}
                         aria-pressed={meGusta}
@@ -490,33 +466,6 @@ export function Feed() {
                         )}
                       </button>
                     )}
-                    <form
-                      className="mt-3 flex gap-2"
-                      onSubmit={(e) => {
-                        e.preventDefault()
-                        const t = rapido[post.id] ?? ''
-                        if (!t.trim()) return
-                        void enviarComentario(post, t).then(() =>
-                          setRapido((r) => ({ ...r, [post.id]: '' }))
-                        )
-                      }}
-                    >
-                      <input
-                        value={rapido[post.id] ?? ''}
-                        onChange={(e) => setRapido((r) => ({ ...r, [post.id]: e.target.value }))}
-                        placeholder="Escribe un aplauso o comentario..."
-                        aria-label={`Comentar ${post.titulo}`}
-                        maxLength={1000}
-                        className="flex-1 h-10 rounded-full bg-bg-primary/40 border border-border-subtle px-4 text-body-sm text-text-primary placeholder:text-text-secondary"
-                      />
-                      <button
-                        type="submit"
-                        aria-label="Enviar comentario"
-                        className="w-10 h-10 rounded-full bg-primary-600 text-on-primary flex items-center justify-center"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">send</span>
-                      </button>
-                    </form>
                   </div>
                 </article>
               </Fragment>

@@ -32,7 +32,7 @@ export function Carrusel({
   const mapa = puntos.length > 1
   const total = imagenes.length + (mapa || imagenes.length === 0 ? 1 : 0)
   return (
-    <div className="relative mx-4 ml-[68px] max-h-[200px]">
+    <div className="relative mb-2 max-h-[200px]">
       <div
         ref={ref}
         onScroll={(e) => {
