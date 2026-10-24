@@ -6,6 +6,18 @@ export default {
     extend: {
       screens: { short: { raw: '(max-height: 700px)' } },
       colors: {
+        c2: {
+          bg: '#0C1322',
+          card: '#191F2F',
+          s2: '#232A3A',
+          linea: '#2C3446',
+          muted: '#A8B0C2',
+          violeta: '#C084FC',
+          morado: '#A855F7',
+          menta: '#68DBA9',
+          cielo: '#96CCFF',
+          peligro: '#BE185D',
+        },
         info: '#3B82F6',
         primary: {
           DEFAULT: '#C084FC',

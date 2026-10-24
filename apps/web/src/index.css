@@ -116,3 +116,39 @@ body {
   background: #0c1322;
   font-variant-numeric: tabular-nums;
 }
+
+/* Componentes C2 Deporte cinetico (mismos que Android: core/ui Componentes.kt y DialogoC2.kt). */
+@layer components {
+  .tarjeta-c2 {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
+  }
+  .pildora-c2 {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 bg-c2-s2 text-[12px] font-semibold text-text-primary;
+    border-radius: 3px;
+  }
+  .etiqueta-c2 {
+    @apply block text-[10px] font-extrabold uppercase tracking-[0.12em] text-c2-muted;
+  }
+  .metrica-c2 {
+    @apply flex flex-col gap-0.5 bg-c2-s2 px-3 py-2;
+    border-radius: 3px;
+  }
+  .valor-c2 {
+    font-family: 'Anton', 'Archivo', sans-serif;
+    @apply italic text-[22px] leading-none whitespace-nowrap;
+  }
+  .boton-c2 {
+    @apply relative flex w-full items-center justify-center gap-2 h-14 text-white font-black italic uppercase text-[16px] tracking-wide transition-transform active:translate-x-[2px] active:translate-y-[2px];
+    background: linear-gradient(90deg, #7b1fa2, #a855f7);
+    clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+    filter: drop-shadow(4px 4px 0 #c084fc);
+  }
+  .boton-c2-peligro {
+    background: linear-gradient(90deg, #9d174d, #be185d);
+    filter: drop-shadow(4px 4px 0 #f472b6);
+  }
+  .boton-c2-secundario {
+    @apply relative flex w-full items-center justify-center gap-2 h-12 bg-c2-s2 text-white font-black italic uppercase text-[15px];
+    clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  }
+}
