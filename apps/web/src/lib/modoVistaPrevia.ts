@@ -1,6 +1,7 @@
 import type { CarreraGuardada, Perfil } from '../data/tipos'
 import { rutasMock } from '../mocks/data'
 import { useApp } from '../store/app'
+import { tracker } from '../features/carreras/application/carreraStore'
 
 /*
  * Modo de previsualizacion solo para desarrollo (pnpm dev, URL con ?vista-previa).
@@ -35,6 +36,20 @@ function carrerasEjemplo(): CarreraGuardada[] {
   }))
 }
 
+/** Carrera simulada para ver En curso sin GPS: unos 2 km por Loja. */
+function simularCarrera() {
+  tracker.iniciar()
+  const t0 = Date.now() - 12 * 60_000
+  for (let k = 0; k < 120; k++)
+    tracker.registrarPunto({
+      lat: -3.9931 + k * 0.00012,
+      lng: -79.2042 + Math.sin(k / 12) * 0.0006,
+      tiempoMs: t0 + k * 6000,
+      precisionM: 5,
+      altitudM: 2060 + Math.round(Math.sin(k / 20) * 12),
+    })
+}
+
 export function activarVistaPreviaSiCorresponde() {
   if (!import.meta.env.DEV) return
   if (!new URLSearchParams(window.location.search).has('vista-previa')) return
@@ -46,6 +61,7 @@ export function activarVistaPreviaSiCorresponde() {
     })
   // cargar() y el listener de sesion pueden dejarla en null: en este modo se vuelve a abrir siempre.
   aplicar()
+  if (window.location.pathname.startsWith('/correr/en-curso')) simularCarrera()
   useApp.subscribe((s) => {
     if (!s.sesion) aplicar()
   })
