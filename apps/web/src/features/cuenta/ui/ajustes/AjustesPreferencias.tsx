@@ -100,7 +100,7 @@ export function AjustesPreferencias() {
 
   return (
     <PantallaAjustes titulo="Ajustes" subtitulo="Club Gacelas Loja • 2,100 msnm" volverA="/perfil">
-      <div className="flex items-center gap-4 p-4 bg-surface-container rounded-2xl border border-border-subtle">
+      <div className="flex items-center gap-4 p-4 tarjeta-c2">
         <FotoPerfil foto={sesion?.foto} nombre={nombre} className="w-14 h-14" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">

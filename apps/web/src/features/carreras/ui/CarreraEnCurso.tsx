@@ -272,7 +272,7 @@ export function CarreraEnCurso() {
             )}
           </div>
 
-          <div className="rounded-3xl bg-surface-container/60 border border-border-subtle p-6 text-center">
+          <div className="rounded-3xl bg-c2-card border border-c2-linea p-6 text-center">
             <div className="text-label-md text-text-secondary uppercase tracking-widest mb-1">
               Distancia recorrida
             </div>
@@ -403,7 +403,7 @@ function Metrica({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-2xl bg-surface-container/60 border border-border-subtle p-4">
+    <div className="rounded-2xl bg-c2-card border border-c2-linea p-4">
       <div className="text-label-md text-text-secondary uppercase">{titulo}</div>
       <div
         className="font-headline-lg text-headline-lg text-text-primary leading-tight tabular-nums"

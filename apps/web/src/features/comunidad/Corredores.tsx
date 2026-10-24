@@ -35,7 +35,9 @@ export function Corredores() {
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
-          <h1 className="font-headline-md text-headline-md text-text-primary">Buscar corredores</h1>
+          <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
+            Buscar corredores
+          </h1>
         </div>
         <div className="relative">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">

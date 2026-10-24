@@ -87,7 +87,7 @@ export function DetalleRuta() {
   if (!ruta)
     return (
       <main className="w-full min-h-screen bg-surface px-margin py-6">
-        <h1 className="font-headline-md text-headline-md text-text-primary mb-2">
+        <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary mb-2">
           Ruta no encontrada
         </h1>
         <Link to="/rutas" className="text-primary-400 underline">

@@ -63,7 +63,7 @@ export function Inicio() {
         <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-c2-muted capitalize">
           {fecha}
         </span>
-        <h1 className="font-headline-md text-headline-md text-text-primary tracking-tight">
+        <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary tracking-tight">
           {saludo(new Date(ahora).getHours())}, {nombre}
         </h1>
         <div className="flex flex-wrap items-center gap-2">

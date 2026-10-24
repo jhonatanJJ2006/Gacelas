@@ -87,7 +87,9 @@ export function Eventos() {
             >
               <span className="material-symbols-outlined">arrow_back</span>
             </Link>
-            <h1 className="font-headline-md text-headline-md text-text-primary">Eventos</h1>
+            <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
+              Eventos
+            </h1>
           </div>
           <div className="flex items-center gap-2 ml-auto mr-2">
             <Link
@@ -254,7 +256,7 @@ export function Eventos() {
           return (
             <article
               key={evento.id}
-              className="bg-surface-container rounded-2xl border border-border-subtle p-4 space-y-3 hover:border-primary-600/50 transition-colors"
+              className="tarjeta-c2 p-4 space-y-3 hover:border-primary-600/50 transition-colors"
               data-testid="evento"
             >
               {i === 1 && <h3 className="sr-only">Más eventos locales</h3>}

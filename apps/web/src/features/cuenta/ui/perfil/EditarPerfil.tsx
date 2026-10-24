@@ -95,7 +95,9 @@ export function EditarPerfil() {
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
-          <h1 className="font-headline-md text-headline-md text-text-primary">Editar perfil</h1>
+          <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
+            Editar perfil
+          </h1>
           <button
             onClick={() => void handleGuardar()}
             className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-on-primary font-label-lg text-label-lg rounded-lg transition-colors"

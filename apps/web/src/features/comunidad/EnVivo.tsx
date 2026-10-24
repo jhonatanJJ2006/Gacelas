@@ -26,7 +26,9 @@ function Encabezado({ titulo }: { titulo: string }) {
       >
         <span className="material-symbols-outlined">arrow_back</span>
       </button>
-      <h1 className="font-headline-md text-headline-md text-text-primary">{titulo}</h1>
+      <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
+        {titulo}
+      </h1>
     </header>
   )
 }

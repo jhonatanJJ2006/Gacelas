@@ -77,7 +77,7 @@ export function EventoEnVivo() {
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="font-headline-md text-headline-md text-text-primary truncate">
+          <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary truncate">
             {evento?.titulo ?? 'Evento'} · en vivo
           </h1>
           <p className="text-sm text-text-secondary">

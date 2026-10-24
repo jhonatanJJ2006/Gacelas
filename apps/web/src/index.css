@@ -120,6 +120,7 @@ body {
 /* Componentes C2 Deporte cinetico (mismos que Android: core/ui Componentes.kt y DialogoC2.kt). */
 @layer components {
   .tarjeta-c2 {
+    @apply bg-c2-card border border-c2-linea;
     clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
   }
   .pildora-c2 {

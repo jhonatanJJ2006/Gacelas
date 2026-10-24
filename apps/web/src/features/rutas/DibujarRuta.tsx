@@ -53,7 +53,9 @@ export function DibujarRuta() {
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
-        <h1 className="font-headline-md text-headline-md text-text-primary">Dibujar ruta</h1>
+        <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
+          Dibujar ruta
+        </h1>
       </header>
       {!sesion || !sociales ? (
         <p className="px-margin text-text-secondary">

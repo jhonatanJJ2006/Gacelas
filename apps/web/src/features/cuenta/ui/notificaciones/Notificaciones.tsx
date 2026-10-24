@@ -62,7 +62,7 @@ export function Notificaciones() {
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
             <div>
-              <h1 className="font-headline-md text-headline-md text-text-primary">
+              <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
                 Notificaciones
               </h1>
               <p className="text-body-sm text-text-secondary hidden sm:block">

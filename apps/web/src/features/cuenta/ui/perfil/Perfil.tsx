@@ -75,7 +75,9 @@ export function Perfil() {
             <span className="material-symbols-outlined">edit</span>
           </Link>
           <FotoPerfil foto={sesion?.foto} nombre={nombre} className="w-24 h-24" />
-          <h1 className="font-headline-md text-headline-md text-text-primary mt-3">{nombre}</h1>
+          <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary mt-3">
+            {nombre}
+          </h1>
           <p className="font-body-md text-body-md text-text-secondary">
             @{sesion?.username ?? usuarioActualMock.username}
           </p>
@@ -119,7 +121,7 @@ export function Perfil() {
         <EstadisticasHistoricas h={hist} m={m} />
         <KilometrajeMensual meses={meses} m={m} />
 
-        <div className={`bg-surface-container rounded-2xl border border-border-subtle p-4 mb-6`}>
+        <div className={`tarjeta-c2 p-4 mb-6`}>
           <h2 className="font-title-md text-title-md text-text-primary mb-2">Este mes</h2>
           <div className="grid grid-cols-3 text-center">
             <div>
