@@ -103,7 +103,7 @@ fun ComunidadIos(ruta: String, navegar: (String) -> Unit, atras: () -> Unit, onC
         }
         ruta == Destinos.NOTIFICACIONES -> {
             val vm = viewModel { c.notificacionesViewModel(MockData.notificaciones, SesionIos.ajustes) }
-            NotificacionesContenido(vm, atras) {}
+            NotificacionesContenido(vm, atras, onAbrir = {})
         }
         ruta == Destinos.CLUBES -> {
             val vm = viewModel { c.clubesViewModel() }
