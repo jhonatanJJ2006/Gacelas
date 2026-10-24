@@ -81,7 +81,7 @@ fun FeedContenido(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text("GACELAS LOJA", style = GType.labelMd, color = GColors.Primary500)
-                Text("Comunidad", style = GType.headlineLg, color = GColors.TextPrimary)
+                Text("COMUNIDAD", style = GType.headlineLg, color = GColors.TextPrimary)
             }
             IconButton(onClick = { vm.refrescar() }) { Icon(Icons.Filled.Refresh, "Actualizar", tint = GColors.TextSecondary) }
             IconButton(onClick = onEnVivo) { Icon(Icons.Filled.Sensors, "Corredores en vivo", tint = GColors.Danger) }
@@ -96,17 +96,18 @@ fun FeedContenido(
         }
         // Pestanas segmentadas como en Stitch: Para ti, Siguiendo, Clubes, Eventos.
         Row(
-            Modifier.fillMaxWidth().clip(CircleShape).background(GColors.SurfaceContainer).padding(4.dp),
+            Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
+            // Pestanas C2: texto en mayusculas cursiva con subrayado violeta en la activa.
             @Composable
             fun Segmento(texto: String, activo: Boolean, onClick: () -> Unit) {
-                Box(
-                    Modifier.weight(1f).height(40.dp).clip(CircleShape)
-                        .background(if (activo) GColors.BgPrimary else GColors.SurfaceContainer)
-                        .clickable(onClick = onClick),
-                    contentAlignment = Alignment.Center,
-                ) { Text(texto, style = GType.labelLg, color = if (activo) GColors.Primary500 else GColors.TextSecondary) }
+                Column(Modifier.weight(1f).clickable(onClick = onClick), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Box(Modifier.height(40.dp), contentAlignment = Alignment.Center) {
+                        Text(texto.uppercase(), style = GType.labelLg.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = if (activo) GColors.TextPrimary else GColors.TextSecondary)
+                    }
+                    Box(Modifier.fillMaxWidth().height(3.dp).background(if (activo) GColors.C2Violeta else GColors.C2Linea))
+                }
             }
             Segmento("Para ti", filtro == FiltroFeed.Todos) { vm.filtro(FiltroFeed.Todos) }
             Segmento("Siguiendo", filtro == FiltroFeed.Siguiendo) { vm.filtro(FiltroFeed.Siguiendo) }
@@ -134,17 +135,19 @@ fun FeedContenido(
             val locales = if (p.remota) emptyList() else ajustes.comentarios[p.id].orEmpty()
             var menu by remember { mutableStateOf(false) }
             val texto = "${p.titulo}: ${Unidades.texto(p.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)} en ${formatearMs(p.segundos)} con Gacelas Loja"
-            Tarjeta {
+            // Publicacion compacta estilo X (C2): avatar a la izquierda, contenido y metricas en linea.
+            Row(Modifier.fillMaxWidth().testTag("post-c2").padding(vertical = 10.dp)) {
+              AvatarCirculo(40.dp, p.indice)
+              Spacer(Modifier.width(10.dp))
+              Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    AvatarCirculo(44.dp, p.indice)
-                    Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(p.autor, style = GType.labelLg, color = GColors.TextPrimary, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
                             Spacer(Modifier.width(6.dp))
                             InsigniaNivel(nivelCorredor(p.autorKm ?: kms[if (p.propia) "yo" else p.autorId ?: p.autor] ?: 0.0))
                         }
-                        Text("${p.titulo} · ${p.cuando}", style = GType.bodySm, color = GColors.TextSecondary)
+                        Text(p.cuando, style = GType.bodySm, color = GColors.TextSecondary)
                     }
                     p.autorId?.let { autor ->
                         val sigo = autor in siguiendo
@@ -167,16 +170,21 @@ fun FeedContenido(
                         }
                     }
                 }
-                CarruselPost(p, imagen)
-                Row(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceLow).padding(vertical = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                ) {
-                    Metrica(Unidades.texto(p.distanciaKm, m, 1), "Distancia (${Unidades.etiquetaDistancia(m)})")
-                    Metrica(formatearRitmo(Unidades.ritmo(p.ritmoSegKm, m)), "Ritmo", color = GColors.Primary500)
-                    Metrica(formatearMs(p.segundos), "Tiempo")
-                    Metrica("+${p.desnivelM} m", "Elevación", color = GColors.Secondary500)
+                Text(p.titulo, style = GType.bodyMd, color = GColors.TextPrimary)
+                Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Bottom) {
+                    @Composable
+                    fun Dato(valor: String, unidad: String, color: androidx.compose.ui.graphics.Color) {
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            Text(valor, style = GType.titleMd, color = color)
+                            Text(unidad, style = GType.bodySm, color = GColors.TextSecondary)
+                        }
+                    }
+                    Dato(Unidades.texto(p.distanciaKm, m, 1), Unidades.etiquetaDistancia(m), GColors.C2Violeta)
+                    Dato(formatearRitmo(Unidades.ritmo(p.ritmoSegKm, m)), "/${Unidades.etiquetaDistancia(m)}", GColors.TextPrimary)
+                    Dato(formatearMs(p.segundos), "", GColors.TextPrimary)
+                    Dato("${p.desnivelM}", "m+", GColors.C2Cielo)
                 }
+                CarruselPost(p, imagen)
                 locales.takeLast(2).forEach { Text("Tú: $it", style = GType.bodySm, color = GColors.TextSecondary) }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = { vm.alternarLike(p.id, onAviso) }) {
@@ -199,15 +207,9 @@ fun FeedContenido(
                         if (p.comentariosBase > 1) Text("Ver los ${p.comentariosBase} comentarios", style = GType.bodySm, color = GColors.Primary400)
                     }
                 }
-                var rapido by remember(p.id) { mutableStateOf("") }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.weight(1f)) { CampoTexto("", rapido, { rapido = it.take(1000) }, "Escribe un aplauso o comentario...") }
-                    IconButton(
-                        onClick = { if (rapido.isNotBlank()) { vm.comentar(p.id, rapido, onAviso); rapido = "" } },
-                        modifier = Modifier.clip(CircleShape).background(GColors.Primary),
-                    ) { Icon(Icons.AutoMirrored.Filled.Send, "Enviar comentario", tint = GColors.OnPrimary) }
-                }
+              }
             }
+            Box(Modifier.fillMaxWidth().height(1.dp).background(GColors.C2Linea))
         }
     }
     comentando?.let { p ->
@@ -513,7 +515,7 @@ private fun CarruselPost(p: Publicacion, imagen: @Composable (String, Modifier) 
     val mapa = p.puntos.size >= 2 || p.imagenes.isEmpty()
     val total = p.imagenes.size + if (mapa) 1 else 0
     val estado = androidx.compose.foundation.pager.rememberPagerState { total }
-    Box(Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(12.dp))) {
+    Box(Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(4.dp))) {
         androidx.compose.foundation.pager.HorizontalPager(estado, Modifier.fillMaxSize()) { pagina ->
             if (mapa && pagina == 0) {
                 Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(GColors.MapParks, GColors.SurfaceLow))), contentAlignment = Alignment.Center) {
