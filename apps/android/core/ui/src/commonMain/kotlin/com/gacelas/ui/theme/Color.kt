@@ -7,7 +7,8 @@ import androidx.compose.ui.graphics.Color
 
 /** Tokens de color equivalentes a apps/web/tailwind.config.js. Paleta morada Social Run Loja (docs/PALETA.md). */
 object GColors {
-    /** Tema claro activo. Se lee como estado de Compose, asi la UI se recompone al cambiarlo. */
+    /** Rediseño C2: la app solo usa fondos oscuros; este estado se conserva por compatibilidad con Ajustes.
+     * Tema claro activo. Se lee como estado de Compose, asi la UI se recompone al cambiarlo. */
     var claro by mutableStateOf(false)
 
     val Primary = Color(0xFF7B1FA2)
@@ -35,23 +36,34 @@ object GColors {
     val Info = Color(0xFF3B82F6)
     val Danger = Color(0xFFDC2626)
 
-    val Surface: Color get() = if (claro) Color(0xFFF8FAFC) else Color(0xFF0C1322)
-    val SurfaceLowest: Color get() = if (claro) Color(0xFFFFFFFF) else Color(0xFF070E1D)
-    val SurfaceLow: Color get() = if (claro) Color(0xFFF1F5F9) else Color(0xFF141B2B)
-    val SurfaceContainer: Color get() = if (claro) Color(0xFFFFFFFF) else Color(0xFF191F2F)
-    val SurfaceHigh: Color get() = if (claro) Color(0xFFE2E8F0) else Color(0xFF232A3A)
-    val SurfaceHighest: Color get() = if (claro) Color(0xFFCBD5E1) else Color(0xFF2E3545)
+    val Surface: Color get() = Color(0xFF0C1322)
+    val SurfaceLowest: Color get() = Color(0xFF070E1D)
+    val SurfaceLow: Color get() = Color(0xFF141B2B)
+    val SurfaceContainer: Color get() = Color(0xFF191F2F)
+    val SurfaceHigh: Color get() = Color(0xFF232A3A)
+    val SurfaceHighest: Color get() = Color(0xFF2E3545)
 
-    val BgPrimary: Color get() = if (claro) Color(0xFFF8FAFC) else Color(0xFF111827)
-    val BgSecondary: Color get() = if (claro) Color(0xFFFFFFFF) else Color(0xFF1F2937)
-    val TextPrimary: Color get() = if (claro) Color(0xFF111827) else Color(0xFFF9FAFB)
-    val TextSecondary: Color get() = if (claro) Color(0xFF4B5563) else Color(0xFF9CA3AF)
-    val BorderSubtle: Color get() = if (claro) Color(0xFFD1D5DB) else Color(0xFF374151)
-    val OnSurface: Color get() = if (claro) Color(0xFF1F2937) else Color(0xFFDCE2F7)
-    val OnSurfaceVariant = Color(0xFFDBC2B0)
-    val Outline = Color(0xFFA38C7C)
+    val BgPrimary: Color get() = Color(0xFF0C1322)
+    val BgSecondary: Color get() = Color(0xFF191F2F)
+    val TextPrimary: Color get() = Color(0xFFFFFFFF)
+    val TextSecondary: Color get() = Color(0xFFA8B0C2)
+    val BorderSubtle: Color get() = Color(0xFF2C3446)
+    val OnSurface: Color get() = Color(0xFFDCE2F7)
+    val OnSurfaceVariant = Color(0xFFC9CFDB)
+    val Outline = Color(0xFF8C95A8)
 
     val MapWater = Color(0xFF1E3A8A)
     val MapRoads = Color(0xFF374151)
     val MapParks = Color(0xFF064E3B)
+
+    /** Tokens C2 Deporte cinetico (rediseno-c2/tokens.css). */
+    val C2Bg = Color(0xFF0C1322)
+    val C2Card = Color(0xFF191F2F)
+    val C2S2 = Color(0xFF232A3A)
+    val C2Linea = Color(0xFF2C3446)
+    val C2Muted = Color(0xFFA8B0C2)
+    val C2Violeta = Color(0xFFC084FC)
+    val C2Morado = Color(0xFFA855F7)
+    val C2Menta = Color(0xFF68DBA9)
+    val C2Cielo = Color(0xFF96CCFF)
 }
