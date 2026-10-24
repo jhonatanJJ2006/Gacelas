@@ -25,7 +25,7 @@ export function BotonGoogle() {
         type="button"
         onClick={entrar}
         disabled={cargando}
-        className="w-full h-12 bg-white hover:bg-gray-100 text-gray-900 font-medium text-sm rounded-xl flex items-center justify-center gap-3 transition-all cursor-pointer disabled:opacity-60 min-h-[48px]"
+        className="w-full h-12 bg-[#232A3A] hover:bg-[#2C3446] text-white font-medium text-sm rounded-xl flex items-center justify-center gap-3 transition-all cursor-pointer disabled:opacity-60 min-h-[48px]"
       >
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 48 48">
           <path
