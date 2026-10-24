@@ -58,7 +58,9 @@ export function ListaRutas() {
     <div className="flex flex-col w-full contenedor-escritorio">
       <div className="px-margin pt-space-md pb-space-sm lg:px-0 lg:pb-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="font-headline-md text-headline-md text-text-primary">Rutas de Loja</h1>
+          <h1 className="font-display italic uppercase text-[26px] text-text-primary">
+            Rutas de Loja
+          </h1>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setVerMapa((v) => !v)}
@@ -180,7 +182,7 @@ export function ListaRutas() {
       {verMapa && (
         <div className="px-margin lg:px-0 pb-4">
           <MapaRutas
-            className="h-[420px] lg:h-[560px] rounded-2xl overflow-hidden"
+            className="h-[420px] lg:h-[560px] rounded-[10px] border border-c2-linea overflow-hidden"
             onAbrir={(id) => navigate(`/rutas/${id}`)}
             rutas={rutas
               .filter((r) => (r.puntos?.length ?? 0) > 0)
@@ -210,80 +212,86 @@ export function ListaRutas() {
           return (
             <article
               key={ruta.id}
-              className="relative bg-surface-container rounded-2xl border border-border-subtle overflow-hidden hover:border-primary-600/50 transition-colors"
+              className="relative tarjeta-c2 overflow-hidden hover:border-c2-violeta/60 transition-colors"
             >
               <Link to={`/rutas/${ruta.id}`} className="block" aria-label={`Abrir ${ruta.nombre}`}>
-                <div className="h-32 bg-gradient-to-br from-primary-600/30 to-secondary-600/30 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[64px] text-primary">route</span>
-                </div>
-                <div className="p-4">
-                  <h2 className="font-title-md text-title-md text-text-primary mb-1">
-                    {ruta.nombre}
-                  </h2>
-                  <p className="text-body-sm text-text-secondary mb-2">{ruta.descripcion}</p>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-sm text-text-secondary">
-                    {ruta.valoracion != null && (
-                      <span className="flex items-center gap-1">
-                        <Estrellas valor={ruta.valoracion} tamano={16} />
-                        {ruta.valoracion.toFixed(1)} ({ruta.resenas})
-                      </span>
-                    )}
-                    {(ruta.meGusta ?? 0) > 0 && (
-                      <span className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[16px]">favorite</span>
-                        {ruta.meGusta}
-                      </span>
-                    )}
-                    {cerca?.[ruta.id] != null && (
-                      <span className="flex items-center gap-1" data-testid="ruta-cerca-km">
-                        <span className="material-symbols-outlined text-[16px]">near_me</span>a{' '}
-                        {Unidades.texto(cerca[ruta.id], m, 1)} {Unidades.etiquetaDistancia(m)}
-                      </span>
-                    )}
-                    {ruta.autorNombre && <span>por {ruta.autorNombre}</span>}
-                  </div>
-                  <div className="mb-2">
-                    <span
-                      className={`font-label-md text-label-md px-2 py-0.5 rounded-full ${
-                        ruta.dificultad === 'Fácil'
-                          ? 'bg-secondary-600/20 text-secondary-500'
-                          : ruta.dificultad === 'Moderado'
-                            ? 'bg-primary-600/20 text-primary-500'
-                            : 'bg-danger/20 text-red-300'
-                      }`}
-                    >
-                      {ruta.dificultad}
+                <div className="flex gap-3 p-3 pr-12">
+                  <div className="w-[88px] h-[88px] shrink-0 rounded-lg bg-c2-s2 border border-c2-linea flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[36px] text-c2-violeta">
+                      route
                     </span>
                   </div>
-                  <div
-                    className="grid grid-cols-3 rounded-lg bg-surface-container-high py-2 text-center"
-                    data-testid="metricas-ruta"
-                  >
-                    <div>
-                      <div className="text-[11px] text-text-secondary">Distancia</div>
-                      <div className="font-label-lg text-label-lg text-text-primary">
-                        {Unidades.texto(ruta.distanciaKm, m, 1)} {Unidades.etiquetaDistancia(m)}
+                  <div className="flex-1 min-w-0">
+                    <h2 className="font-semibold text-[15px] text-text-primary mb-0.5 truncate">
+                      {ruta.nombre}
+                    </h2>
+                    <p className="text-[12px] text-c2-muted mb-1 line-clamp-1">
+                      {ruta.descripcion}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-sm text-text-secondary">
+                      {ruta.valoracion != null && (
+                        <span className="flex items-center gap-1">
+                          <Estrellas valor={ruta.valoracion} tamano={16} />
+                          {ruta.valoracion.toFixed(1)} ({ruta.resenas})
+                        </span>
+                      )}
+                      {(ruta.meGusta ?? 0) > 0 && (
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[16px]">favorite</span>
+                          {ruta.meGusta}
+                        </span>
+                      )}
+                      {cerca?.[ruta.id] != null && (
+                        <span className="flex items-center gap-1" data-testid="ruta-cerca-km">
+                          <span className="material-symbols-outlined text-[16px]">near_me</span>a{' '}
+                          {Unidades.texto(cerca[ruta.id], m, 1)} {Unidades.etiquetaDistancia(m)}
+                        </span>
+                      )}
+                      {ruta.autorNombre && <span>por {ruta.autorNombre}</span>}
+                    </div>
+                    <div className="mb-2">
+                      <span
+                        className={`font-label-md text-label-md px-2 py-0.5 rounded-full ${
+                          ruta.dificultad === 'Fácil'
+                            ? 'bg-secondary-600/20 text-secondary-500'
+                            : ruta.dificultad === 'Moderado'
+                              ? 'bg-primary-600/20 text-primary-500'
+                              : 'bg-danger/20 text-red-300'
+                        }`}
+                      >
+                        {ruta.dificultad}
+                      </span>
+                    </div>
+                    <div
+                      className="grid grid-cols-3 gap-1 pt-1 border-t border-c2-linea"
+                      data-testid="metricas-ruta"
+                    >
+                      <div>
+                        <div className="text-[11px] text-text-secondary">Distancia</div>
+                        <div className="text-[13px] font-semibold text-text-primary">
+                          {Unidades.texto(ruta.distanciaKm, m, 1)} {Unidades.etiquetaDistancia(m)}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[11px] text-text-secondary">Desnivel</div>
+                        <div className="text-[13px] font-semibold text-text-primary">
+                          +{ruta.elevacionM} m
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[11px] text-text-secondary">Valoración</div>
+                        <div className="text-[13px] font-semibold text-c2-violeta">
+                          {ruta.valoracion != null
+                            ? `${ruta.valoracion.toFixed(1)} (${ruta.resenas ?? 0})`
+                            : '--'}
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <div className="text-[11px] text-text-secondary">Desnivel</div>
-                      <div className="font-label-lg text-label-lg text-text-primary">
-                        +{ruta.elevacionM} m
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-[11px] text-text-secondary">Valoración</div>
-                      <div className="font-label-lg text-label-lg text-primary">
-                        {ruta.valoracion != null
-                          ? `${ruta.valoracion.toFixed(1)} (${ruta.resenas ?? 0})`
-                          : '--'}
-                      </div>
-                    </div>
+                    <span className="mt-1 inline-flex items-center gap-1 text-[12px] font-semibold text-c2-violeta">
+                      <span className="material-symbols-outlined text-[16px]">info</span>
+                      Ver detalles
+                    </span>
                   </div>
-                  <span className="mt-3 inline-flex items-center gap-1 rounded-lg bg-surface-container-high px-3 py-2 font-label-md text-label-md text-text-primary">
-                    <span className="material-symbols-outlined text-[16px]">info</span>
-                    Ver detalles
-                  </span>
                 </div>
               </Link>
               <button
@@ -292,7 +300,7 @@ export function ListaRutas() {
                   guardada ? `Quitar ${ruta.nombre} de guardadas` : `Guardar ${ruta.nombre}`
                 }
                 aria-pressed={guardada}
-                className="absolute top-3 right-3 w-10 h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center text-primary-400"
+                className="absolute top-2 right-2 w-9 h-9 rounded-full bg-c2-s2 backdrop-blur flex items-center justify-center text-primary-400"
               >
                 <span
                   className="material-symbols-outlined"
