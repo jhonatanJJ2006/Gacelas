@@ -49,4 +49,14 @@ export function activarVistaPreviaSiCorresponde() {
   useApp.subscribe((s) => {
     if (!s.sesion) aplicar()
   })
+  // Si la sesion se perdio un instante y el enrutador redirigio, se vuelve a la ruta pedida.
+  const destino = window.location.pathname + window.location.search
+  const inicio = Date.now()
+  const restaurar = window.setInterval(() => {
+    if (Date.now() - inicio > 4000) return window.clearInterval(restaurar)
+    if (window.location.pathname + window.location.search !== destino && useApp.getState().sesion) {
+      window.history.replaceState(null, '', destino)
+      window.dispatchEvent(new PopStateEvent('popstate'))
+    }
+  }, 200)
 }

@@ -152,7 +152,9 @@ export function Feed() {
         <div className="px-margin pt-space-md pb-space-sm lg:px-0 lg:pb-4">
           <div className="flex items-center justify-between mb-4 relative">
             <div>
-              <h1 className="font-headline-md text-headline-md text-text-primary">Comunidad</h1>
+              <h1 className="font-display italic uppercase text-[26px] text-text-primary">
+                Comunidad
+              </h1>
             </div>
             <div className="flex-1" />
             <button
@@ -260,7 +262,7 @@ export function Feed() {
           )}
         </div>
 
-        <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:space-y-6">
+        <div className="px-margin space-y-2 pb-space-3xl lg:px-0 lg:space-y-3">
           {posts.length === 0 && (
             <p className="text-center text-text-secondary py-8">
               {filtro === 'Mías'
@@ -283,10 +285,10 @@ export function Feed() {
                   />
                 )}
                 <article
-                  className="bg-surface-container rounded-2xl border border-border-subtle overflow-hidden"
+                  className="border-b border-c2-linea pb-2 lg:pb-3"
                   data-testid="publicacion"
                 >
-                  <header className="p-4 flex items-center gap-3 relative">
+                  <header className="px-4 pt-3 pb-2 flex items-start gap-3 relative">
                     {post.avatar ? (
                       <img
                         src={post.avatar}
@@ -375,13 +377,13 @@ export function Feed() {
                     desnivelM={post.desnivelM}
                   />
 
-                  <div className="p-4">
-                    <div className="grid grid-cols-4 gap-2 mb-4 p-3 rounded-xl bg-bg-primary/40 border border-border-subtle">
+                  <div className="pl-[68px] pr-4 pt-2">
+                    <div className="grid grid-cols-4 gap-2 mb-2">
                       <div>
-                        <div className="font-label-sm text-label-sm text-text-secondary">
+                        <div className="text-[10px] uppercase tracking-wide text-c2-muted truncate">
                           Distancia
                         </div>
-                        <div className="font-headline-sm text-headline-sm text-text-primary">
+                        <div className="font-semibold text-[14px] text-text-primary">
                           {Unidades.texto(post.distanciaKm, m, 1)}{' '}
                           <span className="text-label-sm text-text-secondary">
                             {Unidades.etiquetaDistancia(m)}
@@ -389,25 +391,27 @@ export function Feed() {
                         </div>
                       </div>
                       <div>
-                        <div className="font-label-sm text-label-sm text-text-secondary">Ritmo</div>
-                        <div className="font-headline-sm text-headline-sm text-primary">
+                        <div className="text-[10px] uppercase tracking-wide text-c2-muted truncate">
+                          Ritmo
+                        </div>
+                        <div className="font-semibold text-[14px] text-primary">
                           {formatearRitmo(Unidades.ritmo(post.ritmoSegKm, m))}
                         </div>
                       </div>
                       <div>
-                        <div className="font-label-sm text-label-sm text-text-secondary">
+                        <div className="text-[10px] uppercase tracking-wide text-c2-muted truncate">
                           Tiempo
                         </div>
-                        <div className="font-headline-sm text-headline-sm text-text-primary">
+                        <div className="font-semibold text-[14px] text-text-primary">
                           {formatearMs(post.segundos)}
                         </div>
                       </div>
                       <div>
-                        <div className="font-label-sm text-label-sm text-text-secondary">
+                        <div className="text-[10px] uppercase tracking-wide text-c2-muted truncate">
                           Elevación
                         </div>
                         <div
-                          className="font-headline-sm text-headline-sm text-secondary"
+                          className="font-semibold text-[14px] text-secondary"
                           data-testid="desnivel-post"
                         >
                           +{post.desnivelM ?? 0}
