@@ -294,10 +294,10 @@ private fun FilaDato(etiqueta: String, valor: String) {
 
 @Composable
 private fun DialogoDescartar(onConfirmar: () -> Unit, onCancelar: () -> Unit) {
-    AlertDialog(
+    com.gacelas.ui.components.DialogoC2(
         onDismissRequest = onCancelar,
-        confirmButton = { TextButton(onClick = onConfirmar) { Text("Descartar", color = GColors.Danger) } },
-        dismissButton = { TextButton(onClick = onCancelar) { Text("Seguir corriendo") } },
+        confirmButton = { com.gacelas.ui.components.BotonModalC2("Descartar", onConfirmar, peligro = true) },
+        dismissButton = { com.gacelas.ui.components.BotonModalC2("Seguir corriendo", onCancelar, secundario = true) },
         title = { Text("¿Descartar la carrera?") },
         text = { Text("Se perderá el recorrido grabado hasta ahora.") },
         containerColor = GColors.BgSecondary,

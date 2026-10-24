@@ -158,9 +158,9 @@ fun RegistroContenido(
         botonGoogle()
     }
     if (verTerminos) {
-        AlertDialog(
+        com.gacelas.ui.components.DialogoC2(
             onDismissRequest = { verTerminos = false },
-            confirmButton = { TextButton(onClick = { verTerminos = false }) { Text("Entendido") } },
+            confirmButton = { com.gacelas.ui.components.BotonModalC2("Entendido", { verTerminos = false }) },
             title = { Text("Términos y privacidad") },
             text = { Text("Tus datos se guardan en tu cuenta de Gacelas y en este teléfono. Tú decides qué carreras son públicas y puedes ocultar la zona de tu casa en Ajustes.") },
             containerColor = GColors.BgSecondary,

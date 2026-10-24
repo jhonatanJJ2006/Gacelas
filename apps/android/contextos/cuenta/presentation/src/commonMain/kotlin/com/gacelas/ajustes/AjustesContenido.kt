@@ -182,37 +182,38 @@ fun AjustesContenido(
         }
     }
     when (dialogo) {
-        "acerca" -> AlertDialog(
+        "acerca" -> com.gacelas.ui.components.DialogoC2(
             onDismissRequest = { dialogo = null },
-            confirmButton = { TextButton(onClick = { dialogo = null }) { Text("Cerrar") } },
+            confirmButton = { com.gacelas.ui.components.BotonModalC2("Cerrar", { dialogo = null }) },
             title = { Text("Gacelas Loja") },
             text = { Text("${version}. App del grupo de running Gacelas de Loja, Ecuador. Graba tus carreras con GPS, descubre rutas y entrena con la comunidad.") },
             containerColor = GColors.BgSecondary,
         )
-        "ayuda" -> AlertDialog(
+        "ayuda" -> com.gacelas.ui.components.DialogoC2(
             onDismissRequest = { dialogo = null },
             confirmButton = {
-                TextButton(onClick = {
+                com.gacelas.ui.components.BotonModalC2("Escribir a soporte", {
                     dialogo = null
                     onSoporte()
-                }) { Text("Escribir a soporte") }
+                })
             },
-            dismissButton = { TextButton(onClick = { dialogo = null }) { Text("Cerrar") } },
+            dismissButton = { com.gacelas.ui.components.BotonModalC2("Cerrar", { dialogo = null }, secundario = true) },
             title = { Text("Ayuda y soporte") },
             text = { Text("Para grabar una carrera toca el botón central Correr y da permiso de ubicación. Las carreras se guardan en tu teléfono y aparecen en Perfil e Inicio.") },
             containerColor = GColors.BgSecondary,
         )
-        "salir" -> AlertDialog(
+        "salir" -> com.gacelas.ui.components.DialogoC2(
             onDismissRequest = { dialogo = null },
             confirmButton = {
-                TextButton(onClick = {
+                com.gacelas.ui.components.BotonModalC2("Cerrar sesión", {
                     dialogo = null
                     onCerrarSesion()
-                }) { Text("Cerrar sesión", color = GColors.Danger) }
+                }, peligro = true)
             },
-            dismissButton = { TextButton(onClick = { dialogo = null }) { Text("Cancelar") } },
+            dismissButton = { com.gacelas.ui.components.BotonModalC2("Cancelar", { dialogo = null }, secundario = true) },
+            icon = { Icon(Icons.AutoMirrored.Filled.Logout, null) },
             title = { Text("¿Cerrar sesión?") },
-            text = { Text("Tus carreras siguen guardadas en este dispositivo.") },
+            text = { Text("Tus carreras guardadas siguen en tu cuenta. Las que estén sin sincronizar se subirán la próxima vez que entres.") },
             containerColor = GColors.BgSecondary,
         )
     }

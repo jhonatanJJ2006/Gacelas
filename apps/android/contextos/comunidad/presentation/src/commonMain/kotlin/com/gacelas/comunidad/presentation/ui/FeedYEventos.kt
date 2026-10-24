@@ -215,7 +215,7 @@ fun FeedContenido(
     comentando?.let { p ->
         var texto by remember(p.id) { mutableStateOf("") }
         val hilo by produceState(emptyList<com.gacelas.comunidad.domain.modelo.ComentarioFeed>(), p.id) { value = vm.comentarios(p.id) }
-        AlertDialog(
+        com.gacelas.ui.components.DialogoC2(
             onDismissRequest = { comentando = null },
             title = { Text("Comentarios") },
             text = {
@@ -232,7 +232,7 @@ fun FeedContenido(
                     comentando = null
                 }) { Text("Publicar") }
             },
-            dismissButton = { TextButton(onClick = { comentando = null }) { Text("Cancelar") } },
+            dismissButton = { com.gacelas.ui.components.BotonModalC2("Cancelar", { comentando = null }, secundario = true) },
             containerColor = GColors.BgSecondary,
         )
     }
@@ -311,7 +311,7 @@ private fun DialogoCrearEvento(onCerrar: () -> Unit, onCrear: (Evento) -> Unit) 
     var km by remember { mutableStateOf("5") }
     val inicio = remember(fecha, hora) { inicioEvento(fecha, hora) }
     val valido = titulo.isNotBlank() && inicio != null && lugar.isNotBlank() && km.toIntOrNull() != null
-    AlertDialog(
+    com.gacelas.ui.components.DialogoC2(
         onDismissRequest = onCerrar,
         title = { Text("Nuevo evento") },
         text = {
@@ -334,7 +334,7 @@ private fun DialogoCrearEvento(onCerrar: () -> Unit, onCrear: (Evento) -> Unit) 
                     creadoPorUsuario = true, inicioMs = inicio, cupo = cupo.toIntOrNull()?.coerceAtLeast(1), tipo = tipo))
             }) { Text("Crear") }
         },
-        dismissButton = { TextButton(onClick = onCerrar) { Text("Cancelar") } },
+        dismissButton = { com.gacelas.ui.components.BotonModalC2("Cancelar", onCerrar, secundario = true) },
         containerColor = GColors.BgSecondary,
     )
 }
