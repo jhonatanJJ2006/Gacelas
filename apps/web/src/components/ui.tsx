@@ -32,18 +32,21 @@ export function Dialogo({ titulo, abierto, onCerrar, children, acciones }: Dialo
   if (!abierto) return null
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 sm:p-4"
       onClick={onCerrar}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-label={titulo}
-        className="w-full max-w-md bg-bg-secondary border border-border-subtle rounded-2xl p-6 shadow-2xl"
+        className="w-full max-w-md bg-c2-card border border-c2-linea border-t-2 border-t-c2-violeta rounded-t-[14px] sm:rounded-[14px] px-6 pt-3 pb-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="font-title-md text-title-md text-text-primary mb-3">{titulo}</h2>
-        <div className="text-text-secondary text-sm space-y-3">{children}</div>
+        <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-c2-linea" aria-hidden="true" />
+        <h2 className="font-display italic text-[24px] leading-tight text-text-primary mb-3">
+          {titulo}
+        </h2>
+        <div className="text-c2-muted text-sm space-y-3">{children}</div>
         {acciones && <div className="flex justify-end gap-2 mt-6">{acciones}</div>}
       </div>
     </div>
@@ -68,7 +71,7 @@ export function BotonTexto({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`px-4 h-10 rounded-lg font-label-lg text-label-lg transition-colors disabled:opacity-50 ${peligro ? 'text-danger hover:bg-danger/10' : 'text-primary-500 hover:bg-primary-600/10'}`}
+      className={`px-5 h-11 -skew-x-12 font-black italic uppercase text-[14px] transition-colors disabled:opacity-50 ${peligro ? 'bg-c2-peligro text-white hover:brightness-110' : 'bg-c2-s2 text-c2-violeta hover:bg-c2-linea'}`}
     >
       {children}
     </button>
