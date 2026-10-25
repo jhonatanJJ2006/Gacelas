@@ -78,7 +78,7 @@ CABECERA = (RAIZ / "scripts/rutas-loja/022_cabecera.sql").read_text()
 # Web
 web = ["// Generado por scripts/rutas-loja/generar.py a partir de supabase/seed/rutas-loja.geojson. No editar a mano.",
        "// Trazados (c) colaboradores de OpenStreetMap, licencia ODbL 1.0. Elevación SRTM 30 m vía OpenTopoData.",
-       "import type { Ruta } from '../mocks/data'", "", "export const RUTAS_LOJA: Ruta[] = ["]
+       "import type { Ruta } from '../../../mocks/data'", "", "export const RUTAS_LOJA: Ruta[] = ["]
 for r in rutas:
     pts = ",".join(f"[{round(y,5)},{round(x,5)}]" for x, y in r["cli"])
     web.append("  {")
@@ -99,7 +99,7 @@ for r in rutas:
     web.append(f"    puntos: ([{pts}] as [number, number][]).map(([lat, lng]) => ({{ lat, lng }})),")
     web.append("  },")
 web.append("]")
-(RAIZ / "apps/web/src/data/rutasLoja.ts").write_text("\n".join(web) + "\n")
+(RAIZ / "apps/web/src/contexts/rutas/infrastructure/rutasLojaOsm.ts").write_text("\n".join(web) + "\n")
 
 # Kotlin (trazo como texto para no superar el limite de tamano de metodo de la JVM)
 k = ["// Generado por scripts/rutas-loja/generar.py a partir de supabase/seed/rutas-loja.geojson. No editar a mano.",

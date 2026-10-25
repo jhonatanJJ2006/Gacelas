@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { RUTAS_LOJA } from '../../data/rutasLoja'
+import { RUTAS_LOJA } from '../../contexts/rutas/api'
 import { aplicarFiltros, conOficiales, FILTROS_INICIALES } from '../rutas'
 import { rutasMock } from '../../mocks/data'
 import { rutaDesdeFila } from '../../data/supabaseRepos'

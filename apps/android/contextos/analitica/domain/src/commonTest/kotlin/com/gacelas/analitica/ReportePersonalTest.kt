@@ -1,9 +1,9 @@
-package com.gacelas.carreras
+package com.gacelas.analitica
 
 import com.gacelas.carreras.domain.modelo.Carrera
-import com.gacelas.carreras.domain.reglas.InicioRuta
-import com.gacelas.carreras.domain.reglas.PeriodoReporte
-import com.gacelas.carreras.domain.reglas.ReportesPersonales
+import com.gacelas.analitica.domain.InicioRuta
+import com.gacelas.analitica.domain.PeriodoReporte
+import com.gacelas.analitica.domain.ReportesPersonales
 import com.gacelas.shared.Fechas
 import com.gacelas.carreras.domain.modelo.PuntoGps
 import kotlinx.datetime.LocalDateTime

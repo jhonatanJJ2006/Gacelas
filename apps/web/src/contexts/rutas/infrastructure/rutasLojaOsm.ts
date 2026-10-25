@@ -1,6 +1,6 @@
 // Generado por scripts/rutas-loja/generar.py a partir de supabase/seed/rutas-loja.geojson. No editar a mano.
 // Trazados (c) colaboradores de OpenStreetMap, licencia ODbL 1.0. Elevación SRTM 30 m vía OpenTopoData.
-import type { Ruta } from '../mocks/data'
+import type { Ruta } from '../../../mocks/data'
 
 export const RUTAS_LOJA: Ruta[] = [
   {

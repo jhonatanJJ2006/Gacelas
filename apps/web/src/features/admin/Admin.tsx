@@ -14,6 +14,8 @@ import {
   type EstadoReporte,
   type ReporteAdmin,
   type TipoReporte,
+  definicionTipo,
+  tiposRegistrados,
   type RutaAdmin,
   type UsuarioAdmin,
 } from './api'
@@ -289,12 +291,7 @@ function Usuarios({ f }: { f: FuenteAdmin }) {
   )
 }
 
-const TIPOS: Record<TipoReporte, string> = {
-  post: 'Publicación',
-  usuario: 'Usuario',
-  comentario: 'Comentario',
-  evento: 'Evento',
-}
+const etiqueta = (t: TipoReporte) => definicionTipo(t).etiqueta
 const ESTADOS: [EstadoReporte, string][] = [
   ['pendiente', 'Pendientes'],
   ['en_revision', 'En revisión'],
@@ -332,16 +329,13 @@ function TarjetaReporte({
       (e: Error) => setError(e.message)
     )
   const abiertoCaso = r.status === 'pendiente' || r.status === 'en_revision'
-  const ocultar =
-    r.target_type === 'usuario'
-      ? 'Suspender usuario'
-      : `Ocultar ${TIPOS[r.target_type].toLowerCase()}`
+  const ocultar = definicionTipo(r.target_type).accionOcultar
   return (
     <li className={`${tarjeta} p-4`} data-testid={`reporte-${r.id}`}>
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-1.5 mb-1">
-            <Etiqueta color="violeta">{TIPOS[r.target_type]}</Etiqueta>
+            <Etiqueta color="violeta">{etiqueta(r.target_type)}</Etiqueta>
             <Etiqueta color="peligro">{MOTIVOS[r.reason] ?? r.reason}</Etiqueta>
             <Etiqueta color="gris">
               {ESTADOS.find(([e]) => e === r.status)?.[1] ?? r.status}
@@ -392,14 +386,16 @@ function TarjetaReporte({
                     Revisar
                   </Boton>
                 )}
-                <Boton
-                  tipo="peligro"
-                  onClick={() =>
-                    hacer(r.target_type === 'usuario' ? 'suspender_usuario' : 'ocultar_contenido')
-                  }
-                >
-                  {ocultar}
-                </Boton>
+                {ocultar && (
+                  <Boton
+                    tipo="peligro"
+                    onClick={() =>
+                      hacer(r.target_type === 'usuario' ? 'suspender_usuario' : 'ocultar_contenido')
+                    }
+                  >
+                    {ocultar}
+                  </Boton>
+                )}
                 <Boton tipo="secundario" onClick={() => hacer('descartado')}>
                   Descartar
                 </Boton>
@@ -433,6 +429,8 @@ function Moderacion({ f }: { f: FuenteAdmin }) {
   const lista = (datos ?? []).filter(
     (r) => r.status === filtro && (!tipo || r.target_type === tipo)
   )
+  // Tipos conocidos mas los que lleguen de otros contextos (por ejemplo incidentes).
+  const tipos = [...new Set([...tiposRegistrados(), ...(datos ?? []).map((r) => r.target_type)])]
   const cuenta = (s: EstadoReporte) => (datos ?? []).filter((r) => r.status === s).length
   return (
     <>
@@ -452,14 +450,14 @@ function Moderacion({ f }: { f: FuenteAdmin }) {
         ))}
       </div>
       <div className="flex flex-wrap gap-2 mb-4" role="group" aria-label="Tipo de contenido">
-        {([null, 'post', 'usuario', 'comentario', 'evento'] as const).map((t) => (
+        {[null, ...tipos].map((t) => (
           <button
             key={t ?? 'todos'}
             aria-pressed={tipo === t}
             onClick={() => setTipo(t)}
             className={`px-3 h-7 text-[12px] font-semibold border ${tipo === t ? 'border-[#C084FC] text-[#C084FC]' : 'border-c2-linea text-c2-muted'}`}
           >
-            {t ? TIPOS[t] : 'Todo'}
+            {t ? etiqueta(t) : 'Todo'}
           </button>
         ))}
       </div>

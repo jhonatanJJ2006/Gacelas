@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BarrasHorizontales, GraficoBarras, GraficoLinea } from '../../components/Graficos'
-import { aCsv, aPdf, descargar } from '../../lib/exportar'
+import { aCsv, aPdf, descargar } from '../../contexts/analitica/api'
 import type { Estadisticas as Datos, FuenteAdmin } from './api'
 
 const tarjeta = 'bg-c2-card border border-c2-linea'

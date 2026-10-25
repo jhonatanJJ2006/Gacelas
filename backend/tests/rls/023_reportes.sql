@@ -95,5 +95,49 @@ BEGIN
     RAISE EXCEPTION 'no se aviso al reportante';
   END IF;
 END $$;
+-- Un contexto nuevo se registra como tipo de objetivo sin cambiar la cola.
+CREATE TABLE public.prueba_incidentes (id TEXT PRIMARY KEY, titulo TEXT, oculto BOOLEAN DEFAULT false);
+INSERT INTO public.prueba_incidentes VALUES ('i1', 'Bache en la via');
+CREATE FUNCTION public.prueba_resumen_incidente(o TEXT) RETURNS TEXT LANGUAGE sql AS $$ SELECT titulo FROM public.prueba_incidentes WHERE id = o $$;
+CREATE FUNCTION public.prueba_ocultar_incidente(o TEXT) RETURNS VOID LANGUAGE sql AS $$ UPDATE public.prueba_incidentes SET oculto = true WHERE id = o $$;
+INSERT INTO public.report_target_types (key, etiqueta, referencia, resumen_fn, ocultar_fn)
+VALUES ('incidente', 'Incidente', 'el incidente', 'public.prueba_resumen_incidente', 'public.prueba_ocultar_incidente');
+DO $$
+BEGIN
+  BEGIN
+    INSERT INTO public.content_reports (target_type, target_id, reporter_id, reason)
+    VALUES ('desconocido', 'x', '00000000-0000-0000-0000-0000000000b1', 'spam');
+    RAISE EXCEPTION 'acepto un tipo no registrado';
+  EXCEPTION WHEN foreign_key_violation THEN NULL;
+  END;
+END $$;
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000b1', true);
+INSERT INTO public.content_reports (target_type, target_id, reporter_id, reason)
+VALUES ('incidente', 'i1', '00000000-0000-0000-0000-0000000000b1', 'falso');
+SELECT set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000a1', true);
+DO $$
+DECLARE r UUID;
+BEGIN
+  IF (SELECT resumen FROM public.admin_cola_reportes(NULL, 'incidente') LIMIT 1) <> 'Bache en la via' THEN
+    RAISE EXCEPTION 'la cola no resume el tipo nuevo';
+  END IF;
+  SELECT id INTO r FROM public.content_reports WHERE target_type = 'incidente';
+  PERFORM public.moderar_reporte(r, 'ocultar_contenido', '');
+  BEGIN
+    PERFORM public.moderar_reporte(r, 'suspender_usuario', '');
+    RAISE EXCEPTION 'suspendio sin autor';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM <> 'este tipo no tiene autor' THEN RAISE; END IF;
+  END;
+END $$;
+RESET ROLE;
+DO $$
+BEGIN
+  IF NOT (SELECT oculto FROM public.prueba_incidentes WHERE id = 'i1') THEN RAISE EXCEPTION 'no se oculto el incidente'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE type = 'reporte' AND message LIKE '%el incidente%') THEN
+    RAISE EXCEPTION 'aviso sin referencia del tipo';
+  END IF;
+END $$;
 SELECT 'ok 023_reportes' AS resultado;
 ROLLBACK;

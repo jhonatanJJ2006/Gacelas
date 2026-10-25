@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { aCsv, aPdf } from '../exportar'
-import { rangoPeriodo, reportePersonal, textoCompartir } from '../reportesPersonales'
-import { estadisticasDemo } from '../../features/admin/api'
-import { csvEstadisticas, pdfEstadisticas } from '../../features/admin/Estadisticas'
-import { RUTAS_LOJA } from '../../data/rutasLoja'
-import type { CarreraGuardada } from '../../data/tipos'
+import { aCsv, aPdf } from '../../application/exportar'
+import { rangoPeriodo, reportePersonal, textoCompartir } from '../resumenPersonal'
+import { estadisticasDemo } from '../../infrastructure/estadisticasDemo'
+import { csvEstadisticas, pdfEstadisticas } from '../../../../features/admin/Estadisticas'
+import { RUTAS_LOJA } from '../../../rutas/api'
+import type { CarreraGuardada } from '../../../../data/tipos'
 
 const carrera = (fecha: string, km: number, seg: number, ruta?: number): CarreraGuardada => ({
   id: fecha + km,

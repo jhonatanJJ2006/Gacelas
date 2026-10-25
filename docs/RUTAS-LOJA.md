@@ -18,7 +18,7 @@ Gacelas incluye 26 rutas preestablecidas de Loja y sus alrededores: parques, sen
 - Un trigger calcula `geom` a partir del trazo (`path`).
 - No se aplica sola: hay que ejecutarla en Supabase con el resto de migraciones.
 
-Las apps también traen las rutas en el código (`RutasLoja.kt` y `apps/web/src/data/rutasLoja.ts`) y las mezclan con las del servidor, así que se ven aunque la migración aún no esté aplicada. Si el servidor devuelve la misma ruta, prevalece la del servidor.
+Las apps también traen las rutas en el código (`RutasLoja.kt` y `apps/web/src/contexts/rutas/infrastructure/rutasLojaOsm.ts`) y las mezclan con las del servidor, así que se ven aunque la migración aún no esté aplicada. Si el servidor devuelve la misma ruta, prevalece la del servidor.
 
 ## Lista de rutas
 

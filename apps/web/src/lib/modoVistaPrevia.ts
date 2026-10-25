@@ -2,7 +2,7 @@ import type { CarreraGuardada, Perfil } from '../data/tipos'
 import type { PublicacionRemota } from '../data/repositorios'
 import { rutasMock } from '../mocks/data'
 import { conOficiales } from './rutas'
-import { RUTAS_LOJA } from '../data/rutasLoja'
+import { RUTAS_LOJA } from '../contexts/rutas/api'
 import { useApp } from '../store/app'
 import { tracker } from '../features/carreras/application/carreraStore'
 

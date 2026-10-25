@@ -97,7 +97,7 @@ const EditarPerfil = lazy(() =>
   import('../features/cuenta/ui/perfil/EditarPerfil').then((m) => ({ default: m.EditarPerfil }))
 )
 const MisReportes = lazy(() =>
-  import('../features/reportes/MisReportes').then((m) => ({ default: m.MisReportes }))
+  import('../contexts/analitica/ui/MisReportes').then((m) => ({ default: m.MisReportes }))
 )
 const Avatar3D = lazy(() =>
   import('../features/cuenta/ui/perfil/Avatar3D').then((m) => ({ default: m.Avatar3D }))

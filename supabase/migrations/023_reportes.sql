@@ -6,9 +6,73 @@
 -- Idempotente. post_reports (020) se mantiene: lo que llega ahi se copia a content_reports.
 
 -- 3. Reportes de contenido ------------------------------------------------------
+-- Tipos de objetivo registrables: la cola es generica. Otro contexto (por ejemplo incidentes)
+-- se enchufa con un INSERT en report_target_types y sus funciones de resumen, ocultar y autor,
+-- sin tocar content_reports, moderar_reporte ni admin_cola_reportes.
+CREATE TABLE IF NOT EXISTS public.report_target_types (
+  key TEXT PRIMARY KEY CHECK (key ~ '^[a-z_]{2,30}$'),
+  etiqueta TEXT NOT NULL,
+  referencia TEXT NOT NULL,
+  resumen_fn REGPROC,
+  ocultar_fn REGPROC,
+  autor_fn REGPROC,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE public.report_target_types ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Tipos de reporte visibles" ON public.report_target_types;
+CREATE POLICY "Tipos de reporte visibles" ON public.report_target_types FOR SELECT TO authenticated USING (true);
+-- Sin politicas de escritura: solo migraciones o service role.
+
+-- Funciones por tipo (target_id TEXT). Se ejecutan dentro de moderar_reporte y admin_cola_reportes.
+CREATE OR REPLACE FUNCTION public.moderacion_resumen_post(objetivo TEXT) RETURNS TEXT
+LANGUAGE sql STABLE SET search_path = public AS $$ SELECT a.title FROM public.activities a WHERE a.id::text = objetivo $$;
+CREATE OR REPLACE FUNCTION public.moderacion_ocultar_post(objetivo TEXT) RETURNS VOID
+LANGUAGE sql SET search_path = public AS $$ DELETE FROM public.activities WHERE id::text = objetivo $$;
+CREATE OR REPLACE FUNCTION public.moderacion_autor_post(objetivo TEXT) RETURNS UUID
+LANGUAGE sql STABLE SET search_path = public AS $$ SELECT a.user_id FROM public.activities a WHERE a.id::text = objetivo $$;
+
+CREATE OR REPLACE FUNCTION public.moderacion_resumen_comentario(objetivo TEXT) RETURNS TEXT
+LANGUAGE sql STABLE SET search_path = public AS $$ SELECT left(c.body, 140) FROM public.post_comments c WHERE c.id::text = objetivo $$;
+CREATE OR REPLACE FUNCTION public.moderacion_ocultar_comentario(objetivo TEXT) RETURNS VOID
+LANGUAGE sql SET search_path = public AS $$ DELETE FROM public.post_comments WHERE id::text = objetivo $$;
+CREATE OR REPLACE FUNCTION public.moderacion_autor_comentario(objetivo TEXT) RETURNS UUID
+LANGUAGE sql STABLE SET search_path = public AS $$ SELECT c.user_id FROM public.post_comments c WHERE c.id::text = objetivo $$;
+
+CREATE OR REPLACE FUNCTION public.moderacion_resumen_evento(objetivo TEXT) RETURNS TEXT
+LANGUAGE sql STABLE SET search_path = public AS $$ SELECT e.title FROM public.events e WHERE e.id::text = objetivo $$;
+CREATE OR REPLACE FUNCTION public.moderacion_ocultar_evento(objetivo TEXT) RETURNS VOID
+LANGUAGE sql SET search_path = public AS $$ UPDATE public.events SET published = false WHERE id::text = objetivo $$;
+CREATE OR REPLACE FUNCTION public.moderacion_autor_evento(objetivo TEXT) RETURNS UUID
+LANGUAGE sql STABLE SET search_path = public AS $$ SELECT e.created_by FROM public.events e WHERE e.id::text = objetivo $$;
+
+CREATE OR REPLACE FUNCTION public.moderacion_resumen_usuario(objetivo TEXT) RETURNS TEXT
+LANGUAGE sql STABLE SET search_path = public AS $$ SELECT coalesce(u.full_name, u.username) FROM public.profiles u WHERE u.id::text = objetivo $$;
+CREATE OR REPLACE FUNCTION public.moderacion_ocultar_usuario(objetivo TEXT) RETURNS VOID
+LANGUAGE sql SET search_path = public AS $$ UPDATE public.profiles SET suspended_at = now() WHERE id::text = objetivo $$;
+CREATE OR REPLACE FUNCTION public.moderacion_autor_usuario(objetivo TEXT) RETURNS UUID
+LANGUAGE sql STABLE SET search_path = public AS $$ SELECT u.id FROM public.profiles u WHERE u.id::text = objetivo $$;
+
+DO $$
+DECLARE t TEXT; f TEXT;
+BEGIN
+  FOREACH t IN ARRAY ARRAY['post', 'comentario', 'evento', 'usuario'] LOOP
+    FOREACH f IN ARRAY ARRAY['resumen', 'ocultar', 'autor'] LOOP
+      EXECUTE format('REVOKE ALL ON FUNCTION public.moderacion_%s_%s(TEXT) FROM PUBLIC', f, t);
+    END LOOP;
+  END LOOP;
+END $$;
+
+INSERT INTO public.report_target_types (key, etiqueta, referencia, resumen_fn, ocultar_fn, autor_fn) VALUES
+  ('post', 'Publicación', 'la publicación', 'public.moderacion_resumen_post', 'public.moderacion_ocultar_post', 'public.moderacion_autor_post'),
+  ('comentario', 'Comentario', 'el comentario', 'public.moderacion_resumen_comentario', 'public.moderacion_ocultar_comentario', 'public.moderacion_autor_comentario'),
+  ('evento', 'Evento', 'el evento', 'public.moderacion_resumen_evento', 'public.moderacion_ocultar_evento', 'public.moderacion_autor_evento'),
+  ('usuario', 'Usuario', 'la cuenta', 'public.moderacion_resumen_usuario', 'public.moderacion_ocultar_usuario', 'public.moderacion_autor_usuario')
+ON CONFLICT (key) DO UPDATE SET etiqueta = EXCLUDED.etiqueta, referencia = EXCLUDED.referencia,
+  resumen_fn = EXCLUDED.resumen_fn, ocultar_fn = EXCLUDED.ocultar_fn, autor_fn = EXCLUDED.autor_fn;
+
 CREATE TABLE IF NOT EXISTS public.content_reports (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  target_type TEXT NOT NULL CHECK (target_type IN ('post', 'usuario', 'comentario', 'evento')),
+  target_type TEXT NOT NULL REFERENCES public.report_target_types(key),
   target_id TEXT NOT NULL,
   reporter_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   reason TEXT NOT NULL CHECK (reason IN ('spam', 'ofensivo', 'acoso', 'falso', 'suplantacion', 'peligroso', 'otro')),
@@ -23,6 +87,28 @@ CREATE TABLE IF NOT EXISTS public.content_reports (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (target_type, target_id, reporter_id)
 );
+-- Si la tabla venia de una version anterior con CHECK fijo, se cambia por la clave foranea.
+ALTER TABLE public.content_reports DROP CONSTRAINT IF EXISTS content_reports_target_type_check;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'content_reports_target_type_fkey') THEN
+    ALTER TABLE public.content_reports ADD CONSTRAINT content_reports_target_type_fkey
+      FOREIGN KEY (target_type) REFERENCES public.report_target_types(key);
+  END IF;
+END $$;
+
+-- Resumen legible del objetivo, segun el tipo registrado.
+CREATE OR REPLACE FUNCTION public.moderacion_resumen(tipo TEXT, objetivo TEXT) RETURNS TEXT
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $$
+DECLARE f REGPROC; res TEXT;
+BEGIN
+  SELECT resumen_fn INTO f FROM public.report_target_types WHERE key = tipo;
+  IF f IS NULL THEN RETURN NULL; END IF;
+  EXECUTE format('SELECT %s($1)', f) INTO res USING objetivo;
+  RETURN res;
+END $$;
+REVOKE ALL ON FUNCTION public.moderacion_resumen(TEXT, TEXT) FROM PUBLIC;
+
 CREATE INDEX IF NOT EXISTS content_reports_status_idx ON public.content_reports(status, created_at DESC);
 CREATE INDEX IF NOT EXISTS content_reports_target_idx ON public.content_reports(target_type, target_id);
 ALTER TABLE public.content_reports ENABLE ROW LEVEL SECURITY;
@@ -91,7 +177,8 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
   r public.content_reports;
   nuevo TEXT;
-  que TEXT;
+  tipo_reg public.report_target_types;
+  autor UUID;
 BEGIN
   IF NOT public.es_moderador() THEN RAISE EXCEPTION 'solo moderadores'; END IF;
   SELECT * INTO r FROM public.content_reports WHERE id = reporte FOR UPDATE;
@@ -110,21 +197,14 @@ BEGIN
     WHEN 'nota' THEN r.status
     ELSE 'resuelto' END;
 
+  SELECT * INTO tipo_reg FROM public.report_target_types WHERE key = r.target_type;
   IF accion = 'ocultar_contenido' THEN
-    CASE r.target_type
-      WHEN 'post' THEN DELETE FROM public.activities WHERE id::text = r.target_id;
-      WHEN 'comentario' THEN DELETE FROM public.post_comments WHERE id::text = r.target_id;
-      WHEN 'evento' THEN UPDATE public.events SET published = false WHERE id = r.target_id;
-      WHEN 'usuario' THEN UPDATE public.profiles SET suspended_at = now() WHERE id::text = r.target_id;
-    END CASE;
+    IF tipo_reg.ocultar_fn IS NULL THEN RAISE EXCEPTION 'este tipo no se puede ocultar'; END IF;
+    EXECUTE format('SELECT %s($1)', tipo_reg.ocultar_fn) USING r.target_id;
   ELSIF accion = 'suspender_usuario' THEN
-    UPDATE public.profiles SET suspended_at = now()
-    WHERE id::text = CASE r.target_type
-      WHEN 'usuario' THEN r.target_id
-      WHEN 'post' THEN (SELECT a.user_id::text FROM public.activities a WHERE a.id::text = r.target_id)
-      WHEN 'comentario' THEN (SELECT c.user_id::text FROM public.post_comments c WHERE c.id::text = r.target_id)
-      WHEN 'evento' THEN (SELECT e.created_by::text FROM public.events e WHERE e.id = r.target_id)
-    END;
+    IF tipo_reg.autor_fn IS NULL THEN RAISE EXCEPTION 'este tipo no tiene autor'; END IF;
+    EXECUTE format('SELECT %s($1)', tipo_reg.autor_fn) INTO autor USING r.target_id;
+    UPDATE public.profiles SET suspended_at = now() WHERE id = autor;
   END IF;
 
   UPDATE public.content_reports SET
@@ -144,13 +224,11 @@ BEGIN
   END IF;
 
   IF nuevo IN ('resuelto', 'descartado') AND accion <> 'nota' THEN
-    que := CASE r.target_type WHEN 'post' THEN 'la publicación' WHEN 'usuario' THEN 'la cuenta'
-      WHEN 'comentario' THEN 'el comentario' ELSE 'el evento' END;
     INSERT INTO public.notifications (user_id, type, actor_name, message)
     VALUES (r.reporter_id, 'reporte', 'Moderación Gacelas',
       CASE WHEN nuevo = 'resuelto'
-        THEN 'Revisamos tu reporte sobre ' || que || ' y tomamos medidas. Gracias por avisar.'
-        ELSE 'Revisamos tu reporte sobre ' || que || ' y no encontramos una infracción de las normas.' END);
+        THEN 'Revisamos tu reporte sobre ' || coalesce(tipo_reg.referencia, 'el contenido') || ' y tomamos medidas. Gracias por avisar.'
+        ELSE 'Revisamos tu reporte sobre ' || coalesce(tipo_reg.referencia, 'el contenido') || ' y no encontramos una infracción de las normas.' END);
   END IF;
   RETURN r;
 END $$;
@@ -167,12 +245,7 @@ BEGIN
   RETURN QUERY
     SELECT c.id, c.target_type, c.target_id, c.reason, c.detail, c.status, c.created_at, c.updated_at,
       coalesce(p.full_name, p.username, ''),
-      coalesce(CASE c.target_type
-        WHEN 'post' THEN (SELECT a.title FROM public.activities a WHERE a.id::text = c.target_id)
-        WHEN 'comentario' THEN (SELECT left(pc.body, 140) FROM public.post_comments pc WHERE pc.id::text = c.target_id)
-        WHEN 'evento' THEN (SELECT e.title FROM public.events e WHERE e.id = c.target_id)
-        WHEN 'usuario' THEN (SELECT coalesce(u.full_name, u.username) FROM public.profiles u WHERE u.id::text = c.target_id)
-      END, '(contenido eliminado)'),
+      coalesce(public.moderacion_resumen(c.target_type, c.target_id), '(contenido eliminado)'),
       (SELECT count(*) FROM public.content_reports x WHERE x.target_type = c.target_type AND x.target_id = c.target_id),
       coalesce((SELECT jsonb_agg(jsonb_build_object('accion', h.action, 'nota', h.note, 'fecha', h.created_at,
         'moderador', coalesce(m.full_name, m.username, '')) ORDER BY h.created_at)

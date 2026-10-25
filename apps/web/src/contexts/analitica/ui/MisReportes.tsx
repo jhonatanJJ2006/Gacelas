@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BarrasHorizontales, GraficoBarras } from '../../components/Graficos'
-import { aCsv, aPdf, descargar } from '../../lib/exportar'
+import { BarrasHorizontales, GraficoBarras } from '../../../components/Graficos'
 import {
   duracionTexto,
   etiquetaRango,
@@ -11,8 +10,11 @@ import {
   textoCompartir,
   type Periodo,
   type ReportePersonal,
-} from '../../lib/reportesPersonales'
-import { useApp } from '../../store/app'
+  aCsv,
+  aPdf,
+  descargar,
+} from '../api'
+import { useApp } from '../../../store/app'
 
 function Metrica({ valor, etiqueta, nota }: { valor: string; etiqueta: string; nota?: string }) {
   return (

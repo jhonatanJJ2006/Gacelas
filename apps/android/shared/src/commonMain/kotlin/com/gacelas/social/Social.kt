@@ -7,6 +7,8 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.gacelas.carreras.domain.modelo.Carrera
 import com.gacelas.carreras.domain.reglas.Estadisticas
 import com.gacelas.data.remoto.Backend
+import com.gacelas.moderacion.domain.ObjetivoDenuncia
+import com.gacelas.moderacion.domain.tablaDenuncia
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -27,32 +29,10 @@ fun logrosCumplidos(carreras: List<Carrera>, ahoraMs: Long): List<Logro> = build
     if (Estadisticas.racha(carreras, ahoraMs) >= 7) add(Logro.Racha7)
 }
 
-val MOTIVOS_REPORTE = listOf(
-    "spam" to "Spam o publicidad", "ofensivo" to "Contenido ofensivo", "acoso" to "Acoso o intimidación",
-    "falso" to "Carrera falsa o trampa", "otro" to "Otro motivo",
-)
-
-/** Que se reporta: post usa post_reports (compatibilidad); el resto, content_reports (migracion 023). */
-enum class TipoContenido(val clave: String, val titulo: String) {
-    Post("post", "Reportar publicación"), Usuario("usuario", "Reportar corredor"),
-    Comentario("comentario", "Reportar comentario"), Evento("evento", "Reportar evento"),
-}
-
-/** Motivos validos por tipo, igual que la web (features/social/moderacion.ts). */
-fun motivosReporte(tipo: TipoContenido): List<Pair<String, String>> = when (tipo) {
-    TipoContenido.Post -> MOTIVOS_REPORTE
-    TipoContenido.Usuario -> listOf(
-        "suplantacion" to "Suplantación de identidad", "acoso" to "Acoso o intimidación", "spam" to "Spam o cuenta falsa",
-        "ofensivo" to "Perfil ofensivo", "otro" to "Otro motivo",
-    )
-    TipoContenido.Comentario -> listOf(
-        "ofensivo" to "Contenido ofensivo", "acoso" to "Acoso o intimidación", "spam" to "Spam o publicidad", "otro" to "Otro motivo",
-    )
-    TipoContenido.Evento -> listOf(
-        "peligroso" to "Ruta o evento peligroso", "falso" to "Evento falso o engañoso", "spam" to "Spam o publicidad",
-        "ofensivo" to "Contenido ofensivo", "otro" to "Otro motivo",
-    )
-}
+// Compatibilidad: el modelo de denuncias vive en el contexto Moderacion.
+typealias TipoContenido = com.gacelas.moderacion.domain.TipoContenido
+val MOTIVOS_REPORTE = com.gacelas.moderacion.domain.MOTIVOS_REPORTE
+fun motivosReporte(tipo: TipoContenido) = com.gacelas.moderacion.domain.motivosReporte(tipo)
 
 /** Logros desbloqueados (dispositivo y tabla user_achievements) y reportes (tabla post_reports). */
 class SocialRepository(
@@ -91,17 +71,19 @@ class SocialRepository(
     }
 
     /** Envia el reporte; false sin servidor o sin sesion. */
-    suspend fun reportar(postId: String, motivo: String, detalle: String, tipo: TipoContenido = TipoContenido.Post): Boolean {
+    suspend fun reportar(postId: String, motivo: String, detalle: String, tipo: TipoContenido = TipoContenido.Post): Boolean =
+        denunciar(tipo.objetivo(postId), motivo, detalle)
+
+    /** Envia una denuncia sobre cualquier objetivo registrado en report_target_types. */
+    suspend fun denunciar(o: ObjetivoDenuncia, motivo: String, detalle: String): Boolean {
         val b = backend ?: return false
         val id = uid() ?: return false
         return runCatching {
-            if (tipo == TipoContenido.Post) b.insert("post_reports", listOf(JsonObject(mapOf(
-                "post_id" to JsonPrimitive(postId), "reporter_id" to JsonPrimitive(id),
-                "reason" to JsonPrimitive(motivo), "detail" to JsonPrimitive(detalle.trim()),
-            ))))
-            else b.insert("content_reports", listOf(JsonObject(mapOf(
-                "target_type" to JsonPrimitive(tipo.clave), "target_id" to JsonPrimitive(postId), "reporter_id" to JsonPrimitive(id),
-                "reason" to JsonPrimitive(motivo), "detail" to JsonPrimitive(detalle.trim()),
+            val tabla = tablaDenuncia(o)
+            val objetivo = if (tabla == "post_reports") mapOf("post_id" to JsonPrimitive(o.id))
+            else mapOf("target_type" to JsonPrimitive(o.tipo), "target_id" to JsonPrimitive(o.id))
+            b.insert(tabla, listOf(JsonObject(objetivo + mapOf(
+                "reporter_id" to JsonPrimitive(id), "reason" to JsonPrimitive(motivo), "detail" to JsonPrimitive(detalle.trim()),
             ))))
             true
         }.getOrElse { it.message?.contains("23505") == true }

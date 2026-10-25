@@ -27,10 +27,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.gacelas.carreras.domain.modelo.Carrera
-import com.gacelas.carreras.domain.reglas.InicioRuta
-import com.gacelas.carreras.domain.reglas.PeriodoReporte
-import com.gacelas.carreras.domain.reglas.ReportePersonal
-import com.gacelas.carreras.domain.reglas.ReportesPersonales
+import com.gacelas.analitica.domain.InicioRuta
+import com.gacelas.analitica.domain.PeriodoReporte
+import com.gacelas.analitica.domain.ReportePersonal
+import com.gacelas.analitica.domain.ReportesPersonales
 import com.gacelas.rutas.domain.modelo.RutasLoja
 import com.gacelas.ui.carrerasState
 import com.gacelas.ui.compartir
