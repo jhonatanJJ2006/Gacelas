@@ -1,15 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { TarjetaSeguridad } from '../features/incidentes/TarjetaSeguridad'
-import { HojaReportarIncidente } from '../features/incidentes/HojaReportarIncidente'
-import { ListaIncidentes } from '../features/incidentes/IncidentesRecientes'
+import { HojaReportarIncidente, ListaIncidentes, TarjetaSeguridad } from '../features/seguridad'
 import {
   AVISO_SEGURIDAD,
   incidentesEjemplo,
   nivelDeIndice,
   SEGURIDAD_EJEMPLO,
   TIPOS_INCIDENTE,
-} from '../features/incidentes/incidentes'
+} from '../features/seguridad'
 
 describe('incidentes', () => {
   it('clasifica el indice en bajo, medio y alto', () => {

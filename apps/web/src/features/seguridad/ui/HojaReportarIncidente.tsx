@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react'
-import {
-  direccionDe,
-  MAX_FOTOS,
-  reportarIncidente,
-  TIPOS_INCIDENTE,
-  type TipoIncidente,
-} from './incidentes'
+import { obtenerDireccion, reportarIncidente } from '../application/incidentes'
+import { MAX_FOTOS, TIPOS_INCIDENTE, type TipoIncidente } from '../domain/incidentes'
 
 export interface Ubicacion {
   lat: number
@@ -44,7 +39,7 @@ export function HojaReportarIncidente({
     setError(null)
     if (!ubicacion) return setDireccion('Ubicación no disponible')
     setDireccion('Buscando dirección...')
-    void direccionDe(ubicacion.lat, ubicacion.lng).then(setDireccion)
+    void obtenerDireccion(ubicacion.lat, ubicacion.lng).then(setDireccion)
   }, [abierta, ubicacion])
 
   if (!abierta) return null

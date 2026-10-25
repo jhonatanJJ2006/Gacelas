@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "incidentes:importar": "tsx scripts/importar-ecu911.ts",
+    "incidentes:importar": "tsx src/contexts/seguridad/application/importar-ecu911.ts",
     "test:unit": "vitest run"
   },
   "dependencies": {

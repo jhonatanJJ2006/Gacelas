@@ -1,8 +1,8 @@
 package com.gacelas
 
-import com.gacelas.incidentes.Incidentes
-import com.gacelas.incidentes.NivelSeguridad
-import com.gacelas.incidentes.TipoIncidente
+import com.gacelas.seguridad.domain.Incidentes
+import com.gacelas.seguridad.domain.NivelSeguridad
+import com.gacelas.seguridad.domain.TipoIncidente
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

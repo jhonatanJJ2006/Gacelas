@@ -13,7 +13,7 @@ import { Unidades } from '../../lib/geo'
 import { ETIQUETAS_RUTA } from '../../lib/rutas'
 import { useApp } from '../../store/app'
 import { Estrellas, SelectorEstrellas } from './Estrellas'
-import { TarjetaSeguridad } from '../incidentes/TarjetaSeguridad'
+import { TarjetaSeguridad } from '../seguridad'
 
 export function DetalleRuta() {
   const { id = '' } = useParams()

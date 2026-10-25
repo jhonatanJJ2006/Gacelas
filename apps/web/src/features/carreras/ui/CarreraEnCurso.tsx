@@ -17,7 +17,7 @@ import { useApp } from '../../../store/app'
 import { descartarCarrera, finalizarCarrera, tracker, useCarrera } from '../../../store/carrera'
 import { caloriasEstimadas } from '../../../lib/logica'
 import { claveMapas } from '../../../lib/mapas'
-import { HojaReportarIncidente } from '../../incidentes/HojaReportarIncidente'
+import { HojaReportarIncidente } from '../../seguridad'
 
 export function CarreraEnCurso() {
   const navigate = useNavigate()

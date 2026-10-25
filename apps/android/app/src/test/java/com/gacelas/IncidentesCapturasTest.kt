@@ -33,7 +33,7 @@ class IncidentesCapturasTest {
         compose.setContent {
             GacelasTheme {
                 Column(Modifier.fillMaxSize().background(GColors.C2Bg).padding(16.dp)) {
-                    com.gacelas.incidentes.TarjetaSeguridad("ruta-ejemplo")
+                    com.gacelas.seguridad.ui.TarjetaSeguridad("ruta-ejemplo")
                 }
             }
         }
@@ -46,7 +46,7 @@ class IncidentesCapturasTest {
         compose.setContent {
             GacelasTheme {
                 Box(Modifier.fillMaxSize().background(GColors.C2Bg))
-                com.gacelas.incidentes.HojaReportarIncidente(-3.994 to -79.203, onCerrar = {})
+                com.gacelas.seguridad.ui.HojaReportarIncidente(-3.994 to -79.203, onCerrar = {})
             }
         }
         compose.onNodeWithTag("tipo-perros_agresivos").performClick()

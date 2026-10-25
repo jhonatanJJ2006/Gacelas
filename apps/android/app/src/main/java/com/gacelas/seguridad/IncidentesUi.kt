@@ -1,4 +1,4 @@
-package com.gacelas.incidentes
+package com.gacelas.seguridad.ui
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -46,6 +46,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.gacelas.legal.TipoConsentimiento
+import com.gacelas.seguridad.domain.IncidentePublico
+import com.gacelas.seguridad.domain.Incidentes
+import com.gacelas.seguridad.domain.NivelSeguridad
+import com.gacelas.seguridad.domain.SeguridadZona
+import com.gacelas.seguridad.domain.TipoIncidente
 import com.gacelas.ui.contenedor
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType

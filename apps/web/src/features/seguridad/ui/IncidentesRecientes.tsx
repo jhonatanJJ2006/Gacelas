@@ -1,18 +1,12 @@
 import { useEffect, useState } from 'react'
-import {
-  confirmarIncidente,
-  haceTexto,
-  incidentesRecientes,
-  nombreTipo,
-  TIPOS_INCIDENTE,
-  type IncidentePublico,
-} from './incidentes'
+import { confirmarIncidente, listarIncidentesRecientes } from '../application/incidentes'
+import { haceTexto, nombreTipo, TIPOS_INCIDENTE, type IncidentePublico } from '../domain/incidentes'
 
 export function useIncidentesRecientes(inicial?: IncidentePublico[]) {
   const [lista, setLista] = useState<IncidentePublico[]>(inicial ?? [])
   useEffect(() => {
     if (inicial) return
-    void incidentesRecientes().then(setLista)
+    void listarIncidentesRecientes().then(setLista)
   }, [inicial])
   return lista
 }

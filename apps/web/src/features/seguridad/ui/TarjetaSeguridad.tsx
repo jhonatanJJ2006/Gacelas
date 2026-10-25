@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react'
-import {
-  AVISO_SEGURIDAD,
-  colorNivel,
-  DIAS_CORTOS,
-  seguridadZona,
-  type SeguridadZona,
-} from './incidentes'
+import { consultarSeguridadDeRuta } from '../application/incidentes'
+import { AVISO_SEGURIDAD, colorNivel, DIAS_CORTOS, type SeguridadZona } from '../domain/incidentes'
 
 /** Tarjeta "Seguridad de la zona" del detalle de ruta. Nivel por dia y tipos frecuentes. */
 export function TarjetaSeguridad({ rutaId, inicial }: { rutaId: string; inicial?: SeguridadZona }) {
@@ -13,7 +8,7 @@ export function TarjetaSeguridad({ rutaId, inicial }: { rutaId: string; inicial?
   useEffect(() => {
     if (inicial) return
     let vivo = true
-    void seguridadZona(rutaId).then((d) => vivo && setDatos(d))
+    void consultarSeguridadDeRuta(rutaId).then((d) => vivo && setDatos(d))
     return () => {
       vivo = false
     }

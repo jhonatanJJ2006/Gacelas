@@ -17,7 +17,7 @@ import {
   tablaAFilas,
   URL_CKAN,
   type RecursoCkan,
-} from '../../supabase/functions/importar-ecu911/nucleo.ts'
+} from '../../../../../supabase/functions/importar-ecu911/nucleo.ts'
 
 export const SALIDA = { ok: 0, error: 1, uso: 2, bloqueado: 3 } as const
 

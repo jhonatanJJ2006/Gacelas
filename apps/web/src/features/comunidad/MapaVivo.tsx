@@ -3,9 +3,12 @@ import { Link } from 'react-router-dom'
 import { MapaCorredores } from '../../components/MapaEditable'
 import { ModalC2 } from '../../components/modales'
 import { claveMapas } from '../../lib/mapas'
-import { HojaReportarIncidente } from '../incidentes/HojaReportarIncidente'
-import { ListaIncidentes, useIncidentesRecientes } from '../incidentes/IncidentesRecientes'
-import type { IncidentePublico } from '../incidentes/incidentes'
+import {
+  HojaReportarIncidente,
+  ListaIncidentes,
+  useIncidentesRecientes,
+  type IncidentePublico,
+} from '../seguridad'
 import { tracker } from '../carreras/application/carreraStore'
 import { historial, otorgado } from '../legal/consentimientos'
 import {

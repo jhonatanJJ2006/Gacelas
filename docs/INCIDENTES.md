@@ -30,10 +30,14 @@ La cola de moderación de contenido llega en la rama `feat/rutas-loja-reportes`.
 - Los moderadores cambian `estado` en `incidentes_usuario` (política de actualización para `es_moderador()`).
 - Cuando se fusione esa rama, basta con añadir `incidente` como tipo de objetivo en su tabla de reportes y, al resolver, actualizar `incidentes_usuario.estado` a `verificado` o `rechazado`. No hace falta cambiar esta migración.
 
+## Arquitectura
+
+Todo pertenece al contexto DDD Seguridad de rutas (`seguridad`, ver `docs/ARQUITECTURA-DDD.md`). El importador del backend está en `backend/src/contexts/seguridad/application/`; el núcleo de lectura y agregación se comparte con la Edge Function en `supabase/functions/importar-ecu911/nucleo.ts`.
+
 ## Interfaz
 
-- Android: botón "Reportar incidente" en la cabecera de la carrera y sobre el mapa en vivo, hoja inferior oscura con los tipos, marcadores en el mapa (más intensos si están verificados) y la lista con "Yo también lo vi". Código en `apps/android/app/src/main/java/com/gacelas/incidentes/` y `shared/.../incidentes/`.
-- Web: los mismos elementos en `apps/web/src/features/incidentes/`.
+- Android: botón "Reportar incidente" en la cabecera de la carrera y sobre el mapa en vivo, hoja inferior oscura con los tipos, marcadores en el mapa (más intensos si están verificados) y la lista con "Yo también lo vi". Código en el contexto Seguridad de rutas: `apps/android/contextos/seguridad/domain` (modelo y puerto `IncidentesRepositorio`), `apps/android/contextos/seguridad/data` (adaptador de Supabase) y las pantallas en `apps/android/app/src/main/java/com/gacelas/seguridad/`.
+- Web: los mismos elementos en `apps/web/src/features/seguridad/`, con capas `domain`, `data` (Supabase y Nominatim), `application` (casos de uso) y `ui`. La UI no llama a Supabase: usa los casos de uso.
 - Vista previa: `?vista-previa` en la web, o la app sin servidor configurado, muestra reportes de ejemplo ficticios; en ese modo no se envía nada.
 
 ## Privacidad
