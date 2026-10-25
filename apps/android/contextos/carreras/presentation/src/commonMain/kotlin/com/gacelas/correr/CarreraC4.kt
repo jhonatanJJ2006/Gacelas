@@ -33,8 +33,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.GpsOff
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.MyLocation
@@ -151,39 +153,39 @@ fun ContenidoCarreraC4(
         val bajo = maxHeight < 640.dp
         val controles: ControlesMapaC4 = { recentrar, norte, rumbo, siguiendo ->
             Column(
-                Modifier.align(Alignment.BottomEnd).navigationBarsPadding().padding(end = 16.dp, bottom = if (bajo) 220.dp else 250.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(end = 14.dp, top = 58.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End,
             ) {
-                BotonMapa("Vista ${if (vista3d) "2D" else "3D"}", { vista3d = !vista3d }, "boton-3d") {
-                    Text(if (vista3d) "3D" else "2D", style = TextStyle(fontFamily = num, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.05).em), color = K1.Naranja)
-                }
-                // Sin seguimiento (tras arrastrar) el boton se enciende en naranja.
+                // Sin seguimiento (tras arrastrar) el boton se enciende en violeta.
                 BotonMapa("Recentrar", recentrar, if (siguiendo) "boton-recentrar" else "boton-recentrar-activo", fondo = if (siguiendo) null else K1.Naranja) {
                     Icon(Icons.Filled.MyLocation, null, tint = Color.White, modifier = Modifier.size(20.dp))
                 }
-                BotonMapa("Orientar al norte", norte, "boton-brujula") { Icon(Icons.Filled.Explore, null, tint = K1.Secondary, modifier = Modifier.size(20.dp).rotate(-rumbo)) }
+                BotonMapa("Vista ${if (vista3d) "2D" else "3D"}", { vista3d = !vista3d }, "boton-3d") {
+                    Text(if (vista3d) "3D" else "2D", style = TextStyle(fontFamily = num, fontSize = 13.sp, fontWeight = FontWeight.Bold), color = Color.White)
+                }
+                BotonMapa("Orientar al norte", norte, "boton-brujula") {
+                    Text("N", style = TextStyle(fontFamily = num, fontSize = 14.sp, fontWeight = FontWeight.Bold), color = Color.White, modifier = Modifier.rotate(-rumbo))
+                }
+                BotonMapa("Ver cronómetro", { panel = true }, "boton-cronometro") { Icon(Icons.Filled.Timer, null, tint = Color.White, modifier = Modifier.size(20.dp)) }
+                if (onVoz != null) BotonMapa(if (vozActiva) "Apagar voz" else "Activar voz", onVoz, "boton-voz", fondo = if (vozActiva) null else GColorsC2.S2) {
+                    Icon(if (vozActiva) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff, null, tint = if (vozActiva) GColorsC2.Violeta else K1.Secondary, modifier = Modifier.size(20.dp))
+                }
+                extraCabecera()
             }
         }
         mapa(vista3d, controles, panel)
 
-        Column(Modifier.fillMaxWidth().statusBarsPadding()) {
-            // Cabecera: logo + cronometro.
-            Row(Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(32.dp).shadow(8.dp, RoundedCornerShape(8.dp), spotColor = K1.Naranja.copy(alpha = 0.3f)).clip(RoundedCornerShape(8.dp)).background(K1.Naranja), contentAlignment = Alignment.Center) {
-                    Icon(Icons.AutoMirrored.Filled.DirectionsRun, null, tint = Color.White, modifier = Modifier.size(20.dp))
-                }
-                Spacer(Modifier.width(10.dp))
-                Column(Modifier.weight(1f)) {
-                    Text("GACELAS", style = TextStyle(fontFamily = num, fontSize = 14.sp, lineHeight = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.05.em), color = Color.White)
-                    Spacer(Modifier.height(2.dp))
-                    Text(if (e.pausada) "LOJA · EN PAUSA" else "LOJA · EN VIVO", style = TextStyle(fontFamily = Inter, fontSize = 9.sp, lineHeight = 9.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.1.em), color = K1.Secondary)
-                }
-                extraCabecera()
-                Spacer(Modifier.width(8.dp))
-                Box(Modifier.size(40.dp).vidrio(CircleShape, sombra = 6.dp).clickable { panel = true }.testTag("boton-cronometro"), contentAlignment = Alignment.Center) {
-                    LineaSuperior(8.dp)
-                    Icon(Icons.Filled.Timer, "Ver cronómetro", tint = Color.White, modifier = Modifier.size(20.dp))
-                }
+        // Cabecera C2: chips de estado y ritmo sobre el mapa (sin logo, como el frame Carrera en curso).
+        Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 14.dp).padding(top = 10.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                val gps = e.ultimaPrecisionM
+                val senal = when { gps == null -> "BUSCANDO GPS"; gps < 15f -> "GPS FUERTE"; gps < 50f -> "GPS MEDIO"; else -> "GPS DÉBIL" }
+                ChipC2(
+                    "${if (e.pausada) "EN PAUSA" else "EN CURSO"} · $senal",
+                    punto = when { gps == null -> K1.Secondary; gps < 15f -> GColorsC2.Menta; else -> K1.Ambar },
+                    modifier = Modifier.weight(1.15f), tag = "chip-gps",
+                )
+                ChipC2("PROMEDIO ${formatearRitmo(Unidades.ritmo(e.ritmoPromedioSegKm, m))}", modifier = Modifier.weight(1f), tag = "chip-Prom")
             }
             if (e.puntos.size < 2) Text(
                 if (e.pausada) "Carrera en pausa" else "Esperando señal GPS. Muévete al aire libre.",
@@ -192,56 +194,64 @@ fun ContenidoCarreraC4(
             )
         }
 
-        // Panel compacto C2 abajo: numeros pequenos alrededor, accesos y controles (sin solapes).
+        // Panel compacto C2 (frame Carrera en curso): asa, metricas pequenas en linea, barras de parciales y controles.
         Column(
             Modifier.align(Alignment.BottomCenter).fillMaxWidth().navigationBarsPadding().padding(horizontal = 12.dp).padding(bottom = 12.dp)
-                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 16.dp)).background(GColorsC2.Panel)
-                .border(1.dp, GColorsC2.Linea, RoundedCornerShape(16.dp)).padding(horizontal = 16.dp, vertical = if (bajo) 10.dp else 14.dp)
+                .clip(RoundedCornerShape(16.dp)).background(GColorsC2.Panel)
+                .border(1.dp, GColorsC2.Linea, RoundedCornerShape(16.dp)).padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 12.dp)
                 .testTag("tarjeta-metricas"),
-            verticalArrangement = Arrangement.spacedBy(if (bajo) 8.dp else 10.dp),
+            verticalArrangement = Arrangement.spacedBy(if (bajo) 6.dp else 8.dp),
         ) {
+            Box(Modifier.align(Alignment.CenterHorizontally).width(34.dp).height(4.dp).clip(CircleShape).background(K1.b(0.18f)))
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-                Column(Modifier.weight(1.4f)) {
+                Column(Modifier.weight(1.35f)) {
                     Text(if (e.pausada) "EN PAUSA" else "DISTANCIA", style = etiqueta.copy(fontWeight = FontWeight.ExtraBold), color = GColorsC2.Muted)
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(Unidades.texto(e.distanciaKm, m), style = TextStyle(fontFamily = num, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = if (bajo) 34.sp else 40.sp, lineHeight = if (bajo) 36.sp else 42.sp), color = GColorsC2.Violeta, modifier = Modifier.testTag("distancia"))
-                        Text(if (m) " km" else " mi", style = TextStyle(fontFamily = Inter, fontSize = 12.sp, fontWeight = FontWeight.Bold), color = GColorsC2.Muted)
+                        Text(if (m) " km" else " mi", style = TextStyle(fontFamily = Inter, fontSize = 12.sp, fontWeight = FontWeight.Bold), color = GColorsC2.Muted, modifier = Modifier.padding(bottom = 4.dp))
                     }
                 }
                 MetricaLado("TIEMPO", e.tiempoTexto, "", Modifier.weight(1f))
-                MetricaLado("RITMO", formatearRitmo(Unidades.ritmo(e.ritmoActualSegKm ?: e.ritmoPromedioSegKm, m)), "", Modifier.weight(0.9f), GColorsC2.Menta)
-                MetricaLado("DESNIVEL", "+${e.desnivelM.toInt()}", "", Modifier.weight(0.9f), GColorsC2.Cielo)
+                MetricaLado("RITMO", formatearRitmo(Unidades.ritmo(e.ritmoActualSegKm ?: e.ritmoPromedioSegKm, m)), "", Modifier.weight(0.85f), GColorsC2.Menta)
+                MetricaLado("DESNIVEL", "+${e.desnivelM.toInt()}", "", Modifier.weight(0.85f), GColorsC2.Cielo)
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Chip("Prom", formatearRitmo(Unidades.ritmo(e.ritmoPromedioSegKm, m)))
-                val gps = e.ultimaPrecisionM
-                Chip("GPS", gps?.let { "±${it.toInt()} m" } ?: "--", punto = when { gps == null -> K1.Secondary; gps < 15f -> K1.Verde; else -> K1.Ambar }, tag = "chip-gps")
-                Chip("Kcal", "${(e.distanciaKm * 62).toInt()}")
-                pulsaciones?.let { Chip("Pulso", "$it bpm", tag = "chip-pulso") }
+            BarrasParciales(e)
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("PARCIALES", style = etiqueta.copy(fontWeight = FontWeight.ExtraBold), color = GColorsC2.Muted, modifier = Modifier.weight(1f))
+                val km = e.parciales.filter { !it.manual }
+                val mejor = km.minByOrNull { it.segundos / it.distanciaKm.coerceAtLeast(0.001) }
+                val ultimo = km.lastOrNull()
+                Text(buildAnnotatedString {
+                    if (ultimo == null) append("Primer km en curso")
+                    else {
+                        append("KM ${ultimo.numero} ")
+                        withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Bold)) { append(formatearMs(ultimo.segundos)) }
+                        if (mejor != null) {
+                            append(" · MEJOR KM ${mejor.numero} ")
+                            withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Bold)) { append(formatearMs(mejor.segundos)) }
+                        }
+                    }
+                }, style = etiqueta, color = GColorsC2.Muted, maxLines = 1)
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("Bloquear", style = TextStyle(fontFamily = Inter, fontSize = 12.sp, fontWeight = FontWeight.SemiBold), color = Color.White,
-                    modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(GColorsC2.S2).clickable { bloqueo = true }.padding(horizontal = 12.dp, vertical = 8.dp).testTag("boton-bloqueo"))
-                if (onVoz != null) Text(if (vozActiva) "Voz cada 1 km" else "Voz apagada", style = TextStyle(fontFamily = Inter, fontSize = 12.sp, fontWeight = FontWeight.SemiBold),
-                    color = if (vozActiva) GColorsC2.Violeta else K1.Secondary, maxLines = 1,
-                    modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(GColorsC2.S2).clickable(onClick = onVoz).padding(horizontal = 12.dp, vertical = 8.dp).testTag("boton-voz"))
-                if (autopausa) Text("Auto-pausa", style = TextStyle(fontFamily = Inter, fontSize = 11.sp), color = K1.Secondary, maxLines = 1)
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier.size(52.dp).clip(RoundedCornerShape(10.dp)).background(GColorsC2.S2).clickable { bloqueo = true }.testTag("boton-bloqueo"),
+                    contentAlignment = Alignment.Center,
+                ) { Icon(Icons.Filled.Lock, "Bloquear pantalla", tint = Color.White, modifier = Modifier.size(22.dp)) }
                 Row(
-                    Modifier.weight(1f).height(56.dp).clip(com.gacelas.ui.components.FormaBotonC2)
+                    Modifier.weight(1f).height(52.dp).clip(com.gacelas.ui.components.FormaBotonC2)
                         .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFF5E1781), Color(0xFF7B1FA2))))
                         .clickable { if (!e.pausada) modalPausa = true; onPausa() }.testTag("boton-pausa"),
                     horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(if (e.pausada) Icons.Filled.PlayArrow else Icons.Filled.Pause, null, tint = Color.White, modifier = Modifier.size(24.dp))
+                    Icon(if (e.pausada) Icons.Filled.PlayArrow else Icons.Filled.Pause, null, tint = Color.White, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text(if (e.pausada) "REANUDAR" else "PAUSAR", style = TextStyle(fontFamily = Inter, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 16.sp, fontWeight = FontWeight.Black), color = Color.White)
+                    Text(if (e.pausada) "REANUDAR" else "PAUSAR", style = TextStyle(fontFamily = Inter, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 15.sp, fontWeight = FontWeight.Black), color = Color.White)
                 }
                 Box(
-                    Modifier.size(56.dp).clip(RoundedCornerShape(8.dp)).background(GColorsC2.S2).clickable { modalFin = true }.testTag("boton-stop"),
+                    Modifier.size(52.dp).clip(RoundedCornerShape(10.dp)).background(GColorsC2.S2).clickable { modalFin = true }.testTag("boton-stop"),
                     contentAlignment = Alignment.Center,
-                ) { Icon(Icons.Filled.Stop, "Finalizar", tint = K1.Rojo, modifier = Modifier.size(26.dp)) }
+                ) { Icon(Icons.Filled.Flag, "Terminar carrera", tint = Color.White, modifier = Modifier.size(22.dp)) }
             }
         }
 
@@ -307,8 +317,40 @@ private val etiqueta = TextStyle(fontFamily = Inter, fontSize = 10.sp, lineHeigh
 private fun MetricaLado(titulo: String, valor: String, unidad: String, modifier: Modifier, color: Color = Color.White) {
     Column(modifier) {
         Text(titulo, style = etiqueta.copy(fontWeight = FontWeight.ExtraBold), color = K1.Secondary)
-        Text(valor, style = TextStyle(fontFamily = num, fontSize = 19.sp, lineHeight = 26.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.025).em), color = color, maxLines = 1)
+        Text(valor, style = TextStyle(fontFamily = num, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.025).em), color = color, maxLines = 1)
         if (unidad.isNotEmpty()) Text(unidad, style = TextStyle(fontFamily = Inter, fontSize = 10.sp, lineHeight = 13.sp, fontWeight = FontWeight.Medium), color = K1.Secondary)
+    }
+}
+
+/** Chip C2 de cabecera: paralelogramo oscuro, texto en mayusculas cursiva y punto de estado opcional. */
+@Composable
+private fun ChipC2(texto: String, modifier: Modifier = Modifier, punto: Color? = null, tag: String) {
+    Row(
+        modifier.height(32.dp).clip(com.gacelas.ui.components.FormaBotonC2).background(GColorsC2.Panel).border(1.dp, GColorsC2.Linea, com.gacelas.ui.components.FormaBotonC2)
+            .padding(horizontal = 12.dp).testTag(tag),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
+    ) {
+        if (punto != null) {
+            Box(Modifier.size(8.dp).clip(CircleShape).background(punto))
+            Spacer(Modifier.width(7.dp))
+        }
+        Text(texto, style = TextStyle(fontFamily = Inter, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.02.em), color = Color.White, maxLines = 1)
+    }
+}
+
+/** Barras de parciales: una por km (alto segun velocidad), la del km en curso en menta. */
+@Composable
+private fun BarrasParciales(e: EstadoCarrera) {
+    val km = e.parciales.filter { !it.manual }.takeLast(6)
+    val ritmos = km.map { it.segundos / it.distanciaKm.coerceAtLeast(0.001) }
+    val rapido = ritmos.minOrNull() ?: 1.0
+    val lento = ritmos.maxOrNull() ?: 1.0
+    Row(Modifier.fillMaxWidth().height(26.dp).testTag("barras-parciales"), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.Bottom) {
+        ritmos.forEach { r ->
+            val f = if (lento - rapido < 1.0) 0.75f else (0.5f + 0.5f * ((lento - r) / (lento - rapido)).toFloat())
+            Box(Modifier.weight(1f).fillMaxHeight(f).clip(RoundedCornerShape(2.dp)).background(Brush.verticalGradient(listOf(GColorsC2.Violeta, Color(0xFF7B1FA2)))))
+        }
+        Box(Modifier.weight(if (km.isEmpty()) 6f else 0.8f).fillMaxHeight(0.55f).clip(RoundedCornerShape(2.dp)).background(GColorsC2.Menta.copy(alpha = if (km.isEmpty()) 0.25f else 1f)))
     }
 }
 
@@ -332,8 +374,8 @@ private fun Chip(titulo: String, valor: String, punto: Color? = null, tag: Strin
 
 @Composable
 private fun BotonMapa(descripcion: String, onClick: () -> Unit, tag: String, fondo: Color? = null, contenido: @Composable () -> Unit) {
-    Box(Modifier.size(44.dp).vidrio(CircleShape, sombra = 8.dp).then(if (fondo != null) Modifier.background(fondo) else Modifier).clickable(onClickLabel = descripcion, onClick = onClick).testTag(tag), contentAlignment = Alignment.Center) {
-        LineaSuperior(10.dp)
+    val forma = RoundedCornerShape(6.dp)
+    Box(Modifier.size(42.dp).vidrio(forma, sombra = 6.dp).then(if (fondo != null) Modifier.background(fondo) else Modifier).clickable(onClickLabel = descripcion, onClick = onClick).testTag(tag), contentAlignment = Alignment.Center) {
         contenido()
     }
 }

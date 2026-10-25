@@ -13,6 +13,9 @@ export function AppLayout() {
   const listaNotif = useApp((s) => s.notificaciones)
   const sinLeer = notificacionesVisibles(ajustes, listaNotif).filter((n) => !n.leida).length
 
+  // Comunidad (Figma C2) trae su propia cabecera: sin barra superior en movil.
+  const sinBarra = location.pathname === '/comunidad'
+
   const navItems = [
     { path: '/inicio', label: 'Inicio', icon: 'home' },
     { path: '/rutas', label: 'Rutas', icon: 'map' },
@@ -23,7 +26,9 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-bg-primary text-text-primary">
-      <header className="lg:hidden fixed top-0 inset-x-0 z-50 bg-bg-secondary/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)] pt-safe">
+      <header
+        className={`${sinBarra ? 'hidden' : 'lg:hidden'} fixed top-0 inset-x-0 z-50 bg-bg-secondary/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)] pt-safe`}
+      >
         <div className="h-16 px-margin flex items-center justify-between gap-space-sm">
           <div className="flex items-center gap-space-sm min-w-0">
             <Link to="/perfil" aria-label="Ir a mi perfil">
@@ -59,7 +64,9 @@ export function AppLayout() {
         </div>
       </header>
 
-      <main className="flex-1 pt-16 pb-24 lg:pt-8 lg:pb-12 overflow-auto">
+      <main
+        className={`flex-1 ${sinBarra ? 'pt-0' : 'pt-16'} pb-24 lg:pt-8 lg:pb-12 overflow-auto`}
+      >
         <Outlet />
       </main>
 

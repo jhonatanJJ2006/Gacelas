@@ -35,7 +35,7 @@ test.describe('Ajustes, perfil y notificaciones', () => {
     )
 
     await page.goto('/ajustes/notificaciones')
-    await page.getByRole('switch', { name: /Carreras en vivo/ }).click()
+    await page.getByRole('switch', { name: /Amigos en vivo/ }).click()
     await page.goto('/notificaciones')
     await expect(page.getByTestId('notificacion')).toHaveCount(4)
     await page.getByRole('button', { name: /marcar todas/i }).click()

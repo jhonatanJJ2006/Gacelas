@@ -91,7 +91,7 @@ fun MapaGacelas(
         return
     }
     val context = LocalContext.current
-    val con3d = modo3d && seguir && remember { soporta3D(context) }
+    val con3d = modo3d && seguir
     var mapa by remember { mutableStateOf<MapLibreMap?>(null) }
     var siguiendo by remember { mutableStateOf(true) }
     // Tras arrastrar el mapa se deja de seguir; vuelve solo a los SEGUIR_DE_NUEVO_MS sin tocarlo.

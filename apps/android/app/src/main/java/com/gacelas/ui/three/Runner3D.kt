@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
@@ -97,7 +98,9 @@ fun Runner3D(
     val context = LocalContext.current
     val disponible = !LocalInspectionMode.current && remember { soporta3D(context) }
     if (!disponible) {
-        Runner3DFallback(modifier)
+        // Sin Filament (GPU emulada con SwiftShader, drivers problematicos) se dibuja el mismo GLB con WebGL.
+        if (LocalInspectionMode.current || Build.FINGERPRINT == "robolectric") Runner3DFallback(modifier)
+        else Runner3DWeb(clip, modifier, autoRotar, camara, rumboRelativo)
         return
     }
     val engine = rememberEngine()
@@ -147,3 +150,59 @@ fun Runner3D(
     )
 }
 
+
+private const val HOST_ASSETS = "https://appassets.androidplatform.net/assets/"
+
+/**
+ * Corredor 3D con three.js en un WebView transparente (assets/runner3d). Mismo modelo y clips que
+ * la version Filament; se usa cuando el dispositivo no soporta Filament.
+ */
+@android.annotation.SuppressLint("SetJavaScriptEnabled")
+@Composable
+fun Runner3DWeb(
+    clip: ClipCorredor,
+    modifier: Modifier = Modifier,
+    autoRotar: Boolean = false,
+    camara: Position = Position(0f, 1.2f, 3.5f),
+    rumboRelativo: Float = 0f,
+) {
+    val url = remember(autoRotar, camara) {
+        "${HOST_ASSETS}runner3d/index.html?clip=${clip.nombre}&rotar=${if (autoRotar) 1 else 0}&cam=${camara.x},${camara.y},${camara.z}"
+    }
+    androidx.compose.ui.viewinterop.AndroidView(
+        modifier = modifier.fillMaxSize().then(Modifier.testTag("corredor-3d-webgl")),
+        factory = { ctx ->
+            android.webkit.WebView(ctx).apply {
+                setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                isVerticalScrollBarEnabled = false
+                isHorizontalScrollBarEnabled = false
+                settings.javaScriptEnabled = true
+                settings.allowFileAccess = false
+                settings.allowContentAccess = false
+                setOnTouchListener { _, _ -> false }
+                isClickable = false
+                isFocusable = false
+                webViewClient = object : android.webkit.WebViewClient() {
+                    override fun shouldInterceptRequest(view: android.webkit.WebView, request: android.webkit.WebResourceRequest): android.webkit.WebResourceResponse? {
+                        val u = request.url.toString()
+                        if (!u.startsWith(HOST_ASSETS)) return null
+                        val ruta = request.url.path.orEmpty().removePrefix("/assets/")
+                        val tipo = when {
+                            ruta.endsWith(".html") -> "text/html"
+                            ruta.endsWith(".js") -> "application/javascript"
+                            ruta.endsWith(".glb") -> "model/gltf-binary"
+                            else -> "application/octet-stream"
+                        }
+                        return runCatching { android.webkit.WebResourceResponse(tipo, "utf-8", ctx.assets.open(ruta)) }
+                            .onFailure { Log.w(TAG, "Asset no encontrado: $ruta", it) }.getOrNull()
+                    }
+                }
+                loadUrl(url)
+            }
+        },
+        update = { w ->
+            w.evaluateJavascript("window.gacelasClip&&gacelasClip('${clip.nombre}');window.gacelasRumbo&&gacelasRumbo($rumboRelativo)", null)
+        },
+        onRelease = { it.destroy() },
+    )
+}
