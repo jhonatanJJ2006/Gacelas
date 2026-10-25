@@ -90,3 +90,38 @@ export function FilaInterruptor({
     </div>
   )
 }
+
+/** Grupo C2 (figma-proto): etiqueta violeta y tarjeta con filas separadas por lineas. */
+export function GrupoC2({ titulo, children }: { titulo: string; children: ReactNode }) {
+  return (
+    <section aria-label={titulo}>
+      <h2 className="mb-2 text-[12px] font-extrabold uppercase tracking-[0.14em] text-c2-violeta">
+        {titulo}
+      </h2>
+      <div className="bg-c2-card divide-y divide-c2-linea">{children}</div>
+    </section>
+  )
+}
+
+/** Fila C2 con interruptor, sin icono. */
+export function FilaC2({
+  titulo,
+  descripcion,
+  activo,
+  onCambiar,
+}: {
+  titulo: string
+  descripcion?: string
+  activo: boolean
+  onCambiar: (v: boolean) => void
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 px-4 py-3.5">
+      <div>
+        <div className="text-[15px] font-bold text-white">{titulo}</div>
+        {descripcion && <p className="text-[13px] text-c2-muted">{descripcion}</p>}
+      </div>
+      <Interruptor etiqueta={titulo} activo={activo} onCambiar={onCambiar} />
+    </div>
+  )
+}

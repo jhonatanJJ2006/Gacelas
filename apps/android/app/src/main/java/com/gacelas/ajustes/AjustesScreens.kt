@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -131,82 +132,110 @@ private fun CabeceraAjustes(onEditarPerfil: () -> Unit) {
     }
 }
 
-private fun Visibilidad.titulo() = when (this) { Visibilidad.Publico -> "Público"; Visibilidad.Seguidores -> "Solo seguidores"; Visibilidad.Privado -> "Privado" }
+private fun Visibilidad.titulo() = when (this) { Visibilidad.Publico -> "Todos"; Visibilidad.Seguidores -> "Seguidores"; Visibilidad.Privado -> "Solo yo" }
 private fun Visibilidad.descripcion() = when (this) {
     Visibilidad.Publico -> "Cualquiera puede ver tu perfil y actividades públicas"
     Visibilidad.Seguidores -> "Solo seguidores aceptados pueden ver tus actividades"
     Visibilidad.Privado -> "Solo tú puedes ver tus actividades"
 }
-private fun Visibilidad.icono(): ImageVector = when (this) { Visibilidad.Publico -> Icons.Filled.Public; Visibilidad.Seguidores -> Icons.Filled.Group; Visibilidad.Privado -> Icons.Filled.Lock }
+
+/** Fila C2 sin icono con interruptor (figma-proto). */
+@Composable
+private fun FilaC2(titulo: String, descripcion: String?, checked: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().clickable { onChange(!checked) }.padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(titulo, style = GType.labelLg, color = GColors.TextPrimary)
+            descripcion?.let { Text(it, style = GType.bodySm, color = GColors.C2Muted) }
+        }
+        com.gacelas.ui.components.Interruptor(checked, onChange)
+    }
+}
+
+@Composable
+private fun GrupoC2(titulo: String, contenido: @Composable () -> Unit) {
+    EtiquetaGrupo(titulo)
+    Column(Modifier.fillMaxWidth().background(GColors.C2Card)) { contenido() }
+}
+
+@Composable
+private fun Divisor() = androidx.compose.material3.HorizontalDivider(color = GColors.C2Linea)
+
+@Composable
+private fun MapaZonaOculta(activa: Boolean, radio: Int) {
+    androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth().height(150.dp).background(GColors.C2S2).testTag("zona-oculta-mapa")) {
+        androidx.compose.foundation.Canvas(Modifier.fillMaxSize()) {
+            val calle = androidx.compose.ui.graphics.Color(0xFF2C3446)
+            listOf(0.15f, 0.45f, 0.75f, 1f).forEach { y -> drawLine(calle, androidx.compose.ui.geometry.Offset(0f, size.height * y), androidx.compose.ui.geometry.Offset(size.width, size.height * y - 40f), 12f) }
+            listOf(0.12f, 0.4f, 0.65f, 0.88f).forEach { x -> drawLine(calle, androidx.compose.ui.geometry.Offset(size.width * x, 0f), androidx.compose.ui.geometry.Offset(size.width * x + 40f, size.height), 10f) }
+            val casa = androidx.compose.ui.geometry.Offset(size.width * 0.2f, size.height * 0.4f)
+            if (activa) drawCircle(GColors.C2Morado.copy(alpha = 0.2f), size.height * 0.28f, casa)
+            val ruta = androidx.compose.ui.graphics.Path().apply {
+                moveTo(casa.x, casa.y)
+                cubicTo(size.width * 0.25f, size.height * 0.8f, size.width * 0.5f, size.height * 0.85f, size.width * 0.7f, size.height * 0.7f)
+                cubicTo(size.width * 0.85f, size.height * 0.55f, size.width * 0.8f, size.height * 0.2f, size.width * 0.6f, size.height * 0.15f)
+            }
+            drawPath(ruta, GColors.C2Violeta, style = androidx.compose.ui.graphics.drawscope.Stroke(8f))
+            drawCircle(GColors.C2Morado, 12f, casa)
+            drawCircle(androidx.compose.ui.graphics.Color(0xFF68DBA9), 12f, androidx.compose.ui.geometry.Offset(size.width * 0.6f, size.height * 0.15f))
+        }
+        if (activa) Text(
+            "CASA · ${if (radio >= 1000) "${radio / 1000} KM" else "$radio M"}", style = GType.labelMd,
+            color = GColors.BgPrimary, modifier = Modifier.padding(10.dp).background(GColors.C2Violeta).padding(horizontal = 10.dp, vertical = 4.dp),
+        )
+    }
+}
 
 @Composable
 fun PrivacidadUbicacionScreen(onAtras: () -> Unit, onLegal: (Boolean) -> Unit = {}, onCuentaEliminada: () -> Unit = {}) {
     val a by ajustesState()
     val guardar = guardarAjuste()
     var radio by remember(a.radioHogarM) { mutableStateOf(a.radioHogarM.toFloat()) }
-    PantallaConEncabezado("Privacidad y Ubicación", onAtras) {
-        Tarjeta(fondo = GColors.Primary.copy(alpha = 0.1f), borde = GColors.Primary.copy(alpha = 0.4f)) {
+    PantallaConEncabezado("Privacidad", onAtras) {
+        Tarjeta(fondo = GColors.C2Card, borde = null) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.Shield, null, tint = GColors.Primary500)
-                Text("  Privacidad activa por defecto", style = GType.labelLg, color = GColors.Primary500)
+                Text("ZONA OCULTA", style = GType.labelMd, color = GColors.C2Violeta, modifier = Modifier.weight(1f))
+                com.gacelas.ui.components.Interruptor(a.ocultarHogar) { v -> guardar { it.copy(ocultarHogar = v) } }
             }
-            Text("Tus recorridos no revelan el punto exacto de tu residencia. Tu ubicación en vivo permanece desactivada hasta que decidas compartirla.",
-                style = GType.bodySm, color = GColors.TextSecondary)
-        }
-        EtiquetaGrupo("Visibilidad del perfil")
-        Visibilidad.entries.forEach { v ->
-            val activo = v == a.visibilidad
-            Column(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
-                    .background(if (activo) GColors.PrimaryContainer.copy(alpha = 0.2f) else GColors.SurfaceContainer)
-                    .border(2.dp, if (activo) GColors.Primary else GColors.BorderSubtle, RoundedCornerShape(12.dp))
-                    .clickable { guardar { it.copy(visibilidad = v) } }.padding(16.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(v.icono(), null, tint = GColors.Primary500)
-                    Text("  ${v.titulo()}", style = GType.labelLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-                    Icon(if (activo) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked, null, tint = if (activo) GColors.Primary500 else GColors.TextSecondary)
-                }
-                Text(v.descripcion(), style = GType.bodySm, color = GColors.TextSecondary, modifier = Modifier.padding(top = 4.dp))
-            }
-        }
-        EtiquetaGrupo("Visibilidad de actividades")
-        Tarjeta(padding = 0.dp) {
-            FilaInterruptor(Icons.Filled.MonitorHeart, "Ocultar datos biométricos", "Pulsaciones y cadencia ocultas en resúmenes públicos", a.ocultarBiometricos, { v -> guardar { it.copy(ocultarBiometricos = v) } })
-            FilaInterruptor(Icons.Filled.Leaderboard, "Aparecer en rankings y retos", "Figurar en el top semanal de altimetría y distancia de Loja", a.aparecerRankings, { v -> guardar { it.copy(aparecerRankings = v) } })
-        }
-        EtiquetaGrupo("Ubicación GPS")
-        Tarjeta(padding = 0.dp) {
-            FilaInterruptor(Icons.Filled.MyLocation, "Ubicación precisa", "Graba tu ubicación exacta durante carreras", a.ubicacionPrecisa, { v -> guardar { it.copy(ubicacionPrecisa = v) } })
-        }
-        EtiquetaGrupo("Protección de hogar")
-        Tarjeta(padding = 0.dp) {
-            FilaInterruptor(Icons.Filled.Home, "Ocultar ubicación de casa", "Difumina los puntos de inicio/fin cerca de tu casa", a.ocultarHogar, { v -> guardar { it.copy(ocultarHogar = v) } })
+            MapaZonaOculta(a.ocultarHogar, radio.roundToInt())
+            Text(
+                if (a.ocultarHogar) "Ocultamos el inicio y fin de tus carreras dentro de este radio." else "Activa la zona oculta para no revelar dónde vives.",
+                style = GType.bodySm, color = GColors.C2Muted,
+            )
             if (a.ocultarHogar) {
-                Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf(200, 500, 1000).forEach { r ->
-                            val activo = a.radioHogarM == r
-                            Text(if (r >= 1000) "1 km" else "$r m", style = GType.labelMd, color = if (activo) GColors.Primary500 else GColors.TextSecondary,
-                                modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp)).border(1.dp, if (activo) GColors.Primary else GColors.BorderSubtle, RoundedCornerShape(8.dp))
-                                    .clickable { guardar { it.copy(radioHogarM = r) } }.padding(vertical = 8.dp).testTag("radio-$r"), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(200, 500, 1000).forEach { r ->
+                        androidx.compose.foundation.layout.Box(Modifier.testTag("radio-$r")) {
+                            com.gacelas.ui.components.Pastilla(if (r >= 1000) "1 KM" else "$r M", a.radioHogarM == r, { guardar { it.copy(radioHogarM = r) } })
                         }
                     }
-                    Row {
-                        Text("Radio de protección", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
-                        Text("${radio.roundToInt()}m", style = GType.labelLg, color = GColors.Primary500)
-                    }
-                    Slider(
-                        value = radio, onValueChange = { radio = (it / 50f).roundToInt() * 50f }, valueRange = 100f..1000f, steps = 17,
-                        onValueChangeFinished = { guardar { it.copy(radioHogarM = radio.roundToInt()) } },
-                        colors = SliderDefaults.colors(thumbColor = GColors.Primary, activeTrackColor = GColors.Primary, inactiveTrackColor = GColors.SurfaceHigh),
-                    )
-                    Row {
-                        Text("100m", style = GType.bodySm, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
-                        Text("1 km", style = GType.bodySm, color = GColors.TextSecondary)
-                    }
                 }
+                Row {
+                    Text("Radio de protección", style = GType.bodyMd, color = GColors.C2Muted, modifier = Modifier.weight(1f))
+                    Text("${radio.roundToInt()}m", style = GType.labelLg, color = GColors.C2Violeta)
+                }
+                Slider(
+                    value = radio, onValueChange = { radio = (it / 50f).roundToInt() * 50f }, valueRange = 100f..1000f, steps = 17,
+                    onValueChangeFinished = { guardar { it.copy(radioHogarM = radio.roundToInt()) } },
+                    colors = SliderDefaults.colors(thumbColor = GColors.C2Morado, activeTrackColor = GColors.C2Morado, inactiveTrackColor = GColors.C2Linea),
+                )
             }
+        }
+        EtiquetaGrupo("Quién ve tus carreras")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Visibilidad.entries.forEach { v ->
+                com.gacelas.ui.components.Pastilla(v.titulo().uppercase(), v == a.visibilidad, { guardar { it.copy(visibilidad = v) } })
+            }
+        }
+        Text(a.visibilidad.descripcion(), style = GType.bodySm, color = GColors.C2Muted)
+        GrupoC2("Actividad") {
+            FilaC2("Aparecer en rankings", "Top semanal de distancia y altimetría de Loja", a.aparecerRankings) { v -> guardar { it.copy(aparecerRankings = v) } }
+            Divisor()
+            FilaC2("Ocultar datos biométricos", "Pulsaciones y cadencia fuera de los resúmenes públicos", a.ocultarBiometricos) { v -> guardar { it.copy(ocultarBiometricos = v) } }
+            Divisor()
+            FilaC2("Ubicación precisa", "GPS de alta precisión durante las carreras", a.ubicacionPrecisa) { v -> guardar { it.copy(ubicacionPrecisa = v) } }
         }
         com.gacelas.legal.SeccionConsentimientos(onLegal, onCuentaEliminada)
     }
@@ -219,41 +248,32 @@ fun ConfiguracionNotificacionesScreen(onAtras: () -> Unit) {
     val sistema by com.gacelas.core.notificaciones.notificacionesPermitidasState()
     val activar = com.gacelas.core.notificaciones.rememberActivarNotificaciones()
     PantallaConEncabezado("Notificaciones", onAtras) {
-        EtiquetaGrupo("En este teléfono")
-        Tarjeta(padding = 0.dp) {
+        GrupoC2("En este teléfono") {
             // Refleja el estado REAL de Android (permiso + canal), no un ajuste guardado.
-            FilaInterruptor(
-                androidx.compose.material.icons.Icons.Filled.Notifications, "Notificaciones de Gacelas",
-                if (sistema) "Activadas en Android" else "Bloqueadas en Android: no verás la carrera en la barra",
-                sistema, { activar() }, if (sistema) GColors.Secondary500 else GColors.Danger,
-            )
+            FilaC2("Notificaciones de Gacelas", if (sistema) "Activadas en Android" else "Bloqueadas en Android: no verás la carrera en la barra", sistema) { activar() }
         }
         if (!sistema) com.gacelas.core.notificaciones.AvisoNotificacionesBloqueadas(
             "Android tiene bloqueadas las notificaciones de Gacelas. Actívalas para ver el tiempo y la distancia de tu carrera y los avisos de la comunidad.",
             activar,
         )
-        EtiquetaGrupo("Notificaciones push")
-        Tarjeta(padding = 0.dp) {
-            FilaInterruptor(Icons.Filled.Favorite, "Likes", "Cuando alguien da like a tu actividad", a.notifLikes, { v -> g { it.copy(notifLikes = v) } }, GColors.Danger)
-            FilaInterruptor(Icons.AutoMirrored.Filled.Chat, "Comentarios", "Cuando alguien comenta tu actividad", a.notifComentarios, { v -> g { it.copy(notifComentarios = v) } })
-            FilaInterruptor(Icons.Filled.PersonAdd, "Nuevos seguidores", "Cuando alguien te sigue", a.notifSeguidores, { v -> g { it.copy(notifSeguidores = v) } }, GColors.Secondary500)
-            FilaInterruptor(Icons.Filled.Sensors, "Carreras en vivo", "Cuando alguien inicia seguimiento en vivo", a.notifEnVivo, { v -> g { it.copy(notifEnVivo = v) } }, GColors.Secondary500)
-            FilaInterruptor(Icons.Filled.Event, "Eventos", "Recordatorios de eventos y nuevos eventos", a.notifEventos, { v -> g { it.copy(notifEventos = v) } }, GColors.Tertiary)
+        GrupoC2("Push") {
+            FilaC2("Me gusta", null, a.notifLikes) { v -> g { it.copy(notifLikes = v) } }
+            Divisor()
+            FilaC2("Comentarios", null, a.notifComentarios) { v -> g { it.copy(notifComentarios = v) } }
+            Divisor()
+            FilaC2("Nuevos seguidores", null, a.notifSeguidores) { v -> g { it.copy(notifSeguidores = v) } }
+            Divisor()
+            FilaC2("Amigos en vivo", "Cuando alguien te comparte su carrera", a.notifEnVivo) { v -> g { it.copy(notifEnVivo = v) } }
+            Divisor()
+            FilaC2("Eventos y clubes", null, a.notifEventos) { v -> g { it.copy(notifEventos = v) } }
         }
-        EtiquetaGrupo("Notificaciones por email")
-        Tarjeta(padding = 0.dp) {
-            FilaInterruptor(Icons.Filled.Mail, "Resumen semanal", "Recibe un resumen de tu actividad cada semana", a.notifEmail, { v -> g { it.copy(notifEmail = v) } }, GColors.Info)
+        GrupoC2("Correo") {
+            FilaC2("Resumen semanal", "Tu actividad de la semana, cada lunes", a.notifEmail) { v -> g { it.copy(notifEmail = v) } }
         }
-        EtiquetaGrupo("Frecuencia")
-        Tarjeta {
-            Text("Los likes se agrupan cada 10 o cada 6 horas para evitar notificaciones excesivas.", style = GType.bodyMd, color = GColors.TextSecondary)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.Info, null, tint = GColors.Info)
-                Text("  Configuración optimizada", style = GType.labelLg, color = GColors.Info)
-            }
-        }
+        Text("Los me gusta se agrupan para evitar avisos excesivos.", style = GType.bodySm, color = GColors.C2Muted)
     }
 }
+
 
 
 /** Reto mensual y preferencias de alertas dentro de la bandeja de notificaciones (Stitch). */
