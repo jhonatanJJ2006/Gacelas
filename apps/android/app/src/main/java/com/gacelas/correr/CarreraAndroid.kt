@@ -37,7 +37,14 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
         onStop = { terminarCarrera(context, tracker); onFinalizar() },
         onVuelta = vm::vuelta,
         onAtras = { confirmar = true },
-        extraCabecera = { BotonCompartirEnVivo(tracker) },
+        extraCabecera = {
+            androidx.compose.foundation.layout.Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                com.gacelas.seguridad.ui.BotonReportarIncidente(compacto = true) {
+                    estado.puntos.lastOrNull()?.let { it.lat to it.lng } ?: com.gacelas.rutas.ultimaUbicacion(context)
+                }
+                BotonCompartirEnVivo(tracker)
+            }
+        },
         vozActiva = ajustes.anunciosVoz,
         onVoz = { guardarVoz { it.copy(anunciosVoz = !it.anunciosVoz) } },
         autopausa = ajustes.autopausa,

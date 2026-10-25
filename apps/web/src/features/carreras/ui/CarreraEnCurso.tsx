@@ -17,6 +17,7 @@ import { useApp } from '../../../store/app'
 import { descartarCarrera, finalizarCarrera, tracker, useCarrera } from '../../../store/carrera'
 import { caloriasEstimadas } from '../../../lib/logica'
 import { claveMapas } from '../../../lib/mapas'
+import { HojaReportarIncidente } from '../../seguridad'
 
 export function CarreraEnCurso() {
   const navigate = useNavigate()
@@ -28,6 +29,7 @@ export function CarreraEnCurso() {
   const [gpsAvisado, setGpsAvisado] = useState(false)
   const [vista3d, setVista3d] = useState(true)
   const [recentrar, setRecentrar] = useState(0)
+  const [reportando, setReportando] = useState(false)
   const sesion = useApp((s) => s.sesion)
   const vivo = useCompartirEnVivo()
   const compartiendo = vivo.sesionId !== null
@@ -200,6 +202,25 @@ export function CarreraEnCurso() {
     </div>
   )
 
+  const botonReportar = (
+    <button
+      onClick={() => setReportando(true)}
+      data-testid="reportar-incidente"
+      aria-label="Reportar incidente"
+      className="absolute top-4 left-1/2 -translate-x-1/2 z-30 h-10 px-3 rounded-full bg-c2-card/90 backdrop-blur-md text-white border border-c2-linea shadow-lg flex items-center gap-1 text-sm font-semibold"
+    >
+      <span className="material-symbols-outlined text-[18px] text-[#F5C451]">warning</span>
+      Reportar
+    </button>
+  )
+  const hojaReportar = (
+    <HojaReportarIncidente
+      abierta={reportando}
+      ubicacion={ultimo ? { lat: ultimo.lat, lng: ultimo.lng } : null}
+      onCerrar={() => setReportando(false)}
+    />
+  )
+
   if (claveMapas()) {
     const precision = e.ultimaPrecisionM
     const gps =
@@ -252,6 +273,14 @@ export function CarreraEnCurso() {
           className="absolute right-3 top-[58px] z-20 flex flex-col gap-2"
           data-testid="controles-carrera"
         >
+          <button
+            onClick={() => setReportando(true)}
+            aria-label="Reportar incidente"
+            data-testid="reportar-incidente"
+            className={ctl}
+          >
+            <span className="material-symbols-outlined text-[20px] text-[#F5C451]">warning</span>
+          </button>
           <button
             onClick={() => setRecentrar((n) => n + 1)}
             aria-label="Recentrar"
@@ -424,6 +453,7 @@ export function CarreraEnCurso() {
             </button>
           </div>
         )}
+        {hojaReportar}
         {dialogo}
         {modales}
       </div>
@@ -436,6 +466,8 @@ export function CarreraEnCurso() {
         <div className="absolute inset-0 bg-gradient-to-b from-surface-container-low via-surface to-surface"></div>
 
         {barra}
+        {botonReportar}
+        {hojaReportar}
 
         <div className="relative z-10 flex flex-col gap-3 px-4 pt-20 pb-6 max-w-md mx-auto w-full">
           <div className="flex items-center justify-between rounded-2xl bg-surface-container/70 border border-border-subtle px-4 py-3">

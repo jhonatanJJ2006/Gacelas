@@ -169,6 +169,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
                 if (extra.isNotEmpty()) Text(extra, style = GType.bodySm, color = GColors.C2Muted)
             }
             if (ruta.descripcion.isNotBlank()) Text(ruta.descripcion, style = GType.bodyMd, color = GColors.TextSecondary)
+            com.gacelas.seguridad.ui.TarjetaSeguridad(id)
             if (ruta.etiquetas.isNotEmpty()) Text(ruta.etiquetas.joinToString("  ") { "#" + (ETIQUETAS_RUTA[it] ?: it) }, style = GType.labelLg, color = GColors.TextPrimary)
             ruta.fuente?.let { Text("Trazado: $it. Datos (c) colaboradores de OpenStreetMap.", style = GType.labelMd, color = GColors.C2Muted) }
             ruta.autorNombre?.let { Text("Creada por $it", style = GType.bodySm, color = GColors.TextSecondary) }

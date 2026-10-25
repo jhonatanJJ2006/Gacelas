@@ -32,3 +32,15 @@ La función `eliminar_mi_cuenta()` borra el usuario de `auth.users`. Sus datos s
 ## Consentimiento de GPS al correr
 
 Antes de la primera carrera se muestra un modal que explica qué se usa (GPS del dispositivo), para qué (distancia, ritmo y recorrido), con quién se comparte (nadie, salvo que publiques la carrera) y por cuánto tiempo (solo mientras grabas). La aceptación se guarda en la tabla consents con su versión y fecha, y se puede revocar en Ajustes, Privacidad.
+
+## Reportes de incidentes
+
+La Política de privacidad incluye la sección "6. Reportes de incidentes" (las siguientes se renumeraron). Resumen del tratamiento según la LOPDP:
+
+- Qué: tipo, descripción y fotos opcionales, punto GPS, dirección aproximada y hora, ligados a la cuenta.
+- Base legal: el consentimiento `gps_carrera`; sin él no se puede reportar.
+- Minimización: la vista pública no muestra el usuario, redondea la ubicación a unos 100 m y la hora a la hora, y oculta la descripción hasta que moderación la verifica. Las fotos se suben sin EXIF y con nombres aleatorios.
+- Conservación: los reportes dejan de publicarse a los 90 días. El autor puede borrarlos y se borran al eliminar la cuenta.
+- Datos del ECU 911: son abiertos, agregados y sin datos personales (licencia CC-BY).
+
+Al publicar este cambio hay que subir la versión de la Política en `VersionesLegales`, `VERSIONES_LEGALES` y `legal_versions`, para que los usuarios acepten el texto nuevo.

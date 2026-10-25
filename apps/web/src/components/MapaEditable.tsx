@@ -145,6 +145,35 @@ export function MapaRutas({
   )
 }
 
+function MarcadoresIncidentes({
+  incidentes,
+}: {
+  incidentes: { id: string; lat: number; lng: number }[]
+}) {
+  const mapa = useMap()
+  useEffect(() => {
+    if (!mapa) return
+    const marcas = incidentes.map(
+      (i) =>
+        new google.maps.Marker({
+          position: { lat: i.lat, lng: i.lng },
+          map: mapa,
+          title: 'Incidente reportado',
+          icon: {
+            path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+            scale: 6,
+            fillColor: '#F5C451',
+            fillOpacity: 1,
+            strokeColor: '#0B1220',
+            strokeWeight: 1,
+          },
+        })
+    )
+    return () => marcas.forEach((m) => m.setMap(null))
+  }, [mapa, incidentes])
+  return null
+}
+
 function Corredores({
   corredores,
 }: {
@@ -196,9 +225,12 @@ function Corredores({
 export function MapaCorredores({
   corredores,
   className = '',
+  incidentes = [],
 }: {
   corredores: { id: string; nombre: string; punto: Coordenada | null; trazo: Coordenada[] }[]
   className?: string
+  /** Incidentes recientes (posicion ya redondeada por el servidor). */
+  incidentes?: { id: string; lat: number; lng: number }[]
 }) {
   const clave = claveMapas()
   if (!clave)
@@ -216,6 +248,7 @@ export function MapaCorredores({
           style={{ width: '100%', height: '100%' }}
         >
           <Corredores corredores={corredores} />
+          <MarcadoresIncidentes incidentes={incidentes} />
         </Map>
         <Controles />
       </APIProvider>
