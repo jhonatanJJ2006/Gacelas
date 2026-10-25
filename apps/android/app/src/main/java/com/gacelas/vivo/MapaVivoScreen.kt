@@ -67,6 +67,8 @@ fun MapaVivoScreen(onAtras: () -> Unit, onPrivacidad: () -> Unit, inicial: List<
     var visible by remember { mutableStateOf<Boolean?>(null) }
     var elegido by remember { mutableStateOf<CorredorEnMapa?>(null) }
     var ahora by remember { mutableStateOf(com.gacelas.shared.ahoraMs()) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val incidentes = com.gacelas.seguridad.ui.incidentesRecientes(ejemplo = inicial != null)
     LaunchedEffect(Unit) { visible = c.consentimientos.otorgado(TipoConsentimiento.UbicacionVisible) }
     LaunchedEffect(repo) {
         while (inicial == null && repo != null) {
@@ -87,17 +89,22 @@ fun MapaVivoScreen(onAtras: () -> Unit, onPrivacidad: () -> Unit, inicial: List<
                 val centro = corredores.firstOrNull()?.let { LatLng(it.lat, it.lng) } ?: Mapas.CENTRO_LOJA
                 MapaLibre(
                     Modifier.fillMaxWidth().height(380.dp),
-                    circulos = corredores.map { CirculoMapa(LatLng(it.lat, it.lng), 9f, colorEstado(it.corriendo), Color.White, 2f, id = it.userId) },
+                    circulos = incidentes.map { CirculoMapa(LatLng(it.lat, it.lng), 7f, com.gacelas.seguridad.ui.colorIncidente(it), GColors.C2Bg, 2f, id = "inc-" + it.id) } +
+                        corredores.map { CirculoMapa(LatLng(it.lat, it.lng), 9f, colorEstado(it.corriendo), Color.White, 2f, id = it.userId) },
                     centro = centro, zoom = 13.0,
                     alTocarCirculo = { id -> elegido = corredores.firstOrNull { it.userId == id } },
                 )
             } else EsquemaCorredores(corredores) { elegido = it }
+            com.gacelas.seguridad.ui.BotonReportarIncidente(Modifier.align(Alignment.TopEnd).padding(10.dp)) {
+                com.gacelas.rutas.ultimaUbicacion(context)
+            }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Leyenda(GColors.C2Menta, "Corriendo"); Leyenda(GColors.C2Cielo, "Visible, sin correr")
+            Leyenda(GColors.C2Menta, "Corriendo"); Leyenda(GColors.C2Cielo, "Visible, sin correr"); Leyenda(GColors.C2Peligro, "Incidente")
         }
         Text(if (corredores.isEmpty()) "Nadie está visible ahora mismo" else "${corredores.size} corredores visibles", style = GType.labelLg, color = GColors.TextPrimary)
         corredores.forEach { r -> FilaCorredor(r, ahora) { elegido = r } }
+        com.gacelas.seguridad.ui.ListaIncidentes(incidentes)
     }
     elegido?.let { r ->
         ModalC2(

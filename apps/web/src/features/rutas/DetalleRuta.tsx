@@ -13,6 +13,7 @@ import { Unidades } from '../../lib/geo'
 import { ETIQUETAS_RUTA } from '../../lib/rutas'
 import { useApp } from '../../store/app'
 import { Estrellas, SelectorEstrellas } from './Estrellas'
+import { TarjetaSeguridad } from '../seguridad'
 
 export function DetalleRuta() {
   const { id = '' } = useParams()
@@ -171,6 +172,7 @@ export function DetalleRuta() {
             <PerfilElevacion alturas={ruta.perfilElevacion!} distanciaKm={ruta.distanciaKm} />
           )}
           <p className="text-text-secondary">{ruta.descripcion}</p>
+          <TarjetaSeguridad rutaId={id} />
           {(ruta.etiquetas?.length ?? 0) > 0 && (
             <ul className="flex flex-wrap gap-2" aria-label="Etiquetas">
               {ruta.etiquetas!.map((t) => (

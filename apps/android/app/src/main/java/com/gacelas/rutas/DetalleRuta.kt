@@ -163,6 +163,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
             }
             if (ruta.perfilElevacion.size > 1) PerfilElevacion(ruta.perfilElevacion, ruta.distanciaKm)
             if (ruta.descripcion.isNotBlank()) Text(ruta.descripcion, style = GType.bodyMd, color = GColors.TextSecondary)
+            com.gacelas.seguridad.ui.TarjetaSeguridad(id)
             if (ruta.etiquetas.isNotEmpty()) Text(ruta.etiquetas.joinToString("  ") { "#" + (ETIQUETAS_RUTA[it] ?: it) }, style = GType.labelLg, color = GColors.TextPrimary)
             ruta.autorNombre?.let { Text("Creada por $it", style = GType.bodySm, color = GColors.TextSecondary) }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {

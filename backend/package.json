@@ -1,0 +1,18 @@
+{
+  "name": "backend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "incidentes:importar": "tsx src/contexts/seguridad/application/importar-ecu911.ts",
+    "test:unit": "vitest run"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "vitest": "^1.0.4"
+  }
+}

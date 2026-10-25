@@ -31,7 +31,7 @@ includeModule(":core:comun", "core/comun")
 includeModule(":core:datos", "core/datos")
 includeModule(":core:ui", "core/ui")
 
-listOf("carreras", "rutas", "cuenta", "comunidad").forEach { ctx ->
+listOf("carreras", "rutas", "cuenta", "comunidad", "seguridad").forEach { ctx ->
     includeModule(":contextos:$ctx:domain", "contextos/$ctx/domain")
     includeModule(":contextos:$ctx:data", "contextos/$ctx/data")
     includeModule(":contextos:$ctx:presentation", "contextos/$ctx/presentation")
