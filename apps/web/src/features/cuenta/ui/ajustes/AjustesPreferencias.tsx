@@ -273,6 +273,8 @@ export function AjustesPreferencias() {
           detalle={`v${VERSION_APP}`}
         />
         <Boton onClick={() => setDialogo('ayuda')} icono="help" texto="Ayuda y soporte" />
+        <Enlace to="/legal/terminos" icono="gavel" texto="Términos y condiciones" />
+        <Enlace to="/legal/privacidad" icono="policy" texto="Política de privacidad" />
       </Seccion>
       <section>
         <button

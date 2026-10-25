@@ -10,7 +10,7 @@ export function PantallaAjustes({
 }: {
   titulo: string
   subtitulo?: string
-  volverA: string
+  volverA: string | number
   children: ReactNode
 }) {
   const navigate = useNavigate()
@@ -19,7 +19,7 @@ export function PantallaAjustes({
       <header className="px-margin py-4 border-b border-border-subtle">
         <div className="flex items-center gap-4 lg:max-w-3xl lg:mx-auto lg:w-full">
           <button
-            onClick={() => navigate(volverA)}
+            onClick={() => (typeof volverA === 'number' ? navigate(volverA) : navigate(volverA))}
             aria-label="Volver"
             className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
           >

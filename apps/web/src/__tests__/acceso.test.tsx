@@ -22,6 +22,7 @@ describe('acceso y rutas protegidas', () => {
     renderRuta('/registro')
     await userEvent.type(await screen.findByLabelText('Nombre completo'), 'Jhona')
     await userEvent.type(screen.getByLabelText('Correo electrónico'), 'jhona@utpl.edu.ec')
+    await userEvent.click(screen.getByLabelText('Acepto los Términos y la Política de privacidad'))
     await userEvent.type(screen.getByLabelText('Contraseña'), 'corta')
     await userEvent.click(screen.getByRole('button', { name: /crear cuenta/i }))
     expect(await screen.findByRole('alert')).toHaveTextContent(/8 caracteres/)
@@ -29,16 +30,27 @@ describe('acceso y rutas protegidas', () => {
     await userEvent.type(screen.getByLabelText('Contraseña'), 'gacela123')
     await userEvent.click(screen.getByRole('button', { name: /crear cuenta/i }))
     expect(await screen.findByText('Activa tu ubicación')).toBeInTheDocument()
+    expect(JSON.parse(localStorage.getItem('gacelas:consentimientos') ?? '[]')).toHaveLength(2)
     expect(useApp.getState().sesion?.email).toBe('jhona@utpl.edu.ec')
   })
 
-  it('registro muestra terminos y privacidad', async () => {
+  it('registro enlaza terminos y privacidad', async () => {
     renderRuta('/registro')
-    await userEvent.click(await screen.findByRole('button', { name: 'Términos de Servicio' }))
-    expect(screen.getByRole('dialog', { name: 'Términos de Servicio' })).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Entendido' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Política de Privacidad' }))
-    expect(screen.getByRole('dialog', { name: 'Política de Privacidad' })).toBeInTheDocument()
+    await screen.findByLabelText('Acepto los Términos y la Política de privacidad')
+    expect(screen.getByRole('link', { name: 'Términos' })).toHaveAttribute(
+      'href',
+      '/legal/terminos'
+    )
+    expect(screen.getByRole('link', { name: 'Política de privacidad' })).toHaveAttribute(
+      'href',
+      '/legal/privacidad'
+    )
+  })
+
+  it('terminos se leen sin sesion', async () => {
+    renderRuta('/legal/terminos')
+    expect(await screen.findByTestId('doc-terminos')).toBeInTheDocument()
+    expect(screen.getByText('1. Aceptación')).toBeInTheDocument()
   })
 
   it('inicio de sesion con error y luego correcto', async () => {

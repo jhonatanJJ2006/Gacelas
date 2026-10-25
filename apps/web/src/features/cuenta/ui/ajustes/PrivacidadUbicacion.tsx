@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import type { Visibilidad } from '../../../../data/tipos'
 import { useApp } from '../../../../store/app'
 import { FilaInterruptor, PantallaAjustes, Seccion } from './Comunes'
+import { SeccionConsentimientos } from '../../../legal/Legal'
+import { historial } from '../../../legal/consentimientos'
 
 const OPCIONES: { id: Visibilidad; icono: string; titulo: string; descripcion: string }[] = [
   {
@@ -32,7 +34,9 @@ export function PrivacidadUbicacion() {
   const guardarRadio = () => void actualizar({ radioHogarM: radio })
   const carreras = useApp((s) => s.carreras)
   const descargar = () => {
-    const blob = new Blob([JSON.stringify({ carreras }, null, 2)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify({ carreras, consentimientos: historial() }, null, 2)], {
+      type: 'application/json',
+    })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = 'gacelas-mis-datos.json'
@@ -165,18 +169,7 @@ export function PrivacidadUbicacion() {
         )}
       </Seccion>
 
-      <Seccion titulo="Compartir en vivo">
-        <div className="p-4 rounded-xl bg-secondary-600/10 border border-secondary-600/40">
-          <p className="text-body-md text-text-secondary mb-2">
-            Cuando compartes tu ubicación en vivo, solo las personas que elijas pueden verte. Puedes
-            detener el seguimiento en cualquier momento.
-          </p>
-          <p className="flex items-center gap-2 text-secondary-500 font-semibold">
-            <span className="material-symbols-outlined">shield</span>
-            Tu privacidad está protegida
-          </p>
-        </div>
-      </Seccion>
+      <SeccionConsentimientos />
       <Seccion titulo="Gestión de datos de la cuenta">
         <button
           onClick={descargar}

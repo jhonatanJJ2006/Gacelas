@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { EnlacesLegales } from '../../../legal/Legal'
 import { useNavigate, Link } from 'react-router-dom'
 import { CampoContrasena } from '../../../../components/CampoContrasena'
 import { useApp } from '../../../../store/app'
@@ -143,6 +144,7 @@ export function InicioSesion() {
                 </Link>
               </span>
             </div>
+            <EnlacesLegales />
           </form>
 
           <div className="mt-4 space-y-3 md:col-start-2">
