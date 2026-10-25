@@ -1,6 +1,7 @@
 package com.gacelas.rutas
 
 import androidx.compose.material.icons.filled.Share
+import com.gacelas.rutas.domain.modelo.RutasLoja
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.foundation.horizontalScroll
 import android.Manifest
@@ -96,7 +97,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
     val scope = rememberCoroutineScope()
     val remotas by (repo?.rutas ?: remember { kotlinx.coroutines.flow.MutableStateFlow(null) }).collectAsState()
     val meGusta by (repo?.meGusta ?: remember { kotlinx.coroutines.flow.MutableStateFlow(emptySet<String>()) }).collectAsState()
-    val ruta = (remotas ?: MockData.rutas).firstOrNull { it.id == id }
+    val ruta = RutasLoja.conOficiales(remotas ?: MockData.rutas).firstOrNull { it.id == id }
     val perfil by sesionState()
     val ajustes by ajustesState()
     val m = ajustes.unidadesMetricas
@@ -156,15 +157,21 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
                     ruta.dificultad.etiqueta to "Dificultad",
                 ).forEach { (v, e) ->
                     Tarjeta(Modifier.weight(1f), padding = 10.dp) {
-                        Text(v, style = GType.titleMd, color = GColors.TextPrimary, maxLines = 1)
+                        Text(v, style = GType.labelLg, color = GColors.TextPrimary, maxLines = 1)
                         Text(e, style = GType.bodySm, color = GColors.TextSecondary)
                     }
                 }
             }
             if (ruta.perfilElevacion.size > 1) PerfilElevacion(ruta.perfilElevacion, ruta.distanciaKm)
+            if (ruta.oficial) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                com.gacelas.rutas.InsigniaOficial()
+                val extra = listOfNotNull(ruta.categoria?.etiqueta, ruta.superficie?.let { "superficie $it" }).joinToString(" · ")
+                if (extra.isNotEmpty()) Text(extra, style = GType.bodySm, color = GColors.C2Muted)
+            }
             if (ruta.descripcion.isNotBlank()) Text(ruta.descripcion, style = GType.bodyMd, color = GColors.TextSecondary)
             com.gacelas.seguridad.ui.TarjetaSeguridad(id)
             if (ruta.etiquetas.isNotEmpty()) Text(ruta.etiquetas.joinToString("  ") { "#" + (ETIQUETAS_RUTA[it] ?: it) }, style = GType.labelLg, color = GColors.TextPrimary)
+            ruta.fuente?.let { Text("Trazado: $it. Datos (c) colaboradores de OpenStreetMap.", style = GType.labelMd, color = GColors.C2Muted) }
             ruta.autorNombre?.let { Text("Creada por $it", style = GType.bodySm, color = GColors.TextSecondary) }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 BotonPrimario("Correr esta ruta", { com.gacelas.rutas.data.RutaActiva.id = id; onCorrer() }, Modifier.weight(1f), icono = Icons.AutoMirrored.Filled.DirectionsRun)

@@ -153,6 +153,7 @@ private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
             onAvatar = { nav.navigate(Destinos.AVATAR) },
             onAjustes = { nav.navigate(Destinos.AJUSTES) },
             onCarrera = { nav.navigate(Destinos.detalleCarrera(it)) },
+            onReportes = { nav.navigate(Destinos.MIS_REPORTES) },
         )
     }
 }
@@ -201,6 +202,7 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
     composable(Destinos.DETALLE_EN_VIVO) { entry ->
         com.gacelas.envivo.DetalleEnVivoScreen(id = entry.arguments?.getString("id") ?: "", onAtras = { nav.popBackStack() })
     }
+    composable(Destinos.MIS_REPORTES) { com.gacelas.perfil.MisReportesScreen(onAtras = { nav.popBackStack() }) }
     composable(Destinos.EDITAR_PERFIL) { EditarPerfilScreen(onAtras = { nav.popBackStack() }, onGuardar = { nav.popBackStack() }, onAvatar = { nav.navigate(Destinos.AVATAR) }) }
     composable(Destinos.DETALLE_CARRERA) { e -> com.gacelas.perfil.DetalleCarreraScreen(e.arguments?.getString("id").orEmpty(), onAtras = { nav.popBackStack() }) }
     composable(Destinos.AVATAR) { Avatar3DScreen(onAtras = { nav.popBackStack() }, onGuardar = { nav.popBackStack() }) }
@@ -235,7 +237,7 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
                 TipoNotificacion.Evento -> nav.navigate(Destinos.detalleEvento("1"))
                 TipoNotificacion.EnVivo -> nav.navigate(Destinos.EN_VIVO)
                 TipoNotificacion.Comentario, TipoNotificacion.Like -> nav.irAPestana(Destinos.COMUNIDAD)
-                TipoNotificacion.Seguidor, TipoNotificacion.Racha -> nav.irAPestana(Destinos.PERFIL)
+                TipoNotificacion.Seguidor, TipoNotificacion.Racha, TipoNotificacion.Reporte -> nav.irAPestana(Destinos.PERFIL)
             }
         })
     }

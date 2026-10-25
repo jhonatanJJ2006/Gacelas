@@ -58,6 +58,8 @@ const PERMITIDA: Record<Notificacion['tipo'], keyof Ajustes> = {
   live: 'notifEnVivo',
   streak: 'notifEventos',
   club: 'notifEventos',
+  // El aviso de un reporte resuelto siempre se muestra.
+  reporte: 'notifEventos',
 }
 
 /** Notificaciones visibles segun los ajustes y las ya leidas. */

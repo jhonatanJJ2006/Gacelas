@@ -37,4 +37,9 @@ listOf("carreras", "rutas", "cuenta", "comunidad", "seguridad").forEach { ctx ->
     includeModule(":contextos:$ctx:presentation", "contextos/$ctx/presentation")
 }
 
+// Contextos que por ahora solo tienen dominio.
+listOf("analitica", "moderacion").forEach { ctx ->
+    includeModule(":contextos:$ctx:domain", "contextos/$ctx/domain")
+}
+
 include(":shared")

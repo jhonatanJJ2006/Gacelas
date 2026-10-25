@@ -111,5 +111,7 @@ fun DetalleEventoScreen(id: String, onAtras: () -> Unit, onEnVivo: () -> Unit = 
     val c = contenedor()
     val context = LocalContext.current
     val vm = viewModel(key = "detalle-evento-$id") { c.detalleEventoViewModel(id) }
-    DetalleEventoContenido(vm, onAtras, onEnVivo, onCompartir = { context.compartir(it) }, onAviso = { context.aviso(it) })
+    var reportando by remember { mutableStateOf<String?>(null) }
+    DetalleEventoContenido(vm, onAtras, onEnVivo, onCompartir = { context.compartir(it) }, onAviso = { context.aviso(it) }, onReportar = { reportando = it })
+    reportando?.let { eid -> com.gacelas.social.ModalReporte(eid, c.social, com.gacelas.social.TipoContenido.Evento) { reportando = null } }
 }

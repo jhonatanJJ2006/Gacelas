@@ -1,4 +1,25 @@
 import { obtenerSupabase } from '../../shared/supabase/client'
+import {
+  casosDemo,
+  casosSupabase,
+  type AccionModeracion,
+  type ReporteAdmin,
+} from '../../contexts/moderacion/api'
+import {
+  analiticaSupabase,
+  estadisticasDemo,
+  type Estadisticas,
+} from '../../contexts/analitica/api'
+
+// Los tipos de moderacion y analitica viven en sus contextos; se reexportan por compatibilidad.
+export type * from '../../contexts/moderacion/domain/caso'
+export {
+  definicionTipo,
+  tiposRegistrados,
+  type TipoObjetivo as TipoReporte,
+} from '../../contexts/moderacion/api'
+export type { Estadisticas } from '../../contexts/analitica/api'
+export { estadisticasDemo } from '../../contexts/analitica/api'
 
 export interface Metricas {
   usuarios: number
@@ -19,14 +40,6 @@ export interface UsuarioAdmin {
   role: 'admin' | 'moderador' | null
   carreras: number
   km: number
-}
-export interface ReporteAdmin {
-  id: string
-  post_id: string
-  reason: string
-  detail: string
-  status: 'pendiente' | 'resuelto' | 'descartado'
-  created_at: string
 }
 export interface EventoAdmin {
   id: string
@@ -62,7 +75,8 @@ export interface FuenteAdmin {
   suspender(id: string, si: boolean): Promise<void>
   cambiarRol(id: string, rol: UsuarioAdmin['role']): Promise<void>
   reportes(): Promise<ReporteAdmin[]>
-  resolverReporte(r: ReporteAdmin, ocultar: boolean): Promise<void>
+  moderar(r: ReporteAdmin, accion: AccionModeracion, nota: string): Promise<void>
+  estadisticas(desde: string, hasta: string): Promise<Estadisticas>
   eventos(): Promise<EventoAdmin[]>
   guardarEvento(e: Partial<EventoAdmin> & { title: string }): Promise<void>
   rutas(): Promise<RutaAdmin[]>
@@ -82,7 +96,9 @@ function ok<T>(r: { data: T | null; error: { message: string } | null }): T {
 
 export function fuenteSupabase(): FuenteAdmin | null {
   const sb = obtenerSupabase()
-  if (!sb) return null
+  const casos = casosSupabase()
+  const analitica = analiticaSupabase()
+  if (!sb || !casos || !analitica) return null
   return {
     demo: false,
     async esAdmin() {
@@ -102,24 +118,9 @@ export function fuenteSupabase(): FuenteAdmin | null {
       if (rol) ok(await sb.from('user_roles').upsert({ user_id: id, role: rol }))
       else ok(await sb.from('user_roles').delete().eq('user_id', id))
     },
-    async reportes() {
-      return ok(
-        await sb
-          .from('post_reports')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(200)
-      ) as ReporteAdmin[]
-    },
-    async resolverReporte(r, ocultar) {
-      if (ocultar) ok(await sb.from('activities').delete().eq('id', r.post_id))
-      ok(
-        await sb
-          .from('post_reports')
-          .update({ status: ocultar ? 'resuelto' : 'descartado' })
-          .eq('post_id', r.post_id)
-      )
-    },
+    reportes: () => casos.pendientes(),
+    moderar: (r, accion, nota) => casos.moderar(r, accion, nota),
+    estadisticas: (desde, hasta) => analitica.estadisticas(desde, hasta),
     async eventos() {
       return ok(
         await sb
@@ -200,18 +201,7 @@ export function fuenteDemo(): FuenteAdmin {
     carreras: Math.round((km as number) / 6),
     km: km as number,
   }))
-  const reportes: ReporteAdmin[] = [
-    ['p1', 'ofensivo', 'Insulta a otro club en la descripción.'],
-    ['p2', 'falso', 'Ruta que empieza y termina en un domicilio.'],
-    ['p3', 'spam', 'Zapatillas a mitad de precio, escribe al número.'],
-  ].map(([post_id, reason, detail], i) => ({
-    id: `r${i}`,
-    post_id,
-    reason,
-    detail,
-    status: 'pendiente',
-    created_at: new Date(Date.now() - (i + 1) * 3_600_000).toISOString(),
-  }))
+  const casos = casosDemo()
   const eventos: EventoAdmin[] = [
     {
       id: 'e1',
@@ -242,17 +232,17 @@ export function fuenteDemo(): FuenteAdmin {
   return {
     demo: true,
     esAdmin: () => Promise.resolve(true),
-    metricas: () =>
-      Promise.resolve({
-        usuarios: 2418,
-        usuarios_7d: 126,
-        carreras_7d: 1094,
-        km_7d: 6120.4,
-        reportes_pendientes: reportes.filter((r) => r.status === 'pendiente').length,
-        eventos_proximos: 6,
-        clubes: 14,
-        rutas: 52,
-      }),
+    metricas: async () => ({
+      usuarios: 2418,
+      usuarios_7d: 126,
+      carreras_7d: 1094,
+      km_7d: 6120.4,
+      reportes_pendientes: (await casos.pendientes()).filter((r) => r.status === 'pendiente')
+        .length,
+      eventos_proximos: 6,
+      clubes: 14,
+      rutas: 52,
+    }),
     usuarios: () => Promise.resolve(usuarios),
     async suspender(id, si) {
       const u = usuarios.find((x) => x.id === id)
@@ -262,10 +252,9 @@ export function fuenteDemo(): FuenteAdmin {
       const u = usuarios.find((x) => x.id === id)
       if (u) u.role = rol
     },
-    reportes: () => Promise.resolve(reportes),
-    async resolverReporte(r, ocultar) {
-      r.status = ocultar ? 'resuelto' : 'descartado'
-    },
+    reportes: () => casos.pendientes(),
+    moderar: (r, accion, nota) => casos.moderar(r, accion, nota),
+    estadisticas: (desde, hasta) => Promise.resolve(estadisticasDemo(desde, hasta)),
     eventos: () => Promise.resolve(eventos),
     async guardarEvento(e) {
       const i = eventos.findIndex((x) => x.id === e.id)

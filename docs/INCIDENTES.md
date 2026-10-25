@@ -25,10 +25,15 @@ Bucket público `incidentes` en Storage: JPEG o WebP, 3 MB por archivo, ruta `<u
 
 ## Integración con moderación
 
-La cola de moderación de contenido llega en la rama `feat/rutas-loja-reportes`. Mientras tanto la integración es mínima:
+Los incidentes son un tipo de objetivo más de la cola de moderación genérica (`docs/REPORTES.md`). La migración `031_moderacion_incidentes.sql` registra `incidente` en `report_target_types` sin cambiar 030:
 
-- Los moderadores cambian `estado` en `incidentes_usuario` (política de actualización para `es_moderador()`).
-- Cuando se fusione esa rama, basta con añadir `incidente` como tipo de objetivo en su tabla de reportes y, al resolver, actualizar `incidentes_usuario.estado` a `verificado` o `rechazado`. No hace falta cambiar esta migración.
+- Resumen en la cola: tipo, dirección y descripción del incidente.
+- Ocultar (botón "Rechazar incidente"): el incidente pasa a `rechazado` y deja de contar en el índice y en el mapa.
+- Suspender autor: suspende a quien lo reportó (solo administradores).
+- Al cerrar el caso: `resuelto` deja el incidente en `rechazado`; `descartado` (el incidente es válido) lo deja en `verificado`.
+- Los moderadores pueden seguir cambiando `estado` directamente (política de actualización para `es_moderador()`).
+
+En los clientes, `incidente` ya está registrado: web en `contexts/moderacion/domain/denuncia.ts` (`reportarContenido('incidente', id, motivo, detalle)`) y Android en `TipoContenido.Incidente` (`SocialRepository.reportar(id, motivo, detalle, TipoContenido.Incidente)`). Prueba: `backend/tests/rls/031_moderacion_incidentes.sql`.
 
 ## Arquitectura
 

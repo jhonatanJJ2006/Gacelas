@@ -90,7 +90,7 @@ fun notificacionesVisibles(a: Ajustes, base: List<Notificacion>): List<Notificac
             TipoNotificacion.Seguidor -> a.notifSeguidores
             TipoNotificacion.Evento -> a.notifEventos
             TipoNotificacion.EnVivo -> a.notifEnVivo
-            TipoNotificacion.Racha -> true
+            TipoNotificacion.Racha, TipoNotificacion.Reporte -> true
         }
     }
     .map { if (it.id in a.notificacionesLeidas) it.copy(leida = true) else it }

@@ -25,6 +25,7 @@ import {
 } from '../mocks/data'
 import { obtenerSupabase } from '../lib/supabase'
 import { calcularRacha, type Racha } from '../lib/rachas'
+import { conOficiales } from '../lib/rutas'
 import { repositoriosSupabase } from '../data/supabaseRepos'
 
 /** Con Supabase configurado se usa el servidor; si no, todo queda en el dispositivo. */
@@ -199,7 +200,7 @@ export const useApp = create<EstadoApp>((set, get) => ({
   rachaServidor: null,
   siguiendo: [],
   seguidores: 0,
-  rutas: rutasMock,
+  rutas: conOficiales(rutasMock),
   rutasMeGusta: [],
   rutasSociales: false,
   rutaActivaId: null,
@@ -207,13 +208,17 @@ export const useApp = create<EstadoApp>((set, get) => ({
   explorar: () => repos.explorar,
 
   async refrescarRutas() {
-    if (!repos.explorar) return set({ rutas: rutasMock, rutasSociales: false })
+    if (!repos.explorar) return set({ rutas: conOficiales(rutasMock), rutasSociales: false })
     const [rutas, rutasMeGusta] = await Promise.all([
       repos.explorar.listar().catch(() => null),
       get().sesion ? repos.explorar.meGusta().catch(() => []) : Promise.resolve([]),
     ])
     // Sin rutas en el servidor (o sin red) se muestran las de ejemplo.
-    set({ rutas: rutas?.length ? rutas : rutasMock, rutasMeGusta, rutasSociales: rutas !== null })
+    set({
+      rutas: conOficiales(rutas?.length ? rutas : rutasMock),
+      rutasMeGusta,
+      rutasSociales: rutas !== null,
+    })
   },
   async alternarMeGustaRuta(id) {
     if (!repos.explorar) return

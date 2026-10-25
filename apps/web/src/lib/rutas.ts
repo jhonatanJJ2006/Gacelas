@@ -1,4 +1,6 @@
-import type { Ruta } from '../mocks/data'
+import type { CategoriaRuta, Ruta } from '../mocks/data'
+// Catalogo de rutas oficiales: contexto Rutas. Se reexporta por compatibilidad.
+export { CATEGORIAS_RUTA, conOficiales } from '../contexts/rutas/api'
 import { haversineM } from './geo'
 
 export type Coordenada = { lat: number; lng: number }
@@ -74,7 +76,9 @@ export interface FiltrosRuta {
   dificultad: Ruta['dificultad'] | 'Todas'
   distancia: FiltroDistancia
   etiqueta: string | null
+  categoria?: CategoriaRuta | null
 }
+
 export const FILTROS_INICIALES: FiltrosRuta = {
   dificultad: 'Todas',
   distancia: 'Todas',
@@ -89,7 +93,8 @@ export function aplicarFiltros(rutas: Ruta[], f: FiltrosRuta): Ruta[] {
         (f.distancia === 'Hasta 5 km' && r.distanciaKm <= 5) ||
         (f.distancia === '5-10 km' && r.distanciaKm > 5 && r.distanciaKm <= 10) ||
         (f.distancia === 'Más de 10 km' && r.distanciaKm > 10)) &&
-      (!f.etiqueta || (r.etiquetas ?? []).includes(f.etiqueta))
+      (!f.etiqueta || (r.etiquetas ?? []).includes(f.etiqueta)) &&
+      (!f.categoria || r.categoria === f.categoria)
   )
 }
 

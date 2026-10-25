@@ -5,6 +5,8 @@ import { Aviso } from '../../components/ui'
 import { compartir, useAviso } from '../../hooks'
 import { eventoPorId } from '../../mocks/data'
 import { useApp } from '../../store/app'
+import { ModalReporte } from '../social/Social'
+import { yaReportado } from '../social/moderacion'
 
 export function DetalleEvento() {
   const navigate = useNavigate()
@@ -14,6 +16,7 @@ export function DetalleEvento() {
   const alternar = useApp((s) => s.alternarInscripcion)
   const [aviso, mostrarAviso] = useAviso()
   const [estado, setEstado] = useState<EstadoEvento | null>(null)
+  const [reportando, setReportando] = useState(false)
   useEffect(() => {
     void estadoEvento(id).then(setEstado)
   }, [id, inscritos])
@@ -198,6 +201,30 @@ export function DetalleEvento() {
           </button>
         )}
       </div>
+      <div className="px-margin lg:px-0 pb-8">
+        <button
+          type="button"
+          data-testid="reportar-evento"
+          onClick={() =>
+            yaReportado('evento', evento.id)
+              ? mostrarAviso('Ya reportaste este evento')
+              : setReportando(true)
+          }
+          className="inline-flex items-center gap-1 text-[13px] text-c2-muted hover:text-c2-peligro"
+        >
+          <span className="material-symbols-outlined text-[16px]">flag</span>
+          Reportar evento
+        </button>
+      </div>
+      <ModalReporte
+        tipo="evento"
+        postId={reportando ? evento.id : null}
+        onCerrar={() => setReportando(false)}
+        onEnviado={(ok) => {
+          setReportando(false)
+          mostrarAviso(ok ? 'Reporte enviado' : 'No se pudo enviar el reporte. Revisa tu conexión')
+        }}
+      />
       <Aviso mensaje={aviso} />
     </main>
   )

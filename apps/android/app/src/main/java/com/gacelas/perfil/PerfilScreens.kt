@@ -1,5 +1,6 @@
 package com.gacelas.perfil
 
+import androidx.compose.material.icons.filled.BarChart
 import com.gacelas.ui.components.TarjetaRacha
 import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -112,7 +113,7 @@ fun FotoPerfil(path: String?, tamano: androidx.compose.ui.unit.Dp) {
 }
 
 @Composable
-fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Unit, onCarrera: (String) -> Unit = {}) {
+fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Unit, onCarrera: (String) -> Unit = {}, onReportes: () -> Unit = {}) {
     val perfil by sesionState()
     val carreras by carrerasState()
     val ajustes by ajustesState()
@@ -157,6 +158,14 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
                 Icon(Icons.Filled.Settings, null, tint = GColors.TextPrimary, modifier = Modifier.size(18.dp))
                 Text(" Configuración", style = GType.labelLg, color = GColors.TextPrimary)
             }
+        }
+        Row(
+            Modifier.fillMaxWidth().clip(com.gacelas.ui.components.FormaBotonC2).background(GColors.C2S2).clickable(onClick = onReportes)
+                .padding(vertical = 12.dp).testTag("ir-reportes"),
+            horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Filled.BarChart, null, tint = GColors.C2Violeta, modifier = Modifier.size(18.dp))
+            Text(" Mis reportes", style = GType.labelLg, color = GColors.TextPrimary)
         }
         TarjetaRacha(com.gacelas.ui.rachaState(), carreras)
         com.gacelas.social.ListaLogros(carreras)

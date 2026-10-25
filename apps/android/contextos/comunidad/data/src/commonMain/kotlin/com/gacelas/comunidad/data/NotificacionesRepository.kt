@@ -24,6 +24,7 @@ fun tipoDesde(t: String?): TipoNotificacion? = when (t) {
     "event" -> TipoNotificacion.Evento
     "live" -> TipoNotificacion.EnVivo
     "streak" -> TipoNotificacion.Racha
+    "reporte" -> TipoNotificacion.Reporte
     else -> null
 }
 

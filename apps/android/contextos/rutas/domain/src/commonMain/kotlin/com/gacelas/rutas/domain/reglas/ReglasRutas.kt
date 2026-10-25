@@ -26,7 +26,8 @@ fun aplicarFiltros(rutas: List<Ruta>, f: FiltrosRuta) = rutas.filter { r ->
             FiltroDistancia.De5a10 -> r.distanciaKm > 5 && r.distanciaKm <= 10
             FiltroDistancia.Mas10 -> r.distanciaKm > 10
         } &&
-        (f.etiqueta == null || f.etiqueta in r.etiquetas)
+        (f.etiqueta == null || f.etiqueta in r.etiquetas) &&
+        (f.categoria == null || r.categoria == f.categoria)
 }
 
 fun ordenarPorCercania(rutas: List<Ruta>, cerca: Map<String, Double>) = rutas.sortedBy { cerca[it.id] ?: Double.MAX_VALUE }

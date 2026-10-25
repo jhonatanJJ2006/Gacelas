@@ -2,6 +2,7 @@ package com.gacelas.rutas
 
 import com.gacelas.data.mock.MockData
 import com.gacelas.rutas.domain.modelo.Ruta
+import com.gacelas.rutas.domain.modelo.RutasLoja
 import com.gacelas.rutas.domain.reglas.Guia
 import com.gacelas.ui.components.Mapas
 
@@ -35,6 +36,8 @@ fun rutasNavegables(remotas: List<Ruta>?, locales: List<Ruta>, guardadas: Set<St
     val todas = LinkedHashMap<String, Ruta>()
     (locales + remotas.orEmpty()).forEach { todas[it.id] = it }
     if (todas.isEmpty()) MockData.rutas.forEach { todas[it.id] = it }
+    // El catalogo oficial de Loja siempre esta, aunque el servidor aun no tenga la migracion 022.
+    RutasLoja.todas.forEach { todas.putIfAbsent(it.id, it) }
     val ordenadas = todas.values.sortedWith(compareBy({ it.id != elegida }, { it.id !in guardadas }, { !it.propia }))
     val ejemplos = MockData.rutasSugeridas.mapNotNull { s ->
         Mapas.trazos[s.id]?.let { t -> Guia.longitudM(t.map { it.latitude to it.longitude }).div(1000.0).let { km -> RutaNavegable(s.id, s.nombre, km, minutos(km), s.elevacionM, t.map { it.latitude to it.longitude }, s.principal, real = false) } }

@@ -8,7 +8,8 @@ test.describe('Rutas y comunidad', () => {
 
   test('filtra rutas, guarda una y navega', async ({ page }) => {
     await page.goto('/rutas')
-    await expect(page.getByRole('article')).toHaveCount(4)
+    // 4 rutas de ejemplo mas las 26 oficiales de Loja.
+    await expect(page.getByRole('article')).toHaveCount(30)
     await page.getByRole('tab', { name: 'Mis Rutas' }).click()
     await expect(page.getByRole('article')).toHaveCount(1)
     await page.getByRole('tab', { name: 'Explorar' }).click()

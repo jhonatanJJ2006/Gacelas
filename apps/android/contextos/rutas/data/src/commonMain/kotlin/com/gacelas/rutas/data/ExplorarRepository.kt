@@ -7,6 +7,7 @@ import com.gacelas.rutas.domain.reglas.trazoParaRuta
 import com.gacelas.shared.nuevoUuid
 import com.gacelas.shared.rad
 
+import com.gacelas.rutas.domain.modelo.CategoriaRuta
 import com.gacelas.rutas.domain.modelo.Dificultad
 import com.gacelas.rutas.domain.modelo.Ruta
 import com.gacelas.data.remoto.Backend
@@ -18,6 +19,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlin.math.cos
@@ -54,6 +56,10 @@ fun rutaDesdeFila(f: JsonObject, yo: String? = null) = Ruta(
     resenas = f.numero("rating_count")?.toInt() ?: 0,
     propia = yo != null && f.texto("author_id") == yo,
     perfilElevacion = (f["elevation_profile"] as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.doubleOrNull?.toInt() }.orEmpty(),
+    oficial = (f["is_official"] as? JsonPrimitive)?.booleanOrNull == true,
+    categoria = CategoriaRuta.desdeClave(f.texto("category")),
+    superficie = f.texto("surface"),
+    fuente = f.texto("source")?.let { "$it (${f.texto("license") ?: "ODbL 1.0"})" },
 )
 
 /** Rutas de la comunidad en Supabase (backend/migrations/009_rutas.sql). */

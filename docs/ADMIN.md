@@ -6,7 +6,8 @@ El panel vive en la app web, en la ruta `/admin`. Usa la misma sesión de Supaba
 
 - Dashboard: métricas reales con la función `admin_metricas()`.
 - Usuarios: lista con `admin_usuarios()`, detalle, suspender o reactivar (`admin_suspender`) y cambiar rol.
-- Moderación: reportes de la tabla `post_reports`. Ocultar borra la publicación y marca el reporte como resuelto; Mantener lo marca como descartado.
+- Estadísticas: gráficos por rango de fechas con `admin_estadisticas()`, exportables a CSV y PDF (ver `docs/REPORTES.md`).
+- Moderación: cola de reportes de publicaciones, usuarios, comentarios y eventos (`admin_cola_reportes()`). Pestañas por estado (pendiente, en revisión, resuelto, descartado), filtro por tipo, nota del moderador e historial de acciones. Las acciones (revisar, ocultar o suspender, descartar, reabrir, solo nota) pasan por `moderar_reporte()` y avisan a quien reportó al cerrar el caso.
 - Eventos: crear, editar, publicar y despublicar (columna `events.published`).
 - Rutas y clubes: listado y eliminación.
 - Notificaciones: no disponible hasta tener un servicio push en el servidor.
@@ -17,7 +18,7 @@ El panel vive en la app web, en la ruta `/admin`. Usa la misma sesión de Supaba
 
 Ningún usuario puede darse el rol a sí mismo: la política solo permite escribir en `user_roles` a quien ya es administrador. El primero se crea con permisos de servicio:
 
-1. Aplica las migraciones 019 y 020 en el proyecto de Supabase.
+1. Aplica las migraciones 019 y 020 en el proyecto de Supabase (y 022 y 023 para rutas oficiales, estadísticas y reportes ampliados).
 2. Crea la cuenta desde la app (registro normal) y anota el correo.
 3. En el panel de Supabase, abre SQL Editor y ejecuta:
 
@@ -33,4 +34,4 @@ Desde ahí, ese administrador puede dar o quitar roles a otras personas en Usuar
 
 ## Revisar el panel en desarrollo
 
-Con `pnpm dev`, la dirección `/admin?demo` carga datos de ejemplo sin servidor ni rol. Esa opción no existe en la build de producción.
+Con `pnpm dev`, la dirección `/admin?demo` carga datos de ejemplo sin servidor ni rol, incluidas estadísticas (`/admin/estadisticas?demo`) y reportes de varios tipos. Esa opción no existe en la build de producción.

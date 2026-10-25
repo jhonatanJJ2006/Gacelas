@@ -10,7 +10,8 @@ import { subirVistaPrevia } from '../../lib/vistaPrevia'
 import { useRacha } from '../../store/app'
 import { aPuntosGps } from '../../lib/enVivo'
 import { Unidades } from '../../lib/geo'
-import { ETIQUETAS_RUTA } from '../../lib/rutas'
+import { CATEGORIAS_RUTA, ETIQUETAS_RUTA } from '../../lib/rutas'
+import { InsigniaOficial } from './ListaRutas'
 import { useApp } from '../../store/app'
 import { Estrellas, SelectorEstrellas } from './Estrellas'
 import { TarjetaSeguridad } from '../seguridad'
@@ -161,7 +162,7 @@ export function DetalleRuta() {
               [ruta.dificultad, 'Dificultad'],
             ].map(([v, e]) => (
               <div key={e} className="bg-surface-container rounded-xl p-3 text-center">
-                <div className="font-headline-sm text-headline-sm text-text-primary whitespace-nowrap">
+                <div className="text-[15px] font-semibold text-text-primary whitespace-nowrap">
                   {v}
                 </div>
                 <div className="text-xs text-text-secondary">{e}</div>
@@ -171,7 +172,23 @@ export function DetalleRuta() {
           {(ruta.perfilElevacion?.length ?? 0) > 1 && (
             <PerfilElevacion alturas={ruta.perfilElevacion!} distanciaKm={ruta.distanciaKm} />
           )}
+          {ruta.oficial && (
+            <div className="flex flex-wrap items-center gap-2" data-testid="detalle-oficial">
+              <InsigniaOficial />
+              {ruta.categoria && (
+                <span className="text-[12px] text-c2-muted">
+                  {CATEGORIAS_RUTA.find(([k]) => k === ruta.categoria)?.[1]}
+                  {ruta.superficie ? ` · superficie ${ruta.superficie}` : ''}
+                </span>
+              )}
+            </div>
+          )}
           <p className="text-text-secondary">{ruta.descripcion}</p>
+          {ruta.fuente && (
+            <p className="text-[11px] text-c2-muted" data-testid="fuente-ruta">
+              Trazado: {ruta.fuente}. Datos (c) colaboradores de OpenStreetMap.
+            </p>
+          )}
           <TarjetaSeguridad rutaId={id} />
           {(ruta.etiquetas?.length ?? 0) > 0 && (
             <ul className="flex flex-wrap gap-2" aria-label="Etiquetas">

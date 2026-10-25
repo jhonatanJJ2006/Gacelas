@@ -21,7 +21,24 @@ data class Ruta(
     val autorNombre: String? = null,
     val propia: Boolean = false,
     val perfilElevacion: List<Int> = emptyList(),
+    /** Ruta oficial de Gacelas (catalogo de Loja, migracion 022). */
+    val oficial: Boolean = false,
+    val categoria: CategoriaRuta? = null,
+    /** pavimento, tierra, mixta o tartan. */
+    val superficie: String? = null,
+    /** Fuente y licencia del trazado. */
+    val fuente: String? = null,
 )
+
+/** Categorias del catalogo (routes.category). */
+enum class CategoriaRuta(val clave: String, val etiqueta: String) {
+    Parque("parque", "Parques"), Sendero("sendero", "Senderos"), Montana("montana", "Montaña"),
+    Urbana("urbana", "Urbanas"), Pista("pista", "Pista");
+
+    companion object {
+        fun desdeClave(clave: String?): CategoriaRuta? = entries.firstOrNull { it.clave == clave }
+    }
+}
 
 data class ResenaRuta(val id: String, val usuarioId: String, val nombre: String, val estrellas: Int, val comentario: String)
 
@@ -35,4 +52,9 @@ val ETIQUETAS_RUTA = linkedMapOf(
 
 enum class FiltroDistancia(val etiqueta: String) { Todas("Toda distancia"), Hasta5("Hasta 5 km"), De5a10("5-10 km"), Mas10("Más de 10 km") }
 
-data class FiltrosRuta(val dificultad: Dificultad? = null, val distancia: FiltroDistancia = FiltroDistancia.Todas, val etiqueta: String? = null)
+data class FiltrosRuta(
+    val dificultad: Dificultad? = null,
+    val distancia: FiltroDistancia = FiltroDistancia.Todas,
+    val etiqueta: String? = null,
+    val categoria: CategoriaRuta? = null,
+)

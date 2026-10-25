@@ -39,6 +39,7 @@ object Destinos {
     fun detalleRuta(id: String) = "rutas/detalle/$id"
 
     const val EDITAR_PERFIL = "perfil/editar"
+    const val MIS_REPORTES = "perfil/reportes"
     const val AVATAR = "perfil/avatar"
     const val DETALLE_CARRERA = "perfil/carrera/{id}"
     fun detalleCarrera(id: String) = "perfil/carrera/$id"
