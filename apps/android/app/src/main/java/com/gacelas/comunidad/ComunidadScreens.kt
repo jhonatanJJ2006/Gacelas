@@ -50,6 +50,8 @@ fun FeedScreen(onEventos: () -> Unit, onEnVivo: () -> Unit = {}, onClubes: (() -
     val (eventos, inscritos) = eventosState()
     val creados by c.eventos.creados.collectAsState(initial = emptyList())
     val club = (if (c.feed != null) creados else eventos).filter { !it.yaPaso() }.minByOrNull { it.inicioMs ?: Long.MAX_VALUE }
+    var reportando by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<String?>(null) }
+    reportando?.let { id -> com.gacelas.social.ModalReporte(id, c.social) { reportando = null } }
     FeedContenido(
         vm, onEventos, onEnVivo, onCompartir = { context.compartir(it) }, onAviso = { context.aviso(it) }, onClubes = onClubes.takeIf { c.clubes != null },
         imagen = { url, mod -> FotoFeed(url, mod) },
@@ -57,6 +59,7 @@ fun FeedScreen(onEventos: () -> Unit, onEnVivo: () -> Unit = {}, onClubes: (() -
             fotosPara = id
             selector.launch(androidx.activity.result.PickVisualMediaRequest(androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly))
         },
+        onReportar = { reportando = it },
         eventoClub = club,
         inscritoClub = club?.id in inscritos,
         onAsistir = { club?.let { e -> alcance.launch { c.eventos.alternarInscripcion(e.id) } } },

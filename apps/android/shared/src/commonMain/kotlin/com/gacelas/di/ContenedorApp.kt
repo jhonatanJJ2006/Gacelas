@@ -77,6 +77,9 @@ class ContenedorApp(
     /** Consentimientos legales (terminos, privacidad, ubicacion). */
     val consentimientos: com.gacelas.legal.ConsentimientosRepository
 
+    /** Logros y reportes de publicaciones. */
+    val social: com.gacelas.social.SocialRepository
+
     /** Seguimiento en vivo; null sin servidor. */
     val enVivo: EnVivoRepository?
 
@@ -111,6 +114,7 @@ class ContenedorApp(
             enVivo = null
             mapaVivo = null
             consentimientos = com.gacelas.legal.ConsentimientosRepository(store)
+            social = com.gacelas.social.SocialRepository(store)
             notificaciones = null
             explorar = null
             clubes = null
@@ -133,6 +137,7 @@ class ContenedorApp(
             enVivo = ModuloComunidad.enVivo(backend, uid)
             mapaVivo = com.gacelas.vivo.MapaVivoRepository(backend, uid)
             consentimientos = com.gacelas.legal.ConsentimientosRepository(store, backend, uid)
+            social = com.gacelas.social.SocialRepository(store, backend, uid)
             notificaciones = ModuloComunidad.notificaciones(backend, uid)
             val ex = ModuloRutas.explorar(backend, rutasOffline, programarSincronizacion, uid)
             explorar = ex
