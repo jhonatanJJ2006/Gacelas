@@ -142,6 +142,7 @@ const AnfitrionLogros = lazy(() =>
 const ModalSinConexion = lazy(() =>
   import('../features/social/Social').then((m) => ({ default: m.ModalSinConexion }))
 )
+const Admin = lazy(() => import('../features/admin/Admin').then((m) => ({ default: m.Admin })))
 const MapaVivo = lazy(() =>
   import('../features/comunidad/MapaVivo').then((m) => ({ default: m.MapaVivo }))
 )
@@ -254,6 +255,7 @@ export function AppRoutes() {
           </Route>
         </Route>
 
+        <Route path="/admin/*" element={<Admin />} />
         <Route path="*" element={<Navigate to="/bienvenida" replace />} />
       </Routes>
     </Suspense>
