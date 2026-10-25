@@ -69,7 +69,10 @@ export function ModalReporte({
 /** Vigila las carreras guardadas y muestra el modal C2 cuando se desbloquea un logro. */
 export function AnfitrionLogros() {
   const carreras = useApp((s) => s.carreras)
-  const [cola, setCola] = useState<DefinicionLogro[]>([])
+  const [cola, setCola] = useState<DefinicionLogro[]>(() =>
+    // Solo en desarrollo: ?demo-logro muestra el modal para revisarlo.
+    import.meta.env.DEV && location.search.includes('demo-logro') ? [LOGROS[2]] : []
+  )
   // Al abrir la app se registran en silencio los logros ya ganados; el modal sale solo
   // cuando una carrera nueva desbloquea uno durante la sesion.
   const previas = useRef<number | null>(null)
