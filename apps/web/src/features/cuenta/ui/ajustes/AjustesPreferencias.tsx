@@ -264,6 +264,8 @@ export function AjustesPreferencias() {
       <Seccion titulo="Cuenta" etiqueta="Seguridad y dispositivos">
         <Enlace to="/ajustes/privacidad" icono="lock" texto="Privacidad y ubicación" />
         <Enlace to="/ajustes/notificaciones" icono="notifications" texto="Notificaciones" />
+        <Enlace to="/ajustes/mapas-offline" icono="download" texto="Mapas offline" />
+        <Enlace to="/ajustes/brujula" icono="explore" texto="Brújula" />
         <Boton
           onClick={() => setDialogo('acerca')}
           icono="info"

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { act, screen, waitFor } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { instalarGpsFalso, prepararApp, renderRuta } from '../test/utils'
 import { useApp } from '../store/app'
@@ -57,9 +57,12 @@ describe('grabar una carrera con GPS', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Pausar' }))
     expect(screen.getByText('En pausa')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Reanudar' }))
+    const pausa = screen.getByRole('dialog', { name: 'Carrera en pausa' })
+    await userEvent.click(within(pausa).getByRole('button', { name: 'Reanudar' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: 'Terminar carrera' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Terminar y guardar' }))
     expect(await screen.findByText('Carrera completada')).toBeInTheDocument()
     expect(screen.getByTestId('resumen-distancia')).toHaveTextContent('0.22')
     expect(gps.activos()).toBe(0)
@@ -90,6 +93,7 @@ describe('grabar una carrera con GPS', () => {
     renderRuta('/correr')
     await userEvent.click(await screen.findByRole('button', { name: 'Comenzar carrera' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Terminar carrera' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Terminar y guardar' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Descartar' }))
     await waitFor(() => expect(tracker.estado.fase).toBe('inactiva'))
     expect(useApp.getState().carreras).toHaveLength(0)

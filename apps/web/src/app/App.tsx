@@ -105,6 +105,12 @@ const AjustesPreferencias = lazy(() =>
     default: m.AjustesPreferencias,
   }))
 )
+const Brujula = lazy(() =>
+  import('../features/cuenta/ui/ajustes/Utilidades').then((m) => ({ default: m.Brujula }))
+)
+const MapasOffline = lazy(() =>
+  import('../features/cuenta/ui/ajustes/Utilidades').then((m) => ({ default: m.MapasOffline }))
+)
 const PrivacidadUbicacion = lazy(() =>
   import('../features/cuenta/ui/ajustes/PrivacidadUbicacion').then((m) => ({
     default: m.PrivacidadUbicacion,
@@ -209,6 +215,8 @@ export function AppRoutes() {
             <Route path="/ajustes" element={<AjustesPreferencias />} />
             <Route path="/ajustes/privacidad" element={<PrivacidadUbicacion />} />
             <Route path="/ajustes/notificaciones" element={<ConfiguracionNotificaciones />} />
+            <Route path="/ajustes/brujula" element={<Brujula />} />
+            <Route path="/ajustes/mapas-offline" element={<MapasOffline />} />
             <Route path="/notificaciones" element={<Notificaciones />} />
           </Route>
         </Route>

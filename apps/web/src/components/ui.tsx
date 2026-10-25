@@ -19,10 +19,21 @@ interface DialogoProps {
   onCerrar: () => void
   children: ReactNode
   acciones?: ReactNode
+  /** Icono Material del bloque junto al titulo (modales especificos C2). */
+  icono?: string
+  peligro?: boolean
 }
 
 /** Dialogo modal accesible (Escape o clic fuera para cerrar). */
-export function Dialogo({ titulo, abierto, onCerrar, children, acciones }: DialogoProps) {
+export function Dialogo({
+  titulo,
+  abierto,
+  onCerrar,
+  children,
+  acciones,
+  icono,
+  peligro,
+}: DialogoProps) {
   useEffect(() => {
     if (!abierto) return
     const alTeclear = (e: KeyboardEvent) => e.key === 'Escape' && onCerrar()
@@ -43,9 +54,19 @@ export function Dialogo({ titulo, abierto, onCerrar, children, acciones }: Dialo
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-c2-linea" aria-hidden="true" />
-        <h2 className="font-display italic text-[24px] leading-tight text-text-primary mb-3">
-          {titulo}
-        </h2>
+        <div className="flex items-center gap-3 mb-3">
+          {icono && (
+            <span
+              aria-hidden="true"
+              className={`w-12 h-12 shrink-0 bg-c2-s2 [clip-path:polygon(0_0,100%_0,100%_75%,75%_100%,0_100%)] flex items-center justify-center material-symbols-outlined ${peligro ? 'text-c2-peligro' : 'text-c2-violeta'}`}
+            >
+              {icono}
+            </span>
+          )}
+          <h2 className="font-display italic text-[24px] leading-tight text-text-primary">
+            {titulo}
+          </h2>
+        </div>
         <div className="text-c2-muted text-sm space-y-3">{children}</div>
         {acciones && <div className="flex justify-end gap-2 mt-6">{acciones}</div>}
       </div>
@@ -109,17 +130,27 @@ export function Interruptor({
   )
 }
 
-/** Mensaje breve en la parte inferior de la pantalla. */
+/** Aviso C2 (toast): banner superior con icono; los mensajes de fallo se pintan como error. */
 export function Aviso({ mensaje }: { mensaje: string | null }) {
   if (!mensaje) return null
+  const error = /error|no se pudo|no pudimos|fall|sin conexión|inválid|permiso/i.test(mensaje)
   return (
     <div
       role="status"
-      className="fixed bottom-28 inset-x-0 z-[90] flex justify-center pointer-events-none"
+      className="fixed top-3 inset-x-3 z-[120] flex justify-center pointer-events-none"
     >
-      <span className="bg-bg-secondary border border-border-subtle text-text-primary text-sm px-4 py-2 rounded-full shadow-xl">
-        {mensaje}
-      </span>
+      <div
+        data-testid={error ? 'toast-error' : 'toast-exito'}
+        className={`w-full max-w-md flex items-center gap-3 bg-c2-card border px-4 py-3 shadow-2xl ${error ? 'border-c2-peligro/60' : 'border-c2-menta/60'}`}
+      >
+        <span
+          aria-hidden="true"
+          className={`material-symbols-outlined text-[20px] ${error ? 'text-c2-peligro' : 'text-c2-menta'}`}
+        >
+          {error ? 'error' : 'check_circle'}
+        </span>
+        <span className="text-sm font-semibold text-white">{mensaje}</span>
+      </div>
     </div>
   )
 }

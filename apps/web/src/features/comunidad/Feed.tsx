@@ -4,6 +4,7 @@ import { ProximosEventos, RankingSemanal } from '../../components/PanelesEscrito
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Aviso, BotonTexto, Dialogo } from '../../components/ui'
+import { ModalC2 } from '../../components/modales'
 import { compartir, useAviso } from '../../hooks'
 import { formatearMs, formatearRitmo, Unidades } from '../../lib/geo'
 import { useApp } from '../../store/app'
@@ -33,6 +34,7 @@ export function Feed() {
   const remotas = useApp((s) => s.publicaciones)
   const siguiendo = useApp((s) => s.siguiendo)
   const alternarSeguir = useApp((s) => s.alternarSeguir)
+  const [dejar, setDejar] = useState<{ id: string; nombre: string } | null>(null)
   const ajustes = useApp((s) => s.ajustes)
   const actualizar = useApp((s) => s.actualizarAjustes)
   const m = ajustes.unidadesMetricas
@@ -312,7 +314,11 @@ export function Feed() {
                     </div>
                     {post.autorId && (
                       <button
-                        onClick={() => void alternarSeguir(post.autorId!)}
+                        onClick={() =>
+                          siguiendo.includes(post.autorId!)
+                            ? setDejar({ id: post.autorId!, nombre: post.autor })
+                            : void alternarSeguir(post.autorId!)
+                        }
                         aria-pressed={siguiendo.includes(post.autorId)}
                         className={`h-9 px-4 rounded-full text-sm font-semibold transition-colors ${
                           siguiendo.includes(post.autorId)
@@ -516,6 +522,20 @@ export function Feed() {
           <ProximosEventos />
         </aside>
       )}
+      <ModalC2
+        abierto={dejar != null}
+        icono="person_remove"
+        titulo="Dejar de seguir"
+        texto={`Ya no verás las carreras de ${dejar?.nombre ?? ''} en tu feed de Siguiendo.`}
+        primario="Dejar de seguir"
+        peligro
+        onPrimario={() => {
+          if (dejar) void alternarSeguir(dejar.id)
+          setDejar(null)
+        }}
+        onCerrar={() => setDejar(null)}
+        secundario="Cancelar"
+      />
       <Aviso mensaje={aviso} />
     </div>
   )

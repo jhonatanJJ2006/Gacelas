@@ -10,6 +10,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { MapaGoogle } from '../../../components/MapaGoogle'
 import { TrazadoRuta } from '../../../components/TrazadoRuta'
 import { BotonTexto, Dialogo } from '../../../components/ui'
+import { ModalC2, ResumenModal } from '../../../components/modales'
 import { formatearHms, formatearRitmo, Unidades } from '../../../lib/geo'
 import { estaActiva, ritmoPromedio } from '../../../lib/runTracker'
 import { useApp } from '../../../store/app'
@@ -22,6 +23,9 @@ export function CarreraEnCurso() {
   const e = useCarrera()
   const m = useApp((s) => s.ajustes.unidadesMetricas)
   const [descartar, setDescartar] = useState(false)
+  const [modalFin, setModalFin] = useState(false)
+  const [modalPausa, setModalPausa] = useState(false)
+  const [gpsAvisado, setGpsAvisado] = useState(false)
   const [vista3d, setVista3d] = useState(false)
   const sesion = useApp((s) => s.sesion)
   const vivo = useCompartirEnVivo()
@@ -72,6 +76,64 @@ export function CarreraEnCurso() {
     navigate('/correr/resumen')
   }
 
+  const precision = e.ultimaPrecisionM ?? null
+  const gpsDebil = precision != null && precision > 50 && !pausada
+  const resumen = (
+    <ResumenModal
+      datos={[
+        [`${Unidades.texto(e.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}`, 'Distancia'],
+        [formatearHms(e.segundos), 'Tiempo'],
+        [formatearRitmo(Unidades.ritmo(ritmoPromedio(e), m)), 'Ritmo'],
+      ]}
+    />
+  )
+  const modales = (
+    <>
+      <ModalC2
+        abierto={modalFin}
+        icono="flag"
+        titulo="¿Terminar carrera?"
+        texto="Se guardará tu recorrido y verás el resumen."
+        primario="Terminar y guardar"
+        onPrimario={() => {
+          setModalFin(false)
+          terminar()
+        }}
+        onCerrar={() => setModalFin(false)}
+        secundario="Seguir corriendo"
+      >
+        {resumen}
+      </ModalC2>
+      <ModalC2
+        abierto={modalPausa && pausada && !modalFin}
+        icono="pause"
+        titulo="Carrera en pausa"
+        texto="El cronómetro está detenido. Reanuda cuando estés listo."
+        primario="Reanudar"
+        onPrimario={() => {
+          setModalPausa(false)
+          tracker.alternarPausa()
+        }}
+        onCerrar={() => setModalPausa(false)}
+        secundario="Terminar"
+        onSecundario={() => {
+          setModalPausa(false)
+          setModalFin(true)
+        }}
+      >
+        {resumen}
+      </ModalC2>
+      <ModalC2
+        abierto={gpsDebil && !gpsAvisado && !modalFin}
+        icono="gps_off"
+        titulo="GPS sin señal"
+        texto={`La precisión es baja (±${Math.round(precision ?? 0)} m). Sal a un lugar abierto, lejos de edificios altos.`}
+        primario="Entendido"
+        onPrimario={() => setGpsAvisado(true)}
+        onCerrar={() => setGpsAvisado(true)}
+      />
+    </>
+  )
   const dialogo = (
     <Dialogo
       titulo="¿Descartar la carrera?"
@@ -222,7 +284,10 @@ export function CarreraEnCurso() {
           </div>
           <div className="mt-3 flex gap-3">
             <button
-              onClick={() => tracker.alternarPausa()}
+              onClick={() => {
+                if (!pausada) setModalPausa(true)
+                tracker.alternarPausa()
+              }}
               aria-label={pausada ? 'Reanudar' : 'Pausar'}
               className="flex-1 boton-c2"
             >
@@ -230,7 +295,7 @@ export function CarreraEnCurso() {
               {pausada ? 'Reanudar' : 'Pausar'}
             </button>
             <button
-              onClick={terminar}
+              onClick={() => setModalFin(true)}
               aria-label="Terminar carrera"
               className="flex-1 boton-c2-peligro font-black italic uppercase"
             >
@@ -239,6 +304,7 @@ export function CarreraEnCurso() {
           </div>
         </section>
         {dialogo}
+        {modales}
       </div>
     )
 
@@ -347,7 +413,7 @@ export function CarreraEnCurso() {
           <div className="grid grid-cols-[1fr_1.4fr] gap-3">
             <div className="text-center">
               <button
-                onClick={terminar}
+                onClick={() => setModalFin(true)}
                 aria-label="Terminar carrera"
                 className="w-full h-16 rounded-2xl bg-danger/15 border border-danger/40 text-danger flex items-center justify-center gap-2 font-semibold"
               >
@@ -356,7 +422,10 @@ export function CarreraEnCurso() {
             </div>
             <div className="text-center">
               <button
-                onClick={() => tracker.alternarPausa()}
+                onClick={() => {
+                  if (!pausada) setModalPausa(true)
+                  tracker.alternarPausa()
+                }}
                 aria-label={pausada ? 'Reanudar' : 'Pausar'}
                 className="w-full h-16 rounded-2xl bg-primary-600 text-on-primary flex items-center justify-center gap-2 text-title-md font-bold shadow-lg"
               >
@@ -387,6 +456,7 @@ export function CarreraEnCurso() {
         </div>
       )}
       {dialogo}
+      {modales}
     </div>
   )
 }

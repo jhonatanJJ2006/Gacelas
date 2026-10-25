@@ -5,6 +5,7 @@ import { CalendarioEventos } from './CalendarioEventos'
 import { TIPOS_EVENTO, type TipoEvento } from '../../lib/eventos'
 import { Aviso, BotonTexto, Dialogo, MensajeError } from '../../components/ui'
 import { useAviso } from '../../hooks'
+import { ModalC2, ResumenModal } from '../../components/modales'
 import { filtrarEventos, PESTANAS_EVENTOS, type PestanaEventos } from '../../lib/filtros'
 import { crearId } from '../../lib/runTracker'
 import { eventosMock, type Evento } from '../../mocks/data'
@@ -36,6 +37,7 @@ export function Eventos() {
   })
   const [error, setError] = useState<string | null>(null)
   const [aviso, mostrarAviso] = useAviso()
+  const [uniendo, setUniendo] = useState<Evento | null>(null)
   const feedSocial = useApp((s) => s.feedSocial)
   const todos = feedSocial ? creados : unirEventos(creados, eventosMock)
   const [tipo, setTipo] = useState<TipoEvento | null>(null)
@@ -170,8 +172,9 @@ export function Eventos() {
           const inscribir = !evento.pasado && (
             <button
               onClick={() => {
+                if (!inscrito) return setUniendo(evento)
                 void alternar(evento.id)
-                mostrarAviso(inscrito ? 'Inscripción cancelada' : 'Te inscribiste')
+                mostrarAviso('Inscripción cancelada')
               }}
               aria-pressed={inscrito}
               className={`px-4 py-2 font-label-lg text-label-lg rounded-lg transition-colors flex items-center gap-1 ${inscrito ? 'bg-surface-container-high text-text-primary' : 'bg-primary-600 hover:bg-primary-700 text-on-primary'}`}
@@ -427,6 +430,35 @@ export function Eventos() {
         {clubId && <p className="text-primary-400">Se publicará como evento del club.</p>}
         <MensajeError mensaje={error} />
       </Dialogo>
+      <ModalC2
+        abierto={uniendo != null}
+        icono="event"
+        titulo="Unirse al evento"
+        texto={
+          uniendo
+            ? `${uniendo.titulo} · ${uniendo.fecha} ${uniendo.hora} · ${uniendo.ubicacion}`
+            : ''
+        }
+        primario="Inscribirme"
+        onPrimario={() => {
+          if (!uniendo) return
+          void alternar(uniendo.id)
+          mostrarAviso(`Te inscribiste a ${uniendo.titulo}`)
+          setUniendo(null)
+        }}
+        onCerrar={() => setUniendo(null)}
+        secundario="Ahora no"
+      >
+        {uniendo && (
+          <ResumenModal
+            datos={[
+              [`${uniendo.distanciaKm} km`, 'Distancia'],
+              [String(uniendo.participantes), 'Inscritos'],
+              [uniendo.cupo != null ? String(uniendo.cupo) : 'Libre', 'Cupo'],
+            ]}
+          />
+        )}
+      </ModalC2>
       <Aviso mensaje={aviso} />
     </div>
   )

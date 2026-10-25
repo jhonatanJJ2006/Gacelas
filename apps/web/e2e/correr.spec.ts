@@ -28,10 +28,14 @@ test.describe('Correr con GPS simulado', () => {
     await expect(page.getByTestId('distancia')).not.toHaveText('0.00')
 
     await page.getByRole('button', { name: 'Pausar' }).click()
-    await expect(page.getByText('En pausa')).toBeVisible()
-    await page.getByRole('button', { name: 'Reanudar' }).click()
+    await expect(page.getByText('En pausa', { exact: true })).toBeVisible()
+    await page
+      .getByRole('dialog', { name: 'Carrera en pausa' })
+      .getByRole('button', { name: 'Reanudar' })
+      .click()
 
     await page.getByRole('button', { name: 'Terminar carrera' }).click()
+    await page.getByRole('button', { name: 'Terminar y guardar' }).click()
     await expect(page.getByText('Carrera completada')).toBeVisible()
     await expect(page.getByTestId('celebracion-racha')).toContainText('Racha de 1 día')
     await page.getByLabel('Título de la carrera').fill('Prueba e2e')
