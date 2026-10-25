@@ -33,12 +33,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearRitmo
 import com.gacelas.ui.components.AvatarCirculo
 import com.gacelas.ui.components.IconoCirculo
 import com.gacelas.ui.components.Metrica
+import com.gacelas.ui.components.MetricaC2
+import com.gacelas.ui.components.EtiquetaC2
 import com.gacelas.ui.components.Pantalla
 import com.gacelas.ui.components.Tarjeta
 import com.gacelas.ui.components.TituloSeccion
@@ -70,88 +73,94 @@ fun InicioContenido(
     onEventos: () -> Unit,
     onEvento: (String) -> Unit,
     corredor3D: @Composable BoxScope.() -> Unit,
+    totales: com.gacelas.carreras.domain.reglas.ResumenPeriodo = com.gacelas.carreras.domain.reglas.ResumenPeriodo(semana.carreras, semana.km, 0, 0),
+    meta: Int = 3,
+    rango: String = "",
+    reto: com.gacelas.carreras.domain.reglas.RetoMes? = null,
+    amigos: List<com.gacelas.comunidad.domain.modelo.Publicacion> = emptyList(),
+    inscrito: Boolean = false,
+    onComunidad: () -> Unit = {},
+    /** Nivel del corredor ("Gacela Intermedia"); null lo oculta. */
+    nivel: String? = null,
+    /** Ruta sugerida para hoy; null muestra el estado vacio. */
+    rutaSugerida: com.gacelas.rutas.domain.modelo.Ruta? = null,
+    onRutas: () -> Unit = {},
 ) {
     Pantalla {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-            Column(Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.LocationOn, null, tint = GColors.Primary500, modifier = Modifier.size(14.dp))
-                    Text(" Loja, Ecuador", style = GType.labelMd, color = GColors.TextSecondary)
+        // Encabezado C2: saludo en Anton, pildoras de clima, racha y nivel.
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(saludo, style = GType.labelMd, color = GColors.C2Muted)
+                Text("Hola, $nombre".uppercase(), style = GType.headlineLg, color = GColors.TextPrimary)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    PildoraC2("Loja 14° Fresco", GColors.C2Bg, GColors.TextPrimary, borde = true)
+                    InsigniaRacha(racha)
                 }
-                Text("$saludo, $nombre", style = GType.headlineMd, color = GColors.TextPrimary)
-            }
-            Row(Modifier.clip(CircleShape).background(GColors.SurfaceContainer).padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.WbTwilight, null, tint = GColors.Primary400, modifier = Modifier.size(16.dp))
-                Text(" 14°C Fresco", style = GType.labelMd, color = GColors.TextPrimary)
+                nivel?.let {
+                    PildoraC2(it, GColors.C2Violeta, GColors.C2Bg, modifier = Modifier.testTag("insignia-nivel"))
+                }
             }
         }
-        Tarjeta(fondo = GColors.SurfaceLow, padding = 0.dp) {
-            Box(Modifier.fillMaxWidth().height(300.dp).background(Brush.verticalGradient(listOf(GColors.SurfaceLow, GColors.Primary.copy(alpha = 0.12f))))) {
-                corredor3D()
-                Row(Modifier.align(Alignment.TopStart).padding(12.dp).clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.7f)).padding(horizontal = 10.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(8.dp).clip(CircleShape).background(GColors.Secondary500))
-                    Text("  AUTOPILOT ACTIVO", style = GType.labelMd, color = GColors.Secondary500)
-                }
-                InsigniaRacha(racha, Modifier.align(Alignment.TopEnd).padding(12.dp))
-            }
-            Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceAround) {
-                Metrica("${semana.diasCorridos.size}", "Días", color = GColors.TextPrimary)
-                Metrica(Unidades.texto(semana.km, m, 1), Unidades.etiquetaDistancia(m), color = GColors.Primary500)
-                Metrica(formatearRitmo(Unidades.ritmo(semana.ritmoSegKm, m)), Unidades.etiquetaRitmo(m), color = GColors.Secondary500)
-            }
-        }
-        TituloSeccion("Acción rápida")
-        Row(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))
-                .background(Brush.horizontalGradient(listOf(GColors.Primary, GColors.Primary700)))
-                .clickable(onClick = onCorrer).padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        // Heroe con el corredor 3D destacado.
+        Box(
+            Modifier.fillMaxWidth().height(320.dp).clip(com.gacelas.ui.components.FormaC2)
+                .background(Brush.verticalGradient(listOf(GColors.C2Bg, GColors.Primary.copy(alpha = 0.25f)))),
         ) {
-            Column(Modifier.weight(1f)) {
-                Text("Empezar a correr", style = GType.headlineSm, color = GColors.TextPrimary)
-                Text("Graba tu siguiente carrera", style = GType.bodyMd, color = GColors.TextPrimary.copy(alpha = 0.85f))
+            corredor3D()
+            Column(Modifier.align(Alignment.TopStart).padding(16.dp)) {
+                EtiquetaC2("Avatar")
+                Text("${semana.diasCorridos.size} " + if (semana.diasCorridos.size == 1) "día" else "días", style = GType.headlineSm, color = GColors.TextPrimary)
             }
-            IconoCirculo(Icons.Filled.PlayArrow, GColors.TextPrimary.copy(alpha = 0.2f), GColors.TextPrimary, 56.dp)
-        }
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("Semana atlética", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-            Text("${semana.diasCorridos.size} de 5 días", style = GType.labelMd, color = GColors.Secondary500)
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            listOf("L", "M", "X", "J", "V", "S", "D").forEachIndexed { i, dia ->
-                val hecho = i in semana.diasCorridos
-                val esHoy = i == hoy
-                Column(
-                    Modifier.weight(1f).aspectRatio(1f).clip(RoundedCornerShape(12.dp))
-                        .background(if (hecho) GColors.Secondary.copy(alpha = 0.2f) else GColors.SurfaceContainer)
-                        .border(if (hecho || esHoy) 2.dp else 1.dp, if (hecho) GColors.Secondary else if (esHoy) GColors.Primary else GColors.BorderSubtle, RoundedCornerShape(12.dp)),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Text(dia, style = GType.labelMd, color = if (hecho) GColors.Secondary500 else GColors.TextSecondary)
-                    if (hecho) Icon(Icons.Filled.CheckCircle, null, tint = GColors.Secondary500, modifier = Modifier.size(14.dp))
-                }
+            Column(Modifier.align(Alignment.TopEnd).padding(16.dp), horizontalAlignment = Alignment.End) {
+                EtiquetaC2("Esta semana")
+                Text("${Unidades.texto(semana.km, m, 1)} ${Unidades.etiquetaDistancia(m)}", style = GType.headlineSm, color = GColors.C2Violeta)
             }
         }
-        TituloSeccion("Próximo encuentro", accion = "Ver todos", onAccion = onEventos)
-        Tarjeta(onClick = { onEvento(evento.id) }) {
-            Row(verticalAlignment = Alignment.Top) {
-                IconoCirculo(Icons.Filled.Event, GColors.Primary.copy(alpha = 0.2f), GColors.Primary500, 48.dp)
-                Spacer(Modifier.width(12.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.CalendarToday, null, tint = GColors.Primary500, modifier = Modifier.size(14.dp))
-                        Text(" ${evento.fecha}, ${evento.hora}", style = GType.labelMd, color = GColors.Primary500)
-                    }
-                    Text(evento.titulo, style = GType.titleMd, color = GColors.TextPrimary)
-                    Text(evento.descripcion, style = GType.bodyMd, color = GColors.TextSecondary)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(Modifier.width(72.dp)) {
-                            (0..2).forEach { i -> Box(Modifier.offset(x = (i * 18).dp)) { AvatarCirculo(28.dp, i) } }
-                        }
-                        Text("+12 corredores", style = GType.labelMd, color = GColors.TextSecondary)
-                    }
-                }
+        com.gacelas.ui.components.BotonPrimario("Empezar a correr", onCorrer, icono = Icons.Filled.PlayArrow)
+        Row(Modifier.fillMaxWidth().clip(com.gacelas.ui.components.FormaC2).background(GColors.C2Card).padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+            MetricaC2("${semana.diasCorridos.size}", "Días")
+            MetricaC2(Unidades.texto(semana.km, m, 1), Unidades.etiquetaDistancia(m), color = GColors.C2Violeta)
+            MetricaC2(formatearRitmo(Unidades.ritmo(semana.ritmoSegKm, m)), Unidades.etiquetaRitmo(m), color = GColors.C2Menta)
+        }
+        SemanaAtletica(totales, semana.diasCorridos, hoy, meta, rango, m)
+        reto?.let { TarjetaReto(it, m) }
+        RutaSugeridaC2(rutaSugerida, m, onRutas)
+        AmigosEnRuta(amigos, m, onComunidad)
+        TituloSeccion("Próximo evento", accion = "Ver todos", onAccion = onEventos)
+        TarjetaEvento(evento, inscrito) { onEvento(evento.id) }
+    }
+}
+
+/** Pildora C2 inclinada (rectangular, mayusculas, cursiva). */
+@Composable
+fun PildoraC2(texto: String, fondo: androidx.compose.ui.graphics.Color, color: androidx.compose.ui.graphics.Color, modifier: Modifier = Modifier, borde: Boolean = false) {
+    var m = modifier.clip(RoundedCornerShape(2.dp)).background(fondo)
+    if (borde) m = m.border(1.dp, GColors.C2Linea, RoundedCornerShape(2.dp))
+    Text(
+        texto.uppercase(),
+        style = GType.labelMd.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontWeight = androidx.compose.ui.text.font.FontWeight.Black),
+        color = color, modifier = m.padding(horizontal = 10.dp, vertical = 6.dp),
+    )
+}
+
+/** Ruta sugerida para hoy; si no hay rutas muestra un estado vacio con acceso a Rutas. */
+@Composable
+fun RutaSugeridaC2(ruta: com.gacelas.rutas.domain.modelo.Ruta?, m: Boolean, onRutas: () -> Unit) {
+    Column(
+        Modifier.fillMaxWidth().clip(com.gacelas.ui.components.FormaC2).background(GColors.C2Card).clickable(onClick = onRutas).padding(16.dp).testTag("ruta-sugerida"),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            EtiquetaC2("Ruta sugerida para hoy")
+            EtiquetaC2("Ver rutas")
+        }
+        if (ruta == null) {
+            Text("Aún no hay rutas cerca. Explora o dibuja la tuya.", style = GType.bodyMd, color = GColors.C2Muted)
+        } else {
+            Text(ruta.nombre.uppercase(), style = GType.headlineSm, color = GColors.TextPrimary)
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                MetricaC2("${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}", "Distancia", color = GColors.C2Violeta)
+                MetricaC2("+${ruta.elevacionM} m", "Desnivel", color = GColors.C2Cielo)
             }
         }
     }

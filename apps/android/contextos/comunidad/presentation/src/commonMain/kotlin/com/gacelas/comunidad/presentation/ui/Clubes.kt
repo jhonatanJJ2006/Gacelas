@@ -43,7 +43,7 @@ import com.gacelas.ui.components.Tarjeta
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
-private val COLORES = listOf(0xFFF59E0B, 0xFF10B981, 0xFF3B82F6, 0xFFEF4444, 0xFFA855F7, 0xFFEC4899, 0xFF14B8A6, 0xFFF97316)
+private val COLORES = listOf(0xFFA855F7, 0xFF10B981, 0xFF3B82F6, 0xFFEF4444, 0xFFA855F7, 0xFFEC4899, 0xFF14B8A6, 0xFFF97316)
 fun colorCorredorArgb(i: Int): Long = COLORES[i % COLORES.size]
 fun colorCorredor(i: Int) = Color(colorCorredorArgb(i))
 
@@ -75,7 +75,7 @@ fun ClubesContenido(vm: ClubesViewModel, conServidor: Boolean, onAtras: () -> Un
         var desc by remember { mutableStateOf("") }
         var lugar by remember { mutableStateOf("Loja") }
         var aprobacion by remember { mutableStateOf(false) }
-        AlertDialog(
+        com.gacelas.ui.components.DialogoC2(
             onDismissRequest = { creando = false },
             containerColor = GColors.BgSecondary,
             title = { Text("Crear club") },
@@ -95,7 +95,7 @@ fun ClubesContenido(vm: ClubesViewModel, conServidor: Boolean, onAtras: () -> Un
                     vm.crear(nombre, desc, lugar, aprobacion, onCreado = { creando = false; onClub(it) }, onError = onAviso)
                 }) { Text("Crear") }
             },
-            dismissButton = { TextButton(onClick = { creando = false }) { Text("Cancelar") } },
+            dismissButton = { com.gacelas.ui.components.BotonModalC2("Cancelar", { creando = false }, secundario = true) },
         )
     }
 }

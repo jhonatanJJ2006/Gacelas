@@ -28,7 +28,7 @@ data class Colocacion(val cx: Float, val cy: Float, val escala: Float) {
 }
 
 const val HANDLE_GACELAS = "@gacelasrunningteam"
-private const val NARANJA = 0xFFFF6A13.toInt()
+private const val NARANJA = 0xFFC084FC.toInt()
 
 object Plantillas {
     fun inicial(p: Plantilla) = Colocacion(p.cx, p.cy, p.escala)

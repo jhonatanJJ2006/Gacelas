@@ -87,7 +87,7 @@ export function DetalleRuta() {
   if (!ruta)
     return (
       <main className="w-full min-h-screen bg-surface px-margin py-6">
-        <h1 className="font-headline-md text-headline-md text-text-primary mb-2">
+        <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary mb-2">
           Ruta no encontrada
         </h1>
         <Link to="/rutas" className="text-primary-400 underline">
@@ -193,7 +193,7 @@ export function DetalleRuta() {
                 navigate(`/rutas/buscar?ruta=${ruta.id}`)
               }}
               data-testid="correr-ruta"
-              className="flex-1 h-12 rounded-xl bg-primary-600 text-bg-primary font-semibold flex items-center justify-center gap-2"
+              className="flex-1 h-12 rounded-xl bg-primary-600 text-on-primary font-semibold flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined">directions_run</span>
               Correr esta ruta
@@ -322,7 +322,7 @@ export function DetalleRuta() {
                   <button
                     onClick={() => void enviar()}
                     disabled={enviando}
-                    className="w-full h-11 rounded-xl bg-primary-600 text-bg-primary font-semibold disabled:opacity-60"
+                    className="w-full h-11 rounded-xl bg-primary-600 text-on-primary font-semibold disabled:opacity-60"
                   >
                     {enviando ? 'Enviando…' : 'Publicar reseña'}
                   </button>

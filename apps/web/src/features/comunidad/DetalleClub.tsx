@@ -112,7 +112,7 @@ export function DetalleClub() {
                         club.conAprobacion ? 'Solicitud enviada' : 'Te uniste al club'
                       ))
                 }
-                className={`h-12 px-5 rounded-xl font-semibold disabled:opacity-60 ${yo ? 'bg-surface-container-high text-text-primary border border-border-subtle' : 'bg-primary-600 text-bg-primary'}`}
+                className={`h-12 px-5 rounded-xl font-semibold disabled:opacity-60 ${yo ? 'bg-surface-container-high text-text-primary border border-border-subtle' : 'bg-primary-600 text-on-primary'}`}
               >
                 {accion}
               </button>
@@ -145,7 +145,7 @@ export function DetalleClub() {
                 />
                 <button
                   type="submit"
-                  className="h-12 px-4 rounded-xl bg-primary-600 text-bg-primary font-semibold"
+                  className="h-12 px-4 rounded-xl bg-primary-600 text-on-primary font-semibold"
                   data-testid="publicar-club"
                 >
                   Publicar
@@ -246,7 +246,7 @@ export function DetalleClub() {
                       onClick={() =>
                         void intentar(() => clubes.aprobar(id, m.usuarioId), 'Solicitud aprobada')
                       }
-                      className="h-9 px-3 rounded-full bg-secondary-600 text-bg-primary text-sm font-semibold"
+                      className="h-9 px-3 rounded-full bg-secondary-600 text-on-primary text-sm font-semibold"
                     >
                       Aprobar
                     </button>

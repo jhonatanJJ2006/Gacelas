@@ -74,11 +74,11 @@ fun DetalleCarreraContenido(c: Carrera?, fecha: String, m: Boolean, onAtras: () 
             BotonSecundario("Eliminar carrera", { confirmar = true }, Modifier.fillMaxWidth(), color = GColors.Danger)
         }
     }
-    if (confirmar) AlertDialog(
+    if (confirmar) com.gacelas.ui.components.DialogoC2(
         onDismissRequest = { confirmar = false },
         title = { Text("¿Eliminar esta carrera?") },
         text = { Text("Se quita de tu historial y de tu cuenta. No se puede deshacer.") },
-        confirmButton = { TextButton(onClick = { confirmar = false; onEliminar() }) { Text("Eliminar", color = GColors.Danger) } },
-        dismissButton = { TextButton(onClick = { confirmar = false }) { Text("Cancelar") } },
+        confirmButton = { com.gacelas.ui.components.BotonModalC2("Eliminar", { confirmar = false; onEliminar() }, peligro = true) },
+        dismissButton = { com.gacelas.ui.components.BotonModalC2("Cancelar", { confirmar = false }, secundario = true) },
     )
 }

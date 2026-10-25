@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { EnlacesLegales } from '../../../legal/Legal'
 import { useNavigate, Link } from 'react-router-dom'
 import { CampoContrasena } from '../../../../components/CampoContrasena'
 import { useApp } from '../../../../store/app'
@@ -24,7 +25,16 @@ export function InicioSesion() {
   }
 
   return (
-    <div className="w-full min-h-[100dvh] bg-surface flex flex-col">
+    <div className="relative w-full min-h-[100dvh] bg-surface flex flex-col">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-60"
+        style={{ backgroundImage: "url('/images/mapa-login.webp')" }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-surface/20 via-surface/70 to-surface"
+      />
       <header className="w-full z-20 px-margin py-2 short:py-1 md:absolute md:top-2 md:left-2 md:w-auto">
         <button
           onClick={() => navigate('/bienvenida')}
@@ -34,7 +44,7 @@ export function InicioSesion() {
         </button>
       </header>
 
-      <main className="flex-1 px-6 pb-4 short:pb-2 flex flex-col">
+      <main className="relative z-10 flex-1 px-6 pb-4 short:pb-2 flex flex-col">
         <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full md:max-w-4xl md:grid md:grid-cols-2 md:gap-x-16 md:content-center md:items-center">
           <div className="mb-5 short:mb-3 md:mb-0 md:row-span-2">
             <div className="flex items-center gap-2.5 mb-6 short:hidden md:flex">
@@ -117,7 +127,7 @@ export function InicioSesion() {
             <button
               type="submit"
               disabled={cargando}
-              className="w-full h-12 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all cursor-pointer disabled:opacity-60"
+              className="w-full h-12 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-on-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition-all cursor-pointer disabled:opacity-60"
             >
               <span>{cargando ? 'Entrando...' : 'Iniciar sesión'}</span>
               <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
@@ -134,6 +144,7 @@ export function InicioSesion() {
                 </Link>
               </span>
             </div>
+            <EnlacesLegales />
           </form>
 
           <div className="mt-4 space-y-3 md:col-start-2">

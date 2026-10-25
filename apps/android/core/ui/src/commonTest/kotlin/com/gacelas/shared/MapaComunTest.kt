@@ -32,9 +32,9 @@ class MapaComunTest {
     }
 
     @Test fun geojson() {
-        val t = geojsonTrazos(listOf(TrazoComun(listOf(Coord(-4.0, -79.2), Coord(-4.1, -79.3)), 0xFFFF6A13, 5f)))
-        assertTrue("\"color\":\"#FF6A13\"" in t && "[-79.2,-4.0]" in t)
-        val c = geojsonCirculos(listOf(CirculoComun(Coord(-4.0, -79.2), 9f, 0xFFFF6A13, id = "r\"1")))
+        val t = geojsonTrazos(listOf(TrazoComun(listOf(Coord(-4.0, -79.2), Coord(-4.1, -79.3)), 0xFFC084FC, 5f)))
+        assertTrue("\"color\":\"#C084FC\"" in t && "[-79.2,-4.0]" in t)
+        val c = geojsonCirculos(listOf(CirculoComun(Coord(-4.0, -79.2), 9f, 0xFFC084FC, id = "r\"1")))
         assertTrue("\"id\":\"r\\\"1\"" in c)
     }
 }

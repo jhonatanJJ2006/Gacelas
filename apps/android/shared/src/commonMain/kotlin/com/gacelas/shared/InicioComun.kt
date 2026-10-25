@@ -35,7 +35,7 @@ object ColoresC4 {
     val Fondo = Color(0xFF0A0E16)
     val Tarjeta = Color(0xFF131926)
     val Secondary = Color(0xFFBCC7DE)
-    val Naranja = Color(0xFFD97706)
+    val Naranja = Color(0xFF7B1FA2)
     val Magenta = Color(0xFFD6338A)
     val MagentaOscuro = Color(0xFFAB0660)
 }

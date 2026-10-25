@@ -13,6 +13,7 @@ import { descartarCarrera, tracker, useCarrera } from '../../../store/carrera'
 import { CelebracionRacha } from '../../../components/Racha'
 import { rachaTrasCarrera } from '../../../lib/rachas'
 import { caloriasEstimadas } from '../../../lib/logica'
+import { nuevoRecord } from '../../../lib/estadisticas'
 
 export function ResumenPostCarrera() {
   const navigate = useNavigate()
@@ -54,6 +55,16 @@ export function ResumenPostCarrera() {
   const [errorRuta, setErrorRuta] = useState<string | null>(null)
   const puedeSerRuta = rutasSociales && !!sesion && e.puntos.length >= 2 && e.distanciaKm >= 0.3
   const saliendo = useRef(false)
+  const [record] = useState(() =>
+    e.fase === 'terminada'
+      ? nuevoRecord(carreras, {
+          distanciaKm: e.distanciaKm,
+          segundos: e.segundos,
+          parciales: e.parciales,
+        })
+      : null
+  )
+  const alturas = e.puntos.map((p) => p.altitudM).filter((a): a is number => a != null)
 
   // Tras guardar se va a Perfil; no se redirige a Inicio al reiniciar la carrera.
   if (saliendo.current) return null
@@ -106,81 +117,111 @@ export function ResumenPostCarrera() {
       </header>
 
       <main className="lg:w-full lg:max-w-5xl lg:mx-auto flex-1 px-6 pb-8 overflow-auto">
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 rounded-full bg-secondary-600/20 flex items-center justify-center mx-auto mb-4">
-            <span className="material-symbols-outlined text-[48px] text-secondary-500">
-              check_circle
+        <section className="rounded-3xl bg-gradient-to-b from-primary-600/20 to-surface-container border border-border-subtle p-6 mb-4 text-center">
+          <div className="w-20 h-20 rounded-full border-4 border-primary bg-surface-container flex items-center justify-center mx-auto mb-3">
+            <span className="material-symbols-outlined text-[40px] text-primary">
+              {record ? 'military_tech' : 'check_circle'}
             </span>
           </div>
-          <h1 className="font-headline-lg text-headline-lg text-text-primary mb-2">
-            Carrera completada
+          <h1 className="font-headline-lg text-headline-lg text-text-primary">
+            ¡Excelente zancada, gacela!
           </h1>
-          <p className="font-body-md text-body-md text-text-secondary">
-            Gran trabajo, has terminado tu carrera
+          <p className="font-body-md text-body-md text-text-secondary">Carrera completada</p>
+          {record && (
+            <p className="mt-1 text-primary font-semibold" data-testid="nuevo-record">
+              Nuevo récord personal en {record.etiqueta}
+            </p>
+          )}
+          <p className="mt-3 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container text-body-sm text-text-secondary">
+            <span className="material-symbols-outlined text-[16px]">location_on</span>
+            {new Date(e.inicioMs || Date.now()).toLocaleString('es-EC', {
+              weekday: 'short',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}{' '}
+            • Loja, Ecuador
           </p>
-        </div>
+        </section>
 
         <CelebracionRacha antes={racha.antes} despues={racha.despues} />
 
-        <div className="bg-surface-container rounded-3xl border border-border-subtle p-6 mb-6">
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="text-center">
-              <div
-                className="font-metric-huge text-[40px] text-primary leading-none mb-1"
-                data-testid="resumen-distancia"
-              >
-                {Unidades.texto(e.distanciaKm, m)}
-              </div>
-              <div className="font-label-md text-label-md text-text-secondary uppercase">
-                {Unidades.etiquetaDistancia(m)}
-              </div>
-            </div>
-            <div className="text-center">
-              <div
-                className="font-metric-huge text-[40px] text-text-primary leading-none mb-1"
-                data-testid="resumen-tiempo"
-              >
-                {formatearMs(e.segundos)}
-              </div>
-              <div className="font-label-md text-label-md text-text-secondary uppercase">
-                Tiempo
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="font-metric-huge text-[40px] text-secondary leading-none mb-1">
-                {formatearRitmo(Unidades.ritmo(ritmoPromedio(e), m))}
-              </div>
-              <div className="font-label-md text-label-md text-text-secondary uppercase">
-                {Unidades.etiquetaRitmo(m)}
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-border-subtle pt-4 grid grid-cols-3 gap-3 text-center">
-            <div>
-              <div className="font-headline-sm text-headline-sm text-text-primary">
-                {caloriasEstimadas(e.distanciaKm)}
-              </div>
-              <div className="text-label-md text-text-secondary text-[10px]">kcal est.</div>
-            </div>
-            <div>
-              <div className="font-headline-sm text-headline-sm text-text-primary">
-                {e.parciales.length}
-              </div>
-              <div className="text-label-md text-text-secondary text-[10px]">Parciales</div>
-            </div>
-            <div>
-              <div className="font-headline-sm text-headline-sm text-text-primary">
-                {Math.round(e.desnivelM)}m
-              </div>
-              <div className="text-label-md text-text-secondary text-[10px]">Elev</div>
-            </div>
-          </div>
-          <div className="h-36 mt-4">
+        <section className="rounded-3xl bg-surface-container border border-border-subtle overflow-hidden mb-4">
+          <div className="h-48 relative">
             <MapaGoogle
               puntos={e.puntos}
               className="w-full h-full"
               alternativa={<TrazadoRuta puntos={e.puntos} className="w-full h-full" />}
             />
+            {alturas.length > 1 && (
+              <span className="absolute bottom-2 left-2 px-2 py-1 rounded-lg bg-black/60 text-white text-label-sm">
+                {Math.round(Math.min(...alturas))} m - {Math.round(Math.max(...alturas))} m
+              </span>
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-3xl bg-surface-container border border-border-subtle p-5 mb-3">
+          <div className="text-label-md text-text-secondary uppercase tracking-wider">
+            Distancia total
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span
+              className="font-metric-huge text-[48px] text-text-primary leading-none"
+              data-testid="resumen-distancia"
+            >
+              {Unidades.texto(e.distanciaKm, m)}
+            </span>
+            <span className="text-primary font-semibold">{m ? 'Kilómetros' : 'Millas'}</span>
+          </div>
+        </section>
+
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          {(
+            [
+              [
+                'Tiempo',
+                formatearMs(e.segundos),
+                'Tiempo en movimiento',
+                'resumen-tiempo',
+                'text-text-primary',
+              ],
+              [
+                'Ritmo medio',
+                formatearRitmo(Unidades.ritmo(ritmoPromedio(e), m)),
+                Unidades.etiquetaRitmo(m),
+                undefined,
+                'text-primary',
+              ],
+              [
+                'Desnivel (+)',
+                `+${Math.round(e.desnivelM)} m`,
+                'Subida acumulada',
+                undefined,
+                'text-success',
+              ],
+              [
+                'Calorías',
+                `${caloriasEstimadas(e.distanciaKm)}`,
+                'kcal estimadas',
+                undefined,
+                'text-text-primary',
+              ],
+            ] as const
+          ).map(([t, v, d, id, c]) => (
+            <div
+              key={t}
+              className="rounded-2xl bg-surface-container border border-border-subtle p-4"
+            >
+              <div className="text-label-md text-text-secondary uppercase">{t}</div>
+              <div className={`font-headline-lg text-headline-lg ${c}`} data-testid={id}>
+                {v}
+              </div>
+              <div className="text-body-sm text-text-secondary">{d}</div>
+            </div>
+          ))}
+          <div className="col-span-2 rounded-2xl bg-surface-container border border-border-subtle p-4 flex justify-between">
+            <span className="text-text-secondary">Parciales</span>
+            <span className="text-text-primary font-semibold">{e.parciales.length}</span>
           </div>
         </div>
 
@@ -240,7 +281,7 @@ export function ResumenPostCarrera() {
                         onClick={() => setDificultad(d)}
                         className={`flex-1 min-h-[40px] rounded-full text-sm font-semibold ${
                           dificultad === d
-                            ? 'bg-primary-600 text-bg-primary'
+                            ? 'bg-primary-600 text-on-primary'
                             : 'bg-surface text-text-secondary'
                         }`}
                       >
@@ -261,7 +302,7 @@ export function ResumenPostCarrera() {
                         }
                         className={`min-h-[36px] px-3 rounded-full text-sm ${
                           etiquetas.includes(k)
-                            ? 'bg-secondary-600 text-bg-primary'
+                            ? 'bg-secondary-600 text-on-primary'
                             : 'bg-surface text-text-secondary'
                         }`}
                       >
@@ -284,7 +325,7 @@ export function ResumenPostCarrera() {
           <button
             onClick={guardar}
             disabled={guardando}
-            className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all disabled:opacity-60"
+            className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-on-primary font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition-all disabled:opacity-60"
           >
             <span className="material-symbols-outlined text-[20px]">save</span>
             <span>Guardar carrera</span>

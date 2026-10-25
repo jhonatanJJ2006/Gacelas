@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { MensajeError } from '../../../components/ui'
 import { estaActiva } from '../../../lib/runTracker'
@@ -10,6 +10,8 @@ import {
   tracker,
 } from '../../../store/carrera'
 import { calidadSenal } from '../../../lib/logica'
+import { ModalC2 } from '../../../components/modales'
+import { historial, otorgado, registrarConsentimiento } from '../../legal/consentimientos'
 
 type EstadoGps =
   { tipo: 'buscando' } | { tipo: 'listo'; precisionM: number } | { tipo: 'error'; mensaje: string }
@@ -19,6 +21,8 @@ export function Correr() {
   const precisa = useApp((s) => s.ajustes.ubicacionPrecisa)
   const [gps, setGps] = useState<EstadoGps>({ tipo: 'buscando' })
   const [errorCarrera, setErrorCarrera] = useState<string | null>(null)
+  const [pedirGps, setPedirGps] = useState(false)
+  const [permisoDenegado, setPermisoDenegado] = useState(false)
 
   useEffect(() => {
     if (!geolocalizacionDisponible()) {
@@ -28,7 +32,11 @@ export function Correr() {
     let vivo = true
     navigator.geolocation.getCurrentPosition(
       (p) => vivo && setGps({ tipo: 'listo', precisionM: Math.round(p.coords.accuracy) }),
-      (e) => vivo && setGps({ tipo: 'error', mensaje: mensajeErrorGps(e) }),
+      (e) => {
+        if (!vivo) return
+        setGps({ tipo: 'error', mensaje: mensajeErrorGps(e) })
+        if (e.code === 1) setPermisoDenegado(true)
+      },
       { enableHighAccuracy: precisa, timeout: 15_000, maximumAge: 5_000 }
     )
     return () => {
@@ -36,15 +44,50 @@ export function Correr() {
     }
   }, [precisa])
 
+  const cuentaSeg = useApp((s) => s.ajustes.cuentaRegresivaSeg ?? 0)
+  const [cuenta, setCuenta] = useState<number | null>(null)
+  useEffect(() => {
+    if (cuenta === null) return
+    const t = setTimeout(() => (cuenta <= 1 ? arrancarRef.current() : setCuenta(cuenta - 1)), 1000)
+    return () => clearTimeout(t)
+  }, [cuenta])
+  const arrancarRef = useRef(() => {})
+
   if (estaActiva(tracker.estado)) return <Navigate to="/correr/en-curso" replace />
 
-  const handleStart = () => {
+  const arrancar = () => {
+    setCuenta(null)
     setErrorCarrera(null)
     empezarSeguimiento({ precisa, onError: setErrorCarrera })
     navigate('/correr/en-curso')
   }
+  const iniciar = () => (cuentaSeg > 0 ? setCuenta(cuentaSeg) : arrancar())
+  const handleStart = () => (otorgado(historial(), 'gps_carrera') ? iniciar() : setPedirGps(true))
 
+  arrancarRef.current = arrancar
   const listo = gps.tipo === 'listo'
+  if (cuenta !== null)
+    return (
+      <div
+        className="fixed inset-0 z-50 bg-surface flex flex-col items-center justify-center gap-6"
+        role="timer"
+        aria-label="Cuenta regresiva"
+      >
+        <span className="text-body-md text-text-secondary">Prepárate, arrancamos en</span>
+        <span
+          className="font-mono text-[96px] leading-none text-primary"
+          data-testid="cuenta-regresiva"
+        >
+          {cuenta}
+        </span>
+        <button
+          onClick={arrancar}
+          className="px-4 py-2 rounded-xl bg-surface-container text-text-primary"
+        >
+          Empezar ya
+        </button>
+      </div>
+    )
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
@@ -74,7 +117,7 @@ export function Correr() {
         </div>
 
         <div className="w-full max-w-md space-y-4 mb-8">
-          <div className="bg-surface-container rounded-2xl border border-border-subtle p-6">
+          <div className="tarjeta-c2 p-6">
             <div className="flex items-center gap-4 mb-4">
               <div
                 className={`w-12 h-12 rounded-full flex items-center justify-center ${listo ? 'bg-secondary-600/20 text-secondary-500' : gps.tipo === 'error' ? 'bg-danger/20 text-red-300' : 'bg-primary-600/20 text-primary-500'}`}
@@ -123,12 +166,35 @@ export function Correr() {
           <MensajeError mensaje={errorCarrera} />
         </div>
 
+        <ModalC2
+          abierto={permisoDenegado}
+          icono="location_off"
+          titulo="Permiso de ubicación denegado"
+          texto="El navegador bloqueó el acceso a tu ubicación. Sin él no podemos medir la distancia ni dibujar tu recorrido. Actívalo desde el candado de la barra de direcciones, en Permisos del sitio, y vuelve a cargar la página."
+          primario="Entendido"
+          onPrimario={() => setPermisoDenegado(false)}
+          onCerrar={() => setPermisoDenegado(false)}
+        />
+        <ModalC2
+          abierto={pedirGps}
+          icono="my_location"
+          titulo="Usar tu ubicación durante la carrera"
+          texto="Gacelas usa el GPS del dispositivo solo mientras grabas una carrera, para medir distancia, ritmo y dibujar tu recorrido. La ruta se guarda en tu historial y solo se comparte si tú la publicas. Nadie te ve en el mapa en vivo salvo que actives ese permiso aparte. Puedes revocarlo cuando quieras en Ajustes, Privacidad."
+          primario="Aceptar y empezar"
+          onPrimario={() => {
+            setPedirGps(false)
+            void registrarConsentimiento('gps_carrera', true)
+            iniciar()
+          }}
+          secundario="Ahora no"
+          onCerrar={() => setPedirGps(false)}
+        />
         <button
           onClick={handleStart}
           aria-label="Comenzar carrera"
-          className="w-24 h-24 rounded-full bg-primary-600 hover:bg-primary-700 active:scale-95 shadow-[0_12px_28px_-4px_rgba(217,119,6,0.5)] flex items-center justify-center transition-all"
+          className="w-24 h-24 rounded-full bg-primary-600 hover:bg-primary-700 active:scale-95 shadow-[0_12px_28px_-4px_rgba(123,31,162,0.5)] flex items-center justify-center transition-all"
         >
-          <span className="material-symbols-outlined text-[48px] text-bg-primary">play_arrow</span>
+          <span className="material-symbols-outlined text-[48px] text-on-primary">play_arrow</span>
         </button>
 
         <p className="font-label-lg text-label-lg text-text-secondary mt-6">

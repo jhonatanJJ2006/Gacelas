@@ -30,7 +30,7 @@ export function AppLayout() {
               {sesion?.foto ? (
                 <FotoPerfil foto={sesion.foto} nombre={sesion.nombre} className="h-8 w-8" />
               ) : (
-                <div className="h-8 w-8 bg-primary rounded-full flex items-center justify-center">
+                <div className="h-8 w-8 bg-primary-600 rounded-full flex items-center justify-center">
                   <span className="text-on-primary font-bold text-sm">GL</span>
                 </div>
               )}
@@ -73,7 +73,7 @@ export function AppLayout() {
                 aria-label="Correr"
                 className="flex flex-col items-center justify-center -mt-8"
               >
-                <div className="w-14 h-14 rounded-full bg-primary shadow-lg flex items-center justify-center text-on-primary active:scale-95 transition-transform">
+                <div className="w-14 h-14 rounded-full bg-primary-600 shadow-lg flex items-center justify-center text-on-primary active:scale-95 transition-transform">
                   <span className="material-symbols-outlined text-[32px]">{item.icon}</span>
                 </div>
               </Link>

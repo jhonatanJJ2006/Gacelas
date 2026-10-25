@@ -77,7 +77,7 @@ export function EventoEnVivo() {
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="font-headline-md text-headline-md text-text-primary truncate">
+          <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary truncate">
             {evento?.titulo ?? 'Evento'} · en vivo
           </h1>
           <p className="text-sm text-text-secondary">
@@ -103,7 +103,7 @@ export function EventoEnVivo() {
                   elegirEventoEnVivo(id)
                   navigate('/correr')
                 }}
-                className="h-12 px-5 rounded-xl bg-primary-600 text-bg-primary font-semibold flex items-center gap-2"
+                className="h-12 px-5 rounded-xl bg-primary-600 text-on-primary font-semibold flex items-center gap-2"
               >
                 <span className="material-symbols-outlined">sensors</span>Correr y compartir en el
                 evento
@@ -150,7 +150,7 @@ export function EventoEnVivo() {
               {tabla.map((c, i) => (
                 <li key={c.sesionId} className="flex items-center gap-3">
                   <span
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-bg-primary"
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-on-primary"
                     style={{ background: colorCorredor(i) }}
                   >
                     {i + 1}

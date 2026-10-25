@@ -58,10 +58,19 @@ describe('ajustes', () => {
 
   it('modo claro, unidades y cerrar sesion', async () => {
     renderRuta('/ajustes')
-    await userEvent.click(await screen.findByRole('switch', { name: 'Modo oscuro' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Cambiar tema' }))
     expect(document.documentElement).toHaveClass('tema-claro')
-    await userEvent.click(screen.getByRole('switch', { name: 'Unidades métricas' }))
-    expect(useApp.getState().ajustes).toMatchObject({ modoOscuro: false, unidadesMetricas: false })
+    await userEvent.click(screen.getByRole('button', { name: 'mi' }))
+    await userEvent.click(screen.getByRole('switch', { name: 'Autopausa' }))
+    await userEvent.selectOptions(screen.getByLabelText('Cuenta regresiva'), '5')
+    await userEvent.selectOptions(screen.getByLabelText('Ritmo objetivo'), '300')
+    expect(useApp.getState().ajustes).toMatchObject({
+      modoOscuro: false,
+      unidadesMetricas: false,
+      autopausa: false,
+      cuentaRegresivaSeg: 5,
+      ritmoObjetivoSeg: 300,
+    })
     expect(JSON.parse(localStorage.getItem('gacelas:ajustes')!).unidadesMetricas).toBe(false)
     await userEvent.click(screen.getByRole('button', { name: /Acerca de/ }))
     expect(screen.getByRole('dialog')).toHaveTextContent('Gacelas Loja')
@@ -76,9 +85,23 @@ describe('ajustes', () => {
     expect(useApp.getState().sesion).toBeNull()
   })
 
+  it('notificaciones: reto mensual y preferencias de alertas en la bandeja', async () => {
+    renderRuta('/notificaciones')
+    expect(await screen.findByTestId('reto-notificacion')).toHaveTextContent('Andino')
+    await userEvent.click(screen.getByRole('switch', { name: 'Eventos del club' }))
+    expect(useApp.getState().ajustes.notifEventos).toBe(false)
+  })
+
+  it('privacidad: radios sugeridos y actividades', async () => {
+    renderRuta('/ajustes/privacidad')
+    await userEvent.click(await screen.findByRole('button', { name: '1 km' }))
+    await userEvent.click(screen.getByRole('switch', { name: 'Ocultar datos biométricos' }))
+    expect(useApp.getState().ajustes).toMatchObject({ radioHogarM: 1000, ocultarBiometricos: true })
+  })
+
   it('privacidad y notificaciones persisten', async () => {
     renderRuta('/ajustes/privacidad')
-    await userEvent.click(await screen.findByRole('radio', { name: /Privado/ }))
+    await userEvent.click(await screen.findByRole('radio', { name: /Solo yo/ }))
     await userEvent.click(screen.getByRole('switch', { name: /Ubicación precisa/ }))
     await userEvent.click(screen.getByRole('switch', { name: /Ocultar ubicación de casa/ }))
     expect(screen.queryByTestId('radio-hogar-valor')).not.toBeInTheDocument()
@@ -94,7 +117,7 @@ describe('ajustes', () => {
 
   it('notificaciones desactivadas ocultan su tipo', async () => {
     renderRuta('/ajustes/notificaciones')
-    await userEvent.click(await screen.findByRole('switch', { name: /Likes/ }))
+    await userEvent.click(await screen.findByRole('switch', { name: /Me gusta/ }))
     expect(useApp.getState().ajustes.notifLikes).toBe(false)
     renderRuta('/notificaciones')
     expect(await screen.findAllByTestId('notificacion')).toHaveLength(4)

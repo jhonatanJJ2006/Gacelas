@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { CampoContrasena } from '../../../../components/CampoContrasena'
 import { useApp } from '../../../../store/app'
-import { BotonTexto, Dialogo, MensajeError } from '../../../../components/ui'
+import { MensajeError } from '../../../../components/ui'
+import { registrarConsentimiento } from '../../../legal/consentimientos'
 import { BotonGoogle } from '../../../../components/BotonGoogle'
 import { PanelCorredorAcceso } from '../../../../components/PanelCorredorAcceso'
 
@@ -13,16 +14,25 @@ export function Registro() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [cargando, setCargando] = useState(false)
-  const [legal, setLegal] = useState<'terminos' | 'privacidad' | null>(null)
+  const [acepta, setAcepta] = useState(false)
   const registrar = useApp((s) => s.registrar)
+  const actualizarAjustes = useApp((s) => s.actualizarAjustes)
+  const [nivel, setNivel] = useState<'principiante' | 'intermedio' | 'avanzado'>('principiante')
+  const fuerza = [/.{8,}/, /[A-Za-z]/, /\d/, /[^A-Za-z0-9]/].filter((r) => r.test(password)).length
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!acepta) return setError('Debes aceptar los Términos y la Política de privacidad')
     setCargando(true)
     const r = await registrar(nombre, email, password)
     setCargando(false)
-    if (r.ok) navigate('/permisos-ubicacion', { replace: true })
-    else setError(r.error)
+    if (r.ok) {
+      void actualizarAjustes({ nivelDeclarado: nivel })
+      void registrarConsentimiento('terminos', true).then(() =>
+        registrarConsentimiento('privacidad', true)
+      )
+      navigate('/permisos-ubicacion', { replace: true })
+    } else setError(r.error)
   }
 
   return (
@@ -125,40 +135,76 @@ export function Registro() {
                 required
                 minLength={8}
               />
+              <div className="flex gap-1 mt-2" aria-label={`Fuerza de la clave ${fuerza} de 4`}>
+                {[0, 1, 2, 3].map((i) => (
+                  <span
+                    key={i}
+                    className={`h-1 flex-1 rounded-full ${i < fuerza ? (fuerza >= 3 ? 'bg-success' : 'bg-primary-600') : 'bg-surface-container-highest'}`}
+                  />
+                ))}
+              </div>
               <p className="text-xs text-text-secondary mt-1">
                 Usa mínimo 8 caracteres con letras y números
+                {password && (fuerza >= 3 ? ' • Segura' : ' • Débil')}
               </p>
             </div>
+
+            <fieldset>
+              <legend className="block text-sm font-medium text-text-primary mb-1.5">
+                Nivel de corredor
+              </legend>
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  [
+                    ['principiante', 'Principiante', '0 - 5 km'],
+                    ['intermedio', 'Intermedio', '5 - 15 km'],
+                    ['avanzado', 'Avanzado', '+15 km / Trail'],
+                  ] as const
+                ).map(([id, t, d]) => (
+                  <button
+                    type="button"
+                    key={id}
+                    aria-pressed={nivel === id}
+                    onClick={() => setNivel(id)}
+                    className={`p-2 rounded-xl border text-center ${nivel === id ? 'border-primary-600 bg-primary-600/15' : 'border-border-subtle bg-surface-container'}`}
+                  >
+                    <span className="block text-sm text-text-primary font-semibold">{t}</span>
+                    <span className="block text-xs text-text-secondary">{d}</span>
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            <label className="flex items-start gap-3 p-3 rounded-xl bg-[#191F2F] border border-[#2C3446] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={acepta}
+                onChange={(e) => setAcepta(e.target.checked)}
+                aria-label="Acepto los Términos y la Política de privacidad"
+                className="mt-1 w-4 h-4 accent-[#A855F7]"
+              />
+              <span className="text-sm text-text-primary">
+                He leído y acepto los{' '}
+                <Link to="/legal/terminos" className="text-primary-500 underline">
+                  Términos
+                </Link>{' '}
+                y la{' '}
+                <Link to="/legal/privacidad" className="text-primary-500 underline">
+                  Política de privacidad
+                </Link>
+              </span>
+            </label>
 
             <MensajeError mensaje={error} />
 
             <button
               type="submit"
               disabled={cargando}
-              className="w-full h-12 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all cursor-pointer mt-6"
+              className="w-full h-12 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-on-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition-all cursor-pointer mt-6"
             >
               <span>{cargando ? 'Creando...' : 'Crear cuenta'}</span>
               <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
             </button>
-
-            <p className="text-xs text-text-secondary text-center pt-2">
-              Al crear una cuenta, aceptas nuestros{' '}
-              <button
-                type="button"
-                onClick={() => setLegal('terminos')}
-                className="inline-block py-2 text-primary-500 underline"
-              >
-                Términos de Servicio
-              </button>{' '}
-              y{' '}
-              <button
-                type="button"
-                onClick={() => setLegal('privacidad')}
-                className="inline-block py-2 text-primary-500 underline"
-              >
-                Política de Privacidad
-              </button>
-            </p>
 
             <div className="text-center pt-2">
               <span className="text-text-secondary text-sm">
@@ -182,27 +228,6 @@ export function Registro() {
           </div>
         </div>
       </main>
-
-      <Dialogo
-        titulo={legal === 'terminos' ? 'Términos de Servicio' : 'Política de Privacidad'}
-        abierto={legal != null}
-        onCerrar={() => setLegal(null)}
-        acciones={<BotonTexto onClick={() => setLegal(null)}>Entendido</BotonTexto>}
-      >
-        {legal === 'terminos' ? (
-          <p>
-            Gacelas es una app comunitaria del grupo de running de Loja. Te comprometes a usarla de
-            forma respetuosa, a no publicar contenido ofensivo y a correr bajo tu propia
-            responsabilidad.
-          </p>
-        ) : (
-          <p>
-            Tus carreras, ajustes y perfil se guardan en este navegador. Tu ubicación solo se usa
-            mientras grabas una carrera y puedes ocultar la zona de tu casa en Privacidad y
-            ubicación.
-          </p>
-        )}
-      </Dialogo>
     </div>
   )
 }

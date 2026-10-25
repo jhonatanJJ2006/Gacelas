@@ -44,7 +44,7 @@ export function NuevaContrasena() {
         <button
           type="submit"
           disabled={cargando}
-          className="w-full h-14 bg-primary-600 hover:bg-primary-700 text-bg-primary font-bold rounded-xl disabled:opacity-60"
+          className="w-full h-14 bg-primary-600 hover:bg-primary-700 text-on-primary font-bold rounded-xl disabled:opacity-60"
         >
           {cargando ? 'Guardando...' : 'Guardar contraseña'}
         </button>

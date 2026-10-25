@@ -13,39 +13,38 @@
   --c-surface-container-highest: 46 53 69;
   --c-surface-container-lowest: 7 14 29;
   --c-background: 12 19 34;
-  --c-bg-primary: 17 24 39;
-  --c-bg-secondary: 31 41 55;
-  --c-text-primary: 249 250 251;
-  --c-text-secondary: 156 163 175;
-  --c-border-subtle: 55 65 81;
+  --c-bg-primary: 12 19 34;
+  --c-bg-secondary: 25 31 47;
+  --c-text-primary: 255 255 255;
+  --c-text-secondary: 168 176 194;
+  --c-border-subtle: 44 52 70;
   --c-on-surface: 220 226 247;
   --c-on-background: 220 226 247;
 }
 
-/* Tema claro: se activa al desactivar el modo oscuro en Ajustes. */
+/* Rediseño C2: solo fondos oscuros. La clase se conserva para Ajustes, pero usa la misma paleta oscura. */
 .tema-claro {
-  --c-surface: 248 250 252;
-  --c-surface-dim: 241 245 249;
-  --c-surface-bright: 255 255 255;
-  --c-surface-variant: 226 232 240;
-  --c-surface-container: 255 255 255;
-  --c-surface-container-low: 241 245 249;
-  --c-surface-container-high: 226 232 240;
-  --c-surface-container-highest: 203 213 225;
-  --c-surface-container-lowest: 255 255 255;
-  --c-background: 248 250 252;
-  --c-bg-primary: 248 250 252;
-  --c-bg-secondary: 255 255 255;
-  --c-text-primary: 17 24 39;
-  --c-text-secondary: 75 85 99;
-  --c-border-subtle: 209 213 219;
-  --c-on-surface: 31 41 55;
-  --c-on-background: 31 41 55;
-  color-scheme: light;
+  --c-surface: 12 19 34;
+  --c-surface-dim: 12 19 34;
+  --c-surface-bright: 50 57 73;
+  --c-surface-variant: 46 53 69;
+  --c-surface-container: 25 31 47;
+  --c-surface-container-low: 20 27 43;
+  --c-surface-container-high: 35 42 58;
+  --c-surface-container-highest: 46 53 69;
+  --c-surface-container-lowest: 7 14 29;
+  --c-background: 12 19 34;
+  --c-bg-primary: 12 19 34;
+  --c-bg-secondary: 25 31 47;
+  --c-text-primary: 255 255 255;
+  --c-text-secondary: 168 176 194;
+  --c-border-subtle: 44 52 70;
+  --c-on-surface: 220 226 247;
+  --c-on-background: 220 226 247;
 }
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Archivo, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -89,5 +88,68 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Rediseño C2 Deporte cinetico: titulares display en Anton, cursiva y mayusculas. */
+.font-headline-sm,
+.font-headline-md,
+.font-headline-lg,
+.font-headline-xl,
+.font-headline-lg-mobile,
+.font-headline-xl-mobile,
+.font-metric-huge,
+.font-display {
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+body {
+  background: #0c1322;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Componentes C2 Deporte cinetico (mismos que Android: core/ui Componentes.kt y DialogoC2.kt). */
+@layer components {
+  .tarjeta-c2 {
+    @apply bg-c2-card border border-c2-linea;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
+  }
+  .pildora-c2 {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 bg-c2-s2 text-[12px] font-semibold text-text-primary;
+    border-radius: 3px;
+  }
+  .etiqueta-c2 {
+    @apply block text-[10px] font-extrabold uppercase tracking-[0.12em] text-c2-muted;
+  }
+  .metrica-c2 {
+    @apply flex flex-col gap-0.5 bg-c2-s2 px-3 py-2;
+    border-radius: 3px;
+  }
+  .valor-c2 {
+    font-family: 'Anton', 'Archivo', sans-serif;
+    @apply italic text-[22px] leading-none whitespace-nowrap;
+  }
+  .boton-c2 {
+    @apply relative flex w-full items-center justify-center gap-2 h-14 text-white font-black italic uppercase text-[16px] tracking-wide transition-transform active:translate-x-[2px] active:translate-y-[2px];
+    background: linear-gradient(90deg, #7b1fa2, #a855f7);
+    clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+    filter: drop-shadow(4px 4px 0 #c084fc);
+  }
+  .boton-c2-peligro {
+    background: linear-gradient(90deg, #9d174d, #be185d);
+    filter: drop-shadow(4px 4px 0 #f472b6);
+  }
+  .boton-c2-secundario {
+    @apply relative flex w-full items-center justify-center gap-2 h-12 bg-c2-s2 text-white font-black italic uppercase text-[15px];
+    clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
   }
 }

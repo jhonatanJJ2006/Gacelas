@@ -81,7 +81,7 @@ export function CompartirDialogo({
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-compartir"
-        className="w-full sm:max-w-md bg-surface rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[95vh] overflow-y-auto"
+        className="w-full sm:max-w-md bg-c2-card border-t-2 border-c2-violeta rounded-t-[14px] sm:rounded-[14px] p-5 space-y-4 max-h-[95vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -128,7 +128,7 @@ export function CompartirDialogo({
                   role="radio"
                   aria-checked={formato === f.id}
                   onClick={() => setFormato(f.id)}
-                  className={`flex-1 min-h-[40px] rounded-full text-sm font-semibold ${formato === f.id ? 'bg-primary-600 text-bg-primary' : 'bg-surface-container text-text-secondary'}`}
+                  className={`flex-1 min-h-[40px] rounded-full text-sm font-semibold ${formato === f.id ? 'bg-primary-600 text-on-primary' : 'bg-surface-container text-text-secondary'}`}
                 >
                   {f.etiqueta}
                 </button>
@@ -155,7 +155,7 @@ export function CompartirDialogo({
               <button
                 onClick={() => void compartir()}
                 disabled={!imagen}
-                className="col-span-2 h-12 rounded-xl bg-primary-600 text-bg-primary font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
+                className="col-span-2 boton-c2 disabled:opacity-60"
               >
                 <span className="material-symbols-outlined">ios_share</span>Compartir imagen
               </button>

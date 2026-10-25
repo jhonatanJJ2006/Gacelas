@@ -19,6 +19,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -101,7 +102,17 @@ fun GacelasRaiz() {
         }
         is EstadoSesion.Lista -> {
             val inicio = remember { if (e.perfil != null) Destinos.INICIO else Destinos.BIENVENIDA }
-            GacelasNavHost(inicio = inicio, sesionActiva = e.perfil != null)
+            Box(Modifier.fillMaxSize()) {
+                GacelasNavHost(inicio = inicio, sesionActiva = e.perfil != null)
+                if (e.perfil != null) {
+                    var doc by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf<Boolean?>(null) }
+                    com.gacelas.vivo.PublicadorUbicacionVivo()
+                    doc?.let { t -> Box(Modifier.fillMaxSize().background(GColors.BgPrimary)) { com.gacelas.legal.DocumentoLegalScreen(t) { doc = null } } }
+                    if (doc == null) com.gacelas.legal.ReaceptarTerminos { doc = it }
+                }
+                com.gacelas.ui.components.AnfitrionAvisosC2()
+                com.gacelas.social.ModalSinConexion()
+            }
         }
     }
 }

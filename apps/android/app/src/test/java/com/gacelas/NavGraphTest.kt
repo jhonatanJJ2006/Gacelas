@@ -12,6 +12,7 @@ import com.gacelas.ui.theme.GacelasTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Rule
+import androidx.compose.ui.test.performSemanticsAction
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -67,8 +68,10 @@ class NavGraphTest {
             GacelasTheme { GacelasNavHost(nav, inicio = Destinos.INICIO, sesionActiva = true) }
         }
         compose.runOnIdle { nav.navigate(Destinos.AJUSTES) }
-        compose.onNodeWithText("Unidades métricas").assertExists()
-        compose.onNodeWithText("Cerrar sesión").performScrollTo().performClick()
+        compose.onNodeWithText("Unidades de distancia").assertExists()
+        compose.onNodeWithText("Autopausa").assertExists()
+        // La ventana de Robolectric es baja y la barra inferior flotante tapa la ultima fila: se invoca la accion de clic directamente.
+        compose.onNodeWithText("Cerrar sesión").performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
         compose.onNodeWithText("¿Cerrar sesión?").assertExists()
     }
 }

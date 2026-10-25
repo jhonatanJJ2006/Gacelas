@@ -350,7 +350,7 @@ private fun RutasIos(onDibujar: () -> Unit) {
         cerca = null, onCerca = {}, m = true, puedeDibujar = com.gacelas.acceso.SesionIos.contenedor.explorar != null && perfilSesion != null,
         onBuscar = {}, onRuta = {}, onDibujar = onDibujar,
         onAlternarGuardada = { id, g -> guardadas = if (g) guardadas - id else guardadas + id },
-        mapaRutas = { com.gacelas.mapa.MapaRutasAgrupadasIos(lista, {}, it) },
+        mapaRutas = { com.gacelas.mapa.MapaRutasAgrupadasIos(lista.filter { r -> r.puntos.isNotEmpty() }.map { r -> com.gacelas.mapa.SalidaRuta(r.id, r.puntos.first().first, r.puntos.first().second) }, {}, it) },
         verMapaInicial = argumento("--ver-mapa"),
     )
 }

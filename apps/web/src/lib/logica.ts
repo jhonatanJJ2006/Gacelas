@@ -20,6 +20,13 @@ export interface Publicacion {
   distanciaKm: number
   segundos: number
   ritmoSegKm: number | null
+  /** Desnivel positivo (m). */
+  desnivelM?: number
+  imagenes?: string[]
+  compartidos?: number
+  compartida?: boolean
+  autorKm?: number
+  ultimoComentario?: { autor: string; texto: string } | null
   likes: number
   comentarios: number
   puntos: PuntoGps[]
@@ -94,6 +101,7 @@ export function construirFeed(
       distanciaKm: c.distanciaKm,
       segundos: c.segundos,
       ritmoSegKm: c.distanciaKm > 0.01 ? Math.floor(c.segundos / c.distanciaKm) : null,
+      desnivelM: c.desnivelM,
       likes: 0,
       comentarios: 0,
       puntos: c.puntos,
@@ -109,6 +117,12 @@ export function construirFeed(
     distanciaKm: r.distanciaKm,
     segundos: r.segundos,
     ritmoSegKm: r.distanciaKm > 0.01 ? Math.floor(r.segundos / r.distanciaKm) : null,
+    desnivelM: r.desnivelM ?? 0,
+    imagenes: r.imagenes ?? [],
+    compartidos: r.compartidos ?? 0,
+    compartida: Boolean(r.compartida),
+    autorKm: r.autorKm,
+    ultimoComentario: r.ultimoComentario ?? null,
     likes: r.likes,
     comentarios: r.comentarios,
     puntos: r.puntos,
@@ -241,6 +255,16 @@ export function opcionesBuscador(consulta: string, rutaPreferida: string | null)
   return preferida && !filtradas.includes(preferida) ? [preferida, ...filtradas] : filtradas
 }
 
+/** Etiqueta de una alternativa: Óptima (la más corta), Plano (menos desnivel) o Trail (más desnivel). */
+export function etiquetaOpcion(o: Opcion, todas: Opcion[]): 'Óptima' | 'Plano' | 'Trail' | null {
+  if (todas.length < 2) return null
+  const min = (f: (x: Opcion) => number) => todas.reduce((a, b) => (f(b) < f(a) ? b : a))
+  if (min((x) => x.distance) === o) return 'Óptima'
+  if (min((x) => x.elevation) === o) return 'Plano'
+  if (min((x) => -x.elevation) === o) return 'Trail'
+  return null
+}
+
 /** Indicaciones simplificadas segun la distancia recorrida (sin mapas todavia). */
 export function indicacion(distanciaKm: number): { metros: number; texto: string } {
   const pasos = [
@@ -253,4 +277,22 @@ export function indicacion(distanciaKm: number): { metros: number; texto: string
   const siguiente = pasos.find((p) => p.km > distanciaKm)
   if (!siguiente) return { metros: 0, texto: 'Llegaste al final de la ruta' }
   return { metros: Math.round((siguiente.km - distanciaKm) * 1000), texto: siguiente.texto }
+}
+
+/** Nivel del corredor segun km acumulados (misma regla que Android NivelCorredor). */
+export function nivelCorredor(km: number): string {
+  if (km >= 500) return 'Gacela Élite'
+  if (km >= 150) return 'Gacela Avanzada'
+  if (km >= 30) return 'Gacela Intermedia'
+  return 'Gacela Principiante'
+}
+
+/** Km por autor sumando sus publicaciones visibles en el feed. */
+export function kmPorAutor(posts: Publicacion[]): Map<string, number> {
+  const m = new Map<string, number>()
+  for (const p of posts) {
+    const k = p.propia ? 'yo' : (p.autorId ?? p.autor)
+    m.set(k, (m.get(k) ?? 0) + p.distanciaKm)
+  }
+  return m
 }

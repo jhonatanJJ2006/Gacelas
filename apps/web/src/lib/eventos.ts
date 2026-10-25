@@ -139,7 +139,7 @@ export function suscribirEvento(id: string, alCambiar: () => void): () => void {
 }
 
 const COLORES = [
-  '#F59E0B',
+  '#A855F7',
   '#10B981',
   '#3B82F6',
   '#EF4444',

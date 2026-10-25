@@ -2,20 +2,26 @@ import { unirEventos } from '../../lib/eventos'
 import { InsigniaRacha } from '../../components/Racha'
 import { useEsEscritorio } from '../../lib/useEsEscritorio'
 import { MetaSemanal, RankingSemanal } from '../../components/PanelesEscritorio'
-import { lazy, Suspense, useMemo } from 'react'
+import { lazy, Suspense, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { filtrarEventos } from '../../lib/filtros'
 import { formatearRitmo, Unidades } from '../../lib/geo'
-import { resumenSemana } from '../../lib/estadisticas'
+import { resumenSemana, retoMes, totalesSemana, inicioSemana } from '../../lib/estadisticas'
+import {
+  AmigosEnRuta,
+  RutaSugerida,
+  SemanaAtletica,
+  TarjetaEvento,
+  TarjetaReto,
+} from './SeccionesInicio'
 import { eventosMock } from '../../mocks/data'
 import { useApp } from '../../store/app'
-import { saludo } from '../../lib/logica'
+import { nivelCorredor, saludo } from '../../lib/logica'
+import { InsigniaNivel } from '../comunidad/PostSocial'
 
 const Runner3D = lazy(() =>
   import('../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
 )
-
-const META_DIAS = 5
 
 export function Inicio() {
   const escritorio = useEsEscritorio()
@@ -27,50 +33,53 @@ export function Inicio() {
   const ahora = Date.now()
   const semana = useMemo(() => resumenSemana(carreras, ahora), [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
   const hoy = (new Date(ahora).getDay() + 6) % 7
-  const proximo = filtrarEventos(unirEventos(creados, eventosMock), 'Próximos', inscritos)[0]
+  const feedSocial = useApp((s) => s.feedSocial)
+  const publicaciones = useApp((s) => s.publicaciones)
+  const refrescarFeed = useApp((s) => s.refrescarFeed)
+  const meta = useApp((s) => s.ajustes.metaSemanal) ?? 3
+  useEffect(() => {
+    if (sesion) void refrescarFeed()
+  }, [sesion, refrescarFeed])
+  const totales = useMemo(() => totalesSemana(carreras, ahora), [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
+  const reto = useMemo(() => retoMes(carreras, ahora), [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
+  const amigos = publicaciones.filter((p) => p.sigo && !p.propia).slice(0, 3)
+  const lunes = new Date(inicioSemana(ahora))
+  const domingo = new Date(lunes.getTime() + 6 * 86_400_000)
+  const rango = `${lunes.getDate()} - ${domingo.getDate()} ${domingo.toLocaleDateString('es-EC', { month: 'short' }).replace('.', '')}`
+  // Con Supabase los eventos vienen de la base; los de ejemplo solo sin backend.
+  const eventos = feedSocial ? creados : unirEventos(creados, eventosMock)
+  const proximo = filtrarEventos(eventos, 'Próximos', inscritos)[0]
   const fecha = new Date(ahora).toLocaleDateString('es-EC', {
     weekday: 'long',
     day: 'numeric',
     month: 'short',
   })
   const nombre = sesion?.nombre.split(' ')[0] ?? 'Corredor'
+  const rutas = useApp((s) => s.rutas)
 
   return (
     <div className="flex flex-col w-full px-margin pb-space-3xl space-y-space-xl contenedor-escritorio lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-6 lg:space-y-0 lg:items-start">
-      <section className="flex flex-col space-y-space-xs pt-space-md lg:col-span-12 lg:pt-0">
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="font-label-md text-label-md text-primary flex items-center gap-1.5 uppercase tracking-wider">
-              <span className="material-symbols-outlined text-[16px]">location_on</span>
-              Loja, Ecuador
+      <section className="flex flex-col gap-2 pt-space-md lg:col-span-12 lg:pt-0">
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-c2-muted capitalize">
+          {fecha}
+        </span>
+        <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary tracking-tight">
+          {saludo(new Date(ahora).getHours())}, {nombre}
+        </h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="pildora-c2">
+            <span className="material-symbols-outlined text-[14px] text-c2-violeta">
+              location_on
             </span>
-            <h1 className="font-headline-md text-headline-md text-text-primary tracking-tight">
-              {saludo(new Date(ahora).getHours())}, {nombre}
-            </h1>
-          </div>
-          <div className="bg-surface-container px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm text-text-secondary">
-            <span className="material-symbols-outlined text-[18px] text-primary-400">
-              calendar_today
-            </span>
-            <span className="font-label-md text-label-md text-on-surface capitalize whitespace-nowrap">
-              {fecha}
-            </span>
-          </div>
+            Loja 14° Fresco
+          </span>
+          <InsigniaNivel nivel={nivelCorredor(carreras.reduce((t, c) => t + c.distanciaKm, 0))} />
+          <InsigniaRacha compacta />
         </div>
       </section>
 
-      <section className="lg:col-span-7 lg:row-span-3 relative flex flex-col rounded-3xl overflow-hidden bg-surface-container-high border border-border-subtle shadow-2xl">
-        <div className="absolute top-3 inset-x-3 z-20 flex items-center justify-between pointer-events-none">
-          <div className="inline-flex items-center gap-1.5 px-3 max-[380px]:px-2 py-1 min-w-0 rounded-full bg-bg-secondary/90 backdrop-blur-md text-primary border border-primary/20 shadow-md">
-            <span className="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
-            <span className="font-label-md text-label-md font-bold tracking-wide uppercase whitespace-nowrap max-[380px]:text-[10px] max-[380px]:tracking-normal">
-              {semana.carreras} {semana.carreras === 1 ? 'carrera' : 'carreras'} esta semana
-            </span>
-          </div>
-          <InsigniaRacha compacta />
-        </div>
-
-        <div className="relative w-full h-[430px] lg:h-[560px] bg-surface-container-lowest">
+      <section className="lg:col-span-7 lg:row-span-3 relative flex flex-col overflow-hidden bg-c2-card tarjeta-c2">
+        <div className="relative w-full h-[320px] lg:h-[520px] bg-c2-bg">
           <Suspense
             fallback={
               <div className="w-full h-full flex items-center justify-center text-text-secondary">
@@ -88,99 +97,59 @@ export function Inicio() {
               target={[0, 0.8, 0]}
             />
           </Suspense>
-        </div>
-
-        <div className="absolute bottom-4 inset-x-4 z-20 grid grid-cols-3 gap-2">
-          <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
-            <span className="font-metric-huge text-metric-huge max-[380px]:text-[28px] whitespace-nowrap text-primary leading-none">
-              {semana.diasCorridos.size}
-            </span>
-            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
-              Días
-            </span>
+          <div className="pointer-events-none absolute top-3 left-3 z-20">
+            <span className="etiqueta-c2">Avatar</span>
+            <p className="font-headline-sm text-[18px] italic uppercase text-text-primary">
+              {semana.diasCorridos.size} {semana.diasCorridos.size === 1 ? 'día' : 'días'}
+            </p>
           </div>
-          <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
-            <span
-              className="font-metric-huge text-metric-huge max-[380px]:text-[28px] whitespace-nowrap text-secondary leading-none"
-              data-testid="km-semana"
-            >
-              {Unidades.texto(semana.km, m, 1)}
-            </span>
-            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
-              {Unidades.etiquetaDistancia(m)}
-            </span>
-          </div>
-          <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
-            <span className="font-metric-huge text-metric-huge max-[380px]:text-[28px] whitespace-nowrap text-text-primary leading-none">
-              {formatearRitmo(Unidades.ritmo(semana.ritmoSegKm, m))}
-            </span>
-            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
-              {Unidades.etiquetaRitmo(m)}
-            </span>
+          <div className="pointer-events-none absolute top-3 right-3 z-20 text-right">
+            <span className="etiqueta-c2">Esta semana</span>
+            <p className="font-headline-sm text-[18px] italic text-c2-violeta">
+              {Unidades.texto(semana.km, m, 1)} {Unidades.etiquetaDistancia(m)}
+            </p>
           </div>
         </div>
-      </section>
-
-      <section className="space-y-space-md lg:col-span-5">
-        <div className="flex items-center justify-between">
-          <h2 className="font-title-md text-title-md text-text-primary">Acción rápida</h2>
-        </div>
-
-        <Link
-          to="/correr"
-          className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.98] rounded-2xl p-6 flex items-center justify-between shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all"
-        >
-          <div className="flex flex-col">
-            <span className="font-headline-sm text-headline-sm text-bg-primary font-bold">
-              Empezar a correr
-            </span>
-            <span className="font-body-md text-body-md text-bg-primary mt-1">
-              Graba tu siguiente carrera
-            </span>
-          </div>
-          <div className="w-14 h-14 rounded-full bg-bg-primary/20 flex items-center justify-center">
-            <span className="material-symbols-outlined text-[32px] text-bg-primary">
-              play_arrow
-            </span>
-          </div>
-        </Link>
-      </section>
-
-      <section className="space-y-space-md lg:col-span-5">
-        <div className="flex items-center justify-between">
-          <h2 className="font-title-md text-title-md text-text-primary">Semana atlética</h2>
-          <span className="font-label-md text-label-md text-text-secondary">
-            {semana.diasCorridos.size} de {META_DIAS} días
-          </span>
-        </div>
-
-        <div className="flex gap-2">
-          {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day, index) => (
-            <div
-              key={day}
-              data-corrido={semana.diasCorridos.has(index)}
-              className={`flex-1 aspect-square rounded-xl flex flex-col items-center justify-center ${
-                semana.diasCorridos.has(index)
-                  ? 'bg-secondary-600/20 border-2 border-secondary-600'
-                  : index === hoy
-                    ? 'bg-surface-container border-2 border-primary-600'
-                    : 'bg-surface-container border border-border-subtle'
-              }`}
-            >
-              <span className="font-label-md text-label-md text-text-primary">{day}</span>
-              {semana.diasCorridos.has(index) && (
-                <span className="material-symbols-outlined text-[16px] text-secondary-500 mt-1">
-                  check_circle
-                </span>
-              )}
+        <div className="p-4 flex flex-col gap-4">
+          <Link to="/correr" className="boton-c2">
+            <span className="material-symbols-outlined text-[20px]">play_arrow</span>
+            Empezar a correr
+          </Link>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="metrica-c2">
+              <span className="etiqueta-c2">Días</span>
+              <span className="valor-c2 text-text-primary">{semana.diasCorridos.size}</span>
             </div>
-          ))}
+            <div className="metrica-c2">
+              <span className="etiqueta-c2">{Unidades.etiquetaDistancia(m)}</span>
+              <span className="valor-c2 text-c2-violeta" data-testid="km-semana">
+                {Unidades.texto(semana.km, m, 1)}
+              </span>
+            </div>
+            <div className="metrica-c2">
+              <span className="etiqueta-c2">Ritmo {Unidades.etiquetaRitmo(m)}</span>
+              <span className="valor-c2 text-c2-menta">
+                {formatearRitmo(Unidades.ritmo(semana.ritmoSegKm, m))}
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
+      <RutaSugerida rutas={rutas} carreras={carreras} m={m} />
+
+      <SemanaAtletica
+        semana={totales}
+        dias={semana.diasCorridos}
+        hoy={hoy}
+        metaCarreras={meta}
+        rango={rango}
+        m={m}
+      />
+
       <section className="space-y-space-md lg:col-span-5">
         <div className="flex items-center justify-between">
-          <h2 className="font-title-md text-title-md text-text-primary">Próximo encuentro</h2>
+          <h2 className="font-title-md text-title-md text-text-primary">Próximo evento</h2>
           <Link
             to="/comunidad/eventos"
             className="inline-block py-2 font-label-md text-label-md text-primary"
@@ -188,40 +157,16 @@ export function Inicio() {
             Ver todos
           </Link>
         </div>
-
         {proximo ? (
-          <Link
-            to={`/comunidad/eventos/${proximo.id}`}
-            className="block bg-surface-container rounded-2xl border border-border-subtle overflow-hidden"
-          >
-            <div className="h-32 bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
-              <span className="material-symbols-outlined text-[64px] text-white">event</span>
-            </div>
-            <div className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined text-[16px] text-primary-500">
-                  calendar_today
-                </span>
-                <span className="font-label-md text-label-md text-text-secondary">
-                  {proximo.fecha}, {proximo.hora}
-                </span>
-              </div>
-              <h3 className="font-title-md text-title-md text-text-primary mb-1">
-                {proximo.titulo}
-              </h3>
-              <p className="font-body-sm text-body-sm text-text-secondary mb-3">
-                {proximo.descripcion}
-              </p>
-              <span className="font-label-md text-label-md text-text-secondary">
-                {proximo.participantes + (inscritos.includes(proximo.id) ? 1 : 0)} corredores
-                {inscritos.includes(proximo.id) ? ' (tú incluido)' : ''}
-              </span>
-            </div>
-          </Link>
+          <TarjetaEvento evento={proximo} inscrito={inscritos.includes(proximo.id)} />
         ) : (
           <p className="text-text-secondary">No hay encuentros próximos.</p>
         )}
       </section>
+
+      <TarjetaReto reto={reto} m={m} />
+
+      <AmigosEnRuta lista={amigos} m={m} />
       {escritorio && (
         <div className="lg:col-span-12 grid grid-cols-2 gap-6">
           <MetaSemanal km={semana.km} />

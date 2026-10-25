@@ -51,7 +51,7 @@ import kotlinx.coroutines.delay
 import platform.UIKit.UIView
 import kotlin.math.pow
 
-private const val NARANJA = 0xFFFF6A13
+private const val NARANJA = 0xFFC084FC
 private const val MAGENTA = 0xFFD6338A
 private fun conAlfa(argb: Long, a: Float) = ((a * 255).toLong().coerceIn(0, 255) shl 24) or (argb and 0xFFFFFF)
 
@@ -245,15 +245,18 @@ private fun ControlesMapaIos(vista: UIView?, rumbo: Float, modifier: Modifier) {
     }
 }
 
+/** Salida de una ruta: id y coordenada del primer punto. core:ui no depende del dominio de rutas. */
+data class SalidaRuta(val id: String, val lat: Double, val lng: Double)
+
 /** Salidas de las rutas como circulos tocables (MapaRutasAgrupadas en Android). */
 @Composable
-fun MapaRutasAgrupadasIos(rutas: List<com.gacelas.rutas.domain.modelo.Ruta>, onRuta: (String) -> Unit, modifier: Modifier = Modifier) {
+fun MapaRutasAgrupadasIos(rutas: List<SalidaRuta>, onRuta: (String) -> Unit, modifier: Modifier = Modifier) {
     if (!MapaIos.disponible()) {
         Text("El mapa no está disponible en este dispositivo.", style = GType.bodyMd, color = com.gacelas.ui.theme.GColors.TextSecondary)
         return
     }
     val salidas = remember(rutas) {
-        rutas.filter { it.puntos.isNotEmpty() }.map { CirculoComun(Coord(it.puntos.first().first, it.puntos.first().second), 9f, NARANJA, bordeDp = 2.5f, id = it.id) }
+        rutas.map { CirculoComun(Coord(it.lat, it.lng), 9f, NARANJA, bordeDp = 2.5f, id = it.id) }
     }
     MapaLibreIos(modifier, circulos = salidas, zoom = 12.0, alTocarCirculo = onRuta)
 }

@@ -61,7 +61,7 @@ export function NavegacionRuta() {
               onClick={() => setMapa3d(!mapa3d)}
               aria-pressed={mapa3d}
               data-testid="mapa-3d"
-              className={`px-3 py-1.5 min-h-8 rounded-full ${mapa3d ? 'bg-primary-600 text-bg-primary' : 'bg-black/50'}`}
+              className={`px-3 py-1.5 min-h-8 rounded-full ${mapa3d ? 'bg-primary-600 text-on-primary' : 'bg-black/50'}`}
             >
               Mapa 3D
             </button>
@@ -71,7 +71,7 @@ export function NavegacionRuta() {
               key={a}
               onClick={() => setAnimacion(a)}
               aria-pressed={animacion === a}
-              className={`px-3 py-1.5 min-h-8 rounded-full ${animacion === a ? 'bg-primary-600 text-bg-primary' : 'bg-black/50'}`}
+              className={`px-3 py-1.5 min-h-8 rounded-full ${animacion === a ? 'bg-primary-600 text-on-primary' : 'bg-black/50'}`}
             >
               {a === 'Jog' ? 'Trote' : 'Carrera'}
             </button>
@@ -166,7 +166,7 @@ export function NavegacionRuta() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/correr/cronometro')}
-              className="flex-1 h-12 bg-primary-600 hover:bg-primary-700 text-bg-primary font-semibold rounded-xl flex items-center justify-center gap-2 shadow-lg transition-colors active:scale-95"
+              className="flex-1 h-12 bg-primary-600 hover:bg-primary-700 text-on-primary font-semibold rounded-xl flex items-center justify-center gap-2 shadow-lg transition-colors active:scale-95"
             >
               <span className="material-symbols-outlined">timer</span>
               Ver cronómetro

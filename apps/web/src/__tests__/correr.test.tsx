@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { act, screen, waitFor } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { instalarGpsFalso, prepararApp, renderRuta } from '../test/utils'
 import { useApp } from '../store/app'
@@ -9,9 +9,24 @@ describe('grabar una carrera con GPS', () => {
   let gps: ReturnType<typeof instalarGpsFalso>
   beforeEach(() => {
     prepararApp()
+    useApp.setState((s) => ({ ajustes: { ...s.ajustes, cuentaRegresivaSeg: 0 } }))
     gps = instalarGpsFalso()
+    localStorage.setItem(
+      'gacelas:consentimientos',
+      JSON.stringify([{ tipo: 'gps_carrera', version: 'v', otorgado: true, fechaMs: 1 }])
+    )
   })
   afterEach(() => descartarCarrera())
+
+  it('pide el consentimiento de GPS antes de la primera carrera', async () => {
+    localStorage.removeItem('gacelas:consentimientos')
+    renderRuta('/correr')
+    await userEvent.click(await screen.findByRole('button', { name: 'Comenzar carrera' }))
+    expect(screen.getByText('Usar tu ubicación durante la carrera')).toBeInTheDocument()
+    expect(gps.geo.watchPosition).not.toHaveBeenCalled()
+    await userEvent.click(screen.getByRole('button', { name: 'Aceptar y empezar' }))
+    expect(await screen.findByText('En curso')).toBeInTheDocument()
+  })
 
   it('Correr muestra la señal del GPS y empieza la carrera', async () => {
     renderRuta('/correr')
@@ -22,6 +37,17 @@ describe('grabar una carrera con GPS', () => {
     expect(gps.geo.watchPosition).toHaveBeenCalled()
   })
 
+  it('cuenta regresiva de ajustes antes de arrancar el GPS', async () => {
+    useApp.setState((s) => ({ ajustes: { ...s.ajustes, cuentaRegresivaSeg: 3 } }))
+    renderRuta('/correr')
+    await screen.findByText('GPS Activado')
+    await userEvent.click(screen.getByRole('button', { name: 'Comenzar carrera' }))
+    expect(screen.getByTestId('cuenta-regresiva')).toHaveTextContent('3')
+    expect(gps.geo.watchPosition).not.toHaveBeenCalled()
+    await userEvent.click(screen.getByRole('button', { name: 'Empezar ya' }))
+    expect(await screen.findByText('En curso')).toBeInTheDocument()
+  })
+
   it('Correr avisa si el GPS falla', async () => {
     gps.geo.getCurrentPosition.mockImplementation(
       (_ok: unknown, mal: (e: GeolocationPositionError) => void) =>
@@ -29,7 +55,8 @@ describe('grabar una carrera con GPS', () => {
     )
     renderRuta('/correr')
     expect(await screen.findByText('GPS no disponible')).toBeInTheDocument()
-    expect(screen.getByText(/denegado/)).toBeInTheDocument()
+    expect(screen.getAllByText(/denegado/).length).toBeGreaterThan(0)
+    expect(screen.getByText('Permiso de ubicación denegado')).toBeInTheDocument()
   })
 
   it('distancia y ritmo salen de los puntos GPS; pausa, termina y guarda', async () => {
@@ -45,9 +72,12 @@ describe('grabar una carrera con GPS', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Pausar' }))
     expect(screen.getByText('En pausa')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Reanudar' }))
+    const pausa = screen.getByRole('dialog', { name: 'Carrera en pausa' })
+    await userEvent.click(within(pausa).getByRole('button', { name: 'Reanudar' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: 'Terminar carrera' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Terminar y guardar' }))
     expect(await screen.findByText('Carrera completada')).toBeInTheDocument()
     expect(screen.getByTestId('resumen-distancia')).toHaveTextContent('0.22')
     expect(gps.activos()).toBe(0)
@@ -78,6 +108,7 @@ describe('grabar una carrera con GPS', () => {
     renderRuta('/correr')
     await userEvent.click(await screen.findByRole('button', { name: 'Comenzar carrera' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Terminar carrera' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Terminar y guardar' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Descartar' }))
     await waitFor(() => expect(tracker.estado.fase).toBe('inactiva'))
     expect(useApp.getState().carreras).toHaveLength(0)
@@ -86,5 +117,25 @@ describe('grabar una carrera con GPS', () => {
   it('en curso sin carrera activa vuelve a Correr', async () => {
     renderRuta('/correr/en-curso')
     expect(await screen.findByText('¿Listo para correr?')).toBeInTheDocument()
+  })
+})
+
+describe('logros', () => {
+  it('reglas simples: primera carrera, 5 km y 10 km', async () => {
+    const { logrosCumplidos } = await import('../features/social/logros')
+    const c = (km: number, d: number) =>
+      ({
+        id: `${d}`,
+        inicioMs: new Date(2026, 0, d, 7).getTime(),
+        distanciaKm: km,
+        segundos: 1800,
+      }) as never
+    expect(logrosCumplidos([], Date.now())).toEqual([])
+    expect(logrosCumplidos([c(3, 1)], Date.now())).toEqual(['primera_carrera'])
+    expect(logrosCumplidos([c(3, 1), c(10.2, 2)], Date.now())).toEqual([
+      'primera_carrera',
+      'km_5',
+      'km_10',
+    ])
   })
 })

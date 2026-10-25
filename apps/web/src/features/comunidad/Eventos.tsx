@@ -5,6 +5,7 @@ import { CalendarioEventos } from './CalendarioEventos'
 import { TIPOS_EVENTO, type TipoEvento } from '../../lib/eventos'
 import { Aviso, BotonTexto, Dialogo, MensajeError } from '../../components/ui'
 import { useAviso } from '../../hooks'
+import { ModalC2, ResumenModal } from '../../components/modales'
 import { filtrarEventos, PESTANAS_EVENTOS, type PestanaEventos } from '../../lib/filtros'
 import { crearId } from '../../lib/runTracker'
 import { eventosMock, type Evento } from '../../mocks/data'
@@ -36,7 +37,11 @@ export function Eventos() {
   })
   const [error, setError] = useState<string | null>(null)
   const [aviso, mostrarAviso] = useAviso()
-  const eventos = filtrarEventos(unirEventos(creados, eventosMock), pestana, inscritos)
+  const [uniendo, setUniendo] = useState<Evento | null>(null)
+  const feedSocial = useApp((s) => s.feedSocial)
+  const todos = feedSocial ? creados : unirEventos(creados, eventosMock)
+  const [tipo, setTipo] = useState<TipoEvento | null>(null)
+  const eventos = filtrarEventos(todos, pestana, inscritos).filter((e) => !tipo || e.tipo === tipo)
 
   const guardar = async () => {
     const err = validarEvento(form)
@@ -84,7 +89,9 @@ export function Eventos() {
             >
               <span className="material-symbols-outlined">arrow_back</span>
             </Link>
-            <h1 className="font-headline-md text-headline-md text-text-primary">Eventos</h1>
+            <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
+              Eventos
+            </h1>
           </div>
           <div className="flex items-center gap-2 ml-auto mr-2">
             <Link
@@ -112,7 +119,7 @@ export function Eventos() {
               setCreando(true)
             }}
             aria-label="Crear evento"
-            className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-bg-primary hover:bg-primary-700 transition-colors shadow-lg"
+            className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-on-primary hover:bg-primary-700 transition-colors shadow-lg"
           >
             <span className="material-symbols-outlined">add</span>
           </button>
@@ -125,9 +132,21 @@ export function Eventos() {
               role="tab"
               aria-selected={pestana === p}
               onClick={() => setPestana(p)}
-              className={`px-4 py-2 rounded-full font-label-md text-label-md ${pestana === p ? 'bg-primary-600 text-bg-primary' : 'bg-surface-container text-text-secondary hover:text-text-primary'}`}
+              className={`px-4 py-2 rounded-full font-label-md text-label-md ${pestana === p ? 'bg-primary-600 text-on-primary' : 'bg-surface-container text-text-secondary hover:text-text-primary'}`}
             >
               {p}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2 overflow-x-auto no-scrollbar" aria-label="Filtrar por tipo">
+          {(Object.keys(TIPOS_EVENTO) as TipoEvento[]).map((t) => (
+            <button
+              key={t}
+              aria-pressed={tipo === t}
+              onClick={() => setTipo(tipo === t ? null : t)}
+              className={`px-3 py-1.5 rounded-lg border text-label-md whitespace-nowrap ${tipo === t ? 'border-primary-600 bg-primary-600/15 text-primary' : 'border-border-subtle text-text-secondary'}`}
+            >
+              {TIPOS_EVENTO[t]}
             </button>
           ))}
         </div>
@@ -135,7 +154,7 @@ export function Eventos() {
 
       {vista === 'calendario' && (
         <div className="px-margin lg:px-0 pb-6">
-          <CalendarioEventos eventos={unirEventos(creados, eventosMock)} inscritos={inscritos} />
+          <CalendarioEventos eventos={todos} inscritos={inscritos} />
         </div>
       )}
       <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6 lg:space-y-0">
@@ -146,69 +165,166 @@ export function Eventos() {
               : 'No hay eventos.'}
           </p>
         )}
-        {eventos.map((evento) => {
+        {eventos.map((evento, i) => {
           const inscrito = inscritos.includes(evento.id)
+          const participantes = evento.participantes + (inscrito ? 1 : 0)
+          const ruta = evento.rutaId ? rutas.find((r) => r.id === evento.rutaId) : undefined
+          const inscribir = !evento.pasado && (
+            <button
+              onClick={() => {
+                if (!inscrito) return setUniendo(evento)
+                void alternar(evento.id)
+                mostrarAviso('Inscripción cancelada')
+              }}
+              aria-pressed={inscrito}
+              className={`px-4 py-2 font-label-lg text-label-lg rounded-lg transition-colors flex items-center gap-1 ${inscrito ? 'bg-surface-container-high text-text-primary' : 'bg-primary-600 hover:bg-primary-700 text-on-primary'}`}
+            >
+              {i === 0 && (
+                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+              )}
+              {inscrito ? 'Inscrito' : 'Inscribirse'}
+            </button>
+          )
+          const lleno = evento.cupo != null && participantes >= evento.cupo
+          const fecha = evento.inicioMs != null ? new Date(evento.inicioMs) : null
+          if (i === 0)
+            return (
+              <article
+                key={evento.id}
+                className="relative bg-surface-container rounded-2xl border border-primary-600/40 overflow-hidden lg:col-span-full"
+                data-testid="evento"
+              >
+                <div className="h-1 bg-gradient-to-r from-primary-600 via-secondary-500 to-success" />
+                <div className="p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="px-2 py-0.5 rounded-md border border-primary-600/50 text-primary text-label-sm flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">star</span>Evento
+                      principal
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-label-sm ${evento.pasado ? 'bg-surface-container-high text-text-secondary' : 'bg-success/15 text-success'}`}
+                    >
+                      {evento.pasado
+                        ? 'Finalizado'
+                        : lleno
+                          ? 'Lista de espera'
+                          : 'Inscripción abierta'}
+                    </span>
+                  </div>
+                  <Link to={`/comunidad/eventos/${evento.id}`} className="block space-y-1">
+                    <h2 className="font-headline-sm text-headline-sm text-text-primary">
+                      {evento.titulo}
+                    </h2>
+                    {evento.creadoPorUsuario && (
+                      <span className="text-label-sm text-primary">Organizas tú</span>
+                    )}
+                    <p className="flex items-center gap-2 text-text-secondary text-body-sm capitalize">
+                      <span className="material-symbols-outlined text-[18px] text-primary">
+                        schedule
+                      </span>
+                      {evento.fecha} • {evento.hora}
+                    </p>
+                    <p className="flex items-center gap-2 text-text-secondary text-body-sm">
+                      <span className="material-symbols-outlined text-[18px] text-primary">
+                        location_on
+                      </span>
+                      {evento.ubicacion}
+                    </p>
+                  </Link>
+                  <div className="grid grid-cols-3 gap-2" data-testid="evento-metricas">
+                    {[
+                      ['Distancia', `${evento.distanciaKm} km`, 'text-primary'],
+                      ['Tipo', TIPOS_EVENTO[evento.tipo ?? 'grupal'], 'text-text-primary'],
+                      [
+                        'Desnivel',
+                        ruta ? `+${Math.round(ruta.elevacionM)} m` : '--',
+                        'text-success',
+                      ],
+                    ].map(([t, v, c]) => (
+                      <div key={t} className="rounded-xl bg-surface-container-high p-2 text-center">
+                        <div className="text-label-sm text-text-secondary">{t}</div>
+                        <div className={`font-title-sm text-title-sm ${c}`}>{v}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-label-md text-label-md text-text-secondary">
+                      {participantes} participantes
+                    </span>
+                    {inscribir}
+                  </div>
+                </div>
+              </article>
+            )
           return (
             <article
               key={evento.id}
-              className="bg-surface-container rounded-2xl border border-border-subtle overflow-hidden hover:border-primary-600/50 transition-colors"
+              className="tarjeta-c2 p-4 space-y-3 hover:border-primary-600/50 transition-colors"
               data-testid="evento"
             >
-              <Link to={`/comunidad/eventos/${evento.id}`} className="block">
-                <div className="h-40 bg-gradient-to-br from-primary-600 to-secondary-600 relative overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[80px] text-white/20">
-                      event
-                    </span>
-                  </div>
-                  <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full">
-                    <span className="text-white font-label-md text-label-md">
-                      {evento.distanciaKm} km
-                    </span>
-                  </div>
-                  {evento.creadoPorUsuario && (
-                    <div className="absolute top-4 left-4 bg-black/60 px-3 py-1.5 rounded-full text-white text-label-md">
-                      Organizas tú
-                    </div>
-                  )}
+              {i === 1 && <h3 className="sr-only">Más eventos locales</h3>}
+              <Link to={`/comunidad/eventos/${evento.id}`} className="flex gap-3">
+                <div className="w-14 shrink-0 rounded-xl border border-border-subtle bg-surface-container-high flex flex-col items-center justify-center py-1">
+                  <span className="text-label-sm text-primary uppercase">
+                    {fecha
+                      ? fecha.toLocaleDateString('es-EC', { weekday: 'short' }).replace('.', '')
+                      : '--'}
+                  </span>
+                  <span className="font-headline-sm text-headline-sm text-text-primary leading-none">
+                    {fecha ? fecha.getDate() : '--'}
+                  </span>
+                  <span className="text-label-sm text-text-secondary uppercase">
+                    {fecha
+                      ? fecha.toLocaleDateString('es-EC', { month: 'short' }).replace('.', '')
+                      : ''}
+                  </span>
                 </div>
-                <div className="p-4 pb-0">
-                  <h2 className="font-title-md text-title-md text-text-primary mb-2">
-                    {evento.titulo}
-                  </h2>
-                  <div className="space-y-2 mb-3">
-                    <div className="flex items-center gap-2 text-text-secondary">
-                      <span className="material-symbols-outlined text-[18px] text-primary-500">
-                        calendar_today
-                      </span>
-                      <span className="font-body-sm text-body-sm capitalize">
-                        {evento.fecha}, {evento.hora}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-text-secondary">
-                      <span className="material-symbols-outlined text-[18px] text-secondary-500">
-                        location_on
-                      </span>
-                      <span className="font-body-sm text-body-sm">{evento.ubicacion}</span>
-                    </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-body-sm text-text-secondary truncate">
+                      {evento.hora} • {evento.ubicacion}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-md bg-primary-600/15 text-primary text-label-sm shrink-0">
+                      {TIPOS_EVENTO[evento.tipo ?? 'grupal']}
+                    </span>
                   </div>
+                  <h2 className="font-title-md text-title-md text-text-primary">{evento.titulo}</h2>
+                  {evento.creadoPorUsuario && (
+                    <span className="text-label-sm text-primary">Organizas tú</span>
+                  )}
+                  <p className="text-body-sm text-text-secondary">
+                    {evento.distanciaKm} km
+                    {ruta ? ` • +${Math.round(ruta.elevacionM)} m desnivel` : ''}
+                  </p>
                 </div>
               </Link>
-              <div className="flex items-center justify-between p-4 pt-3 border-t border-border-subtle mx-4 px-0">
+              {evento.cupo != null && (
+                <div>
+                  <div className="flex justify-between text-label-sm text-text-secondary mb-1">
+                    <span>Cupos confirmados</span>
+                    <span className="text-primary">
+                      {Math.min(participantes, evento.cupo)}/{evento.cupo} cupos
+                    </span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
+                    <div
+                      className="h-full bg-primary-600"
+                      style={{ width: `${Math.min(100, (participantes / evento.cupo) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
                 <span className="font-label-md text-label-md text-text-secondary">
-                  {evento.participantes + (inscrito ? 1 : 0)} participantes
+                  {participantes} participantes
                 </span>
-                {!evento.pasado && (
-                  <button
-                    onClick={() => {
-                      void alternar(evento.id)
-                      mostrarAviso(inscrito ? 'Inscripción cancelada' : 'Te inscribiste')
-                    }}
-                    aria-pressed={inscrito}
-                    className={`px-4 py-2 font-label-lg text-label-lg rounded-lg transition-colors ${inscrito ? 'bg-surface-container-high text-text-primary' : 'bg-primary-600 hover:bg-primary-700 text-bg-primary'}`}
+                {inscribir || (
+                  <Link
+                    to={`/comunidad/eventos/${evento.id}`}
+                    className="px-4 py-2 rounded-lg border border-border-subtle text-text-primary text-label-lg"
                   >
-                    {inscrito ? 'Inscrito' : 'Inscribirse'}
-                  </button>
+                    Ver detalles
+                  </Link>
                 )}
               </div>
             </article>
@@ -314,6 +430,35 @@ export function Eventos() {
         {clubId && <p className="text-primary-400">Se publicará como evento del club.</p>}
         <MensajeError mensaje={error} />
       </Dialogo>
+      <ModalC2
+        abierto={uniendo != null}
+        icono="event"
+        titulo="Unirse al evento"
+        texto={
+          uniendo
+            ? `${uniendo.titulo} · ${uniendo.fecha} ${uniendo.hora} · ${uniendo.ubicacion}`
+            : ''
+        }
+        primario="Inscribirme"
+        onPrimario={() => {
+          if (!uniendo) return
+          void alternar(uniendo.id)
+          mostrarAviso(`Te inscribiste a ${uniendo.titulo}`)
+          setUniendo(null)
+        }}
+        onCerrar={() => setUniendo(null)}
+        secundario="Ahora no"
+      >
+        {uniendo && (
+          <ResumenModal
+            datos={[
+              [`${uniendo.distanciaKm} km`, 'Distancia'],
+              [String(uniendo.participantes), 'Inscritos'],
+              [uniendo.cupo != null ? String(uniendo.cupo) : 'Libre', 'Cupo'],
+            ]}
+          />
+        )}
+      </ModalC2>
       <Aviso mensaje={aviso} />
     </div>
   )

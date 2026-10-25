@@ -30,7 +30,7 @@ fun CargandoGoogle(fase: FaseGoogle) {
                 .padding(horizontal = 28.dp, vertical = 24.dp).testTag("cargando-google"),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            CircularProgressIndicator(Modifier.size(36.dp), color = Color(0xFFD97706), strokeWidth = 3.dp)
+            CircularProgressIndicator(Modifier.size(36.dp), color = Color(0xFF7B1FA2), strokeWidth = 3.dp)
             Text(fase.texto, fontFamily = com.gacelas.ui.theme.Inter, fontSize = 15.sp, color = Color.White)
         }
     }
@@ -39,9 +39,9 @@ fun CargandoGoogle(fase: FaseGoogle) {
 /** El error se muestra en un dialogo (no se pierde fuera de la tarjeta). */
 @Composable
 fun ErrorGoogle(mensaje: String, titulo: String = "No se pudo entrar con Google", onCerrar: () -> Unit) {
-    androidx.compose.material3.AlertDialog(
+    com.gacelas.ui.components.DialogoC2(
         onDismissRequest = onCerrar,
-        confirmButton = { androidx.compose.material3.TextButton(onClick = onCerrar) { Text("Entendido", color = Color(0xFFF59E0B)) } },
+        confirmButton = { com.gacelas.ui.components.BotonModalC2("Entendido", onCerrar) },
         title = { Text(titulo) },
         text = { Text(mensaje, modifier = Modifier.testTag("error-google")) },
         containerColor = Color(0xFF131926), titleContentColor = Color.White, textContentColor = Color(0xFFBCC7DE),

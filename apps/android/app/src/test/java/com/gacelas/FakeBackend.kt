@@ -13,6 +13,7 @@ class FakeBackend : Backend {
     val usuarios = mutableListOf<Triple<String, String, String>>() // id, email, password
     var actual: UsuarioRemoto? = null
     var sinRed = false
+    var ahoraIso = "2026-10-25T15:00:00Z"
     var confirmarCorreo = false
     var googleActivo = true
     val tokensGoogle = mutableListOf<Pair<String, String?>>()
@@ -120,6 +121,19 @@ class FakeBackend : Backend {
             "live_terminar" -> {
                 val i = t.indexOfFirst { it.valor("id") == args.valor("sesion") && it.valor("user_id") == yo }
                 if (i >= 0) t[i] = JsonObject(t[i] + ("ended_at" to JsonPrimitive("2026-10-11T05:30:00Z")))
+                kotlinx.serialization.json.JsonNull
+            }
+            "mapa_publicar" -> {
+                val visible = tabla("consents").lastOrNull { it.valor("user_id") == yo && it.valor("kind") == "ubicacion_visible" }?.valor("granted") == "true"
+                val pos = tabla("runner_positions")
+                pos.removeAll { it.valor("user_id") == yo }
+                if (visible) pos += JsonObject(mapOf("user_id" to JsonPrimitive(yo), "lat" to args.getValue("lat"), "lng" to args.getValue("lng"),
+                    "running" to args.getValue("corriendo"), "updated_at" to JsonPrimitive(ahoraIso)))
+                JsonPrimitive(visible)
+            }
+            "eliminar_mi_cuenta" -> {
+                usuarios.removeAll { it.first == yo }; tablas.values.forEach { l -> l.removeAll { it.valor("user_id") == yo || it.valor("id") == yo } }
+                actual = null
                 kotlinx.serialization.json.JsonNull
             }
             else -> throw ErrorRemoto("funcion desconocida $funcion")

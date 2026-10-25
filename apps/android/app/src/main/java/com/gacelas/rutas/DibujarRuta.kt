@@ -56,7 +56,7 @@ fun MapaRutasAgrupadas(rutas: List<Ruta>, onRuta: (String) -> Unit, modifier: Mo
         return
     }
     val salidas = remember(rutas) {
-        rutas.filter { it.puntos.isNotEmpty() }.map { CirculoMapa(LatLng(it.puntos.first().first, it.puntos.first().second), 9f, Color(0xFFFF6A13), bordeDp = 2.5f, id = it.id) }
+        rutas.filter { it.puntos.isNotEmpty() }.map { CirculoMapa(LatLng(it.puntos.first().first, it.puntos.first().second), 9f, Color(0xFFC084FC), bordeDp = 2.5f, id = it.id) }
     }
     MapaLibre(modifier, circulos = salidas, zoom = 12.0, alTocarCirculo = onRuta)
 }

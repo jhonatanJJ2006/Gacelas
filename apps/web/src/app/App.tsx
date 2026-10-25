@@ -90,6 +90,9 @@ const DetalleEnVivo = lazy(() =>
 const Perfil = lazy(() =>
   import('../features/cuenta/ui/perfil/Perfil').then((m) => ({ default: m.Perfil }))
 )
+const DetalleCarrera = lazy(() =>
+  import('../features/cuenta/ui/perfil/DetalleCarrera').then((m) => ({ default: m.DetalleCarrera }))
+)
 const EditarPerfil = lazy(() =>
   import('../features/cuenta/ui/perfil/EditarPerfil').then((m) => ({ default: m.EditarPerfil }))
 )
@@ -101,6 +104,12 @@ const AjustesPreferencias = lazy(() =>
   import('../features/cuenta/ui/ajustes/AjustesPreferencias').then((m) => ({
     default: m.AjustesPreferencias,
   }))
+)
+const Brujula = lazy(() =>
+  import('../features/cuenta/ui/ajustes/Utilidades').then((m) => ({ default: m.Brujula }))
+)
+const MapasOffline = lazy(() =>
+  import('../features/cuenta/ui/ajustes/Utilidades').then((m) => ({ default: m.MapasOffline }))
 )
 const PrivacidadUbicacion = lazy(() =>
   import('../features/cuenta/ui/ajustes/PrivacidadUbicacion').then((m) => ({
@@ -116,6 +125,29 @@ const Notificaciones = lazy(() =>
   import('../features/cuenta/ui/notificaciones/Notificaciones').then((m) => ({
     default: m.Notificaciones,
   }))
+)
+
+const Terminos = lazy(() =>
+  import('../features/legal/Legal').then((m) => ({ default: m.Terminos }))
+)
+const PoliticaPrivacidad = lazy(() =>
+  import('../features/legal/Legal').then((m) => ({ default: m.PoliticaPrivacidad }))
+)
+const ReaceptarTerminos = lazy(() =>
+  import('../features/legal/Legal').then((m) => ({ default: m.ReaceptarTerminos }))
+)
+const AnfitrionLogros = lazy(() =>
+  import('../features/social/Social').then((m) => ({ default: m.AnfitrionLogros }))
+)
+const ModalSinConexion = lazy(() =>
+  import('../features/social/Social').then((m) => ({ default: m.ModalSinConexion }))
+)
+const Admin = lazy(() => import('../features/admin/Admin').then((m) => ({ default: m.Admin })))
+const MapaVivo = lazy(() =>
+  import('../features/comunidad/MapaVivo').then((m) => ({ default: m.MapaVivo }))
+)
+const PublicadorUbicacion = lazy(() =>
+  import('../features/comunidad/MapaVivo').then((m) => ({ default: m.PublicadorUbicacion }))
 )
 
 function LoadingFallback() {
@@ -134,7 +166,15 @@ export function RutaProtegida() {
   const sesion = useApp((s) => s.sesion)
   const location = useLocation()
   if (!sesion) return <Navigate to="/bienvenida" replace state={{ desde: location.pathname }} />
-  return <Outlet />
+  return (
+    <>
+      <Outlet />
+      <ReaceptarTerminos />
+      <PublicadorUbicacion />
+      <AnfitrionLogros />
+      <ModalSinConexion />
+    </>
+  )
 }
 
 /** Pantallas de acceso: con sesion abierta se va directo a Inicio. */
@@ -168,6 +208,8 @@ export function AppRoutes() {
         </Route>
 
         <Route path="/nueva-contrasena" element={<NuevaContrasena />} />
+        <Route path="/legal/terminos" element={<Terminos />} />
+        <Route path="/legal/privacidad" element={<PoliticaPrivacidad />} />
 
         <Route element={<RutaProtegida />}>
           <Route path="/permisos-ubicacion" element={<PermisosUbicacion />} />
@@ -197,18 +239,23 @@ export function AppRoutes() {
             <Route path="/comunidad/clubes/:id" element={<DetalleClub />} />
             <Route path="/comunidad/corredores" element={<Corredores />} />
             <Route path="/comunidad/en-vivo" element={<ListaEnVivo />} />
+            <Route path="/comunidad/mapa" element={<MapaVivo />} />
             <Route path="/comunidad/en-vivo/:id" element={<DetalleEnVivo />} />
 
             <Route path="/perfil/editar" element={<EditarPerfil />} />
+            <Route path="/perfil/carrera/:id" element={<DetalleCarrera />} />
             <Route path="/perfil/avatar" element={<Avatar3D />} />
 
             <Route path="/ajustes" element={<AjustesPreferencias />} />
             <Route path="/ajustes/privacidad" element={<PrivacidadUbicacion />} />
             <Route path="/ajustes/notificaciones" element={<ConfiguracionNotificaciones />} />
+            <Route path="/ajustes/brujula" element={<Brujula />} />
+            <Route path="/ajustes/mapas-offline" element={<MapasOffline />} />
             <Route path="/notificaciones" element={<Notificaciones />} />
           </Route>
         </Route>
 
+        <Route path="/admin/*" element={<Admin />} />
         <Route path="*" element={<Navigate to="/bienvenida" replace />} />
       </Routes>
     </Suspense>

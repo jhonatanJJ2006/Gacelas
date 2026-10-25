@@ -103,6 +103,7 @@ fun InicioSesionC4(
     onRecuperar: () -> Unit,
     onRegistro: () -> Unit,
     botonGoogle: @Composable () -> Unit,
+    onLegal: ((terminos: Boolean) -> Unit)? = null,
 ) {
     // Sin scroll: el teclado (imePadding) achica el hueco y la pantalla se adapta por niveles.
     // El mapa es fondo de ventana completa (no se mueve con el teclado), igual que en el export de Stitch.
@@ -160,6 +161,10 @@ fun InicioSesionC4(
                         SeparadorC4()
                         botonGoogle()
                         PieC4("¿No tienes cuenta? ", "Crear cuenta", onRegistro, arriba = 10.dp)
+                        if (onLegal != null) Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center) {
+                            Text("Términos", fontSize = 12.sp, color = C4.Secondary, modifier = Modifier.clickable { onLegal(true) }.padding(6.dp).testTag("pie-terminos"))
+                            Text("Privacidad", fontSize = 12.sp, color = C4.Secondary, modifier = Modifier.clickable { onLegal(false) }.padding(6.dp).testTag("pie-privacidad"))
+                        }
                     }
                 }
             }

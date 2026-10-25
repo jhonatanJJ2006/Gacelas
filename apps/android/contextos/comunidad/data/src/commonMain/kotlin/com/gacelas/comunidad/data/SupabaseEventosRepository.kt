@@ -22,6 +22,10 @@ import kotlinx.serialization.json.put
 
 /* ---------------- Eventos ---------------- */
 
+/** Oculta borradores (published = false) salvo a su creador; refuerza la RLS de 021. */
+fun eventoVisible(f: JsonObject, uid: String? = null): Boolean =
+    (f["published"] as? kotlinx.serialization.json.JsonPrimitive)?.content != "false" || (uid != null && f.texto("created_by") == uid)
+
 fun eventoDesdeFila(f: JsonObject, uid: String? = null): Evento {
     val inicio = f.texto("starts_at")?.let(FechaIso::leer)
     return Evento(
@@ -62,7 +66,7 @@ class SupabaseEventosRepository(
             .mapNotNull { f -> f.texto("event_id")?.let { id -> id to (f.entero("otros") ?: 0) } }.toMap()
         runCatching { backend.select("events", emptyMap(), "starts_at") }.getOrNull()?.let { filas ->
             creadosValor.actualizar {
-                filas.map { eventoDesdeFila(it, uid) }.map { e -> otros[e.id]?.let { e.copy(participantes = it) } ?: e }
+                filas.filter { eventoVisible(it, uid) }.map { eventoDesdeFila(it, uid) }.map { e -> otros[e.id]?.let { e.copy(participantes = it) } ?: e }
             }
         }
         runCatching { backend.select("event_rsvps", mapOf("user_id" to uid)) }.getOrNull()?.let { filas ->

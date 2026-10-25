@@ -47,6 +47,22 @@ class FeedRemotoTest {
         assertEquals("Luis", comentarioDesdeFila(fila("""{"id":"c","user_id":"u3","autor":"Luis","body":"Bien"}""")).autor)
     }
 
+    @Test fun camposSocialesDelFeed() {
+        val f = fila(
+            """{"id":"a","user_id":"u2","autor":"Ana","title":"T","elevation_gain":31,"images":["post-images/u2/a/1.jpg"],
+            "reposts_count":2,"reposteada":true,"autor_km":42.5,"ultimo_comentario":{"autor":"Luis","texto":"Bien"}}""",
+        )
+        val p = publicacionDesdeFilaFeed(f, ahora = ahora, url = { "https://x/$it" })
+        assertEquals(31, p.desnivelM)
+        assertEquals(listOf("https://x/post-images/u2/a/1.jpg"), p.imagenes)
+        assertEquals(2, p.compartidos)
+        assertTrue(p.compartida)
+        assertEquals("Luis" to "Bien", p.ultimoComentario)
+        assertEquals("Gacela Intermedia", com.gacelas.comunidad.domain.modelo.nivelCorredor(p.autorKm ?: 0.0))
+        assertEquals("Gacela Principiante", com.gacelas.comunidad.domain.modelo.nivelCorredor(0.0))
+        assertEquals("Gacela Élite", com.gacelas.comunidad.domain.modelo.nivelCorredor(600.0))
+    }
+
     @Test fun conServidorNoHayEjemplosNiDuplicados() {
         val remota = publicacionDesdeFilaFeed(otra, ahora = ahora)
         val subida = Carrera("x1", "Ya subida", inicioMs = ahora - 3_600_000, segundos = 1800, distanciaKm = 6.0)

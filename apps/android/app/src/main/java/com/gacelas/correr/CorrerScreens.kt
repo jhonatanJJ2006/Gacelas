@@ -4,6 +4,7 @@ import com.gacelas.ui.components.Pastilla
 
 import com.gacelas.ui.components.Mapas
 
+import androidx.compose.material.icons.filled.MilitaryTech
 import androidx.compose.material.icons.filled.Sensors
 import com.gacelas.ui.components.MapaGacelas
 import com.gacelas.ui.components.aLatLng
@@ -38,6 +39,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.automirrored.filled.ListAlt
@@ -80,6 +83,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -196,12 +200,22 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
     val context = LocalContext.current
     val tracker = contenedor().tracker
     var permiso by remember { mutableStateOf(LocationService.tienePermiso(context)) }
+    var permisoDenegado by remember { mutableStateOf(false) }
+    if (permisoDenegado) com.gacelas.ui.components.ModalC2(
+        icono = androidx.compose.material.icons.Icons.Filled.LocationOff, titulo = "Permiso de ubicación",
+        texto = "Sin permiso de ubicación no se puede grabar la carrera. Actívalo en los ajustes del teléfono.",
+        primario = "Abrir ajustes", onCerrar = { permisoDenegado = false }, secundario = "Ahora no", tag = "modal-permiso",
+        onPrimario = {
+            permisoDenegado = false
+            context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.fromParts("package", context.packageName, null)))
+        },
+    )
     var precision by remember { mutableStateOf<Float?>(null) }
     val notificaciones by com.gacelas.core.notificaciones.notificacionesPermitidasState()
     val activarNotificaciones = com.gacelas.core.notificaciones.rememberActivarNotificaciones()
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         permiso = LocationService.tienePermiso(context)
-        if (!permiso) context.aviso("Sin permiso de ubicación no se puede grabar la carrera")
+        if (!permiso) permisoDenegado = true
     }
     LaunchedEffect(permiso) {
         if (permiso) {
@@ -217,6 +231,41 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
         precision!! <= 10f -> "Señal fuerte (±${precision!!.toInt()} m)"
         precision!! <= 30f -> "Señal media (±${precision!!.toInt()} m)"
         else -> "Señal débil (±${precision!!.toInt()} m)"
+    }
+    val ajustesCorrer by ajustesState()
+    var cuenta by remember { mutableStateOf<Int?>(null) }
+    val consentimientos = contenedor().consentimientos
+    val scopeGps = rememberCoroutineScope()
+    var pedirGps by remember { mutableStateOf(false) }
+    val iniciar = {
+        if (ajustesCorrer.cuentaRegresivaSeg > 0) cuenta = ajustesCorrer.cuentaRegresivaSeg
+        else { empezarCarrera(context, tracker); onEmpezar() }
+    }
+    if (pedirGps) com.gacelas.ui.components.ModalC2(
+        icono = Icons.Filled.GpsFixed, titulo = "Usar tu ubicación durante la carrera",
+        texto = "Gacelas usa el GPS del teléfono solo mientras grabas una carrera, para medir distancia, ritmo y dibujar tu recorrido. La ruta se guarda en tu historial y solo se comparte si tú la publicas. Nadie te ve en el mapa en vivo salvo que actives ese permiso aparte. Puedes revocarlo cuando quieras en Ajustes, Privacidad.",
+        primario = "Aceptar y empezar", secundario = "Ahora no", tag = "modal-consentimiento-gps",
+        onCerrar = { pedirGps = false },
+        onPrimario = {
+            pedirGps = false
+            scopeGps.launch { consentimientos.registrar(com.gacelas.legal.TipoConsentimiento.GpsCarrera, true); iniciar() }
+        },
+    )
+    LaunchedEffect(cuenta) {
+        val n = cuenta ?: return@LaunchedEffect
+        kotlinx.coroutines.delay(1000)
+        if (n <= 1) { cuenta = null; empezarCarrera(context, tracker); onEmpezar() } else cuenta = n - 1
+    }
+    cuenta?.let { n ->
+        PantallaCompleta {
+            Column(Modifier.fillMaxWidth().padding(top = 120.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text("Prepárate, arrancamos en", style = GType.bodyLg, color = GColors.TextSecondary)
+                Text("$n", style = GType.headlineLg.copy(fontSize = androidx.compose.ui.unit.TextUnit(96f, androidx.compose.ui.unit.TextUnitType.Sp)), color = GColors.Primary500,
+                    modifier = Modifier.testTag("cuenta-regresiva"))
+                TextButton(onClick = { cuenta = null; empezarCarrera(context, tracker); onEmpezar() }) { Text("Empezar ya") }
+            }
+        }
+        return
     }
     PantallaCompleta {
         BotonCerrar(onCerrar)
@@ -255,8 +304,9 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
                         context.aviso("Notificaciones bloqueadas: no verás la carrera en la barra de Android")
                         if (com.gacelas.core.notificaciones.PermisoNotificaciones.sePuedePedir(context)) activarNotificaciones()
                     }
-                    empezarCarrera(context, tracker)
-                    onEmpezar()
+                    scopeGps.launch {
+                        if (consentimientos.otorgado(com.gacelas.legal.TipoConsentimiento.GpsCarrera)) iniciar() else pedirGps = true
+                    }
                 }
             })
             Text(if (permiso) "Toca para comenzar" else "Toca para dar permiso de ubicación", style = GType.labelLg, color = GColors.TextSecondary)
@@ -274,13 +324,11 @@ private fun FilaDato(etiqueta: String, valor: String) {
 
 @Composable
 private fun DialogoDescartar(onConfirmar: () -> Unit, onCancelar: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onCancelar,
-        confirmButton = { TextButton(onClick = onConfirmar) { Text("Descartar", color = GColors.Danger) } },
-        dismissButton = { TextButton(onClick = onCancelar) { Text("Seguir corriendo") } },
-        title = { Text("¿Descartar la carrera?") },
-        text = { Text("Se perderá el recorrido grabado hasta ahora.") },
-        containerColor = GColors.BgSecondary,
+    com.gacelas.ui.components.ModalC2(
+        icono = androidx.compose.material.icons.Icons.Filled.Delete, titulo = "¿Descartar la carrera?",
+        texto = "Se perderá el recorrido grabado hasta ahora. Esta acción no se puede deshacer.",
+        primario = "Descartar", onPrimario = onConfirmar, onCerrar = onCancelar,
+        secundario = "Seguir corriendo", peligro = true, tag = "modal-descartar",
     )
 }
 
@@ -321,7 +369,7 @@ fun CronometroScreen(onAtras: () -> Unit, onFin: () -> Unit) {
     var modo by rememberSaveable { mutableStateOf(ModoCrono.Libre) }
     MantenerPantallaEncendida()
     RelojCarrera(tracker, estado)
-    val objetivoSeg = 300
+    val objetivoSeg = ajustes.ritmoObjetivoSeg
     val ritmo = estado.ritmoActualSegKm ?: estado.ritmoPromedioSegKm
     val progreso = (estado.segundos / 3600f).coerceIn(0f, 1f)
     PantallaCompleta {
@@ -600,27 +648,46 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
             descartarCarrera(context, tracker)
             onCerrar()
         }
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            IconoCirculo(Icons.Filled.CheckCircle, GColors.Secondary.copy(alpha = 0.2f), GColors.Secondary500, 96.dp)
-            Text("Carrera completada", style = GType.headlineLg, color = GColors.TextPrimary)
-            Text(if (estado.segundos > 0) "Gran trabajo, has terminado tu carrera" else "No hay datos de carrera para guardar", style = GType.bodyLg, color = GColors.TextSecondary)
+        val record = remember(carrerasPrevias, estado.segundos) {
+            if (estado.segundos > 0) com.gacelas.carreras.domain.reglas.EstadisticasPerfil.nuevoRecord(carrerasPrevias,
+                com.gacelas.carreras.domain.modelo.Carrera(id = "nueva", titulo = "", inicioMs = estado.inicioMs, segundos = estado.segundos, distanciaKm = estado.distanciaKm, parciales = estado.parciales)) else null
+        }
+        Tarjeta(fondo = GColors.Primary.copy(alpha = 0.12f)) {
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                IconoCirculo(if (record != null) Icons.Filled.MilitaryTech else Icons.Filled.CheckCircle, GColors.Primary.copy(alpha = 0.2f), GColors.Primary500, 88.dp)
+                Text(if (estado.segundos > 0) "¡Excelente zancada, gacela!" else "Carrera completada", style = GType.headlineMd, color = GColors.TextPrimary, textAlign = TextAlign.Center)
+                Text(if (estado.segundos > 0) "Carrera completada" else "No hay datos de carrera para guardar", style = GType.bodyLg, color = GColors.TextSecondary)
+                record?.let { Text("Nuevo récord personal en ${it.etiqueta}", style = GType.labelLg, color = GColors.Primary500, modifier = Modifier.testTag("nuevo-record")) }
+                Text("Loja, Ecuador", style = GType.bodySm, color = GColors.TextSecondary)
+            }
         }
         if (estado.segundos > 0) com.gacelas.ui.components.CelebracionRacha(rachaAntes, rachaDespues)
-        Tarjeta {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                Metrica(Unidades.texto(estado.distanciaKm, m), Unidades.etiquetaDistancia(m), grande = true, color = GColors.Primary500)
-                Metrica(formatearMs(estado.segundos), "Tiempo", grande = true)
-                Metrica(formatearRitmo(Unidades.ritmo(estado.ritmoPromedioSegKm, m)), Unidades.etiquetaRitmo(m), grande = true, color = GColors.Secondary500)
-            }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            val kcal = (estado.distanciaKm * 62).toInt()
-            listOf("$kcal" to "Cal", "${estado.parciales.size}" to "Parciales", "${estado.puntos.size}" to "Puntos", "${estado.desnivelM.toInt()}m" to "Elev").forEach { (v, e) ->
-                Tarjeta(Modifier.weight(1f), padding = 10.dp) { Metrica(v, e, Modifier.fillMaxWidth()) }
-            }
-        }
         if (estado.puntos.size >= 2) Tarjeta(padding = 8.dp) {
             MapaGacelas(estado.puntos.aLatLng(), Modifier.fillMaxWidth().height(180.dp)) { TrazadoRuta(estado.puntos, Modifier.fillMaxWidth().height(180.dp)) }
+            val alturas = estado.puntos.mapNotNull { it.altitudM }
+            if (alturas.size > 1) Text("${alturas.min().toInt()} m - ${alturas.max().toInt()} m", style = GType.labelMd, color = GColors.TextSecondary)
+        }
+        Tarjeta {
+            Text("DISTANCIA TOTAL", style = GType.labelMd, color = GColors.TextSecondary)
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(Unidades.texto(estado.distanciaKm, m), style = GType.headlineLg, color = GColors.TextPrimary)
+                Text("  ${if (m) "Kilómetros" else "Millas"}", style = GType.labelLg, color = GColors.Primary500)
+            }
+        }
+        val kcal = (estado.distanciaKm * 62).toInt()
+        listOf(
+            listOf(Triple("TIEMPO", formatearMs(estado.segundos), "Tiempo en movimiento"), Triple("RITMO MEDIO", formatearRitmo(Unidades.ritmo(estado.ritmoPromedioSegKm, m)), Unidades.etiquetaRitmo(m))),
+            listOf(Triple("DESNIVEL (+)", "+${estado.desnivelM.toInt()} m", "Subida acumulada"), Triple("CALORÍAS", "$kcal", "kcal estimadas")),
+        ).forEach { fila ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                fila.forEach { (t, v, d) ->
+                    Tarjeta(Modifier.weight(1f), padding = 12.dp) {
+                        Text(t, style = GType.labelMd, color = GColors.TextSecondary)
+                        Text(v, style = GType.headlineMd, color = GColors.TextPrimary)
+                        Text(d, style = GType.bodySm, color = GColors.TextSecondary)
+                    }
+                }
+            }
         }
         CampoTexto("Título", titulo, { titulo = it }, "Título de la carrera (opcional)")
         CampoTexto("Notas", nota, { nota = it }, "¿Cómo te fue? Comparte tus pensamientos...", lineas = 3)

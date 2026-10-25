@@ -61,7 +61,7 @@ fun iconoNotificacion(tipo: TipoNotificacion): Pair<ImageVector, Color> = when (
 }
 
 @Composable
-fun NotificacionesContenido(vm: NotificacionesViewModel, onAtras: () -> Unit, onAbrir: (Notificacion) -> Unit) {
+fun NotificacionesContenido(vm: NotificacionesViewModel, onAtras: () -> Unit, onAbrir: (Notificacion) -> Unit, extra: @Composable () -> Unit = {}) {
     val filtro by vm.filtro.collectAsState()
     val lista by vm.lista.collectAsState()
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
@@ -106,6 +106,7 @@ fun NotificacionesContenido(vm: NotificacionesViewModel, onAtras: () -> Unit, on
                 }
                 HorizontalDivider(color = GColors.BorderSubtle.copy(alpha = 0.5f))
             }
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) { extra() }
         }
     }
 }

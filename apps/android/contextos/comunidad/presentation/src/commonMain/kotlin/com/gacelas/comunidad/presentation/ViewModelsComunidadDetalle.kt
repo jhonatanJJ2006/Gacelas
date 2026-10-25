@@ -134,7 +134,7 @@ class FeedViewModel(
         if (remota(id) != null && feed != null) {
             viewModelScope.launch {
                 runCatching { feed.comentar(id, t) }
-                    .onSuccess { remotas.value = remotas.value?.map { if (it.id == id) it.copy(comentariosBase = it.comentariosBase + 1) else it } }
+                    .onSuccess { remotas.value = remotas.value?.map { if (it.id == id) it.copy(comentariosBase = it.comentariosBase + 1, ultimoComentario = "Tú" to t) else it } }
                     .onFailure { onError("No se pudo publicar el comentario") }
             }
             return
@@ -144,6 +144,32 @@ class FeedViewModel(
 
     /** Comentarios de todos en una publicacion real (vacio para las locales). */
     suspend fun comentarios(id: String): List<ComentarioFeed> = if (remota(id) != null) feed?.comentarios(id).orEmpty() else emptyList()
+
+    /** Compartir (repost) en el perfil; optimista con vuelta atras si falla. */
+    fun alternarCompartida(id: String, onError: (String) -> Unit = {}) {
+        val p = remota(id)
+        val f = feed
+        if (p == null || f == null) return onError("Publica la carrera para poder compartirla")
+        val activo = !p.compartida
+        val antes = remotas.value
+        remotas.value = antes?.map { if (it.id == id) it.copy(compartida = activo, compartidos = (it.compartidos + if (activo) 1 else -1).coerceAtLeast(0)) else it }
+        viewModelScope.launch {
+            runCatching { f.alternarCompartida(id, activo) }.onFailure { remotas.value = antes; onError("No se pudo compartir") }
+        }
+    }
+
+    /** Sube fotos (bytes, tipo MIME) a una carrera propia publicada. */
+    fun subirFotos(id: String, fotos: List<Pair<ByteArray, String>>, onAviso: (String) -> Unit = {}) {
+        val f = feed ?: return
+        viewModelScope.launch {
+            runCatching { fotos.take(6).mapIndexed { i, (b, t) -> f.subirFoto(id, b, t, i) } }
+                .onSuccess { urls ->
+                    remotas.value = remotas.value?.map { if (it.id == id) it.copy(imagenes = it.imagenes + urls) else it }
+                    onAviso("Fotos publicadas")
+                }
+                .onFailure { onAviso("No se pudieron subir las fotos") }
+        }
+    }
 
     fun alternarSeguir(id: String) {
         val f = feed ?: return

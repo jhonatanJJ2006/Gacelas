@@ -2,7 +2,6 @@ package com.gacelas.ui
 
 import android.content.Context
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -49,7 +48,8 @@ fun rachaState(): com.gacelas.carreras.domain.reglas.Racha {
     }
 }
 
-fun Context.aviso(texto: String) = Toast.makeText(this, texto, Toast.LENGTH_SHORT).show()
+@Suppress("UnusedReceiverParameter")
+fun Context.aviso(texto: String) = com.gacelas.ui.components.AvisosC2.mostrar(texto)
 
 /** Abre el selector del sistema para compartir texto. */
 fun Context.compartir(texto: String) {
@@ -62,4 +62,23 @@ fun Context.compartir(texto: String) {
 fun ajustesViewModel(repo: com.gacelas.cuenta.domain.repositorio.AjustesRepository = contenedor().ajustes): com.gacelas.cuenta.presentation.AjustesViewModel {
     val c = contenedor()
     return androidx.lifecycle.viewmodel.compose.viewModel(key = "ajustes") { c.ajustesViewModel(repo) }
+}
+
+/** Datos sociales reales de Supabase para Inicio y Perfil (amigos en ruta, seguidores, siguiendo). */
+data class Social(
+    val amigos: List<com.gacelas.comunidad.domain.modelo.Publicacion> = emptyList(),
+    val seguidores: Int = 0,
+    val siguiendo: Int = 0,
+)
+
+@Composable
+fun socialState(): State<Social> {
+    val feed = contenedor().feed
+    val perfil by sesionState()
+    return androidx.compose.runtime.produceState(Social(), feed, perfil?.email) {
+        val f = feed ?: return@produceState
+        val sig = f.siguiendo()
+        val pubs = f.publicaciones().orEmpty()
+        value = Social(pubs.filter { !it.propia && it.autorId != null && it.autorId in sig }.take(3), f.seguidores(), sig.size)
+    }
 }

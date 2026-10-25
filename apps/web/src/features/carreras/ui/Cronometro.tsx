@@ -196,7 +196,7 @@ export function PanelIntervalos() {
       <button
         type="button"
         onClick={estado ? () => setTranscurrido(null) : iniciar}
-        className={`h-12 rounded-xl font-bold ${estado ? 'bg-danger/20 text-red-300' : 'bg-primary-600 text-bg-primary'}`}
+        className={`h-12 rounded-xl font-bold ${estado ? 'bg-danger/20 text-red-300' : 'bg-primary-600 text-on-primary'}`}
       >
         {estado ? 'Detener intervalos' : 'Iniciar intervalos'}
       </button>
@@ -270,7 +270,7 @@ export function PanelMetronomo() {
       <button
         type="button"
         onClick={() => setSonando((s) => !s)}
-        className={`w-full h-12 rounded-xl font-bold ${sonando ? 'bg-danger/20 text-red-300' : 'bg-primary-600 text-bg-primary'}`}
+        className={`w-full h-12 rounded-xl font-bold ${sonando ? 'bg-danger/20 text-red-300' : 'bg-primary-600 text-on-primary'}`}
       >
         {sonando ? 'Detener metrónomo' : 'Iniciar metrónomo'}
       </button>
@@ -492,7 +492,7 @@ export function Cronometro() {
           <button
             onClick={principal}
             aria-label={!activa ? 'Iniciar' : e.fase === 'pausada' ? 'Reanudar' : 'Pausar'}
-            className="w-20 h-20 rounded-full bg-primary-600 hover:bg-primary-700 active:scale-95 text-bg-primary flex items-center justify-center shadow-lg"
+            className="w-20 h-20 rounded-full bg-primary-600 hover:bg-primary-700 active:scale-95 text-on-primary flex items-center justify-center shadow-lg"
           >
             <span className="material-symbols-outlined text-[36px] font-bold">
               {e.fase === 'corriendo' ? 'pause' : 'play_arrow'}

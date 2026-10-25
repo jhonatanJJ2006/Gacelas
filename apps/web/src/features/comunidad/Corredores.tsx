@@ -35,7 +35,9 @@ export function Corredores() {
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
-          <h1 className="font-headline-md text-headline-md text-text-primary">Buscar corredores</h1>
+          <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
+            Buscar corredores
+          </h1>
         </div>
         <div className="relative">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">
@@ -98,7 +100,7 @@ export function Corredores() {
                     className={`h-11 px-4 shrink-0 rounded-full text-sm font-semibold transition-colors ${
                       sigo
                         ? 'bg-surface-container-high text-text-primary border border-border-subtle'
-                        : 'bg-primary text-on-primary hover:bg-primary-700'
+                        : 'bg-primary-600 text-on-primary hover:bg-primary-700'
                     }`}
                   >
                     {sigo ? 'Siguiendo' : 'Seguir'}

@@ -101,7 +101,7 @@ private fun ChipBeneficio(icono: ImageVector, texto: String, modifier: Modifier)
 }
 
 @Composable
-fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: () -> Unit, onRegistro: () -> Unit) {
+fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: () -> Unit, onRegistro: () -> Unit, onLegal: ((Boolean) -> Unit)? = null) {
     val c = contenedor()
     val auth = c.auth
     val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.loginViewModel(auth) }
@@ -111,22 +111,37 @@ fun InicioSesionScreen(onAtras: () -> Unit, onEntrar: () -> Unit, onRecuperar: (
         onEmail = vm::email, onPassword = vm::password,
         onEntrar = { vm.entrar { onEntrar() } }, onAtras = onAtras, onRecuperar = onRecuperar, onRegistro = onRegistro,
         botonGoogle = { BotonGoogle(onEntrar, portada = true, alto = 48.dp) },
+        onLegal = onLegal,
     )
 }
 
 @Composable
-fun RegistroScreen(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: () -> Unit) {
+fun RegistroScreen(onAtras: () -> Unit, onCrear: () -> Unit, onIniciarSesion: () -> Unit, onLegal: ((Boolean) -> Unit)? = null) {
     val c = contenedor()
     val auth = c.auth
     val context = LocalContext.current
     val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.registroViewModel(auth) }
     val e by vm.estado.collectAsState()
+    val ajustesVm = com.gacelas.ui.ajustesViewModel()
+    var nivel by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf("principiante") }
+    var acepta by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
     RegistroContenido(
         nombre = e.nombre, email = e.email, password = e.password, error = e.error, cargando = e.cargando,
         onNombre = vm::nombre, onEmail = vm::email, onPassword = vm::password,
-        onCrear = { vm.crear { context.aviso("Cuenta creada"); onCrear() } },
+        onCrear = { vm.crear {
+            ajustesVm.actualizar { it.copy(nivelDeclarado = nivel) }
+            scope.launch {
+                c.consentimientos.registrar(com.gacelas.legal.TipoConsentimiento.Terminos, true)
+                c.consentimientos.registrar(com.gacelas.legal.TipoConsentimiento.Privacidad, true)
+            }
+            context.aviso("Cuenta creada"); onCrear()
+        } },
         onAtras = onAtras, onIniciarSesion = onIniciarSesion,
         botonGoogle = { BotonGoogle(onCrear) },
+        nivel = nivel, onNivel = { nivel = it },
+        aceptaTerminos = acepta, onAceptaTerminos = { acepta = it },
+        onVerTerminos = onLegal?.let { { it(true) } }, onVerPrivacidad = onLegal?.let { { it(false) } },
     )
 }
 
