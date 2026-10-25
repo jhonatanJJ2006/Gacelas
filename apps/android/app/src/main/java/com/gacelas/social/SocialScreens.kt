@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsRun
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.MilitaryTech
@@ -44,6 +45,7 @@ import java.util.Locale
 @Composable
 fun ModalReporte(postId: String, repo: SocialRepository, onCerrar: () -> Unit) {
     var motivo by remember { mutableStateOf(MOTIVOS_REPORTE.first().first) }
+    var detalle by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     ModalC2(
         icono = Icons.Filled.Flag, titulo = "Reportar publicación",
@@ -52,7 +54,7 @@ fun ModalReporte(postId: String, repo: SocialRepository, onCerrar: () -> Unit) {
         onCerrar = onCerrar,
         onPrimario = {
             scope.launch {
-                val ok = repo.reportar(postId, motivo, "")
+                val ok = repo.reportar(postId, motivo, detalle.trim())
                 AvisosC2.mostrar(if (ok) "Reporte enviado. Gracias por cuidar la comunidad" else "No se pudo enviar el reporte. Revisa tu conexión", error = !ok)
                 onCerrar()
             }
@@ -70,8 +72,49 @@ fun ModalReporte(postId: String, repo: SocialRepository, onCerrar: () -> Unit) {
                     Text(etiqueta, style = GType.bodyMd, color = GColors.TextPrimary)
                 }
             }
+            androidx.compose.material3.OutlinedTextField(
+                value = detalle, onValueChange = { if (it.length <= 500) detalle = it },
+                label = { Text("Detalle (opcional)") }, minLines = 2,
+                modifier = Modifier.fillMaxWidth().padding(top = 6.dp).testTag("reporte-detalle"),
+                colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = GColors.C2Violeta, unfocusedBorderColor = GColors.C2Linea,
+                    focusedTextColor = GColors.TextPrimary, unfocusedTextColor = GColors.TextPrimary,
+                    focusedContainerColor = GColors.C2S2, unfocusedContainerColor = GColors.C2S2,
+                    focusedLabelColor = GColors.C2Violeta, unfocusedLabelColor = GColors.C2Muted, cursorColor = GColors.C2Violeta,
+                ),
+            )
         }
     }
+}
+
+/** Escucha la conectividad del sistema y muestra un modal C2 cuando se pierde la red. */
+@Composable
+fun ModalSinConexion() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var sinRed by remember { mutableStateOf(false) }
+    var descartado by remember { mutableStateOf(false) }
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        val cm = context.getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager
+        val cb = object : android.net.ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: android.net.Network) { sinRed = false; descartado = false }
+            override fun onLost(network: android.net.Network) {
+                val activa = cm?.activeNetwork
+                if (activa == null || activa == network) sinRed = true
+            }
+        }
+        val registrado = runCatching { cm?.registerDefaultNetworkCallback(cb) }.isSuccess && cm != null
+        onDispose { if (registrado) runCatching { cm?.unregisterNetworkCallback(cb) } }
+    }
+    if (sinRed && !descartado) ModalSinConexionContenido { descartado = true }
+}
+
+@Composable
+fun ModalSinConexionContenido(onCerrar: () -> Unit) {
+    ModalC2(
+        icono = Icons.Filled.CloudOff, titulo = "Sin conexión",
+        texto = "No hay internet. Puedes seguir corriendo: tu carrera se guarda en el teléfono y se sincroniza cuando vuelva la señal.",
+        primario = "Entendido", onPrimario = onCerrar, onCerrar = onCerrar, tag = "modal-sin-conexion",
+    )
 }
 
 private fun icono(l: Logro) = when (l) {

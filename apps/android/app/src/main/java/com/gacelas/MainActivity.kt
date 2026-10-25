@@ -111,6 +111,7 @@ fun GacelasRaiz() {
                     if (doc == null) com.gacelas.legal.ReaceptarTerminos { doc = it }
                 }
                 com.gacelas.ui.components.AnfitrionAvisosC2()
+                com.gacelas.social.ModalSinConexion()
             }
         }
     }
