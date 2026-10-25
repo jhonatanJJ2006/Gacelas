@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.graphics.asImageBitmap
 import com.gacelas.carreras.domain.reglas.Estadisticas
 import com.gacelas.carreras.domain.reglas.EstadisticasPerfil
 import com.gacelas.carreras.domain.reglas.Racha
@@ -143,4 +145,36 @@ class ParidadSeccionesTest {
         compose.setContent { GacelasTheme { FeedContenido(vm, {}, {}, {}, {}, eventoClub = MockData.eventos.first()) } }
         compose.onRoot().captureRoboImage("$dir/paridad/feed.png")
     }
+
+    /** Feed con datos de ejemplo (FeedDemo): fotos, rutas, texto solo y comentarios. */
+    @OptIn(com.github.takahirom.roborazzi.ExperimentalRoborazziApi::class)
+    @Test fun feedDemo() {
+        val ahora = System.currentTimeMillis()
+        val pubs = FeedDemo.publicaciones(ahora)
+        val repo = object : FeedRepository {
+            override suspend fun publicaciones() = pubs
+            override suspend fun alternarMeGusta(id: String, activo: Boolean) {}
+            override suspend fun comentarios(id: String) = FeedDemo.comentarios[id].orEmpty()
+            override suspend fun comentar(id: String, texto: String) {}
+            override suspend fun siguiendo() = emptySet<String>()
+            override suspend fun alternarSeguir(id: String) = emptySet<String>()
+        }
+        val vm = FeedViewModel(LocalCarrerasRepository(store), LocalAuthRepository(store), LocalAjustesRepository(store), emptyList(), repo, intervaloMs = 0)
+        vm.refrescar()
+        repeat(200) { if (vm.publicaciones.value.none { it.id == "demo-1" }) { org.robolectric.shadows.ShadowLooper.idleMainLooper(); Thread.sleep(20) } }
+        val foto: @androidx.compose.runtime.Composable (String, Modifier) -> Unit = { url, mod ->
+            val bmp = androidx.compose.runtime.remember(url) {
+                javaClass.classLoader!!.getResourceAsStream(url).use { android.graphics.BitmapFactory.decodeStream(it) }
+            }
+            androidx.compose.foundation.Image(bmp.asImageBitmapCompat(), null, mod, contentScale = androidx.compose.ui.layout.ContentScale.Crop)
+        }
+        compose.setContent { GacelasTheme { FeedContenido(vm, {}, {}, {}, {}, imagen = foto) } }
+        compose.onRoot().captureRoboImage("$dir/feed-demo/feed.png")
+        compose.onAllNodes(androidx.compose.ui.test.hasTestTag("accion-comentar"))[0].performClick()
+        compose.waitForIdle()
+        repeat(20) { org.robolectric.shadows.ShadowLooper.idleMainLooper(); Thread.sleep(20) }
+        com.github.takahirom.roborazzi.captureScreenRoboImage("$dir/feed-demo/post-comentarios.png")
+    }
 }
+
+private fun android.graphics.Bitmap.asImageBitmapCompat() = this.asImageBitmap()

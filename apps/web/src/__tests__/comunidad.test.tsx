@@ -53,7 +53,8 @@ describe('comunidad', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Filtrar publicaciones' }))
     await userEvent.click(screen.getByRole('menuitemradio', { name: 'Comunidad' }))
     expect(screen.getAllByTestId('publicacion')).toHaveLength(2)
-    await userEvent.click(screen.getByRole('button', { name: 'Eventos' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Filtrar publicaciones' }))
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Eventos' }))
     expect(await screen.findByRole('tab', { name: 'Próximos' })).toBeInTheDocument()
   })
 

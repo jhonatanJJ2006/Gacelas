@@ -21,12 +21,24 @@ interface Runner3DProps {
   cameraPosition?: [number, number, number]
   /** Punto al que mira la camara (por defecto el origen). */
   target?: [number, number, number]
+  /** Giro del modelo en grados (sentido horario visto desde arriba). */
+  giroY?: number
+  /** Falso quita los controles de orbita (corredor sobre el mapa). */
+  interactivo?: boolean
 }
 
 /** Imagen estatica del corredor: se ve mientras carga el 3D o si WebGL/el modelo fallan. */
 export const RUNNER_POSTER = '/models/gacelas-runner-poster.png'
 
-function RunnerModel({ animation = 'Idle', onReady }: { animation: string; onReady?: () => void }) {
+function RunnerModel({
+  animation = 'Idle',
+  onReady,
+  giroY = 0,
+}: {
+  animation: string
+  onReady?: () => void
+  giroY?: number
+}) {
   const group = useRef<THREE.Group>(null)
   const { scene, animations } = useGLTF('/models/gacelas-runner-animated.glb')
   // SkeletonUtils.clone mantiene los huesos enlazados (scene.clone() rompe el skinning)
@@ -46,7 +58,15 @@ function RunnerModel({ animation = 'Idle', onReady }: { animation: string; onRea
     }
   }, [actions, animation])
 
-  return <primitive ref={group} object={modelo} scale={1.5} position={[0, 0, 0]} />
+  return (
+    <primitive
+      ref={group}
+      object={modelo}
+      scale={1.5}
+      position={[0, 0, 0]}
+      rotation={[0, (-giroY * Math.PI) / 180, 0]}
+    />
+  )
 }
 
 export function Runner3DFallback({ className = '' }: { className?: string }) {
@@ -106,6 +126,8 @@ export function Runner3D({
   autoRotate = false,
   cameraPosition = [0, 1.2, 3],
   target,
+  giroY = 0,
+  interactivo = true,
 }: Runner3DProps) {
   const [webgl] = useState(isWebGLAvailable)
   const [menosMovimiento] = useState(
@@ -130,16 +152,18 @@ export function Runner3D({
           <Suspense fallback={null}>
             <ambientLight intensity={0.5} />
             <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
-            <RunnerModel animation={animation} onReady={marcarListo} />
-            <OrbitControls
-              enableZoom={false}
-              enablePan={false}
-              target={target}
-              autoRotate={autoRotate && !menosMovimiento}
-              autoRotateSpeed={2}
-              maxPolarAngle={Math.PI / 2}
-              minPolarAngle={Math.PI / 4}
-            />
+            <RunnerModel animation={animation} onReady={marcarListo} giroY={giroY} />
+            {interactivo && (
+              <OrbitControls
+                enableZoom={false}
+                enablePan={false}
+                target={target}
+                autoRotate={autoRotate && !menosMovimiento}
+                autoRotateSpeed={2}
+                maxPolarAngle={Math.PI / 2}
+                minPolarAngle={Math.PI / 4}
+              />
+            )}
           </Suspense>
         </Canvas>
       </div>
