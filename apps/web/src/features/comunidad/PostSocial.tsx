@@ -32,7 +32,7 @@ export function Carrusel({
   const mapa = puntos.length > 1
   const total = imagenes.length + (mapa || imagenes.length === 0 ? 1 : 0)
   return (
-    <div className="relative mb-2 max-h-[200px]">
+    <div className="relative mb-2 max-h-[200px] lg:max-w-[420px]">
       <div
         ref={ref}
         onScroll={(e) => {
@@ -44,7 +44,7 @@ export function Carrusel({
         aria-label="Fotos de la publicación"
       >
         {(mapa || imagenes.length === 0) && (
-          <div className="snap-center shrink-0 w-full h-[180px] lg:h-[200px] bg-c2-s2 flex items-center justify-center relative">
+          <div className="snap-center shrink-0 w-full h-[180px] lg:h-[150px] bg-c2-s2 flex items-center justify-center relative">
             {mapa ? (
               <TrazadoRuta puntos={puntos} className="w-full h-full p-4" />
             ) : (
@@ -66,7 +66,7 @@ export function Carrusel({
             src={src}
             alt={`Foto ${k + 1}`}
             loading="lazy"
-            className="snap-center shrink-0 w-full h-[180px] lg:h-[200px] object-cover"
+            className="snap-center shrink-0 w-full h-[180px] lg:h-[150px] object-cover"
           />
         ))}
       </div>

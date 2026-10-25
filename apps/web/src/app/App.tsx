@@ -127,6 +127,29 @@ const Notificaciones = lazy(() =>
   }))
 )
 
+const Terminos = lazy(() =>
+  import('../features/legal/Legal').then((m) => ({ default: m.Terminos }))
+)
+const PoliticaPrivacidad = lazy(() =>
+  import('../features/legal/Legal').then((m) => ({ default: m.PoliticaPrivacidad }))
+)
+const ReaceptarTerminos = lazy(() =>
+  import('../features/legal/Legal').then((m) => ({ default: m.ReaceptarTerminos }))
+)
+const AnfitrionLogros = lazy(() =>
+  import('../features/social/Social').then((m) => ({ default: m.AnfitrionLogros }))
+)
+const ModalSinConexion = lazy(() =>
+  import('../features/social/Social').then((m) => ({ default: m.ModalSinConexion }))
+)
+const Admin = lazy(() => import('../features/admin/Admin').then((m) => ({ default: m.Admin })))
+const MapaVivo = lazy(() =>
+  import('../features/comunidad/MapaVivo').then((m) => ({ default: m.MapaVivo }))
+)
+const PublicadorUbicacion = lazy(() =>
+  import('../features/comunidad/MapaVivo').then((m) => ({ default: m.PublicadorUbicacion }))
+)
+
 function LoadingFallback() {
   return (
     <div className="min-h-screen bg-surface flex items-center justify-center">
@@ -143,7 +166,15 @@ export function RutaProtegida() {
   const sesion = useApp((s) => s.sesion)
   const location = useLocation()
   if (!sesion) return <Navigate to="/bienvenida" replace state={{ desde: location.pathname }} />
-  return <Outlet />
+  return (
+    <>
+      <Outlet />
+      <ReaceptarTerminos />
+      <PublicadorUbicacion />
+      <AnfitrionLogros />
+      <ModalSinConexion />
+    </>
+  )
 }
 
 /** Pantallas de acceso: con sesion abierta se va directo a Inicio. */
@@ -177,6 +208,8 @@ export function AppRoutes() {
         </Route>
 
         <Route path="/nueva-contrasena" element={<NuevaContrasena />} />
+        <Route path="/legal/terminos" element={<Terminos />} />
+        <Route path="/legal/privacidad" element={<PoliticaPrivacidad />} />
 
         <Route element={<RutaProtegida />}>
           <Route path="/permisos-ubicacion" element={<PermisosUbicacion />} />
@@ -206,6 +239,7 @@ export function AppRoutes() {
             <Route path="/comunidad/clubes/:id" element={<DetalleClub />} />
             <Route path="/comunidad/corredores" element={<Corredores />} />
             <Route path="/comunidad/en-vivo" element={<ListaEnVivo />} />
+            <Route path="/comunidad/mapa" element={<MapaVivo />} />
             <Route path="/comunidad/en-vivo/:id" element={<DetalleEnVivo />} />
 
             <Route path="/perfil/editar" element={<EditarPerfil />} />
@@ -221,6 +255,7 @@ export function AppRoutes() {
           </Route>
         </Route>
 
+        <Route path="/admin/*" element={<Admin />} />
         <Route path="*" element={<Navigate to="/bienvenida" replace />} />
       </Routes>
     </Suspense>

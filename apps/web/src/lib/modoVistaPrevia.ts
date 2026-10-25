@@ -1,4 +1,5 @@
 import type { CarreraGuardada, Perfil } from '../data/tipos'
+import type { PublicacionRemota } from '../data/repositorios'
 import { rutasMock } from '../mocks/data'
 import { useApp } from '../store/app'
 import { tracker } from '../features/carreras/application/carreraStore'
@@ -36,6 +37,24 @@ function carrerasEjemplo(): CarreraGuardada[] {
   }))
 }
 
+/** Publicacion de otra corredora para ver el menu "Reportar publicacion". */
+function publicacionAjena(): PublicacionRemota {
+  return {
+    id: 'vp-ajena-1',
+    autorId: 'vp-lucia',
+    autor: 'Lucía Paredes',
+    titulo: 'Subida al Villonaco',
+    inicioMs: Date.now() - 3 * 3_600_000,
+    distanciaKm: 8.4,
+    segundos: 3020,
+    desnivelM: 310,
+    likes: 12,
+    comentarios: 3,
+    puntos: [],
+    propia: false,
+  }
+}
+
 /** Carrera simulada para ver En curso sin GPS: unos 2 km por Loja. */
 function simularCarrera() {
   tracker.iniciar()
@@ -58,12 +77,15 @@ export function activarVistaPreviaSiCorresponde() {
       sesion: PERFIL_EJEMPLO,
       carreras: carrerasEjemplo(),
       rutas: useApp.getState().rutas.length ? useApp.getState().rutas : rutasMock,
+      publicaciones: [publicacionAjena()],
     })
   // cargar() y el listener de sesion pueden dejarla en null: en este modo se vuelve a abrir siempre.
   aplicar()
   if (window.location.pathname.startsWith('/correr/en-curso')) simularCarrera()
   useApp.subscribe((s) => {
     if (!s.sesion) aplicar()
+    else if (!s.publicaciones.some((p) => p.id === 'vp-ajena-1'))
+      useApp.setState({ publicaciones: [...s.publicaciones, publicacionAjena()] })
   })
   // Si la sesion se perdio un instante y el enrutador redirigio, se vuelve a la ruta pedida.
   const destino = window.location.pathname + window.location.search

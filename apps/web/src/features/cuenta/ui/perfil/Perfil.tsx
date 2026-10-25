@@ -1,4 +1,5 @@
 import { useEsEscritorio } from '../../../../lib/useEsEscritorio'
+import { ListaLogros } from '../../../social/Social'
 import { EstadisticasPerfil } from '../../../../components/PanelesEscritorio'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -117,6 +118,9 @@ export function Perfil() {
         </div>
 
         <TarjetaRacha />
+        <div className="mb-6">
+          <ListaLogros />
+        </div>
 
         <EstadisticasHistoricas h={hist} m={m} />
         <KilometrajeMensual meses={meses} m={m} />

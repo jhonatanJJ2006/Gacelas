@@ -1,25 +1,28 @@
 import { useEffect, useState } from 'react'
 import type { Visibilidad } from '../../../../data/tipos'
 import { useApp } from '../../../../store/app'
-import { FilaInterruptor, PantallaAjustes, Seccion } from './Comunes'
+import { FilaC2, GrupoC2, PantallaAjustes } from './Comunes'
+import { Interruptor } from '../../../../components/ui'
+import { SeccionConsentimientos } from '../../../legal/Legal'
+import { historial } from '../../../legal/consentimientos'
 
 const OPCIONES: { id: Visibilidad; icono: string; titulo: string; descripcion: string }[] = [
   {
     id: 'publico',
     icono: 'public',
-    titulo: 'Público',
+    titulo: 'Todos',
     descripcion: 'Cualquiera puede ver tu perfil y actividades públicas',
   },
   {
     id: 'seguidores',
     icono: 'group',
-    titulo: 'Solo seguidores',
+    titulo: 'Seguidores',
     descripcion: 'Solo seguidores aceptados pueden ver tus actividades',
   },
   {
     id: 'privado',
     icono: 'lock',
-    titulo: 'Privado',
+    titulo: 'Solo yo',
     descripcion: 'Solo tú puedes ver tus actividades',
   },
 ]
@@ -32,7 +35,9 @@ export function PrivacidadUbicacion() {
   const guardarRadio = () => void actualizar({ radioHogarM: radio })
   const carreras = useApp((s) => s.carreras)
   const descargar = () => {
-    const blob = new Blob([JSON.stringify({ carreras }, null, 2)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify({ carreras, consentimientos: historial() }, null, 2)], {
+      type: 'application/json',
+    })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = 'gacelas-mis-datos.json'
@@ -41,106 +46,79 @@ export function PrivacidadUbicacion() {
   }
 
   return (
-    <PantallaAjustes
-      titulo="Privacidad y Ubicación"
-      subtitulo="Gacelas Loja • Club oficial"
-      volverA="/ajustes"
-    >
-      <div className="flex gap-3 p-4 rounded-2xl bg-primary-600/10 border border-primary-600/40">
-        <span className="material-symbols-outlined text-primary">shield</span>
-        <div>
-          <p className="font-title-sm text-title-sm text-primary">Privacidad activa por defecto</p>
-          <p className="text-body-sm text-text-secondary">
-            Tus recorridos no revelan el punto exacto de tu residencia. Tu ubicación en vivo
-            permanece desactivada hasta que decidas compartirla.
-          </p>
+    <PantallaAjustes titulo="Privacidad" volverA="/ajustes">
+      <section aria-label="Zona oculta" className="bg-c2-card p-5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[12px] font-extrabold uppercase tracking-[0.14em] text-c2-violeta">
+            Zona oculta
+          </h2>
+          <Interruptor
+            etiqueta="Ocultar ubicación de casa"
+            activo={ajustes.ocultarHogar}
+            onCambiar={(v) => void actualizar({ ocultarHogar: v })}
+          />
         </div>
-      </div>
-      <Seccion titulo="Visibilidad del perfil">
-        <div role="radiogroup" aria-label="Visibilidad del perfil" className="space-y-2">
-          {OPCIONES.map((o) => {
-            const activo = ajustes.visibilidad === o.id
-            return (
-              <button
-                key={o.id}
-                role="radio"
-                aria-checked={activo}
-                onClick={() => void actualizar({ visibilidad: o.id })}
-                className={`w-full text-left p-4 rounded-xl border-2 transition-colors ${activo ? 'bg-primary-container/20 border-primary-600' : 'bg-surface-container border-border-subtle'}`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-primary-500">{o.icono}</span>
-                  <span className="flex-1 font-body-md text-text-primary font-semibold">
-                    {o.titulo}
-                  </span>
-                  <span
-                    className={`material-symbols-outlined ${activo ? 'text-primary-500' : 'text-text-secondary'}`}
-                  >
-                    {activo ? 'check_circle' : 'radio_button_unchecked'}
-                  </span>
-                </div>
-                <p className="text-body-sm text-text-secondary mt-1">{o.descripcion}</p>
-              </button>
-            )
-          })}
+        <div className="relative mt-3 h-[150px] overflow-hidden bg-c2-s2" aria-hidden="true">
+          <svg viewBox="0 0 310 150" className="absolute inset-0 w-full h-full">
+            {[20, 60, 100, 140].map((y) => (
+              <line key={y} x1="0" y1={y} x2="310" y2={y - 30} stroke="#2C3446" strokeWidth="6" />
+            ))}
+            {[40, 120, 200, 270].map((x) => (
+              <line key={x} x1={x} y1="0" x2={x + 30} y2="150" stroke="#2C3446" strokeWidth="5" />
+            ))}
+            {ajustes.ocultarHogar && (
+              <circle
+                cx="60"
+                cy="55"
+                r="34"
+                fill="#A855F7"
+                opacity="0.18"
+                stroke="#C084FC"
+                strokeDasharray="4 4"
+              />
+            )}
+            <path
+              d="M60 55 C 50 75, 60 95, 80 90 S 110 110, 150 115 S 210 120, 230 100 S 250 80, 262 60 L 240 40 C 220 30, 200 25, 180 22"
+              fill="none"
+              stroke="#C084FC"
+              strokeWidth="4"
+            />
+            <circle cx="60" cy="55" r="7" fill="#A855F7" />
+            <circle cx="180" cy="22" r="7" fill="#68DBA9" />
+          </svg>
+          {ajustes.ocultarHogar && (
+            <span className="absolute left-3 top-3 -skew-x-12 bg-c2-violeta px-3 py-1 text-[12px] font-black italic uppercase text-[#0C1322]">
+              Casa · {radio >= 1000 ? `${radio / 1000} km` : `${radio} m`}
+            </span>
+          )}
         </div>
-      </Seccion>
-
-      <Seccion titulo="Visibilidad de actividades">
-        <FilaInterruptor
-          icono="monitor_heart"
-          titulo="Ocultar datos biométricos"
-          descripcion="Pulsaciones y cadencia ocultas en resúmenes públicos"
-          activo={ajustes.ocultarBiometricos}
-          onCambiar={(v) => void actualizar({ ocultarBiometricos: v })}
-        />
-        <FilaInterruptor
-          icono="leaderboard"
-          titulo="Aparecer en rankings y retos"
-          descripcion="Figurar en el top semanal de altimetría y distancia de Loja"
-          activo={ajustes.aparecerRankings}
-          onCambiar={(v) => void actualizar({ aparecerRankings: v })}
-        />
-      </Seccion>
-
-      <Seccion titulo="Ubicación GPS">
-        <FilaInterruptor
-          icono="my_location"
-          titulo="Ubicación precisa"
-          descripcion="Graba tu ubicación exacta durante carreras"
-          activo={ajustes.ubicacionPrecisa}
-          onCambiar={(v) => void actualizar({ ubicacionPrecisa: v })}
-        />
-      </Seccion>
-
-      <Seccion titulo="Protección de hogar">
-        <FilaInterruptor
-          icono="home"
-          titulo="Ocultar ubicación de casa"
-          descripcion="Difumina los puntos de inicio/fin cerca de tu casa"
-          activo={ajustes.ocultarHogar}
-          onCambiar={(v) => void actualizar({ ocultarHogar: v })}
-        />
+        <p className="mt-3 text-[13px] text-c2-muted">
+          {ajustes.ocultarHogar
+            ? 'Ocultamos el inicio y fin de tus carreras dentro de este radio.'
+            : 'Activa la zona oculta para no revelar dónde vives en tus recorridos.'}
+        </p>
         {ajustes.ocultarHogar && (
-          <div className="px-4 py-3 bg-surface-container rounded-xl space-y-3">
+          <div className="mt-4 space-y-3">
             <div className="flex gap-2" aria-label="Radios sugeridos">
               {[200, 500, 1000].map((r) => (
                 <button
                   key={r}
                   aria-pressed={ajustes.radioHogarM === r}
                   onClick={() => void actualizar({ radioHogarM: r })}
-                  className={`flex-1 py-2 rounded-lg border text-label-md ${ajustes.radioHogarM === r ? 'border-primary-600 bg-primary-600/15 text-primary' : 'border-border-subtle text-text-secondary'}`}
+                  className={`flex-1 h-9 -skew-x-12 text-[12px] font-black italic uppercase ${ajustes.radioHogarM === r ? 'bg-c2-violeta text-[#0C1322]' : 'bg-c2-s2 text-white border border-c2-linea'}`}
                 >
                   {r >= 1000 ? `${r / 1000} km` : `${r} m`}
-                  {r === 200 ? ' (recomendado)' : ''}
                 </button>
               ))}
             </div>
-            <div className="flex justify-between mb-2">
-              <label htmlFor="radio-hogar" className="text-body-md text-text-secondary">
+            <div className="flex justify-between">
+              <label htmlFor="radio-hogar" className="text-[13px] text-c2-muted">
                 Radio de protección
               </label>
-              <span className="text-label-lg text-primary-500" data-testid="radio-hogar-valor">
+              <span
+                className="text-[13px] font-bold text-c2-violeta"
+                data-testid="radio-hogar-valor"
+              >
                 {radio}m
               </span>
             </div>
@@ -155,45 +133,77 @@ export function PrivacidadUbicacion() {
               onPointerUp={guardarRadio}
               onKeyUp={guardarRadio}
               onBlur={guardarRadio}
-              className="h-8 w-full accent-primary-600"
+              className="h-8 w-full accent-[#A855F7]"
             />
-            <div className="flex justify-between text-body-sm text-text-secondary">
-              <span>100m</span>
-              <span>1 km</span>
-            </div>
           </div>
         )}
-      </Seccion>
+      </section>
 
-      <Seccion titulo="Compartir en vivo">
-        <div className="p-4 rounded-xl bg-secondary-600/10 border border-secondary-600/40">
-          <p className="text-body-md text-text-secondary mb-2">
-            Cuando compartes tu ubicación en vivo, solo las personas que elijas pueden verte. Puedes
-            detener el seguimiento en cualquier momento.
-          </p>
-          <p className="flex items-center gap-2 text-secondary-500 font-semibold">
-            <span className="material-symbols-outlined">shield</span>
-            Tu privacidad está protegida
-          </p>
+      <section aria-label="Quién ve tus carreras">
+        <h2 className="mb-2 text-[12px] font-extrabold uppercase tracking-[0.14em] text-c2-violeta">
+          Quién ve tus carreras
+        </h2>
+        <div role="radiogroup" aria-label="Visibilidad del perfil" className="flex gap-2">
+          {OPCIONES.map((o) => {
+            const activo = ajustes.visibilidad === o.id
+            return (
+              <button
+                key={o.id}
+                role="radio"
+                aria-checked={activo}
+                title={o.descripcion}
+                onClick={() => void actualizar({ visibilidad: o.id })}
+                className={`h-9 px-4 -skew-x-12 text-[12px] font-black italic uppercase ${activo ? 'bg-c2-violeta text-[#0C1322]' : 'bg-c2-s2 text-white border border-c2-linea'}`}
+              >
+                {o.titulo}
+              </button>
+            )
+          })}
         </div>
-      </Seccion>
-      <Seccion titulo="Gestión de datos de la cuenta">
+        <p className="mt-2 text-[13px] text-c2-muted">
+          {OPCIONES.find((o) => o.id === ajustes.visibilidad)?.descripcion}
+        </p>
+      </section>
+
+      <GrupoC2 titulo="Actividad">
+        <FilaC2
+          titulo="Aparecer en rankings"
+          descripcion="Top semanal de distancia y altimetría de Loja"
+          activo={ajustes.aparecerRankings}
+          onCambiar={(v) => void actualizar({ aparecerRankings: v })}
+        />
+        <FilaC2
+          titulo="Ocultar datos biométricos"
+          descripcion="Pulsaciones y cadencia fuera de los resúmenes públicos"
+          activo={ajustes.ocultarBiometricos}
+          onCambiar={(v) => void actualizar({ ocultarBiometricos: v })}
+        />
+        <FilaC2
+          titulo="Ubicación precisa"
+          descripcion="GPS de alta precisión durante las carreras"
+          activo={ajustes.ubicacionPrecisa}
+          onCambiar={(v) => void actualizar({ ubicacionPrecisa: v })}
+        />
+      </GrupoC2>
+
+      <SeccionConsentimientos />
+      <GrupoC2 titulo="Tus datos">
         <button
           onClick={descargar}
-          className="w-full flex items-center gap-3 px-4 py-3 bg-surface-container rounded-xl text-left hover:bg-surface-container-high"
+          className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-c2-s2"
         >
-          <span className="material-symbols-outlined text-primary">download</span>
+          <span className="material-symbols-outlined text-c2-violeta">download</span>
           <span className="flex-1">
-            <span className="block text-text-primary font-semibold">
+            <span className="block text-[15px] font-bold text-white">
               Descargar mis datos y rutas
             </span>
-            <span className="block text-body-sm text-text-secondary">
-              Exporta tus carreras en un archivo JSON
+            <span className="block text-[13px] text-c2-muted">
+              Archivo JSON con carreras y consentimientos
             </span>
           </span>
-          <span className="material-symbols-outlined text-text-secondary">chevron_right</span>
+          <span className="material-symbols-outlined text-c2-muted">chevron_right</span>
         </button>
-      </Seccion>
+      </GrupoC2>
     </PantallaAjustes>
   )
 }

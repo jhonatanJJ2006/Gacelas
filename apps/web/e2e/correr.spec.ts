@@ -15,6 +15,7 @@ test.describe('Correr con GPS simulado', () => {
     await page.getByRole('link', { name: /empezar a correr/i }).click()
     await expect(page.getByText('GPS Activado')).toBeVisible()
     await page.getByRole('button', { name: 'Comenzar carrera' }).click()
+    await page.getByRole('button', { name: 'Aceptar y empezar' }).click()
     await expect(page).toHaveURL(/\/correr\/en-curso/)
     // Los botones de arriba no quedan tapados por el contenido.
     await page

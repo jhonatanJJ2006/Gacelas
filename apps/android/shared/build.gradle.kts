@@ -55,6 +55,7 @@ kotlin {
             implementation(compose.ui)
             implementation(libs.compose.material.icons.extended)
             api(libs.androidx.datastore.preferences.core)
+            implementation(libs.kotlinx.serialization.json)
             api(libs.jetbrains.lifecycle.viewmodel)
             api(libs.jetbrains.lifecycle.viewmodel.compose)
         }

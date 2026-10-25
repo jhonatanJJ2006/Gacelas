@@ -65,6 +65,8 @@ fun FeedContenido(
     imagen: @Composable (url: String, modifier: Modifier) -> Unit = { _, mod -> Box(mod.background(GColors.SurfaceHigh)) },
     /** Abre el selector de fotos para una carrera propia; null si la plataforma no lo soporta. */
     onAgregarFotos: ((id: String) -> Unit)? = null,
+    /** Reporta una publicacion ajena; null si no hay servidor. */
+    onReportar: ((id: String) -> Unit)? = null,
     eventoClub: Evento? = null,
     inscritoClub: Boolean = false,
     onAsistir: () -> Unit = {},
@@ -177,6 +179,9 @@ fun FeedContenido(
                                 vm.ocultar(p.id)
                                 onAviso("Publicación oculta")
                             })
+                            if (!p.propia && onReportar != null) {
+                                DropdownMenuItem(text = { Text("Reportar publicación", color = GColors.C2Peligro) }, onClick = { menu = false; onReportar(p.id) })
+                            }
                         }
                     }
                 }

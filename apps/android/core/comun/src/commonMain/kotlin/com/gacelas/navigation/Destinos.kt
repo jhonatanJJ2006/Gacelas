@@ -49,6 +49,9 @@ object Destinos {
     const val NOTIFICACIONES = "notificaciones"
     const val BRUJULA = "ajustes/brujula"
     const val MAPAS_OFFLINE = "ajustes/mapas-offline"
+    const val MAPA_VIVO = "comunidad/mapa"
+    const val TERMINOS = "legal/terminos"
+    const val POLITICA_PRIVACIDAD = "legal/privacidad"
 
     /** Pantallas del flujo de acceso, fuera del scaffold con barra inferior. */
     val acceso = listOf(BIENVENIDA, INICIO_SESION, REGISTRO, RECUPERAR_CONTRASENA, PERMISOS_UBICACION)
@@ -61,5 +64,6 @@ object Destinos {
         BUSCADOR_RUTAS, NAVEGACION, DETALLE_EVENTO, EN_VIVO, DETALLE_EN_VIVO, DETALLE_RUTA, CREAR_RUTA, CLUBES, DETALLE_CLUB, EVENTO_EN_VIVO,
         EDITAR_PERFIL, AVATAR,
         AJUSTES, PRIVACIDAD, CONFIG_NOTIFICACIONES, NOTIFICACIONES, BRUJULA, MAPAS_OFFLINE,
+        MAPA_VIVO, TERMINOS, POLITICA_PRIVACIDAD,
     )
 }

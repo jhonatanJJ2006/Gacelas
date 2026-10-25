@@ -159,6 +159,7 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
             }
         }
         TarjetaRacha(com.gacelas.ui.rachaState(), carreras)
+        com.gacelas.social.ListaLogros(carreras)
         EstadisticasHistoricas(hist, m)
         KilometrajeMensual(meses, m)
         Tarjeta {

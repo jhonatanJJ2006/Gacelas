@@ -548,10 +548,12 @@ export class SupabaseEventosRepository implements EventosRepository {
     )
     return escribir(
       'eventos-creados',
-      ((data ?? []) as Fila[]).map((f) => {
-        const e = eventoDesdeFila(f, user.id)
-        return otros.has(e.id) ? { ...e, participantes: otros.get(e.id)! } : e
-      })
+      ((data ?? []) as Fila[])
+        .filter((f) => eventoVisible(f, user.id))
+        .map((f) => {
+          const e = eventoDesdeFila(f, user.id)
+          return otros.has(e.id) ? { ...e, participantes: otros.get(e.id)! } : e
+        })
     )
   }
 
@@ -1054,4 +1056,9 @@ export class SupabaseRachasRepository implements RachasRepository {
     const fila = (Array.isArray(data) ? data[0] : data) as Fila | undefined
     return fila ? rachaDesdeFila(fila) : null
   }
+}
+
+/** Oculta borradores (published = false) salvo al creador; refuerza la RLS de 021. */
+export function eventoVisible(f: Fila, uid?: string | null): boolean {
+  return f.published !== false || (uid != null && f.created_by === uid)
 }

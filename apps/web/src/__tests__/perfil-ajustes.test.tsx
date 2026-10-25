@@ -101,7 +101,7 @@ describe('ajustes', () => {
 
   it('privacidad y notificaciones persisten', async () => {
     renderRuta('/ajustes/privacidad')
-    await userEvent.click(await screen.findByRole('radio', { name: /Privado/ }))
+    await userEvent.click(await screen.findByRole('radio', { name: /Solo yo/ }))
     await userEvent.click(screen.getByRole('switch', { name: /Ubicación precisa/ }))
     await userEvent.click(screen.getByRole('switch', { name: /Ocultar ubicación de casa/ }))
     expect(screen.queryByTestId('radio-hogar-valor')).not.toBeInTheDocument()
@@ -117,7 +117,7 @@ describe('ajustes', () => {
 
   it('notificaciones desactivadas ocultan su tipo', async () => {
     renderRuta('/ajustes/notificaciones')
-    await userEvent.click(await screen.findByRole('switch', { name: /Likes/ }))
+    await userEvent.click(await screen.findByRole('switch', { name: /Me gusta/ }))
     expect(useApp.getState().ajustes.notifLikes).toBe(false)
     renderRuta('/notificaciones')
     expect(await screen.findAllByTestId('notificacion')).toHaveLength(4)

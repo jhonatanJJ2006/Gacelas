@@ -234,6 +234,23 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
     }
     val ajustesCorrer by ajustesState()
     var cuenta by remember { mutableStateOf<Int?>(null) }
+    val consentimientos = contenedor().consentimientos
+    val scopeGps = rememberCoroutineScope()
+    var pedirGps by remember { mutableStateOf(false) }
+    val iniciar = {
+        if (ajustesCorrer.cuentaRegresivaSeg > 0) cuenta = ajustesCorrer.cuentaRegresivaSeg
+        else { empezarCarrera(context, tracker); onEmpezar() }
+    }
+    if (pedirGps) com.gacelas.ui.components.ModalC2(
+        icono = Icons.Filled.GpsFixed, titulo = "Usar tu ubicación durante la carrera",
+        texto = "Gacelas usa el GPS del teléfono solo mientras grabas una carrera, para medir distancia, ritmo y dibujar tu recorrido. La ruta se guarda en tu historial y solo se comparte si tú la publicas. Nadie te ve en el mapa en vivo salvo que actives ese permiso aparte. Puedes revocarlo cuando quieras en Ajustes, Privacidad.",
+        primario = "Aceptar y empezar", secundario = "Ahora no", tag = "modal-consentimiento-gps",
+        onCerrar = { pedirGps = false },
+        onPrimario = {
+            pedirGps = false
+            scopeGps.launch { consentimientos.registrar(com.gacelas.legal.TipoConsentimiento.GpsCarrera, true); iniciar() }
+        },
+    )
     LaunchedEffect(cuenta) {
         val n = cuenta ?: return@LaunchedEffect
         kotlinx.coroutines.delay(1000)
@@ -287,8 +304,9 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
                         context.aviso("Notificaciones bloqueadas: no verás la carrera en la barra de Android")
                         if (com.gacelas.core.notificaciones.PermisoNotificaciones.sePuedePedir(context)) activarNotificaciones()
                     }
-                    if (ajustesCorrer.cuentaRegresivaSeg > 0) cuenta = ajustesCorrer.cuentaRegresivaSeg
-                    else { empezarCarrera(context, tracker); onEmpezar() }
+                    scopeGps.launch {
+                        if (consentimientos.otorgado(com.gacelas.legal.TipoConsentimiento.GpsCarrera)) iniciar() else pedirGps = true
+                    }
                 }
             })
             Text(if (permiso) "Toca para comenzar" else "Toca para dar permiso de ubicación", style = GType.labelLg, color = GColors.TextSecondary)

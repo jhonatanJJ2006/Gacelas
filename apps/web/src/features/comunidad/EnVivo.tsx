@@ -53,6 +53,20 @@ export function ListaEnVivo() {
     <main className="w-full min-h-screen bg-surface contenedor-escritorio lg:max-w-3xl">
       <Encabezado titulo="En vivo ahora" />
       <div className="px-margin pb-24 space-y-3">
+        <Link
+          to="/comunidad/mapa"
+          data-testid="ir-mapa-vivo"
+          className="flex items-center gap-3 p-4 rounded-2xl bg-[#191F2F] border border-[#C084FC]/50"
+        >
+          <span className="w-2.5 h-2.5 rounded-full bg-[#68DBA9]" />
+          <span className="flex-1">
+            <span className="block text-text-primary font-semibold">Mapa de corredores</span>
+            <span className="block text-body-sm text-text-secondary">
+              Quién está visible cerca de ti ahora
+            </span>
+          </span>
+          <span className="material-symbols-outlined text-[#C084FC]">chevron_right</span>
+        </Link>
         {sesiones === null && <p className="text-text-secondary">Buscando corredores…</p>}
         {sesiones?.length === 0 && (
           <div className="bg-surface-container rounded-2xl p-6 text-center text-text-secondary">

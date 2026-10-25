@@ -140,7 +140,7 @@ fun ComunidadIos(ruta: String, navegar: (String) -> Unit, atras: () -> Unit, onC
         }
         ruta == Destinos.EN_VIVO -> {
             val vm = viewModel { c.listaEnVivoViewModel() }
-            ListaEnVivoContenido(vm, ajustes, atras) { navegar(Destinos.detalleEnVivo(it)) }
+            ListaEnVivoContenido(vm, ajustes, atras, onSesion = { navegar(Destinos.detalleEnVivo(it)) })
         }
         ruta.startsWith("comunidad/en-vivo/") -> {
             val id = idDe(ruta, "comunidad/en-vivo/")
