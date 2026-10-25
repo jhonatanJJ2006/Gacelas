@@ -116,6 +116,7 @@ fun AjustesContenido(
     cabecera: @Composable () -> Unit = {},
     onMapasOffline: (() -> Unit)? = null,
     onBrujula: (() -> Unit)? = null,
+    onLegal: ((terminos: Boolean) -> Unit)? = null,
 ) {
     var dialogo by remember { mutableStateOf<String?>(null) }
     PantallaConEncabezado("Ajustes", onAtras) {
@@ -184,6 +185,10 @@ fun AjustesContenido(
             FilaAjuste(Icons.Filled.Notifications, "Notificaciones", onClick = onNotificaciones)
             FilaAjuste(Icons.Filled.Info, "Acerca de", version, onClick = { dialogo = "acerca" })
             FilaAjuste(Icons.AutoMirrored.Filled.Help, "Ayuda y soporte", onClick = { dialogo = "ayuda" })
+            if (onLegal != null) {
+                FilaAjuste(Icons.Filled.Info, "Términos y condiciones", onClick = { onLegal(true) })
+                FilaAjuste(Icons.Filled.Info, "Política de privacidad", onClick = { onLegal(false) })
+            }
         }
         Tarjeta(padding = 0.dp, fondo = GColors.Danger.copy(alpha = 0.1f), borde = GColors.Danger.copy(alpha = 0.4f)) {
             FilaAjuste(Icons.AutoMirrored.Filled.Logout, "Cerrar sesión", colorIcono = GColors.Danger, onClick = { dialogo = "salir" }, trailing = {})

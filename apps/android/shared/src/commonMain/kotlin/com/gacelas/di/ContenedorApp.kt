@@ -71,6 +71,12 @@ class ContenedorApp(
     /** Carrera en curso (una por app). */
     val tracker = SesionCarrera()
 
+    /** Mapa en vivo de corredores; null sin servidor. */
+    val mapaVivo: com.gacelas.vivo.MapaVivoRepository?
+
+    /** Consentimientos legales (terminos, privacidad, ubicacion). */
+    val consentimientos: com.gacelas.legal.ConsentimientosRepository
+
     /** Seguimiento en vivo; null sin servidor. */
     val enVivo: EnVivoRepository?
 
@@ -103,6 +109,8 @@ class ContenedorApp(
             sincronizar = {}
             subirPendientes = { 0 }
             enVivo = null
+            mapaVivo = null
+            consentimientos = com.gacelas.legal.ConsentimientosRepository(store)
             notificaciones = null
             explorar = null
             clubes = null
@@ -123,6 +131,8 @@ class ContenedorApp(
             eventos = e
             sincronizar = { remotoAuth.restaurar() }
             enVivo = ModuloComunidad.enVivo(backend, uid)
+            mapaVivo = com.gacelas.vivo.MapaVivoRepository(backend, uid)
+            consentimientos = com.gacelas.legal.ConsentimientosRepository(store, backend, uid)
             notificaciones = ModuloComunidad.notificaciones(backend, uid)
             val ex = ModuloRutas.explorar(backend, rutasOffline, programarSincronizacion, uid)
             explorar = ex

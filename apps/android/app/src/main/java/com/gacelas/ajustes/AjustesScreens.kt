@@ -92,6 +92,7 @@ fun AjustesPreferenciasScreen(
     onCerrarSesion: () -> Unit,
     onMapasOffline: (() -> Unit)? = null,
     onBrujula: (() -> Unit)? = null,
+    onLegal: ((Boolean) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val c = contenedor()
@@ -109,6 +110,7 @@ fun AjustesPreferenciasScreen(
         cabecera = { CabeceraAjustes(onEditarPerfil) },
         onMapasOffline = onMapasOffline,
         onBrujula = onBrujula,
+        onLegal = onLegal,
     )
 }
 
@@ -138,7 +140,7 @@ private fun Visibilidad.descripcion() = when (this) {
 private fun Visibilidad.icono(): ImageVector = when (this) { Visibilidad.Publico -> Icons.Filled.Public; Visibilidad.Seguidores -> Icons.Filled.Group; Visibilidad.Privado -> Icons.Filled.Lock }
 
 @Composable
-fun PrivacidadUbicacionScreen(onAtras: () -> Unit) {
+fun PrivacidadUbicacionScreen(onAtras: () -> Unit, onLegal: (Boolean) -> Unit = {}, onCuentaEliminada: () -> Unit = {}) {
     val a by ajustesState()
     val guardar = guardarAjuste()
     var radio by remember(a.radioHogarM) { mutableStateOf(a.radioHogarM.toFloat()) }
@@ -206,15 +208,7 @@ fun PrivacidadUbicacionScreen(onAtras: () -> Unit) {
                 }
             }
         }
-        EtiquetaGrupo("Compartir en vivo")
-        Tarjeta(fondo = GColors.Secondary.copy(alpha = 0.1f), borde = GColors.Secondary.copy(alpha = 0.4f)) {
-            Text("Cuando compartes tu ubicación en vivo, solo las personas que elijas pueden verte. Puedes detener el seguimiento en cualquier momento.",
-                style = GType.bodyMd, color = GColors.TextSecondary)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.Shield, null, tint = GColors.Secondary500)
-                Text("  Tu privacidad está protegida", style = GType.labelLg, color = GColors.Secondary500)
-            }
-        }
+        com.gacelas.legal.SeccionConsentimientos(onLegal, onCuentaEliminada)
     }
 }
 

@@ -12,11 +12,11 @@ import org.maplibre.android.geometry.LatLng
 
 /** Corredores en vivo que puedo ver. Se actualiza cada 10 s. */
 @Composable
-fun ListaEnVivoScreen(onAtras: () -> Unit, onSesion: (String) -> Unit) {
+fun ListaEnVivoScreen(onAtras: () -> Unit, onSesion: (String) -> Unit, onMapa: (() -> Unit)? = null) {
     val c = contenedor()
     val vm = viewModel { c.listaEnVivoViewModel() }
     val m by ajustesState()
-    ListaEnVivoContenido(vm, m, onAtras, onSesion)
+    ListaEnVivoContenido(vm, m, onAtras, onSesion, onMapa)
 }
 
 /** Mapa en vivo de un corredor. La web usa Supabase Realtime; aqui se consulta cada 5 s. */

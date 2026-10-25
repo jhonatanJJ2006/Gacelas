@@ -42,10 +42,21 @@ private fun Encabezado(titulo: String, onAtras: () -> Unit) {
 
 /** Corredores en vivo que puedo ver. Se actualiza cada 10 s. */
 @Composable
-fun ListaEnVivoContenido(vm: ListaEnVivoViewModel, m: Ajustes, onAtras: () -> Unit, onSesion: (String) -> Unit) {
+fun ListaEnVivoContenido(vm: ListaEnVivoViewModel, m: Ajustes, onAtras: () -> Unit, onSesion: (String) -> Unit, onMapa: (() -> Unit)? = null) {
     val sesiones by vm.sesiones.collectAsState()
     Pantalla {
         Encabezado("En vivo ahora", onAtras)
+        if (onMapa != null) Tarjeta(onClick = onMapa, fondo = GColors.C2Card, borde = GColors.C2Violeta.copy(alpha = 0.5f)) {
+            Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(10.dp).clip(CircleShape).background(GColors.C2Menta))
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Mapa de corredores", style = GType.titleMd, color = GColors.TextPrimary)
+                    Text("Quién está visible cerca de ti ahora", style = GType.bodySm, color = GColors.TextSecondary)
+                }
+                Icon(Icons.Filled.ChevronRight, null, tint = GColors.C2Violeta)
+            }
+        }
         when {
             sesiones == null -> Text("Buscando corredores…", style = GType.bodyMd, color = GColors.TextSecondary)
             sesiones!!.isEmpty() -> Tarjeta { Text("Nadie a quien sigues está corriendo en vivo ahora.", style = GType.bodyMd, color = GColors.TextSecondary) }

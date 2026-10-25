@@ -118,6 +118,10 @@ fun RegistroContenido(
     botonGoogle: @Composable () -> Unit,
     nivel: String = "principiante",
     onNivel: (String) -> Unit = {},
+    aceptaTerminos: Boolean = true,
+    onAceptaTerminos: (Boolean) -> Unit = {},
+    onVerTerminos: (() -> Unit)? = null,
+    onVerPrivacidad: (() -> Unit)? = null,
 ) {
     var verTerminos by remember { mutableStateOf(false) }
     PantallaAcceso(onAtras) {
@@ -147,10 +151,27 @@ fun RegistroContenido(
             }
         }
         MensajeError(error)
-        BotonPrimario(if (cargando) "Creando cuenta..." else "Crear cuenta", onCrear, enabled = !cargando)
-        Text("Al crear una cuenta, aceptas nuestros Términos de Servicio y Política de Privacidad",
-            style = GType.bodySm, color = GColors.Primary500, textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().clickable { verTerminos = true })
+        Row(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceContainer)
+                .border(1.dp, if (aceptaTerminos) GColors.Primary else GColors.BorderSubtle, RoundedCornerShape(12.dp))
+                .clickable { onAceptaTerminos(!aceptaTerminos) }.padding(12.dp).testTag("aceptar-terminos"),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            androidx.compose.material3.Checkbox(
+                checked = aceptaTerminos, onCheckedChange = onAceptaTerminos,
+                colors = androidx.compose.material3.CheckboxDefaults.colors(checkedColor = GColors.Primary, uncheckedColor = GColors.TextSecondary, checkmarkColor = GColors.BgPrimary),
+            )
+            Column(Modifier.weight(1f)) {
+                Text("He leído y acepto los Términos y la Política de privacidad", style = GType.bodyMd, color = GColors.TextPrimary)
+                Row {
+                    Text("Ver términos", style = GType.labelMd, color = GColors.Primary500,
+                        modifier = Modifier.clickable { onVerTerminos?.invoke() ?: run { verTerminos = true } }.padding(end = 12.dp, top = 4.dp).testTag("ver-terminos"))
+                    Text("Ver privacidad", style = GType.labelMd, color = GColors.Primary500,
+                        modifier = Modifier.clickable { onVerPrivacidad?.invoke() ?: run { verTerminos = true } }.padding(top = 4.dp).testTag("ver-privacidad"))
+                }
+            }
+        }
+        BotonPrimario(if (cargando) "Creando cuenta..." else "Crear cuenta", onCrear, enabled = !cargando && aceptaTerminos)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             Text("¿Ya tienes cuenta? ", style = GType.bodyMd, color = GColors.TextSecondary)
             Text("Iniciar sesión", style = GType.labelLg, color = GColors.Primary500, modifier = Modifier.clickable(onClick = onIniciarSesion))
