@@ -209,8 +209,12 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
             onPrivacidad = { nav.navigate(Destinos.PRIVACIDAD) },
             onNotificaciones = { nav.navigate(Destinos.CONFIG_NOTIFICACIONES) },
             onCerrarSesion = { nav.navigate(Destinos.BIENVENIDA) { popUpTo(0) { inclusive = true } } },
+            onMapasOffline = { nav.navigate(Destinos.MAPAS_OFFLINE) },
+            onBrujula = { nav.navigate(Destinos.BRUJULA) },
         )
     }
+    composable(Destinos.BRUJULA) { com.gacelas.ajustes.BrujulaScreen(onAtras = { nav.popBackStack() }) }
+    composable(Destinos.MAPAS_OFFLINE) { com.gacelas.ajustes.MapasOfflineScreen(onAtras = { nav.popBackStack() }) }
     composable(Destinos.PRIVACIDAD) { PrivacidadUbicacionScreen(onAtras = { nav.popBackStack() }) }
     composable(Destinos.CONFIG_NOTIFICACIONES) { ConfiguracionNotificacionesScreen(onAtras = { nav.popBackStack() }) }
     composable(Destinos.NOTIFICACIONES) {

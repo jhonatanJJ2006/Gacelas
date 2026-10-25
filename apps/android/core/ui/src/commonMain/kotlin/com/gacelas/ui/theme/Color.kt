@@ -66,4 +66,5 @@ object GColors {
     val C2Morado = Color(0xFFA855F7)
     val C2Menta = Color(0xFF68DBA9)
     val C2Cielo = Color(0xFF96CCFF)
+    val C2Peligro = Color(0xFFBE185D)
 }

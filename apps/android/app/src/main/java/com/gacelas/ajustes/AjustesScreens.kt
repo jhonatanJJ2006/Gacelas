@@ -90,6 +90,8 @@ fun AjustesPreferenciasScreen(
     onPrivacidad: () -> Unit,
     onNotificaciones: () -> Unit,
     onCerrarSesion: () -> Unit,
+    onMapasOffline: (() -> Unit)? = null,
+    onBrujula: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val c = contenedor()
@@ -105,6 +107,8 @@ fun AjustesPreferenciasScreen(
         onCerrarSesion = { scope.launch { c.auth.cerrarSesion(); onCerrarSesion() } },
         mapaOffline = { MapaOfflineAjuste() },
         cabecera = { CabeceraAjustes(onEditarPerfil) },
+        onMapasOffline = onMapasOffline,
+        onBrujula = onBrujula,
     )
 }
 

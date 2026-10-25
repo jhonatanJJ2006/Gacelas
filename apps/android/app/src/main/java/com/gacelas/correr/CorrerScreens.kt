@@ -39,6 +39,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.automirrored.filled.ListAlt
@@ -198,12 +200,22 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
     val context = LocalContext.current
     val tracker = contenedor().tracker
     var permiso by remember { mutableStateOf(LocationService.tienePermiso(context)) }
+    var permisoDenegado by remember { mutableStateOf(false) }
+    if (permisoDenegado) com.gacelas.ui.components.ModalC2(
+        icono = androidx.compose.material.icons.Icons.Filled.LocationOff, titulo = "Permiso de ubicación",
+        texto = "Sin permiso de ubicación no se puede grabar la carrera. Actívalo en los ajustes del teléfono.",
+        primario = "Abrir ajustes", onCerrar = { permisoDenegado = false }, secundario = "Ahora no", tag = "modal-permiso",
+        onPrimario = {
+            permisoDenegado = false
+            context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.fromParts("package", context.packageName, null)))
+        },
+    )
     var precision by remember { mutableStateOf<Float?>(null) }
     val notificaciones by com.gacelas.core.notificaciones.notificacionesPermitidasState()
     val activarNotificaciones = com.gacelas.core.notificaciones.rememberActivarNotificaciones()
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         permiso = LocationService.tienePermiso(context)
-        if (!permiso) context.aviso("Sin permiso de ubicación no se puede grabar la carrera")
+        if (!permiso) permisoDenegado = true
     }
     LaunchedEffect(permiso) {
         if (permiso) {
@@ -294,13 +306,11 @@ private fun FilaDato(etiqueta: String, valor: String) {
 
 @Composable
 private fun DialogoDescartar(onConfirmar: () -> Unit, onCancelar: () -> Unit) {
-    com.gacelas.ui.components.DialogoC2(
-        onDismissRequest = onCancelar,
-        confirmButton = { com.gacelas.ui.components.BotonModalC2("Descartar", onConfirmar, peligro = true) },
-        dismissButton = { com.gacelas.ui.components.BotonModalC2("Seguir corriendo", onCancelar, secundario = true) },
-        title = { Text("¿Descartar la carrera?") },
-        text = { Text("Se perderá el recorrido grabado hasta ahora.") },
-        containerColor = GColors.BgSecondary,
+    com.gacelas.ui.components.ModalC2(
+        icono = androidx.compose.material.icons.Icons.Filled.Delete, titulo = "¿Descartar la carrera?",
+        texto = "Se perderá el recorrido grabado hasta ahora. Esta acción no se puede deshacer.",
+        primario = "Descartar", onPrimario = onConfirmar, onCerrar = onCancelar,
+        secundario = "Seguir corriendo", peligro = true, tag = "modal-descartar",
     )
 }
 

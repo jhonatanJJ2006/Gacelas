@@ -125,34 +125,33 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
     val recs = remember(carreras) { EstadisticasPerfil.records(carreras) }
     val meds = remember(carreras) { EstadisticasPerfil.medallas(carreras) }
     Pantalla {
-        Box(Modifier.fillMaxWidth()) {
-            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                FotoPerfil(perfil?.fotoPath, 96.dp)
-                Spacer(Modifier.height(8.dp))
-                Text(perfil?.nombre ?: MockData.usuarioActual.nombre, style = GType.headlineMd, color = GColors.TextPrimary)
-                Text("@${perfil?.username ?: MockData.usuarioActual.username}", style = GType.bodyMd, color = GColors.TextSecondary)
-                perfil?.ubicacion?.takeIf { it.isNotBlank() }?.let { Text(it, style = GType.bodySm, color = GColors.TextSecondary) }
-                perfil?.bio?.takeIf { it.isNotBlank() }?.let { Text(it, style = GType.bodySm, color = GColors.TextSecondary) }
+        // C2: cabecera en fila con foto, nombre en Anton cursiva y datos en una linea.
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            FotoPerfil(perfil?.fotoPath, 80.dp)
+            Column(Modifier.weight(1f).padding(start = 14.dp)) {
+                Text(perfil?.nombre ?: MockData.usuarioActual.nombre, style = GType.headlineMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary, maxLines = 1)
                 Text(
-                    "Club Gacelas Loja", style = GType.labelMd, color = GColors.TextSecondary,
-                    modifier = Modifier.padding(top = 6.dp).clip(CircleShape).background(GColors.SurfaceContainer).padding(horizontal = 12.dp, vertical = 4.dp),
+                    listOfNotNull("@${perfil?.username ?: MockData.usuarioActual.username}", perfil?.ubicacion?.takeIf { it.isNotBlank() }).joinToString(" · "),
+                    style = GType.bodySm, color = GColors.C2Muted, maxLines = 1,
                 )
+                perfil?.bio?.takeIf { it.isNotBlank() }?.let { Text(it, style = GType.bodySm, color = GColors.C2Muted, maxLines = 2) }
+                com.gacelas.ui.components.EtiquetaC2("Club Gacelas Loja", Modifier.padding(top = 4.dp))
             }
-            IconButton(onClick = onEditar, modifier = Modifier.align(Alignment.TopEnd).clip(CircleShape).background(GColors.SurfaceContainer)) {
-                Icon(Icons.Filled.Edit, "Editar perfil", tint = GColors.Primary500)
+            IconButton(onClick = onEditar, modifier = Modifier.align(Alignment.Top).clip(RoundedCornerShape(4.dp)).background(GColors.C2S2)) {
+                Icon(Icons.Filled.Edit, "Editar perfil", tint = GColors.C2Violeta)
             }
         }
         Contadores(carreras.size, social.seguidores, social.siguiendo)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(
-                Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(GColors.Primary).clickable(onClick = onAvatar).padding(vertical = 12.dp),
+                Modifier.weight(1f).clip(com.gacelas.ui.components.FormaBotonC2).background(GColors.C2Morado).clickable(onClick = onAvatar).padding(vertical = 12.dp),
                 horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Filled.Person, null, tint = GColors.OnPrimary, modifier = Modifier.size(18.dp))
                 Text(" Editar avatar 3D", style = GType.labelLg, color = GColors.OnPrimary)
             }
             Row(
-                Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceContainer).clickable(onClick = onAjustes).padding(vertical = 12.dp),
+                Modifier.weight(1f).clip(com.gacelas.ui.components.FormaBotonC2).background(GColors.C2S2).clickable(onClick = onAjustes).padding(vertical = 12.dp),
                 horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Filled.Settings, null, tint = GColors.TextPrimary, modifier = Modifier.size(18.dp))
@@ -188,10 +187,10 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
                     }
                     if (!c.publica) Text("Privada", style = GType.bodySm, color = GColors.TextSecondary)
                 }
-                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(GColors.SurfaceHigh).padding(vertical = 8.dp)) {
-                    Metrica("${Unidades.texto(c.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}", "Distancia", Modifier.weight(1f))
-                    Metrica("${formatearRitmo(Unidades.ritmo(c.ritmoSegKm, m))} ${Unidades.etiquetaRitmo(m)}", "Ritmo", Modifier.weight(1f))
-                    Metrica(formatearMs(c.segundos), "Tiempo", Modifier.weight(1f))
+                Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Text("${Unidades.texto(c.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}", style = GType.labelLg, color = GColors.C2Violeta)
+                    Text("${formatearRitmo(Unidades.ritmo(c.ritmoSegKm, m))} ${Unidades.etiquetaRitmo(m)}", style = GType.labelLg, color = GColors.C2Menta)
+                    Text(formatearMs(c.segundos), style = GType.labelLg, color = GColors.TextPrimary)
                 }
             }
         }

@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -112,6 +114,8 @@ fun AjustesContenido(
     onCerrarSesion: () -> Unit,
     mapaOffline: @Composable () -> Unit,
     cabecera: @Composable () -> Unit = {},
+    onMapasOffline: (() -> Unit)? = null,
+    onBrujula: (() -> Unit)? = null,
 ) {
     var dialogo by remember { mutableStateOf<String?>(null) }
     PantallaConEncabezado("Ajustes", onAtras) {
@@ -154,6 +158,10 @@ fun AjustesContenido(
             })
         }
         EtiquetaGrupo("Mapa")
+        if (onMapasOffline != null || onBrujula != null) Tarjeta(padding = 0.dp) {
+            onMapasOffline?.let { FilaAjuste(Icons.Filled.Download, "Mapas offline", "Rutas de Loja sin conexión", onClick = it) }
+            onBrujula?.let { FilaAjuste(Icons.Filled.Explore, "Brújula", "Rumbo y calibración", onClick = it) }
+        }
         mapaOffline()
         EtiquetaSeccion("Rachas", "Constancia")
         Tarjeta(padding = 0.dp) {

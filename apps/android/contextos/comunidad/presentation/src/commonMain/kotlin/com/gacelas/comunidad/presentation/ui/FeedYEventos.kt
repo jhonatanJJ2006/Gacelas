@@ -151,7 +151,17 @@ fun FeedContenido(
                     }
                     p.autorId?.let { autor ->
                         val sigo = autor in siguiendo
-                        TextButton(onClick = { vm.alternarSeguir(autor) }) {
+                        var dejar by remember { mutableStateOf(false) }
+                        if (dejar) com.gacelas.ui.components.ModalC2(
+                            icono = Icons.Filled.PersonRemove, titulo = "Dejar de seguir",
+                            texto = "Ya no verás las carreras de ${p.autor} en tu feed de Siguiendo.",
+                            primario = "Dejar de seguir", onPrimario = { dejar = false; vm.alternarSeguir(autor) }, onCerrar = { dejar = false },
+                            secundario = "Cancelar", peligro = true, tag = "modal-dejar-seguir",
+                        )
+                        TextButton(onClick = {
+                            if (sigo) dejar = true
+                            else { vm.alternarSeguir(autor); com.gacelas.ui.components.AvisosC2.mostrar("Ahora sigues a ${p.autor}", error = false) }
+                        }) {
                             Text(if (sigo) "Siguiendo" else "Seguir", color = if (sigo) GColors.TextSecondary else GColors.Primary500, style = GType.labelLg)
                         }
                     }
@@ -255,12 +265,13 @@ fun EventosContenido(
 ) {
     val pestana by vm.pestana.collectAsState()
     var creando by remember { mutableStateOf(clubId != null) }
+    var uniendo by remember { mutableStateOf<Evento?>(null) }
     var calendario by rememberSaveable { mutableStateOf(false) }
     var tipo by rememberSaveable { mutableStateOf<String?>(null) }
     val lista = vm.visibles(eventos, inscritos).filter { tipo == null || it.tipo == tipo }
     Pantalla {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Eventos", style = GType.headlineLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+            Text("EVENTOS", style = GType.headlineLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary, modifier = Modifier.weight(1f))
             if (conClubes) IconButton(onClick = onClubes) { Icon(Icons.Filled.Groups, "Clubes", tint = GColors.TextPrimary) }
             IconButton(onClick = { calendario = !calendario }) { Icon(Icons.Filled.CalendarMonth, if (calendario) "Ver lista" else "Ver calendario", tint = GColors.TextPrimary) }
             IconButton(onClick = { creando = true }, modifier = Modifier.clip(CircleShape).background(GColors.Primary)) {
@@ -283,11 +294,21 @@ fun EventosContenido(
         lista.forEachIndexed { i, e ->
             if (i == 1) Text("Más eventos locales", style = GType.titleMd, color = GColors.TextPrimary)
             val inscribir = {
-                vm.alternarInscripcion(e.id)
-                onAviso(if (e.id in inscritos) "Inscripción cancelada" else "Te inscribiste a ${e.titulo}")
+                if (e.id in inscritos) { vm.alternarInscripcion(e.id); onAviso("Inscripción cancelada") }
+                else uniendo = e
             }
             if (i == 0) EventoPrincipal(e, e.id in inscritos, onClick = { onEvento(e.id) }, onInscribir = inscribir)
             else TarjetaEvento(e, e.id in inscritos, onClick = { onEvento(e.id) }, onInscribir = inscribir)
+        }
+    }
+    uniendo?.let { e ->
+        com.gacelas.ui.components.ModalC2(
+            icono = Icons.Filled.Event, titulo = "Unirse al evento",
+            texto = "${e.titulo} · ${e.fecha} ${e.hora} · ${e.ubicacion}",
+            primario = "Inscribirme", onCerrar = { uniendo = null }, secundario = "Ahora no", tag = "modal-unirse",
+            onPrimario = { uniendo = null; vm.alternarInscripcion(e.id); onAviso("Te inscribiste a ${e.titulo}") },
+        ) {
+            com.gacelas.ui.components.ResumenModalC2(listOf("${e.distanciaKm} km" to "Distancia", "${e.participantes}" to "Inscritos", (e.cupo?.toString() ?: "Libre") to "Cupo"))
         }
     }
     if (creando) {
@@ -346,14 +367,14 @@ private fun tipoTexto(t: String) = TIPOS_EVENTO.firstOrNull { it.first == t }?.s
 private fun EventoPrincipal(e: Evento, inscrito: Boolean, onClick: () -> Unit, onInscribir: () -> Unit) {
     val total = e.participantes + if (inscrito && !e.creadoPorUsuario) 1 else 0
     val lleno = e.cupo != null && total >= e.cupo!!
-    Tarjeta(padding = 0.dp, onClick = onClick, borde = GColors.Primary.copy(alpha = 0.5f)) {
-        Box(Modifier.fillMaxWidth().height(4.dp).background(Brush.horizontalGradient(listOf(GColors.Primary, GColors.Secondary500))))
+    Tarjeta(padding = 0.dp, onClick = onClick, fondo = GColors.C2Card) {
+        Box(Modifier.fillMaxWidth().height(3.dp).background(Brush.horizontalGradient(listOf(GColors.C2Morado, GColors.C2Violeta))))
         Column(Modifier.padding(16.dp).testTag("evento-principal"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Evento principal", style = GType.labelMd, color = GColors.Primary500, modifier = Modifier.weight(1f))
                 Text(if (e.yaPaso()) "Finalizado" else if (lleno) "Lista de espera" else "Inscripción abierta", style = GType.labelMd, color = GColors.Secondary500)
             }
-            Text(e.titulo, style = GType.headlineMd, color = GColors.TextPrimary)
+            Text(e.titulo, style = GType.headlineMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary)
             if (e.creadoPorUsuario) Text("Organizas tú", style = GType.labelMd, color = GColors.Primary500)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.CalendarToday, null, tint = GColors.Primary500, modifier = Modifier.size(14.dp))
@@ -365,16 +386,15 @@ private fun EventoPrincipal(e: Evento, inscrito: Boolean, onClick: () -> Unit, o
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("Distancia" to "${e.distanciaKm} km", "Tipo" to tipoTexto(e.tipo), "Cupo" to (e.cupo?.let { "$total/$it" } ?: "Libre")).forEach { (t, v) ->
-                    Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceHigh).padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(t, style = GType.labelMd, color = GColors.TextSecondary)
-                        Text(v, style = GType.labelLg, color = GColors.Primary500, maxLines = 1, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                    Column(Modifier.weight(1f).clip(RoundedCornerShape(4.dp)).background(GColors.C2S2).padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(t.uppercase(), style = GType.labelMd.copy(fontSize = androidx.compose.ui.unit.TextUnit(10f, androidx.compose.ui.unit.TextUnitType.Sp)), color = GColors.C2Muted)
+                        Text(v, style = GType.labelLg, color = GColors.C2Violeta, maxLines = 1, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                     }
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("$total participantes", style = GType.labelMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
-                if (!e.yaPaso()) Text(if (inscrito) "Inscrito" else "Inscribirse", style = GType.labelLg, color = GColors.TextPrimary,
-                    modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(if (inscrito) GColors.Secondary else GColors.Primary).clickable(onClick = onInscribir).padding(horizontal = 16.dp, vertical = 8.dp))
+                if (!e.yaPaso()) com.gacelas.ui.components.BotonChipC2(if (inscrito) "Inscrito" else "Inscribirse", onInscribir, activo = inscrito)
             }
         }
     }
@@ -382,41 +402,29 @@ private fun EventoPrincipal(e: Evento, inscrito: Boolean, onClick: () -> Unit, o
 
 @Composable
 private fun TarjetaEvento(e: Evento, inscrito: Boolean, onClick: () -> Unit, onInscribir: () -> Unit) {
-    Tarjeta(onClick = onClick) {
+    // C2: bloque de fecha, titular Anton en cursiva, datos en una linea y boton inclinado.
+    val total = e.participantes + if (inscrito && !e.creadoPorUsuario) 1 else 0
+    Tarjeta(onClick = onClick, fondo = GColors.C2Card, padding = 14.dp) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             val dm = e.inicioMs?.let { com.gacelas.carreras.domain.reglas.EstadisticasPerfil.diaYMes(it) }
-            Column(Modifier.width(56.dp).clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceHigh).padding(vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("${dm?.first ?: "--"}", style = GType.headlineMd, color = GColors.TextPrimary)
-                Text(dm?.second?.uppercase() ?: "", style = GType.labelMd, color = GColors.Primary500)
-            }
+            com.gacelas.ui.components.FechaC2("${dm?.first ?: "--"}", dm?.second ?: "")
             Column(Modifier.weight(1f).padding(start = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("${e.hora} • ${e.ubicacion}", style = GType.bodySm, color = GColors.TextSecondary, maxLines = 1, modifier = Modifier.weight(1f))
-                    Text(tipoTexto(e.tipo), style = GType.labelMd, color = GColors.Primary500)
-                }
-                Text(e.titulo, style = GType.titleMd, color = GColors.TextPrimary)
-                Text("${e.distanciaKm} km" + if (e.creadoPorUsuario) " • Organizas tú" else "", style = GType.bodySm, color = GColors.TextSecondary)
+                Text(e.titulo, style = GType.titleMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary, maxLines = 2)
+                Text("${e.hora} · ${e.ubicacion}", style = GType.bodySm, color = GColors.C2Muted, maxLines = 1)
+                Text(
+                    "${e.distanciaKm} km · ${tipoTexto(e.tipo)} · " +
+                        (e.cupo?.let { "${minOf(total, it)}/$it cupos" } ?: "$total participantes") +
+                        if (e.creadoPorUsuario) " · Organizas tú" else "",
+                    style = GType.bodySm, color = GColors.C2Muted, maxLines = 1,
+                )
             }
+            Spacer(Modifier.width(8.dp))
+            if (!e.yaPaso()) com.gacelas.ui.components.BotonChipC2(if (inscrito) "Inscrito" else "Inscribirse", onInscribir, activo = inscrito)
+            else Text("Finalizado", style = GType.labelMd, color = GColors.C2Muted)
         }
-        val total0 = e.participantes + if (inscrito && !e.creadoPorUsuario) 1 else 0
         e.cupo?.let { cupo ->
-            Row { Text("Cupos confirmados", style = GType.labelMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f)); Text("${minOf(total0, cupo)}/$cupo cupos", style = GType.labelMd, color = GColors.Primary500) }
-            Box(Modifier.fillMaxWidth().height(6.dp).clip(CircleShape).background(GColors.SurfaceHigh)) {
-                Box(Modifier.fillMaxWidth((total0.toFloat() / cupo).coerceIn(0f, 1f)).height(6.dp).background(GColors.Primary))
-            }
-        }
-        Column {
-            val total = e.participantes + if (inscrito && !e.creadoPorUsuario) 1 else 0
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.width(64.dp)) { (0 until minOf(3, total)).forEach { i -> Box(Modifier.offset(x = (i * 16).dp)) { AvatarCirculo(28.dp, i) } } }
-                Text(if (total > 3) "+${total - 3} participantes" else "$total participantes",
-                    style = GType.labelMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
-                if (!e.yaPaso()) {
-                    Text(if (inscrito) "Inscrito" else "Inscribirse", style = GType.labelMd, color = GColors.TextPrimary,
-                        modifier = Modifier.clip(CircleShape).background(if (inscrito) GColors.Secondary else GColors.Primary).clickable(onClick = onInscribir).padding(horizontal = 12.dp, vertical = 6.dp))
-                } else {
-                    Text("Finalizado", style = GType.labelMd, color = GColors.TextSecondary)
-                }
+            Box(Modifier.fillMaxWidth().height(3.dp).background(GColors.C2S2)) {
+                Box(Modifier.fillMaxWidth((total.toFloat() / cupo).coerceIn(0f, 1f)).height(3.dp).background(GColors.C2Violeta))
             }
         }
     }

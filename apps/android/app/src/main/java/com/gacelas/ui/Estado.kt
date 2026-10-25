@@ -2,7 +2,6 @@ package com.gacelas.ui
 
 import android.content.Context
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -49,7 +48,8 @@ fun rachaState(): com.gacelas.carreras.domain.reglas.Racha {
     }
 }
 
-fun Context.aviso(texto: String) = Toast.makeText(this, texto, Toast.LENGTH_SHORT).show()
+@Suppress("UnusedReceiverParameter")
+fun Context.aviso(texto: String) = com.gacelas.ui.components.AvisosC2.mostrar(texto)
 
 /** Abre el selector del sistema para compartir texto. */
 fun Context.compartir(texto: String) {

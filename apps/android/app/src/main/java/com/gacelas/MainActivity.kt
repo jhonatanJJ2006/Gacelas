@@ -101,7 +101,10 @@ fun GacelasRaiz() {
         }
         is EstadoSesion.Lista -> {
             val inicio = remember { if (e.perfil != null) Destinos.INICIO else Destinos.BIENVENIDA }
-            GacelasNavHost(inicio = inicio, sesionActiva = e.perfil != null)
+            Box(Modifier.fillMaxSize()) {
+                GacelasNavHost(inicio = inicio, sesionActiva = e.perfil != null)
+                com.gacelas.ui.components.AnfitrionAvisosC2()
+            }
         }
     }
 }

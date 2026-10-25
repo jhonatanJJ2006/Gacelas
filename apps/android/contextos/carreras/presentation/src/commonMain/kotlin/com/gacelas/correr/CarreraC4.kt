@@ -33,6 +33,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.GpsOff
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.MyLocation
@@ -130,6 +132,8 @@ fun ContenidoCarreraC4(
     autopausa: Boolean = false,
     /** Pulsaciones; null mientras no haya un sensor real conectado (el bloque queda oculto). */
     pulsaciones: Int? = null,
+    /** Descarta la carrera desde el modal de terminar; null oculta la opcion. */
+    onDescartar: (() -> Unit)? = null,
     mapa: @Composable (vista3d: Boolean, controles: ControlesMapaC4, panelAbierto: Boolean) -> Unit,
 ) {
     var bloqueo by rememberSaveable { mutableStateOf(false) }
@@ -137,6 +141,10 @@ fun ContenidoCarreraC4(
     val m = vista.metricas
     var panel by rememberSaveable { mutableStateOf(panelInicial) }
     var vista3d by rememberSaveable { mutableStateOf(true) }
+    var modalFin by rememberSaveable { mutableStateOf(false) }
+    var modalPausa by rememberSaveable { mutableStateOf(false) }
+    var gpsAvisado by rememberSaveable { mutableStateOf(false) }
+    val gpsDebil = (e.ultimaPrecisionM ?: 0f) > 50f && !e.pausada
     ManejarAtras { if (panel) panel = false else onAtras() }
 
     BoxWithConstraints(Modifier.fillMaxSize().background(K1.Fondo).testTag("pantalla-carrera")) {
@@ -223,7 +231,7 @@ fun ContenidoCarreraC4(
                 Row(
                     Modifier.weight(1f).height(56.dp).clip(com.gacelas.ui.components.FormaBotonC2)
                         .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFF5E1781), Color(0xFF7B1FA2))))
-                        .clickable(onClick = onPausa).testTag("boton-pausa"),
+                        .clickable { if (!e.pausada) modalPausa = true; onPausa() }.testTag("boton-pausa"),
                     horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(if (e.pausada) Icons.Filled.PlayArrow else Icons.Filled.Pause, null, tint = Color.White, modifier = Modifier.size(24.dp))
@@ -231,7 +239,7 @@ fun ContenidoCarreraC4(
                     Text(if (e.pausada) "REANUDAR" else "PAUSAR", style = TextStyle(fontFamily = Inter, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 16.sp, fontWeight = FontWeight.Black), color = Color.White)
                 }
                 Box(
-                    Modifier.size(56.dp).clip(RoundedCornerShape(8.dp)).background(GColorsC2.S2).clickable(onClick = onStop).testTag("boton-stop"),
+                    Modifier.size(56.dp).clip(RoundedCornerShape(8.dp)).background(GColorsC2.S2).clickable { modalFin = true }.testTag("boton-stop"),
                     contentAlignment = Alignment.Center,
                 ) { Icon(Icons.Filled.Stop, "Finalizar", tint = K1.Rojo, modifier = Modifier.size(26.dp)) }
             }
@@ -254,6 +262,32 @@ fun ContenidoCarreraC4(
             PanelCronometro(e, m, bajo, onVuelta, onCerrar = { panel = false }, Modifier.width(maxWidth * 0.85f))
         }
     }
+    val resumen: @Composable () -> Unit = {
+        com.gacelas.ui.components.ResumenModalC2(listOf(
+            "${Unidades.texto(e.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}" to "Distancia",
+            e.tiempoTexto to "Tiempo",
+            formatearRitmo(Unidades.ritmo(e.ritmoPromedioSegKm, m)) to "Ritmo",
+        ))
+    }
+    if (modalFin) com.gacelas.ui.components.ModalC2(
+        icono = Icons.Filled.Flag, titulo = "¿Terminar carrera?",
+        texto = "Se guardará tu recorrido y verás el resumen.",
+        primario = "Terminar y guardar", onPrimario = { modalFin = false; onStop() }, onCerrar = { modalFin = false },
+        secundario = if (onDescartar != null) "Descartar carrera" else "Seguir corriendo",
+        onSecundario = { modalFin = false; onDescartar?.invoke() }, tag = "modal-terminar", contenido = resumen,
+    )
+    else if (modalPausa && e.pausada) com.gacelas.ui.components.ModalC2(
+        icono = Icons.Filled.Pause, titulo = "Carrera en pausa",
+        texto = "El cronómetro está detenido. Reanuda cuando estés listo.",
+        primario = "Reanudar", onPrimario = { modalPausa = false; onPausa() }, onCerrar = { modalPausa = false },
+        secundario = "Terminar carrera", onSecundario = { modalPausa = false; modalFin = true }, tag = "modal-pausa", contenido = resumen,
+    )
+    else if (gpsDebil && !gpsAvisado) com.gacelas.ui.components.ModalC2(
+        icono = Icons.Filled.GpsOff, titulo = "GPS sin señal",
+        texto = "La precisión es baja (±${e.ultimaPrecisionM?.toInt()} m). Sal a un lugar abierto, lejos de edificios altos.",
+        primario = "Entendido", onPrimario = { gpsAvisado = true }, onCerrar = { gpsAvisado = true },
+        secundario = "Pausar carrera", onSecundario = { gpsAvisado = true; onPausa() }, tag = "modal-gps",
+    )
 }
 
 /** Tokens C2 usados por la carrera. */

@@ -248,7 +248,7 @@ fun TituloSeccion(texto: String, modifier: Modifier = Modifier, accion: String? 
 
 @Composable
 fun EtiquetaGrupo(texto: String) {
-    Text(texto.uppercase(), style = GType.labelMd, color = GColors.TextSecondary, modifier = Modifier.padding(top = 8.dp))
+    EtiquetaC2(texto, Modifier.padding(top = 12.dp, bottom = 2.dp))
 }
 
 @Composable
@@ -279,10 +279,12 @@ fun FilaAjuste(
 ) {
     val m = Modifier.fillMaxWidth().let { if (onClick != null) it.clickable(onClick = onClick) else it }
     Row(m.padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(icono, contentDescription = null, tint = colorIcono)
-        Spacer(Modifier.width(14.dp))
+        Box(Modifier.size(34.dp).clip(RoundedCornerShape(4.dp)).background(GColors.C2S2), contentAlignment = Alignment.Center) {
+            Icon(icono, contentDescription = null, tint = colorIcono, modifier = Modifier.size(18.dp))
+        }
+        Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(titulo, style = GType.bodyLg, color = GColors.TextPrimary)
+            Text(titulo, style = GType.bodyMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold), color = GColors.TextPrimary)
             if (descripcion != null) Text(descripcion, style = GType.bodySm, color = GColors.TextSecondary)
         }
         trailing()
@@ -355,4 +357,34 @@ fun MetricaC2(valor: String, etiqueta: String, modifier: Modifier = Modifier, co
         Text(etiqueta.uppercase(), style = GType.labelMd.copy(fontSize = androidx.compose.ui.unit.TextUnit(10f, androidx.compose.ui.unit.TextUnitType.Sp), fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold), color = GColors.C2Muted)
         Text(valor, style = GType.headlineSm, color = color)
     }
+}
+
+/** Bloque de fecha C2: dia en Anton cursiva sobre violeta oscuro y mes en mayusculas. */
+@Composable
+fun FechaC2(dia: String, mes: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier.width(52.dp).clip(FormaBotonC2).background(GColors.C2Morado.copy(alpha = 0.35f)).padding(vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(dia, style = GType.headlineMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary)
+        Text(mes.uppercase(), style = GType.labelMd.copy(fontSize = androidx.compose.ui.unit.TextUnit(10f, androidx.compose.ui.unit.TextUnitType.Sp)), color = GColors.C2Violeta)
+    }
+}
+
+/** Boton pequeno C2 inclinado (Asistire, Seguir, Inscribirse). [activo] lo pinta en gris como estado ya elegido. */
+@Composable
+fun BotonChipC2(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier, activo: Boolean = false) {
+    Text(
+        texto.uppercase(),
+        style = GType.labelMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic),
+        color = if (activo) GColors.C2Violeta else GColors.SobreColor,
+        modifier = modifier.clip(FormaBotonC2).background(if (activo) GColors.C2S2 else GColors.C2Morado)
+            .clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 7.dp),
+    )
+}
+
+/** Grupo de ajustes C2: tarjeta unica con filas separadas por lineas finas. */
+@Composable
+fun GrupoC2(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+    Column(modifier.fillMaxWidth().clip(FormaC2).background(GColors.C2Card).border(1.dp, GColors.C2Linea, FormaC2), content = content)
 }

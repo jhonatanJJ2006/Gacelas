@@ -41,6 +41,7 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
         vozActiva = ajustes.anunciosVoz,
         onVoz = { guardarVoz { it.copy(anunciosVoz = !it.anunciosVoz) } },
         autopausa = ajustes.autopausa,
+        onDescartar = { confirmar = true },
         mapa = { vista3d, controles, panelAbierto ->
             if (Mapas.configurado()) MapaGacelas(
                 estado.puntos.aLatLng(), Modifier.fillMaxSize(), seguir = true, zoom = 17f, modo3d = vista3d,
