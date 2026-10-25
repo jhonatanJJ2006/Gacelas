@@ -15,7 +15,7 @@ import { kmPorAutor, nivelCorredor } from '../../lib/logica'
 import { filtrarEventos } from '../../lib/filtros'
 import { ModalReporte } from '../social/Social'
 import { yaReportada } from '../social/moderacion'
-import { Carrusel, InsigniaNivel, TarjetaClub } from './PostSocial'
+import { AvatarLetra, handle, InsigniaNivel, MediaPost, TarjetaClub } from './PostSocial'
 
 export function Feed() {
   const [enVivo, setEnVivo] = useState<SesionEnVivo[]>([])
@@ -153,33 +153,25 @@ export function Feed() {
   return (
     <div className="contenedor-escritorio lg:grid lg:grid-cols-[minmax(0,600px)_340px] lg:justify-center lg:gap-8 lg:items-start">
       <div className="flex flex-col w-full min-w-0">
-        <div className="px-margin pt-space-md pb-space-sm lg:px-0 lg:pb-4">
-          <div className="flex items-center justify-between mb-4 relative">
-            <div>
-              <h1 className="font-display italic uppercase text-[26px] text-text-primary">
-                Comunidad
-              </h1>
-            </div>
-            <div className="flex-1" />
-            <button
-              onClick={() => navigate('/comunidad/corredores')}
-              aria-label="Buscar corredores"
-              className="w-11 h-11 mr-2 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
-            >
-              <span className="material-symbols-outlined">person_search</span>
-            </button>
+        <div className="pt-[max(env(safe-area-inset-top),8px)] lg:pt-4">
+          <div className="relative h-14 px-4 flex items-center justify-between lg:px-0">
+            <AvatarLetra nombre={sesion?.nombre ?? 'Tú'} />
+            <h1 className="absolute left-1/2 -translate-x-1/2 font-display italic font-black uppercase text-[22px] text-white tracking-wide">
+              Comunidad
+            </h1>
             <button
               onClick={() => setMenuFiltro((v) => !v)}
               aria-label="Filtrar publicaciones"
               aria-expanded={menuFiltro}
-              className="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+              data-testid="boton-buscar-feed"
+              className="w-9 h-9 rounded-full bg-c2-s2 border border-c2-linea flex items-center justify-center text-white"
             >
-              <span className="material-symbols-outlined">filter_list</span>
+              <span className="material-symbols-outlined text-[20px]">search</span>
             </button>
             {menuFiltro && (
               <div
                 role="menu"
-                className="absolute right-0 top-12 z-30 bg-bg-secondary border border-border-subtle rounded-xl shadow-xl overflow-hidden"
+                className="absolute right-4 top-12 z-30 min-w-[200px] bg-c2-card border border-c2-linea rounded-xl shadow-xl overflow-hidden lg:right-0"
               >
                 {(['Todos', 'Siguiendo', 'Comunidad', 'Mías'] as FiltroFeed[]).map((f) => (
                   <button
@@ -190,28 +182,47 @@ export function Feed() {
                       setFiltro(f)
                       setMenuFiltro(false)
                     }}
-                    className={`block w-full text-left px-4 py-2 text-sm ${filtro === f ? 'text-primary-500' : 'text-text-primary'} hover:bg-surface-container`}
+                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-c2-s2 ${filtro === f ? 'text-c2-violeta' : 'text-white'}`}
                   >
                     {f}
                   </button>
                 ))}
+                <div className="border-t border-c2-linea" />
+                <button
+                  role="menuitem"
+                  onClick={() => navigate('/comunidad/corredores')}
+                  className="block w-full text-left px-4 py-2 text-sm hover:bg-c2-s2 text-white"
+                >
+                  Buscar corredores
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => navigate('/comunidad/en-vivo')}
+                  className="block w-full text-left px-4 py-2 text-sm hover:bg-c2-s2 text-white"
+                >
+                  Corredores en vivo
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => navigate('/comunidad/eventos')}
+                  className="block w-full text-left px-4 py-2 text-sm hover:bg-c2-s2 text-white"
+                >
+                  Eventos
+                </button>
               </div>
             )}
           </div>
 
-          <nav
-            aria-label="Secciones de comunidad"
-            className="flex p-1 mb-4 rounded-full bg-surface-container border border-border-subtle"
-          >
+          <nav aria-label="Secciones de comunidad" className="flex border-b border-c2-linea">
             {pestanas.map((t) => (
               <button
                 key={t.id}
                 onClick={() => setFiltro(t.id)}
                 aria-current={filtro === t.id ? 'page' : undefined}
-                className={`flex-1 h-10 rounded-full font-label-md text-label-md transition-colors ${
+                className={`flex-1 h-11 text-[13px] font-black italic uppercase tracking-wide border-b-2 transition-colors ${
                   filtro === t.id
-                    ? 'bg-bg-primary text-primary shadow'
-                    : 'text-text-secondary hover:text-text-primary'
+                    ? 'text-white border-c2-violeta'
+                    : 'text-c2-muted border-transparent'
                 }`}
               >
                 {t.etiqueta}
@@ -219,15 +230,9 @@ export function Feed() {
             ))}
             <button
               onClick={() => navigate('/comunidad/clubes')}
-              className="flex-1 h-10 rounded-full font-label-md text-label-md text-text-secondary hover:text-text-primary"
+              className="flex-1 h-11 text-[13px] font-black italic uppercase tracking-wide text-c2-muted border-b-2 border-transparent"
             >
               Clubes
-            </button>
-            <button
-              onClick={() => navigate('/comunidad/eventos')}
-              className="flex-1 h-10 rounded-full font-label-md text-label-md text-text-secondary hover:text-text-primary"
-            >
-              Eventos
             </button>
           </nav>
 
@@ -235,9 +240,9 @@ export function Feed() {
             <Link
               to="/comunidad/en-vivo"
               data-testid="banner-en-vivo"
-              className="flex items-center gap-3 min-h-[52px] mb-4 px-4 rounded-2xl bg-danger/15 border border-danger/40 text-text-primary"
+              className="flex items-center gap-3 min-h-[44px] mx-4 mt-3 px-4 rounded-[10px] bg-c2-peligro/15 border border-c2-peligro/40 text-white text-sm lg:mx-0"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-danger animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-c2-peligro animate-pulse" />
               <span className="flex-1 font-semibold">
                 {enVivo.length === 1
                   ? `${enVivo[0].nombre} está corriendo en vivo`
@@ -247,26 +252,44 @@ export function Feed() {
             </Link>
           )}
 
-          <button
-            onClick={() => navigate('/correr')}
-            className="w-full flex items-center gap-3 p-3 rounded-2xl bg-surface-container border border-border-subtle text-left hover:border-primary/50 transition-colors"
+          <div
+            className="px-4 pt-3 pb-3 border-b border-c2-linea lg:px-0"
+            data-testid="compositor-feed"
           >
-            <span className="w-10 h-10 rounded-full bg-primary-600/30 flex items-center justify-center text-primary-400 font-bold">
-              {(sesion?.nombre ?? 'T').charAt(0)}
-            </span>
-            <span className="flex-1 text-body-md text-text-secondary">
-              Comparte tu entrenamiento: sal a correr y publícalo.
-            </span>
-            <span className="px-4 h-9 rounded-full bg-primary-600 text-on-primary font-label-md text-label-md flex items-center">
-              Correr
-            </span>
-          </button>
+            <div className="flex items-center gap-3">
+              <AvatarLetra nombre={sesion?.nombre ?? 'Tú'} />
+              <button
+                onClick={() => navigate('/correr')}
+                className="flex-1 text-left text-[14px] text-c2-muted"
+              >
+                ¿Cómo te fue hoy{sesion?.nombre ? `, ${sesion.nombre.split(' ')[0]}` : ''}?
+              </button>
+            </div>
+            <div className="mt-2 pl-12 flex items-center gap-4 text-c2-violeta [&_.material-symbols-outlined]:text-[18px]">
+              <span className="material-symbols-outlined" aria-hidden="true">
+                image
+              </span>
+              <span className="material-symbols-outlined" aria-hidden="true">
+                directions_run
+              </span>
+              <span className="material-symbols-outlined" aria-hidden="true">
+                map
+              </span>
+              <button
+                onClick={() => navigate('/correr')}
+                data-testid="boton-publicar"
+                className="ml-auto h-9 px-5 text-white text-[13px] font-black italic uppercase bg-gradient-to-r from-[#7b1fa2] to-c2-morado [clip-path:polygon(8px_0,100%_0,calc(100%-8px)_100%,0_100%)]"
+              >
+                Publicar
+              </button>
+            </div>
+          </div>
           {filtro !== 'Todos' && filtro !== 'Siguiendo' && (
-            <p className="mt-3 text-label-md text-text-secondary">Filtro: {filtro}</p>
+            <p className="px-4 mt-2 text-[12px] text-c2-muted lg:px-0">Filtro: {filtro}</p>
           )}
         </div>
 
-        <div className="px-margin space-y-2 pb-space-3xl lg:px-0 lg:space-y-3">
+        <div className="pb-space-3xl">
           {posts.length === 0 && (
             <p className="text-center text-text-secondary py-8">
               {filtro === 'Mías'
@@ -289,167 +312,146 @@ export function Feed() {
                   />
                 )}
                 <article
-                  className="border-b border-c2-linea pb-2 lg:pb-3"
+                  className="relative flex gap-3 px-4 pt-3 pb-2 border-b border-c2-linea lg:px-0"
                   data-testid="publicacion"
                 >
-                  <header className="px-4 pt-3 pb-2 flex items-start gap-3 relative">
+                  <div className="relative flex flex-col items-center">
                     {post.avatar ? (
-                      <img
-                        src={post.avatar}
-                        alt=""
-                        className="w-11 h-11 rounded-full object-cover border-2 border-primary/60"
-                      />
+                      <img src={post.avatar} alt="" className="w-9 h-9 rounded-full object-cover" />
                     ) : (
-                      <div className="w-11 h-11 rounded-full bg-primary-600/30 border-2 border-primary/60 flex items-center justify-center text-primary-400 font-bold">
-                        {post.autor.charAt(0)}
-                      </div>
+                      <AvatarLetra nombre={post.autor} />
                     )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                        <span className="font-body-md text-body-md text-text-primary font-semibold truncate max-w-full">
-                          {post.autor}
-                        </span>
-                        <InsigniaNivel nivel={nivelDe(post)} />
-                      </div>
-                      <p className="font-body-sm text-body-sm text-text-secondary truncate">
-                        {post.titulo} · {post.tiempo}
-                      </p>
-                    </div>
-                    {post.autorId && (
+                    {post.ultimoComentario && <span className="mt-1 flex-1 w-0.5 bg-c2-linea" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <header className="relative flex items-center gap-1.5 min-w-0">
+                      <span className="text-[14px] font-bold text-white truncate">
+                        {post.autor}
+                      </span>
+                      <InsigniaNivel nivel={nivelDe(post)} />
+                      <span className="text-[12px] text-c2-muted truncate min-w-0">
+                        {handle(post.autor)} · {post.tiempo}
+                      </span>
                       <button
-                        onClick={() =>
-                          siguiendo.includes(post.autorId!)
-                            ? setDejar({ id: post.autorId!, nombre: post.autor })
-                            : void alternarSeguir(post.autorId!)
-                        }
-                        aria-pressed={siguiendo.includes(post.autorId)}
-                        className={`h-9 px-4 rounded-full text-sm font-semibold transition-colors ${
-                          siguiendo.includes(post.autorId)
-                            ? 'bg-surface-container-high text-text-primary border border-border-subtle'
-                            : 'bg-primary-600 text-on-primary hover:bg-primary-700'
-                        }`}
+                        onClick={() => setMenuPost(menuPost === post.id ? null : post.id)}
+                        aria-label="Más opciones"
+                        className="ml-auto w-8 h-8 -mr-1 shrink-0 flex items-center justify-center text-c2-muted hover:text-white"
                       >
-                        {siguiendo.includes(post.autorId) ? 'Siguiendo' : 'Seguir'}
+                        <span className="material-symbols-outlined text-[18px]">more_horiz</span>
                       </button>
-                    )}
-                    <button
-                      onClick={() => setMenuPost(menuPost === post.id ? null : post.id)}
-                      aria-label="Más opciones"
-                      className="w-11 h-11 -mr-2 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary"
-                    >
-                      <span className="material-symbols-outlined">more_vert</span>
-                    </button>
-                    {menuPost === post.id && (
-                      <div
-                        role="menu"
-                        className="absolute right-4 top-14 z-30 bg-bg-secondary border border-border-subtle rounded-xl shadow-xl overflow-hidden"
-                      >
-                        {post.propia && post.remota && (
-                          <label
-                            role="menuitem"
-                            className="block w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-container cursor-pointer"
-                          >
-                            Agregar fotos
-                            <input
-                              type="file"
-                              accept="image/jpeg,image/png,image/webp"
-                              multiple
-                              className="sr-only"
-                              aria-label="Agregar fotos"
-                              onClick={() => setFotosPara(post.id)}
-                              onChange={(e) => {
-                                setMenuPost(null)
-                                void subirFotos(fotosPara ?? post.id, e.target.files)
-                              }}
-                            />
-                          </label>
-                        )}
-                        <button
-                          role="menuitem"
-                          onClick={() => {
-                            void actualizar((a) => ({ ocultas: [...a.ocultas, post.id] }))
-                            setMenuPost(null)
-                            mostrarAviso('Publicación oculta')
-                          }}
-                          className="block w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-container"
+                      {menuPost === post.id && (
+                        <div
+                          role="menu"
+                          className="absolute right-0 top-8 z-30 bg-c2-card border border-c2-linea rounded-xl shadow-xl overflow-hidden"
                         >
-                          Ocultar publicación
-                        </button>
-                        {!post.propia && (
+                          {post.autorId && (
+                            <button
+                              role="menuitem"
+                              onClick={() => {
+                                setMenuPost(null)
+                                if (siguiendo.includes(post.autorId!))
+                                  setDejar({ id: post.autorId!, nombre: post.autor })
+                                else void alternarSeguir(post.autorId!)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-c2-s2"
+                            >
+                              {siguiendo.includes(post.autorId) ? 'Dejar de seguir' : 'Seguir'}
+                            </button>
+                          )}
+                          {post.propia && post.remota && (
+                            <label
+                              role="menuitem"
+                              className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-c2-s2 cursor-pointer"
+                            >
+                              Agregar fotos
+                              <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                multiple
+                                className="sr-only"
+                                aria-label="Agregar fotos"
+                                onClick={() => setFotosPara(post.id)}
+                                onChange={(e) => {
+                                  setMenuPost(null)
+                                  void subirFotos(fotosPara ?? post.id, e.target.files)
+                                }}
+                              />
+                            </label>
+                          )}
                           <button
                             role="menuitem"
                             onClick={() => {
+                              void actualizar((a) => ({ ocultas: [...a.ocultas, post.id] }))
                               setMenuPost(null)
-                              if (yaReportada(post.id))
-                                mostrarAviso('Ya reportaste esta publicación')
-                              else setReportando(post.id)
+                              mostrarAviso('Publicación oculta')
                             }}
-                            className="block w-full text-left px-4 py-2 text-sm text-c2-peligro hover:bg-surface-container"
+                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-c2-s2"
                           >
-                            Reportar publicación
+                            Ocultar publicación
                           </button>
-                        )}
-                      </div>
-                    )}
-                  </header>
-
-                  <div className="pl-[68px] pr-4 pt-2">
+                          {!post.propia && (
+                            <button
+                              role="menuitem"
+                              onClick={() => {
+                                setMenuPost(null)
+                                if (yaReportada(post.id))
+                                  mostrarAviso('Ya reportaste esta publicación')
+                                else setReportando(post.id)
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-c2-peligro hover:bg-c2-s2"
+                            >
+                              Reportar publicación
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </header>
+                    <p className="text-[14px] leading-snug text-white/90">{post.titulo}</p>
                     <div
-                      className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-1 font-display italic text-[15px] tabular-nums"
+                      className="mt-1.5 mb-2 flex flex-wrap items-baseline gap-x-3 font-display italic font-black text-[14px] tabular-nums"
                       data-testid="metricas-post"
                     >
                       <span className="text-c2-violeta">
                         {Unidades.texto(post.distanciaKm, m, 1)}
-                        <span className="font-sans not-italic text-[11px] text-c2-muted">
+                        <span className="font-sans not-italic font-normal text-[10px] text-c2-muted">
                           {Unidades.etiquetaDistancia(m)}
                         </span>
                       </span>
-                      <span className="text-text-primary">
+                      <span className="text-white">
                         {formatearRitmo(Unidades.ritmo(post.ritmoSegKm, m))}
+                        <span className="font-sans not-italic font-normal text-[10px] text-c2-muted">
+                          /{m ? 'km' : 'mi'}
+                        </span>
                       </span>
-                      <span className="text-text-primary">{formatearMs(post.segundos)}</span>
+                      <span className="text-white">{formatearMs(post.segundos)}</span>
                       <span className="text-c2-cielo" data-testid="desnivel-post">
                         +{post.desnivelM ?? 0}
-                        <span className="font-sans not-italic text-[11px] text-c2-muted">m</span>
+                        <span className="font-sans not-italic font-normal text-[10px] text-c2-muted">
+                          m
+                        </span>
                       </span>
                     </div>
 
-                    <Carrusel
-                      imagenes={post.imagenes ?? []}
-                      puntos={post.puntos}
-                      desnivelM={post.desnivelM}
-                    />
+                    <MediaPost imagenes={post.imagenes ?? []} puntos={post.puntos} />
                     {locales.length > 0 && (
-                      <ul className="mb-3 space-y-1">
+                      <ul className="mt-2 space-y-1">
                         {locales.map((c, i) => (
-                          <li key={i} className="text-body-sm text-text-secondary">
-                            <strong className="text-text-primary">Tú:</strong> {c}
+                          <li key={i} className="text-[13px] text-c2-muted">
+                            <strong className="text-white">Tú:</strong> {c}
                           </li>
                         ))}
                       </ul>
                     )}
 
-                    <div className="flex items-center gap-4 pt-1 [&_.material-symbols-outlined]:text-[18px]">
-                      <button
-                        onClick={() => alternarLike(post)}
-                        aria-pressed={meGusta}
-                        aria-label={meGusta ? 'Quitar me gusta' : 'Me gusta'}
-                        className={`min-h-11 px-3 rounded-full flex items-center gap-2 transition-colors ${meGusta ? 'bg-primary/15 text-primary' : 'text-text-secondary hover:text-primary'}`}
-                      >
-                        <span className="material-symbols-outlined">
-                          {meGusta ? 'favorite' : 'favorite_border'}
-                        </span>
-                        <span className="font-label-md text-label-md">{likesDe(post)}</span>
-                      </button>
+                    <div className="mt-1 flex items-center justify-between text-c2-muted [&_.material-symbols-outlined]:text-[17px] [&_button]:min-h-9 [&_button]:flex [&_button]:items-center [&_button]:gap-1.5 [&_button]:text-[12px]">
                       <button
                         onClick={() => abrirComentarios(post)}
                         aria-label="Comentar"
-                        className="min-h-11 min-w-11 flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors"
+                        data-testid="accion-comentar"
+                        className="hover:text-white"
                       >
                         <span className="material-symbols-outlined">chat_bubble_outline</span>
-                        <span className="font-label-md text-label-md">
-                          {post.comentarios + locales.length}
-                        </span>
+                        {post.comentarios + locales.length}
                       </button>
                       <button
                         onClick={() => repostear(post)}
@@ -457,33 +459,52 @@ export function Feed() {
                         aria-label={
                           post.compartida ? 'Dejar de compartir' : 'Compartir en mi perfil'
                         }
-                        className={`min-h-11 px-3 rounded-full flex items-center gap-2 transition-colors ${post.compartida ? 'bg-secondary/15 text-secondary' : 'text-text-secondary hover:text-secondary'}`}
+                        data-testid="accion-repost"
+                        className={post.compartida ? 'text-c2-menta' : 'hover:text-c2-menta'}
                       >
                         <span className="material-symbols-outlined">repeat</span>
-                        <span className="font-label-md text-label-md">{post.compartidos ?? 0}</span>
+                        {post.compartidos ?? 0}
+                      </button>
+                      <button
+                        onClick={() => alternarLike(post)}
+                        aria-pressed={meGusta}
+                        aria-label={meGusta ? 'Quitar me gusta' : 'Me gusta'}
+                        data-testid="accion-like"
+                        className={meGusta ? 'text-c2-violeta' : 'hover:text-c2-violeta'}
+                      >
+                        <span className="material-symbols-outlined">
+                          {meGusta ? 'favorite' : 'favorite_border'}
+                        </span>
+                        {likesDe(post)}
                       </button>
                       <button
                         onClick={() => void compartirPost(post)}
                         aria-label="Compartir"
-                        className="min-h-11 min-w-11 justify-center flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors ml-auto"
+                        className="hover:text-white"
                       >
-                        <span className="material-symbols-outlined">share</span>
+                        <span className="material-symbols-outlined">ios_share</span>
                       </button>
                     </div>
                     {post.ultimoComentario && (
                       <button
                         onClick={() => abrirComentarios(post)}
-                        className="mt-3 w-full text-left rounded-xl bg-bg-primary/40 border border-border-subtle p-3"
+                        className="mt-1 mb-1 w-full text-left"
                         data-testid="vista-comentario"
                       >
-                        <span className="text-body-sm">
-                          <strong className="text-text-primary">
-                            {post.ultimoComentario.autor}
-                          </strong>{' '}
-                          <span className="text-text-secondary">{post.ultimoComentario.texto}</span>
+                        <span className="flex gap-2 rounded-[10px] bg-c2-s2 border border-c2-linea p-2.5">
+                          <AvatarLetra nombre={post.ultimoComentario.autor} chico />
+                          <span className="min-w-0 text-[13px]">
+                            <strong className="text-white">{post.ultimoComentario.autor}</strong>{' '}
+                            <span className="text-c2-muted">
+                              {handle(post.ultimoComentario.autor)}
+                            </span>
+                            <span className="block text-white/85">
+                              {post.ultimoComentario.texto}
+                            </span>
+                          </span>
                         </span>
                         {post.comentarios > 1 && (
-                          <span className="block text-[11px] text-primary mt-1">
+                          <span className="block text-[12px] text-c2-violeta mt-1.5">
                             Ver los {post.comentarios} comentarios
                           </span>
                         )}

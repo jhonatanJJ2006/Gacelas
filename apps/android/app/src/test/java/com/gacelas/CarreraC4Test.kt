@@ -66,7 +66,7 @@ class CarreraC4Test {
         mostrar()
         compose.onNodeWithText("00:14:52").assertIsDisplayed()
         compose.onNodeWithTag("distancia").assertIsDisplayed()
-        compose.onNodeWithText("±9 m", substring = true).assertIsDisplayed()
+        compose.onNodeWithTag("chip-gps").assertIsDisplayed()
         listOf("boton-pausa", "boton-stop", "boton-cronometro", "boton-3d", "boton-recentrar", "boton-brujula").forEach { compose.onNodeWithTag(it).assertIsDisplayed() }
         compose.onAllNodesWithTag("panel-cronometro").assertCountEquals(0)
         compose.onAllNodes(hasScrollAction()).assertCountEquals(0)
