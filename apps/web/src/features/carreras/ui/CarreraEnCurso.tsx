@@ -17,6 +17,7 @@ import { useApp } from '../../../store/app'
 import { descartarCarrera, finalizarCarrera, tracker, useCarrera } from '../../../store/carrera'
 import { caloriasEstimadas } from '../../../lib/logica'
 import { claveMapas } from '../../../lib/mapas'
+import { HojaReportarIncidente } from '../../incidentes/HojaReportarIncidente'
 
 export function CarreraEnCurso() {
   const navigate = useNavigate()
@@ -26,6 +27,7 @@ export function CarreraEnCurso() {
   const [modalFin, setModalFin] = useState(false)
   const [modalPausa, setModalPausa] = useState(false)
   const [gpsAvisado, setGpsAvisado] = useState(false)
+  const [reportando, setReportando] = useState(false)
   const [vista3d, setVista3d] = useState(false)
   const sesion = useApp((s) => s.sesion)
   const vivo = useCompartirEnVivo()
@@ -199,6 +201,25 @@ export function CarreraEnCurso() {
     </div>
   )
 
+  const botonReportar = (
+    <button
+      onClick={() => setReportando(true)}
+      data-testid="reportar-incidente"
+      aria-label="Reportar incidente"
+      className="absolute top-4 left-1/2 -translate-x-1/2 z-30 h-10 px-3 rounded-full bg-c2-card/90 backdrop-blur-md text-white border border-c2-linea shadow-lg flex items-center gap-1 text-sm font-semibold"
+    >
+      <span className="material-symbols-outlined text-[18px] text-[#F5C451]">warning</span>
+      Reportar
+    </button>
+  )
+  const hojaReportar = (
+    <HojaReportarIncidente
+      abierta={reportando}
+      ubicacion={ultimo ? { lat: ultimo.lat, lng: ultimo.lng } : null}
+      onCerrar={() => setReportando(false)}
+    />
+  )
+
   if (claveMapas())
     return (
       <div className="fixed inset-0 bg-c2-bg z-40" data-testid="carrera-mapa">
@@ -213,6 +234,8 @@ export function CarreraEnCurso() {
         />
         <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
         {barra}
+        {botonReportar}
+        {hojaReportar}
         <button
           onClick={() => setVista3d(!vista3d)}
           aria-pressed={vista3d}
@@ -314,6 +337,8 @@ export function CarreraEnCurso() {
         <div className="absolute inset-0 bg-gradient-to-b from-surface-container-low via-surface to-surface"></div>
 
         {barra}
+        {botonReportar}
+        {hojaReportar}
 
         <div className="relative z-10 flex flex-col gap-3 px-4 pt-20 pb-6 max-w-md mx-auto w-full">
           <div className="flex items-center justify-between rounded-2xl bg-surface-container/70 border border-border-subtle px-4 py-3">

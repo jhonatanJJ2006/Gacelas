@@ -90,27 +90,32 @@ export const PRIVACIDAD: SeccionLegal[] = [
       'Si lo activas, otros corredores con sesión iniciada verán tu última posición, tu nombre, tu foto y si estás corriendo, mientras uses la aplicación. La posición se actualiza como mucho cada 15 segundos y deja de mostrarse a los 2 minutos sin actualizar. Puedes desactivarlo en cualquier momento en Privacidad y tu posición se borra al instante.',
   },
   {
-    titulo: '6. Con quién compartimos',
+    titulo: '6. Reportes de incidentes',
+    texto:
+      'Si reportas un incidente guardamos el tipo, la descripción y las fotos opcionales, el punto GPS donde estás, la dirección aproximada y la hora, junto a tu cuenta (base legal: tu consentimiento de ubicación). Las fotos se suben sin metadatos EXIF. Otros usuarios ven el reporte sin tu nombre, con la ubicación redondeada a unos 100 metros y la hora redondeada a la hora; la descripción solo se muestra si moderación la verifica. Los reportes dejan de mostrarse a los 90 días y puedes borrarlos cuando quieras. Para el indicador de seguridad de las rutas usamos además datos abiertos y agregados del SIS ECU 911 (licencia CC-BY), que no contienen datos personales.',
+  },
+  {
+    titulo: '7. Con quién compartimos',
     texto:
       'Usamos Supabase como proveedor de base de datos y autenticación y servicios de mapas para mostrar teselas. No vendemos tus datos ni los usamos para publicidad. Estos proveedores pueden estar fuera de Ecuador con garantías adecuadas según la LOPDP.',
   },
   {
-    titulo: '7. Conservación',
+    titulo: '8. Conservación',
     texto:
       'Conservamos tus datos mientras tengas una cuenta. Las posiciones del mapa en vivo se ocultan a los 2 minutos y se sobrescriben con la siguiente. Al eliminar tu cuenta borramos tus datos personales, salvo los que la ley obligue a conservar.',
   },
   {
-    titulo: '8. Tus derechos',
+    titulo: '9. Tus derechos',
     texto:
       'Según la LOPDP puedes acceder, rectificar, actualizar, eliminar y portar tus datos, oponerte a su tratamiento y revocar tus consentimientos. Desde Privacidad puedes descargar tus datos, revocar consentimientos y eliminar tu cuenta. También puedes reclamar ante la Superintendencia de Protección de Datos Personales.',
   },
   {
-    titulo: '9. Seguridad',
+    titulo: '10. Seguridad',
     texto:
       'Aplicamos cifrado en tránsito, control de acceso por filas en la base de datos y el principio de mínimo privilegio. Si ocurre una vulneración que afecte tus datos te lo notificaremos conforme a la ley.',
   },
   {
-    titulo: '10. Cambios',
+    titulo: '11. Cambios',
     texto:
       'Si cambiamos esta Política te lo avisaremos en la aplicación. La versión vigente y su fecha se muestran al inicio de este documento.',
   },

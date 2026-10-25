@@ -73,6 +73,8 @@ class ContenedorApp(
 
     /** Mapa en vivo de corredores; null sin servidor. */
     val mapaVivo: com.gacelas.vivo.MapaVivoRepository?
+    /** Incidentes (ECU 911 + reportes de corredores); null sin backend: la UI muestra el ejemplo. */
+    val incidentes: com.gacelas.incidentes.IncidentesRepository?
 
     /** Consentimientos legales (terminos, privacidad, ubicacion). */
     val consentimientos: com.gacelas.legal.ConsentimientosRepository
@@ -113,6 +115,7 @@ class ContenedorApp(
             subirPendientes = { 0 }
             enVivo = null
             mapaVivo = null
+            incidentes = null
             consentimientos = com.gacelas.legal.ConsentimientosRepository(store)
             social = com.gacelas.social.SocialRepository(store)
             notificaciones = null
@@ -136,6 +139,7 @@ class ContenedorApp(
             sincronizar = { remotoAuth.restaurar() }
             enVivo = ModuloComunidad.enVivo(backend, uid)
             mapaVivo = com.gacelas.vivo.MapaVivoRepository(backend, uid)
+            incidentes = com.gacelas.incidentes.IncidentesRepository(backend)
             consentimientos = com.gacelas.legal.ConsentimientosRepository(store, backend, uid)
             social = com.gacelas.social.SocialRepository(store, backend, uid)
             notificaciones = ModuloComunidad.notificaciones(backend, uid)

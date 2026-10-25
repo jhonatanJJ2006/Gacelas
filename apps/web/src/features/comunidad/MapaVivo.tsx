@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom'
 import { MapaCorredores } from '../../components/MapaEditable'
 import { ModalC2 } from '../../components/modales'
 import { claveMapas } from '../../lib/mapas'
+import { HojaReportarIncidente } from '../incidentes/HojaReportarIncidente'
+import { ListaIncidentes, useIncidentesRecientes } from '../incidentes/IncidentesRecientes'
+import type { IncidentePublico } from '../incidentes/incidentes'
 import { tracker } from '../carreras/application/carreraStore'
 import { historial, otorgado } from '../legal/consentimientos'
 import {
@@ -44,12 +47,14 @@ function Avatar({ c }: { c: CorredorEnMapa }) {
 function Esquema({
   lista,
   onTocar,
+  incidentes = [],
 }: {
   lista: CorredorEnMapa[]
   onTocar: (c: CorredorEnMapa) => void
+  incidentes?: IncidentePublico[]
 }) {
-  const lats = lista.map((c) => c.lat)
-  const lngs = lista.map((c) => c.lng)
+  const lats = [...lista, ...incidentes].map((c) => c.lat)
+  const lngs = [...lista, ...incidentes].map((c) => c.lng)
   const [minLat, maxLat, minLng, maxLng] = [
     Math.min(...lats),
     Math.max(...lats),
@@ -65,6 +70,21 @@ function Esquema({
         backgroundSize: '48px 48px',
       }}
     >
+      {incidentes.map((i) => {
+        const x = maxLng > minLng ? (i.lng - minLng) / (maxLng - minLng) : 0.5
+        const y = maxLat > minLat ? 1 - (i.lat - minLat) / (maxLat - minLat) : 0.5
+        return (
+          <span
+            key={i.id}
+            data-testid={`marcador-incidente-${i.id}`}
+            title="Incidente reportado"
+            className="absolute -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[#F5C451] text-[#0B1220] flex items-center justify-center shadow-lg"
+            style={{ left: `${10 + x * 80}%`, top: `${10 + y * 80}%` }}
+          >
+            <span className="material-symbols-outlined text-[16px]">warning</span>
+          </span>
+        )
+      })}
       {lista.length === 0 && (
         <p className="absolute inset-0 flex items-center justify-center text-[#A8B0C2]">
           Sin corredores visibles
@@ -96,7 +116,28 @@ function Esquema({
  * Mapa en vivo de corredores. Solo aparecen quienes activaron "Ubicación visible" y publicaron
  * en los ultimos 2 minutos (RLS de runner_positions). Se actualiza con Supabase Realtime.
  */
-export function MapaVivo({ inicial }: { inicial?: CorredorEnMapa[] }) {
+export function MapaVivo({
+  inicial,
+  incidentesIniciales,
+}: {
+  inicial?: CorredorEnMapa[]
+  incidentesIniciales?: IncidentePublico[]
+}) {
+  const incidentes = useIncidentesRecientes(incidentesIniciales)
+  const [reportando, setReportando] = useState(false)
+  const [miPos, setMiPos] = useState<{ lat: number; lng: number } | null>(null)
+  const [avisoReporte, setAvisoReporte] = useState<string | null>(null)
+  const abrirReporte = () => {
+    const p = tracker.estado.puntos.at(-1)
+    if (p) setMiPos({ lat: p.lat, lng: p.lng })
+    else
+      navigator.geolocation?.getCurrentPosition(
+        (g) => setMiPos({ lat: g.coords.latitude, lng: g.coords.longitude }),
+        () => setMiPos(null),
+        { maximumAge: 30_000, timeout: 10_000 }
+      )
+    setReportando(true)
+  }
   const [lista, setLista] = useState<CorredorEnMapa[]>(inicial ?? [])
   const [ahora, setAhora] = useState(Date.now())
   const [elegido, setElegido] = useState<CorredorEnMapa | null>(null)
@@ -152,6 +193,7 @@ export function MapaVivo({ inicial }: { inicial?: CorredorEnMapa[] }) {
           {claveMapas() && !inicial ? (
             <MapaCorredores
               className="w-full h-full"
+              incidentes={incidentes}
               corredores={lista.map((c) => ({
                 id: c.userId,
                 nombre: c.nombre,
@@ -160,9 +202,28 @@ export function MapaVivo({ inicial }: { inicial?: CorredorEnMapa[] }) {
               }))}
             />
           ) : (
-            <Esquema lista={lista} onTocar={setElegido} />
+            <Esquema lista={lista} onTocar={setElegido} incidentes={incidentes} />
           )}
         </div>
+        <button
+          onClick={abrirReporte}
+          data-testid="reportar-incidente"
+          className="w-full h-11 rounded-xl bg-c2-card border border-c2-linea text-text-primary font-semibold flex items-center justify-center gap-2"
+        >
+          <span className="material-symbols-outlined text-[#F5C451]">warning</span>
+          Reportar incidente
+        </button>
+        {avisoReporte && (
+          <p role="status" className="text-sm text-[#68DBA9]">
+            {avisoReporte}
+          </p>
+        )}
+        <HojaReportarIncidente
+          abierta={reportando}
+          ubicacion={miPos}
+          onCerrar={() => setReportando(false)}
+          onEnviado={setAvisoReporte}
+        />
         <div className="flex gap-4 text-sm text-[#A8B0C2]">
           <span className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[#68DBA9]" /> Corriendo
@@ -176,6 +237,7 @@ export function MapaVivo({ inicial }: { inicial?: CorredorEnMapa[] }) {
             ? 'Nadie está visible ahora mismo'
             : `${lista.length} corredores visibles`}
         </p>
+        <ListaIncidentes lista={incidentes} />
         <ul className="space-y-2">
           {lista.map((c) => (
             <li key={c.userId}>
