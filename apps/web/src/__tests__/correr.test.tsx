@@ -11,8 +11,22 @@ describe('grabar una carrera con GPS', () => {
     prepararApp()
     useApp.setState((s) => ({ ajustes: { ...s.ajustes, cuentaRegresivaSeg: 0 } }))
     gps = instalarGpsFalso()
+    localStorage.setItem(
+      'gacelas:consentimientos',
+      JSON.stringify([{ tipo: 'gps_carrera', version: 'v', otorgado: true, fechaMs: 1 }])
+    )
   })
   afterEach(() => descartarCarrera())
+
+  it('pide el consentimiento de GPS antes de la primera carrera', async () => {
+    localStorage.removeItem('gacelas:consentimientos')
+    renderRuta('/correr')
+    await userEvent.click(await screen.findByRole('button', { name: 'Comenzar carrera' }))
+    expect(screen.getByText('Usar tu ubicación durante la carrera')).toBeInTheDocument()
+    expect(gps.geo.watchPosition).not.toHaveBeenCalled()
+    await userEvent.click(screen.getByRole('button', { name: 'Aceptar y empezar' }))
+    expect(await screen.findByText('En curso')).toBeInTheDocument()
+  })
 
   it('Correr muestra la señal del GPS y empieza la carrera', async () => {
     renderRuta('/correr')

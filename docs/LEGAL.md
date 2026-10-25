@@ -28,3 +28,7 @@ Tipos:
 ## Eliminar la cuenta
 
 La función `eliminar_mi_cuenta()` borra el usuario de `auth.users`. Sus datos se borran en cascada.
+
+## Consentimiento de GPS al correr
+
+Antes de la primera carrera se muestra un modal que explica qué se usa (GPS del dispositivo), para qué (distancia, ritmo y recorrido), con quién se comparte (nadie, salvo que publiques la carrera) y por cuánto tiempo (solo mientras grabas). La aceptación se guarda en la tabla consents con su versión y fecha, y se puede revocar en Ajustes, Privacidad.

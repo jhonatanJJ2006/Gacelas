@@ -10,6 +10,8 @@ import {
   tracker,
 } from '../../../store/carrera'
 import { calidadSenal } from '../../../lib/logica'
+import { ModalC2 } from '../../../components/modales'
+import { historial, otorgado, registrarConsentimiento } from '../../legal/consentimientos'
 
 type EstadoGps =
   { tipo: 'buscando' } | { tipo: 'listo'; precisionM: number } | { tipo: 'error'; mensaje: string }
@@ -44,6 +46,7 @@ export function Correr() {
     return () => clearTimeout(t)
   }, [cuenta])
   const arrancarRef = useRef(() => {})
+  const [pedirGps, setPedirGps] = useState(false)
 
   if (estaActiva(tracker.estado)) return <Navigate to="/correr/en-curso" replace />
 
@@ -53,7 +56,8 @@ export function Correr() {
     empezarSeguimiento({ precisa, onError: setErrorCarrera })
     navigate('/correr/en-curso')
   }
-  const handleStart = () => (cuentaSeg > 0 ? setCuenta(cuentaSeg) : arrancar())
+  const iniciar = () => (cuentaSeg > 0 ? setCuenta(cuentaSeg) : arrancar())
+  const handleStart = () => (otorgado(historial(), 'gps_carrera') ? iniciar() : setPedirGps(true))
 
   arrancarRef.current = arrancar
   const listo = gps.tipo === 'listo'
@@ -157,6 +161,20 @@ export function Correr() {
           <MensajeError mensaje={errorCarrera} />
         </div>
 
+        <ModalC2
+          abierto={pedirGps}
+          icono="my_location"
+          titulo="Usar tu ubicación durante la carrera"
+          texto="Gacelas usa el GPS del dispositivo solo mientras grabas una carrera, para medir distancia, ritmo y dibujar tu recorrido. La ruta se guarda en tu historial y solo se comparte si tú la publicas. Nadie te ve en el mapa en vivo salvo que actives ese permiso aparte. Puedes revocarlo cuando quieras en Ajustes, Privacidad."
+          primario="Aceptar y empezar"
+          onPrimario={() => {
+            setPedirGps(false)
+            void registrarConsentimiento('gps_carrera', true)
+            iniciar()
+          }}
+          secundario="Ahora no"
+          onCerrar={() => setPedirGps(false)}
+        />
         <button
           onClick={handleStart}
           aria-label="Comenzar carrera"
