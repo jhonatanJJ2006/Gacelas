@@ -16,8 +16,12 @@ CREATE TABLE IF NOT EXISTS public.report_target_types (
   resumen_fn REGPROC,
   ocultar_fn REGPROC,
   autor_fn REGPROC,
+  resolver_fn REGPROC,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+-- resolver_fn(objetivo TEXT, resultado TEXT): avisa al contexto dueno cuando el caso se cierra
+-- ('resuelto' o 'descartado'), por ejemplo para marcar un incidente como rechazado o verificado.
+ALTER TABLE public.report_target_types ADD COLUMN IF NOT EXISTS resolver_fn REGPROC;
 ALTER TABLE public.report_target_types ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Tipos de reporte visibles" ON public.report_target_types;
 CREATE POLICY "Tipos de reporte visibles" ON public.report_target_types FOR SELECT TO authenticated USING (true);
@@ -218,6 +222,10 @@ BEGIN
 
   INSERT INTO public.content_report_actions (report_id, moderator_id, action, note)
   VALUES (reporte, auth.uid(), accion, left(coalesce(nota, ''), 500));
+
+  IF nuevo IN ('resuelto', 'descartado') AND accion <> 'nota' AND tipo_reg.resolver_fn IS NOT NULL THEN
+    EXECUTE format('SELECT %s($1, $2)', tipo_reg.resolver_fn) USING r.target_id, nuevo;
+  END IF;
 
   IF r.legacy_post_report_id IS NOT NULL THEN
     UPDATE public.post_reports SET status = nuevo, resolved_by = r.resolved_by WHERE id = r.legacy_post_report_id;

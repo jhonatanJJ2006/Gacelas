@@ -16,10 +16,12 @@ val MOTIVOS_GENERICOS = listOf(
     "spam" to "Spam o publicidad", "ofensivo" to "Contenido ofensivo", "falso" to "Información falsa", "otro" to "Otro motivo",
 )
 
-/** Tipos que registra la migracion 023. Post usa post_reports por compatibilidad; el resto, content_reports. */
+/** Tipos que registran las migraciones 023 y 031. Post usa post_reports por compatibilidad; el resto, content_reports. */
 enum class TipoContenido(val clave: String, val titulo: String) {
     Post("post", "Reportar publicación"), Usuario("usuario", "Reportar corredor"),
     Comentario("comentario", "Reportar comentario"), Evento("evento", "Reportar evento"),
+    /** Incidentes de corredores (contexto Seguridad de rutas, migraciones 030 y 031). */
+    Incidente("incidente", "Reportar incidente"),
     ;
 
     fun objetivo(id: String) = ObjetivoDenuncia(clave, id)
@@ -42,6 +44,10 @@ fun motivosReporte(tipo: TipoContenido): List<Pair<String, String>> = when (tipo
     TipoContenido.Evento -> listOf(
         "peligroso" to "Ruta o evento peligroso", "falso" to "Evento falso o engañoso", "spam" to "Spam o publicidad",
         "ofensivo" to "Contenido ofensivo", "otro" to "Otro motivo",
+    )
+    TipoContenido.Incidente -> listOf(
+        "falso" to "Incidente falso o exagerado", "ofensivo" to "Descripción o fotos ofensivas",
+        "spam" to "Spam o publicidad", "otro" to "Otro motivo",
     )
 }
 

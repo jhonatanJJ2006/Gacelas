@@ -15,9 +15,15 @@ class DenunciaTest {
     }
 
     @Test fun tipoNuevoUsaLaColaGenerica() {
-        val o = ObjetivoDenuncia("incidente", "i1")
+        val o = ObjetivoDenuncia("ruta_cerrada", "r1")
         assertEquals("content_reports", tablaDenuncia(o))
         assertEquals(MOTIVOS_GENERICOS, motivosReporte(o.tipo))
         assertEquals("suplantacion", motivosReporte("usuario").first().first)
+    }
+
+    @Test fun incidentesEnLaCola() {
+        val o = TipoContenido.Incidente.objetivo("i1")
+        assertEquals("content_reports", tablaDenuncia(o))
+        assertEquals("falso", motivosReporte("incidente").first().first)
     }
 }

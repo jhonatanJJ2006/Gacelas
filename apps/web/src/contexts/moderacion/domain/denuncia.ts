@@ -89,7 +89,23 @@ const BASE: Record<TipoContenido, DefinicionTipo> = {
     tieneAutor: false,
   },
 }
-const registro = new Map<string, DefinicionTipo>(Object.entries(BASE))
+// Incidentes de corredores (contexto Seguridad de rutas, migraciones 030 y 031).
+const INCIDENTE: DefinicionTipo = {
+  etiqueta: 'Incidente',
+  titulo: 'Reportar incidente',
+  motivos: [
+    ['falso', 'Incidente falso o exagerado'],
+    ['ofensivo', 'Descripción o fotos ofensivas'],
+    ['spam', 'Spam o publicidad'],
+    ['otro', 'Otro motivo'],
+  ],
+  accionOcultar: 'Rechazar incidente',
+  tieneAutor: true,
+}
+const registro = new Map<string, DefinicionTipo>([
+  ...Object.entries(BASE),
+  ['incidente', INCIDENTE],
+])
 
 /** Punto de extension para otros contextos. */
 export function registrarTipoObjetivo(clave: string, def: DefinicionTipo) {

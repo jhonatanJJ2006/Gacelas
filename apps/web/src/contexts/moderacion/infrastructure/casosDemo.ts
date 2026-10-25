@@ -51,6 +51,15 @@ export function casosDemo(): CasoRepositorio {
         2,
       ],
       [
+        'incidente',
+        'i2',
+        'falso',
+        'La foto es de otra ciudad y nadie más lo confirmó.',
+        'robo asalto en Av. Universitaria: me quitaron el celular',
+        'pendiente',
+        2,
+      ],
+      [
         'post',
         'p3',
         'spam',

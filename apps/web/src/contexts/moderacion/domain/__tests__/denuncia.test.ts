@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { claveObjetivo, definicionTipo, registrarTipoObjetivo, tiposRegistrados } from '../denuncia'
 
 describe('cola de moderación genérica', () => {
-  it('conoce los cuatro tipos de la migración 023', () => {
-    expect(tiposRegistrados()).toEqual(['post', 'comentario', 'evento', 'usuario'])
+  it('conoce los tipos de 023 y los incidentes de 031', () => {
+    expect(tiposRegistrados()).toEqual(['post', 'comentario', 'evento', 'usuario', 'incidente'])
+    expect(definicionTipo('incidente').accionOcultar).toBe('Rechazar incidente')
     expect(definicionTipo('usuario').accionOcultar).toBe('Suspender usuario')
   })
 
@@ -15,15 +16,15 @@ describe('cola de moderación genérica', () => {
   })
 
   it('otro contexto registra su tipo', () => {
-    registrarTipoObjetivo('incidente', {
-      etiqueta: 'Incidente',
-      titulo: 'Reportar incidente',
-      motivos: [['falso', 'Incidente falso']],
-      accionOcultar: 'Ocultar incidente',
+    registrarTipoObjetivo('ruta_cerrada', {
+      etiqueta: 'Ruta cerrada',
+      titulo: 'Reportar cierre',
+      motivos: [['falso', 'Cierre falso']],
+      accionOcultar: 'Ocultar cierre',
       tieneAutor: true,
     })
-    expect(definicionTipo('incidente').etiqueta).toBe('Incidente')
-    expect(tiposRegistrados()).toContain('incidente')
+    expect(definicionTipo('ruta_cerrada').etiqueta).toBe('Ruta cerrada')
+    expect(tiposRegistrados()).toContain('ruta_cerrada')
   })
 
   it('las publicaciones conservan la clave local antigua', () => {

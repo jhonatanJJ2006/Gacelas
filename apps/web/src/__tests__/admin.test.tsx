@@ -15,7 +15,7 @@ describe('panel de administración', () => {
     const f = fuenteDemo()
     const [r] = await f.reportes()
     await f.moderar(r, 'ocultar_contenido', 'spam')
-    expect((await f.metricas()).reportes_pendientes).toBe(3)
+    expect((await f.metricas()).reportes_pendientes).toBe(4)
     expect(r.status).toBe('resuelto')
     expect(r.acciones.at(-1)).toMatchObject({ accion: 'ocultar_contenido', nota: 'spam' })
     await f.guardarEvento({ title: 'Nuevo', published: true })
@@ -28,7 +28,7 @@ describe('panel de administración', () => {
     const f = fuenteDemo()
     const cola = await f.reportes()
     expect(new Set(cola.map((r) => r.target_type))).toEqual(
-      new Set(['post', 'usuario', 'comentario', 'evento'])
+      new Set(['post', 'usuario', 'comentario', 'evento', 'incidente'])
     )
     const r = cola.find((x) => x.target_type === 'usuario')!
     await f.moderar(r, 'en_revision', '')

@@ -64,9 +64,9 @@ Al cerrar un reporte, quien lo envió recibe una notificación de tipo `reporte`
 
 ### Cola genérica y nuevos tipos
 
-La cola no conoce los tipos de antemano. Para sumar un tipo nuevo (por ejemplo los incidentes de la rama `feat/incidentes-ecu911`), su migración:
+La cola no conoce los tipos de antemano. Los incidentes de corredores ya están conectados así (migración `031_moderacion_incidentes.sql`, ver `docs/INCIDENTES.md`). Para sumar otro tipo, su migración:
 
-1. Crea las funciones del tipo, con firma `(objetivo TEXT)`: resumen (`RETURNS TEXT`), ocultar (`RETURNS VOID`) y, si el contenido tiene autor, autor (`RETURNS UUID`). Conviene quitarles `EXECUTE` a `PUBLIC`.
+1. Crea las funciones del tipo, con firma `(objetivo TEXT)`: resumen (`RETURNS TEXT`), ocultar (`RETURNS VOID`) y, si el contenido tiene autor, autor (`RETURNS UUID`). Opcionalmente, `resolver_fn(objetivo TEXT, resultado TEXT)` recibe `resuelto` o `descartado` al cerrar el caso. Conviene quitarles `EXECUTE` a `PUBLIC`.
 2. Inserta la fila en `report_target_types`:
 
 ```sql
