@@ -212,6 +212,9 @@ export const clubes = {
     ok(await sb().from('club_posts').delete().eq('id', postId))
   },
   async eventos(id: string) {
-    return ok(await sb().from('events').select('*').eq('club_id', id).order('starts_at')) as Fila[]
+    const filas = ok(
+      await sb().from('events').select('*').eq('club_id', id).order('starts_at')
+    ) as Fila[]
+    return filas.filter((f) => f.published !== false)
   },
 }

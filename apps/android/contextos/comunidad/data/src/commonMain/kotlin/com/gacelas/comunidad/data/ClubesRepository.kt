@@ -81,7 +81,7 @@ class SupabaseClubesRepository(private val backend: Backend, val uid: suspend ()
         backend.insert("club_posts", listOf(JsonObject(mapOf("club_id" to s(id), "user_id" to s(yo), "body" to s(texto.trim())))))
     }
 
-    override suspend fun eventos(id: String): List<Evento> = runCatching { backend.select("events", mapOf("club_id" to id), "starts_at").map(::eventoDesdeFila) }.getOrDefault(emptyList())
+    override suspend fun eventos(id: String): List<Evento> = runCatching { backend.select("events", mapOf("club_id" to id), "starts_at").filter { eventoVisible(it) }.map(::eventoDesdeFila) }.getOrDefault(emptyList())
     override suspend fun evento(id: String): Evento? = runCatching { backend.select("events", mapOf("id" to id)).firstOrNull()?.let(::eventoDesdeFila) }.getOrNull()
 
     // ---- Eventos: cupo y en vivo ----
