@@ -24,6 +24,13 @@ class NotificacionesRemotasTest {
         assertNull(notificacionDesdeFila(JsonObject(mapOf("type" to JsonPrimitive("otro")))))
     }
 
+    @Test fun reporteResuelto() {
+        val f = Json.parseToJsonElement("""{"id":"n9","type":"reporte","actor_name":"Moderación","message":"Revisamos tu reporte","read":false,"created_at":"2026-10-11T05:00:00Z"}""").jsonObject
+        assertEquals(TipoNotificacion.Reporte, notificacionDesdeFila(f)!!.tipo)
+        assertEquals("suplantacion", com.gacelas.social.motivosReporte(com.gacelas.social.TipoContenido.Usuario).first().first)
+        assertTrue(com.gacelas.social.motivosReporte(com.gacelas.social.TipoContenido.Evento).any { it.first == "peligroso" })
+    }
+
     @Test fun tiempos() {
         assertEquals("ahora", haceCuanto(1000, 1000))
         assertEquals("hace 5 min", haceCuanto(0, 5 * 60_000))

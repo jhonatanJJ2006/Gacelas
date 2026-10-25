@@ -1,5 +1,7 @@
 package com.gacelas.comunidad.presentation.ui
 
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
@@ -437,7 +439,10 @@ private fun TarjetaEvento(e: Evento, inscrito: Boolean, onClick: () -> Unit, onI
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun DetalleEventoContenido(vm: DetalleEventoViewModel, onAtras: () -> Unit, onEnVivo: () -> Unit, onCompartir: (String) -> Unit, onAviso: (String) -> Unit) {
+fun DetalleEventoContenido(
+    vm: DetalleEventoViewModel, onAtras: () -> Unit, onEnVivo: () -> Unit, onCompartir: (String) -> Unit, onAviso: (String) -> Unit,
+    onReportar: ((String) -> Unit)? = null,
+) {
     val (_, inscritos) = vm.datos.collectAsState().value
     val e by vm.evento.collectAsState()
     val inscrito = e.id in inscritos
@@ -454,6 +459,12 @@ fun DetalleEventoContenido(vm: DetalleEventoViewModel, onAtras: () -> Unit, onEn
                     Spacer(Modifier.weight(1f))
                     IconButton(onClick = { onCompartir("${e.titulo} - ${e.fecha}, ${e.hora} en ${e.ubicacion}. Corre con Gacelas Loja.") }, modifier = Modifier.clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.6f))) {
                         Icon(Icons.Filled.Share, "Compartir evento", tint = GColors.TextPrimary)
+                    }
+                    if (onReportar != null && !e.creadoPorUsuario) {
+                        Spacer(Modifier.width(8.dp))
+                        IconButton(onClick = { onReportar(e.id) }, modifier = Modifier.clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.6f)).testTag("reportar-evento")) {
+                            Icon(Icons.Filled.Flag, "Reportar evento", tint = GColors.TextPrimary)
+                        }
                     }
                 }
                 Icon(Icons.Filled.Event, null, tint = GColors.TextPrimary.copy(alpha = 0.5f), modifier = Modifier.align(Alignment.Center).size(72.dp))

@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -56,6 +57,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.gacelas.rutas.domain.modelo.CategoriaRuta
 import com.gacelas.rutas.domain.modelo.Dificultad
 import com.gacelas.rutas.domain.modelo.Ruta
 import com.gacelas.rutas.domain.modelo.FiltrosRuta
@@ -110,6 +112,10 @@ fun ListaRutasContenido(
         CampoTexto("Buscar", consulta, onConsulta, "Buscar rutas...", trailing = {
             IconButton(onClick = onBuscar) { Icon(Icons.Filled.Search, "Abrir buscador en el mapa", tint = GColors.TextSecondary) }
         })
+        Row(Modifier.horizontalScroll(rememberScrollState()).testTag("filtro-categoria"), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Pastilla("Todas", filtros.categoria == null, { onFiltros(filtros.copy(categoria = null)) })
+            CategoriaRuta.entries.forEach { c -> Pastilla(c.etiqueta, filtros.categoria == c, { onFiltros(filtros.copy(categoria = if (filtros.categoria == c) null else c)) }) }
+        }
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Pastilla("Cerca de mí", cerca != null, onCerca)
             Pastilla("Toda dificultad", filtros.dificultad == null, { onFiltros(filtros.copy(dificultad = null)) })
@@ -151,6 +157,7 @@ fun ListaRutasContenido(
                                 Icon(if (guardada) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, if (guardada) "Quitar de guardadas" else "Guardar ruta", tint = GColors.C2Violeta)
                             }
                         }
+                        if (ruta.oficial) InsigniaOficial()
                         Text(ruta.descripcion, style = GType.bodySm, color = GColors.C2Muted, maxLines = 2)
                         val extra = listOfNotNull(
                             ruta.valoracion?.let { "★ ${decimalLocal(it)} (${ruta.resenas})" },
@@ -163,6 +170,7 @@ fun ListaRutasContenido(
                             Text("${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}", style = GType.labelLg, color = GColors.C2Violeta)
                             Text("+${ruta.elevacionM} m", style = GType.labelLg, color = GColors.C2Cielo)
                             EtiquetaDificultad(ruta.dificultad)
+                            ruta.categoria?.let { Text(it.etiqueta, style = GType.labelMd, color = GColors.C2Muted) }
                         }
                     }
                 }
@@ -181,3 +189,16 @@ fun EtiquetaDificultad(d: Dificultad) {
     Text(d.etiqueta, style = GType.labelMd, color = color, modifier = Modifier.clip(CircleShape).background(color.copy(alpha = 0.2f)).padding(horizontal = 8.dp, vertical = 2.dp))
 }
 
+/** Insignia C2 de las rutas del catalogo oficial de Loja. */
+@Composable
+fun InsigniaOficial(modifier: Modifier = Modifier) {
+    Row(
+        modifier.testTag("insignia-oficial").clip(RoundedCornerShape(50)).border(1.dp, GColors.C2Violeta.copy(alpha = 0.6f), RoundedCornerShape(50))
+            .background(GColors.C2Violeta.copy(alpha = 0.15f)).padding(horizontal = 8.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Icon(Icons.Filled.Verified, null, tint = GColors.C2Violeta, modifier = Modifier.size(14.dp))
+        Text("RUTA OFICIAL", style = GType.labelMd, color = GColors.C2Violeta)
+    }
+}

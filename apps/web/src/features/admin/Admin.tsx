@@ -10,15 +10,20 @@ import {
   type EventoAdmin,
   type FuenteAdmin,
   type Metricas,
+  type AccionModeracion,
+  type EstadoReporte,
   type ReporteAdmin,
+  type TipoReporte,
   type RutaAdmin,
   type UsuarioAdmin,
 } from './api'
 import { VERSIONES_LEGALES } from '../legal/textos'
+import { Estadisticas } from './Estadisticas'
 
 const SECCIONES: [string, string, string][] = [
   ['', 'Dashboard', 'dashboard'],
   ['usuarios', 'Usuarios', 'group'],
+  ['estadisticas', 'Estadísticas', 'monitoring'],
   ['moderacion', 'Moderación', 'shield'],
   ['eventos', 'Eventos', 'event'],
   ['rutas', 'Rutas', 'route'],
@@ -33,6 +38,8 @@ const MOTIVOS: Record<string, string> = {
   ofensivo: 'Contenido ofensivo',
   acoso: 'Acoso',
   falso: 'Carrera falsa',
+  suplantacion: 'Suplantación',
+  peligroso: 'Peligroso',
   otro: 'Otro',
 }
 
@@ -121,7 +128,7 @@ function ErrorCarga({ mensaje }: { mensaje: string | null }) {
   if (!mensaje) return null
   return (
     <p role="alert" className="mb-4 border border-c2-peligro bg-c2-card p-3 text-sm text-white">
-      No se pudo cargar: {mensaje}. Revisa que la migración 020 esté aplicada.
+      No se pudo cargar: {mensaje}. Revisa que las migraciones 020 y 023 estén aplicadas.
     </p>
   )
 }
@@ -282,23 +289,157 @@ function Usuarios({ f }: { f: FuenteAdmin }) {
   )
 }
 
+const TIPOS: Record<TipoReporte, string> = {
+  post: 'Publicación',
+  usuario: 'Usuario',
+  comentario: 'Comentario',
+  evento: 'Evento',
+}
+const ESTADOS: [EstadoReporte, string][] = [
+  ['pendiente', 'Pendientes'],
+  ['en_revision', 'En revisión'],
+  ['resuelto', 'Resueltos'],
+  ['descartado', 'Descartados'],
+]
+const ACCIONES: Record<AccionModeracion, string> = {
+  en_revision: 'Tomó el caso',
+  resuelto: 'Resolvió',
+  descartado: 'Descartó',
+  reabierto: 'Reabrió',
+  ocultar_contenido: 'Ocultó el contenido',
+  suspender_usuario: 'Suspendió al autor',
+  nota: 'Nota',
+}
+
+function TarjetaReporte({
+  r,
+  f,
+  recargar,
+}: {
+  r: ReporteAdmin
+  f: FuenteAdmin
+  recargar: () => void
+}) {
+  const [nota, setNota] = useState('')
+  const [abierto, setAbierto] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const hacer = (a: AccionModeracion) =>
+    void f.moderar(r, a, nota.trim()).then(
+      () => {
+        setNota('')
+        recargar()
+      },
+      (e: Error) => setError(e.message)
+    )
+  const abiertoCaso = r.status === 'pendiente' || r.status === 'en_revision'
+  const ocultar =
+    r.target_type === 'usuario'
+      ? 'Suspender usuario'
+      : `Ocultar ${TIPOS[r.target_type].toLowerCase()}`
+  return (
+    <li className={`${tarjeta} p-4`} data-testid={`reporte-${r.id}`}>
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5 mb-1">
+            <Etiqueta color="violeta">{TIPOS[r.target_type]}</Etiqueta>
+            <Etiqueta color="peligro">{MOTIVOS[r.reason] ?? r.reason}</Etiqueta>
+            <Etiqueta color="gris">
+              {ESTADOS.find(([e]) => e === r.status)?.[1] ?? r.status}
+            </Etiqueta>
+            {r.total_reportes > 1 && <Etiqueta color="mint">{r.total_reportes} reportes</Etiqueta>}
+          </div>
+          <p className="text-white font-semibold truncate">{r.resumen}</p>
+          <p className="text-white/80 text-[14px] my-1">{r.detail || 'Sin detalle'}</p>
+          <p className="text-c2-muted text-[12px]">
+            {r.reportante ? `Reportado por ${r.reportante}, ` : 'Reportado el '}
+            {new Date(r.created_at).toLocaleString('es-EC')}
+          </p>
+          {r.acciones.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setAbierto((x) => !x)}
+              className="mt-2 text-[12px] text-[#C084FC] underline"
+              aria-expanded={abierto}
+            >
+              Historial ({r.acciones.length})
+            </button>
+          )}
+          {abierto && (
+            <ol className="mt-2 border-l border-c2-linea pl-3 space-y-1" data-testid="historial">
+              {r.acciones.map((h, i) => (
+                <li key={i} className="text-[12px] text-c2-muted">
+                  <span className="text-white">{h.moderador || 'Moderación'}</span>{' '}
+                  {ACCIONES[h.accion] ?? h.accion}
+                  {h.nota ? `: ${h.nota}` : ''} ({new Date(h.fecha).toLocaleString('es-EC')})
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+        <div className="lg:w-64 flex flex-col gap-2">
+          <input
+            value={nota}
+            onChange={(e) => setNota(e.target.value)}
+            placeholder="Nota para el historial y el reportante"
+            aria-label="Nota de moderación"
+            className="h-9 bg-c2-s2 px-3 text-[13px] text-white placeholder:text-c2-muted"
+          />
+          <div className="flex flex-wrap gap-2">
+            {abiertoCaso ? (
+              <>
+                {r.status === 'pendiente' && (
+                  <Boton tipo="secundario" onClick={() => hacer('en_revision')}>
+                    Revisar
+                  </Boton>
+                )}
+                <Boton
+                  tipo="peligro"
+                  onClick={() =>
+                    hacer(r.target_type === 'usuario' ? 'suspender_usuario' : 'ocultar_contenido')
+                  }
+                >
+                  {ocultar}
+                </Boton>
+                <Boton tipo="secundario" onClick={() => hacer('descartado')}>
+                  Descartar
+                </Boton>
+              </>
+            ) : (
+              <Boton tipo="secundario" onClick={() => hacer('reabierto')}>
+                Reabrir
+              </Boton>
+            )}
+            {nota.trim() && (
+              <Boton tipo="secundario" onClick={() => hacer('nota')}>
+                Solo nota
+              </Boton>
+            )}
+          </div>
+          {error && (
+            <p role="alert" className="text-[12px] text-c2-peligro">
+              {error}
+            </p>
+          )}
+        </div>
+      </div>
+    </li>
+  )
+}
+
 function Moderacion({ f }: { f: FuenteAdmin }) {
   const { datos, error, recargar } = useCarga<ReporteAdmin[]>(() => f.reportes(), [f])
-  const [filtro, setFiltro] = useState<ReporteAdmin['status']>('pendiente')
-  const lista = (datos ?? []).filter((r) => r.status === filtro)
-  const cuenta = (s: ReporteAdmin['status']) => (datos ?? []).filter((r) => r.status === s).length
+  const [filtro, setFiltro] = useState<EstadoReporte>('pendiente')
+  const [tipo, setTipo] = useState<TipoReporte | null>(null)
+  const lista = (datos ?? []).filter(
+    (r) => r.status === filtro && (!tipo || r.target_type === tipo)
+  )
+  const cuenta = (s: EstadoReporte) => (datos ?? []).filter((r) => r.status === s).length
   return (
     <>
       <Titulo>Moderación</Titulo>
       <ErrorCarga mensaje={error} />
-      <div className="flex gap-2 mb-4" role="tablist">
-        {(
-          [
-            ['pendiente', 'Pendientes'],
-            ['resuelto', 'Ocultadas'],
-            ['descartado', 'Mantenidas'],
-          ] as const
-        ).map(([s, t]) => (
+      <div className="flex flex-wrap gap-2 mb-3" role="tablist" aria-label="Estado">
+        {ESTADOS.map(([s, t]) => (
           <button
             key={s}
             role="tab"
@@ -310,39 +451,22 @@ function Moderacion({ f }: { f: FuenteAdmin }) {
           </button>
         ))}
       </div>
+      <div className="flex flex-wrap gap-2 mb-4" role="group" aria-label="Tipo de contenido">
+        {([null, 'post', 'usuario', 'comentario', 'evento'] as const).map((t) => (
+          <button
+            key={t ?? 'todos'}
+            aria-pressed={tipo === t}
+            onClick={() => setTipo(t)}
+            className={`px-3 h-7 text-[12px] font-semibold border ${tipo === t ? 'border-[#C084FC] text-[#C084FC]' : 'border-c2-linea text-c2-muted'}`}
+          >
+            {t ? TIPOS[t] : 'Todo'}
+          </button>
+        ))}
+      </div>
       {lista.length === 0 && <p className="text-c2-muted">No hay reportes en esta lista.</p>}
       <ul className="space-y-3">
         {lista.map((r) => (
-          <li
-            key={r.id}
-            className={`${tarjeta} p-4 flex flex-col lg:flex-row gap-4 lg:items-center`}
-          >
-            <div className="flex-1">
-              <p className="text-c2-muted text-[12px]">
-                Publicación {r.post_id}, reportada el{' '}
-                {new Date(r.created_at).toLocaleString('es-EC')}
-              </p>
-              <p className="text-white my-1">{r.detail || 'Sin detalle'}</p>
-              <Etiqueta color="peligro">{MOTIVOS[r.reason] ?? r.reason}</Etiqueta>{' '}
-              <Etiqueta color="gris">{r.status}</Etiqueta>
-            </div>
-            {r.status === 'pendiente' && (
-              <div className="flex lg:flex-col gap-2">
-                <Boton
-                  tipo="peligro"
-                  onClick={() => void f.resolverReporte(r, true).then(recargar)}
-                >
-                  Ocultar
-                </Boton>
-                <Boton
-                  tipo="secundario"
-                  onClick={() => void f.resolverReporte(r, false).then(recargar)}
-                >
-                  Mantener
-                </Boton>
-              </div>
-            )}
-          </li>
+          <TarjetaReporte key={r.id} r={r} f={f} recargar={recargar} />
         ))}
       </ul>
     </>
@@ -768,6 +892,7 @@ export function Admin() {
         <Routes>
           <Route index element={<Dashboard f={f} />} />
           <Route path="usuarios" element={<Usuarios f={f} />} />
+          <Route path="estadisticas" element={<Estadisticas f={f} />} />
           <Route path="moderacion" element={<Moderacion f={f} />} />
           <Route path="eventos" element={<Eventos f={f} />} />
           <Route path="rutas" element={<Rutas f={f} />} />

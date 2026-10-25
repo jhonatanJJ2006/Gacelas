@@ -1,5 +1,6 @@
 package com.gacelas.comunidad.presentation.ui
 
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.runtime.collectAsState
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.foundation.background
@@ -58,6 +59,7 @@ fun iconoNotificacion(tipo: TipoNotificacion): Pair<ImageVector, Color> = when (
     TipoNotificacion.Evento -> Icons.Filled.Event to GColors.Tertiary
     TipoNotificacion.EnVivo -> Icons.Filled.Sensors to GColors.Secondary500
     TipoNotificacion.Racha -> Icons.Filled.LocalFireDepartment to GColors.Primary500
+    TipoNotificacion.Reporte -> Icons.Filled.Flag to GColors.C2Violeta
 }
 
 @Composable

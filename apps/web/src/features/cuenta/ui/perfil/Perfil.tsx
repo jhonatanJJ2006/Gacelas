@@ -117,6 +117,20 @@ export function Perfil() {
           </Link>
         </div>
 
+        <Link
+          to="/perfil/reportes"
+          data-testid="ir-reportes"
+          className="tarjeta-c2 mb-6 flex items-center gap-3 p-4"
+        >
+          <span className="material-symbols-outlined text-c2-violeta">bar_chart</span>
+          <span className="flex-1">
+            <span className="block text-white font-semibold">Mis reportes</span>
+            <span className="block text-[12px] text-c2-muted">
+              Semana, mes y año con comparación y exportación
+            </span>
+          </span>
+          <span className="material-symbols-outlined text-c2-muted">chevron_right</span>
+        </Link>
         <TarjetaRacha />
         <div className="mb-6">
           <ListaLogros />

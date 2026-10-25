@@ -1,4 +1,5 @@
-import type { Ruta } from '../mocks/data'
+import type { CategoriaRuta, Ruta } from '../mocks/data'
+import { RUTAS_LOJA } from '../data/rutasLoja'
 import { haversineM } from './geo'
 
 export type Coordenada = { lat: number; lng: number }
@@ -74,6 +75,21 @@ export interface FiltrosRuta {
   dificultad: Ruta['dificultad'] | 'Todas'
   distancia: FiltroDistancia
   etiqueta: string | null
+  categoria?: CategoriaRuta | null
+}
+
+export const CATEGORIAS_RUTA: [CategoriaRuta, string][] = [
+  ['parque', 'Parques'],
+  ['sendero', 'Senderos'],
+  ['montana', 'Montaña'],
+  ['urbana', 'Urbanas'],
+  ['pista', 'Pista'],
+]
+
+/** Agrega las rutas oficiales de Loja que no lleguen del servidor (antes de aplicar 022 o sin red). */
+export function conOficiales(rutas: Ruta[]): Ruta[] {
+  const ids = new Set(rutas.map((r) => r.id))
+  return [...rutas, ...RUTAS_LOJA.filter((r) => !ids.has(r.id))]
 }
 export const FILTROS_INICIALES: FiltrosRuta = {
   dificultad: 'Todas',
@@ -89,7 +105,8 @@ export function aplicarFiltros(rutas: Ruta[], f: FiltrosRuta): Ruta[] {
         (f.distancia === 'Hasta 5 km' && r.distanciaKm <= 5) ||
         (f.distancia === '5-10 km' && r.distanciaKm > 5 && r.distanciaKm <= 10) ||
         (f.distancia === 'Más de 10 km' && r.distanciaKm > 10)) &&
-      (!f.etiqueta || (r.etiquetas ?? []).includes(f.etiqueta))
+      (!f.etiqueta || (r.etiquetas ?? []).includes(f.etiqueta)) &&
+      (!f.categoria || r.categoria === f.categoria)
   )
 }
 

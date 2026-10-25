@@ -627,6 +627,10 @@ export function rutaDesdeFila(f: Fila): Ruta {
     resenas: Number(f.rating_count ?? 0),
     perfilElevacion: Array.isArray(f.elevation_profile) ? (f.elevation_profile as number[]) : [],
     origen: (f.origin as Ruta['origen']) ?? 'actividad',
+    oficial: Boolean(f.is_official),
+    categoria: (f.category as Ruta['categoria']) ?? undefined,
+    superficie: (f.surface as Ruta['superficie']) ?? undefined,
+    fuente: f.source ? `${String(f.source)} (${String(f.license ?? 'ODbL 1.0')})` : undefined,
   }
 }
 
@@ -819,7 +823,16 @@ export const repositoriosSupabase = (sb: SupabaseClient): Repositorios => ({
   explorar: new SupabaseExplorarRepository(sb),
 })
 
-const TIPOS_NOTIF = ['like', 'comment', 'follow', 'event', 'live', 'streak', 'club'] as const
+const TIPOS_NOTIF = [
+  'like',
+  'comment',
+  'follow',
+  'event',
+  'live',
+  'streak',
+  'club',
+  'reporte',
+] as const
 
 export function notificacionDesdeFila(f: Fila, ahora = Date.now()): Notificacion {
   const tipo = TIPOS_NOTIF.includes(f.type as (typeof TIPOS_NOTIF)[number])

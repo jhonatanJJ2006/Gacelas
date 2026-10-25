@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { CorredorPublico } from '../../data/repositorios'
 import { useApp } from '../../store/app'
+import { ModalReporte } from '../social/Social'
+import { yaReportado } from '../social/moderacion'
 
 /** Buscar corredores por nombre o usuario y seguirlos. */
 export function Corredores() {
@@ -11,6 +13,8 @@ export function Corredores() {
   const alternarSeguir = useApp((s) => s.alternarSeguir)
   const [consulta, setConsulta] = useState('')
   const [resultados, setResultados] = useState<CorredorPublico[] | null>(null)
+  const [reportando, setReportando] = useState<string | null>(null)
+  const [aviso, setAviso] = useState<string | null>(null)
 
   useEffect(() => {
     let vigente = true
@@ -105,6 +109,17 @@ export function Corredores() {
                   >
                     {sigo ? 'Siguiendo' : 'Seguir'}
                   </button>
+                  <button
+                    onClick={() =>
+                      yaReportado('usuario', c.id)
+                        ? setAviso('Ya reportaste a este corredor')
+                        : setReportando(c.id)
+                    }
+                    aria-label={`Reportar a ${c.nombre}`}
+                    className="w-9 h-9 shrink-0 flex items-center justify-center text-c2-muted hover:text-c2-peligro"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">flag</span>
+                  </button>
                 </li>
               )
             })}
@@ -115,6 +130,20 @@ export function Corredores() {
           seguidores&quot; aparecen en tu feed cuando lo sigues.
         </p>
       </main>
+      <ModalReporte
+        tipo="usuario"
+        postId={reportando}
+        onCerrar={() => setReportando(null)}
+        onEnviado={(ok) => {
+          setReportando(null)
+          setAviso(ok ? 'Reporte enviado' : 'No se pudo enviar el reporte. Revisa tu conexión')
+        }}
+      />
+      {aviso && (
+        <p role="status" className="px-margin lg:px-0 pb-6 text-sm text-c2-menta">
+          {aviso}
+        </p>
+      )}
     </div>
   )
 }

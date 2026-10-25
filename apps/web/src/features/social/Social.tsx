@@ -2,26 +2,36 @@ import { useEffect, useRef, useState } from 'react'
 import { ModalC2 } from '../../components/modales'
 import { useApp } from '../../store/app'
 import { LOGROS, desbloquearNuevos, logrosDesbloqueados, type DefinicionLogro } from './logros'
-import { MOTIVOS_REPORTE, reportarPublicacion, type MotivoReporte } from './moderacion'
+import {
+  MOTIVOS_POR_TIPO,
+  reportarContenido,
+  TITULO_REPORTE,
+  type MotivoReporte,
+  type TipoContenido,
+} from './moderacion'
 
-/** Modal C2 para reportar una publicacion. */
+/** Modal C2 para reportar una publicacion, un comentario, un corredor o un evento. */
 export function ModalReporte({
   postId,
+  tipo = 'post',
   onCerrar,
   onEnviado,
 }: {
+  /** Id del contenido a reportar (null cierra el modal). */
   postId: string | null
+  tipo?: TipoContenido
   onCerrar: () => void
   onEnviado: (ok: boolean) => void
 }) {
-  const [motivo, setMotivo] = useState<MotivoReporte>('spam')
+  const motivos = MOTIVOS_POR_TIPO[tipo]
+  const [motivo, setMotivo] = useState<MotivoReporte>(motivos[0][0])
   const [detalle, setDetalle] = useState('')
   return (
     <ModalC2
       abierto={postId != null}
       icono="flag"
-      titulo="Reportar publicación"
-      texto="Cuéntanos qué pasa. El equipo de moderación lo revisará; la persona no sabrá quién la reportó."
+      titulo={TITULO_REPORTE[tipo]}
+      texto="Cuéntanos qué pasa. El equipo de moderación lo revisará y te avisará cuando lo resuelva; la persona no sabrá quién la reportó."
       primario="Enviar reporte"
       peligro
       secundario="Cancelar"
@@ -29,14 +39,14 @@ export function ModalReporte({
       onPrimario={() => {
         const id = postId
         if (!id) return
-        void reportarPublicacion(id, motivo, detalle).then((ok) => {
+        void reportarContenido(tipo, id, motivo, detalle).then((ok) => {
           setDetalle('')
           onEnviado(ok)
         })
       }}
     >
       <fieldset className="mt-3 space-y-1" aria-label="Motivo del reporte">
-        {MOTIVOS_REPORTE.map(([v, etiqueta]) => (
+        {motivos.map(([v, etiqueta]) => (
           <label
             key={v}
             className={`flex items-center gap-3 px-3 h-11 border cursor-pointer ${motivo === v ? 'border-c2-violeta bg-c2-s2' : 'border-c2-linea'}`}

@@ -22,7 +22,7 @@ data class Evento(
     val clubId: String? = null,
 )
 
-enum class TipoNotificacion { Like, Comentario, Seguidor, Evento, EnVivo, Racha }
+enum class TipoNotificacion { Like, Comentario, Seguidor, Evento, EnVivo, Racha, Reporte }
 
 data class Notificacion(val id: String, val tipo: TipoNotificacion, val usuario: String, val mensaje: String, val tiempo: String, val leida: Boolean)
 

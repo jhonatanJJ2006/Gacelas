@@ -32,6 +32,28 @@ val MOTIVOS_REPORTE = listOf(
     "falso" to "Carrera falsa o trampa", "otro" to "Otro motivo",
 )
 
+/** Que se reporta: post usa post_reports (compatibilidad); el resto, content_reports (migracion 023). */
+enum class TipoContenido(val clave: String, val titulo: String) {
+    Post("post", "Reportar publicación"), Usuario("usuario", "Reportar corredor"),
+    Comentario("comentario", "Reportar comentario"), Evento("evento", "Reportar evento"),
+}
+
+/** Motivos validos por tipo, igual que la web (features/social/moderacion.ts). */
+fun motivosReporte(tipo: TipoContenido): List<Pair<String, String>> = when (tipo) {
+    TipoContenido.Post -> MOTIVOS_REPORTE
+    TipoContenido.Usuario -> listOf(
+        "suplantacion" to "Suplantación de identidad", "acoso" to "Acoso o intimidación", "spam" to "Spam o cuenta falsa",
+        "ofensivo" to "Perfil ofensivo", "otro" to "Otro motivo",
+    )
+    TipoContenido.Comentario -> listOf(
+        "ofensivo" to "Contenido ofensivo", "acoso" to "Acoso o intimidación", "spam" to "Spam o publicidad", "otro" to "Otro motivo",
+    )
+    TipoContenido.Evento -> listOf(
+        "peligroso" to "Ruta o evento peligroso", "falso" to "Evento falso o engañoso", "spam" to "Spam o publicidad",
+        "ofensivo" to "Contenido ofensivo", "otro" to "Otro motivo",
+    )
+}
+
 /** Logros desbloqueados (dispositivo y tabla user_achievements) y reportes (tabla post_reports). */
 class SocialRepository(
     private val store: DataStore<Preferences>,
@@ -69,12 +91,16 @@ class SocialRepository(
     }
 
     /** Envia el reporte; false sin servidor o sin sesion. */
-    suspend fun reportar(postId: String, motivo: String, detalle: String): Boolean {
+    suspend fun reportar(postId: String, motivo: String, detalle: String, tipo: TipoContenido = TipoContenido.Post): Boolean {
         val b = backend ?: return false
         val id = uid() ?: return false
         return runCatching {
-            b.insert("post_reports", listOf(JsonObject(mapOf(
+            if (tipo == TipoContenido.Post) b.insert("post_reports", listOf(JsonObject(mapOf(
                 "post_id" to JsonPrimitive(postId), "reporter_id" to JsonPrimitive(id),
+                "reason" to JsonPrimitive(motivo), "detail" to JsonPrimitive(detalle.trim()),
+            ))))
+            else b.insert("content_reports", listOf(JsonObject(mapOf(
+                "target_type" to JsonPrimitive(tipo.clave), "target_id" to JsonPrimitive(postId), "reporter_id" to JsonPrimitive(id),
                 "reason" to JsonPrimitive(motivo), "detail" to JsonPrimitive(detalle.trim()),
             ))))
             true

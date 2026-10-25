@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import {
   aplicarFiltros,
+  CATEGORIAS_RUTA,
   ETIQUETAS_RUTA,
   FILTROS_DISTANCIA,
   FILTROS_INICIALES,
@@ -14,6 +15,19 @@ import { filtrarRutas, PESTANAS_RUTAS, type PestanaRutas } from '../../lib/filtr
 import { Unidades } from '../../lib/geo'
 import { ID_USUARIO } from '../../mocks/data'
 import { useApp } from '../../store/app'
+
+/** Insignia C2 de las rutas del catalogo oficial de Loja. */
+export function InsigniaOficial() {
+  return (
+    <span
+      data-testid="insignia-oficial"
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-c2-violeta/60 bg-c2-violeta/15 text-c2-violeta text-[11px] font-semibold uppercase tracking-wide"
+    >
+      <span className="material-symbols-outlined text-[14px]">verified</span>
+      Ruta oficial
+    </span>
+  )
+}
 
 export function ListaRutas() {
   const [pestana, setPestana] = useState<PestanaRutas>('Explorar')
@@ -126,6 +140,32 @@ export function ListaRutas() {
 
         <div
           className="mt-3 flex gap-2 overflow-x-auto pb-1"
+          role="group"
+          aria-label="Categoría"
+          data-testid="filtro-categoria"
+        >
+          <button
+            aria-pressed={!filtros.categoria}
+            onClick={() => setFiltros({ ...filtros, categoria: null })}
+            className={chip(!filtros.categoria)}
+          >
+            Todas
+          </button>
+          {CATEGORIAS_RUTA.map(([k, v]) => (
+            <button
+              key={k}
+              aria-pressed={filtros.categoria === k}
+              onClick={() =>
+                setFiltros({ ...filtros, categoria: filtros.categoria === k ? null : k })
+              }
+              className={chip(filtros.categoria === k)}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+        <div
+          className="mt-2 flex gap-2 overflow-x-auto pb-1"
           aria-label="Filtros de rutas"
           role="group"
         >
@@ -249,7 +289,8 @@ export function ListaRutas() {
                       )}
                       {ruta.autorNombre && <span>por {ruta.autorNombre}</span>}
                     </div>
-                    <div className="mb-2">
+                    <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                      {ruta.oficial && <InsigniaOficial />}
                       <span
                         className={`font-label-md text-label-md px-2 py-0.5 rounded-full ${
                           ruta.dificultad === 'Fácil'

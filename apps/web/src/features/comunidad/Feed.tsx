@@ -14,7 +14,7 @@ import { Fragment } from 'react'
 import { kmPorAutor, nivelCorredor } from '../../lib/logica'
 import { filtrarEventos } from '../../lib/filtros'
 import { ModalReporte } from '../social/Social'
-import { yaReportada } from '../social/moderacion'
+import { yaReportada, yaReportado } from '../social/moderacion'
 import { Carrusel, InsigniaNivel, TarjetaClub } from './PostSocial'
 
 export function Feed() {
@@ -61,6 +61,7 @@ export function Feed() {
   const alternarInscripcion = useApp((s) => s.alternarInscripcion)
   const [fotosPara, setFotosPara] = useState<string | null>(null)
   const [reportando, setReportando] = useState<string | null>(null)
+  const [reportandoComentario, setReportandoComentario] = useState<string | null>(null)
 
   // Feed real: se refresca al entrar y con cada cambio en la base (realtime).
   useEffect(() => {
@@ -512,9 +513,25 @@ export function Feed() {
           {hilo.length > 0 && (
             <ul className="mb-3 max-h-60 overflow-y-auto space-y-2" aria-label="Comentarios">
               {hilo.map((c) => (
-                <li key={c.id} className="text-body-sm">
-                  <strong className="text-text-primary">{c.autor}:</strong>{' '}
-                  <span className="text-text-secondary">{c.texto}</span>
+                <li key={c.id} className="text-body-sm flex items-start gap-2">
+                  <span className="flex-1">
+                    <strong className="text-text-primary">{c.autor}:</strong>{' '}
+                    <span className="text-text-secondary">{c.texto}</span>
+                  </span>
+                  {sesion && c.autor !== sesion.nombre && (
+                    <button
+                      type="button"
+                      aria-label={`Reportar comentario de ${c.autor}`}
+                      onClick={() =>
+                        yaReportado('comentario', c.id)
+                          ? mostrarAviso('Ya reportaste este comentario')
+                          : setReportandoComentario(c.id)
+                      }
+                      className="text-c2-muted hover:text-c2-peligro"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">flag</span>
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -552,6 +569,15 @@ export function Feed() {
         }}
         onCerrar={() => setDejar(null)}
         secundario="Cancelar"
+      />
+      <ModalReporte
+        tipo="comentario"
+        postId={reportandoComentario}
+        onCerrar={() => setReportandoComentario(null)}
+        onEnviado={(ok) => {
+          setReportandoComentario(null)
+          mostrarAviso(ok ? 'Reporte enviado' : 'No se pudo enviar el reporte. Revisa tu conexión')
+        }}
       />
       <ModalReporte
         postId={reportando}

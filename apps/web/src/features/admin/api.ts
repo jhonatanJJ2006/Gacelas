@@ -20,13 +20,66 @@ export interface UsuarioAdmin {
   carreras: number
   km: number
 }
+export type TipoReporte = 'post' | 'usuario' | 'comentario' | 'evento'
+export type EstadoReporte = 'pendiente' | 'en_revision' | 'resuelto' | 'descartado'
+export type AccionModeracion =
+  | 'en_revision'
+  | 'resuelto'
+  | 'descartado'
+  | 'reabierto'
+  | 'ocultar_contenido'
+  | 'suspender_usuario'
+  | 'nota'
+export interface AccionReporte {
+  accion: AccionModeracion
+  nota: string
+  fecha: string
+  moderador: string
+}
+/** Fila de la cola ampliada (public.admin_cola_reportes, migracion 023). */
 export interface ReporteAdmin {
   id: string
-  post_id: string
+  target_type: TipoReporte
+  target_id: string
+  /** Compatibilidad con la cola anterior (solo publicaciones). */
+  post_id?: string
   reason: string
   detail: string
-  status: 'pendiente' | 'resuelto' | 'descartado'
+  status: EstadoReporte
   created_at: string
+  reportante: string
+  resumen: string
+  total_reportes: number
+  acciones: AccionReporte[]
+}
+export interface Estadisticas {
+  desde: string
+  hasta: string
+  totales: {
+    usuarios_nuevos: number
+    usuarios_activos: number
+    carreras: number
+    km: number
+    eventos: number
+    inscripciones: number
+    reportes: number
+    usuarios_total: number
+  }
+  serie: { dia: string; nuevos: number; activos: number; carreras: number; km: number }[]
+  rutas_top: {
+    id: string
+    nombre: string
+    oficial: boolean
+    corridas: number
+    corredores: number
+  }[]
+  eventos_top: { id: string; titulo: string; fecha: string; inscritos: number }[]
+  retencion: { previos: number; vuelven: number; porcentaje: number }
+  reportes: {
+    por_estado: Record<string, number>
+    por_tipo: Record<string, number>
+    por_motivo: Record<string, number>
+  }
 }
 export interface EventoAdmin {
   id: string
@@ -62,7 +115,8 @@ export interface FuenteAdmin {
   suspender(id: string, si: boolean): Promise<void>
   cambiarRol(id: string, rol: UsuarioAdmin['role']): Promise<void>
   reportes(): Promise<ReporteAdmin[]>
-  resolverReporte(r: ReporteAdmin, ocultar: boolean): Promise<void>
+  moderar(r: ReporteAdmin, accion: AccionModeracion, nota: string): Promise<void>
+  estadisticas(desde: string, hasta: string): Promise<Estadisticas>
   eventos(): Promise<EventoAdmin[]>
   guardarEvento(e: Partial<EventoAdmin> & { title: string }): Promise<void>
   rutas(): Promise<RutaAdmin[]>
@@ -103,22 +157,39 @@ export function fuenteSupabase(): FuenteAdmin | null {
       else ok(await sb.from('user_roles').delete().eq('user_id', id))
     },
     async reportes() {
-      return ok(
+      const r = await sb.rpc('admin_cola_reportes')
+      if (!r.error) return r.data as ReporteAdmin[]
+      // Sin la migracion 023 se usa la cola anterior de publicaciones.
+      const viejos = ok(
         await sb
           .from('post_reports')
           .select('*')
           .order('created_at', { ascending: false })
           .limit(200)
-      ) as ReporteAdmin[]
+      ) as {
+        id: string
+        post_id: string
+        reason: string
+        detail: string
+        status: string
+        created_at: string
+      }[]
+      return viejos.map((v) => ({
+        ...v,
+        target_type: 'post' as const,
+        target_id: v.post_id,
+        status: v.status as EstadoReporte,
+        reportante: '',
+        resumen: `Publicación ${v.post_id}`,
+        total_reportes: 1,
+        acciones: [],
+      }))
     },
-    async resolverReporte(r, ocultar) {
-      if (ocultar) ok(await sb.from('activities').delete().eq('id', r.post_id))
-      ok(
-        await sb
-          .from('post_reports')
-          .update({ status: ocultar ? 'resuelto' : 'descartado' })
-          .eq('post_id', r.post_id)
-      )
+    async moderar(r, accion, nota) {
+      ok(await sb.rpc('moderar_reporte', { reporte: r.id, accion, nota }))
+    },
+    async estadisticas(desde, hasta) {
+      return ok(await sb.rpc('admin_estadisticas', { desde, hasta })) as Estadisticas
     },
     async eventos() {
       return ok(
@@ -200,17 +271,86 @@ export function fuenteDemo(): FuenteAdmin {
     carreras: Math.round((km as number) / 6),
     km: km as number,
   }))
-  const reportes: ReporteAdmin[] = [
-    ['p1', 'ofensivo', 'Insulta a otro club en la descripción.'],
-    ['p2', 'falso', 'Ruta que empieza y termina en un domicilio.'],
-    ['p3', 'spam', 'Zapatillas a mitad de precio, escribe al número.'],
-  ].map(([post_id, reason, detail], i) => ({
+  const reportes: ReporteAdmin[] = (
+    [
+      [
+        'post',
+        'p1',
+        'ofensivo',
+        'Insulta a otro club en la descripción.',
+        'Fondo de domingo',
+        'pendiente',
+        2,
+      ],
+      [
+        'post',
+        'p2',
+        'falso',
+        'Ruta que empieza y termina en un domicilio.',
+        '42 km en 1 hora',
+        'en_revision',
+        1,
+      ],
+      [
+        'usuario',
+        'u9',
+        'suplantacion',
+        'Usa el nombre y la foto de un atleta conocido.',
+        'Richard Carapaz',
+        'pendiente',
+        3,
+      ],
+      [
+        'comentario',
+        'c4',
+        'acoso',
+        'Comentarios repetidos contra la misma corredora.',
+        'Eres lentísima, deja de publicar',
+        'pendiente',
+        1,
+      ],
+      [
+        'evento',
+        'e3',
+        'peligroso',
+        'Convoca a correr de noche por la vía a Cuenca sin permisos.',
+        'Reto nocturno vía a Cuenca',
+        'pendiente',
+        2,
+      ],
+      [
+        'post',
+        'p3',
+        'spam',
+        'Zapatillas a mitad de precio, escribe al número.',
+        'Oferta zapatillas',
+        'resuelto',
+        4,
+      ],
+      ['comentario', 'c7', 'otro', 'No me gustó.', 'Buen ritmo', 'descartado', 1],
+    ] as const
+  ).map(([target_type, target_id, reason, detail, resumen, status, total], i) => ({
     id: `r${i}`,
-    post_id,
+    target_type,
+    target_id,
     reason,
     detail,
-    status: 'pendiente',
+    status,
     created_at: new Date(Date.now() - (i + 1) * 3_600_000).toISOString(),
+    reportante: ['Andrea Montaño', 'Kevin Jaramillo', 'Luis Ordóñez'][i % 3],
+    resumen,
+    total_reportes: total,
+    acciones:
+      status === 'pendiente'
+        ? []
+        : [
+            {
+              accion: (status === 'resuelto' ? 'ocultar_contenido' : status) as AccionModeracion,
+              nota: status === 'descartado' ? 'No incumple las normas.' : 'Revisando el trazado.',
+              fecha: new Date(Date.now() - i * 1_800_000).toISOString(),
+              moderador: 'Daniela Cueva',
+            },
+          ],
   }))
   const eventos: EventoAdmin[] = [
     {
@@ -263,9 +403,22 @@ export function fuenteDemo(): FuenteAdmin {
       if (u) u.role = rol
     },
     reportes: () => Promise.resolve(reportes),
-    async resolverReporte(r, ocultar) {
-      r.status = ocultar ? 'resuelto' : 'descartado'
+    async moderar(r, accion, nota) {
+      const estado: Partial<Record<AccionModeracion, EstadoReporte>> = {
+        en_revision: 'en_revision',
+        resuelto: 'resuelto',
+        descartado: 'descartado',
+        reabierto: 'pendiente',
+        ocultar_contenido: 'resuelto',
+        suspender_usuario: 'resuelto',
+      }
+      r.status = estado[accion] ?? r.status
+      r.acciones = [
+        ...r.acciones,
+        { accion, nota, fecha: new Date().toISOString(), moderador: 'Jhonatan Jara' },
+      ]
     },
+    estadisticas: (desde, hasta) => Promise.resolve(estadisticasDemo(desde, hasta)),
     eventos: () => Promise.resolve(eventos),
     async guardarEvento(e) {
       const i = eventos.findIndex((x) => x.id === e.id)
@@ -301,6 +454,71 @@ export function fuenteDemo(): FuenteAdmin {
     versionTerminos: () => Promise.resolve(terminos),
     async publicarTerminos(v) {
       terminos = v
+    },
+  }
+}
+
+/** Estadisticas de ejemplo deterministas para /admin?demo. */
+export function estadisticasDemo(desde: string, hasta: string): Estadisticas {
+  const ini = new Date(`${desde}T00:00:00`)
+  const fin = new Date(`${hasta}T00:00:00`)
+  const dias = Math.max(1, Math.round((fin.getTime() - ini.getTime()) / 86_400_000) + 1)
+  const serie = Array.from({ length: dias }, (_, i) => {
+    const d = new Date(ini)
+    d.setDate(d.getDate() + i)
+    const finde = d.getDay() === 0 || d.getDay() === 6
+    const ola = Math.sin(i / 3) * 12
+    const carreras = Math.round((finde ? 210 : 140) + ola + (i % 5) * 4)
+    return {
+      dia: d.toISOString().slice(0, 10),
+      nuevos: Math.round(14 + (i % 7) * 2 + ola / 3),
+      activos: Math.round(carreras * 0.8),
+      carreras,
+      km: Math.round(carreras * 6.3 * 10) / 10,
+    }
+  })
+  const suma = (k: 'nuevos' | 'carreras' | 'km') => serie.reduce((s, x) => s + x[k], 0)
+  return {
+    desde,
+    hasta,
+    totales: {
+      usuarios_nuevos: suma('nuevos'),
+      usuarios_activos: Math.round(Math.max(...serie.map((s) => s.activos)) * 2.1),
+      carreras: suma('carreras'),
+      km: Math.round(suma('km') * 10) / 10,
+      eventos: Math.max(1, Math.round(dias / 5)),
+      inscripciones: Math.round(dias * 11.5),
+      reportes: Math.round(dias * 0.9),
+      usuarios_total: 2418,
+    },
+    serie,
+    rutas_top: [
+      ['loja-jipiro', 'Parque Recreacional Jipiro', 412],
+      ['loja-la-tebaida', 'Parque Lineal La Tebaida', 288],
+      ['loja-orillas-zamora', 'Orillas del Zamora', 251],
+      ['loja-villonaco', 'Subida al Villonaco', 133],
+      ['loja-pucara', 'Parque Pucará Podocarpus', 97],
+    ].map(([id, nombre, n]) => ({
+      id: id as string,
+      nombre: nombre as string,
+      oficial: true,
+      corridas: Math.round(((n as number) * dias) / 30),
+      corredores: Math.round(((n as number) * dias) / 30 / 2.4),
+    })),
+    eventos_top: [
+      {
+        id: 'e1',
+        titulo: '10K Ciudad de Loja',
+        fecha: '2026-11-15T07:00:00-05:00',
+        inscritos: 318,
+      },
+      { id: 'e2', titulo: 'Trail Podocarpus', fecha: '2026-11-29T06:30:00-05:00', inscritos: 96 },
+    ],
+    retencion: { previos: 1180, vuelven: 802, porcentaje: 68 },
+    reportes: {
+      por_estado: { pendiente: 4, en_revision: 1, resuelto: 9, descartado: 3 },
+      por_tipo: { post: 8, comentario: 5, usuario: 3, evento: 1 },
+      por_motivo: { spam: 6, ofensivo: 4, acoso: 3, falso: 2, suplantacion: 1, peligroso: 1 },
     },
   }
 }

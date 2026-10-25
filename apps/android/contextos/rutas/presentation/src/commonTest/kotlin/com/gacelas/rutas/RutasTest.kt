@@ -53,7 +53,8 @@ class RutasTest {
     @Test fun listaUsaEjemploSinServidorYGuarda() = runTest {
         val repo = GuardadasMemoria()
         val vm = ListaRutasViewModel(null, repo, "yo", ejemplo)
-        assertEquals(3, vm.lista.value.size)
+        // Las rutas oficiales de Loja se suman a las del ejemplo.
+        assertEquals(3 + com.gacelas.rutas.domain.modelo.RutasLoja.todas.size, vm.lista.value.size)
         vm.pestana(PestanaRutas.Guardadas)
         assertEquals(emptyList(), vm.lista.value)
         vm.alternarGuardada("3")
@@ -65,10 +66,10 @@ class RutasTest {
         val vm = ListaRutasViewModel(ex, GuardadasMemoria(), "yo", ejemplo)
         assertEquals(1, ex.refrescos)
         ex.rutas.value = ejemplo.take(2)
-        assertEquals(listOf("1", "3"), vm.lista.value.map { it.id })
+        assertEquals(listOf("1", "3"), vm.lista.value.filterNot { it.oficial }.map { it.id })
         vm.ordenarCerca(0.0, 0.0)
         assertEquals(mapOf("4" to 0.5, "1" to 2.0), vm.consulta.value.cerca)
-        assertEquals(listOf("1", "3"), vm.lista.value.map { it.id })
+        assertEquals(listOf("1", "3"), vm.lista.value.filterNot { it.oficial }.map { it.id })
         vm.quitarCercania()
         assertEquals(null, vm.consulta.value.cerca)
     }

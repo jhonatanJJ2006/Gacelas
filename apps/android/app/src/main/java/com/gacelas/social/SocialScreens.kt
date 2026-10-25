@@ -43,25 +43,29 @@ import java.util.Locale
 
 /** Modal C2 para reportar una publicacion ajena. */
 @Composable
-fun ModalReporte(postId: String, repo: SocialRepository, onCerrar: () -> Unit) {
-    var motivo by remember { mutableStateOf(MOTIVOS_REPORTE.first().first) }
+fun ModalReporte(
+    postId: String, repo: SocialRepository,
+    tipo: com.gacelas.social.TipoContenido = com.gacelas.social.TipoContenido.Post, onCerrar: () -> Unit,
+) {
+    val motivos = com.gacelas.social.motivosReporte(tipo)
+    var motivo by remember { mutableStateOf(motivos.first().first) }
     var detalle by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     ModalC2(
-        icono = Icons.Filled.Flag, titulo = "Reportar publicación",
+        icono = Icons.Filled.Flag, titulo = tipo.titulo,
         texto = "Cuéntanos qué pasa. El equipo de moderación lo revisará; la persona no sabrá quién la reportó.",
         primario = "Enviar reporte", peligro = true, secundario = "Cancelar", tag = "modal-reporte",
         onCerrar = onCerrar,
         onPrimario = {
             scope.launch {
-                val ok = repo.reportar(postId, motivo, detalle.trim())
+                val ok = repo.reportar(postId, motivo, detalle.trim(), tipo)
                 AvisosC2.mostrar(if (ok) "Reporte enviado. Gracias por cuidar la comunidad" else "No se pudo enviar el reporte. Revisa tu conexión", error = !ok)
                 onCerrar()
             }
         },
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            MOTIVOS_REPORTE.forEach { (v, etiqueta) ->
+            motivos.forEach { (v, etiqueta) ->
                 val sel = motivo == v
                 Row(
                     Modifier.fillMaxWidth().background(if (sel) GColors.C2S2 else GColors.C2Card)

@@ -96,6 +96,9 @@ const DetalleCarrera = lazy(() =>
 const EditarPerfil = lazy(() =>
   import('../features/cuenta/ui/perfil/EditarPerfil').then((m) => ({ default: m.EditarPerfil }))
 )
+const MisReportes = lazy(() =>
+  import('../features/reportes/MisReportes').then((m) => ({ default: m.MisReportes }))
+)
 const Avatar3D = lazy(() =>
   import('../features/cuenta/ui/perfil/Avatar3D').then((m) => ({ default: m.Avatar3D }))
 )
@@ -245,6 +248,7 @@ export function AppRoutes() {
             <Route path="/perfil/editar" element={<EditarPerfil />} />
             <Route path="/perfil/carrera/:id" element={<DetalleCarrera />} />
             <Route path="/perfil/avatar" element={<Avatar3D />} />
+            <Route path="/perfil/reportes" element={<MisReportes />} />
 
             <Route path="/ajustes" element={<AjustesPreferencias />} />
             <Route path="/ajustes/privacidad" element={<PrivacidadUbicacion />} />

@@ -45,7 +45,15 @@ export interface Ruta {
   /** Alturas (m) a lo largo del trazo. */
   perfilElevacion?: number[]
   origen?: 'actividad' | 'dibujada' | 'oficial'
+  /** Ruta oficial de Gacelas (catalogo de Loja, migracion 022). */
+  oficial?: boolean
+  categoria?: CategoriaRuta
+  superficie?: 'pavimento' | 'tierra' | 'mixta' | 'tartan'
+  /** Fuente y licencia del trazado. */
+  fuente?: string
 }
+
+export type CategoriaRuta = 'parque' | 'sendero' | 'montana' | 'urbana' | 'pista'
 
 export interface Evento {
   id: string
@@ -75,7 +83,8 @@ export interface RutaSugerida {
   principal: boolean
 }
 
-export type TipoNotificacion = 'like' | 'comment' | 'follow' | 'event' | 'live' | 'streak' | 'club'
+export type TipoNotificacion =
+  'like' | 'comment' | 'follow' | 'event' | 'live' | 'streak' | 'club' | 'reporte'
 
 export interface Notificacion {
   id: string

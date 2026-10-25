@@ -1,6 +1,8 @@
 import type { CarreraGuardada, Perfil } from '../data/tipos'
 import type { PublicacionRemota } from '../data/repositorios'
 import { rutasMock } from '../mocks/data'
+import { conOficiales } from './rutas'
+import { RUTAS_LOJA } from '../data/rutasLoja'
 import { useApp } from '../store/app'
 import { tracker } from '../features/carreras/application/carreraStore'
 
@@ -23,18 +25,38 @@ const PERFIL_EJEMPLO: Perfil = {
 function carrerasEjemplo(): CarreraGuardada[] {
   const dia = 86_400_000
   const ahora = Date.now()
-  return [5.2, 7.8, 4.1, 10.3, 6.4].map((km, i) => ({
-    id: `vp-${i}`,
-    titulo: ['Trote suave', 'Fondo por Jipiro', 'Series cortas', 'Fondo largo', 'Recuperación'][i],
-    nota: '',
-    publica: true,
-    inicioMs: ahora - (i * 2 + 1) * dia,
-    segundos: Math.round(km * 340),
-    distanciaKm: km,
-    desnivelM: 20 + i * 15,
-    parciales: [],
-    puntos: [],
-  }))
+  const titulos = [
+    'Trote suave',
+    'Fondo por Jipiro',
+    'Series cortas',
+    'Fondo largo',
+    'Recuperación',
+  ]
+  // Las primeras cinco son las de siempre; luego un historial de varios meses para los reportes,
+  // varias empezando en rutas oficiales de Loja para que aparezcan como rutas favoritas.
+  const favoritas = [0, 1, 0, 10, 0, 1]
+  return Array.from({ length: 64 }, (_, i) => {
+    const km = i < 5 ? [5.2, 7.8, 4.1, 10.3, 6.4][i] : 4 + ((i * 37) % 90) / 10
+    const ruta = i % 2 === 0 ? RUTAS_LOJA[favoritas[(i / 2) % favoritas.length]] : undefined
+    const inicioMs = ahora - (i < 5 ? i * 2 + 1 : 10 + (i - 5) * 4.2) * dia
+    return {
+      id: `vp-${i}`,
+      titulo: titulos[i % titulos.length],
+      nota: '',
+      publica: true,
+      inicioMs: Math.round(inicioMs),
+      segundos: Math.round(km * (320 + ((i * 13) % 50))),
+      distanciaKm: km,
+      desnivelM: 20 + ((i * 15) % 140),
+      parciales: [],
+      puntos: (ruta?.puntos ?? []).slice(0, 2).map((p, j) => ({
+        ...p,
+        tiempoMs: inicioMs + j * 60_000,
+        precisionM: 5,
+        altitudM: null,
+      })),
+    }
+  })
 }
 
 /** Publicacion de otra corredora para ver el menu "Reportar publicacion". */
@@ -76,7 +98,7 @@ export function activarVistaPreviaSiCorresponde() {
     useApp.setState({
       sesion: PERFIL_EJEMPLO,
       carreras: carrerasEjemplo(),
-      rutas: useApp.getState().rutas.length ? useApp.getState().rutas : rutasMock,
+      rutas: conOficiales(useApp.getState().rutas.length ? useApp.getState().rutas : rutasMock),
       publicaciones: [publicacionAjena()],
     })
   // cargar() y el listener de sesion pueden dejarla en null: en este modo se vuelve a abrir siempre.

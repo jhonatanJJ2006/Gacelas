@@ -44,6 +44,8 @@ export function Notificaciones() {
         return { icon: 'local_fire_department', color: 'text-primary' }
       case 'live':
         return { icon: 'sensors', color: 'text-secondary-500' }
+      case 'reporte':
+        return { icon: 'flag', color: 'text-c2-violeta' }
       default:
         return { icon: 'notifications', color: 'text-text-secondary' }
     }

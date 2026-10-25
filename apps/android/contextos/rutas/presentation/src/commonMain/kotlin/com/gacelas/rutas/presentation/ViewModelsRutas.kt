@@ -8,6 +8,7 @@ import com.gacelas.rutas.domain.modelo.FiltrosRuta
 import com.gacelas.rutas.domain.modelo.PestanaRutas
 import com.gacelas.rutas.domain.modelo.ResenaRuta
 import com.gacelas.rutas.domain.modelo.Ruta
+import com.gacelas.rutas.domain.modelo.RutasLoja
 import com.gacelas.rutas.domain.repositorio.ExplorarRutas
 import com.gacelas.rutas.domain.repositorio.RutasRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,8 +36,8 @@ class ListaRutasViewModel(
     val guardadas: StateFlow<Set<String>> = repo.guardadas.stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
     private val remotas = explorar?.rutas ?: flowOf(null)
 
-    val lista: StateFlow<List<Ruta>> = combine(remotas, guardadas, _consulta) { r, g, c -> rutasVisibles(r ?: ejemplo, g, usuarioId, c) }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, rutasVisibles(explorar?.rutas?.value ?: ejemplo, emptySet(), usuarioId, ConsultaRutas()))
+    val lista: StateFlow<List<Ruta>> = combine(remotas, guardadas, _consulta) { r, g, c -> rutasVisibles(RutasLoja.conOficiales(r ?: ejemplo), g, usuarioId, c) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, rutasVisibles(RutasLoja.conOficiales(explorar?.rutas?.value ?: ejemplo), emptySet(), usuarioId, ConsultaRutas()))
 
     init { explorar?.let { e -> viewModelScope.launch { e.refrescar() } } }
 
