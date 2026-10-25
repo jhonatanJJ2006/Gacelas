@@ -107,7 +107,11 @@ fun BarraInferior(rutaActual: String, onNavegar: (String) -> Unit) {
 fun ScaffoldPrincipal(rutaActual: String, sinLeer: Int, onNavegar: (String) -> Unit, content: @Composable () -> Unit) {
     Scaffold(
         containerColor = GColors.BgPrimary,
-        topBar = { BarraSuperior(sinLeer, onNotificaciones = { onNavegar(Destinos.NOTIFICACIONES) }, onPerfil = { onNavegar(Destinos.PERFIL) }) },
+        topBar = {
+            // Comunidad trae su propia cabecera C2 (avatar, titulo centrado y buscar).
+            if (rutaActual == Destinos.COMUNIDAD) Spacer(Modifier.fillMaxWidth().background(GColors.C2Bg).statusBarsPadding())
+            else BarraSuperior(sinLeer, onNotificaciones = { onNavegar(Destinos.NOTIFICACIONES) }, onPerfil = { onNavegar(Destinos.PERFIL) })
+        },
         bottomBar = { BarraInferior(rutaActual, onNavegar) },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) { content() }

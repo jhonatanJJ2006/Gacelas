@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { type Coordenada } from '../lib/mapas'
-import { rumboReciente, tramosPorRitmo } from '../lib/mapaEstilo'
+import { rumboReciente, tieneMapIdPropio, tramosPorRitmo } from '../lib/mapaEstilo'
 import { combinar, useRumboSensor } from '../lib/rumbo'
 import { haversineM } from '../shared/lib/geo'
 import {
@@ -13,6 +13,7 @@ import {
   SeguirCamara,
 } from './mapa/MapaBase'
 import { Corredor3DMapa } from './mapa/Corredor3DMapa'
+import { Corredor3DHtml } from './mapa/Corredor3DHtml'
 
 type PuntoMapa = Coordenada & { tiempoMs?: number }
 
@@ -33,6 +34,7 @@ export function MapaGoogle({
   hijos,
   plan,
   adelanteM,
+  recentrar = 0,
 }: {
   puntos: PuntoMapa[]
   alternativa: ReactNode
@@ -46,6 +48,8 @@ export function MapaGoogle({
   /** Ruta planificada (navegacion). */
   plan?: Coordenada[]
   adelanteM?: number
+  /** Cambia el valor para volver a seguir al corredor (boton propio de la pantalla). */
+  recentrar?: number
 }) {
   const tramos = useMemo(() => tramosPorRitmo(puntos), [puntos])
   const ultimo = puntos[puntos.length - 1] ?? null
@@ -63,9 +67,13 @@ export function MapaGoogle({
   const rumbo = combinar(rumboSensor, rumboGps ?? null, velocidad)
   const [siguiendo, setSiguiendo] = useState(true)
   const [sin3d, setSin3d] = useState(false)
+  useEffect(() => {
+    if (recentrar) setSiguiendo(true)
+  }, [recentrar])
   const dejar = useCallback(() => setSiguiendo(false), [])
   const fallo3d = useCallback(() => setSin3d(true), [])
   const con3d = modo3d && !sin3d
+  const vector = modo3d && tieneMapIdPropio()
   return (
     <MapaBase
       centro={puntos[0]}
@@ -81,8 +89,10 @@ export function MapaGoogle({
       {!seguir && puntos.length > 1 && <Pin pos={puntos[puntos.length - 1]} tipo="meta" />}
       {seguir &&
         ultimo &&
-        (con3d ? (
+        (con3d && vector ? (
           <Corredor3DMapa pos={ultimo} rumbo={rumbo} ritmoSegKm={ritmoSegKm} onFallo={fallo3d} />
+        ) : modo3d ? (
+          <Corredor3DHtml pos={ultimo} rumbo={rumbo} ritmoSegKm={ritmoSegKm} />
         ) : (
           <Puck pos={ultimo} rumbo={rumbo} />
         ))}
@@ -90,13 +100,15 @@ export function MapaGoogle({
         <SeguirCamara
           pos={ultimo}
           rumbo={rumbo}
-          modo3d={modo3d}
+          modo3d={vector}
           siguiendo={siguiendo}
           adelanteM={adelanteM}
           onDejarDeSeguir={dejar}
         />
       )}
-      {seguir && <BotonSeguir siguiendo={siguiendo} onSeguir={() => setSiguiendo(true)} />}
+      {seguir && controles && (
+        <BotonSeguir siguiendo={siguiendo} onSeguir={() => setSiguiendo(true)} />
+      )}
       {hijos}
     </MapaBase>
   )

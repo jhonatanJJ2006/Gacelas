@@ -3,7 +3,15 @@ import { createPortal } from 'react-dom'
 import { usePosicionSuave } from './usePosicionSuave'
 import { APIProvider, Map, useMap } from '@vis.gl/react-google-maps'
 import { CENTRO_LOJA, claveMapas, type Coordenada } from '../../lib/mapas'
-import { deltaAngulo, desplazar, ESTILO_GACELAS, mapId, NARANJA, VERDE } from '../../lib/mapaEstilo'
+import {
+  deltaAngulo,
+  desplazar,
+  ESTILO_GACELAS,
+  mapId,
+  NARANJA,
+  tieneMapIdPropio,
+  VERDE,
+} from '../../lib/mapaEstilo'
 
 /**
  * Mapa base de Gacelas: estilo propio (oscuro, sin ruido), controles propios y, en modo 3D,
@@ -29,6 +37,9 @@ export function MapaBase({
   testId?: string
 }) {
   const clave = claveMapas()
+  // El vectorial inclinado solo con un Map ID propio (estilo oscuro de Gacelas en la nube). Con el
+  // DEMO_MAP_ID salia el estilo por defecto de Google con comercios: se usa el raster oscuro propio.
+  const vector = modo3d && tieneMapIdPropio()
   if (!clave) return <>{alternativa}</>
   return (
     <div
@@ -37,15 +48,15 @@ export function MapaBase({
     >
       <APIProvider apiKey={clave} language="es" region="EC">
         <Map
-          key={modo3d ? 'vector' : 'raster'}
+          key={vector ? 'vector' : 'raster'}
           defaultCenter={centro}
-          defaultZoom={modo3d ? 18.5 : zoom}
-          defaultTilt={modo3d ? 65 : 0}
+          defaultZoom={modo3d ? 18 : zoom}
+          defaultTilt={vector ? 65 : 0}
           disableDefaultUI
           clickableIcons={false}
           gestureHandling="greedy"
           backgroundColor="#0d1422"
-          {...(modo3d
+          {...(vector
             ? { mapId: mapId(), colorScheme: 'DARK' as const, renderingType: 'VECTOR' as const }
             : { styles: ESTILO_GACELAS })}
           style={{ width: '100%', height: '100%' }}

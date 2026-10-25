@@ -79,153 +79,175 @@ fun FeedContenido(
     var menuFiltro by remember { mutableStateOf(false) }
     var comentando by remember { mutableStateOf<Publicacion?>(null) }
     val lista by vm.publicaciones.collectAsState()
-    Pantalla {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text("GACELAS LOJA", style = GType.labelMd, color = GColors.Primary500)
-                Text("COMUNIDAD", style = GType.headlineLg, color = GColors.TextPrimary)
-            }
-            IconButton(onClick = { vm.refrescar() }) { Icon(Icons.Filled.Refresh, "Actualizar", tint = GColors.TextSecondary) }
-            IconButton(onClick = onEnVivo) { Icon(Icons.Filled.Sensors, "Corredores en vivo", tint = GColors.Danger) }
+    val italica = androidx.compose.ui.text.font.FontStyle.Italic
+    val negra = androidx.compose.ui.text.font.FontWeight.Black
+    // Feed C2 (frame Movil / Comunidad / Feed): cabecera centrada, pestanas, compositor y posts estilo X a todo el ancho.
+    Column(Modifier.fillMaxSize().background(GColors.C2Bg).verticalScroll(rememberScrollState()).testTag("feed-c2")) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            AvatarLetra("Tú", 34.dp)
+            Text(
+                "COMUNIDAD", style = GType.headlineMd.copy(fontStyle = italica, fontWeight = negra), color = GColors.TextPrimary,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.weight(1f),
+            )
             Box {
-                IconButton(onClick = { menuFiltro = true }) { Icon(Icons.Filled.FilterList, "Filtrar", tint = GColors.TextSecondary) }
+                Box(
+                    Modifier.size(40.dp).clip(CircleShape).background(GColors.C2Card).clickable { menuFiltro = true }.testTag("boton-buscar-feed"),
+                    contentAlignment = Alignment.Center,
+                ) { Icon(Icons.Filled.Search, "Buscar y filtrar", tint = GColors.TextPrimary, modifier = Modifier.size(20.dp)) }
                 DropdownMenu(expanded = menuFiltro, onDismissRequest = { menuFiltro = false }) {
                     FiltroFeed.entries.forEach { f ->
                         DropdownMenuItem(text = { Text(f.etiqueta) }, onClick = { vm.filtro(f); menuFiltro = false })
                     }
+                    DropdownMenuItem(text = { Text("Corredores en vivo") }, onClick = { menuFiltro = false; onEnVivo() })
+                    DropdownMenuItem(text = { Text("Eventos") }, onClick = { menuFiltro = false; onEventos() })
+                    DropdownMenuItem(text = { Text("Actualizar") }, onClick = { menuFiltro = false; vm.refrescar() })
                 }
             }
         }
-        // Pestanas segmentadas como en Stitch: Para ti, Siguiendo, Clubes, Eventos.
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            // Pestanas C2: texto en mayusculas cursiva con subrayado violeta en la activa.
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
             @Composable
             fun Segmento(texto: String, activo: Boolean, onClick: () -> Unit) {
                 Column(Modifier.weight(1f).clickable(onClick = onClick), horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(Modifier.height(40.dp), contentAlignment = Alignment.Center) {
-                        Text(texto.uppercase(), style = GType.labelLg.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = if (activo) GColors.TextPrimary else GColors.TextSecondary)
+                        Text(texto.uppercase(), style = GType.labelLg.copy(fontStyle = italica, fontWeight = negra), color = if (activo) GColors.TextPrimary else GColors.C2Muted)
                     }
-                    Box(Modifier.fillMaxWidth().height(3.dp).background(if (activo) GColors.C2Violeta else GColors.C2Linea))
+                    Box(Modifier.fillMaxWidth().height(if (activo) 3.dp else 1.dp).background(if (activo) GColors.C2Violeta else GColors.C2Linea))
                 }
             }
             Segmento("Para ti", filtro == FiltroFeed.Todos) { vm.filtro(FiltroFeed.Todos) }
             Segmento("Siguiendo", filtro == FiltroFeed.Siguiendo) { vm.filtro(FiltroFeed.Siguiendo) }
-            if (onClubes != null) Segmento("Clubes", false, onClubes)
-            Segmento("Eventos", false, onEventos)
+            if (onClubes != null) Segmento("Clubes", false, onClubes) else Segmento("Eventos", false, onEventos)
         }
+        // Compositor: las carreras se publican al guardarlas; aqui se explica y se abre el filtro de las propias.
+        Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 12.dp).testTag("compositor-feed")) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                AvatarLetra("Tú", 36.dp)
+                Spacer(Modifier.width(12.dp))
+                Text("¿Cómo te fue hoy?", style = GType.bodyLg, color = GColors.C2Muted, modifier = Modifier.weight(1f))
+            }
+            Row(Modifier.fillMaxWidth().padding(start = 48.dp, top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Filled.Image, "Foto", tint = GColors.C2Violeta, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(18.dp))
+                Icon(Icons.AutoMirrored.Filled.DirectionsRun, "Carrera", tint = GColors.C2Violeta, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(18.dp))
+                Icon(Icons.Filled.Map, "Ruta", tint = GColors.C2Violeta, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.weight(1f))
+                Text(
+                    "PUBLICAR", style = GType.labelLg.copy(fontStyle = italica, fontWeight = negra), color = GColors.TextPrimary,
+                    modifier = Modifier.clip(com.gacelas.ui.components.FormaBotonC2).background(androidx.compose.ui.graphics.Color(0xFF7B1FA2))
+                        .clickable { vm.filtro(FiltroFeed.Mias); onAviso("Tus carreras se publican al guardarlas. Desde el menú de cada una puedes agregar fotos.") }
+                        .padding(horizontal = 18.dp, vertical = 9.dp).testTag("boton-publicar"),
+                )
+            }
+        }
+        Box(Modifier.fillMaxWidth().height(1.dp).background(GColors.C2Linea))
         if (filtro == FiltroFeed.Comunidad || filtro == FiltroFeed.Mias) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Pastilla(filtro.etiqueta, true, { vm.filtro(FiltroFeed.Todos) }) }
+            Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) { Pastilla(filtro.etiqueta, true, { vm.filtro(FiltroFeed.Todos) }) }
         }
-        if (lista.isEmpty()) Tarjeta {
-            Text(
-                when (filtro) {
-                    FiltroFeed.Siguiendo -> "Las carreras de quienes sigues aparecerán aquí."
-                    FiltroFeed.Mias -> "Aún no tienes carreras públicas."
-                    else -> "No hay publicaciones todavía."
-                },
-                style = GType.bodyMd, color = GColors.TextSecondary,
-            )
-        }
+        if (lista.isEmpty()) Text(
+            when (filtro) {
+                FiltroFeed.Siguiendo -> "Las carreras de quienes sigues aparecerán aquí."
+                FiltroFeed.Mias -> "Aún no tienes carreras públicas."
+                else -> "No hay publicaciones todavía."
+            },
+            style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.padding(16.dp),
+        )
         val kms = remember(lista) { lista.groupBy { if (it.propia) "yo" else it.autorId ?: it.autor }.mapValues { (_, l) -> l.sumOf { it.distanciaKm } } }
         lista.forEachIndexed { indice, p ->
-            if (indice == 1 && eventoClub != null) TarjetaClub(eventoClub, inscritoClub, onAsistir, onEventoClub)
+            if (indice == 1 && eventoClub != null) Box(Modifier.padding(16.dp)) { TarjetaClub(eventoClub, inscritoClub, onAsistir, onEventoClub) }
             val gusta = if (p.remota) p.meGusta else p.id in ajustes.likes
             val likes = if (p.remota) p.likesBase else p.likesBase + if (gusta) 1 else 0
             val locales = if (p.remota) emptyList() else ajustes.comentarios[p.id].orEmpty()
             var menu by remember { mutableStateOf(false) }
             val texto = "${p.titulo}: ${Unidades.texto(p.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)} en ${formatearMs(p.segundos)} con Gacelas Loja"
-            // Publicacion compacta estilo X (C2): avatar a la izquierda, contenido y metricas en linea.
-            Row(Modifier.fillMaxWidth().testTag("post-c2").padding(vertical = 10.dp)) {
-              AvatarCirculo(40.dp, p.indice)
-              Spacer(Modifier.width(10.dp))
-              Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(p.autor, style = GType.labelLg, color = GColors.TextPrimary, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
-                            Spacer(Modifier.width(6.dp))
-                            InsigniaNivel(nivelCorredor(p.autorKm ?: kms[if (p.propia) "yo" else p.autorId ?: p.autor] ?: 0.0))
-                        }
-                        Text(p.cuando, style = GType.bodySm, color = GColors.TextSecondary)
-                    }
-                    p.autorId?.let { autor ->
-                        val sigo = autor in siguiendo
-                        var dejar by remember { mutableStateOf(false) }
-                        if (dejar) com.gacelas.ui.components.ModalC2(
-                            icono = Icons.Filled.PersonRemove, titulo = "Dejar de seguir",
-                            texto = "Ya no verás las carreras de ${p.autor} en tu feed de Siguiendo.",
-                            primario = "Dejar de seguir", onPrimario = { dejar = false; vm.alternarSeguir(autor) }, onCerrar = { dejar = false },
-                            secundario = "Cancelar", peligro = true, tag = "modal-dejar-seguir",
-                        )
-                        TextButton(onClick = {
-                            if (sigo) dejar = true
-                            else { vm.alternarSeguir(autor); com.gacelas.ui.components.AvisosC2.mostrar("Ahora sigues a ${p.autor}", error = false) }
-                        }) {
-                            Text(if (sigo) "Siguiendo" else "Seguir", color = if (sigo) GColors.TextSecondary else GColors.Primary500, style = GType.labelLg)
-                        }
-                    }
-                    Box {
-                        IconButton(onClick = { menu = true }) { Icon(Icons.Filled.MoreVert, "Más opciones", tint = GColors.TextSecondary) }
-                        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                            DropdownMenuItem(text = { Text("Compartir") }, onClick = { menu = false; onCompartir(texto) })
-                            if (p.propia && p.remota && onAgregarFotos != null) {
-                                DropdownMenuItem(text = { Text("Agregar fotos") }, onClick = { menu = false; onAgregarFotos(p.id) })
-                            }
-                            DropdownMenuItem(text = { Text("Ocultar publicación") }, onClick = {
-                                menu = false
-                                vm.ocultar(p.id)
-                                onAviso("Publicación oculta")
-                            })
-                            if (!p.propia && onReportar != null) {
-                                DropdownMenuItem(text = { Text("Reportar publicación", color = GColors.C2Peligro) }, onClick = { menu = false; onReportar(p.id) })
+            val hilo = p.ultimoComentario != null
+            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 10.dp).testTag("post-c2")) {
+                Column(Modifier.fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    AvatarLetra(p.autor, 36.dp)
+                    if (hilo) Box(Modifier.padding(top = 6.dp).width(2.dp).weight(1f).background(GColors.C2Linea))
+                }
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(p.autor, style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = GColors.TextPrimary, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
+                        Spacer(Modifier.width(6.dp))
+                        InsigniaNivel(nivelCorredor(p.autorKm ?: kms[if (p.propia) "yo" else p.autorId ?: p.autor] ?: 0.0))
+                        Spacer(Modifier.width(6.dp))
+                        Text("${handle(p.autor)} · ${p.cuando}", style = GType.bodySm, color = GColors.C2Muted, maxLines = 1, modifier = Modifier.weight(1f))
+                        Box {
+                            Icon(Icons.Filled.MoreHoriz, "Más opciones", tint = GColors.C2Muted, modifier = Modifier.size(18.dp).clickable { menu = true })
+                            DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                                p.autorId?.let { autor ->
+                                    val sigo = autor in siguiendo
+                                    DropdownMenuItem(text = { Text(if (sigo) "Dejar de seguir" else "Seguir a ${p.autor}") }, onClick = {
+                                        menu = false
+                                        vm.alternarSeguir(autor)
+                                        if (!sigo) com.gacelas.ui.components.AvisosC2.mostrar("Ahora sigues a ${p.autor}", error = false)
+                                    })
+                                }
+                                DropdownMenuItem(text = { Text("Compartir") }, onClick = { menu = false; onCompartir(texto) })
+                                if (p.propia && p.remota && onAgregarFotos != null) {
+                                    DropdownMenuItem(text = { Text("Agregar fotos") }, onClick = { menu = false; onAgregarFotos(p.id) })
+                                }
+                                DropdownMenuItem(text = { Text("Ocultar publicación") }, onClick = {
+                                    menu = false
+                                    vm.ocultar(p.id)
+                                    onAviso("Publicación oculta")
+                                })
+                                if (!p.propia && onReportar != null) {
+                                    DropdownMenuItem(text = { Text("Reportar publicación", color = GColors.C2Peligro) }, onClick = { menu = false; onReportar(p.id) })
+                                }
                             }
                         }
                     }
-                }
-                Text(p.titulo, style = GType.bodyMd, color = GColors.TextPrimary)
-                Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Bottom) {
-                    @Composable
-                    fun Dato(valor: String, unidad: String, color: androidx.compose.ui.graphics.Color) {
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            Text(valor, style = GType.titleMd, color = color)
-                            Text(unidad, style = GType.bodySm, color = GColors.TextSecondary)
+                    Text(p.titulo, style = GType.bodyMd, color = GColors.TextPrimary)
+                    if (p.distanciaKm > 0) Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Bottom) {
+                        @Composable
+                        fun Dato(valor: String, unidad: String, color: androidx.compose.ui.graphics.Color) {
+                            Row(verticalAlignment = Alignment.Bottom) {
+                                Text(valor, style = GType.titleMd.copy(fontStyle = italica, fontWeight = negra), color = color)
+                                Text(unidad, style = GType.bodySm, color = GColors.C2Muted)
+                            }
                         }
+                        Dato(Unidades.texto(p.distanciaKm, m, 1), Unidades.etiquetaDistancia(m), GColors.C2Violeta)
+                        Dato(formatearRitmo(Unidades.ritmo(p.ritmoSegKm, m)), "/${Unidades.etiquetaDistancia(m)}", GColors.TextPrimary)
+                        Dato(formatearMs(p.segundos), "", GColors.TextPrimary)
+                        Dato("${p.desnivelM}", "m+", GColors.C2Cielo)
                     }
-                    Dato(Unidades.texto(p.distanciaKm, m, 1), Unidades.etiquetaDistancia(m), GColors.C2Violeta)
-                    Dato(formatearRitmo(Unidades.ritmo(p.ritmoSegKm, m)), "/${Unidades.etiquetaDistancia(m)}", GColors.TextPrimary)
-                    Dato(formatearMs(p.segundos), "", GColors.TextPrimary)
-                    Dato("${p.desnivelM}", "m+", GColors.C2Cielo)
+                    if (p.distanciaKm > 0 || p.imagenes.isNotEmpty()) MediaPost(p, imagen)
+                    locales.takeLast(2).forEach { Text("Tú: $it", style = GType.bodySm, color = GColors.TextSecondary) }
+                    Row(Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+                        @Composable
+                        fun Accion(icono: androidx.compose.ui.graphics.vector.ImageVector, desc: String, valor: Int, color: androidx.compose.ui.graphics.Color, tag: String, onClick: () -> Unit) {
+                            Row(Modifier.weight(1f).clip(RoundedCornerShape(4.dp)).clickable(onClick = onClick).padding(vertical = 6.dp).testTag(tag), verticalAlignment = Alignment.CenterVertically) {
+                                Icon(icono, desc, tint = color, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text("$valor", style = GType.labelLg, color = color)
+                            }
+                        }
+                        Accion(Icons.AutoMirrored.Outlined.Chat, "Comentar", p.comentariosBase + locales.size, GColors.C2Muted, "accion-comentar") { comentando = p }
+                        Accion(Icons.Filled.Repeat, if (p.compartida) "Dejar de compartir" else "Compartir en mi perfil", p.compartidos, if (p.compartida) GColors.C2Menta else GColors.C2Muted, "accion-repost") { vm.alternarCompartida(p.id, onAviso) }
+                        Accion(if (gusta) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder, if (gusta) "Quitar me gusta" else "Me gusta", likes, if (gusta) GColors.C2Violeta else GColors.C2Muted, "accion-like") { vm.alternarLike(p.id, onAviso) }
+                        Icon(Icons.Filled.IosShare, "Compartir", tint = GColors.C2Muted, modifier = Modifier.size(18.dp).clickable { onCompartir(texto) })
+                    }
+                    p.ultimoComentario?.let { (autor, cuerpo) ->
+                        Row(
+                            Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(GColors.C2Card).clickable { comentando = p }.padding(10.dp),
+                        ) {
+                            AvatarLetra(autor, 26.dp)
+                            Spacer(Modifier.width(8.dp))
+                            Column {
+                                Text(autor, style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = GColors.TextPrimary, maxLines = 1)
+                                Text(cuerpo, style = GType.bodySm, color = GColors.TextPrimary, maxLines = 2)
+                            }
+                        }
+                        if (p.comentariosBase > 1) Text("Ver los ${p.comentariosBase} comentarios", style = GType.labelLg, color = GColors.C2Violeta, modifier = Modifier.clickable { comentando = p })
+                    }
                 }
-                CarruselPost(p, imagen)
-                locales.takeLast(2).forEach { Text("Tú: $it", style = GType.bodySm, color = GColors.TextSecondary) }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { vm.alternarLike(p.id, onAviso) }) {
-                        Icon(if (gusta) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder, if (gusta) "Quitar me gusta" else "Me gusta", tint = if (gusta) GColors.Primary500 else GColors.TextSecondary)
-                    }
-                    Text("$likes", style = GType.labelLg, color = GColors.TextSecondary)
-                    IconButton(onClick = { comentando = p }) { Icon(Icons.AutoMirrored.Outlined.Chat, "Comentar", tint = GColors.TextSecondary) }
-                    Text("${p.comentariosBase + locales.size}", style = GType.labelLg, color = GColors.TextSecondary)
-                    IconButton(onClick = { vm.alternarCompartida(p.id, onAviso) }) {
-                        Icon(Icons.Filled.Repeat, if (p.compartida) "Dejar de compartir" else "Compartir en mi perfil", tint = if (p.compartida) GColors.Secondary500 else GColors.TextSecondary)
-                    }
-                    Text("${p.compartidos}", style = GType.labelLg, color = if (p.compartida) GColors.Secondary500 else GColors.TextSecondary, modifier = Modifier.weight(1f))
-                    IconButton(onClick = { onCompartir(texto) }) { Icon(Icons.Filled.Share, "Compartir", tint = GColors.TextSecondary) }
-                }
-                p.ultimoComentario?.let { (autor, cuerpo) ->
-                    Column(
-                        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceLow).clickable { comentando = p }.padding(10.dp),
-                    ) {
-                        Text("$autor  $cuerpo", style = GType.bodySm, color = GColors.TextPrimary, maxLines = 2)
-                        if (p.comentariosBase > 1) Text("Ver los ${p.comentariosBase} comentarios", style = GType.bodySm, color = GColors.Primary400)
-                    }
-                }
-              }
             }
             Box(Modifier.fillMaxWidth().height(1.dp).background(GColors.C2Linea))
         }
+        Spacer(Modifier.height(16.dp))
     }
     comentando?.let { p ->
         var texto by remember(p.id) { mutableStateOf("") }
@@ -510,42 +532,49 @@ fun DetalleEventoContenido(vm: DetalleEventoViewModel, onAtras: () -> Unit, onEn
     }
 }
 
-/** Insignia de nivel del corredor (misma regla que la web). */
+/** Insignia de nivel C2: etiqueta corta en violeta, cursiva y con corte diagonal (misma regla que la web). */
 @Composable
 fun InsigniaNivel(nivel: String) {
-    Row(
-        Modifier.clip(CircleShape).background(GColors.Secondary.copy(alpha = 0.2f)).padding(horizontal = 8.dp, vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(Icons.AutoMirrored.Filled.DirectionsRun, null, tint = GColors.Secondary500, modifier = Modifier.size(12.dp))
-        Text(" $nivel", style = GType.labelMd, color = GColors.Secondary500, maxLines = 1)
+    val corto = when {
+        nivel.contains("lite") -> "ÉLITE"
+        nivel.contains("Avanzada") -> "NV 3"
+        nivel.contains("Intermedia") -> "NV 2"
+        else -> "NV 1"
+    }
+    Text(
+        corto, style = GType.labelMd.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontWeight = androidx.compose.ui.text.font.FontWeight.Black),
+        color = GColors.C2Violeta, maxLines = 1,
+        modifier = Modifier.clip(com.gacelas.ui.components.FormaBotonC2).background(GColors.C2Violeta.copy(alpha = 0.18f)).padding(horizontal = 6.dp, vertical = 1.dp).testTag("insignia-nivel"),
+    )
+}
+
+/** Avatar C2: circulo violeta con la inicial. */
+@Composable
+internal fun AvatarLetra(nombre: String, tamano: androidx.compose.ui.unit.Dp) {
+    Box(Modifier.size(tamano).clip(CircleShape).background(GColors.C2Violeta), contentAlignment = Alignment.Center) {
+        Text(nombre.trim().firstOrNull()?.uppercase() ?: "G", style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.C2Bg)
     }
 }
 
-/** Carrusel: trazado de la ruta (con desnivel) y fotos de la publicacion. */
+/** Usuario visible tipo @nombre a partir del nombre del autor. */
+internal fun handle(nombre: String): String {
+    val base = nombre.lowercase().map { c -> when (c) { 'á' -> 'a'; 'é' -> 'e'; 'í' -> 'i'; 'ó' -> 'o'; 'ú', 'ü' -> 'u'; 'ñ' -> 'n'; else -> c } }
+        .filter { it.isLetterOrDigit() }.joinToString("")
+    return "@" + base.take(14).ifEmpty { "gacela" }
+}
+
+/** Media del post (max 200 dp): ruta a la izquierda y hasta dos fotos apiladas a la derecha, como el frame C2. */
 @Composable
-private fun CarruselPost(p: Publicacion, imagen: @Composable (String, Modifier) -> Unit) {
-    val mapa = p.puntos.size >= 2 || p.imagenes.isEmpty()
-    val total = p.imagenes.size + if (mapa) 1 else 0
-    val estado = androidx.compose.foundation.pager.rememberPagerState { total }
-    Box(Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(4.dp))) {
-        androidx.compose.foundation.pager.HorizontalPager(estado, Modifier.fillMaxSize()) { pagina ->
-            if (mapa && pagina == 0) {
-                Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(GColors.MapParks, GColors.SurfaceLow))), contentAlignment = Alignment.Center) {
-                    if (p.puntos.size >= 2) TrazadoRuta(p.puntos, Modifier.fillMaxSize()) else Icon(Icons.Filled.Route, null, tint = GColors.Primary500, modifier = Modifier.size(56.dp))
-                    if (p.desnivelM > 0) Text(
-                        "Desnivel +${p.desnivelM} m", style = GType.labelMd, color = GColors.TextPrimary,
-                        modifier = Modifier.align(Alignment.BottomStart).padding(10.dp).clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.8f)).padding(horizontal = 10.dp, vertical = 4.dp),
-                    )
-                }
-            } else {
-                imagen(p.imagenes[pagina - if (mapa) 1 else 0], Modifier.fillMaxSize())
-            }
+private fun MediaPost(p: Publicacion, imagen: @Composable (String, Modifier) -> Unit) {
+    val forma = RoundedCornerShape(12.dp)
+    val fotos = p.imagenes.take(2)
+    Row(Modifier.fillMaxWidth().height(if (fotos.isEmpty()) 170.dp else 200.dp).clip(forma).border(1.dp, GColors.C2Linea, forma).testTag("media-post"), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+        Box(Modifier.weight(if (fotos.isEmpty()) 1f else 1.15f).fillMaxHeight().background(Brush.linearGradient(listOf(GColors.MapParks, GColors.C2Card)))) {
+            if (p.puntos.size >= 2) TrazadoRuta(p.puntos, Modifier.fillMaxSize()) else Icon(Icons.Filled.Route, null, tint = GColors.C2Violeta, modifier = Modifier.align(Alignment.Center).size(48.dp))
+            Text("RUTA", style = GType.labelMd.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary, modifier = Modifier.align(Alignment.BottomStart).padding(10.dp))
         }
-        if (total > 1) Row(Modifier.align(Alignment.BottomCenter).padding(6.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            repeat(total) { i ->
-                Box(Modifier.size(if (i == estado.currentPage) 10.dp else 6.dp, 6.dp).clip(CircleShape).background(if (i == estado.currentPage) GColors.Primary400 else GColors.TextPrimary.copy(alpha = 0.6f)))
-            }
+        if (fotos.isNotEmpty()) Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            fotos.forEach { imagen(it, Modifier.fillMaxWidth().weight(1f)) }
         }
     }
 }
