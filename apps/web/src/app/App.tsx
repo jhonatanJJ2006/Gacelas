@@ -136,6 +136,12 @@ const PoliticaPrivacidad = lazy(() =>
 const ReaceptarTerminos = lazy(() =>
   import('../features/legal/Legal').then((m) => ({ default: m.ReaceptarTerminos }))
 )
+const AnfitrionLogros = lazy(() =>
+  import('../features/social/Social').then((m) => ({ default: m.AnfitrionLogros }))
+)
+const ModalSinConexion = lazy(() =>
+  import('../features/social/Social').then((m) => ({ default: m.ModalSinConexion }))
+)
 const MapaVivo = lazy(() =>
   import('../features/comunidad/MapaVivo').then((m) => ({ default: m.MapaVivo }))
 )
@@ -164,6 +170,8 @@ export function RutaProtegida() {
       <Outlet />
       <ReaceptarTerminos />
       <PublicadorUbicacion />
+      <AnfitrionLogros />
+      <ModalSinConexion />
     </>
   )
 }

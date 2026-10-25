@@ -55,7 +55,8 @@ describe('grabar una carrera con GPS', () => {
     )
     renderRuta('/correr')
     expect(await screen.findByText('GPS no disponible')).toBeInTheDocument()
-    expect(screen.getByText(/denegado/)).toBeInTheDocument()
+    expect(screen.getAllByText(/denegado/).length).toBeGreaterThan(0)
+    expect(screen.getByText('Permiso de ubicación denegado')).toBeInTheDocument()
   })
 
   it('distancia y ritmo salen de los puntos GPS; pausa, termina y guarda', async () => {
@@ -116,5 +117,25 @@ describe('grabar una carrera con GPS', () => {
   it('en curso sin carrera activa vuelve a Correr', async () => {
     renderRuta('/correr/en-curso')
     expect(await screen.findByText('¿Listo para correr?')).toBeInTheDocument()
+  })
+})
+
+describe('logros', () => {
+  it('reglas simples: primera carrera, 5 km y 10 km', async () => {
+    const { logrosCumplidos } = await import('../features/social/logros')
+    const c = (km: number, d: number) =>
+      ({
+        id: `${d}`,
+        inicioMs: new Date(2026, 0, d, 7).getTime(),
+        distanciaKm: km,
+        segundos: 1800,
+      }) as never
+    expect(logrosCumplidos([], Date.now())).toEqual([])
+    expect(logrosCumplidos([c(3, 1)], Date.now())).toEqual(['primera_carrera'])
+    expect(logrosCumplidos([c(3, 1), c(10.2, 2)], Date.now())).toEqual([
+      'primera_carrera',
+      'km_5',
+      'km_10',
+    ])
   })
 })

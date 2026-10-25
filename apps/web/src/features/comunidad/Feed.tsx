@@ -13,6 +13,8 @@ import type { ComentarioPublicacion } from '../../data/repositorios'
 import { Fragment } from 'react'
 import { kmPorAutor, nivelCorredor } from '../../lib/logica'
 import { filtrarEventos } from '../../lib/filtros'
+import { ModalReporte } from '../social/Social'
+import { yaReportada } from '../social/moderacion'
 import { Carrusel, InsigniaNivel, TarjetaClub } from './PostSocial'
 
 export function Feed() {
@@ -58,6 +60,7 @@ export function Feed() {
   const inscritos = useApp((s) => s.inscritos)
   const alternarInscripcion = useApp((s) => s.alternarInscripcion)
   const [fotosPara, setFotosPara] = useState<string | null>(null)
+  const [reportando, setReportando] = useState<string | null>(null)
 
   // Feed real: se refresca al entrar y con cada cambio en la base (realtime).
   useEffect(() => {
@@ -372,6 +375,20 @@ export function Feed() {
                         >
                           Ocultar publicación
                         </button>
+                        {!post.propia && (
+                          <button
+                            role="menuitem"
+                            onClick={() => {
+                              setMenuPost(null)
+                              if (yaReportada(post.id))
+                                mostrarAviso('Ya reportaste esta publicación')
+                              else setReportando(post.id)
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-c2-peligro hover:bg-surface-container"
+                          >
+                            Reportar publicación
+                          </button>
+                        )}
                       </div>
                     )}
                   </header>
@@ -535,6 +552,18 @@ export function Feed() {
         }}
         onCerrar={() => setDejar(null)}
         secundario="Cancelar"
+      />
+      <ModalReporte
+        postId={reportando}
+        onCerrar={() => setReportando(null)}
+        onEnviado={(ok) => {
+          setReportando(null)
+          mostrarAviso(
+            ok
+              ? 'Reporte enviado. Gracias por cuidar la comunidad'
+              : 'No se pudo enviar el reporte. Revisa tu conexión'
+          )
+        }}
       />
       <Aviso mensaje={aviso} />
     </div>

@@ -21,6 +21,8 @@ export function Correr() {
   const precisa = useApp((s) => s.ajustes.ubicacionPrecisa)
   const [gps, setGps] = useState<EstadoGps>({ tipo: 'buscando' })
   const [errorCarrera, setErrorCarrera] = useState<string | null>(null)
+  const [pedirGps, setPedirGps] = useState(false)
+  const [permisoDenegado, setPermisoDenegado] = useState(false)
 
   useEffect(() => {
     if (!geolocalizacionDisponible()) {
@@ -30,7 +32,11 @@ export function Correr() {
     let vivo = true
     navigator.geolocation.getCurrentPosition(
       (p) => vivo && setGps({ tipo: 'listo', precisionM: Math.round(p.coords.accuracy) }),
-      (e) => vivo && setGps({ tipo: 'error', mensaje: mensajeErrorGps(e) }),
+      (e) => {
+        if (!vivo) return
+        setGps({ tipo: 'error', mensaje: mensajeErrorGps(e) })
+        if (e.code === 1) setPermisoDenegado(true)
+      },
       { enableHighAccuracy: precisa, timeout: 15_000, maximumAge: 5_000 }
     )
     return () => {
@@ -46,7 +52,6 @@ export function Correr() {
     return () => clearTimeout(t)
   }, [cuenta])
   const arrancarRef = useRef(() => {})
-  const [pedirGps, setPedirGps] = useState(false)
 
   if (estaActiva(tracker.estado)) return <Navigate to="/correr/en-curso" replace />
 
@@ -161,6 +166,15 @@ export function Correr() {
           <MensajeError mensaje={errorCarrera} />
         </div>
 
+        <ModalC2
+          abierto={permisoDenegado}
+          icono="location_off"
+          titulo="Permiso de ubicación denegado"
+          texto="El navegador bloqueó el acceso a tu ubicación. Sin él no podemos medir la distancia ni dibujar tu recorrido. Actívalo desde el candado de la barra de direcciones, en Permisos del sitio, y vuelve a cargar la página."
+          primario="Entendido"
+          onPrimario={() => setPermisoDenegado(false)}
+          onCerrar={() => setPermisoDenegado(false)}
+        />
         <ModalC2
           abierto={pedirGps}
           icono="my_location"
