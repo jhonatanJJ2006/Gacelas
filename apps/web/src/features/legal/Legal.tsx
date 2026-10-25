@@ -9,6 +9,7 @@ import {
   otorgado,
   registrarConsentimiento,
   requiereAceptarTerminos,
+  terminosRemotos,
   vigente,
 } from './consentimientos'
 import { PRIVACIDAD, TERMINOS, TEXTO_UBICACION_VISIBLE, VERSIONES_LEGALES } from './textos'
@@ -43,13 +44,23 @@ function Documento({ terminos }: { terminos: boolean }) {
 export const Terminos = () => <Documento terminos />
 export const PoliticaPrivacidad = () => <Documento terminos={false} />
 
-/** Pide aceptar otra vez los Terminos cuando cambia la version (si ya se acepto una anterior). */
+/** Pide aceptar los Terminos si la version aceptada en Supabase (o, sin conexion, en el dispositivo) no es la vigente. */
 export function ReaceptarTerminos() {
   const navigate = useNavigate()
   const [pedir, setPedir] = useState(() => {
     const h = historial()
     return vigente(h, 'terminos') != null && requiereAceptarTerminos(h)
   })
+  // La fuente de verdad es la version aceptada en Supabase (consents), no solo el dispositivo.
+  useEffect(() => {
+    let vivo = true
+    void terminosRemotos().then((r) => {
+      if (vivo && r !== undefined) setPedir(requiereAceptarTerminos(r ? [r] : []))
+    })
+    return () => {
+      vivo = false
+    }
+  }, [])
   const aceptar = async () => {
     await registrarConsentimiento('terminos', true)
     await registrarConsentimiento('privacidad', true)

@@ -34,6 +34,39 @@ export function requiereAceptarTerminos(h: Consentimiento[]) {
   return !t || !t.otorgado || t.version !== VERSIONES_LEGALES.terminos
 }
 
+/**
+ * Ultima aceptacion de Terminos guardada en Supabase (tabla consents).
+ * Devuelve null si la cuenta no tiene ninguna y undefined si no hay Supabase, sesion o red,
+ * en cuyo caso se usa el historial del dispositivo.
+ */
+export async function terminosRemotos(): Promise<Consentimiento | null | undefined> {
+  const sb = obtenerSupabase()
+  if (!sb) return undefined
+  try {
+    const { data: u } = await sb.auth.getUser()
+    if (!u.user) return undefined
+    const { data, error } = await sb
+      .from('consents')
+      .select('version, granted, created_at')
+      .eq('user_id', u.user.id)
+      .eq('kind', 'terminos')
+      .order('created_at', { ascending: false })
+      .limit(1)
+    if (error) return undefined
+    const f = (data ?? [])[0] as
+      { version: string; granted: boolean; created_at: string } | undefined
+    if (!f) return null
+    return {
+      tipo: 'terminos',
+      version: f.version,
+      otorgado: f.granted,
+      fechaMs: Date.parse(f.created_at),
+    }
+  } catch {
+    return undefined
+  }
+}
+
 /** Registra en el historial local y, con sesion, en la tabla consents de Supabase. */
 export async function registrarConsentimiento(
   tipo: TipoConsentimiento,
