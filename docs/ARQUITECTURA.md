@@ -6,6 +6,8 @@ Documento de referencia de la arquitectura actual y objetivo. Basado en el códi
 - App web (`apps/web`): [arquitectura/web.md](arquitectura/web.md)
 - Backend Supabase y CI/CD: secciones de este documento
 
+Propuesta de evolución DDD: [ARQUITECTURA-DDD.md](ARQUITECTURA-DDD.md).
+
 Documentos relacionados: `SYSTEM.md` (visión funcional inicial), `DATA_MODEL.md`, `SUPABASE.md`, `SECURITY_PRIVACY.md`, `adr/001-backend-selection.md`. Costos de operación: [PRESUPUESTO.md](PRESUPUESTO.md).
 
 ## Visión general
