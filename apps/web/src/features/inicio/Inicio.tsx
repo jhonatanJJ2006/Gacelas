@@ -7,7 +7,13 @@ import { Link } from 'react-router-dom'
 import { filtrarEventos } from '../../lib/filtros'
 import { formatearRitmo, Unidades } from '../../lib/geo'
 import { resumenSemana, retoMes, totalesSemana, inicioSemana } from '../../lib/estadisticas'
-import { AmigosEnRuta, SemanaAtletica, TarjetaEvento, TarjetaReto } from './SeccionesInicio'
+import {
+  AmigosEnRuta,
+  RutaSugerida,
+  SemanaAtletica,
+  TarjetaEvento,
+  TarjetaReto,
+} from './SeccionesInicio'
 import { eventosMock } from '../../mocks/data'
 import { useApp } from '../../store/app'
 import { nivelCorredor, saludo } from '../../lib/logica'
@@ -49,46 +55,31 @@ export function Inicio() {
     month: 'short',
   })
   const nombre = sesion?.nombre.split(' ')[0] ?? 'Corredor'
+  const rutas = useApp((s) => s.rutas)
 
   return (
     <div className="flex flex-col w-full px-margin pb-space-3xl space-y-space-xl contenedor-escritorio lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-6 lg:space-y-0 lg:items-start">
-      <section className="flex flex-col space-y-space-xs pt-space-md lg:col-span-12 lg:pt-0">
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="font-label-md text-label-md text-primary flex items-center gap-1.5 uppercase tracking-wider">
-              <span className="material-symbols-outlined text-[16px]">location_on</span>
-              Loja, Ecuador
+      <section className="flex flex-col gap-2 pt-space-md lg:col-span-12 lg:pt-0">
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-c2-muted capitalize">
+          {fecha}
+        </span>
+        <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary tracking-tight">
+          {saludo(new Date(ahora).getHours())}, {nombre}
+        </h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="pildora-c2">
+            <span className="material-symbols-outlined text-[14px] text-c2-violeta">
+              location_on
             </span>
-            <h1 className="font-headline-md text-headline-md text-text-primary tracking-tight">
-              {saludo(new Date(ahora).getHours())}, {nombre}
-            </h1>
-          </div>
-          <div className="bg-surface-container px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm text-text-secondary">
-            <span className="material-symbols-outlined text-[18px] text-primary-400">
-              calendar_today
-            </span>
-            <span className="font-label-md text-label-md text-on-surface capitalize whitespace-nowrap">
-              {fecha}
-            </span>
-          </div>
+            Loja 14° Fresco
+          </span>
+          <InsigniaNivel nivel={nivelCorredor(carreras.reduce((t, c) => t + c.distanciaKm, 0))} />
+          <InsigniaRacha compacta />
         </div>
       </section>
 
-      <section className="lg:col-span-7 lg:row-span-3 relative flex flex-col rounded-3xl overflow-hidden bg-surface-container-high border border-border-subtle shadow-2xl">
-        <div className="absolute top-3 inset-x-3 z-20 flex items-center justify-between pointer-events-none">
-          <div className="inline-flex items-center gap-1.5 px-3 max-[380px]:px-2 py-1 min-w-0 rounded-full bg-bg-secondary/90 backdrop-blur-md text-primary border border-primary/20 shadow-md">
-            <span className="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
-            <span className="font-label-md text-label-md font-bold tracking-wide uppercase whitespace-nowrap max-[380px]:text-[10px] max-[380px]:tracking-normal">
-              {semana.carreras} {semana.carreras === 1 ? 'carrera' : 'carreras'} esta semana
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <InsigniaNivel nivel={nivelCorredor(carreras.reduce((t, c) => t + c.distanciaKm, 0))} />
-            <InsigniaRacha compacta />
-          </div>
-        </div>
-
-        <div className="relative w-full h-[430px] lg:h-[560px] bg-surface-container-lowest">
+      <section className="lg:col-span-7 lg:row-span-3 relative flex flex-col overflow-hidden bg-c2-card tarjeta-c2">
+        <div className="relative w-full h-[320px] lg:h-[520px] bg-c2-bg">
           <Suspense
             fallback={
               <div className="w-full h-full flex items-center justify-center text-text-secondary">
@@ -106,63 +97,46 @@ export function Inicio() {
               target={[0, 0.8, 0]}
             />
           </Suspense>
+          <div className="pointer-events-none absolute top-3 left-3 z-20">
+            <span className="etiqueta-c2">Avatar</span>
+            <p className="font-headline-sm text-[18px] italic uppercase text-text-primary">
+              {semana.diasCorridos.size} {semana.diasCorridos.size === 1 ? 'día' : 'días'}
+            </p>
+          </div>
+          <div className="pointer-events-none absolute top-3 right-3 z-20 text-right">
+            <span className="etiqueta-c2">Esta semana</span>
+            <p className="font-headline-sm text-[18px] italic text-c2-violeta">
+              {Unidades.texto(semana.km, m, 1)} {Unidades.etiquetaDistancia(m)}
+            </p>
+          </div>
         </div>
-
-        <div className="absolute bottom-4 inset-x-4 z-20 grid grid-cols-3 gap-2">
-          <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
-            <span className="font-metric-huge text-metric-huge max-[380px]:text-[28px] whitespace-nowrap text-primary leading-none">
-              {semana.diasCorridos.size}
-            </span>
-            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
-              Días
-            </span>
-          </div>
-          <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
-            <span
-              className="font-metric-huge text-metric-huge max-[380px]:text-[28px] whitespace-nowrap text-secondary leading-none"
-              data-testid="km-semana"
-            >
-              {Unidades.texto(semana.km, m, 1)}
-            </span>
-            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
-              {Unidades.etiquetaDistancia(m)}
-            </span>
-          </div>
-          <div className="bg-surface/90 backdrop-blur-md border border-border-subtle rounded-xl px-3 py-2.5 flex flex-col items-center shadow-lg">
-            <span className="font-metric-huge text-metric-huge max-[380px]:text-[28px] whitespace-nowrap text-text-primary leading-none">
-              {formatearRitmo(Unidades.ritmo(semana.ritmoSegKm, m))}
-            </span>
-            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
-              {Unidades.etiquetaRitmo(m)}
-            </span>
+        <div className="p-4 flex flex-col gap-4">
+          <Link to="/correr" className="boton-c2">
+            <span className="material-symbols-outlined text-[20px]">play_arrow</span>
+            Empezar a correr
+          </Link>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="metrica-c2">
+              <span className="etiqueta-c2">Días</span>
+              <span className="valor-c2 text-text-primary">{semana.diasCorridos.size}</span>
+            </div>
+            <div className="metrica-c2">
+              <span className="etiqueta-c2">{Unidades.etiquetaDistancia(m)}</span>
+              <span className="valor-c2 text-c2-violeta" data-testid="km-semana">
+                {Unidades.texto(semana.km, m, 1)}
+              </span>
+            </div>
+            <div className="metrica-c2">
+              <span className="etiqueta-c2">Ritmo {Unidades.etiquetaRitmo(m)}</span>
+              <span className="valor-c2 text-c2-menta">
+                {formatearRitmo(Unidades.ritmo(semana.ritmoSegKm, m))}
+              </span>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="space-y-space-md lg:col-span-5">
-        <div className="flex items-center justify-between">
-          <h2 className="font-title-md text-title-md text-text-primary">Acción rápida</h2>
-        </div>
-
-        <Link
-          to="/correr"
-          className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.98] rounded-2xl p-6 flex items-center justify-between shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition-all"
-        >
-          <div className="flex flex-col">
-            <span className="font-headline-sm text-headline-sm text-on-primary font-bold">
-              Empezar a correr
-            </span>
-            <span className="font-body-md text-body-md text-on-primary mt-1">
-              Graba tu siguiente carrera
-            </span>
-          </div>
-          <div className="w-14 h-14 rounded-full bg-bg-primary/20 flex items-center justify-center">
-            <span className="material-symbols-outlined text-[32px] text-on-primary">
-              play_arrow
-            </span>
-          </div>
-        </Link>
-      </section>
+      <RutaSugerida rutas={rutas} carreras={carreras} m={m} />
 
       <SemanaAtletica
         semana={totales}
@@ -175,7 +149,7 @@ export function Inicio() {
 
       <section className="space-y-space-md lg:col-span-5">
         <div className="flex items-center justify-between">
-          <h2 className="font-title-md text-title-md text-text-primary">Próximo encuentro</h2>
+          <h2 className="font-title-md text-title-md text-text-primary">Próximo evento</h2>
           <Link
             to="/comunidad/eventos"
             className="inline-block py-2 font-label-md text-label-md text-primary"

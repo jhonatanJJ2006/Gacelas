@@ -39,6 +39,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.automirrored.filled.ListAlt
@@ -198,12 +200,22 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
     val context = LocalContext.current
     val tracker = contenedor().tracker
     var permiso by remember { mutableStateOf(LocationService.tienePermiso(context)) }
+    var permisoDenegado by remember { mutableStateOf(false) }
+    if (permisoDenegado) com.gacelas.ui.components.ModalC2(
+        icono = androidx.compose.material.icons.Icons.Filled.LocationOff, titulo = "Permiso de ubicación",
+        texto = "Sin permiso de ubicación no se puede grabar la carrera. Actívalo en los ajustes del teléfono.",
+        primario = "Abrir ajustes", onCerrar = { permisoDenegado = false }, secundario = "Ahora no", tag = "modal-permiso",
+        onPrimario = {
+            permisoDenegado = false
+            context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.fromParts("package", context.packageName, null)))
+        },
+    )
     var precision by remember { mutableStateOf<Float?>(null) }
     val notificaciones by com.gacelas.core.notificaciones.notificacionesPermitidasState()
     val activarNotificaciones = com.gacelas.core.notificaciones.rememberActivarNotificaciones()
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         permiso = LocationService.tienePermiso(context)
-        if (!permiso) context.aviso("Sin permiso de ubicación no se puede grabar la carrera")
+        if (!permiso) permisoDenegado = true
     }
     LaunchedEffect(permiso) {
         if (permiso) {
@@ -222,6 +234,23 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
     }
     val ajustesCorrer by ajustesState()
     var cuenta by remember { mutableStateOf<Int?>(null) }
+    val consentimientos = contenedor().consentimientos
+    val scopeGps = rememberCoroutineScope()
+    var pedirGps by remember { mutableStateOf(false) }
+    val iniciar = {
+        if (ajustesCorrer.cuentaRegresivaSeg > 0) cuenta = ajustesCorrer.cuentaRegresivaSeg
+        else { empezarCarrera(context, tracker); onEmpezar() }
+    }
+    if (pedirGps) com.gacelas.ui.components.ModalC2(
+        icono = Icons.Filled.GpsFixed, titulo = "Usar tu ubicación durante la carrera",
+        texto = "Gacelas usa el GPS del teléfono solo mientras grabas una carrera, para medir distancia, ritmo y dibujar tu recorrido. La ruta se guarda en tu historial y solo se comparte si tú la publicas. Nadie te ve en el mapa en vivo salvo que actives ese permiso aparte. Puedes revocarlo cuando quieras en Ajustes, Privacidad.",
+        primario = "Aceptar y empezar", secundario = "Ahora no", tag = "modal-consentimiento-gps",
+        onCerrar = { pedirGps = false },
+        onPrimario = {
+            pedirGps = false
+            scopeGps.launch { consentimientos.registrar(com.gacelas.legal.TipoConsentimiento.GpsCarrera, true); iniciar() }
+        },
+    )
     LaunchedEffect(cuenta) {
         val n = cuenta ?: return@LaunchedEffect
         kotlinx.coroutines.delay(1000)
@@ -275,8 +304,9 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
                         context.aviso("Notificaciones bloqueadas: no verás la carrera en la barra de Android")
                         if (com.gacelas.core.notificaciones.PermisoNotificaciones.sePuedePedir(context)) activarNotificaciones()
                     }
-                    if (ajustesCorrer.cuentaRegresivaSeg > 0) cuenta = ajustesCorrer.cuentaRegresivaSeg
-                    else { empezarCarrera(context, tracker); onEmpezar() }
+                    scopeGps.launch {
+                        if (consentimientos.otorgado(com.gacelas.legal.TipoConsentimiento.GpsCarrera)) iniciar() else pedirGps = true
+                    }
                 }
             })
             Text(if (permiso) "Toca para comenzar" else "Toca para dar permiso de ubicación", style = GType.labelLg, color = GColors.TextSecondary)
@@ -294,13 +324,11 @@ private fun FilaDato(etiqueta: String, valor: String) {
 
 @Composable
 private fun DialogoDescartar(onConfirmar: () -> Unit, onCancelar: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onCancelar,
-        confirmButton = { TextButton(onClick = onConfirmar) { Text("Descartar", color = GColors.Danger) } },
-        dismissButton = { TextButton(onClick = onCancelar) { Text("Seguir corriendo") } },
-        title = { Text("¿Descartar la carrera?") },
-        text = { Text("Se perderá el recorrido grabado hasta ahora.") },
-        containerColor = GColors.BgSecondary,
+    com.gacelas.ui.components.ModalC2(
+        icono = androidx.compose.material.icons.Icons.Filled.Delete, titulo = "¿Descartar la carrera?",
+        texto = "Se perderá el recorrido grabado hasta ahora. Esta acción no se puede deshacer.",
+        primario = "Descartar", onPrimario = onConfirmar, onCerrar = onCancelar,
+        secundario = "Seguir corriendo", peligro = true, tag = "modal-descartar",
     )
 }
 

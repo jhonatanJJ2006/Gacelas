@@ -32,19 +32,19 @@ export function Carrusel({
   const mapa = puntos.length > 1
   const total = imagenes.length + (mapa || imagenes.length === 0 ? 1 : 0)
   return (
-    <div className="relative mx-4">
+    <div className="relative mb-2 max-h-[200px] lg:max-w-[420px]">
       <div
         ref={ref}
         onScroll={(e) => {
           const el = e.currentTarget
           setI(Math.round(el.scrollLeft / Math.max(1, el.clientWidth)))
         }}
-        className="flex overflow-x-auto snap-x snap-mandatory rounded-xl no-scrollbar"
+        className="flex overflow-x-auto snap-x snap-mandatory rounded-lg border border-c2-linea no-scrollbar"
         data-testid="carrusel"
         aria-label="Fotos de la publicación"
       >
         {(mapa || imagenes.length === 0) && (
-          <div className="snap-center shrink-0 w-full h-56 lg:h-72 bg-gradient-to-br from-primary-600/20 to-secondary-600/20 flex items-center justify-center relative">
+          <div className="snap-center shrink-0 w-full h-[180px] lg:h-[150px] bg-c2-s2 flex items-center justify-center relative">
             {mapa ? (
               <TrazadoRuta puntos={puntos} className="w-full h-full p-4" />
             ) : (
@@ -66,7 +66,7 @@ export function Carrusel({
             src={src}
             alt={`Foto ${k + 1}`}
             loading="lazy"
-            className="snap-center shrink-0 w-full h-56 lg:h-72 object-cover"
+            className="snap-center shrink-0 w-full h-[180px] lg:h-[150px] object-cover"
           />
         ))}
       </div>
@@ -95,10 +95,7 @@ export function TarjetaClub({
   onAlternar: () => void
 }) {
   return (
-    <article
-      className="bg-surface-container rounded-2xl border border-border-subtle p-4"
-      data-testid="publicacion-club"
-    >
+    <article className="tarjeta-c2 p-4" data-testid="publicacion-club">
       <header className="flex items-center gap-3 mb-3">
         <span className="w-11 h-11 rounded-full bg-primary-600 text-on-primary font-bold flex items-center justify-center">
           GL

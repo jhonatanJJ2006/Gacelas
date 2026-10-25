@@ -1,6 +1,6 @@
 import type { Ajustes } from '../../../../data/tipos'
 import { useApp } from '../../../../store/app'
-import { FilaInterruptor, PantallaAjustes, Seccion } from './Comunes'
+import { FilaC2, GrupoC2, PantallaAjustes } from './Comunes'
 
 type ClaveNotif =
   | 'notifLikes'
@@ -10,50 +10,19 @@ type ClaveNotif =
   | 'notifEventos'
   | 'notifEmail'
 
-const PUSH: {
-  clave: ClaveNotif
-  icono: string
-  color: string
-  titulo: string
-  descripcion: string
-}[] = [
-  {
-    clave: 'notifLikes',
-    icono: 'favorite',
-    color: 'text-danger',
-    titulo: 'Likes',
-    descripcion: 'Cuando alguien da like a tu actividad',
-  },
-  {
-    clave: 'notifComentarios',
-    icono: 'chat_bubble',
-    color: 'text-primary-500',
-    titulo: 'Comentarios',
-    descripcion: 'Cuando alguien comenta tu actividad',
-  },
-  {
-    clave: 'notifSeguidores',
-    icono: 'person_add',
-    color: 'text-secondary-500',
-    titulo: 'Nuevos seguidores',
-    descripcion: 'Cuando alguien te sigue',
-  },
+const PUSH: { clave: ClaveNotif; titulo: string; descripcion?: string }[] = [
+  { clave: 'notifLikes', titulo: 'Me gusta' },
+  { clave: 'notifComentarios', titulo: 'Comentarios' },
+  { clave: 'notifSeguidores', titulo: 'Nuevos seguidores' },
   {
     clave: 'notifEnVivo',
-    icono: 'sensors',
-    color: 'text-secondary-500',
-    titulo: 'Carreras en vivo',
-    descripcion: 'Cuando alguien inicia seguimiento en vivo',
+    titulo: 'Amigos en vivo',
+    descripcion: 'Cuando alguien te comparte su carrera',
   },
-  {
-    clave: 'notifEventos',
-    icono: 'event',
-    color: 'text-tertiary',
-    titulo: 'Eventos',
-    descripcion: 'Recordatorios de eventos y nuevos eventos',
-  },
+  { clave: 'notifEventos', titulo: 'Eventos y clubes' },
 ]
 
+/** Ajustes de notificaciones, rediseño C2 segun figma-proto. */
 export function ConfiguracionNotificaciones() {
   const ajustes = useApp((s) => s.ajustes)
   const actualizar = useApp((s) => s.actualizarAjustes)
@@ -62,35 +31,29 @@ export function ConfiguracionNotificaciones() {
 
   return (
     <PantallaAjustes titulo="Notificaciones" volverA="/ajustes">
-      <Seccion titulo="Notificaciones push">
+      <GrupoC2 titulo="Push">
         {PUSH.map((n) => (
-          <FilaInterruptor
+          <FilaC2
             key={n.clave}
-            icono={n.icono}
-            color={n.color}
             titulo={n.titulo}
             descripcion={n.descripcion}
             activo={ajustes[n.clave]}
             onCambiar={(v) => cambiar(n.clave, v)}
           />
         ))}
-      </Seccion>
-      <Seccion titulo="Notificaciones por email">
-        <FilaInterruptor
-          icono="mail"
-          color="text-info"
+      </GrupoC2>
+      <GrupoC2 titulo="Correo">
+        <FilaC2
           titulo="Resumen semanal"
-          descripcion="Recibe un resumen de tu actividad cada semana"
+          descripcion="Tu actividad de la semana, cada lunes"
           activo={ajustes.notifEmail}
           onCambiar={(v) => cambiar('notifEmail', v)}
         />
-      </Seccion>
-      <Seccion titulo="Frecuencia">
-        <div className="px-4 py-3 bg-surface-container rounded-xl text-body-md text-text-secondary">
-          Los likes se agrupan cada 10 o cada 6 horas para evitar notificaciones excesivas. Las
-          notificaciones desactivadas dejan de aparecer en tu bandeja.
-        </div>
-      </Seccion>
+      </GrupoC2>
+      <p className="text-[13px] text-c2-muted">
+        Los me gusta se agrupan para evitar avisos excesivos. Lo que desactives deja de aparecer en
+        tu bandeja.
+      </p>
     </PantallaAjustes>
   )
 }

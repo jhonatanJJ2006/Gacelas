@@ -105,7 +105,7 @@ fun CompartirDialogo(datos: DatosCompartir, onCerrar: () -> Unit) {
 
     var sobreFoto by remember { mutableStateOf(true) }
     if (sobreFoto) return ComponerFotoDialogo(datos, onCerrar, onImagenMarca = { sobreFoto = false })
-    AlertDialog(
+    com.gacelas.ui.components.DialogoC2(
         onDismissRequest = onCerrar,
         containerColor = GColors.Surface,
         title = { Text("Compartir", style = GType.titleMd, color = GColors.TextPrimary) },

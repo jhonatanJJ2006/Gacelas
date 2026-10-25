@@ -47,7 +47,7 @@ export function Avatar3D() {
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
-          <h1 className="font-headline-md text-headline-md text-text-primary">
+          <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
             Personalizar Avatar
           </h1>
           <button

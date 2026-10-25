@@ -115,6 +115,7 @@ private fun NavGraphBuilder.accesoGraph(nav: NavHostController) {
             onEntrar = nav::entrarApp,
             onRecuperar = { nav.navigate(Destinos.RECUPERAR_CONTRASENA) },
             onRegistro = { nav.navigate(Destinos.REGISTRO) },
+            onLegal = { t -> nav.navigate(if (t) Destinos.TERMINOS else Destinos.POLITICA_PRIVACIDAD) },
         )
     }
     composable(Destinos.REGISTRO) {
@@ -122,6 +123,7 @@ private fun NavGraphBuilder.accesoGraph(nav: NavHostController) {
             onAtras = { nav.popBackStack() },
             onCrear = { nav.navigate(Destinos.PERMISOS_UBICACION) },
             onIniciarSesion = { nav.navigate(Destinos.INICIO_SESION) },
+            onLegal = { t -> nav.navigate(if (t) Destinos.TERMINOS else Destinos.POLITICA_PRIVACIDAD) },
         )
     }
     composable(Destinos.RECUPERAR_CONTRASENA) { RecuperarContrasenaScreen(onAtras = { nav.popBackStack() }) }
@@ -138,7 +140,7 @@ private fun NavGraphBuilder.conBarra(nav: NavHostController, ruta: String, conte
 
 private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
     conBarra(nav, Destinos.INICIO) {
-        InicioScreen(onCorrer = { nav.navigate(Destinos.CORRER) }, onEventos = { nav.navigate(Destinos.EVENTOS) }, onEvento = { nav.navigate(Destinos.detalleEvento(it)) }, onComunidad = { nav.irAPestana(Destinos.COMUNIDAD) })
+        InicioScreen(onCorrer = { nav.navigate(Destinos.CORRER) }, onEventos = { nav.navigate(Destinos.EVENTOS) }, onEvento = { nav.navigate(Destinos.detalleEvento(it)) }, onComunidad = { nav.irAPestana(Destinos.COMUNIDAD) }, onRutas = { nav.irAPestana(Destinos.RUTAS) })
     }
     conBarra(nav, Destinos.RUTAS) {
         ListaRutasScreen(onBuscar = { nav.navigate(Destinos.BUSCADOR_RUTAS) }, onRuta = { nav.navigate(Destinos.detalleRuta(it)) }, onDibujar = { nav.navigate(Destinos.CREAR_RUTA) })
@@ -195,7 +197,7 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
     composable(Destinos.DETALLE_RUTA) { entry ->
         com.gacelas.rutas.DetalleRutaScreen(id = entry.arguments?.getString("id") ?: "", onAtras = { nav.popBackStack() }, onCorrer = { nav.navigate(Destinos.BUSCADOR_RUTAS) })
     }
-    composable(Destinos.EN_VIVO) { com.gacelas.envivo.ListaEnVivoScreen(onAtras = { nav.popBackStack() }, onSesion = { nav.navigate(Destinos.detalleEnVivo(it)) }) }
+    composable(Destinos.EN_VIVO) { com.gacelas.envivo.ListaEnVivoScreen(onAtras = { nav.popBackStack() }, onSesion = { nav.navigate(Destinos.detalleEnVivo(it)) }, onMapa = { nav.navigate(Destinos.MAPA_VIVO) }) }
     composable(Destinos.DETALLE_EN_VIVO) { entry ->
         com.gacelas.envivo.DetalleEnVivoScreen(id = entry.arguments?.getString("id") ?: "", onAtras = { nav.popBackStack() })
     }
@@ -209,9 +211,23 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
             onPrivacidad = { nav.navigate(Destinos.PRIVACIDAD) },
             onNotificaciones = { nav.navigate(Destinos.CONFIG_NOTIFICACIONES) },
             onCerrarSesion = { nav.navigate(Destinos.BIENVENIDA) { popUpTo(0) { inclusive = true } } },
+            onMapasOffline = { nav.navigate(Destinos.MAPAS_OFFLINE) },
+            onBrujula = { nav.navigate(Destinos.BRUJULA) },
+            onLegal = { t -> nav.navigate(if (t) Destinos.TERMINOS else Destinos.POLITICA_PRIVACIDAD) },
         )
     }
-    composable(Destinos.PRIVACIDAD) { PrivacidadUbicacionScreen(onAtras = { nav.popBackStack() }) }
+    composable(Destinos.BRUJULA) { com.gacelas.ajustes.BrujulaScreen(onAtras = { nav.popBackStack() }) }
+    composable(Destinos.MAPAS_OFFLINE) { com.gacelas.ajustes.MapasOfflineScreen(onAtras = { nav.popBackStack() }) }
+    composable(Destinos.PRIVACIDAD) {
+        PrivacidadUbicacionScreen(
+            onAtras = { nav.popBackStack() },
+            onLegal = { t -> nav.navigate(if (t) Destinos.TERMINOS else Destinos.POLITICA_PRIVACIDAD) },
+            onCuentaEliminada = { nav.navigate(Destinos.BIENVENIDA) { popUpTo(0) { inclusive = true } } },
+        )
+    }
+    composable(Destinos.TERMINOS) { com.gacelas.legal.DocumentoLegalScreen(terminos = true, onAtras = { nav.popBackStack() }) }
+    composable(Destinos.POLITICA_PRIVACIDAD) { com.gacelas.legal.DocumentoLegalScreen(terminos = false, onAtras = { nav.popBackStack() }) }
+    composable(Destinos.MAPA_VIVO) { com.gacelas.vivo.MapaVivoScreen(onAtras = { nav.popBackStack() }, onPrivacidad = { nav.navigate(Destinos.PRIVACIDAD) }) }
     composable(Destinos.CONFIG_NOTIFICACIONES) { ConfiguracionNotificacionesScreen(onAtras = { nav.popBackStack() }) }
     composable(Destinos.NOTIFICACIONES) {
         NotificacionesScreen(onAtras = { nav.popBackStack() }, onAbrir = { n ->

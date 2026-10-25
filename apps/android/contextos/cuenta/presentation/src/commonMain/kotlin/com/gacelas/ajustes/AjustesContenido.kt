@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -112,6 +114,9 @@ fun AjustesContenido(
     onCerrarSesion: () -> Unit,
     mapaOffline: @Composable () -> Unit,
     cabecera: @Composable () -> Unit = {},
+    onMapasOffline: (() -> Unit)? = null,
+    onBrujula: (() -> Unit)? = null,
+    onLegal: ((terminos: Boolean) -> Unit)? = null,
 ) {
     var dialogo by remember { mutableStateOf<String?>(null) }
     PantallaConEncabezado("Ajustes", onAtras) {
@@ -154,6 +159,10 @@ fun AjustesContenido(
             })
         }
         EtiquetaGrupo("Mapa")
+        if (onMapasOffline != null || onBrujula != null) Tarjeta(padding = 0.dp) {
+            onMapasOffline?.let { FilaAjuste(Icons.Filled.Download, "Mapas offline", "Rutas de Loja sin conexión", onClick = it) }
+            onBrujula?.let { FilaAjuste(Icons.Filled.Explore, "Brújula", "Rumbo y calibración", onClick = it) }
+        }
         mapaOffline()
         EtiquetaSeccion("Rachas", "Constancia")
         Tarjeta(padding = 0.dp) {
@@ -176,43 +185,48 @@ fun AjustesContenido(
             FilaAjuste(Icons.Filled.Notifications, "Notificaciones", onClick = onNotificaciones)
             FilaAjuste(Icons.Filled.Info, "Acerca de", version, onClick = { dialogo = "acerca" })
             FilaAjuste(Icons.AutoMirrored.Filled.Help, "Ayuda y soporte", onClick = { dialogo = "ayuda" })
+            if (onLegal != null) {
+                FilaAjuste(Icons.Filled.Info, "Términos y condiciones", onClick = { onLegal(true) })
+                FilaAjuste(Icons.Filled.Info, "Política de privacidad", onClick = { onLegal(false) })
+            }
         }
         Tarjeta(padding = 0.dp, fondo = GColors.Danger.copy(alpha = 0.1f), borde = GColors.Danger.copy(alpha = 0.4f)) {
             FilaAjuste(Icons.AutoMirrored.Filled.Logout, "Cerrar sesión", colorIcono = GColors.Danger, onClick = { dialogo = "salir" }, trailing = {})
         }
     }
     when (dialogo) {
-        "acerca" -> AlertDialog(
+        "acerca" -> com.gacelas.ui.components.DialogoC2(
             onDismissRequest = { dialogo = null },
-            confirmButton = { TextButton(onClick = { dialogo = null }) { Text("Cerrar") } },
+            confirmButton = { com.gacelas.ui.components.BotonModalC2("Cerrar", { dialogo = null }) },
             title = { Text("Gacelas Loja") },
             text = { Text("${version}. App del grupo de running Gacelas de Loja, Ecuador. Graba tus carreras con GPS, descubre rutas y entrena con la comunidad.") },
             containerColor = GColors.BgSecondary,
         )
-        "ayuda" -> AlertDialog(
+        "ayuda" -> com.gacelas.ui.components.DialogoC2(
             onDismissRequest = { dialogo = null },
             confirmButton = {
-                TextButton(onClick = {
+                com.gacelas.ui.components.BotonModalC2("Escribir a soporte", {
                     dialogo = null
                     onSoporte()
-                }) { Text("Escribir a soporte") }
+                })
             },
-            dismissButton = { TextButton(onClick = { dialogo = null }) { Text("Cerrar") } },
+            dismissButton = { com.gacelas.ui.components.BotonModalC2("Cerrar", { dialogo = null }, secundario = true) },
             title = { Text("Ayuda y soporte") },
             text = { Text("Para grabar una carrera toca el botón central Correr y da permiso de ubicación. Las carreras se guardan en tu teléfono y aparecen en Perfil e Inicio.") },
             containerColor = GColors.BgSecondary,
         )
-        "salir" -> AlertDialog(
+        "salir" -> com.gacelas.ui.components.DialogoC2(
             onDismissRequest = { dialogo = null },
             confirmButton = {
-                TextButton(onClick = {
+                com.gacelas.ui.components.BotonModalC2("Cerrar sesión", {
                     dialogo = null
                     onCerrarSesion()
-                }) { Text("Cerrar sesión", color = GColors.Danger) }
+                }, peligro = true)
             },
-            dismissButton = { TextButton(onClick = { dialogo = null }) { Text("Cancelar") } },
+            dismissButton = { com.gacelas.ui.components.BotonModalC2("Cancelar", { dialogo = null }, secundario = true) },
+            icon = { Icon(Icons.AutoMirrored.Filled.Logout, null) },
             title = { Text("¿Cerrar sesión?") },
-            text = { Text("Tus carreras siguen guardadas en este dispositivo.") },
+            text = { Text("Tus carreras guardadas siguen en tu cuenta. Las que estén sin sincronizar se subirán la próxima vez que entres.") },
             containerColor = GColors.BgSecondary,
         )
     }

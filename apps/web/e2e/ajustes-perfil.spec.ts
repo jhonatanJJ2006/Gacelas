@@ -27,9 +27,9 @@ test.describe('Ajustes, perfil y notificaciones', () => {
 
   test('privacidad y notificaciones', async ({ page }) => {
     await page.goto('/ajustes/privacidad')
-    await page.getByRole('radio', { name: /Privado/ }).click()
+    await page.getByRole('radio', { name: /Solo yo/ }).click()
     await page.reload()
-    await expect(page.getByRole('radio', { name: /Privado/ })).toHaveAttribute(
+    await expect(page.getByRole('radio', { name: /Solo yo/ })).toHaveAttribute(
       'aria-checked',
       'true'
     )

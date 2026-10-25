@@ -32,13 +32,15 @@ test.describe('Rutas y comunidad', () => {
     await page.reload()
     await expect(maria.getByRole('button', { name: 'Quitar me gusta' })).toBeVisible()
 
-    // Estilo Stitch: nivel, desnivel, compartir (repost) y comentario rapido con vista previa.
+    // Estilo Stitch: nivel, desnivel, compartir (repost) y comentario desde la hoja con vista previa.
     await expect(maria.getByTestId('insignia-nivel')).toBeVisible()
     await expect(maria.getByTestId('desnivel-post')).toContainText('+42')
     await maria.getByRole('button', { name: 'Compartir en mi perfil' }).click()
     await expect(maria.getByRole('button', { name: 'Dejar de compartir' })).toContainText('1')
-    await maria.getByLabel('Comentar Carrera matutina').fill('Gran ritmo')
-    await maria.getByRole('button', { name: 'Enviar comentario' }).click()
+    await maria.getByRole('button', { name: 'Comentar', exact: true }).click()
+    const hoja = page.getByRole('dialog', { name: 'Comentar: Carrera matutina' })
+    await hoja.getByLabel('Comentario').fill('Gran ritmo')
+    await hoja.getByRole('button', { name: 'Publicar' }).click()
     await page.reload()
     await expect(maria.getByTestId('vista-comentario')).toContainText('Gran ritmo')
     await expect(maria.getByRole('button', { name: 'Dejar de compartir' })).toBeVisible()

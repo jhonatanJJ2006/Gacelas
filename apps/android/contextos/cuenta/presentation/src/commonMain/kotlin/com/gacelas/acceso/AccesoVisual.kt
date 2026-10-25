@@ -78,26 +78,27 @@ import com.gacelas.ui.theme.Inter
  * Traduccion 1:1 del export de Stitch de la variante C4 (tools/mapa-acceso/C4-*.html).
  * Los valores (hex, tamanos en px = dp/sp, radios, sombras) salen tal cual del HTML/Tailwind.
  */
+/** Tokens de acceso alineados al rediseño C2 Deporte cinetico. */
 object C4 {
-    val Fondo = Color(0xFF0A0E16)            // surface-container-lowest
-    val Tarjeta = Color(0xFF131926)          // bg-[#131926]/85 (bienvenida) /90 (login)
-    val SurfaceContainer = Color(0xFF1C2028)
+    val Fondo = Color(0xFF0C1322)            // surface-container-lowest
+    val Tarjeta = Color(0xFF191F2F)          // bg-[#131926]/85 (bienvenida) /90 (login)
+    val SurfaceContainer = Color(0xFF232A3A)
     val OnSurface = Color(0xFFDFE2EE)
-    val Secondary = Color(0xFFBCC7DE)
+    val Secondary = Color(0xFFA8B0C2)
     val Naranja = Color(0xFF7B1FA2)
-    val Enlace = Color(0xFFA855F7)
-    val Magenta = Color(0xFFD6338A)
-    val MagentaOscuro = Color(0xFFAB0660)
-    val Subtitulo = Color(0xFFE0C0B1)
+    val Enlace = Color(0xFFC084FC)
+    val Magenta = Color(0xFFC084FC)
+    val MagentaOscuro = Color(0xFF7B1FA2)
+    val Subtitulo = Color(0xFFD5DAE4)
     val Blanco10 = Color.White.copy(alpha = 0.10f)
     val Blanco5 = Color.White.copy(alpha = 0.05f)
 }
 
 object C4Texto {
     /** label-caps: Inter 11/14, 0.08em, 600 (tracking-wider = 0.05em). */
-    val labelCaps = TextStyle(fontFamily = Inter, fontSize = 11.sp, lineHeight = 14.sp, letterSpacing = 0.05.em, fontWeight = FontWeight.SemiBold)
-    val headlineSm = TextStyle(fontFamily = SpaceGrotesk, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Bold)
-    val headlineLgMobile = TextStyle(fontFamily = SpaceGrotesk, fontSize = 26.sp, lineHeight = 30.sp, letterSpacing = (-0.025).em, fontWeight = FontWeight.Bold)
+    val labelCaps = TextStyle(fontFamily = Inter, fontSize = 11.sp, lineHeight = 14.sp, letterSpacing = 0.12.em, fontWeight = FontWeight.ExtraBold)
+    val headlineSm = TextStyle(fontFamily = SpaceGrotesk, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Bold)
+    val headlineLgMobile = TextStyle(fontFamily = SpaceGrotesk, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 26.sp, lineHeight = 30.sp, letterSpacing = (-0.025).em, fontWeight = FontWeight.Bold)
     val bodyMd = TextStyle(fontFamily = Inter, fontSize = 15.sp, lineHeight = 24.sp, letterSpacing = (-0.005).em)
     val bodySm = TextStyle(fontFamily = Inter, fontSize = 13.sp, lineHeight = 18.sp)
 }

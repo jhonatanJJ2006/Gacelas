@@ -75,7 +75,7 @@ fun ClubesContenido(vm: ClubesViewModel, conServidor: Boolean, onAtras: () -> Un
         var desc by remember { mutableStateOf("") }
         var lugar by remember { mutableStateOf("Loja") }
         var aprobacion by remember { mutableStateOf(false) }
-        AlertDialog(
+        com.gacelas.ui.components.DialogoC2(
             onDismissRequest = { creando = false },
             containerColor = GColors.BgSecondary,
             title = { Text("Crear club") },
@@ -95,7 +95,7 @@ fun ClubesContenido(vm: ClubesViewModel, conServidor: Boolean, onAtras: () -> Un
                     vm.crear(nombre, desc, lugar, aprobacion, onCreado = { creando = false; onClub(it) }, onError = onAviso)
                 }) { Text("Crear") }
             },
-            dismissButton = { TextButton(onClick = { creando = false }) { Text("Cancelar") } },
+            dismissButton = { com.gacelas.ui.components.BotonModalC2("Cancelar", { creando = false }, secundario = true) },
         )
     }
 }

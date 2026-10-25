@@ -100,7 +100,7 @@ export function AjustesPreferencias() {
 
   return (
     <PantallaAjustes titulo="Ajustes" subtitulo="Club Gacelas Loja • 2,100 msnm" volverA="/perfil">
-      <div className="flex items-center gap-4 p-4 bg-surface-container rounded-2xl border border-border-subtle">
+      <div className="flex items-center gap-4 p-4 tarjeta-c2">
         <FotoPerfil foto={sesion?.foto} nombre={nombre} className="w-14 h-14" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -264,6 +264,8 @@ export function AjustesPreferencias() {
       <Seccion titulo="Cuenta" etiqueta="Seguridad y dispositivos">
         <Enlace to="/ajustes/privacidad" icono="lock" texto="Privacidad y ubicación" />
         <Enlace to="/ajustes/notificaciones" icono="notifications" texto="Notificaciones" />
+        <Enlace to="/ajustes/mapas-offline" icono="download" texto="Mapas offline" />
+        <Enlace to="/ajustes/brujula" icono="explore" texto="Brújula" />
         <Boton
           onClick={() => setDialogo('acerca')}
           icono="info"
@@ -271,6 +273,8 @@ export function AjustesPreferencias() {
           detalle={`v${VERSION_APP}`}
         />
         <Boton onClick={() => setDialogo('ayuda')} icono="help" texto="Ayuda y soporte" />
+        <Enlace to="/legal/terminos" icono="gavel" texto="Términos y condiciones" />
+        <Enlace to="/legal/privacidad" icono="policy" texto="Política de privacidad" />
       </Seccion>
       <section>
         <button

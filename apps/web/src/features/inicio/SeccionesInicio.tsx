@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom'
 import type { PublicacionRemota } from '../../data/repositorios'
 import type { ResumenPeriodo, RetoMes } from '../../lib/estadisticas'
 import { formatearHms, formatearRitmo, Unidades } from '../../lib/geo'
-import type { Evento } from '../../mocks/data'
+import type { Evento, Ruta } from '../../mocks/data'
+import type { CarreraGuardada } from '../../data/tipos'
 
 import { haceTiempo } from '../../lib/tiempo'
 
@@ -39,7 +40,7 @@ export function SemanaAtletica({
         <h2 className="font-title-md text-title-md text-text-primary">Tu semana atlética</h2>
         <span className="font-label-md text-label-md text-text-secondary">{rango}</span>
       </div>
-      <div className="bg-surface-container rounded-2xl border border-border-subtle p-4 space-y-2">
+      <div className="tarjeta-c2 p-4 space-y-2">
         <div className="flex items-center justify-between">
           <span className="font-label-lg text-label-lg text-text-primary flex items-center gap-2">
             <span className="material-symbols-outlined text-[18px] text-secondary">flag</span>
@@ -71,10 +72,7 @@ export function SemanaAtletica({
           ],
           ['Desnivel', `+${semana.desnivelM} m`, 'landscape'],
         ].map(([t, v, i]) => (
-          <div
-            key={t}
-            className="bg-surface-container rounded-2xl border border-border-subtle p-3 flex flex-col items-center"
-          >
+          <div key={t} className="tarjeta-c2 p-3 flex flex-col items-center">
             <span className="material-symbols-outlined text-[18px] text-primary">{i}</span>
             <span className="font-title-md text-title-md text-text-primary whitespace-nowrap">
               {v}
@@ -114,7 +112,7 @@ export function TarjetaEvento({ evento, inscrito }: { evento: Evento; inscrito: 
   return (
     <Link
       to={`/comunidad/eventos/${evento.id}`}
-      className="block bg-surface-container rounded-2xl border border-border-subtle p-4"
+      className="block tarjeta-c2 p-4"
       data-testid="tarjeta-evento"
     >
       <div className="flex items-start justify-between gap-3">
@@ -195,16 +193,13 @@ export function AmigosEnRuta({ lista, m }: { lista: PublicacionRemota[]; m: bool
         </Link>
       </div>
       {lista.length === 0 ? (
-        <p className="font-body-md text-body-md text-text-secondary bg-surface-container rounded-2xl border border-border-subtle p-4">
+        <p className="font-body-md text-body-md text-text-secondary tarjeta-c2 p-4">
           Sigue a corredores en Comunidad para ver aquí su actividad.
         </p>
       ) : (
         <ul className="space-y-2">
           {lista.map((p) => (
-            <li
-              key={p.id}
-              className="bg-surface-container rounded-2xl border border-border-subtle p-3 flex items-center gap-3"
-            >
+            <li key={p.id} className="tarjeta-c2 p-3 flex items-center gap-3">
               {p.avatar ? (
                 <img src={p.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
               ) : (
@@ -229,6 +224,69 @@ export function AmigosEnRuta({ lista, m }: { lista: PublicacionRemota[]; m: bool
             </li>
           ))}
         </ul>
+      )}
+    </section>
+  )
+}
+
+/** Ruta del catalogo mas cercana a la distancia media de las ultimas 5 carreras (5 km sin historial), igual que Android. */
+export function rutaSugerida(rutas: Ruta[], carreras: CarreraGuardada[]): Ruta | undefined {
+  if (rutas.length === 0) return undefined
+  const ultimas = [...carreras].sort((a, b) => b.inicioMs - a.inicioMs).slice(0, 5)
+  const objetivo = ultimas.length
+    ? ultimas.reduce((t, c) => t + c.distanciaKm, 0) / ultimas.length
+    : 5
+  return [...rutas].sort(
+    (a, b) => Math.abs(a.distanciaKm - objetivo) - Math.abs(b.distanciaKm - objetivo)
+  )[0]
+}
+
+export function RutaSugerida({
+  rutas,
+  carreras,
+  m,
+}: {
+  rutas: Ruta[]
+  carreras: CarreraGuardada[]
+  m: boolean
+}) {
+  const ruta = rutaSugerida(rutas, carreras)
+  return (
+    <section className="space-y-space-md lg:col-span-5" data-testid="ruta-sugerida">
+      <div className="flex items-center justify-between">
+        <h2 className="font-title-md text-title-md text-text-primary">Ruta sugerida para hoy</h2>
+        <Link to="/rutas" className="inline-block py-2 font-label-md text-label-md text-primary">
+          Ver rutas
+        </Link>
+      </div>
+      {ruta ? (
+        <Link
+          to={`/rutas/${ruta.id}`}
+          className="tarjeta-c2 bg-c2-card p-3 flex items-center gap-3 hover:bg-c2-s2 transition-colors"
+        >
+          <span className="w-[88px] h-[88px] shrink-0 bg-gradient-to-br from-c2-s2 to-c2-bg flex items-center justify-center rounded-[4px]">
+            <span className="material-symbols-outlined text-[34px] text-c2-violeta">route</span>
+          </span>
+          <span className="flex-1 min-w-0">
+            <span className="block font-title-md text-title-md text-text-primary truncate">
+              {ruta.nombre}
+            </span>
+            <span className="block text-body-sm text-c2-muted line-clamp-2">
+              {ruta.descripcion}
+            </span>
+            <span className="mt-1 flex gap-3 text-[13px] font-bold">
+              <span className="text-c2-violeta">
+                {Unidades.texto(ruta.distanciaKm, m, 1)} {Unidades.etiquetaDistancia(m)}
+              </span>
+              <span className="text-c2-cielo">+{ruta.elevacionM} m</span>
+              <span className="text-c2-menta">{ruta.dificultad}</span>
+            </span>
+          </span>
+        </Link>
+      ) : (
+        <p className="tarjeta-c2 bg-c2-card p-4 text-body-md text-c2-muted">
+          Aún no hay rutas cargadas. Explora Rutas para encontrar tu próximo recorrido.
+        </p>
       )}
     </section>
   )

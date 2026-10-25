@@ -10,6 +10,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { MapaGoogle } from '../../../components/MapaGoogle'
 import { TrazadoRuta } from '../../../components/TrazadoRuta'
 import { BotonTexto, Dialogo } from '../../../components/ui'
+import { ModalC2, ResumenModal } from '../../../components/modales'
 import { formatearHms, formatearRitmo, Unidades } from '../../../lib/geo'
 import { estaActiva, ritmoPromedio } from '../../../lib/runTracker'
 import { useApp } from '../../../store/app'
@@ -22,6 +23,9 @@ export function CarreraEnCurso() {
   const e = useCarrera()
   const m = useApp((s) => s.ajustes.unidadesMetricas)
   const [descartar, setDescartar] = useState(false)
+  const [modalFin, setModalFin] = useState(false)
+  const [modalPausa, setModalPausa] = useState(false)
+  const [gpsAvisado, setGpsAvisado] = useState(false)
   const [vista3d, setVista3d] = useState(false)
   const sesion = useApp((s) => s.sesion)
   const vivo = useCompartirEnVivo()
@@ -72,6 +76,64 @@ export function CarreraEnCurso() {
     navigate('/correr/resumen')
   }
 
+  const precision = e.ultimaPrecisionM ?? null
+  const gpsDebil = precision != null && precision > 50 && !pausada
+  const resumen = (
+    <ResumenModal
+      datos={[
+        [`${Unidades.texto(e.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}`, 'Distancia'],
+        [formatearHms(e.segundos), 'Tiempo'],
+        [formatearRitmo(Unidades.ritmo(ritmoPromedio(e), m)), 'Ritmo'],
+      ]}
+    />
+  )
+  const modales = (
+    <>
+      <ModalC2
+        abierto={modalFin}
+        icono="flag"
+        titulo="¿Terminar carrera?"
+        texto="Se guardará tu recorrido y verás el resumen."
+        primario="Terminar y guardar"
+        onPrimario={() => {
+          setModalFin(false)
+          terminar()
+        }}
+        onCerrar={() => setModalFin(false)}
+        secundario="Seguir corriendo"
+      >
+        {resumen}
+      </ModalC2>
+      <ModalC2
+        abierto={modalPausa && pausada && !modalFin}
+        icono="pause"
+        titulo="Carrera en pausa"
+        texto="El cronómetro está detenido. Reanuda cuando estés listo."
+        primario="Reanudar"
+        onPrimario={() => {
+          setModalPausa(false)
+          tracker.alternarPausa()
+        }}
+        onCerrar={() => setModalPausa(false)}
+        secundario="Terminar"
+        onSecundario={() => {
+          setModalPausa(false)
+          setModalFin(true)
+        }}
+      >
+        {resumen}
+      </ModalC2>
+      <ModalC2
+        abierto={gpsDebil && !gpsAvisado && !modalFin}
+        icono="gps_off"
+        titulo="GPS sin señal"
+        texto={`La precisión es baja (±${Math.round(precision ?? 0)} m). Sal a un lugar abierto, lejos de edificios altos.`}
+        primario="Entendido"
+        onPrimario={() => setGpsAvisado(true)}
+        onCerrar={() => setGpsAvisado(true)}
+      />
+    </>
+  )
   const dialogo = (
     <Dialogo
       titulo="¿Descartar la carrera?"
@@ -139,7 +201,7 @@ export function CarreraEnCurso() {
 
   if (claveMapas())
     return (
-      <div className="fixed inset-0 bg-[#0d1422] z-40" data-testid="carrera-mapa">
+      <div className="fixed inset-0 bg-c2-bg z-40" data-testid="carrera-mapa">
         <MapaGoogle
           puntos={e.puntos}
           seguir
@@ -155,13 +217,13 @@ export function CarreraEnCurso() {
           onClick={() => setVista3d(!vista3d)}
           aria-pressed={vista3d}
           data-testid="vista-3d"
-          className="absolute top-20 left-4 z-20 h-10 px-4 rounded-full bg-[#121a2a]/90 backdrop-blur-md text-white border border-white/10 shadow-lg font-semibold"
+          className="absolute top-20 left-4 z-20 h-10 px-4 rounded-full bg-c2-card/90 backdrop-blur-md text-white border border-c2-linea shadow-lg font-semibold"
         >
           {vista3d ? '2D' : '3D'}
         </button>
         <section
           aria-label="Datos de la carrera"
-          className="absolute inset-x-0 bottom-0 z-20 rounded-t-[28px] bg-[#0f1625]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-12px_40px_rgba(0,0,0,0.5)] px-6 pt-3 pb-[max(env(safe-area-inset-bottom),20px)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-lg lg:bottom-6 lg:rounded-[28px] lg:border"
+          className="absolute inset-x-0 bottom-0 z-20 rounded-t-[14px] bg-c2-card/95 backdrop-blur-xl border-t-2 border-c2-violeta shadow-[0_-12px_40px_rgba(0,0,0,0.5)] px-5 pt-2 pb-[max(env(safe-area-inset-bottom),20px)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-lg lg:bottom-6 lg:rounded-[14px] lg:border lg:border-c2-linea"
         >
           <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-white/20" />
           <div className="flex items-center justify-between mb-1 text-xs text-text-secondary">
@@ -176,7 +238,7 @@ export function CarreraEnCurso() {
           <div className="flex items-end gap-6">
             <div className="flex-1">
               <div
-                className="text-[56px] leading-none font-light text-white tabular-nums"
+                className="font-display italic text-[40px] leading-none text-c2-violeta tabular-nums"
                 data-testid="distancia"
               >
                 {Unidades.texto(e.distanciaKm, m)}
@@ -186,13 +248,19 @@ export function CarreraEnCurso() {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-light text-white tabular-nums" data-testid="tiempo">
+              <div
+                className="text-[18px] font-semibold text-white tabular-nums"
+                data-testid="tiempo"
+              >
                 {formatearHms(e.segundos)}
               </div>
               <div className="text-[11px] uppercase tracking-wider text-text-secondary">Tiempo</div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-light text-white tabular-nums" data-testid="ritmo">
+              <div
+                className="text-[18px] font-semibold text-c2-menta tabular-nums"
+                data-testid="ritmo"
+              >
                 {formatearRitmo(Unidades.ritmo(e.ritmoActualSegKm, m))}
               </div>
               <div className="text-[11px] uppercase tracking-wider text-text-secondary">
@@ -200,7 +268,7 @@ export function CarreraEnCurso() {
               </div>
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-3 gap-3 text-center text-sm text-text-secondary border-t border-white/10 pt-3">
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center text-[11px] uppercase text-c2-muted border-t border-c2-linea pt-2">
             <div>
               <span className="block text-white">
                 {formatearRitmo(Unidades.ritmo(ritmoPromedio(e), m))}
@@ -214,25 +282,29 @@ export function CarreraEnCurso() {
               <span className="block text-white">{caloriasEstimadas(e.distanciaKm)}</span>kcal est.
             </div>
           </div>
-          <div className="mt-4 flex gap-3">
+          <div className="mt-3 flex gap-3">
             <button
-              onClick={() => tracker.alternarPausa()}
+              onClick={() => {
+                if (!pausada) setModalPausa(true)
+                tracker.alternarPausa()
+              }}
               aria-label={pausada ? 'Reanudar' : 'Pausar'}
-              className="flex-1 h-14 rounded-2xl bg-white/10 text-white flex items-center justify-center gap-2 font-semibold"
+              className="flex-1 boton-c2"
             >
               <span className="material-symbols-outlined">{pausada ? 'play_arrow' : 'pause'}</span>
               {pausada ? 'Reanudar' : 'Pausar'}
             </button>
             <button
-              onClick={terminar}
+              onClick={() => setModalFin(true)}
               aria-label="Terminar carrera"
-              className="flex-1 h-14 rounded-2xl bg-[#FF6A13] text-[#0b1220] flex items-center justify-center gap-2 font-bold"
+              className="flex-1 boton-c2-peligro font-black italic uppercase"
             >
               <span className="material-symbols-outlined">stop</span>Terminar
             </button>
           </div>
         </section>
         {dialogo}
+        {modales}
       </div>
     )
 
@@ -266,7 +338,7 @@ export function CarreraEnCurso() {
             )}
           </div>
 
-          <div className="rounded-3xl bg-surface-container/60 border border-border-subtle p-6 text-center">
+          <div className="rounded-3xl bg-c2-card border border-c2-linea p-6 text-center">
             <div className="text-label-md text-text-secondary uppercase tracking-widest mb-1">
               Distancia recorrida
             </div>
@@ -341,7 +413,7 @@ export function CarreraEnCurso() {
           <div className="grid grid-cols-[1fr_1.4fr] gap-3">
             <div className="text-center">
               <button
-                onClick={terminar}
+                onClick={() => setModalFin(true)}
                 aria-label="Terminar carrera"
                 className="w-full h-16 rounded-2xl bg-danger/15 border border-danger/40 text-danger flex items-center justify-center gap-2 font-semibold"
               >
@@ -350,7 +422,10 @@ export function CarreraEnCurso() {
             </div>
             <div className="text-center">
               <button
-                onClick={() => tracker.alternarPausa()}
+                onClick={() => {
+                  if (!pausada) setModalPausa(true)
+                  tracker.alternarPausa()
+                }}
                 aria-label={pausada ? 'Reanudar' : 'Pausar'}
                 className="w-full h-16 rounded-2xl bg-primary-600 text-on-primary flex items-center justify-center gap-2 text-title-md font-bold shadow-lg"
               >
@@ -381,6 +456,7 @@ export function CarreraEnCurso() {
         </div>
       )}
       {dialogo}
+      {modales}
     </div>
   )
 }
@@ -397,7 +473,7 @@ function Metrica({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-2xl bg-surface-container/60 border border-border-subtle p-4">
+    <div className="rounded-2xl bg-c2-card border border-c2-linea p-4">
       <div className="text-label-md text-text-secondary uppercase">{titulo}</div>
       <div
         className="font-headline-lg text-headline-lg text-text-primary leading-tight tabular-nums"

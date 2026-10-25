@@ -1,7 +1,7 @@
 import type { Historico, KmMes, Medalla, RecordPersonal } from '../../../../lib/estadisticas'
 import { formatearHms, formatearMs, formatearRitmo, Unidades } from '../../../../lib/geo'
 
-const tarjeta = 'bg-surface-container rounded-2xl border border-border-subtle'
+const tarjeta = 'tarjeta-c2'
 
 function Titulo({ icono, texto, extra }: { icono: string; texto: string; extra?: string }) {
   return (

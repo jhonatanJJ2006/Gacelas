@@ -82,7 +82,7 @@ fun ComponerFotoDialogo(datos: DatosCompartir, onCerrar: () -> Unit, onImagenMar
     fun lanzar(i: Intent, si: String) = try { context.startActivity(i) } catch (_: ActivityNotFoundException) { context.aviso(si) }
     fun exportar() = guardarParaCompartir(context, Plantillas.componer(foto, capa, plantilla, col, formato), "gacelas-foto-${formato.name.lowercase()}")
 
-    AlertDialog(
+    com.gacelas.ui.components.DialogoC2(
         onDismissRequest = onCerrar,
         containerColor = GColors.Surface,
         title = { Text("Compartir sobre tu foto", style = GType.titleMd, color = GColors.TextPrimary) },

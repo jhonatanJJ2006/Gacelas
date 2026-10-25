@@ -44,6 +44,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
@@ -70,13 +71,13 @@ sealed interface Fase {
 
 /** Colores y medidas del export de Stitch (update-modal V3 "Compacta"). */
 object M3 {
-    val Tarjeta = Color(0xFF131926)
-    val Panel = Color(0xFF1C2028)
-    val Secondary = Color(0xFFBCC7DE)
+    val Tarjeta = Color(0xFF191F2F)
+    val Panel = Color(0xFF232A3A)
+    val Secondary = Color(0xFFA8B0C2)
     val Naranja = Color(0xFF7B1FA2)
-    val Enlace = Color(0xFFA855F7)
-    val Magenta = Color(0xFFD6338A)
-    val MagentaOscuro = Color(0xFFAB0660)
+    val Enlace = Color(0xFFC084FC)
+    val Magenta = Color(0xFFC084FC)
+    val MagentaOscuro = Color(0xFF7B1FA2)
     val Error = Color(0xFFFFB4AB)
     fun blanco(a: Float) = Color.White.copy(alpha = a)
 }
@@ -96,16 +97,16 @@ fun ContenidoModal(
     onPermiso: () -> Unit,
 ) {
     BoxWithConstraints(
-        Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.6f)).systemBarsPadding().padding(horizontal = 20.dp, vertical = 24.dp),
-        contentAlignment = Alignment.Center,
+        Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.6f)).systemBarsPadding(),
+        contentAlignment = Alignment.BottomCenter,
     ) {
         val compacto = maxHeight < 560.dp
         val maxItems = if (maxHeight < 440.dp) 2 else if (compacto) 3 else 5
-        val forma = RoundedCornerShape(28.dp)
+        val forma = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
         Box(
-            Modifier.widthIn(max = 350.dp).fillMaxWidth()
+            Modifier.widthIn(max = 560.dp).fillMaxWidth()
                 .shadow(20.dp, forma, ambientColor = Color.Black.copy(alpha = 0.65f), spotColor = Color.Black.copy(alpha = 0.65f))
-                .clip(forma).background(M3.Tarjeta.copy(alpha = 0.98f)).border(1.dp, M3.blanco(0.10f), forma)
+                .clip(forma).background(M3.Tarjeta)
                 .drawBehind {
                     // Brillo ambiental arriba a la derecha (-top-16 -right-16 w-36, #D6338A/10, blur-2xl).
                     drawCircle(Brush.radialGradient(listOf(M3.Magenta.copy(alpha = 0.12f), Color.Transparent), center = Offset(size.width + 8.dp.toPx(), 8.dp.toPx()), radius = 110.dp.toPx()),
@@ -114,7 +115,7 @@ fun ContenidoModal(
                 .testTag("modal-actualizacion"),
         ) {
             Box(Modifier.fillMaxWidth().height(1.dp).align(Alignment.TopCenter)
-                .background(Brush.horizontalGradient(listOf(M3.blanco(0f), M3.blanco(0.22f), M3.blanco(0f)))))
+                .background(Brush.horizontalGradient(listOf(Color.Transparent, M3.Magenta))))
             Column(Modifier.fillMaxWidth().padding(if (compacto) 20.dp else 24.dp)) {
                 Cabecera(versionActual, info.versionName)
                 Spacer(Modifier.height(if (compacto) 14.dp else 20.dp))
@@ -130,7 +131,7 @@ fun ContenidoModal(
                     }
                     Spacer(Modifier.height(8.dp))
                 }
-                Text("Hay una nueva versión", style = TextStyle(fontFamily = display, fontSize = 22.sp, lineHeight = 26.4.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.025).em), color = Color.White)
+                Text("Hay una nueva versión", style = TextStyle(fontFamily = display, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 26.sp, lineHeight = 30.sp), color = Color.White)
                 if (!compacto || obligatoria) {
                     Spacer(Modifier.height(4.dp))
                     Text(
@@ -176,8 +177,8 @@ private fun Cabecera(actual: String, nueva: String) {
 
 @Composable
 private fun PanelNovedades(items: List<String>, bytes: Long?) {
-    val forma = RoundedCornerShape(16.dp)
-    Column(Modifier.fillMaxWidth().clip(forma).background(M3.Panel).border(1.dp, M3.blanco(0.08f), forma).padding(16.dp)) {
+    val forma = RoundedCornerShape(4.dp)
+    Column(Modifier.fillMaxWidth().clip(forma).background(M3.Panel).padding(16.dp)) {
         Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(6.dp).clip(CircleShape).background(M3.Naranja))
             Spacer(Modifier.width(6.dp))
@@ -213,11 +214,14 @@ private fun PanelNovedades(items: List<String>, bytes: Long?) {
 private fun BotonNaranja(texto: String, onClick: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().height(52.dp)
-            .shadow(10.dp, CircleShape, ambientColor = M3.Naranja.copy(alpha = 0.42f), spotColor = M3.Naranja.copy(alpha = 0.42f))
-            .clip(CircleShape).background(M3.Naranja).clickable(onClick = onClick).testTag("boton-actualizar"),
+            .drawBehind {
+                // Sombra solida violeta desplazada (boton inclinado C2).
+                translate(4.dp.toPx(), 4.dp.toPx()) { drawRect(M3.Magenta) }
+            }
+            .clip(com.gacelas.ui.components.FormaBotonC2).background(Brush.horizontalGradient(listOf(M3.MagentaOscuro, Color(0xFFA855F7)))).clickable(onClick = onClick).testTag("boton-actualizar"),
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(texto, style = TextStyle(fontFamily = display, fontSize = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.025.em), color = Color.White)
+        Text(texto, style = TextStyle(fontFamily = Inter, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 16.sp, fontWeight = FontWeight.Black), color = Color.White)
         Spacer(Modifier.width(8.dp))
         Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = Color.White, modifier = Modifier.size(20.dp))
     }

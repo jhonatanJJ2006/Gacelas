@@ -12,13 +12,14 @@ private fun variable(res: Int, w: FontWeight) =
     Font(res, w, variationSettings = FontVariation.Settings(FontVariation.weight(w.weight)))
 
 actual val Inter: FontFamily = FontFamily(
-    listOf(FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold).map { variable(R.font.inter, it) },
+    listOf(FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold).map { variable(R.font.archivo, it) },
 )
 
 actual val RobotoFlex: FontFamily = FontFamily(
-    listOf(FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold, FontWeight.Black).map { variable(R.font.roboto_flex, it) },
+    listOf(FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold, FontWeight.Black).map { variable(R.font.archivo, it) },
 )
 
+/** Anton tiene un solo peso; se registra para todos los pesos usados en titulares. */
 actual val SpaceGrotesk: FontFamily = FontFamily(
-    listOf(FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold).map { variable(R.font.space_grotesk, it) },
+    listOf(FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold, FontWeight.Black).map { Font(R.font.anton, it) },
 )

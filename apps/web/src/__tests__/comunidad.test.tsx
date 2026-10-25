@@ -66,6 +66,11 @@ describe('comunidad', () => {
     await userEvent.click(screen.getByRole('tab', { name: 'Próximos' }))
     const trail = screen.getByText('Trail Running Podocarpus').closest('article')!
     await userEvent.click(within(trail).getByRole('button', { name: 'Inscribirse' }))
+    await userEvent.click(
+      within(screen.getByRole('dialog', { name: 'Unirse al evento' })).getByRole('button', {
+        name: 'Inscribirme',
+      })
+    )
     expect(within(trail).getByText('9 participantes')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('tab', { name: 'Mis eventos' }))
     expect(screen.getAllByTestId('evento')).toHaveLength(1)

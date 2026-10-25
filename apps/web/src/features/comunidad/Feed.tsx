@@ -4,6 +4,7 @@ import { ProximosEventos, RankingSemanal } from '../../components/PanelesEscrito
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Aviso, BotonTexto, Dialogo } from '../../components/ui'
+import { ModalC2 } from '../../components/modales'
 import { compartir, useAviso } from '../../hooks'
 import { formatearMs, formatearRitmo, Unidades } from '../../lib/geo'
 import { useApp } from '../../store/app'
@@ -12,6 +13,8 @@ import type { ComentarioPublicacion } from '../../data/repositorios'
 import { Fragment } from 'react'
 import { kmPorAutor, nivelCorredor } from '../../lib/logica'
 import { filtrarEventos } from '../../lib/filtros'
+import { ModalReporte } from '../social/Social'
+import { yaReportada } from '../social/moderacion'
 import { Carrusel, InsigniaNivel, TarjetaClub } from './PostSocial'
 
 export function Feed() {
@@ -33,6 +36,7 @@ export function Feed() {
   const remotas = useApp((s) => s.publicaciones)
   const siguiendo = useApp((s) => s.siguiendo)
   const alternarSeguir = useApp((s) => s.alternarSeguir)
+  const [dejar, setDejar] = useState<{ id: string; nombre: string } | null>(null)
   const ajustes = useApp((s) => s.ajustes)
   const actualizar = useApp((s) => s.actualizarAjustes)
   const m = ajustes.unidadesMetricas
@@ -56,7 +60,7 @@ export function Feed() {
   const inscritos = useApp((s) => s.inscritos)
   const alternarInscripcion = useApp((s) => s.alternarInscripcion)
   const [fotosPara, setFotosPara] = useState<string | null>(null)
-  const [rapido, setRapido] = useState<Record<string, string>>({})
+  const [reportando, setReportando] = useState<string | null>(null)
 
   // Feed real: se refresca al entrar y con cada cambio en la base (realtime).
   useEffect(() => {
@@ -147,12 +151,14 @@ export function Feed() {
   ]
 
   return (
-    <div className="contenedor-escritorio lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8 lg:items-start">
+    <div className="contenedor-escritorio lg:grid lg:grid-cols-[minmax(0,600px)_340px] lg:justify-center lg:gap-8 lg:items-start">
       <div className="flex flex-col w-full min-w-0">
         <div className="px-margin pt-space-md pb-space-sm lg:px-0 lg:pb-4">
           <div className="flex items-center justify-between mb-4 relative">
             <div>
-              <h1 className="font-headline-md text-headline-md text-text-primary">Comunidad</h1>
+              <h1 className="font-display italic uppercase text-[26px] text-text-primary">
+                Comunidad
+              </h1>
             </div>
             <div className="flex-1" />
             <button
@@ -260,7 +266,7 @@ export function Feed() {
           )}
         </div>
 
-        <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:space-y-6">
+        <div className="px-margin space-y-2 pb-space-3xl lg:px-0 lg:space-y-3">
           {posts.length === 0 && (
             <p className="text-center text-text-secondary py-8">
               {filtro === 'Mías'
@@ -283,10 +289,10 @@ export function Feed() {
                   />
                 )}
                 <article
-                  className="bg-surface-container rounded-2xl border border-border-subtle overflow-hidden"
+                  className="border-b border-c2-linea pb-2 lg:pb-3"
                   data-testid="publicacion"
                 >
-                  <header className="p-4 flex items-center gap-3 relative">
+                  <header className="px-4 pt-3 pb-2 flex items-start gap-3 relative">
                     {post.avatar ? (
                       <img
                         src={post.avatar}
@@ -311,7 +317,11 @@ export function Feed() {
                     </div>
                     {post.autorId && (
                       <button
-                        onClick={() => void alternarSeguir(post.autorId!)}
+                        onClick={() =>
+                          siguiendo.includes(post.autorId!)
+                            ? setDejar({ id: post.autorId!, nombre: post.autor })
+                            : void alternarSeguir(post.autorId!)
+                        }
                         aria-pressed={siguiendo.includes(post.autorId)}
                         className={`h-9 px-4 rounded-full text-sm font-semibold transition-colors ${
                           siguiendo.includes(post.autorId)
@@ -365,57 +375,50 @@ export function Feed() {
                         >
                           Ocultar publicación
                         </button>
+                        {!post.propia && (
+                          <button
+                            role="menuitem"
+                            onClick={() => {
+                              setMenuPost(null)
+                              if (yaReportada(post.id))
+                                mostrarAviso('Ya reportaste esta publicación')
+                              else setReportando(post.id)
+                            }}
+                            className="block w-full text-left px-4 py-2 text-sm text-c2-peligro hover:bg-surface-container"
+                          >
+                            Reportar publicación
+                          </button>
+                        )}
                       </div>
                     )}
                   </header>
 
-                  <Carrusel
-                    imagenes={post.imagenes ?? []}
-                    puntos={post.puntos}
-                    desnivelM={post.desnivelM}
-                  />
-
-                  <div className="p-4">
-                    <div className="grid grid-cols-4 gap-2 mb-4 p-3 rounded-xl bg-bg-primary/40 border border-border-subtle">
-                      <div>
-                        <div className="font-label-sm text-label-sm text-text-secondary">
-                          Distancia
-                        </div>
-                        <div className="font-headline-sm text-headline-sm text-text-primary">
-                          {Unidades.texto(post.distanciaKm, m, 1)}{' '}
-                          <span className="text-label-sm text-text-secondary">
-                            {Unidades.etiquetaDistancia(m)}
-                          </span>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="font-label-sm text-label-sm text-text-secondary">Ritmo</div>
-                        <div className="font-headline-sm text-headline-sm text-primary">
-                          {formatearRitmo(Unidades.ritmo(post.ritmoSegKm, m))}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="font-label-sm text-label-sm text-text-secondary">
-                          Tiempo
-                        </div>
-                        <div className="font-headline-sm text-headline-sm text-text-primary">
-                          {formatearMs(post.segundos)}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="font-label-sm text-label-sm text-text-secondary">
-                          Elevación
-                        </div>
-                        <div
-                          className="font-headline-sm text-headline-sm text-secondary"
-                          data-testid="desnivel-post"
-                        >
-                          +{post.desnivelM ?? 0}
-                          <span className="text-label-sm text-text-secondary"> m</span>
-                        </div>
-                      </div>
+                  <div className="pl-[68px] pr-4 pt-2">
+                    <div
+                      className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-1 font-display italic text-[15px] tabular-nums"
+                      data-testid="metricas-post"
+                    >
+                      <span className="text-c2-violeta">
+                        {Unidades.texto(post.distanciaKm, m, 1)}
+                        <span className="font-sans not-italic text-[11px] text-c2-muted">
+                          {Unidades.etiquetaDistancia(m)}
+                        </span>
+                      </span>
+                      <span className="text-text-primary">
+                        {formatearRitmo(Unidades.ritmo(post.ritmoSegKm, m))}
+                      </span>
+                      <span className="text-text-primary">{formatearMs(post.segundos)}</span>
+                      <span className="text-c2-cielo" data-testid="desnivel-post">
+                        +{post.desnivelM ?? 0}
+                        <span className="font-sans not-italic text-[11px] text-c2-muted">m</span>
+                      </span>
                     </div>
 
+                    <Carrusel
+                      imagenes={post.imagenes ?? []}
+                      puntos={post.puntos}
+                      desnivelM={post.desnivelM}
+                    />
                     {locales.length > 0 && (
                       <ul className="mb-3 space-y-1">
                         {locales.map((c, i) => (
@@ -426,7 +429,7 @@ export function Feed() {
                       </ul>
                     )}
 
-                    <div className="flex items-center gap-4 pt-3 border-t border-border-subtle">
+                    <div className="flex items-center gap-4 pt-1 [&_.material-symbols-outlined]:text-[18px]">
                       <button
                         onClick={() => alternarLike(post)}
                         aria-pressed={meGusta}
@@ -486,33 +489,6 @@ export function Feed() {
                         )}
                       </button>
                     )}
-                    <form
-                      className="mt-3 flex gap-2"
-                      onSubmit={(e) => {
-                        e.preventDefault()
-                        const t = rapido[post.id] ?? ''
-                        if (!t.trim()) return
-                        void enviarComentario(post, t).then(() =>
-                          setRapido((r) => ({ ...r, [post.id]: '' }))
-                        )
-                      }}
-                    >
-                      <input
-                        value={rapido[post.id] ?? ''}
-                        onChange={(e) => setRapido((r) => ({ ...r, [post.id]: e.target.value }))}
-                        placeholder="Escribe un aplauso o comentario..."
-                        aria-label={`Comentar ${post.titulo}`}
-                        maxLength={1000}
-                        className="flex-1 h-10 rounded-full bg-bg-primary/40 border border-border-subtle px-4 text-body-sm text-text-primary placeholder:text-text-secondary"
-                      />
-                      <button
-                        type="submit"
-                        aria-label="Enviar comentario"
-                        className="w-10 h-10 rounded-full bg-primary-600 text-on-primary flex items-center justify-center"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">send</span>
-                      </button>
-                    </form>
                   </div>
                 </article>
               </Fragment>
@@ -563,6 +539,32 @@ export function Feed() {
           <ProximosEventos />
         </aside>
       )}
+      <ModalC2
+        abierto={dejar != null}
+        icono="person_remove"
+        titulo="Dejar de seguir"
+        texto={`Ya no verás las carreras de ${dejar?.nombre ?? ''} en tu feed de Siguiendo.`}
+        primario="Dejar de seguir"
+        peligro
+        onPrimario={() => {
+          if (dejar) void alternarSeguir(dejar.id)
+          setDejar(null)
+        }}
+        onCerrar={() => setDejar(null)}
+        secundario="Cancelar"
+      />
+      <ModalReporte
+        postId={reportando}
+        onCerrar={() => setReportando(null)}
+        onEnviado={(ok) => {
+          setReportando(null)
+          mostrarAviso(
+            ok
+              ? 'Reporte enviado. Gracias por cuidar la comunidad'
+              : 'No se pudo enviar el reporte. Revisa tu conexión'
+          )
+        }}
+      />
       <Aviso mensaje={aviso} />
     </div>
   )

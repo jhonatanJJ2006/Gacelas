@@ -137,45 +137,33 @@ fun ListaRutasContenido(
         }
         lista.forEach { ruta ->
             val guardada = ruta.id in guardadas
-            Tarjeta(padding = 0.dp, onClick = { onRuta(ruta.id) }) {
-                Box(Modifier.fillMaxWidth().height(120.dp).background(Brush.linearGradient(listOf(GColors.MapParks, GColors.SurfaceLow))), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Filled.Route, null, tint = GColors.Primary500.copy(alpha = 0.7f), modifier = Modifier.size(56.dp))
-                    IconButton(
-                        onClick = { onAlternarGuardada(ruta.id, guardada) },
-                        modifier = Modifier.align(Alignment.TopEnd).padding(8.dp).clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.6f)),
-                    ) {
-                        Icon(if (guardada) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, if (guardada) "Quitar de guardadas" else "Guardar ruta", tint = GColors.Primary500)
-                    }
-                }
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(ruta.nombre, style = GType.titleMd, color = GColors.TextPrimary)
-                    Text(ruta.descripcion, style = GType.bodySm, color = GColors.TextSecondary)
-                    val extra = listOfNotNull(
-                        ruta.valoracion?.let { "★ ${decimalLocal(it)} (${ruta.resenas})" },
-                        ruta.meGusta.takeIf { it > 0 }?.let { "♥ $it" },
-                        cerca?.get(ruta.id)?.let { "a ${Unidades.texto(it, m, 1)} ${Unidades.etiquetaDistancia(m)}" },
-                        ruta.autorNombre?.let { "por $it" },
-                    )
-                    if (extra.isNotEmpty()) Text(extra.joinToString("  ·  "), style = GType.labelMd, color = GColors.TextSecondary)
-                    EtiquetaDificultad(ruta.dificultad)
-                    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(GColors.SurfaceHigh).padding(vertical = 8.dp).testTag("metricas-ruta")) {
-                        listOf(
-                            "Distancia" to "${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}",
-                            "Desnivel" to "+${ruta.elevacionM} m",
-                            "Valoración" to (ruta.valoracion?.let { "${decimalLocal(it)} (${ruta.resenas})" } ?: "--"),
-                        ).forEachIndexed { i, (t, v) ->
-                            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(t, style = GType.bodySm, color = GColors.TextSecondary)
-                                Text(v, style = GType.labelLg, color = if (i == 2) GColors.Primary400 else GColors.TextPrimary)
+            // Tarjeta C2 compacta: miniatura de 88 dp, datos en linea y numeros pequenos.
+            Tarjeta(padding = 12.dp, onClick = { onRuta(ruta.id) }) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(
+                        Modifier.size(88.dp).clip(RoundedCornerShape(4.dp)).background(Brush.linearGradient(listOf(GColors.C2S2, GColors.C2Bg))),
+                        contentAlignment = Alignment.Center,
+                    ) { Icon(Icons.Filled.Route, null, tint = GColors.C2Violeta, modifier = Modifier.size(36.dp)) }
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(verticalAlignment = Alignment.Top) {
+                            Text(ruta.nombre, style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f), maxLines = 2)
+                            IconButton(onClick = { onAlternarGuardada(ruta.id, guardada) }, modifier = Modifier.size(32.dp)) {
+                                Icon(if (guardada) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, if (guardada) "Quitar de guardadas" else "Guardar ruta", tint = GColors.C2Violeta)
                             }
                         }
-                    }
-                    Row(
-                        Modifier.clip(RoundedCornerShape(8.dp)).background(GColors.SurfaceHigh).padding(horizontal = 12.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(Icons.Filled.Info, null, tint = GColors.TextPrimary, modifier = Modifier.size(16.dp))
-                        Text(" Ver detalles", style = GType.labelMd, color = GColors.TextPrimary)
+                        Text(ruta.descripcion, style = GType.bodySm, color = GColors.C2Muted, maxLines = 2)
+                        val extra = listOfNotNull(
+                            ruta.valoracion?.let { "★ ${decimalLocal(it)} (${ruta.resenas})" },
+                            ruta.meGusta.takeIf { it > 0 }?.let { "♥ $it" },
+                            cerca?.get(ruta.id)?.let { "a ${Unidades.texto(it, m, 1)} ${Unidades.etiquetaDistancia(m)}" },
+                            ruta.autorNombre?.let { "por $it" },
+                        )
+                        if (extra.isNotEmpty()) Text(extra.joinToString("  ·  "), style = GType.labelMd, color = GColors.C2Muted)
+                        Row(Modifier.fillMaxWidth().testTag("metricas-ruta"), horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text("${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}", style = GType.labelLg, color = GColors.C2Violeta)
+                            Text("+${ruta.elevacionM} m", style = GType.labelLg, color = GColors.C2Cielo)
+                            EtiquetaDificultad(ruta.dificultad)
+                        }
                     }
                 }
             }
