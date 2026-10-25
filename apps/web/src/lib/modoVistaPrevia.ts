@@ -55,6 +55,20 @@ function publicacionAjena(): PublicacionRemota {
   }
 }
 
+/** Feed de ejemplo con fotos y comentarios; se carga solo en este modo (import dinamico). */
+let feedDemo: PublicacionRemota[] = []
+const publicacionesVista = () => [publicacionAjena(), ...feedDemo]
+
+async function cargarFeedDemo() {
+  const demo = await import('../mocks/feed-demo/feedDemo')
+  feedDemo = demo.publicacionesDemo()
+  const original = useApp.getState().comentariosPost
+  useApp.setState({
+    publicaciones: publicacionesVista(),
+    comentariosPost: async (id) => demo.comentariosDemo(id) ?? original(id),
+  })
+}
+
 /** Carrera simulada para ver En curso sin GPS: unos 2 km por Loja. */
 function simularCarrera() {
   tracker.iniciar()
@@ -77,15 +91,16 @@ export function activarVistaPreviaSiCorresponde() {
       sesion: PERFIL_EJEMPLO,
       carreras: carrerasEjemplo(),
       rutas: useApp.getState().rutas.length ? useApp.getState().rutas : rutasMock,
-      publicaciones: [publicacionAjena()],
+      publicaciones: publicacionesVista(),
     })
   // cargar() y el listener de sesion pueden dejarla en null: en este modo se vuelve a abrir siempre.
   aplicar()
+  void cargarFeedDemo()
   if (window.location.pathname.startsWith('/correr/en-curso')) simularCarrera()
   useApp.subscribe((s) => {
     if (!s.sesion) aplicar()
     else if (!s.publicaciones.some((p) => p.id === 'vp-ajena-1'))
-      useApp.setState({ publicaciones: [...s.publicaciones, publicacionAjena()] })
+      useApp.setState({ publicaciones: [...s.publicaciones, ...publicacionesVista()] })
   })
   // Si la sesion se perdio un instante y el enrutador redirigio, se vuelve a la ruta pedida.
   const destino = window.location.pathname + window.location.search

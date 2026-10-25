@@ -407,32 +407,35 @@ export function Feed() {
                       )}
                     </header>
                     <p className="text-[14px] leading-snug text-white/90">{post.titulo}</p>
-                    <div
-                      className="mt-1.5 mb-2 flex flex-wrap items-baseline gap-x-3 font-display italic font-black text-[14px] tabular-nums"
-                      data-testid="metricas-post"
-                    >
-                      <span className="text-c2-violeta">
-                        {Unidades.texto(post.distanciaKm, m, 1)}
-                        <span className="font-sans not-italic font-normal text-[10px] text-c2-muted">
-                          {Unidades.etiquetaDistancia(m)}
+                    {post.distanciaKm > 0 && (
+                      <div
+                        className="mt-1.5 mb-2 flex flex-wrap items-baseline gap-x-3 font-display italic font-black text-[14px] tabular-nums"
+                        data-testid="metricas-post"
+                      >
+                        <span className="text-c2-violeta">
+                          {Unidades.texto(post.distanciaKm, m, 1)}
+                          <span className="font-sans not-italic font-normal text-[10px] text-c2-muted">
+                            {Unidades.etiquetaDistancia(m)}
+                          </span>
                         </span>
-                      </span>
-                      <span className="text-white">
-                        {formatearRitmo(Unidades.ritmo(post.ritmoSegKm, m))}
-                        <span className="font-sans not-italic font-normal text-[10px] text-c2-muted">
-                          /{m ? 'km' : 'mi'}
+                        <span className="text-white">
+                          {formatearRitmo(Unidades.ritmo(post.ritmoSegKm, m))}
+                          <span className="font-sans not-italic font-normal text-[10px] text-c2-muted">
+                            /{m ? 'km' : 'mi'}
+                          </span>
                         </span>
-                      </span>
-                      <span className="text-white">{formatearMs(post.segundos)}</span>
-                      <span className="text-c2-cielo" data-testid="desnivel-post">
-                        +{post.desnivelM ?? 0}
-                        <span className="font-sans not-italic font-normal text-[10px] text-c2-muted">
-                          m
+                        <span className="text-white">{formatearMs(post.segundos)}</span>
+                        <span className="text-c2-cielo" data-testid="desnivel-post">
+                          +{post.desnivelM ?? 0}
+                          <span className="font-sans not-italic font-normal text-[10px] text-c2-muted">
+                            m
+                          </span>
                         </span>
-                      </span>
-                    </div>
-
-                    <MediaPost imagenes={post.imagenes ?? []} puntos={post.puntos} />
+                      </div>
+                    )}
+                    {(post.distanciaKm > 0 || (post.imagenes ?? []).length > 0) && (
+                      <MediaPost imagenes={post.imagenes ?? []} puntos={post.puntos} />
+                    )}
                     {locales.length > 0 && (
                       <ul className="mt-2 space-y-1">
                         {locales.map((c, i) => (

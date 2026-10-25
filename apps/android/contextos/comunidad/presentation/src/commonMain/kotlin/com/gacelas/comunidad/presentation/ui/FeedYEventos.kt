@@ -201,7 +201,7 @@ fun FeedContenido(
                         }
                     }
                     Text(p.titulo, style = GType.bodyMd, color = GColors.TextPrimary)
-                    Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Bottom) {
+                    if (p.distanciaKm > 0) Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Bottom) {
                         @Composable
                         fun Dato(valor: String, unidad: String, color: androidx.compose.ui.graphics.Color) {
                             Row(verticalAlignment = Alignment.Bottom) {
@@ -214,7 +214,7 @@ fun FeedContenido(
                         Dato(formatearMs(p.segundos), "", GColors.TextPrimary)
                         Dato("${p.desnivelM}", "m+", GColors.C2Cielo)
                     }
-                    MediaPost(p, imagen)
+                    if (p.distanciaKm > 0 || p.imagenes.isNotEmpty()) MediaPost(p, imagen)
                     locales.takeLast(2).forEach { Text("Tú: $it", style = GType.bodySm, color = GColors.TextSecondary) }
                     Row(Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                         @Composable
