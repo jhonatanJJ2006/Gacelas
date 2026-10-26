@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { clubDesdeFila } from '../lib/clubes'
-import { textoCupo, unirEventos } from '../lib/eventos'
+import { clubDesdeFila } from '../contexts/eventos/infrastructure/clubes'
+import { textoCupo, unirEventos } from '../contexts/eventos/infrastructure/eventos'
 import type { Evento } from '../mocks/data'
 
 /* Caracterizacion de Eventos y clubes (F6, docs/ARQUITECTURA-DDD.md). */

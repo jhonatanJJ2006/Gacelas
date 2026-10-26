@@ -9,7 +9,7 @@ import {
   posicionesRepeticion,
   suscribirEvento,
   type CorredorEvento,
-} from '../../lib/eventos'
+} from '../../contexts/eventos/infrastructure/eventos'
 import { formatearHms } from '../../lib/geo'
 import { eventoPorId } from '../../mocks/data'
 import { useApp } from '../../store/app'

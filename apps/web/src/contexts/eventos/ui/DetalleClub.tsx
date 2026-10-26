@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Aviso } from '../../components/ui'
-import { useAviso } from '../../hooks'
+import { Aviso } from '../../../components/ui'
+import { useAviso } from '../../../hooks'
 import {
   accionClub,
   clubes,
@@ -10,10 +10,10 @@ import {
   type Club,
   type MiembroClub,
   type PostClub,
-} from '../../lib/clubes'
-import { eventoDesdeFila } from '../../data/supabaseRepos'
-import type { Evento } from '../../mocks/data'
-import { useApp } from '../../store/app'
+} from '../infrastructure/clubes'
+import { eventoDesdeFila } from '../../../data/supabaseRepos'
+import type { Evento } from '../../../mocks/data'
+import { useApp } from '../../../store/app'
 
 export function DetalleClub() {
   const { id = '' } = useParams()

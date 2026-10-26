@@ -1,4 +1,4 @@
-import { unirEventos } from '../lib/eventos'
+import { unirEventos } from '../contexts/eventos/infrastructure/eventos'
 import { Link } from 'react-router-dom'
 import { formatearHms, formatearRitmo, Unidades } from '../lib/geo'
 import { kmPorSemana, rankingSemanal, recordsPersonales } from '../lib/paneles'
