@@ -159,6 +159,11 @@ class ContenedorApp(
     fun accesoSocialViewModel(a: AuthRepository = auth) = AccesoSocialViewModel(a)
     fun ajustesViewModel(repo: AjustesRepository = ajustes) = AjustesViewModel(repo)
     fun historialCarrerasViewModel() = HistorialCarrerasViewModel(carreras)
+    fun reportesPersonalesViewModel(inicios: () -> List<com.gacelas.analitica.domain.InicioRuta>, ahora: () -> Long) =
+        com.gacelas.analitica.presentation.ReportesPersonalesViewModel(
+            com.gacelas.analitica.application.VerResumenPersonal(com.gacelas.analitica.infrastructure.ConsultaAnaliticaCarreras(carreras, inicios)),
+            ahora,
+        )
     fun detalleCarreraViewModel(id: String) = DetalleCarreraViewModel(id, carreras)
     fun carreraEnCursoViewModel(sesion: SesionCarrera = tracker) = CarreraEnCursoViewModel(sesion)
     fun listaRutasViewModel(idUsuario: String, ejemplo: List<Ruta>) = ListaRutasViewModel(explorar, rutas, idUsuario, ejemplo)
