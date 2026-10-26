@@ -7,7 +7,7 @@ import {
   ordenarPorCercania,
   simplificar,
   trazoParaRuta,
-} from '../rutas'
+} from '../../contexts/rutas/domain/rutas'
 
 const recta = Array.from({ length: 50 }, (_, i) => ({ lat: -4 + i * 0.0001, lng: -79.2 }))
 

@@ -1,4 +1,4 @@
-import { haversineM } from './geo'
+import { haversineM } from '../../../shared/lib/geo'
 import type { Coordenada } from './rutas'
 
 /** Toma `n` puntos repartidos a igual distancia a lo largo del trazo. */

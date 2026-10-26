@@ -7,14 +7,14 @@ import {
   FILTROS_INICIALES,
   ordenarPorCercania,
   type FiltroDistancia,
-} from '../../lib/rutas'
+} from '../domain/rutas'
 import { Estrellas } from './Estrellas'
 import { Link, useNavigate } from 'react-router-dom'
-import { MapaRutas } from '../../components/MapaEditable'
-import { filtrarRutas, PESTANAS_RUTAS, type PestanaRutas } from '../../lib/filtros'
-import { Unidades } from '../../lib/geo'
-import { ID_USUARIO } from '../../mocks/data'
-import { useApp } from '../../store/app'
+import { MapaRutas } from '../../../components/MapaEditable'
+import { filtrarRutas, PESTANAS_RUTAS, type PestanaRutas } from '../../../lib/filtros'
+import { Unidades } from '../../../lib/geo'
+import { ID_USUARIO } from '../../../mocks/data'
+import { useApp } from '../../../store/app'
 
 /** Insignia C2 de las rutas del catalogo oficial de Loja. */
 export function InsigniaOficial() {

@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapaEditable } from '../../components/MapaEditable'
-import { desnivelPositivo, perfilElevacion } from '../../lib/elevacion'
-import { ETIQUETAS_RUTA, longitudKm, type Coordenada } from '../../lib/rutas'
-import { useApp } from '../../store/app'
+import { MapaEditable } from '../../../components/MapaEditable'
+import { desnivelPositivo, perfilElevacion } from '../domain/elevacion'
+import { ETIQUETAS_RUTA, longitudKm, type Coordenada } from '../domain/rutas'
+import { useApp } from '../../../store/app'
 
 export function DibujarRuta() {
   const navigate = useNavigate()
