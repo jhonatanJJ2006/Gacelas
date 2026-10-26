@@ -4,7 +4,7 @@
 // Content-Type text/csv o el XLSX en binario y el encabezado x-archivo con el nombre).
 // Se programa con pg_cron (ver docs/INCIDENTES-ECU911.md). No guarda filas crudas.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
-import * as XLSX from 'https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs'
+import * as XLSX from 'npm:xlsx@0.18.5'
 import {
   agregarLoja,
   leerTabla,

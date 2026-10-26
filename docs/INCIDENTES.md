@@ -48,3 +48,7 @@ Todo pertenece al contexto DDD Seguridad de rutas (`seguridad`, ver `docs/ARQUIT
 ## Privacidad
 
 La sección "Reportes de incidentes" de la Política de privacidad explica qué se guarda y qué se publica. Ver `docs/LEGAL.md`.
+
+## Estado en producción
+
+Desde el 25 de octubre de 2026 están aplicadas las migraciones 030 y 031, existe el bucket público `incidentes` con sus políticas de subida y borrado, y la Edge Function `importar-ecu911` está desplegada. La función lee XLSX con `npm:xlsx` porque el empaquetador de Supabase no acepta imports desde cdn.sheetjs.com.
