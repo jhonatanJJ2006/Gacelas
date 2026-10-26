@@ -1,5 +1,5 @@
 import type { PuntoGps } from '../lib/geo'
-import type { ConfigIntervalos } from '../lib/intervalos'
+import type { ConfigIntervalos } from './intervalos'
 
 export type { PuntoGps, ConfigIntervalos }
 

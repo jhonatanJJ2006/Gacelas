@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { inicioSemana, kmPorSemana, rankingSemanal, recordsPersonales } from '../paneles'
-import type { CarreraGuardada } from '../../data/tipos'
+import type { CarreraGuardada } from '../../shared/kernel/tipos'
 
 const ahora = new Date(2026, 9, 10, 12).getTime() // sabado
 const carrera = (dias: number, km: number, seg: number) =>

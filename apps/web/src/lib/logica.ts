@@ -1,5 +1,5 @@
 /** Logica de pantallas sin dependencias de React, separada para poder probarla. */
-import type { CarreraGuardada, PuntoGps } from '../data/tipos'
+import type { CarreraGuardada, PuntoGps } from '../shared/kernel/tipos'
 import type { PublicacionRemota } from '../data/repositorios'
 import {
   actividadesMock,

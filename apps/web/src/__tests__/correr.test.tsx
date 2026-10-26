@@ -122,7 +122,7 @@ describe('grabar una carrera con GPS', () => {
 
 describe('logros', () => {
   it('reglas simples: primera carrera, 5 km y 10 km', async () => {
-    const { logrosCumplidos } = await import('../features/social/logros')
+    const { logrosCumplidos } = await import('../contexts/logros/infrastructure/logros')
     const c = (km: number, d: number) =>
       ({
         id: `${d}`,

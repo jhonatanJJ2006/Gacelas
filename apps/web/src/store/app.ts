@@ -14,7 +14,7 @@ import {
   type CarreraGuardada,
   type Perfil,
   type ResultadoAuth,
-} from '../data/tipos'
+} from '../shared/kernel/tipos'
 import {
   notificacionesMock,
   rutasMock,

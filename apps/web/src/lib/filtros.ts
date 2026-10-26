@@ -1,4 +1,4 @@
-import type { Ajustes } from '../data/tipos'
+import type { Ajustes } from '../shared/kernel/tipos'
 import { notificacionesMock, type Evento, type Notificacion, type Ruta } from '../mocks/data'
 
 export type PestanaRutas = 'Explorar' | 'Mis Rutas' | 'Guardadas'

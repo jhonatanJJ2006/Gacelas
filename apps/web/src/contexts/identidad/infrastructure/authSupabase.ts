@@ -1,6 +1,6 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js'
 import type { AuthRepository } from '../../../data/repositorios'
-import type { Perfil, ResultadoAuth } from '../../../data/tipos'
+import type { Perfil, ResultadoAuth } from '../../../shared/kernel/tipos'
 import { configSupabase } from '../../../lib/supabase'
 import { ValidacionAuth } from '../../../lib/validacion'
 

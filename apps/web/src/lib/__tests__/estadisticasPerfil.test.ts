@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { CarreraGuardada } from '../../data/tipos'
+import type { CarreraGuardada } from '../../shared/kernel/tipos'
 import {
   historico,
   kmMensual,

@@ -5,7 +5,7 @@ import {
   LocalCarrerasRepository,
   type CarrerasRepository,
 } from '../../../data/repositorios'
-import type { CarreraGuardada } from '../../../data/tipos'
+import type { CarreraGuardada } from '../../../shared/kernel/tipos'
 
 /**
  * Adaptador Supabase del repositorio de carreras (tablas activities y activity_tracks) con

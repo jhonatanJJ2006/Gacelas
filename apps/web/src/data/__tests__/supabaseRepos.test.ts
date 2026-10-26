@@ -7,7 +7,7 @@ import {
   perfilDesdeFila,
 } from '../supabaseRepos'
 import type { Repositorios } from '../repositorios'
-import type { CarreraGuardada } from '../tipos'
+import type { CarreraGuardada } from '../../shared/kernel/tipos'
 import { useApp, usarRepositorios } from '../../store/app'
 
 const carrera = (id: string, inicioMs = 1_700_000_000_000): CarreraGuardada => ({

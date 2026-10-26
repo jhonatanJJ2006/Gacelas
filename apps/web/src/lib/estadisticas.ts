@@ -1,1 +1,1 @@
-export * from '../contexts/actividad/domain/estadisticas'
+export * from '../shared/kernel/estadisticas'

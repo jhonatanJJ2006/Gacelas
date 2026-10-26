@@ -1,4 +1,4 @@
-import type { CarreraGuardada } from '../data/tipos'
+import type { CarreraGuardada } from '../shared/kernel/tipos'
 import type { PublicacionRemota } from '../data/repositorios'
 
 const SEMANA_MS = 7 * 24 * 3600 * 1000

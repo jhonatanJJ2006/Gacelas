@@ -5,8 +5,8 @@ import { Aviso } from '../../components/ui'
 import { compartir, useAviso } from '../../hooks'
 import { eventoPorId } from '../../mocks/data'
 import { useApp } from '../../store/app'
-import { ModalReporte } from '../social/Social'
-import { yaReportado } from '../social/moderacion'
+import { ModalReporte } from '../../contexts/comunidad/ui/Social'
+import { yaReportado } from '../../contexts/moderacion/api'
 
 export function DetalleEvento() {
   const navigate = useNavigate()

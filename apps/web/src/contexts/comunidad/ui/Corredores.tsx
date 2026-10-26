@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import type { CorredorPublico } from '../../data/repositorios'
-import { useApp } from '../../store/app'
-import { ModalReporte } from '../social/Social'
-import { yaReportado } from '../social/moderacion'
+import type { CorredorPublico } from '../../../data/repositorios'
+import { useApp } from '../../../store/app'
+import { ModalReporte } from './Social'
+import { yaReportado } from '../../moderacion/api'
 
 /** Buscar corredores por nombre o usuario y seguirlos. */
 export function Corredores() {

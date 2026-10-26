@@ -17,7 +17,7 @@ import {
 import { eventosMock } from '../../mocks/data'
 import { useApp } from '../../store/app'
 import { nivelCorredor, saludo } from '../../lib/logica'
-import { InsigniaNivel } from '../comunidad/PostSocial'
+import { InsigniaNivel } from '../../contexts/comunidad/ui/PostSocial'
 
 const Runner3D = lazy(() =>
   import('../../components/Runner3D').then((m) => ({ default: m.Runner3D }))

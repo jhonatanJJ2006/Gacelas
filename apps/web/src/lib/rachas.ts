@@ -1,1 +1,1 @@
-export * from '../contexts/actividad/domain/rachas'
+export * from '../shared/kernel/rachas'

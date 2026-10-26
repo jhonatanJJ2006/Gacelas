@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { Visibilidad } from '../../../../data/tipos'
+import type { Visibilidad } from '../../../../shared/kernel/tipos'
 import { useApp } from '../../../../store/app'
 import { FilaC2, GrupoC2, PantallaAjustes } from './Comunes'
 import { Interruptor } from '../../../../components/ui'

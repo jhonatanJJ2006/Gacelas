@@ -3,7 +3,12 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { vi } from 'vitest'
 import { AppRoutes } from '../app/App'
-import { AJUSTES_POR_DEFECTO, type Ajustes, type CarreraGuardada, type Perfil } from '../data/tipos'
+import {
+  AJUSTES_POR_DEFECTO,
+  type Ajustes,
+  type CarreraGuardada,
+  type Perfil,
+} from '../shared/kernel/tipos'
 import { useApp } from '../store/app'
 import { descartarCarrera } from '../store/carrera'
 

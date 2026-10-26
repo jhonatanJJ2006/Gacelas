@@ -4,7 +4,7 @@ import { rangoPeriodo, reportePersonal, textoCompartir } from '../resumenPersona
 import { estadisticasDemo } from '../../infrastructure/estadisticasDemo'
 import { csvEstadisticas, pdfEstadisticas } from '../../../../features/admin/Estadisticas'
 import { RUTAS_LOJA } from '../../../rutas/api'
-import type { CarreraGuardada } from '../../../../data/tipos'
+import type { CarreraGuardada } from '../../../../shared/kernel/tipos'
 
 const carrera = (fecha: string, km: number, seg: number, ruta?: number): CarreraGuardada => ({
   id: fecha + km,

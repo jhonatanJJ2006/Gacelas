@@ -1,10 +1,6 @@
-export interface ConfigIntervalos {
-  trabajoSeg: number
-  descansoSeg: number
-  rondas: number
-  vibracion: boolean
-  sonido: boolean
-}
+import type { ConfigIntervalos } from '../../../shared/kernel/intervalos'
+
+export type { ConfigIntervalos }
 
 export type FaseIntervalo = 'trabajo' | 'descanso' | 'terminado'
 

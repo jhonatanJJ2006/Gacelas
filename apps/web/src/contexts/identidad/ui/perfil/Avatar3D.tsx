@@ -1,7 +1,7 @@
 import { lazy, Suspense, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Interruptor } from '../../../../components/ui'
-import type { ConfigAvatar } from '../../../../data/tipos'
+import type { ConfigAvatar } from '../../../../shared/kernel/tipos'
 import { useApp } from '../../../../store/app'
 
 const Runner3D = lazy(() =>

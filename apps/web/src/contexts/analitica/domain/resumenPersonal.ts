@@ -1,7 +1,7 @@
-import type { CarreraGuardada } from '../../../data/tipos'
+import type { CarreraGuardada } from '../../../shared/kernel/tipos'
 import type { Ruta } from '../../../mocks/data'
-import { calcularRacha } from '../../actividad/domain/rachas'
-import { inicioDia, inicioSemana } from '../../actividad/domain/estadisticas'
+import { calcularRacha } from '../../../shared/kernel/rachas'
+import { inicioDia, inicioSemana } from '../../../shared/kernel/estadisticas'
 
 /**
  * Reporte personal del corredor calculado en el cliente con sus propias carreras.
