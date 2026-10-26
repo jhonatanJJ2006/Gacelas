@@ -25,7 +25,7 @@ private fun bytesDelBundle(archivo: String): ByteArray {
 
 /*
  * Fuentes C2 leidas del bundle de la app (apps/ios/iosApp/iosApp/Fuentes), igual que Android:
- * Archivo (variable) para el cuerpo y Anton para los titulares.
+ * Archivo (variable) para el cuerpo y Saira Semi Condensed 700 para los titulares.
  */
 private fun familia(archivo: String, vararg pesos: FontWeight) = FontFamily(
     pesos.flatMap { w ->
@@ -41,4 +41,4 @@ actual val Inter: FontFamily = familia("archivo_400", *pesosCuerpo)
 
 actual val RobotoFlex: FontFamily = familia("archivo_400", *pesosCuerpo)
 
-actual val SpaceGrotesk: FontFamily = familia("anton_400", FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold)
+actual val SpaceGrotesk: FontFamily = familia("saira_semi_condensed_700", FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold, FontWeight.Black)

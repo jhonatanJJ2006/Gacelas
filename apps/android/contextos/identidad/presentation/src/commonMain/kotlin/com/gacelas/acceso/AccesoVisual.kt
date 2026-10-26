@@ -97,8 +97,8 @@ object C4 {
 object C4Texto {
     /** label-caps: Inter 11/14, 0.08em, 600 (tracking-wider = 0.05em). */
     val labelCaps = TextStyle(fontFamily = Inter, fontSize = 11.sp, lineHeight = 14.sp, letterSpacing = 0.12.em, fontWeight = FontWeight.ExtraBold)
-    val headlineSm = TextStyle(fontFamily = SpaceGrotesk, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Bold)
-    val headlineLgMobile = TextStyle(fontFamily = SpaceGrotesk, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 26.sp, lineHeight = 30.sp, letterSpacing = (-0.025).em, fontWeight = FontWeight.Bold)
+    val headlineSm = TextStyle(fontFamily = SpaceGrotesk, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Bold)
+    val headlineLgMobile = TextStyle(fontFamily = SpaceGrotesk, fontSize = 26.sp, lineHeight = 30.sp, letterSpacing = 0.02.em, fontWeight = FontWeight.Bold)
     val bodyMd = TextStyle(fontFamily = Inter, fontSize = 15.sp, lineHeight = 24.sp, letterSpacing = (-0.005).em)
     val bodySm = TextStyle(fontFamily = Inter, fontSize = 13.sp, lineHeight = 18.sp)
 }
@@ -136,7 +136,7 @@ fun MarcaC4() {
         com.gacelas.ui.components.IconoGacelas(36.dp)
         Spacer(Modifier.width(8.dp))
         Column {
-            Text("GACELAS", style = C4Texto.headlineSm.copy(letterSpacing = (-0.025).em), color = Color.White)
+            Text("GACELAS", style = C4Texto.headlineSm.copy(letterSpacing = 0.02.em), color = Color.White)
             Text("LOJA RUNNING CO.", style = TextStyle(fontFamily = Inter, fontSize = 9.sp, lineHeight = 12.sp, letterSpacing = 0.14.em, fontWeight = FontWeight.SemiBold),
                 color = C4.Secondary, modifier = Modifier.offset(y = (-4).dp))
         }

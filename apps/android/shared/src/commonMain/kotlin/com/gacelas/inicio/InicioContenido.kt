@@ -87,7 +87,7 @@ fun InicioContenido(
     onRutas: () -> Unit = {},
 ) {
     Pantalla {
-        // Encabezado C2: saludo en Anton, pildoras de clima, racha y nivel.
+        // Encabezado C2: saludo en Saira Semi Condensed, pildoras de clima, racha y nivel.
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(saludo, style = GType.labelMd, color = GColors.C2Muted)
