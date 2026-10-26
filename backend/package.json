@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "incidentes:importar": "tsx src/contexts/seguridad/application/importar-ecu911.ts",
-    "test:unit": "vitest run"
+    "test:unit": "vitest run",
+    "type-check": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
@@ -13,6 +14,8 @@
   },
   "devDependencies": {
     "tsx": "^4.19.0",
-    "vitest": "^1.0.4"
+    "vitest": "^1.0.4",
+    "typescript": "^5.2.2",
+    "@types/node": "^20.10.0"
   }
 }
