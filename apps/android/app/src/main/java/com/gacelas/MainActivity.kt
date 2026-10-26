@@ -1,6 +1,7 @@
 package com.gacelas
 
 import android.os.Bundle
+import android.os.SystemClock
 import android.provider.Settings
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -44,6 +45,27 @@ import com.gacelas.ui.theme.GacelasTheme
 import kotlinx.coroutines.flow.map
 
 class MainActivity : ComponentActivity() {
+    private val intro = mutableStateOf(false)
+    private var decidida = false
+
+    private fun decidirIntro(): Boolean {
+        decidida = true
+        val escala = Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
+        return IntroArranque.alEntrar(SystemClock.elapsedRealtime(), escala)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // onCreate ya decidio en este ciclo; en las vueltas siguientes se decide aqui.
+        if (!decidida && decidirIntro()) intro.value = true
+        decidida = false
+    }
+
+    override fun onStop() {
+        super.onStop()
+        IntroArranque.alSalir(SystemClock.elapsedRealtime())
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         leerDestino(intent)
@@ -68,17 +90,18 @@ class MainActivity : ComponentActivity() {
         // Arranque con el fondo de marca (Theme.Gacelas.Arranque); se cierra en el primer cuadro.
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        // Intro de marca solo en arranque en frio y con animaciones del sistema activas (docs/MARCA.md).
-        val escala = Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
-        val conIntro = IntroArranque.debeMostrar(savedInstanceState == null, escala).also { if (it) IntroArranque.marcarMostrada() }
+        // La intro se decide en onStart (cada vez que la app pasa a primer plano, docs/MARCA.md).
+        intro.value = decidirIntro()
         enableEdgeToEdge()
         leerDestino(intent)
         pedirPermisoNotificaciones()
         // Mapa sin conexion: Loja se descarga sola con wifi y se reanuda si quedo a medias.
-        if (com.gacelas.ui.components.Mapas.configurado()) {
+        // Se aplaza hasta despues de la intro para no competir con su primer cuadro.
+        if (com.gacelas.ui.components.Mapas.configurado()) window.decorView.postDelayed({
+            if (isDestroyed) return@postDelayed
             runCatching { com.gacelas.ui.components.MapaOffline.asegurar(this) } // cache ambiental + estado
             com.gacelas.ui.components.MapaOfflineWorker.programar(this)         // descarga con internet (reintenta)
-        }
+        }, 3_000)
         setContent {
             GacelasTheme {
                 // Tocar fuera de un campo oculta el teclado. Los botones, listas y mapas consumen
@@ -86,11 +109,21 @@ class MainActivity : ComponentActivity() {
                 val foco = LocalFocusManager.current
                 val teclado = LocalSoftwareKeyboardController.current
                 Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { foco.clearFocus(); teclado?.hide() } }) {
-                    GacelasRaiz()
-                    com.gacelas.actualizacion.AvisoActualizacion()
-                    // La sesion se carga debajo mientras corre la intro; al terminar queda la pantalla que toque.
-                    var intro by rememberSaveable { mutableStateOf(conIntro) }
-                    if (intro) IntroAnimada(alTerminar = { intro = false })
+                    // Con intro, la app (sesion, Supabase, NavHost, mapas) se monta despues del primer
+                    // cuadro de la intro y cuando el contenedor ya esta construido, para que la intro
+                    // arranque sin hueco y sin tirones (docs/MARCA.md).
+                    var montarApp by remember { mutableStateOf(!intro.value) }
+                    if (!montarApp) androidx.compose.runtime.LaunchedEffect(Unit) {
+                        androidx.compose.runtime.withFrameNanos { }
+                        androidx.compose.runtime.withFrameNanos { }
+                        (application as GacelasApp).esperarContenedor()
+                        montarApp = true
+                    }
+                    if (montarApp) {
+                        GacelasRaiz()
+                        com.gacelas.actualizacion.AvisoActualizacion()
+                    }
+                    if (intro.value) IntroAnimada(alTerminar = { intro.value = false; montarApp = true })
                 }
             }
         }

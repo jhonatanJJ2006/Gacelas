@@ -51,9 +51,7 @@ fun InicioComun(version: String = VersionGacelas.NOMBRE, onEmpezar: () -> Unit =
     ) {
         Column(Modifier.fillMaxSize().safeDrawingPadding().padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).background(ColoresC4.Naranja), contentAlignment = Alignment.Center) {
-                    Text("G", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                }
+                com.gacelas.ui.components.IconoGacelas(32.dp)
                 Spacer(Modifier.width(8.dp))
                 Column {
                     Text("GACELAS", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)

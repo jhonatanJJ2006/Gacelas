@@ -7,7 +7,9 @@ test.describe('Intro de marca', () => {
     await instalarFakeSupabase(context)
   })
 
-  test('aparece al cargar, se salta con un toque y no reaparece en la sesion', async ({ page }) => {
+  test('aparece al cargar, se salta con un toque y no reaparece al recargar enseguida', async ({
+    page,
+  }) => {
     await page.goto('/')
     const intro = page.getByTestId('intro-animada')
     await expect(intro).toBeVisible()

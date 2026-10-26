@@ -151,9 +151,7 @@ fun ContenidoModal(
 @Composable
 private fun Cabecera(actual: String, nueva: String) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(32.dp).shadow(1.dp, RoundedCornerShape(8.dp)).clip(RoundedCornerShape(8.dp)).background(M3.Naranja), contentAlignment = Alignment.Center) {
-            Icon(Icons.AutoMirrored.Filled.DirectionsRun, null, tint = Color.White, modifier = Modifier.size(19.dp))
-        }
+        com.gacelas.ui.components.IconoGacelas(32.dp)
         Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
             Text("GACELAS", style = TextStyle(fontFamily = display, fontSize = 13.sp, lineHeight = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.05.em), color = Color.White)

@@ -3,7 +3,7 @@ import { debeMostrarIntro, dibujarIntro, DURACION_INTRO_S, marcarIntroVista } fr
 
 function almacenSesion(): Storage | null {
   try {
-    return window.sessionStorage
+    return window.localStorage
   } catch {
     return null
   }
@@ -14,14 +14,29 @@ const reducirMovimiento = () =>
   window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /**
- * Intro de marca a pantalla completa (docs/MARCA.md). Se muestra una vez por sesion al cargar la
- * app, encima de la app que ya carga debajo; se salta con clic, toque o cualquier tecla.
+ * Intro de marca a pantalla completa (docs/MARCA.md). Se muestra al abrir la app y al volver tras
+ * mas de 30 s fuera, encima de la app que ya carga debajo; se salta con clic, toque o cualquier tecla.
  */
 export function IntroAnimada() {
   const [visible, setVisible] = useState(() =>
     debeMostrarIntro(almacenSesion(), reducirMovimiento())
   )
   const lienzo = useRef<HTMLCanvasElement>(null)
+
+  // La ultima salida cuenta para la regla de 30 s; al volver tras una ausencia larga se repite.
+  useEffect(() => {
+    const alCambiar = () => {
+      if (document.visibilityState === 'hidden') marcarIntroVista(almacenSesion())
+      else if (debeMostrarIntro(almacenSesion(), reducirMovimiento())) setVisible(true)
+    }
+    const alSalir = () => marcarIntroVista(almacenSesion())
+    document.addEventListener('visibilitychange', alCambiar)
+    window.addEventListener('pagehide', alSalir)
+    return () => {
+      document.removeEventListener('visibilitychange', alCambiar)
+      window.removeEventListener('pagehide', alSalir)
+    }
+  }, [])
 
   useEffect(() => {
     if (!visible) return

@@ -49,7 +49,7 @@ import kotlin.math.sin
  */
 
 /** Paleta de la intro (docs/MARCA.md). */
-private object Tinta {
+internal object Tinta {
     val Morado = Color(0xFFA855F7)
     val MoradoClaro = Color(0xFFC084FC)
     val MoradoOscuro = Color(0xFF7B1FA2)
@@ -62,7 +62,7 @@ private object Tinta {
 
 private const val W = 1080f
 private const val H = 1920f
-private const val GAZ = "M28 60 C33 52 46 49 60 50 L66 49 C69 45 72 40 75 36 L73 27 C72 23 70 20 67 18 C71 19 74 22 76 27 " +
+internal const val GAZ = "M28 60 C33 52 46 49 60 50 L66 49 C69 45 72 40 75 36 L73 27 C72 23 70 20 67 18 C71 19 74 22 76 27 " +
     "L78 33 C80 33 83 35 86 38 L83 41 L79 41 C77 45 74 50 72 55 C77 56 83 57 90 55 L91 58 C84 61 77 62 69 61 " +
     "C64 64 58 66 52 66 C45 71 36 75 24 78 L22 75 C31 72 38 68 42 63 C37 63 32 64 28 66 L22 62 Z"
 
@@ -81,14 +81,34 @@ object CurvasIntro {
     }
 }
 
-private val gacela: Path by lazy { PathParser().parsePathString(GAZ).toPath() }
+internal val gacela: Path by lazy { PathParser().parsePathString(GAZ).toPath() }
+
+/** Objetos reutilizados en cada cuadro: el bucle de dibujo no asigna rutas, trazos ni pinceles. */
+private object Reuso {
+    val ruta = Path()
+    val trazos = listOf(Stroke(46f, cap = StrokeCap.Round, join = StrokeJoin.Round) to .1f,
+        Stroke(28f, cap = StrokeCap.Round, join = StrokeJoin.Round) to .2f,
+        Stroke(14f, cap = StrokeCap.Round, join = StrokeJoin.Round) to 1f)
+    val relleno = Brush.linearGradient(0f to Tinta.Lila, .4f to Tinta.MoradoClaro, .75f to Tinta.Morado, 1f to Tinta.MoradoOscuro,
+        start = Offset(-400f, -400f), end = Offset(400f, 400f))
+    val verdeHalo = Tinta.Verde.copy(alpha = .25f)
+    var fondo: Brush? = null
+    var fondoTam = Size.Zero
+    /** Texto medido por espaciado (redondeado a medio pixel) y escala. */
+    val textos = HashMap<Long, androidx.compose.ui.text.TextLayoutResult>()
+    var textoK = 0f
+}
 
 /** Dibuja el cuadro de la intro en el instante [t] (segundos, 0..[IntroArranque.DURACION_S]). */
 fun DrawScope.dibujarIntro(t: Float, medidor: TextMeasurer) {
     with(CurvasIntro) {
         // Fondo radial (ocupa toda la pantalla aunque el lienzo de diseño quede encajado).
-        drawRect(Brush.radialGradient(0f to Tinta.Violeta, .6f to Tinta.Fondo, 1f to Tinta.FondoProfundo,
-            center = Offset(size.width / 2, size.height * .45f), radius = 1100f * escala()))
+        if (Reuso.fondo == null || Reuso.fondoTam != size) {
+            Reuso.fondo = Brush.radialGradient(0f to Tinta.Violeta, .6f to Tinta.Fondo, 1f to Tinta.FondoProfundo,
+                center = Offset(size.width / 2, size.height * .45f), radius = 1100f * escala())
+            Reuso.fondoTam = size
+        }
+        drawRect(Reuso.fondo!!)
         val k = escala()
         translate((size.width - W * k) / 2, (size.height - H * k) / 2) {
             withTransform({ scale(k, k, Offset.Zero) }) {
@@ -97,14 +117,12 @@ fun DrawScope.dibujarIntro(t: Float, medidor: TextMeasurer) {
                 val n = floor(d * 200).toInt()
                 val alfaRuta = 1 - cl((t - 1.4f) / .4f)
                 if (n > 0 && alfaRuta > 0) {
-                    val p = Path().apply { moveTo(ruta[0].x, ruta[0].y); for (i in 1..n) lineTo(ruta[i].x, ruta[i].y) }
-                    listOf(46f to .1f, 28f to .2f, 14f to 1f).forEach { (ancho, a) ->
-                        drawPath(p, Tinta.Morado, alpha = a * alfaRuta, style = Stroke(ancho, cap = StrokeCap.Round, join = StrokeJoin.Round))
-                    }
+                    val p = Reuso.ruta.apply { rewind(); moveTo(ruta[0].x, ruta[0].y); for (i in 1..n) lineTo(ruta[i].x, ruta[i].y) }
+                    for ((trazo, a) in Reuso.trazos) drawPath(p, Tinta.Morado, alpha = a * alfaRuta, style = trazo)
                     if (t < 1.5f) {
                         val c = ruta[n]
-                        drawCircle(Tinta.Verde.copy(alpha = .25f * alfaRuta), 44f, c)
-                        drawCircle(Tinta.Verde.copy(alpha = alfaRuta), 22f, c)
+                        drawCircle(Reuso.verdeHalo, 44f, c, alpha = alfaRuta)
+                        drawCircle(Tinta.Verde, 22f, c, alpha = alfaRuta)
                     }
                 }
                 // Destello.
@@ -121,15 +139,16 @@ fun DrawScope.dibujarIntro(t: Float, medidor: TextMeasurer) {
                     if (t > 2.2f) { val z = io((t - 2.2f) / .6f); s *= 1 + z * 14; al = 1 - z }
                     if (al > 0) {
                         withTransform({ translate(W / 2, H * .45f); scale(s, s, Offset.Zero); translate(-56f, -48f) }) {
-                            val relleno = Brush.linearGradient(0f to Tinta.Lila, .4f to Tinta.MoradoClaro, .75f to Tinta.Morado, 1f to Tinta.MoradoOscuro,
-                                start = Offset(-400f, -400f), end = Offset(400f, 400f))
+                            val relleno = Reuso.relleno
                             drawPath(gacela, Tinta.Morado, alpha = .1f * al, style = Stroke(60f / s, join = StrokeJoin.Round))
                             drawPath(gacela, Tinta.Morado, alpha = .16f * al, style = Stroke(28f / s, join = StrokeJoin.Round))
                             drawPath(gacela, relleno, alpha = al)
                         }
                         val alTexto = al * e((t - 1.6f) / .4f)
                         if (alTexto > 0) {
-                            val r = medidor.measure("GACELAS", estiloPalabra(120f * k, (20 - 10 * kk) * k))
+                            if (Reuso.textoK != k) { Reuso.textos.clear(); Reuso.textoK = k }
+                            val esp = (20 - 10 * kk) * k
+                            val r = Reuso.textos.getOrPut((esp * 2).toLong()) { medidor.measure("GACELAS", estiloPalabra(120f * k, esp)) }
                             val x = W / 2 - r.size.width / k / 2
                             val y = H * .62f - r.firstBaseline / k
                             withTransform({ translate(x, y); scale(1 / k, 1 / k, Offset.Zero) }) {

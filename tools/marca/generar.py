@@ -160,6 +160,20 @@ def main():
         png(pg, icono, 192, "22%").save(WEB / "icon-192.png", optimize=True)
         png(pg, icono, 512, "22%").save(WEB / "icon-512.png", optimize=True)
         png(pg, icono, 512).convert("RGB").save(WEB / "icon-maskable-512.png", optimize=True)
+        # Logo interno para imagenes de compartir (Android y web) y tarjeta Open Graph.
+        logo = png(pg, icono, 512, "22%")
+        logo.save(RES / "drawable-nodpi/compartir_logo.png", optimize=True)
+        (WEB / "marca").mkdir(exist_ok=True)
+        logo.save(WEB / "marca/logo-compartir.png", optimize=True)
+        pg.set_viewport_size({"width": 1200, "height": 630})
+        s = icono.replace('width="1024" height="1024"', 'width="300" height="300"')
+        pg.set_content(
+            '<body style="margin:0;width:1200px;height:630px;display:flex;align-items:center;justify-content:center;gap:56px;'
+            'background:radial-gradient(circle at 50% 45%,#1A1030,#0C1322 60%,#070E1D);font-family:Anton,Impact,sans-serif">'
+            f'<div style="width:300px;height:300px;border-radius:22%;overflow:hidden;box-shadow:0 0 80px #A855F755">{s}</div>'
+            '<div><div style="color:#fff;font-size:120px;letter-spacing:10px;font-weight:800">GACELAS</div>'
+            '<div style="color:#C084FC;font:600 36px Inter,sans-serif">Rutas para correr en Loja</div></div></body>')
+        Image.open(io.BytesIO(pg.screenshot())).convert("RGB").save(WEB / "og-default.png", optimize=True)
         b.close()
     print("Iconos generados.")
 

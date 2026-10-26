@@ -133,11 +133,7 @@ fun Modifier.cerrarTecladoAlTocarFuera(): Modifier {
 @Composable
 fun MarcaC4() {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            Modifier.shadow(7.dp, RoundedCornerShape(8.dp), ambientColor = C4.Naranja, spotColor = C4.Naranja.copy(alpha = 0.45f))
-                .size(32.dp).clip(RoundedCornerShape(8.dp)).background(C4.Naranja).border(1.dp, C4.Blanco10, RoundedCornerShape(8.dp)),
-            contentAlignment = Alignment.Center,
-        ) { Icon(Icons.AutoMirrored.Filled.DirectionsRun, null, tint = Color.White, modifier = Modifier.size(19.dp)) }
+        com.gacelas.ui.components.IconoGacelas(36.dp)
         Spacer(Modifier.width(8.dp))
         Column {
             Text("GACELAS", style = C4Texto.headlineSm.copy(letterSpacing = (-0.025).em), color = Color.White)

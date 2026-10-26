@@ -7,6 +7,7 @@ import {
   e,
   io,
   marcarIntroVista,
+  UMBRAL_AUSENCIA_MS,
 } from '../../lib/intro'
 import { IntroAnimada } from '../IntroAnimada'
 
@@ -25,12 +26,13 @@ function movimientoReducido(si: boolean) {
 }
 
 describe('logica de la intro', () => {
-  it('se muestra una vez por sesion', () => {
+  it('se muestra al abrir y se repite solo tras 30 s fuera', () => {
     const a = almacen()
-    expect(debeMostrarIntro(a, false)).toBe(true)
-    marcarIntroVista(a)
-    expect(a.getItem(CLAVE_INTRO)).toBe('1')
-    expect(debeMostrarIntro(a, false)).toBe(false)
+    expect(debeMostrarIntro(a, false, 1_000)).toBe(true)
+    marcarIntroVista(a, 1_000)
+    expect(a.getItem(CLAVE_INTRO)).toBe('1000')
+    expect(debeMostrarIntro(a, false, 1_000 + UMBRAL_AUSENCIA_MS - 1)).toBe(false)
+    expect(debeMostrarIntro(a, false, 1_000 + UMBRAL_AUSENCIA_MS)).toBe(true)
   })
   it('se omite con prefers-reduced-motion', () => {
     expect(debeMostrarIntro(almacen(), true)).toBe(false)
@@ -57,14 +59,14 @@ describe('logica de la intro', () => {
 
 describe('<IntroAnimada />', () => {
   beforeEach(() => {
-    sessionStorage.clear()
+    localStorage.clear()
     HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue(null) as never
   })
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
-  it('aparece, se salta con un clic y no reaparece en la misma sesion', () => {
+  it('aparece, se salta con un clic y no reaparece al volver enseguida', () => {
     movimientoReducido(false)
     const { unmount } = render(<IntroAnimada />)
     fireEvent.click(screen.getByTestId('intro-animada'))
