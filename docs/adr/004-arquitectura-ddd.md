@@ -19,7 +19,7 @@ La app suma contextos nuevos (mapa en vivo, seguridad de rutas, moderación, ana
 
 ## Reglas en modo aviso
 
-Las reglas nuevas se activan como aviso en F0 y pasan a error al terminar F6, cuando el tipo `legacy` quede vacío.
+Las reglas nuevas se activaron como aviso en F0 y pasaron a error al terminar F6, con el tipo `legacy` ya eliminado.
 
 | Plataforma  | Comando                                                                | Qué revisa                                                                |
 | ----------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------- |
