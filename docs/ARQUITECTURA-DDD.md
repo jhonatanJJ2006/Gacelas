@@ -1,6 +1,6 @@
 # Arquitectura DDD de Gacelas
 
-Diseño aprobado ([ADR 004](adr/004-arquitectura-ddd.md)). Fases F0, F1, F2, F3, F4 y F5 aplicadas. Basada en `main` del 25 de octubre de 2026, después de fusionar los PR #79, #80 y #81. Amplía el [ADR 003](adr/003-arquitectura-modular.md) y reemplaza la sección "Bounded contexts" de [ARQUITECTURA.md](ARQUITECTURA.md) cuando se apruebe.
+Diseño aprobado ([ADR 004](adr/004-arquitectura-ddd.md)). Fases F0, F1, F2, F3, F4, F5 y F6 aplicadas. Basada en `main` del 25 de octubre de 2026, después de fusionar los PR #79, #80 y #81. Amplía el [ADR 003](adr/003-arquitectura-modular.md) y reemplaza la sección "Bounded contexts" de [ARQUITECTURA.md](ARQUITECTURA.md) cuando se apruebe.
 
 ## Estado de la migración
 
@@ -12,6 +12,7 @@ Diseño aprobado ([ADR 004](adr/004-arquitectura-ddd.md)). Fases F0, F1, F2, F3,
 | F3   | Hecha  | Legal con `domain` (textos y reglas de consentimiento), `infrastructure` (historial local y Supabase), `ui` y `api.ts` publicada; Identidad con `api.ts` e `infrastructure/authSupabase.ts`; `store/app.ts` ya no importa Supabase (la composición de repositorios pasa a `data/composicion.ts`). En Android, Identidad y Legal ya estaban separados desde F1                                                                                                                                                                                                            |
 | F4   | Hecha  | Web: pantallas en `contexts/rutas/ui`, reglas de rutas y elevación en `domain`, repositorios Supabase de rutas y exploración en `infrastructure/rutasSupabase.ts`, y `api.ts` como fachada; `usuario` y `traducirError` pasan a `shared/supabase`. En Android, el catálogo oficial de Loja y la importación OSM ya estaban en `contextos:rutas`; las pantallas de `app/rutas` siguen en `app` porque usan MapLibre y APIs de Android                                                                                                                                     |
 | F5   | Hecha  | Web: contexto `logros` (reglas en `domain`, registro local y Supabase en `infrastructure`, `api.ts`); feed, publicaciones, corredores y social en `contexts/comunidad/ui` con su repositorio Supabase en `infrastructure`; rachas de Supabase en `actividad/infrastructure`. `data/tipos.ts`, rachas, estadísticas y la configuración de intervalos pasan a `shared/kernel` porque los usan Actividad, Analítica y Logros. La publicación automática al terminar una carrera y las denuncias generalizadas quedan para cuando se pidan, porque cambian el comportamiento |
+| F6   | Hecha  | Contextos En vivo, Avisos y Administracion con su API publicada; el panel recibe Moderacion y Analitica por composicion en su capa de UI; la carpeta features desaparece y la pantalla de inicio pasa a app/inicio.                                                                                                                                                                                                                                                                                                                                                      |
 
 ## 1. Diagnóstico del estado actual
 

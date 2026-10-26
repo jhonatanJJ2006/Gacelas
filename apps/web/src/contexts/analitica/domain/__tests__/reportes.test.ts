@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { aCsv, aPdf } from '../../application/exportar'
 import { rangoPeriodo, reportePersonal, textoCompartir } from '../resumenPersonal'
 import { estadisticasDemo } from '../../infrastructure/estadisticasDemo'
-import { csvEstadisticas, pdfEstadisticas } from '../../../../features/admin/Estadisticas'
+import { csvEstadisticas, pdfEstadisticas } from '../../../admin/ui/Estadisticas'
 import { RUTAS_LOJA } from '../../../rutas/api'
 import type { CarreraGuardada } from '../../../../shared/kernel/tipos'
 

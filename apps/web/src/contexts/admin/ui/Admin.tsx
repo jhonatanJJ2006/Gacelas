@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { NavLink, Navigate, Route, Routes, useNavigate, useSearchParams } from 'react-router-dom'
-import { useApp } from '../../store/app'
-import { ModalC2 } from '../../components/modales'
+import { useApp } from '../../../store/app'
+import { ModalC2 } from '../../../components/modales'
 import {
   fuenteDemo,
   fuenteSupabase,
@@ -18,8 +18,8 @@ import {
   tiposRegistrados,
   type RutaAdmin,
   type UsuarioAdmin,
-} from './api'
-import { VERSIONES_LEGALES } from '../../contexts/legal/api'
+} from './fuente'
+import { VERSIONES_LEGALES } from '../../legal/api'
 import { Estadisticas } from './Estadisticas'
 
 const SECCIONES: [string, string, string][] = [

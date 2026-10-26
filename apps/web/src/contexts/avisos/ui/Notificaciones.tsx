@@ -4,12 +4,12 @@ import {
   filtrarNotificaciones,
   notificacionesVisibles,
   type FiltroNotificaciones,
-} from '../../../../lib/filtros'
-import type { Notificacion } from '../../../../mocks/data'
-import { useApp } from '../../../../store/app'
-import { destinoNotificacion } from '../../../../lib/logica'
-import { retoMes } from '../../../../lib/estadisticas'
-import { FilaInterruptor } from '../ajustes/Comunes'
+} from '../../../lib/filtros'
+import type { Notificacion } from '../../../mocks/data'
+import { useApp } from '../../../store/app'
+import { destinoNotificacion } from '../../../lib/logica'
+import { retoMes } from '../../../lib/estadisticas'
+import { FilaInterruptor } from '../../identidad'
 
 export function Notificaciones() {
   const navigate = useNavigate()

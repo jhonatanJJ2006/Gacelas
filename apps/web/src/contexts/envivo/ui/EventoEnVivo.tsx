@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { MapaCorredores } from '../../components/MapaEditable'
-import { elegirEventoEnVivo } from '../../lib/enVivo'
+import { MapaCorredores } from '../../../components/MapaEditable'
+import { elegirEventoEnVivo } from '../../../lib/enVivo'
 import {
   clasificacion,
   colorCorredor,
@@ -9,10 +9,10 @@ import {
   posicionesRepeticion,
   suscribirEvento,
   type CorredorEvento,
-} from '../../contexts/eventos/infrastructure/eventos'
-import { formatearHms } from '../../lib/geo'
-import { eventoPorId } from '../../mocks/data'
-import { useApp } from '../../store/app'
+} from '../../eventos/api'
+import { formatearHms } from '../../../lib/geo'
+import { eventoPorId } from '../../../mocks/data'
+import { useApp } from '../../../store/app'
 
 /** Mapa en vivo de todos los participantes de un evento, clasificacion y repeticion. */
 export function EventoEnVivo() {
