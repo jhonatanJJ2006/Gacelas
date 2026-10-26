@@ -38,6 +38,7 @@ kotlin {
             api(project(":core:datos"))
             api(project(":core:ui"))
             api(project(":contextos:actividad:domain"))
+            api(project(":contextos:actividad:application"))
             api(project(":contextos:actividad:infrastructure"))
             api(project(":contextos:actividad:presentation"))
             api(project(":contextos:rutas:domain"))

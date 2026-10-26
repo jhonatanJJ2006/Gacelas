@@ -2,9 +2,9 @@ package com.gacelas.actividad
 
 import com.gacelas.actividad.domain.FaseCarrera
 import com.gacelas.actividad.domain.SesionCarrera
-import com.gacelas.actividad.domain.casosuso.EliminarCarrera
-import com.gacelas.actividad.domain.casosuso.GuardarCarrera
-import com.gacelas.actividad.domain.casosuso.ObtenerCarrera
+import com.gacelas.actividad.application.EliminarCarrera
+import com.gacelas.actividad.application.GuardarCarrera
+import com.gacelas.actividad.application.ObtenerCarrera
 import com.gacelas.actividad.domain.modelo.Carrera
 import com.gacelas.actividad.domain.modelo.Distancia
 import com.gacelas.actividad.domain.modelo.Parcial
