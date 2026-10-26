@@ -3,15 +3,16 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { formatearMs, formatearRitmo, Unidades } from '../../../../shared/lib/geo'
 import { TrazadoRuta } from '../../../../shared/ui/TrazadoRuta'
 import { BotonTexto, Dialogo } from '../../../../shared/ui/ui'
-import { useApp } from '../../../../store/app'
+import { useActividad } from '../../../actividad/api'
+import { useIdentidad } from '../../application/estado'
 
 /** Detalle de una carrera guardada: igual que DetalleCarreraContenido de Android. */
 export function DetalleCarrera() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
-  const c = useApp((s) => s.carreras.find((x) => x.id === id))
-  const m = useApp((s) => s.ajustes.unidadesMetricas)
-  const eliminar = useApp((s) => s.eliminarCarrera)
+  const c = useActividad((s) => s.carreras.find((x) => x.id === id))
+  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
+  const eliminar = useActividad((s) => s.eliminarCarrera)
   const [confirmar, setConfirmar] = useState(false)
 
   const encabezado = (

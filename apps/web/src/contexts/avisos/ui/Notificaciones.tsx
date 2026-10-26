@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Notificacion } from '../../../mocks/data'
 import { retoMes } from '../../../shared/kernel/estadisticas'
-import { useApp } from '../../../store/app'
+import { useActividad } from '../../actividad/api'
 import { FilaInterruptor } from '../../identidad'
+import { useIdentidad } from '../../identidad/api'
+import { useAvisos } from '../application/estado'
 import { destinoNotificacion } from '../domain/destino'
 import {
   filtrarNotificaciones,
@@ -13,13 +15,13 @@ import {
 
 export function Notificaciones() {
   const navigate = useNavigate()
-  const ajustes = useApp((s) => s.ajustes)
-  const lista = useApp((s) => s.notificaciones)
-  const marcar = useApp((s) => s.marcarNotificacionesLeidas)
+  const ajustes = useIdentidad((s) => s.ajustes)
+  const lista = useAvisos((s) => s.notificaciones)
+  const marcar = useAvisos((s) => s.marcarNotificacionesLeidas)
   const [filtro, setFiltro] = useState<FiltroNotificaciones>('Todas')
   const notificaciones = filtrarNotificaciones(notificacionesVisibles(ajustes, lista), filtro)
-  const actualizar = useApp((s) => s.actualizarAjustes)
-  const carreras = useApp((s) => s.carreras)
+  const actualizar = useIdentidad((s) => s.actualizarAjustes)
+  const carreras = useActividad((s) => s.carreras)
   const reto = retoMes(carreras, Date.now())
   const pctReto = Math.min(100, Math.round((reto.km / reto.metaKm) * 100))
   const nuevas = lista.filter((n) => !n.leida).length

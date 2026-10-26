@@ -1,8 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { useEventos } from '../contexts/eventos/application/estado'
+import { useIdentidad } from '../contexts/identidad/application/estado'
 import { carreraPrueba, prepararApp, renderRuta } from '../test/utils'
-import { useApp } from '../store/app'
 
 describe('comunidad', () => {
   beforeEach(() =>
@@ -23,7 +24,7 @@ describe('comunidad', () => {
     const maria = screen.getByText('María López').closest('article')!
     await userEvent.click(within(maria).getByRole('button', { name: 'Me gusta' }))
     expect(within(maria).getByRole('button', { name: 'Quitar me gusta' })).toHaveTextContent('24')
-    expect(useApp.getState().ajustes.likes).toEqual(['a-1'])
+    expect(useIdentidad.getState().ajustes.likes).toEqual(['a-1'])
 
     await userEvent.click(within(maria).getByRole('button', { name: 'Comentar' }))
     const dialogo = screen.getByRole('dialog')
@@ -37,7 +38,7 @@ describe('comunidad', () => {
     await userEvent.click(within(maria).getByRole('button', { name: 'Más opciones' }))
     await userEvent.click(screen.getByRole('menuitem', { name: 'Ocultar publicación' }))
     expect(screen.queryByText('María López')).not.toBeInTheDocument()
-    expect(useApp.getState().ajustes.ocultas).toEqual(['a-1'])
+    expect(useIdentidad.getState().ajustes.ocultas).toEqual(['a-1'])
   })
 
   it('filtro del feed y compartir', async () => {
@@ -102,7 +103,7 @@ describe('comunidad', () => {
     expect(screen.getByTestId('participantes')).toHaveTextContent('15')
     await userEvent.click(screen.getByRole('button', { name: /inscribirme al evento/i }))
     expect(screen.getByTestId('participantes')).toHaveTextContent('16')
-    expect(useApp.getState().inscritos).toEqual(['1'])
+    expect(useEventos.getState().inscritos).toEqual(['1'])
     await userEvent.click(screen.getByRole('button', { name: /cancelar inscripción/i }))
     expect(screen.getByTestId('participantes')).toHaveTextContent('15')
     await userEvent.click(screen.getByRole('button', { name: 'Compartir evento' }))

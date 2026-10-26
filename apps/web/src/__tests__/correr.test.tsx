@@ -1,15 +1,16 @@
 import { act, screen, waitFor, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { fijarEstado } from '../app/estado'
 import { descartarCarrera, tracker } from '../contexts/actividad/application/carreraStore'
-import { useApp } from '../store/app'
+import { useActividad } from '../contexts/actividad/application/estado'
 import { instalarGpsFalso, prepararApp, renderRuta } from '../test/utils'
 
 describe('grabar una carrera con GPS', () => {
   let gps: ReturnType<typeof instalarGpsFalso>
   beforeEach(() => {
     prepararApp()
-    useApp.setState((s) => ({ ajustes: { ...s.ajustes, cuentaRegresivaSeg: 0 } }))
+    fijarEstado((s) => ({ ajustes: { ...s.ajustes, cuentaRegresivaSeg: 0 } }))
     gps = instalarGpsFalso()
     localStorage.setItem(
       'gacelas:consentimientos',
@@ -38,7 +39,7 @@ describe('grabar una carrera con GPS', () => {
   })
 
   it('cuenta regresiva de ajustes antes de arrancar el GPS', async () => {
-    useApp.setState((s) => ({ ajustes: { ...s.ajustes, cuentaRegresivaSeg: 3 } }))
+    fijarEstado((s) => ({ ajustes: { ...s.ajustes, cuentaRegresivaSeg: 3 } }))
     renderRuta('/correr')
     await screen.findByText('GPS Activado')
     await userEvent.click(screen.getByRole('button', { name: 'Comenzar carrera' }))
@@ -87,7 +88,7 @@ describe('grabar una carrera con GPS', () => {
     await userEvent.click(screen.getByRole('button', { name: /guardar carrera/i }))
     expect(await screen.findByText('Fondo Jipiro')).toBeInTheDocument()
     expect(screen.getByText('Privada')).toBeInTheDocument()
-    expect(useApp.getState().carreras).toHaveLength(1)
+    expect(useActividad.getState().carreras).toHaveLength(1)
     expect(JSON.parse(localStorage.getItem('gacelas:carreras')!)[0].titulo).toBe('Fondo Jipiro')
     expect(tracker.estado.fase).toBe('inactiva')
   })
@@ -101,7 +102,7 @@ describe('grabar una carrera con GPS', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Salir de la carrera' }))
     await userEvent.click(screen.getByRole('button', { name: 'Descartar' }))
     await waitFor(() => expect(tracker.estado.fase).toBe('inactiva'))
-    expect(useApp.getState().carreras).toHaveLength(0)
+    expect(useActividad.getState().carreras).toHaveLength(0)
   })
 
   it('resumen: descartar no guarda; sin carrera terminada vuelve a inicio', async () => {
@@ -111,7 +112,7 @@ describe('grabar una carrera con GPS', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Terminar y guardar' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Descartar' }))
     await waitFor(() => expect(tracker.estado.fase).toBe('inactiva'))
-    expect(useApp.getState().carreras).toHaveLength(0)
+    expect(useActividad.getState().carreras).toHaveLength(0)
   })
 
   it('en curso sin carrera activa vuelve a Correr', async () => {

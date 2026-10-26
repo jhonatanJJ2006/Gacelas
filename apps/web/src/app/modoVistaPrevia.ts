@@ -1,9 +1,11 @@
 import { tracker } from '../contexts/actividad/api'
-import { conOficiales, RUTAS_LOJA } from '../contexts/rutas/api'
+import { useComunidad } from '../contexts/comunidad/api'
+import { useIdentidad } from '../contexts/identidad/api'
+import { conOficiales, RUTAS_LOJA, useRutas } from '../contexts/rutas/api'
 import { rutasMock } from '../mocks/data'
 import type { PublicacionRemota } from '../shared/kernel/comunidad'
 import type { CarreraGuardada, Perfil } from '../shared/kernel/tipos'
-import { useApp } from '../store/app'
+import { fijarEstado, suscribirEstado } from './estado'
 
 /*
  * Modo de previsualizacion solo para desarrollo (pnpm dev, URL con ?vista-previa).
@@ -83,8 +85,8 @@ const publicacionesVista = () => [publicacionAjena(), ...feedDemo]
 async function cargarFeedDemo() {
   const demo = await import('../mocks/feed-demo/feedDemo')
   feedDemo = demo.publicacionesDemo()
-  const original = useApp.getState().comentariosPost
-  useApp.setState({
+  const original = useComunidad.getState().comentariosPost
+  fijarEstado({
     publicaciones: publicacionesVista(),
     comentariosPost: async (id) => demo.comentariosDemo(id) ?? original(id),
   })
@@ -108,27 +110,30 @@ export function activarVistaPreviaSiCorresponde() {
   if (!import.meta.env.DEV) return
   if (!new URLSearchParams(window.location.search).has('vista-previa')) return
   const aplicar = () =>
-    useApp.setState({
+    fijarEstado({
       sesion: PERFIL_EJEMPLO,
       carreras: carrerasEjemplo(),
-      rutas: conOficiales(useApp.getState().rutas.length ? useApp.getState().rutas : rutasMock),
+      rutas: conOficiales(useRutas.getState().rutas.length ? useRutas.getState().rutas : rutasMock),
       publicaciones: publicacionesVista(),
     })
   // cargar() y el listener de sesion pueden dejarla en null: en este modo se vuelve a abrir siempre.
   aplicar()
   void cargarFeedDemo()
   if (window.location.pathname.startsWith('/correr/en-curso')) simularCarrera()
-  useApp.subscribe((s) => {
+  suscribirEstado((s) => {
     if (!s.sesion) aplicar()
     else if (!s.publicaciones.some((p) => p.id === 'vp-ajena-1'))
-      useApp.setState({ publicaciones: [...s.publicaciones, ...publicacionesVista()] })
+      fijarEstado({ publicaciones: [...s.publicaciones, ...publicacionesVista()] })
   })
   // Si la sesion se perdio un instante y el enrutador redirigio, se vuelve a la ruta pedida.
   const destino = window.location.pathname + window.location.search
   const inicio = Date.now()
   const restaurar = window.setInterval(() => {
     if (Date.now() - inicio > 4000) return window.clearInterval(restaurar)
-    if (window.location.pathname + window.location.search !== destino && useApp.getState().sesion) {
+    if (
+      window.location.pathname + window.location.search !== destino &&
+      useIdentidad.getState().sesion
+    ) {
       window.history.replaceState(null, '', destino)
       window.dispatchEvent(new PopStateEvent('popstate'))
     }

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { Visibilidad } from '../../../../shared/kernel/tipos'
 import { Interruptor } from '../../../../shared/ui/ui'
-import { useApp } from '../../../../store/app'
+import { useActividad } from '../../../actividad/api'
 import { SeccionConsentimientos } from '../../../legal'
 import { historial } from '../../../legal/api'
+import { useIdentidad } from '../../application/estado'
 import { FilaC2, GrupoC2, PantallaAjustes } from './Comunes'
 
 const OPCIONES: { id: Visibilidad; icono: string; titulo: string; descripcion: string }[] = [
@@ -28,12 +29,12 @@ const OPCIONES: { id: Visibilidad; icono: string; titulo: string; descripcion: s
 ]
 
 export function PrivacidadUbicacion() {
-  const ajustes = useApp((s) => s.ajustes)
-  const actualizar = useApp((s) => s.actualizarAjustes)
+  const ajustes = useIdentidad((s) => s.ajustes)
+  const actualizar = useIdentidad((s) => s.actualizarAjustes)
   const [radio, setRadio] = useState(ajustes.radioHogarM)
   useEffect(() => setRadio(ajustes.radioHogarM), [ajustes.radioHogarM])
   const guardarRadio = () => void actualizar({ radioHogarM: radio })
-  const carreras = useApp((s) => s.carreras)
+  const carreras = useActividad((s) => s.carreras)
   const descargar = () => {
     const blob = new Blob([JSON.stringify({ carreras, consentimientos: historial() }, null, 2)], {
       type: 'application/json',

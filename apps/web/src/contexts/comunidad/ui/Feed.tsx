@@ -7,11 +7,12 @@ import { formatearMs, formatearRitmo, Unidades } from '../../../shared/lib/geo'
 import { useEsEscritorio } from '../../../shared/lib/useEsEscritorio'
 import { ModalC2 } from '../../../shared/ui/modales'
 import { Aviso, BotonTexto, Dialogo } from '../../../shared/ui/ui'
-import { useApp } from '../../../store/app'
-import { listarEnVivo, suscribirLista, type SesionEnVivo } from '../../actividad/api'
+import { listarEnVivo, suscribirLista, useActividad, type SesionEnVivo } from '../../actividad/api'
 import { ProximosEventos } from '../../eventos'
-import { filtrarEventos } from '../../eventos/api'
+import { filtrarEventos, useEventos } from '../../eventos/api'
+import { useIdentidad } from '../../identidad/api'
 import { yaReportada, yaReportado } from '../../moderacion/api'
+import { useComunidad } from '../application/estado'
 import {
   construirFeed,
   filtrarFeed,
@@ -37,14 +38,14 @@ export function Feed() {
   }, [])
   const escritorio = useEsEscritorio()
   const navigate = useNavigate()
-  const sesion = useApp((s) => s.sesion)
-  const carreras = useApp((s) => s.carreras)
-  const remotas = useApp((s) => s.publicaciones)
-  const siguiendo = useApp((s) => s.siguiendo)
-  const alternarSeguir = useApp((s) => s.alternarSeguir)
+  const sesion = useIdentidad((s) => s.sesion)
+  const carreras = useActividad((s) => s.carreras)
+  const remotas = useComunidad((s) => s.publicaciones)
+  const siguiendo = useComunidad((s) => s.siguiendo)
+  const alternarSeguir = useComunidad((s) => s.alternarSeguir)
   const [dejar, setDejar] = useState<{ id: string; nombre: string } | null>(null)
-  const ajustes = useApp((s) => s.ajustes)
-  const actualizar = useApp((s) => s.actualizarAjustes)
+  const ajustes = useIdentidad((s) => s.ajustes)
+  const actualizar = useIdentidad((s) => s.actualizarAjustes)
   const m = ajustes.unidadesMetricas
   const [filtro, setFiltro] = useState<FiltroFeed>('Todos')
   const [menuFiltro, setMenuFiltro] = useState(false)
@@ -53,18 +54,18 @@ export function Feed() {
   const [texto, setTexto] = useState('')
   const [aviso, mostrarAviso] = useAviso()
 
-  const feedSocial = useApp((s) => s.feedSocial)
-  const alternarMeGustaPost = useApp((s) => s.alternarMeGustaPost)
-  const comentarPost = useApp((s) => s.comentarPost)
-  const comentariosPost = useApp((s) => s.comentariosPost)
-  const suscribirFeed = useApp((s) => s.suscribirFeed)
-  const refrescarFeed = useApp((s) => s.refrescarFeed)
+  const feedSocial = useComunidad((s) => s.feedSocial)
+  const alternarMeGustaPost = useComunidad((s) => s.alternarMeGustaPost)
+  const comentarPost = useComunidad((s) => s.comentarPost)
+  const comentariosPost = useComunidad((s) => s.comentariosPost)
+  const suscribirFeed = useComunidad((s) => s.suscribirFeed)
+  const refrescarFeed = useComunidad((s) => s.refrescarFeed)
   const [hilo, setHilo] = useState<ComentarioPublicacion[]>([])
-  const alternarCompartidaPost = useApp((s) => s.alternarCompartidaPost)
-  const subirFotosPost = useApp((s) => s.subirFotosPost)
-  const creados = useApp((s) => s.eventosCreados)
-  const inscritos = useApp((s) => s.inscritos)
-  const alternarInscripcion = useApp((s) => s.alternarInscripcion)
+  const alternarCompartidaPost = useComunidad((s) => s.alternarCompartidaPost)
+  const subirFotosPost = useComunidad((s) => s.subirFotosPost)
+  const creados = useEventos((s) => s.eventosCreados)
+  const inscritos = useEventos((s) => s.inscritos)
+  const alternarInscripcion = useEventos((s) => s.alternarInscripcion)
   const [fotosPara, setFotosPara] = useState<string | null>(null)
   const [reportando, setReportando] = useState<string | null>(null)
   const [reportandoComentario, setReportandoComentario] = useState<string | null>(null)

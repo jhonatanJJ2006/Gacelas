@@ -1,5 +1,6 @@
 import { mapaCalor, rachaEnRiesgo, type Racha } from '../../../shared/kernel/rachas'
-import { useApp, useRacha } from '../../../store/app'
+import { useActividad } from '../application/estado'
+import { useRacha } from './useRacha'
 
 const plural = (n: number, uno: string, varios: string) => `${n} ${n === 1 ? uno : varios}`
 
@@ -44,7 +45,7 @@ export function InsigniaRacha({
 /** Tarjeta de Perfil: rachas diaria y semanal con mapa de calor de 12 semanas. */
 export function TarjetaRacha() {
   const r = useRacha()
-  const carreras = useApp((s) => s.carreras)
+  const carreras = useActividad((s) => s.carreras)
   const semanas = mapaCalor(carreras, Date.now())
   const max = Math.max(1, ...semanas.flat().map((c) => c.km))
   const nivel = (km: number) =>

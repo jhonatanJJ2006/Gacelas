@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { CorredorPublico } from '../../../shared/kernel/comunidad'
-import { useApp } from '../../../store/app'
 import { yaReportado } from '../../moderacion/api'
+import { useComunidad } from '../application/estado'
 import { ModalReporte } from './Social'
 
 /** Buscar corredores por nombre o usuario y seguirlos. */
 export function Corredores() {
   const navigate = useNavigate()
-  const buscar = useApp((s) => s.buscarCorredores)
-  const siguiendo = useApp((s) => s.siguiendo)
-  const alternarSeguir = useApp((s) => s.alternarSeguir)
+  const buscar = useComunidad((s) => s.buscarCorredores)
+  const siguiendo = useComunidad((s) => s.siguiendo)
+  const alternarSeguir = useComunidad((s) => s.alternarSeguir)
   const [consulta, setConsulta] = useState('')
   const [resultados, setResultados] = useState<CorredorPublico[] | null>(null)
   const [reportando, setReportando] = useState<string | null>(null)

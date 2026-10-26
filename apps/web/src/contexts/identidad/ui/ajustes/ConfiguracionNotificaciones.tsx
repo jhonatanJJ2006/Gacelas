@@ -1,5 +1,5 @@
 import type { Ajustes } from '../../../../shared/kernel/tipos'
-import { useApp } from '../../../../store/app'
+import { useIdentidad } from '../../application/estado'
 import { FilaC2, GrupoC2, PantallaAjustes } from './Comunes'
 
 type ClaveNotif =
@@ -24,8 +24,8 @@ const PUSH: { clave: ClaveNotif; titulo: string; descripcion?: string }[] = [
 
 /** Ajustes de notificaciones, rediseño C2 segun figma-proto. */
 export function ConfiguracionNotificaciones() {
-  const ajustes = useApp((s) => s.ajustes)
-  const actualizar = useApp((s) => s.actualizarAjustes)
+  const ajustes = useIdentidad((s) => s.ajustes)
+  const actualizar = useIdentidad((s) => s.actualizarAjustes)
   const cambiar = (clave: ClaveNotif, v: boolean) =>
     void actualizar({ [clave]: v } as Partial<Ajustes>)
 

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MensajeError } from '../../../../shared/ui/ui'
-import { useApp } from '../../../../store/app'
 import { registrarConsentimiento } from '../../../legal/api'
+import { useIdentidad } from '../../application/estado'
 import { BotonGoogle } from './BotonGoogle'
 import { CampoContrasena } from './CampoContrasena'
 import { PanelCorredorAcceso } from './PanelCorredorAcceso'
@@ -15,8 +15,8 @@ export function Registro() {
   const [error, setError] = useState<string | null>(null)
   const [cargando, setCargando] = useState(false)
   const [acepta, setAcepta] = useState(false)
-  const registrar = useApp((s) => s.registrar)
-  const actualizarAjustes = useApp((s) => s.actualizarAjustes)
+  const registrar = useIdentidad((s) => s.registrar)
+  const actualizarAjustes = useIdentidad((s) => s.actualizarAjustes)
   const [nivel, setNivel] = useState<'principiante' | 'intermedio' | 'avanzado'>('principiante')
   const fuerza = [/.{8,}/, /[A-Za-z]/, /\d/, /[^A-Za-z0-9]/].filter((r) => r.test(password)).length
 

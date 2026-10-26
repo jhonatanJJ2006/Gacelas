@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ModalC2 } from '../../../shared/ui/modales'
-import { useApp } from '../../../store/app'
+import { useActividad } from '../../actividad/api'
 import {
   desbloquearNuevos,
   LOGROS,
@@ -83,7 +83,7 @@ export function ModalReporte({
 
 /** Vigila las carreras guardadas y muestra el modal C2 cuando se desbloquea un logro. */
 export function AnfitrionLogros() {
-  const carreras = useApp((s) => s.carreras)
+  const carreras = useActividad((s) => s.carreras)
   const [cola, setCola] = useState<DefinicionLogro[]>(() =>
     // Solo en desarrollo: ?demo-logro muestra el modal para revisarlo.
     import.meta.env.DEV && location.search.includes('demo-logro') ? [LOGROS[2]] : []
@@ -114,7 +114,7 @@ export function AnfitrionLogros() {
 
 /** Lista de logros en Perfil: desbloqueados en color, pendientes atenuados. */
 export function ListaLogros() {
-  const carreras = useApp((s) => s.carreras)
+  const carreras = useActividad((s) => s.carreras)
   const [hechos, setHechos] = useState(logrosDesbloqueados)
   useEffect(() => setHechos(logrosDesbloqueados()), [carreras])
   return (

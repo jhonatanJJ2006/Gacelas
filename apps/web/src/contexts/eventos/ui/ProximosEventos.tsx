@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom'
 import { eventosMock } from '../../../mocks/data'
 import { tarjeta } from '../../../shared/ui/tarjeta'
-import { useApp } from '../../../store/app'
 import { unirEventos } from '../api'
+import { useEventos } from '../application/estado'
 
 export function ProximosEventos() {
-  const creados = useApp((s) => s.eventosCreados)
+  const creados = useEventos((s) => s.eventosCreados)
   const lista = unirEventos(creados, eventosMock)
     .filter((e) => !e.pasado)
     .slice(0, 3)

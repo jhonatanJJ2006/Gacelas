@@ -1,15 +1,16 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapaEditable } from '../../../shared/ui/MapaEditable'
-import { useApp } from '../../../store/app'
+import { useIdentidad } from '../../identidad/api'
+import { useRutas } from '../application/estado'
 import { desnivelPositivo, perfilElevacion } from '../domain/elevacion'
 import { ETIQUETAS_RUTA, longitudKm, type Coordenada } from '../domain/rutas'
 
 export function DibujarRuta() {
   const navigate = useNavigate()
-  const sesion = useApp((s) => s.sesion)
-  const sociales = useApp((s) => s.rutasSociales)
-  const publicarRuta = useApp((s) => s.publicarRuta)
+  const sesion = useIdentidad((s) => s.sesion)
+  const sociales = useRutas((s) => s.rutasSociales)
+  const publicarRuta = useRutas((s) => s.publicarRuta)
   const [puntos, setPuntos] = useState<Coordenada[]>([])
   const [nombre, setNombre] = useState('')
   const [descripcion, setDescripcion] = useState('')

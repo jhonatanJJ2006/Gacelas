@@ -4,9 +4,11 @@ import { useAviso } from '../../../hooks'
 import { eventosMock, type Evento } from '../../../mocks/data'
 import { ModalC2, ResumenModal } from '../../../shared/ui/modales'
 import { Aviso, BotonTexto, Dialogo, MensajeError } from '../../../shared/ui/ui'
-import { useApp } from '../../../store/app'
 import { crearId } from '../../actividad/api'
+import { useComunidad } from '../../comunidad/api'
+import { useRutas } from '../../rutas/api'
 import { TIPOS_EVENTO, unirEventos, type TipoEvento } from '../api'
+import { useEventos } from '../application/estado'
 import { filtrarEventos, PESTANAS_EVENTOS, type PestanaEventos } from '../domain/filtros'
 import { validarEvento } from '../domain/validacion'
 import { CalendarioEventos } from './CalendarioEventos'
@@ -15,16 +17,16 @@ const campo =
   'w-full h-11 px-3 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary'
 
 export function Eventos() {
-  const creados = useApp((s) => s.eventosCreados)
-  const inscritos = useApp((s) => s.inscritos)
-  const crearEvento = useApp((s) => s.crearEvento)
-  const alternar = useApp((s) => s.alternarInscripcion)
+  const creados = useEventos((s) => s.eventosCreados)
+  const inscritos = useEventos((s) => s.inscritos)
+  const crearEvento = useEventos((s) => s.crearEvento)
+  const alternar = useEventos((s) => s.alternarInscripcion)
   const [pestana, setPestana] = useState<PestanaEventos>('Próximos')
   const [params, setParams] = useSearchParams()
   const clubId = params.get('club')
   const [creando, setCreando] = useState(() => !!clubId)
   const [vista, setVista] = useState<'lista' | 'calendario'>('lista')
-  const rutas = useApp((s) => s.rutas)
+  const rutas = useRutas((s) => s.rutas)
   const [extra, setExtra] = useState({ tipo: 'grupal' as TipoEvento, cupo: '', rutaId: '' })
   const [form, setForm] = useState({
     titulo: '',
@@ -37,7 +39,7 @@ export function Eventos() {
   const [error, setError] = useState<string | null>(null)
   const [aviso, mostrarAviso] = useAviso()
   const [uniendo, setUniendo] = useState<Evento | null>(null)
-  const feedSocial = useApp((s) => s.feedSocial)
+  const feedSocial = useComunidad((s) => s.feedSocial)
   const todos = feedSocial ? creados : unirEventos(creados, eventosMock)
   const [tipo, setTipo] = useState<TipoEvento | null>(null)
   const eventos = filtrarEventos(todos, pestana, inscritos).filter((e) => !tipo || e.tipo === tipo)

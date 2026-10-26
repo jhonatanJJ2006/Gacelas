@@ -7,9 +7,16 @@ import { formatearMs, formatearRitmo, Unidades } from '../../../shared/lib/geo'
 import { CompartirDialogo } from '../../../shared/ui/CompartirDialogo'
 import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
 import { TrazadoRuta } from '../../../shared/ui/TrazadoRuta'
-import { useApp } from '../../../store/app'
-import { desnivelPositivo, ETIQUETAS_RUTA, perfilElevacion, trazoParaRuta } from '../../rutas/api'
+import { useIdentidad } from '../../identidad/api'
+import {
+  desnivelPositivo,
+  ETIQUETAS_RUTA,
+  perfilElevacion,
+  trazoParaRuta,
+  useRutas,
+} from '../../rutas/api'
 import { descartarCarrera, tracker, useCarrera } from '../application/carreraStore'
+import { useActividad } from '../application/estado'
 import { caloriasEstimadas } from '../domain/metricas'
 import { ritmoPromedio, tituloPorHora } from '../domain/runTracker'
 import { CelebracionRacha } from './Racha'
@@ -17,9 +24,9 @@ import { CelebracionRacha } from './Racha'
 export function ResumenPostCarrera() {
   const navigate = useNavigate()
   const e = useCarrera()
-  const ajustes = useApp((s) => s.ajustes)
-  const guardarCarrera = useApp((s) => s.guardarCarrera)
-  const carreras = useApp((s) => s.carreras)
+  const ajustes = useIdentidad((s) => s.ajustes)
+  const guardarCarrera = useActividad((s) => s.guardarCarrera)
+  const carreras = useActividad((s) => s.carreras)
   const [racha] = useState(() =>
     rachaTrasCarrera(carreras, { inicioMs: Date.now() }, ajustes.metaSemanal)
   )
@@ -45,9 +52,9 @@ export function ResumenPostCarrera() {
   const [nota, setNota] = useState('')
   const [publica, setPublica] = useState(ajustes.visibilidad !== 'privado')
   const [guardando, setGuardando] = useState(false)
-  const sesion = useApp((s) => s.sesion)
-  const rutasSociales = useApp((s) => s.rutasSociales)
-  const publicarRuta = useApp((s) => s.publicarRuta)
+  const sesion = useIdentidad((s) => s.sesion)
+  const rutasSociales = useRutas((s) => s.rutasSociales)
+  const publicarRuta = useRutas((s) => s.publicarRuta)
   const [comoRuta, setComoRuta] = useState(false)
   const [dificultad, setDificultad] = useState<'Fácil' | 'Moderado' | 'Difícil'>('Moderado')
   const [etiquetas, setEtiquetas] = useState<string[]>([])

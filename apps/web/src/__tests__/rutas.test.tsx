@@ -2,7 +2,7 @@ import { act, screen, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { descartarCarrera, tracker } from '../contexts/actividad/application/carreraStore'
-import { useApp } from '../store/app'
+import { useActividad } from '../contexts/actividad/application/estado'
 import { instalarGpsFalso, prepararApp, renderRuta } from '../test/utils'
 
 describe('rutas', () => {
@@ -88,6 +88,6 @@ describe('rutas', () => {
     reloj.mockRestore()
     await userEvent.click(screen.getByRole('button', { name: 'Terminar navegación' }))
     expect(await screen.findByText('Carrera completada')).toBeInTheDocument()
-    expect(useApp.getState().carreras).toHaveLength(0)
+    expect(useActividad.getState().carreras).toHaveLength(0)
   })
 })

@@ -1,8 +1,9 @@
-import { beforeEach, describe, expect, it } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { useActividad } from '../contexts/actividad/application/estado'
+import { useIdentidad } from '../contexts/identidad/application/estado'
 import { carreraPrueba, prepararApp, renderRuta } from '../test/utils'
-import { useApp } from '../store/app'
 
 describe('perfil', () => {
   beforeEach(() =>
@@ -25,7 +26,7 @@ describe('perfil', () => {
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Eliminar' })
     )
     expect(screen.queryByText('Suave')).not.toBeInTheDocument()
-    expect(useApp.getState().carreras).toHaveLength(1)
+    expect(useActividad.getState().carreras).toHaveLength(1)
   })
 
   it('editar perfil valida y guarda', async () => {
@@ -48,7 +49,7 @@ describe('perfil', () => {
     renderRuta('/perfil/avatar')
     await userEvent.click(await screen.findByRole('button', { name: 'Equipación Verde' }))
     await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
-    expect(useApp.getState().ajustes.avatar.equipacion).toBe(1)
+    expect(useIdentidad.getState().ajustes.avatar.equipacion).toBe(1)
     expect(await screen.findByText('Jhona Runner')).toBeInTheDocument()
   })
 })
@@ -64,7 +65,7 @@ describe('ajustes', () => {
     await userEvent.click(screen.getByRole('switch', { name: 'Autopausa' }))
     await userEvent.selectOptions(screen.getByLabelText('Cuenta regresiva'), '5')
     await userEvent.selectOptions(screen.getByLabelText('Ritmo objetivo'), '300')
-    expect(useApp.getState().ajustes).toMatchObject({
+    expect(useIdentidad.getState().ajustes).toMatchObject({
       modoOscuro: false,
       unidadesMetricas: false,
       autopausa: false,
@@ -82,21 +83,24 @@ describe('ajustes', () => {
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Cerrar sesión' })
     )
     expect(await screen.findByText('Corre con la manada de Loja')).toBeInTheDocument()
-    expect(useApp.getState().sesion).toBeNull()
+    expect(useIdentidad.getState().sesion).toBeNull()
   })
 
   it('notificaciones: reto mensual y preferencias de alertas en la bandeja', async () => {
     renderRuta('/notificaciones')
     expect(await screen.findByTestId('reto-notificacion')).toHaveTextContent('Andino')
     await userEvent.click(screen.getByRole('switch', { name: 'Eventos del club' }))
-    expect(useApp.getState().ajustes.notifEventos).toBe(false)
+    expect(useIdentidad.getState().ajustes.notifEventos).toBe(false)
   })
 
   it('privacidad: radios sugeridos y actividades', async () => {
     renderRuta('/ajustes/privacidad')
     await userEvent.click(await screen.findByRole('button', { name: '1 km' }))
     await userEvent.click(screen.getByRole('switch', { name: 'Ocultar datos biométricos' }))
-    expect(useApp.getState().ajustes).toMatchObject({ radioHogarM: 1000, ocultarBiometricos: true })
+    expect(useIdentidad.getState().ajustes).toMatchObject({
+      radioHogarM: 1000,
+      ocultarBiometricos: true,
+    })
   })
 
   it('privacidad y notificaciones persisten', async () => {
@@ -105,7 +109,7 @@ describe('ajustes', () => {
     await userEvent.click(screen.getByRole('switch', { name: /Ubicación precisa/ }))
     await userEvent.click(screen.getByRole('switch', { name: /Ocultar ubicación de casa/ }))
     expect(screen.queryByTestId('radio-hogar-valor')).not.toBeInTheDocument()
-    expect(useApp.getState().ajustes).toMatchObject({
+    expect(useIdentidad.getState().ajustes).toMatchObject({
       visibilidad: 'privado',
       ubicacionPrecisa: false,
       ocultarHogar: false,
@@ -118,7 +122,7 @@ describe('ajustes', () => {
   it('notificaciones desactivadas ocultan su tipo', async () => {
     renderRuta('/ajustes/notificaciones')
     await userEvent.click(await screen.findByRole('switch', { name: /Me gusta/ }))
-    expect(useApp.getState().ajustes.notifLikes).toBe(false)
+    expect(useIdentidad.getState().ajustes.notifLikes).toBe(false)
     renderRuta('/notificaciones')
     expect(await screen.findAllByTestId('notificacion')).toHaveLength(4)
   })

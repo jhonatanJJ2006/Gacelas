@@ -1,7 +1,8 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
-import { useApp } from '../store/app'
+import { useIdentidad } from '../contexts/identidad/api'
 import { AppLayout } from './AppLayout'
+import { cargar } from './estado'
 import { ShellEscritorio } from './ShellEscritorio'
 
 const Bienvenida = lazy(() =>
@@ -168,7 +169,7 @@ function LoadingFallback() {
 
 /** Rutas protegidas: sin sesion se redirige a /bienvenida. */
 export function RutaProtegida() {
-  const sesion = useApp((s) => s.sesion)
+  const sesion = useIdentidad((s) => s.sesion)
   const location = useLocation()
   if (!sesion) return <Navigate to="/bienvenida" replace state={{ desde: location.pathname }} />
   return (
@@ -185,14 +186,14 @@ export function RutaProtegida() {
 /** Pantallas de acceso: con sesion abierta se va directo a Inicio. */
 export function SoloInvitados() {
   // Se mira la sesion al entrar: tras registrarse, la pantalla navega por su cuenta.
-  const [sesionAlEntrar] = useState(() => useApp.getState().sesion)
+  const [sesionAlEntrar] = useState(() => useIdentidad.getState().sesion)
   if (sesionAlEntrar) return <Navigate to="/inicio" replace />
   return <Outlet />
 }
 
 /** Aplica el tema claro u oscuro de los ajustes al documento. */
 function TemaDocumento() {
-  const modoOscuro = useApp((s) => s.ajustes.modoOscuro)
+  const modoOscuro = useIdentidad((s) => s.ajustes.modoOscuro)
   useEffect(() => {
     document.documentElement.classList.toggle('tema-claro', !modoOscuro)
     document.documentElement.classList.toggle('dark', modoOscuro)
@@ -269,11 +270,10 @@ export function AppRoutes() {
 }
 
 function App() {
-  const listo = useApp((s) => s.listo)
-  const cargar = useApp((s) => s.cargar)
+  const listo = useIdentidad((s) => s.listo)
   useEffect(() => {
     void cargar()
-  }, [cargar])
+  }, [])
   if (!listo) return <LoadingFallback />
   return (
     <BrowserRouter>

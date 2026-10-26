@@ -2,6 +2,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { vi } from 'vitest'
 import { AppRoutes } from '../app/App'
+import { fijarEstado } from '../app/estado'
 import { descartarCarrera } from '../contexts/actividad/application/carreraStore'
 import { notificacionesMock, rutasMock } from '../mocks/data'
 import {
@@ -10,7 +11,6 @@ import {
   type CarreraGuardada,
   type Perfil,
 } from '../shared/kernel/tipos'
-import { useApp } from '../store/app'
 
 export const PERFIL_PRUEBA: Perfil = {
   email: 'jhona@utpl.edu.ec',
@@ -59,7 +59,7 @@ export function prepararApp(
       })
     )
   if (opciones.carreras) localStorage.setItem('gacelas:carreras', JSON.stringify(opciones.carreras))
-  useApp.setState({
+  fijarEstado({
     listo: true,
     sesion,
     ajustes: { ...AJUSTES_POR_DEFECTO, ...opciones.ajustes },

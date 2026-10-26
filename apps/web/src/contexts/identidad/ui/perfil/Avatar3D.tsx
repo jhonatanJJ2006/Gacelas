@@ -2,7 +2,7 @@ import { lazy, Suspense, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ConfigAvatar } from '../../../../shared/kernel/tipos'
 import { Interruptor } from '../../../../shared/ui/ui'
-import { useApp } from '../../../../store/app'
+import { useIdentidad } from '../../application/estado'
 
 const Runner3D = lazy(() =>
   import('../../../../shared/ui/Runner3D').then((m) => ({ default: m.Runner3D }))
@@ -25,8 +25,8 @@ const ESTILOS = [
 
 export function Avatar3D() {
   const navigate = useNavigate()
-  const guardado = useApp((s) => s.ajustes.avatar)
-  const actualizar = useApp((s) => s.actualizarAjustes)
+  const guardado = useIdentidad((s) => s.ajustes.avatar)
+  const actualizar = useIdentidad((s) => s.actualizarAjustes)
   const [avatar, setAvatar] = useState<ConfigAvatar>(guardado)
   const cambiar = (c: Partial<ConfigAvatar>) => setAvatar((a) => ({ ...a, ...c }))
   const animacion = ESTILOS.find((e) => e.id === avatar.estilo)?.animacion ?? 'Idle'

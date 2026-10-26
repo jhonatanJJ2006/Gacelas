@@ -1,10 +1,11 @@
 import { formatearHms, formatearRitmo, Unidades } from '../../../shared/lib/geo'
 import { tarjeta } from '../../../shared/ui/tarjeta'
-import { useApp } from '../../../store/app'
+import { useActividad } from '../../actividad/api'
+import { useIdentidad } from '../../identidad/api'
 import { kmPorSemana, recordsPersonales } from '../domain/paneles'
 
 export function MetaSemanal({ km, metaKm = 30 }: { km: number; metaKm?: number }) {
-  const m = useApp((s) => s.ajustes.unidadesMetricas)
+  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
   const pct = Math.min(100, Math.round((km / metaKm) * 100))
   const r = 34
   const c = 2 * Math.PI * r
@@ -58,8 +59,8 @@ export function MetaSemanal({ km, metaKm = 30 }: { km: number; metaKm?: number }
 }
 
 export function EstadisticasPerfil() {
-  const carreras = useApp((s) => s.carreras)
-  const m = useApp((s) => s.ajustes.unidadesMetricas)
+  const carreras = useActividad((s) => s.carreras)
+  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
   const semanas = kmPorSemana(carreras, Date.now())
   const max = Math.max(1, ...semanas.map((s) => s.km))
   const rec = recordsPersonales(carreras)

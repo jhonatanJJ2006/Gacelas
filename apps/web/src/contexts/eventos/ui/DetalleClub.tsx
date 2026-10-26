@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAviso } from '../../../hooks'
 import type { Evento } from '../../../mocks/data'
 import { Aviso } from '../../../shared/ui/ui'
-import { useApp } from '../../../store/app'
+import { useIdentidad } from '../../identidad/api'
 import {
   accionClub,
   clubes,
@@ -18,7 +18,7 @@ import {
 export function DetalleClub() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
-  const sesion = useApp((s) => s.sesion)
+  const sesion = useIdentidad((s) => s.sesion)
   const [club, setClub] = useState<Club | null | undefined>(undefined)
   const [miembros, setMiembros] = useState<MiembroClub[]>([])
   const [posts, setPosts] = useState<PostClub[]>([])

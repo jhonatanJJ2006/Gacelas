@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MensajeError } from '../../../../shared/ui/ui'
-import { useApp } from '../../../../store/app'
 import { EnlacesLegales } from '../../../legal'
+import { useIdentidad } from '../../application/estado'
 import { BotonGoogle } from './BotonGoogle'
 import { CampoContrasena } from './CampoContrasena'
 import { PanelCorredorAcceso } from './PanelCorredorAcceso'
@@ -13,7 +13,7 @@ export function InicioSesion() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [cargando, setCargando] = useState(false)
-  const iniciarSesion = useApp((s) => s.iniciarSesion)
+  const iniciarSesion = useIdentidad((s) => s.iniciarSesion)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

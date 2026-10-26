@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { ModalC2 } from '../../../shared/ui/modales'
 import { MensajeError } from '../../../shared/ui/ui'
-import { useApp } from '../../../store/app'
+import { useIdentidad } from '../../identidad/api'
 import { historial, otorgado, registrarConsentimiento } from '../../legal/api'
 import {
   empezarSeguimiento,
@@ -18,7 +18,7 @@ type EstadoGps =
 
 export function Correr() {
   const navigate = useNavigate()
-  const precisa = useApp((s) => s.ajustes.ubicacionPrecisa)
+  const precisa = useIdentidad((s) => s.ajustes.ubicacionPrecisa)
   const [gps, setGps] = useState<EstadoGps>({ tipo: 'buscando' })
   const [errorCarrera, setErrorCarrera] = useState<string | null>(null)
   const [pedirGps, setPedirGps] = useState(false)
@@ -44,7 +44,7 @@ export function Correr() {
     }
   }, [precisa])
 
-  const cuentaSeg = useApp((s) => s.ajustes.cuentaRegresivaSeg ?? 0)
+  const cuentaSeg = useIdentidad((s) => s.ajustes.cuentaRegresivaSeg ?? 0)
   const [cuenta, setCuenta] = useState<number | null>(null)
   useEffect(() => {
     if (cuenta === null) return

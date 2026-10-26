@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ID_USUARIO } from '../../../mocks/data'
 import { Unidades } from '../../../shared/lib/geo'
 import { MapaRutas } from '../../../shared/ui/MapaEditable'
-import { useApp } from '../../../store/app'
+import { useIdentidad } from '../../identidad/api'
+import { useRutas } from '../application/estado'
 import { filtrarRutas, PESTANAS_RUTAS, type PestanaRutas } from '../domain/filtros'
 import {
   aplicarFiltros,
@@ -32,15 +33,15 @@ export function InsigniaOficial() {
 export function ListaRutas() {
   const [pestana, setPestana] = useState<PestanaRutas>('Explorar')
   const [consulta, setConsulta] = useState('')
-  const guardadas = useApp((s) => s.rutasGuardadas)
-  const alternar = useApp((s) => s.alternarRutaGuardada)
-  const m = useApp((s) => s.ajustes.unidadesMetricas)
-  const todas = useApp((s) => s.rutas)
-  const rutasCercanas = useApp((s) => s.rutasCercanas)
+  const guardadas = useRutas((s) => s.rutasGuardadas)
+  const alternar = useRutas((s) => s.alternarRutaGuardada)
+  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
+  const todas = useRutas((s) => s.rutas)
+  const rutasCercanas = useRutas((s) => s.rutasCercanas)
   const [filtros, setFiltros] = useState(FILTROS_INICIALES)
   const [verMapa, setVerMapa] = useState(false)
   const navigate = useNavigate()
-  const sociales = useApp((s) => s.rutasSociales)
+  const sociales = useRutas((s) => s.rutasSociales)
   const [cerca, setCerca] = useState<Record<string, number> | null>(null)
   const [buscandoCerca, setBuscandoCerca] = useState(false)
   const filtradas = aplicarFiltros(

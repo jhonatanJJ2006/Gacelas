@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { useIdentidad } from '../contexts/identidad/application/estado'
 import { prepararApp, renderRuta } from '../test/utils'
-import { useApp } from '../store/app'
 
 describe('acceso y rutas protegidas', () => {
   beforeEach(() => prepararApp({ sesion: null }))
@@ -31,7 +31,7 @@ describe('acceso y rutas protegidas', () => {
     await userEvent.click(screen.getByRole('button', { name: /crear cuenta/i }))
     expect(await screen.findByText('Activa tu ubicación')).toBeInTheDocument()
     expect(JSON.parse(localStorage.getItem('gacelas:consentimientos') ?? '[]')).toHaveLength(2)
-    expect(useApp.getState().sesion?.email).toBe('jhona@utpl.edu.ec')
+    expect(useIdentidad.getState().sesion?.email).toBe('jhona@utpl.edu.ec')
   })
 
   it('registro enlaza terminos y privacidad', async () => {
@@ -54,8 +54,8 @@ describe('acceso y rutas protegidas', () => {
   })
 
   it('inicio de sesion con error y luego correcto', async () => {
-    await useApp.getState().registrar('Jhona', 'jhona@utpl.edu.ec', 'gacela123')
-    await useApp.getState().cerrarSesion()
+    await useIdentidad.getState().registrar('Jhona', 'jhona@utpl.edu.ec', 'gacela123')
+    await useIdentidad.getState().cerrarSesion()
     renderRuta('/inicio-sesion')
     await userEvent.type(await screen.findByLabelText('Correo electrónico'), 'jhona@utpl.edu.ec')
     await userEvent.type(screen.getByLabelText('Contraseña'), 'incorrecta1')
