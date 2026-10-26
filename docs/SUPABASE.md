@@ -49,6 +49,15 @@ Todas las tablas tienen Row Level Security activo.
 - `routes` publicas y `events`: lectura publica (sin sesion tambien).
 - `post_likes` y `post_comments`: lectura para usuarios con sesion.
 
+## Esquemas por contexto (F7)
+
+Desde la migración `033_mover_tablas_contexto.sql` cada tabla vive en el esquema de su contexto acotado: `identidad`, `legal`, `actividad`, `rutas`, `envivo`, `seguridad`, `comunidad`, `eventos`, `logros`, `moderacion`, `avisos` y `admin`. `kernel.propiedad_tablas` dice a qué contexto pertenece cada tabla y dónde está (`esquema_actual`).
+
+- En `public` queda una vista con el mismo nombre y columnas (`security_invoker = true`). Las apps y PostgREST siguen usando `public.<tabla>` para leer y escribir. RLS se aplica en la tabla con el rol de quien consulta.
+- Las tablas de la publicación `supabase_realtime` (`activities`, `follows`, `post_likes`, `post_comments`, `post_reposts`, `live_sessions`, `club_posts` y `runner_positions`) siguen en `public`, porque Realtime no emite cambios sobre vistas. Están en `kernel.tablas_en_public` con su motivo.
+- Una migración que agregue columnas a una tabla movida debe recrear su vista en `public`. `TRUNCATE`, `ALTER TABLE` y `DISABLE TRIGGER` van contra `<contexto>.<tabla>`.
+- Reversión: `supabase/rollback/033_mover_tablas_contexto.down.sql`. Decisión completa en [ADR 005](adr/005-tablas-por-contexto.md).
+
 ## Aplicar migraciones
 
 Desde esta maquina los puertos de Postgres (5432 y 6543) pueden estar bloqueados, asi que se usa la Management API por HTTPS con un token personal (`SUPABASE_ACCESS_TOKEN` en `backend/.env`):
