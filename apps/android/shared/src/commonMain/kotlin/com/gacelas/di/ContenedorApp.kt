@@ -72,7 +72,7 @@ class ContenedorApp(
     val tracker = SesionCarrera()
 
     /** Mapa en vivo de corredores; null sin servidor. */
-    val mapaVivo: com.gacelas.vivo.MapaVivoRepository?
+    val mapaVivo: com.gacelas.vivo.MapaVivoRepositorio?
     /** Incidentes (ECU 911 + reportes de corredores); null sin backend: la UI muestra el ejemplo. */
     val incidentes: com.gacelas.seguridad.domain.IncidentesRepositorio?
 

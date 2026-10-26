@@ -44,5 +44,7 @@ listOf("analitica", "moderacion", "legal").forEach { ctx ->
 
 includeModule(":contextos:actividad:application", "contextos/actividad/application")
 includeModule(":contextos:legal:infrastructure", "contextos/legal/infrastructure")
+includeModule(":contextos:envivo:domain", "contextos/envivo/domain")
+includeModule(":contextos:envivo:infrastructure", "contextos/envivo/infrastructure")
 
 include(":shared")
