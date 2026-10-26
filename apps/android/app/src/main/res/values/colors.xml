@@ -2,4 +2,6 @@
 <resources>
     <color name="fondo">#FF111827</color>
     <color name="primario">#FFD97706</color>
+    <!-- Fondo del arranque (SplashScreen) y de la intro animada. -->
+    <color name="fondo_marca">#FF0C1322</color>
 </resources>

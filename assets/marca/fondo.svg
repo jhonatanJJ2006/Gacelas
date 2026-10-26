@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="1024" height="1024"><defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1A1030"/><stop offset=".55" stop-color="#0C1322"/><stop offset="1" stop-color="#070E1D"/></linearGradient>
+<radialGradient id="glow" cx=".5" cy=".45" r=".6"><stop offset="0" stop-color="#7B1FA2" stop-opacity=".75"/><stop offset="1" stop-color="#7B1FA2" stop-opacity="0"/></radialGradient>
+<linearGradient id="mor" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F3E8FF"/><stop offset=".35" stop-color="#C084FC"/><stop offset=".75" stop-color="#A855F7"/><stop offset="1" stop-color="#7B1FA2"/></linearGradient>
+<linearGradient id="ruta" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7B1FA2" stop-opacity="0"/><stop offset=".5" stop-color="#A855F7"/><stop offset="1" stop-color="#E9D5FF"/></linearGradient>
+<linearGradient id="mont" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E3545"/><stop offset="1" stop-color="#141B2B"/></linearGradient>
+<filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1.6" stdDeviation="1.6" flood-color="#000" flood-opacity=".55"/></filter>
+<filter id="neon" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs><rect width="108" height="108" fill="url(#bg)"/><circle cx="54" cy="50" r="46" fill="url(#glow)"/><path d="M0 82 L22 62 L34 72 L52 50 L70 70 L82 60 L108 80 V108 H0Z" fill="url(#mont)" opacity=".9"/><path d="M0 92 L30 76 L50 86 L76 72 L108 88 V108 H0Z" fill="#070E1D" opacity=".8"/></svg>

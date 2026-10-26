@@ -1,6 +1,12 @@
 package com.gacelas
 
 import android.os.Bundle
+import android.provider.Settings
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.gacelas.ui.intro.IntroAnimada
+import com.gacelas.ui.intro.IntroArranque
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import android.Manifest
@@ -59,7 +65,12 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Arranque con el fondo de marca (Theme.Gacelas.Arranque); se cierra en el primer cuadro.
+        installSplashScreen()
         super.onCreate(savedInstanceState)
+        // Intro de marca solo en arranque en frio y con animaciones del sistema activas (docs/MARCA.md).
+        val escala = Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
+        val conIntro = IntroArranque.debeMostrar(savedInstanceState == null, escala).also { if (it) IntroArranque.marcarMostrada() }
         enableEdgeToEdge()
         leerDestino(intent)
         pedirPermisoNotificaciones()
@@ -77,6 +88,9 @@ class MainActivity : ComponentActivity() {
                 Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { foco.clearFocus(); teclado?.hide() } }) {
                     GacelasRaiz()
                     com.gacelas.actualizacion.AvisoActualizacion()
+                    // La sesion se carga debajo mientras corre la intro; al terminar queda la pantalla que toque.
+                    var intro by rememberSaveable { mutableStateOf(conIntro) }
+                    if (intro) IntroAnimada(alTerminar = { intro = false })
                 }
             }
         }
