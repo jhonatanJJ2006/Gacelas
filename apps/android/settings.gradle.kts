@@ -45,6 +45,9 @@ listOf("analitica", "moderacion", "legal").forEach { ctx ->
 includeModule(":contextos:actividad:application", "contextos/actividad/application")
 includeModule(":contextos:legal:infrastructure", "contextos/legal/infrastructure")
 includeModule(":contextos:seguridad:application", "contextos/seguridad/application")
+includeModule(":contextos:analitica:application", "contextos/analitica/application")
+includeModule(":contextos:analitica:infrastructure", "contextos/analitica/infrastructure")
+includeModule(":contextos:analitica:presentation", "contextos/analitica/presentation")
 includeModule(":contextos:envivo:domain", "contextos/envivo/domain")
 includeModule(":contextos:envivo:infrastructure", "contextos/envivo/infrastructure")
 

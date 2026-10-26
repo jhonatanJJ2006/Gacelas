@@ -72,7 +72,7 @@ class RutasReportesTest {
             Carrera("3", "Suave", inicioMs = ms(10, 21), segundos = 960, distanciaKm = 3.0),
             Carrera("4", "Previa", inicioMs = ms(10, 14), segundos = 1900, distanciaKm = 6.0),
         )
-        compose.setContent { GacelasTheme { com.gacelas.perfil.MisReportesContenido(carreras, ms(10, 21) + 18_000_000, {}, {}) } }
+        compose.setContent { GacelasTheme { com.gacelas.perfil.MisReportesContenido(carreras, ms(10, 21) + 18_000_000, {}, {}, rutas = com.gacelas.perfil.iniciosRutasLoja) } }
         compose.onNodeWithText("+200.0% vs. anterior").assertExists()
         compose.onNodeWithText(r.nombre).assertExists()
         captureScreenRoboImage("$dir/reportes/mis-reportes-semana.png")
