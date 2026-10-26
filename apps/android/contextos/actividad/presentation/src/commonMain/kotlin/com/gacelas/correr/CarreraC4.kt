@@ -207,7 +207,7 @@ fun ContenidoCarreraC4(
                 Column(Modifier.weight(1.35f)) {
                     Text(if (e.pausada) "EN PAUSA" else "DISTANCIA", style = etiqueta.copy(fontWeight = FontWeight.ExtraBold), color = GColorsC2.Muted)
                     Row(verticalAlignment = Alignment.Bottom) {
-                        Text(Unidades.texto(e.distanciaKm, m), style = TextStyle(fontFamily = num, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = if (bajo) 34.sp else 40.sp, lineHeight = if (bajo) 36.sp else 42.sp), color = GColorsC2.Violeta, modifier = Modifier.testTag("distancia"))
+                        Text(Unidades.texto(e.distanciaKm, m), style = TextStyle(fontFamily = num, fontSize = if (bajo) 34.sp else 40.sp, lineHeight = if (bajo) 36.sp else 42.sp), color = GColorsC2.Violeta, modifier = Modifier.testTag("distancia"))
                         Text(if (m) " km" else " mi", style = TextStyle(fontFamily = Inter, fontSize = 12.sp, fontWeight = FontWeight.Bold), color = GColorsC2.Muted, modifier = Modifier.padding(bottom = 4.dp))
                     }
                 }
@@ -317,7 +317,7 @@ private val etiqueta = TextStyle(fontFamily = Inter, fontSize = 10.sp, lineHeigh
 private fun MetricaLado(titulo: String, valor: String, unidad: String, modifier: Modifier, color: Color = Color.White) {
     Column(modifier) {
         Text(titulo, style = etiqueta.copy(fontWeight = FontWeight.ExtraBold), color = K1.Secondary)
-        Text(valor, style = TextStyle(fontFamily = num, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.025).em), color = color, maxLines = 1)
+        Text(valor, style = TextStyle(fontFamily = num, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.02.em), color = color, maxLines = 1)
         if (unidad.isNotEmpty()) Text(unidad, style = TextStyle(fontFamily = Inter, fontSize = 10.sp, lineHeight = 13.sp, fontWeight = FontWeight.Medium), color = K1.Secondary)
     }
 }
