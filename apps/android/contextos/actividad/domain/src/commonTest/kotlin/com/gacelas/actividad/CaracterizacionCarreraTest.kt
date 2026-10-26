@@ -31,11 +31,10 @@ class CaracterizacionCarreraTest {
         s.registrarPunto(punto(400))
         // Tras reanudar, el primer punto no suma el salto hecho durante la pausa.
         assertEquals(enPausa.distanciaKm, s.estado.value.distanciaKm)
-        reloj = 122_000L
-        s.registrarPunto(punto(401))
+        for (i in 1..5) { reloj = 121_000L + i * 1000L; s.registrarPunto(punto(400 + i)) }
         s.actualizarTiempo()
         assertTrue(s.estado.value.distanciaKm > enPausa.distanciaKm)
-        assertEquals(enPausa.segundos + 1, s.estado.value.segundos)
+        assertEquals(enPausa.segundos + 5, s.estado.value.segundos)
     }
 
     @Test fun puntosImprecisosNoCuentan() {
