@@ -32,6 +32,10 @@ ON CONFLICT (user_id) DO UPDATE SET role = 'admin';
 
 Desde ahí, ese administrador puede dar o quitar roles a otras personas en Usuarios.
 
+## Estado en producción
+
+El 25 de octubre de 2026 se aplicaron en el proyecto las migraciones 019 a 023, 030, 031 y 032, con respaldo previo, y quedaron registradas en `supabase_migrations.schema_migrations`. La cuenta 2jhonatanjara2@gmail.com tiene rol `admin`.
+
 ## Revisar el panel en desarrollo
 
 Con `pnpm dev`, la dirección `/admin?demo` carga datos de ejemplo sin servidor ni rol, incluidas estadísticas (`/admin/estadisticas?demo`) y reportes de varios tipos. Esa opción no existe en la build de producción.
