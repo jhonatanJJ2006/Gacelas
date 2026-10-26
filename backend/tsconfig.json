@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "types": ["node"]
+  },
+  "include": [
+    "src/contexts/seguridad/domain",
+    "src/contexts/seguridad/application/consultas.ts",
+    "src/contexts/seguridad/infrastructure",
+    "src/contexts/analitica",
+    "src/shared",
+    "tests/contexts"
+  ]
+}

@@ -110,3 +110,36 @@ WHERE user_id = 'user-uuid-here'
 ## Documentación
 
 Ver [../docs/DATA_MODEL.md](../docs/DATA_MODEL.md) para el modelo de datos completo.
+
+## Backend propio por contextos (F8)
+
+Esqueleto del servicio TypeScript descrito en `docs/ARQUITECTURA-DDD.md` (4.5). Por ahora solo contiene casos de uso y adaptadores sobre Supabase; no tiene servidor HTTP ni se despliega (el proveedor queda para el ADR de la decisión D6).
+
+```
+backend/src/
+  shared/supabase.ts            cliente con la clave de servicio
+  contexts/seguridad/
+    domain/                     índice, niveles de riesgo y puertos
+    application/consultas.ts    ConsultarSeguridadDeRuta, SugerirHorarioSeguro, incidentes recientes
+    application/importar-ecu911.ts  importador existente del ECU 911
+    infrastructure/supabase.ts  RPC seguridad_zona_ruta y vista incidentes_publicos
+  contexts/analitica/
+    domain/                     estadísticas, periodo y puerto ConsultaAnalitica
+    application/panel.ts        VerPanelAdmin y exportación CSV
+    infrastructure/supabase.ts  RPC admin_estadisticas
+backend/tests/contexts/         pruebas con un doble del cliente de Supabase
+```
+
+Reglas: `domain` no importa nada de fuera del contexto; `application` solo usa `domain`; Supabase solo aparece en `infrastructure` y en `shared/supabase.ts`.
+
+### Cómo correrlo
+
+Desde la raíz del repositorio, con Node 20 y pnpm:
+
+```bash
+pnpm install
+pnpm --filter backend type-check   # tsc sin emitir
+pnpm --filter backend test:unit    # vitest, sin red ni Supabase
+```
+
+Las pruebas no necesitan credenciales. Para usar los adaptadores contra un proyecto real hay que definir `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en el entorno (por ejemplo en `backend/.env`, que no se versiona) y crear el cliente con `crearClienteServicio()`. Los avisos y el consumidor del outbox se añadirán cuando exista la tabla `kernel.eventos_salida` (F7).

@@ -139,9 +139,15 @@ importers:
         specifier: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
         version: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
     devDependencies:
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.43
       tsx:
         specifier: ^4.19.0
         version: 4.23.15
+      typescript:
+        specifier: ^5.2.2
+        version: 5.9.3
       vitest:
         specifier: ^1.0.4
         version: 1.6.1(@types/node@20.19.43)(@vitest/ui@1.6.1)(jsdom@23.2.0)
