@@ -45,6 +45,8 @@ kotlin {
             api(project(":contextos:rutas:infrastructure"))
             api(project(":contextos:seguridad:domain"))
             api(project(":contextos:seguridad:infrastructure"))
+            api(project(":contextos:seguridad:application"))
+            api(project(":contextos:seguridad:presentation"))
             api(project(":contextos:rutas:presentation"))
             api(project(":contextos:identidad:domain"))
             api(project(":contextos:identidad:infrastructure"))
