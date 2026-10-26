@@ -1,3 +1,4 @@
+import { LogoGacelas } from '../../../../shared/ui/LogoGacelas'
 import { lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Runner3DFallback } from '../../../../shared/ui/Runner3D'
@@ -14,19 +15,7 @@ export function Bienvenida() {
     <div className="w-full h-[100dvh] bg-surface flex flex-col overflow-hidden relative">
       <header className="w-full z-20 shrink-0">
         <div className="flex items-center justify-between px-margin py-1 max-w-6xl mx-auto w-full">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-primary-600/15 border border-primary-600/30 flex items-center justify-center text-primary-500 shadow-sm">
-              <span className="material-symbols-outlined text-[20px]">sprint</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="font-headline-md text-text-primary text-base font-extrabold tracking-wider leading-none">
-                GACELAS
-              </span>
-              <span className="text-[10px] font-semibold text-primary-400 tracking-widest mt-0.5">
-                LOJA, ECUADOR
-              </span>
-            </div>
-          </div>
+          <LogoGacelas tam={36} />
           <button
             onClick={() => navigate('/inicio-sesion')}
             className="text-text-secondary hover:text-text-primary text-sm font-semibold tracking-wide px-3 py-1.5 rounded-lg active:bg-surface-variant transition-colors min-h-[48px] flex items-center"

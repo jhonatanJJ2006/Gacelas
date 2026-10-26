@@ -117,7 +117,7 @@ export async function generarImagen(d: DatosCompartir, formato: FormatoCompartir
   cv.height = H
   const g = cv.getContext('2d')!
   const [logo, corredor] = await Promise.all([
-    cargar('/images/82a3eb8346b4.png'),
+    cargar('/marca/logo-compartir.png'),
     formato === 'sticker' ? Promise.resolve(null) : cargar('/models/gacelas-runner-poster.png'),
   ])
   await document.fonts?.ready

@@ -198,7 +198,7 @@ fun AjustesContenido(
         "acerca" -> com.gacelas.ui.components.DialogoC2(
             onDismissRequest = { dialogo = null },
             confirmButton = { com.gacelas.ui.components.BotonModalC2("Cerrar", { dialogo = null }) },
-            title = { Text("Gacelas Loja") },
+            title = { com.gacelas.ui.components.MarcaGacelasA(40.dp, "LOJA, ECUADOR", tamTexto = 18f) },
             text = { Text("${version}. App del grupo de running Gacelas de Loja, Ecuador. Graba tus carreras con GPS, descubre rutas y entrena con la comunidad.") },
             containerColor = GColors.BgSecondary,
         )

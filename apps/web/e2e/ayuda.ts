@@ -6,7 +6,9 @@ export const test = base.extend<{ supabase: EstadoFake }>({
   supabase: [
     async ({ context }, use) => {
       // La intro de marca se prueba aparte (intro.spec.ts); aqui se da por vista.
-      await context.addInitScript(() => sessionStorage.setItem('gacelas.intro.vista', '1'))
+      await context.addInitScript(() =>
+        localStorage.setItem('gacelas.intro.vista', String(Date.now() + 1e12))
+      )
       await use(await instalarFakeSupabase(context))
     },
     { auto: true },

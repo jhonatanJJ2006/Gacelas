@@ -1,26 +1,37 @@
 package com.gacelas.ui.intro
 
-/** Reglas de cuando se muestra la intro de marca (comunes a Android e iOS). */
+/**
+ * Reglas de cuando se muestra la intro de marca (comunes a Android e iOS, ver docs/MARCA.md).
+ *
+ * Se muestra cada vez que la app pasa a primer plano (arranque en frio, volver tras salir con
+ * atras o volver desde inicio/recientes con el proceso vivo), salvo que la app haya estado fuera
+ * de primer plano menos de [UMBRAL_AUSENCIA_MS] (cambio rapido de app o rotacion de pantalla).
+ * Nunca con las animaciones del sistema desactivadas.
+ */
 object IntroArranque {
     /** Duracion de la animacion A "Ruta y destello", en segundos. */
     const val DURACION_S = 2.8f
 
-    /** Ya se mostro en este proceso: un arranque en caliente (actividad recreada) no la repite. */
-    var mostradaEnProceso = false
+    /** Ausencia minima para repetir la intro al volver: 30 s. */
+    const val UMBRAL_AUSENCIA_MS = 30_000L
+
+    /** Ultima vez (reloj monotono, ms) que la app salio de primer plano o mostro la intro; null si nunca. */
+    var ultimaSalidaMs: Long? = null
         private set
 
-    /**
-     * Solo en arranque en frio ([arranqueNuevo] y sin haberse mostrado en el proceso) y con
-     * animaciones del sistema activas ([escalaAnimaciones] mayor que 0).
-     */
-    fun debeMostrar(arranqueNuevo: Boolean, escalaAnimaciones: Float): Boolean =
-        arranqueNuevo && !mostradaEnProceso && escalaAnimaciones > 0f
+    /** Regla pura: [ultimaSalida] null es arranque en frio del proceso. */
+    fun debeMostrar(ahoraMs: Long, ultimaSalida: Long?, escalaAnimaciones: Float): Boolean =
+        escalaAnimaciones > 0f && (ultimaSalida == null || ahoraMs - ultimaSalida >= UMBRAL_AUSENCIA_MS)
 
-    /** Marca la intro como mostrada; se llama al decidir mostrarla. */
-    fun marcarMostrada() { mostradaEnProceso = true }
+    /** Decide al pasar a primer plano (onStart) y, si toca, la deja marcada. */
+    fun alEntrar(ahoraMs: Long, escalaAnimaciones: Float): Boolean =
+        debeMostrar(ahoraMs, ultimaSalidaMs, escalaAnimaciones).also { if (it) ultimaSalidaMs = ahoraMs }
+
+    /** Se llama al salir de primer plano (onStop). */
+    fun alSalir(ahoraMs: Long) { ultimaSalidaMs = ahoraMs }
 
     /** Solo para pruebas. */
-    fun reiniciarParaPruebas() { mostradaEnProceso = false }
+    fun reiniciarParaPruebas() { ultimaSalidaMs = null }
 }
 
 /** Estado de una reproduccion: terminar (por tiempo o por toque) solo cuenta una vez. */

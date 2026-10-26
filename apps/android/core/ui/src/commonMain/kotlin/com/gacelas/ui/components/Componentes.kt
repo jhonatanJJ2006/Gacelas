@@ -103,22 +103,9 @@ fun EncabezadoAtras(
     }
 }
 
-/** Marca Gacelas Loja con icono de corredor. */
+/** Marca Gacelas Loja: icono A "Gacela en ruta" con la palabra GACELAS (docs/MARCA.md). */
 @Composable
-fun MarcaGacelas(modifier: Modifier = Modifier) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Box(
-            Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(GColors.Primary),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(Icons.AutoMirrored.Filled.DirectionsRun, contentDescription = null, tint = GColors.OnPrimary)
-        }
-        Column {
-            Text("GACELAS", style = GType.titleMd.copy(fontWeight = FontWeight.Black), color = GColors.TextPrimary)
-            Text("LOJA, ECUADOR", style = GType.labelMd, color = GColors.Primary500)
-        }
-    }
-}
+fun MarcaGacelas(modifier: Modifier = Modifier) = MarcaGacelasA(44.dp, "LOJA, ECUADOR", modifier)
 
 @Composable
 fun BotonPrimario(

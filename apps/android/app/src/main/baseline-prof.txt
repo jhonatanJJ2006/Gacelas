@@ -1,0 +1,16 @@
+# Perfil de referencia escrito a mano (docs/MARCA.md): arranque, intro de marca y primera pantalla.
+# Se compila AOT al instalar (profileinstaller), asi el primer cuadro no espera al JIT.
+HSPLcom/gacelas/GacelasApp;->**(**)**
+HSPLcom/gacelas/MainActivity;->**(**)**
+HSPLcom/gacelas/MainActivityKt;->**(**)**
+HSPLcom/gacelas/ui/intro/**;->**(**)**
+HSPLcom/gacelas/ui/components/IconoGacelasKt;->**(**)**
+HSPLcom/gacelas/ui/theme/**;->**(**)**
+HSPLcom/gacelas/navigation/**;->**(**)**
+HSPLcom/gacelas/acceso/**;->**(**)**
+HSPLcom/gacelas/inicio/**;->**(**)**
+HSPLandroidx/compose/runtime/**;->**(**)**
+HSPLandroidx/compose/ui/**;->**(**)**
+HSPLandroidx/compose/foundation/**;->**(**)**
+HSPLandroidx/core/splashscreen/**;->**(**)**
+Lcom/gacelas/**;

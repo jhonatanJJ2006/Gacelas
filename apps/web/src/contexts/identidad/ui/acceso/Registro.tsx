@@ -1,3 +1,4 @@
+import { LogoGacelas } from '../../../../shared/ui/LogoGacelas'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MensajeError } from '../../../../shared/ui/ui'
@@ -49,18 +50,8 @@ export function Registro() {
       <main className="flex-1 px-6 pb-4 short:pb-2 flex flex-col">
         <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full md:max-w-4xl md:grid md:grid-cols-2 md:gap-x-16 md:content-center md:items-center">
           <div className="mb-5 short:mb-3 md:mb-0 md:row-span-2">
-            <div className="flex items-center gap-2.5 mb-6 short:hidden md:flex">
-              <div className="w-12 h-12 rounded-xl bg-primary-600/15 border border-primary-600/30 flex items-center justify-center text-primary-500 shadow-sm">
-                <span className="material-symbols-outlined text-[24px]">sprint</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-headline-md text-text-primary text-lg font-extrabold tracking-wider leading-none">
-                  GACELAS
-                </span>
-                <span className="text-xs font-semibold text-primary-400 tracking-widest">
-                  LOJA, ECUADOR
-                </span>
-              </div>
+            <div className="mb-6 short:hidden md:flex flex">
+              <LogoGacelas tam={48} grande />
             </div>
 
             <h1 className="text-text-primary font-headline-lg text-2xl md:text-4xl font-bold mb-2">
