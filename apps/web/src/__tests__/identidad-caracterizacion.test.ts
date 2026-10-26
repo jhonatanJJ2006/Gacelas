@@ -27,7 +27,10 @@ describe('identidad: perfilDesdeFila', () => {
     expect(p.username.length).toBeGreaterThan(0)
   })
   it('con fila prefiere los datos del perfil', () => {
-    const p = perfilDesdeFila({ full_name: 'Ana', username: 'ana1', location: 'Quito', avatar_url: 'x.png' }, user)
+    const p = perfilDesdeFila(
+      { full_name: 'Ana', username: 'ana1', location: 'Quito', avatar_url: 'x.png' },
+      user
+    )
     expect(p).toMatchObject({ nombre: 'Ana', username: 'ana1', ubicacion: 'Quito', foto: 'x.png' })
   })
 })

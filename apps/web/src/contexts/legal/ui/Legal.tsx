@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ModalC2 } from '../../components/modales'
-import { FilaInterruptor, PantallaAjustes, Seccion } from '../identidad/ui/ajustes/Comunes'
-import { dejarDeCompartir } from '../../features/comunidad/domain/mapaVivo'
+import { ModalC2 } from '../../../components/modales'
+import { FilaInterruptor, PantallaAjustes, Seccion } from '../../identidad'
+import { dejarDeCompartir } from '../../../features/comunidad/domain/mapaVivo'
 import {
   eliminarCuenta,
   historial,
@@ -11,8 +11,8 @@ import {
   requiereAceptarTerminos,
   terminosRemotos,
   vigente,
-} from './consentimientos'
-import { PRIVACIDAD, TERMINOS, TEXTO_UBICACION_VISIBLE, VERSIONES_LEGALES } from './textos'
+} from '../infrastructure/consentimientos'
+import { PRIVACIDAD, TERMINOS, TEXTO_UBICACION_VISIBLE, VERSIONES_LEGALES } from '../domain/textos'
 
 function Documento({ terminos }: { terminos: boolean }) {
   const secciones = terminos ? TERMINOS : PRIVACIDAD

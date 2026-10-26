@@ -3,8 +3,8 @@ import type { Visibilidad } from '../../../../data/tipos'
 import { useApp } from '../../../../store/app'
 import { FilaC2, GrupoC2, PantallaAjustes } from './Comunes'
 import { Interruptor } from '../../../../components/ui'
-import { SeccionConsentimientos } from '../../../legal/Legal'
-import { historial } from '../../../legal/consentimientos'
+import { SeccionConsentimientos } from '../../../legal'
+import { historial } from '../../../legal/api'
 
 const OPCIONES: { id: Visibilidad; icono: string; titulo: string; descripcion: string }[] = [
   {
