@@ -101,6 +101,19 @@ class CuentaTest {
         }
     }
 
+    // Regresion v0.8.0: Google se quedaba cargando tras elegir la cuenta (firma no registrada).
+    @Test fun googleSinRespuestaMuestraErrorYQuitaLaCarga() = runTest {
+        val vm = AccesoSocialViewModel(AuthFalso(), limiteMs = 1_000)
+        var entradas = 0
+        vm.entrar(Proveedor.Google, pedirToken = { kotlinx.coroutines.awaitCancellation() }, alEntrar = { entradas++ })
+        assertEquals(FaseGoogle.Cuenta, vm.fase.value)
+        testScheduler.advanceTimeBy(1_001)
+        testScheduler.runCurrent()
+        assertNull(vm.fase.value)
+        assertEquals(0, entradas)
+        assertEquals(AccesoSocialViewModel.sinRespuesta(Proveedor.Google), vm.error.value?.mensaje)
+    }
+
     @Test fun ajustes() = runTest {
         val repo = object : AjustesRepository {
             override val ajustes = MutableStateFlow(Ajustes())

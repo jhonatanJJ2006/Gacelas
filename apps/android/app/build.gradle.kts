@@ -1,3 +1,6 @@
+import java.io.File
+import java.security.KeyStore
+import java.security.MessageDigest
 import java.util.Properties
 
 plugins {
@@ -21,6 +24,27 @@ listOf("SUPABASE_URL", "SUPABASE_ANON_KEY", "GOOGLE_WEB_CLIENT_ID").filter { loc
     val msg = "local.properties no tiene ${faltan.joinToString()}: el APK no podra iniciar sesion con Google ni conectarse a Supabase."
     if (project.findProperty("gacelas.release") == "true") throw GradleException("$msg No se puede publicar asi.")
     logger.warn("ADVERTENCIA: $msg")
+}
+
+// Firma del APK: Google solo entrega el ID token si la SHA-1 del certificado esta registrada en un
+// cliente OAuth Android (paquete com.gacelas) del proyecto de Google Cloud. Si no, el selector de
+// cuentas se queda cargando o falla tras elegir la cuenta. Paso en v0.8.0 (firmado con F1:A2...
+// cuando el cliente tenia 23:CF...). La lista vive en gradle.properties (gacelas.firmasGoogle).
+// Ver docs/REGRESIONES.md.
+fun sha1Keystore(archivo: File): String? = runCatching {
+    // keystore.type.compat (activo por defecto) permite leer JKS y PKCS12 con el tipo por defecto.
+    val ks = KeyStore.getInstance(KeyStore.getDefaultType()).apply { archivo.inputStream().use { load(it, "android".toCharArray()) } }
+    MessageDigest.getInstance("SHA-1").digest(ks.getCertificate("androiddebugkey").encoded).joinToString(":") { "%02X".format(it) }
+}.getOrNull()
+
+if (project.findProperty("gacelas.release") == "true") {
+    val registradas = (project.findProperty("gacelas.firmasGoogle") as String?).orEmpty().split(',').map { it.trim().uppercase() }.filter { it.isNotEmpty() }
+    val keystore = File(System.getProperty("user.home"), ".android/debug.keystore")
+    val sha1 = sha1Keystore(keystore)
+    if (sha1 == null || sha1 !in registradas) throw GradleException(
+        "La firma del APK (SHA-1 ${sha1 ?: "desconocida"}) no esta en gacelas.firmasGoogle. Registrala en Google Cloud " +
+            "(cliente OAuth Android com.gacelas) y agregala a gradle.properties, o Google se quedara cargando al iniciar sesion."
+    )
 }
 
 android {
