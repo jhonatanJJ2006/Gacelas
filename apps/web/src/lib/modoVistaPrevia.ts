@@ -1,10 +1,9 @@
-import type { CarreraGuardada, Perfil } from '../shared/kernel/tipos'
-import type { PublicacionRemota } from '../data/repositorios'
-import { rutasMock } from '../mocks/data'
-import { conOficiales } from '../contexts/rutas/api'
-import { RUTAS_LOJA } from '../contexts/rutas/api'
-import { useApp } from '../store/app'
 import { tracker } from '../contexts/actividad/application/carreraStore'
+import { conOficiales, RUTAS_LOJA } from '../contexts/rutas/api'
+import { rutasMock } from '../mocks/data'
+import type { PublicacionRemota } from '../shared/kernel/comunidad'
+import type { CarreraGuardada, Perfil } from '../shared/kernel/tipos'
+import { useApp } from '../store/app'
 
 /*
  * Modo de previsualizacion solo para desarrollo (pnpm dev, URL con ?vista-previa).

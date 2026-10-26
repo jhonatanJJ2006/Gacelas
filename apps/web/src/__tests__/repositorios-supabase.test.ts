@@ -1,14 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { crearFakeSupabase, type FakeSupabase } from '../../test/fakeSupabase'
-import {
-  repositoriosSupabase,
-  traducirError,
-  eventoDesdeFila,
-  perfilDesdeFila,
-} from '../supabaseRepos'
-import type { Repositorios } from '../repositorios'
-import type { CarreraGuardada } from '../../shared/kernel/tipos'
-import { useApp, usarRepositorios } from '../../store/app'
+import type { Repositorios } from '../app/composicion'
+import { repositoriosSupabase } from '../app/composicion'
+import { eventoDesdeFila } from '../contexts/eventos/infrastructure/eventosSupabase'
+import { perfilDesdeFila, traducirError } from '../contexts/identidad/infrastructure/authSupabase'
+import type { CarreraGuardada } from '../shared/kernel/tipos'
+import { usarRepositorios, useApp } from '../store/app'
+import { crearFakeSupabase, type FakeSupabase } from '../test/fakeSupabase'
 
 const carrera = (id: string, inicioMs = 1_700_000_000_000): CarreraGuardada => ({
   id,
@@ -94,7 +91,7 @@ describe('SupabaseAuthRepository', () => {
   })
 
   it('si Google no esta activo en el servidor lo explica', async () => {
-    const { configSupabase } = await import('../../lib/supabase')
+    const { configSupabase } = await import('../lib/supabase')
     const antes = { ...configSupabase }
     configSupabase.url = 'https://x.supabase.co'
     const f = vi.fn(async () => new Response(JSON.stringify({ external: { google: false } })))
@@ -230,7 +227,7 @@ describe('utilidades', () => {
 
 describe('notificaciones', () => {
   it('convierte filas de Supabase', async () => {
-    const { notificacionDesdeFila } = await import('../supabaseRepos')
+    const { notificacionDesdeFila } = await import('../contexts/avisos/api')
     const ahora = Date.parse('2026-10-10T12:00:00Z')
     const n = notificacionDesdeFila(
       {

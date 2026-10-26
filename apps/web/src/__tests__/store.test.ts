@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useApp, usarRepositorios } from '../store/app'
-import { repositoriosLocales } from '../data/repositorios'
+import { repositoriosLocales } from '../app/composicion'
+import { usarRepositorios, useApp } from '../store/app'
 import {
   descartarCarrera,
   empezarSeguimiento,

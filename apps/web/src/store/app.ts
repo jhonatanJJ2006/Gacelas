@@ -1,20 +1,12 @@
 import { create } from 'zustand'
+import { repositoriosPorDefecto, type Repositorios } from '../app/composicion'
+import { conOficiales } from '../contexts/rutas/api'
 import {
-  type PublicacionRemota,
-  type ComentarioPublicacion,
-  type CorredorPublico,
-  type Repositorios,
+  type ExplorarRepository,
   type NuevaRuta,
   type ResenaRuta,
-  type ExplorarRepository,
-} from '../data/repositorios'
-import {
-  AJUSTES_POR_DEFECTO,
-  type Ajustes,
-  type CarreraGuardada,
-  type Perfil,
-  type ResultadoAuth,
-} from '../shared/kernel/tipos'
+} from '../contexts/rutas/domain/puertos'
+import { calcularRacha, type Racha } from '../lib/rachas'
 import {
   notificacionesMock,
   rutasMock,
@@ -22,9 +14,18 @@ import {
   type Notificacion,
   type Ruta,
 } from '../mocks/data'
-import { calcularRacha, type Racha } from '../lib/rachas'
-import { conOficiales } from '../contexts/rutas/api'
-import { repositoriosPorDefecto } from '../data/composicion'
+import {
+  type ComentarioPublicacion,
+  type CorredorPublico,
+  type PublicacionRemota,
+} from '../shared/kernel/comunidad'
+import {
+  AJUSTES_POR_DEFECTO,
+  type Ajustes,
+  type CarreraGuardada,
+  type Perfil,
+  type ResultadoAuth,
+} from '../shared/kernel/tipos'
 
 export { repositoriosPorDefecto }
 

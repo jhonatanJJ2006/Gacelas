@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { RUTAS_LOJA } from '../../contexts/rutas/api'
+import { conOficiales, RUTAS_LOJA } from '../../contexts/rutas/api'
 import { aplicarFiltros, FILTROS_INICIALES } from '../../contexts/rutas/domain/rutas'
-import { conOficiales } from '../../contexts/rutas/api'
+import { rutaDesdeFila } from '../../contexts/rutas/infrastructure/rutasSupabase'
 import { rutasMock } from '../../mocks/data'
-import { rutaDesdeFila } from '../../data/supabaseRepos'
 
 describe('rutas oficiales de Loja', () => {
   it('trae entre 20 y 30 rutas con trazado, categoria y fuente', () => {

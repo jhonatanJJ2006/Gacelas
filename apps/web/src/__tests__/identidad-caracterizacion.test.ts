@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
 import type { User } from '@supabase/supabase-js'
-import { perfilDesdeFila, traducirError } from '../data/supabaseRepos'
+import { describe, expect, it } from 'vitest'
+import { perfilDesdeFila, traducirError } from '../contexts/identidad/infrastructure/authSupabase'
 
 /* Caracterizacion de Identidad (F3, docs/ARQUITECTURA-DDD.md): fija el comportamiento antes de mover codigo. */
 describe('identidad: traducirError', () => {

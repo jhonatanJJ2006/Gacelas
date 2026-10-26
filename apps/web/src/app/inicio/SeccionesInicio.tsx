@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
-import type { PublicacionRemota } from '../../data/repositorios'
 import type { ResumenPeriodo, RetoMes } from '../../lib/estadisticas'
 import { formatearHms, formatearRitmo, Unidades } from '../../lib/geo'
 import type { Evento, Ruta } from '../../mocks/data'
+import type { PublicacionRemota } from '../../shared/kernel/comunidad'
 import type { CarreraGuardada } from '../../shared/kernel/tipos'
 
 import { haceTiempo } from '../../lib/tiempo'

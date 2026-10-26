@@ -1,8 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { type NotificacionesRepository } from '../../../data/repositorios'
 import { tiempoRelativo } from '../../../lib/logica'
 import type { Notificacion } from '../../../mocks/data'
 import { usuario } from '../../../shared/supabase/sesion'
+import { type NotificacionesRepository } from '../domain/puertos'
 
 /* Notificaciones de la cuenta sobre Supabase (contexto Avisos). */
 

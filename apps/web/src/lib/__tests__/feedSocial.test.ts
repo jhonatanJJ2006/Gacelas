@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { publicacionDesdeFilaFeed } from '../../data/supabaseRepos'
+import { publicacionDesdeFilaFeed } from '../../contexts/comunidad/infrastructure/comunidadSupabase'
 import { nivelCorredor } from '../logica'
 
 describe('feed social', () => {

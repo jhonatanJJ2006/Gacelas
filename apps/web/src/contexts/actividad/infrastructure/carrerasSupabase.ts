@@ -1,11 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import {
-  escribir,
-  leer,
-  LocalCarrerasRepository,
-  type CarrerasRepository,
-} from '../../../data/repositorios'
 import type { CarreraGuardada } from '../../../shared/kernel/tipos'
+import { escribir, leer } from '../../../shared/lib/almacenLocal'
+import { type CarrerasRepository } from '../domain/puertos'
+import { LocalCarrerasRepository } from './carrerasLocal'
 
 /**
  * Adaptador Supabase del repositorio de carreras (tablas activities y activity_tracks) con

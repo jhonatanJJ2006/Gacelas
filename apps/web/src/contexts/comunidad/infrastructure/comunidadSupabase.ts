@@ -1,12 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   type ComentarioPublicacion,
-  type ComunidadRepository,
   type CorredorPublico,
   type PublicacionRemota,
-} from '../../../data/repositorios'
+} from '../../../shared/kernel/comunidad'
 import { traducirError } from '../../../shared/supabase/errores'
 import { usuario } from '../../../shared/supabase/sesion'
+import { type ComunidadRepository } from '../domain/puertos'
 
 /* Repositorio de la comunidad sobre Supabase: feed, comentarios, me gusta y corredores. */
 

@@ -1,16 +1,16 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Ruta } from '../../../mocks/data'
+import { escribir } from '../../../shared/lib/almacenLocal'
+import { traducirError } from '../../../shared/supabase/errores'
+import { usuario } from '../../../shared/supabase/sesion'
 import {
-  escribir,
-  LocalRutasRepository,
   type CorredorRuta,
   type ExplorarRepository,
   type FotoRuta,
   type NuevaRuta,
   type RutasRepository,
-} from '../../../data/repositorios'
-import type { Ruta } from '../../../mocks/data'
-import { traducirError } from '../../../shared/supabase/errores'
-import { usuario } from '../../../shared/supabase/sesion'
+} from '../domain/puertos'
+import { LocalRutasRepository } from './rutasLocal'
 
 /* Repositorios de rutas sobre Supabase (contexto Rutas), con la copia local como respaldo. */
 

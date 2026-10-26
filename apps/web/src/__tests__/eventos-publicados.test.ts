@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { eventoVisible } from '../data/supabaseRepos'
+import { eventoVisible } from '../contexts/eventos/infrastructure/eventosSupabase'
 
 describe('eventos publicados', () => {
   it('oculta borradores a quien no es su creador', () => {

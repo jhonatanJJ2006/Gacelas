@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { escribir, hashPassword, leer, repositoriosLocales } from '../repositorios'
-import { eventosMock } from '../../mocks/data'
+import { repositoriosLocales } from '../app/composicion'
+import { hashPassword } from '../contexts/identidad/infrastructure/local'
+import { eventosMock } from '../mocks/data'
+import { escribir, leer } from '../shared/lib/almacenLocal'
 
 describe('repositorios locales', () => {
   beforeEach(() => localStorage.clear())

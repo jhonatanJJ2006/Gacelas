@@ -1,12 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import {
-  escribir,
-  LocalEventosRepository,
-  type EventosRepository,
-} from '../../../data/repositorios'
 import type { Evento } from '../../../mocks/data'
+import { escribir } from '../../../shared/lib/almacenLocal'
 import { traducirError } from '../../../shared/supabase/errores'
 import { usuario } from '../../../shared/supabase/sesion'
+import { type EventosRepository } from '../domain/puertos'
+import { LocalEventosRepository } from './eventosLocal'
 
 /* Repositorio de eventos sobre Supabase (contexto Eventos y clubes). */
 
