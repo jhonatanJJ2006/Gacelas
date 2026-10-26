@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gacelas.actividad.domain.EstadoCarrera
 import com.gacelas.actividad.domain.SesionCarrera
-import com.gacelas.actividad.domain.casosuso.AlternarPausa
-import com.gacelas.actividad.domain.casosuso.EliminarCarrera
-import com.gacelas.actividad.domain.casosuso.MarcarVuelta
-import com.gacelas.actividad.domain.casosuso.ObtenerCarrera
+import com.gacelas.actividad.application.AlternarPausa
+import com.gacelas.actividad.application.EliminarCarrera
+import com.gacelas.actividad.application.MarcarVuelta
+import com.gacelas.actividad.application.ObtenerCarrera
 import com.gacelas.actividad.domain.modelo.Carrera
 import com.gacelas.actividad.domain.repositorio.CarrerasRepository
 import kotlinx.coroutines.flow.SharingStarted

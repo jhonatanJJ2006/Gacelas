@@ -1,4 +1,4 @@
-package com.gacelas.actividad.domain.casosuso
+package com.gacelas.actividad.application
 
 import com.gacelas.actividad.domain.EstadoCarrera
 import com.gacelas.actividad.domain.SesionCarrera
