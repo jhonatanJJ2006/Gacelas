@@ -17,8 +17,11 @@ vi.mock('../shared/supabase/client', () => {
   }
 })
 
-import { requiereAceptarTerminos, terminosRemotos } from '../contexts/legal/consentimientos'
-import { VERSIONES_LEGALES } from '../contexts/legal/textos'
+import {
+  requiereAceptarTerminos,
+  terminosRemotos,
+} from '../contexts/legal/infrastructure/consentimientos'
+import { VERSIONES_LEGALES } from '../contexts/legal/domain/textos'
 
 describe('re-aceptacion basada en consents de Supabase', () => {
   beforeEach(() => {

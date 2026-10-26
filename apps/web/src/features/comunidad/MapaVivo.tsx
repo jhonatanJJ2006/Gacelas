@@ -10,7 +10,7 @@ import {
   type IncidentePublico,
 } from '../../contexts/seguridad'
 import { tracker } from '../../contexts/actividad/application/carreraStore'
-import { historial, otorgado } from '../../contexts/legal/consentimientos'
+import { historial, otorgado } from '../../contexts/legal/infrastructure/consentimientos'
 import {
   listarCorredores,
   publicarPosicion,

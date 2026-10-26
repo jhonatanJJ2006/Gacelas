@@ -1,2 +1,3 @@
-/** API publica del contexto cuenta (importar pantallas desde ui/ directamente en el router). */
-export {}
+/** Entrada del contexto Identidad: su API y los componentes de ajustes que usan otros contextos. */
+export * from './api'
+export { FilaInterruptor, PantallaAjustes, Seccion } from './ui/ajustes/Comunes'

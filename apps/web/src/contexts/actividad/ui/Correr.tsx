@@ -11,7 +11,7 @@ import {
 } from '../../../store/carrera'
 import { calidadSenal } from '../../../lib/logica'
 import { ModalC2 } from '../../../components/modales'
-import { historial, otorgado, registrarConsentimiento } from '../../legal/consentimientos'
+import { historial, otorgado, registrarConsentimiento } from '../../legal/api'
 
 type EstadoGps =
   { tipo: 'buscando' } | { tipo: 'listo'; precisionM: number } | { tipo: 'error'; mensaje: string }

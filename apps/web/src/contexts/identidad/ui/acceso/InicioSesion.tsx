@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { EnlacesLegales } from '../../../legal/Legal'
+import { EnlacesLegales } from '../../../legal'
 import { useNavigate, Link } from 'react-router-dom'
 import { CampoContrasena } from '../../../../components/CampoContrasena'
 import { useApp } from '../../../../store/app'

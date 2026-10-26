@@ -10,8 +10,8 @@ import {
   otorgado,
   registrarConsentimiento,
   requiereAceptarTerminos,
-} from '../../contexts/legal/consentimientos'
-import { PRIVACIDAD, TERMINOS, VERSIONES_LEGALES } from '../../contexts/legal/textos'
+} from '../../contexts/legal/infrastructure/consentimientos'
+import { PRIVACIDAD, TERMINOS, VERSIONES_LEGALES } from '../../contexts/legal/domain/textos'
 
 const c = (id: string, hace: number, ahora: number): CorredorEnMapa => ({
   userId: id,

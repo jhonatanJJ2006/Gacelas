@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import {
-  repositoriosLocales,
   type PublicacionRemota,
   type ComentarioPublicacion,
   type CorredorPublico,
@@ -23,16 +22,11 @@ import {
   type Notificacion,
   type Ruta,
 } from '../mocks/data'
-import { obtenerSupabase } from '../lib/supabase'
 import { calcularRacha, type Racha } from '../lib/rachas'
 import { conOficiales } from '../lib/rutas'
-import { repositoriosSupabase } from '../data/supabaseRepos'
+import { repositoriosPorDefecto } from '../data/composicion'
 
-/** Con Supabase configurado se usa el servidor; si no, todo queda en el dispositivo. */
-export function repositoriosPorDefecto(): Repositorios {
-  const sb = obtenerSupabase()
-  return sb ? repositoriosSupabase(sb) : repositoriosLocales()
-}
+export { repositoriosPorDefecto }
 
 let repos: Repositorios = repositoriosPorDefecto()
 let dejarDeEscuchar: (() => void) | null = null

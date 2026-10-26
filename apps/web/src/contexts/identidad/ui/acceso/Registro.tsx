@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { CampoContrasena } from '../../../../components/CampoContrasena'
 import { useApp } from '../../../../store/app'
 import { MensajeError } from '../../../../components/ui'
-import { registrarConsentimiento } from '../../../legal/consentimientos'
+import { registrarConsentimiento } from '../../../legal/api'
 import { BotonGoogle } from '../../../../components/BotonGoogle'
 import { PanelCorredorAcceso } from '../../../../components/PanelCorredorAcceso'
 

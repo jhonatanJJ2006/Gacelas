@@ -133,13 +133,13 @@ const Notificaciones = lazy(() =>
 )
 
 const Terminos = lazy(() =>
-  import('../contexts/legal/Legal').then((m) => ({ default: m.Terminos }))
+  import('../contexts/legal/ui/Legal').then((m) => ({ default: m.Terminos }))
 )
 const PoliticaPrivacidad = lazy(() =>
-  import('../contexts/legal/Legal').then((m) => ({ default: m.PoliticaPrivacidad }))
+  import('../contexts/legal/ui/Legal').then((m) => ({ default: m.PoliticaPrivacidad }))
 )
 const ReaceptarTerminos = lazy(() =>
-  import('../contexts/legal/Legal').then((m) => ({ default: m.ReaceptarTerminos }))
+  import('../contexts/legal/ui/Legal').then((m) => ({ default: m.ReaceptarTerminos }))
 )
 const AnfitrionLogros = lazy(() =>
   import('../features/social/Social').then((m) => ({ default: m.AnfitrionLogros }))
