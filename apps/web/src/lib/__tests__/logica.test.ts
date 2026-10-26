@@ -20,7 +20,7 @@ import {
   validarEvento,
 } from '../logica'
 import { eventosMock, ID_USUARIO, notificacionesMock, rutasMock } from '../../mocks/data'
-import { AJUSTES_POR_DEFECTO, type CarreraGuardada } from '../../data/tipos'
+import { AJUSTES_POR_DEFECTO, type CarreraGuardada } from '../../shared/kernel/tipos'
 
 const ms = (y: number, m: number, d: number, h = 7) => new Date(y, m - 1, d, h).getTime()
 const carrera = (inicioMs: number, km = 5, publica = true): CarreraGuardada => ({

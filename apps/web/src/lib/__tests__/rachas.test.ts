@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { calcularRacha, mapaCalor, rachaEnRiesgo } from '../rachas'
-import type { CarreraGuardada } from '../../data/tipos'
+import type { CarreraGuardada } from '../../shared/kernel/tipos'
 
 const ahora = new Date(2026, 9, 10, 12).getTime() // sabado 10 oct 2026
 const hace = (dias: number) =>

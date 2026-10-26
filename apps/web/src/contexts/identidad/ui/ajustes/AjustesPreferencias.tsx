@@ -6,7 +6,7 @@ import { useApp } from '../../../../store/app'
 import type { ReactNode } from 'react'
 import { Interruptor } from '../../../../components/ui'
 import { nivelCorredor } from '../../../../lib/logica'
-import { InsigniaNivel } from '../../../../features/comunidad/PostSocial'
+import { InsigniaNivel } from '../../../comunidad'
 import { FotoPerfil } from '../perfil/Perfil'
 import { PantallaAjustes, Seccion } from './Comunes'
 

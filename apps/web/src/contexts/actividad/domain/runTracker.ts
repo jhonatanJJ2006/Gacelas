@@ -1,5 +1,5 @@
 import { distanciaPuntos, formatearHms, type PuntoGps } from '../../../shared/lib/geo'
-import type { CarreraGuardada, Parcial } from '../../../data/tipos'
+import type { CarreraGuardada, Parcial } from '../../../shared/kernel/tipos'
 
 export type FaseCarrera = 'inactiva' | 'corriendo' | 'pausada' | 'terminada'
 

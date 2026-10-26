@@ -1,4 +1,4 @@
-import type { CarreraGuardada } from '../../../data/tipos'
+import type { CarreraGuardada } from './tipos'
 import { inicioDia, inicioSemana } from './estadisticas'
 
 /** Estado de rachas. Misma logica que public.recalcular_racha en Supabase. */

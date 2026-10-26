@@ -1,14 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
-import { ModalC2 } from '../../components/modales'
-import { useApp } from '../../store/app'
-import { LOGROS, desbloquearNuevos, logrosDesbloqueados, type DefinicionLogro } from './logros'
+import { ModalC2 } from '../../../components/modales'
+import { useApp } from '../../../store/app'
+import {
+  LOGROS,
+  desbloquearNuevos,
+  logrosDesbloqueados,
+  type DefinicionLogro,
+} from '../../logros/api'
 import {
   MOTIVOS_POR_TIPO,
   reportarContenido,
   TITULO_REPORTE,
   type MotivoReporte,
   type TipoContenido,
-} from './moderacion'
+} from '../../moderacion/api'
 
 /** Modal C2 para reportar una publicacion, un comentario, un corredor o un evento. */
 export function ModalReporte({

@@ -7,7 +7,7 @@ import {
   type CarreraGuardada,
   type Perfil,
   type ResultadoAuth,
-} from './tipos'
+} from '../shared/kernel/tipos'
 
 /*
  * Repositorios de datos. La app solo conoce estas interfaces; hoy se implementan con

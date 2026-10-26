@@ -1,4 +1,4 @@
-import type { CarreraGuardada, Perfil } from '../data/tipos'
+import type { CarreraGuardada, Perfil } from '../shared/kernel/tipos'
 import type { PublicacionRemota } from '../data/repositorios'
 import { rutasMock } from '../mocks/data'
 import { conOficiales } from '../contexts/rutas/api'

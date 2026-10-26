@@ -1,5 +1,5 @@
 import { useEsEscritorio } from '../../../../lib/useEsEscritorio'
-import { ListaLogros } from '../../../../features/social/Social'
+import { ListaLogros } from '../../../comunidad'
 import { EstadisticasPerfil } from '../../../../components/PanelesEscritorio'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'

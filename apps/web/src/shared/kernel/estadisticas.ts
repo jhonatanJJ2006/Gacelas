@@ -1,4 +1,4 @@
-import type { CarreraGuardada } from '../../../data/tipos'
+import type { CarreraGuardada } from './tipos'
 
 const DIA_MS = 86_400_000
 

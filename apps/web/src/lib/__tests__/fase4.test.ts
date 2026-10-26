@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { nuevoRecord } from '../estadisticas'
 import { etiquetaOpcion, type Opcion } from '../logica'
-import type { CarreraGuardada } from '../../data/tipos'
+import type { CarreraGuardada } from '../../shared/kernel/tipos'
 
 const c = (distanciaKm: number, segundos: number) =>
   ({ id: `${distanciaKm}-${segundos}`, distanciaKm, segundos, inicioMs: 0 }) as CarreraGuardada

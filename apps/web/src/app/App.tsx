@@ -55,7 +55,7 @@ const NavegacionRuta = lazy(() =>
   import('../contexts/rutas/ui/NavegacionRuta').then((m) => ({ default: m.NavegacionRuta }))
 )
 
-const Feed = lazy(() => import('../features/comunidad/Feed').then((m) => ({ default: m.Feed })))
+const Feed = lazy(() => import('../contexts/comunidad/ui/Feed').then((m) => ({ default: m.Feed })))
 const Eventos = lazy(() =>
   import('../features/comunidad/Eventos').then((m) => ({ default: m.Eventos }))
 )
@@ -64,7 +64,7 @@ const DetalleEvento = lazy(() =>
 )
 
 const Corredores = lazy(() =>
-  import('../features/comunidad/Corredores').then((m) => ({ default: m.Corredores }))
+  import('../contexts/comunidad/ui/Corredores').then((m) => ({ default: m.Corredores }))
 )
 const Clubes = lazy(() =>
   import('../features/comunidad/Clubes').then((m) => ({ default: m.Clubes }))
@@ -142,10 +142,10 @@ const ReaceptarTerminos = lazy(() =>
   import('../contexts/legal/ui/Legal').then((m) => ({ default: m.ReaceptarTerminos }))
 )
 const AnfitrionLogros = lazy(() =>
-  import('../features/social/Social').then((m) => ({ default: m.AnfitrionLogros }))
+  import('../contexts/comunidad/ui/Social').then((m) => ({ default: m.AnfitrionLogros }))
 )
 const ModalSinConexion = lazy(() =>
-  import('../features/social/Social').then((m) => ({ default: m.ModalSinConexion }))
+  import('../contexts/comunidad/ui/Social').then((m) => ({ default: m.ModalSinConexion }))
 )
 const Admin = lazy(() => import('../features/admin/Admin').then((m) => ({ default: m.Admin })))
 const MapaVivo = lazy(() =>
