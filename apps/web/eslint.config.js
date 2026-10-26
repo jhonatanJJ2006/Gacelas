@@ -29,7 +29,6 @@ export default tseslint.config(
         { type: 'ui', pattern: 'src/{features,contexts}/*/ui/**' },
         // Fachada publica de cada contexto (docs/ARQUITECTURA-DDD.md, 4.2).
         { type: 'api', pattern: 'src/contexts/*/api.ts', mode: 'file' },
-        { type: 'legacy', pattern: 'src/{lib,store,data,components}/**' },
       ],
       'boundaries/ignore': ['**/*.test.ts', '**/*.test.tsx', '**/__tests__/**', 'src/test/**'],
     },
@@ -44,27 +43,26 @@ export default tseslint.config(
             { from: 'domain', allow: ['shared', 'domain'] },
             { from: 'data', allow: ['domain', 'shared', 'data'] },
             { from: 'application', allow: ['domain', 'data', 'application', 'shared'] },
-            { from: 'ui', allow: ['application', 'domain', 'shared', 'ui', 'legacy', 'api'] },
-            { from: 'app', allow: ['ui', 'application', 'shared', 'legacy', 'app', 'api'] },
+            { from: 'ui', allow: ['application', 'domain', 'shared', 'ui', 'api'] },
+            { from: 'app', allow: ['ui', 'application', 'shared', 'app', 'api'] },
             { from: 'api', allow: ['domain', 'application', 'data', 'shared'] },
-            { from: 'legacy', allow: ['*'] },
             { from: 'shared', allow: ['shared'] },
           ],
         },
       ],
     },
   },
-  // Reglas DDD en modo aviso (docs/adr/004-arquitectura-ddd.md): Supabase solo en infrastructure.
+  // Reglas DDD (docs/adr/004-arquitectura-ddd.md): Supabase solo en infrastructure.
   {
     files: ['src/contexts/*/{domain,application,ui}/**/*.{ts,tsx}', 'src/features/**/*.{ts,tsx}'],
     ignores: ['**/*.test.ts', '**/*.test.tsx', '**/__tests__/**'],
     rules: {
       'no-restricted-imports': [
-        'warn',
+        'error',
         {
           patterns: [
             {
-              group: ['@supabase/*', '**/shared/supabase/*', '**/lib/supabase'],
+              group: ['@supabase/*', '**/shared/supabase/*'],
               message: 'Supabase solo se usa desde infrastructure (ADR 004).',
             },
           ],
