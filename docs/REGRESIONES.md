@@ -16,10 +16,10 @@ En Android, al pulsar "Continuar con Google" y elegir la cuenta, la app se queda
 - El codigo de Google en Android (`GoogleAcceso.kt`) es igual en v0.6.10 y v0.8.0.
 - La firma si cambio:
 
-| Version | SHA-1 de la firma |
-| --- | --- |
+| Version | SHA-1 de la firma                                           |
+| ------- | ----------------------------------------------------------- |
 | v0.6.10 | 23:CF:7D:D7:5A:19:B1:54:13:99:38:AD:62:61:DE:AA:BE:DC:23:F9 |
-| v0.8.0 | F1:A2:7B:EE:15:19:B9:5D:DB:88:AD:77:4F:5E:0E:08:5F:9F:45:D1 |
+| v0.8.0  | F1:A2:7B:EE:15:19:B9:5D:DB:88:AD:77:4F:5E:0E:08:5F:9F:45:D1 |
 
 El ultimo inicio con Google que funciono fue el 20-oct a las 11:06 (hora de Ecuador), con v0.6.10. v0.8.0 se publico ese mismo dia a las 12:34.
 
