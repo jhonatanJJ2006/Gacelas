@@ -32,6 +32,8 @@ const racha = (diaria: number, semanal: number): Racha => ({
   ultimoDiaMs: null,
   semanal,
   mejorSemanal: semanal,
+  metaSemanal: 3,
+  carrerasSemana: 0,
 })
 
 const carrera = (id: string, inicioMs = Date.now()): CarreraGuardada => ({
@@ -92,7 +94,10 @@ function conBackend(sesion: Perfil | null = perfil('ana@x.ec')) {
       siguiendo: vi.fn(async () => ['s1']),
       alternarSeguir: vi.fn(async () => ['s1', 's2']),
       seguidores: vi.fn(async () => 4),
-      suscribir: vi.fn(() => vi.fn()),
+      suscribir: vi.fn((alCambiar: () => void) => {
+        void alCambiar
+        return vi.fn()
+      }),
     },
     rachas: { leer: vi.fn(async () => racha(2, 1)) },
     explorar: {
@@ -128,7 +133,9 @@ describe('caracterizacion del estado de la app', () => {
       notificaciones: notificacionesMock,
     })
   })
-  afterEach(() => vi.useRealTimers())
+  afterEach(() => {
+    vi.useRealTimers()
+  })
 
   it('sin backend ni sesion usa los datos de ejemplo', async () => {
     configurar(repositoriosLocales())
@@ -260,7 +267,7 @@ describe('caracterizacion del estado de la app', () => {
     await estado().cargar()
     vi.useFakeTimers()
     const baja = estado().suscribirFeed()
-    const aviso = r.comunidad.suscribir.mock.calls[0][0] as () => void
+    const aviso = r.comunidad.suscribir.mock.calls[0][0]
     aviso()
     aviso()
     vi.advanceTimersByTime(399)
