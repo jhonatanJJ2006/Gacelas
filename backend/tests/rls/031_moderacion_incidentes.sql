@@ -10,13 +10,13 @@ INSERT INTO auth.users (id, email) VALUES
 ON CONFLICT DO NOTHING;
 INSERT INTO public.user_roles VALUES ('00000000-0000-0000-0000-0000000031a1', 'admin', now())
 ON CONFLICT DO NOTHING;
-ALTER TABLE public.incidentes_usuario DISABLE TRIGGER USER;
+ALTER TABLE seguridad.incidentes_usuario DISABLE TRIGGER USER;
 INSERT INTO public.incidentes_usuario (id, user_id, tipo, descripcion, geom, direccion) VALUES
   ('00000000-0000-0000-0000-0000000031e1', '00000000-0000-0000-0000-0000000031b1', 'via_mal_estado',
    'Hueco grande', ST_SetSRID(ST_MakePoint(-79.2, -4.0), 4326), 'Av. Universitaria'),
   ('00000000-0000-0000-0000-0000000031e2', '00000000-0000-0000-0000-0000000031b1', 'otro',
    'Prueba', ST_SetSRID(ST_MakePoint(-79.2, -4.0), 4326), NULL);
-ALTER TABLE public.incidentes_usuario ENABLE TRIGGER USER;
+ALTER TABLE seguridad.incidentes_usuario ENABLE TRIGGER USER;
 INSERT INTO public.content_reports (target_type, target_id, reporter_id, reason) VALUES
   ('incidente', '00000000-0000-0000-0000-0000000031e1', '00000000-0000-0000-0000-0000000031c1', 'falso'),
   ('incidente', '00000000-0000-0000-0000-0000000031e2', '00000000-0000-0000-0000-0000000031c1', 'falso');
