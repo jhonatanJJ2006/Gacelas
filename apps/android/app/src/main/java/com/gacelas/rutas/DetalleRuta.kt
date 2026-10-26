@@ -51,7 +51,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.actividad.domain.modelo.PuntoGps
 import com.gacelas.data.mock.MockData
 import com.gacelas.rutas.domain.modelo.ETIQUETAS_RUTA
 import com.gacelas.rutas.domain.modelo.ResenaRuta
@@ -111,7 +111,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
     var subiendo by remember { mutableStateOf(false) }
     var compartiendo by remember { mutableStateOf(false) }
     val carrerasRacha by com.gacelas.ui.carrerasState()
-    val rachaDias = remember(carrerasRacha, ajustes.metaSemanal) { com.gacelas.carreras.domain.reglas.Rachas.calcular(carrerasRacha, System.currentTimeMillis(), ajustes.metaSemanal).diaria }
+    val rachaDias = remember(carrerasRacha, ajustes.metaSemanal) { com.gacelas.actividad.domain.reglas.Rachas.calcular(carrerasRacha, System.currentTimeMillis(), ajustes.metaSemanal).diaria }
     LaunchedEffect(id, sociales) {
         if (!sociales) return@LaunchedEffect
         vm.cargar()
@@ -174,7 +174,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
             ruta.fuente?.let { Text("Trazado: $it. Datos (c) colaboradores de OpenStreetMap.", style = GType.labelMd, color = GColors.C2Muted) }
             ruta.autorNombre?.let { Text("Creada por $it", style = GType.bodySm, color = GColors.TextSecondary) }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                BotonPrimario("Correr esta ruta", { com.gacelas.rutas.data.RutaActiva.id = id; onCorrer() }, Modifier.weight(1f), icono = Icons.AutoMirrored.Filled.DirectionsRun)
+                BotonPrimario("Correr esta ruta", { com.gacelas.rutas.infrastructure.RutaActiva.id = id; onCorrer() }, Modifier.weight(1f), icono = Icons.AutoMirrored.Filled.DirectionsRun)
                 IconButton(onClick = { compartiendo = true }, modifier = Modifier.clip(CircleShape).background(GColors.SurfaceContainer)) { Icon(Icons.Filled.Share, "Compartir ruta", tint = GColors.TextPrimary) }
                 if (sociales) {
                     val activo = id in meGusta

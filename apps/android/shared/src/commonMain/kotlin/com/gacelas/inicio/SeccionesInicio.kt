@@ -36,8 +36,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.gacelas.carreras.domain.reglas.ResumenPeriodo
-import com.gacelas.carreras.domain.reglas.RetoMes
+import com.gacelas.actividad.domain.reglas.ResumenPeriodo
+import com.gacelas.actividad.domain.reglas.RetoMes
 import com.gacelas.comunidad.domain.modelo.Evento
 import com.gacelas.comunidad.domain.modelo.Publicacion
 import com.gacelas.tracking.Unidades
@@ -130,7 +130,7 @@ fun TarjetaEvento(evento: Evento, inscrito: Boolean, onClick: () -> Unit) {
         Row(verticalAlignment = Alignment.Top) {
             Text(evento.titulo, style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
             evento.inicioMs?.let { ms ->
-                val (dia, mes) = com.gacelas.carreras.domain.reglas.EstadisticasPerfil.diaYMes(ms)
+                val (dia, mes) = com.gacelas.actividad.domain.reglas.EstadisticasPerfil.diaYMes(ms)
                 Column(
                     Modifier.width(56.dp).clip(RoundedCornerShape(12.dp)).background(GColors.Primary.copy(alpha = 0.2f)).padding(vertical = 4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,

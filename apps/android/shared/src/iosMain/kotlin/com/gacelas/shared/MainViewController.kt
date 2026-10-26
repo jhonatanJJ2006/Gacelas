@@ -16,7 +16,7 @@ import com.gacelas.navigation.Destinos
 import com.gacelas.ui.components.ScaffoldPrincipal
 import com.gacelas.acceso.BotonGoogleVisual
 import com.gacelas.acceso.InicioSesionC4
-import com.gacelas.cuenta.domain.reglas.ValidacionAuth
+import com.gacelas.identidad.domain.reglas.ValidacionAuth
 import com.gacelas.ui.theme.GacelasTheme
 import platform.Foundation.NSBundle
 import platform.Foundation.NSDate
@@ -85,7 +85,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
     // Sesion guardada (Supabase o local): al abrir sin pantalla pedida, entra directo a Inicio como Android.
     val sinPantalla = remember { NSProcessInfo.processInfo.arguments.none { (it as? String)?.startsWith("--") == true } }
     LaunchedEffect(Unit) {
-        (com.gacelas.acceso.SesionIos.auth as? com.gacelas.cuenta.data.SupabaseAuthRepository)?.let { runCatching { it.restaurar() } }
+        (com.gacelas.acceso.SesionIos.auth as? com.gacelas.identidad.infrastructure.SupabaseAuthRepository)?.let { runCatching { it.restaurar() } }
         if (sinPantalla && pantalla == PantallaIos.Bienvenida && com.gacelas.acceso.SesionIos.auth.sesion.firstOrNull() != null) pantalla = PantallaIos.Inicio
     }
     if (!enSensores) {
@@ -246,10 +246,10 @@ private fun InicioIos(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (St
     com.gacelas.inicio.InicioContenido(
         saludo = com.gacelas.inicio.saludoPorHora(Fechas.hora(ahora)),
         nombre = perfil?.nombre?.substringBefore(' ')?.ifBlank { null } ?: "Corredor",
-        semana = remember { com.gacelas.carreras.domain.reglas.Estadisticas.semana(emptyList(), ahora) },
+        semana = remember { com.gacelas.actividad.domain.reglas.Estadisticas.semana(emptyList(), ahora) },
         hoy = Fechas.diaSemana(ahora),
         m = true,
-        racha = remember { com.gacelas.carreras.domain.reglas.Rachas.calcular(emptyList(), ahora) },
+        racha = remember { com.gacelas.actividad.domain.reglas.Rachas.calcular(emptyList(), ahora) },
         evento = evento,
         onCorrer = onCorrer, onEventos = onEventos, onEvento = onEvento,
         // Igual que InicioScreen (Android): Idle girando, camara (0, 0.3, 4.4).

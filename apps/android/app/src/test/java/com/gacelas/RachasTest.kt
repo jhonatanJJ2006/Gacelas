@@ -1,7 +1,7 @@
 package com.gacelas
 
-import com.gacelas.carreras.domain.modelo.Carrera
-import com.gacelas.carreras.domain.reglas.Rachas
+import com.gacelas.actividad.domain.modelo.Carrera
+import com.gacelas.actividad.domain.reglas.Rachas
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

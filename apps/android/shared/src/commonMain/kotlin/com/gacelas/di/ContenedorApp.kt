@@ -2,39 +2,39 @@ package com.gacelas.di
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import com.gacelas.carreras.data.LocalCarrerasRepository
-import com.gacelas.carreras.data.SupabaseCarrerasRepository
-import com.gacelas.carreras.domain.SesionCarrera
-import com.gacelas.carreras.domain.repositorio.CarrerasRepository
-import com.gacelas.carreras.presentation.CarreraEnCursoViewModel
-import com.gacelas.carreras.presentation.DetalleCarreraViewModel
-import com.gacelas.carreras.presentation.HistorialCarrerasViewModel
+import com.gacelas.actividad.infrastructure.LocalCarrerasRepository
+import com.gacelas.actividad.infrastructure.SupabaseCarrerasRepository
+import com.gacelas.actividad.domain.SesionCarrera
+import com.gacelas.actividad.domain.repositorio.CarrerasRepository
+import com.gacelas.actividad.presentation.CarreraEnCursoViewModel
+import com.gacelas.actividad.presentation.DetalleCarreraViewModel
+import com.gacelas.actividad.presentation.HistorialCarrerasViewModel
 import com.gacelas.comunidad.domain.repositorio.ClubesRepository
 import com.gacelas.comunidad.domain.repositorio.EnVivoRepository
 import com.gacelas.comunidad.domain.repositorio.NotificacionesRepository
-import com.gacelas.comunidad.data.SupabaseEventosRepository
+import com.gacelas.comunidad.infrastructure.SupabaseEventosRepository
 import com.gacelas.comunidad.domain.modelo.Notificacion
 import com.gacelas.comunidad.domain.repositorio.EventosRepository
 import com.gacelas.comunidad.presentation.ClubesViewModel
 import com.gacelas.comunidad.presentation.EventosViewModel
 import com.gacelas.comunidad.presentation.NotificacionesViewModel
-import com.gacelas.cuenta.data.LocalAjustesRepository
-import com.gacelas.cuenta.data.LocalAuthRepository
-import com.gacelas.cuenta.data.SupabaseAjustesRepository
-import com.gacelas.cuenta.data.SupabaseAuthRepository
-import com.gacelas.cuenta.domain.repositorio.AjustesRepository
-import com.gacelas.cuenta.domain.repositorio.AuthRepository
-import com.gacelas.cuenta.presentation.AccesoSocialViewModel
-import com.gacelas.cuenta.presentation.AjustesViewModel
-import com.gacelas.cuenta.presentation.LoginViewModel
-import com.gacelas.cuenta.presentation.RecuperarViewModel
-import com.gacelas.cuenta.presentation.RegistroViewModel
+import com.gacelas.identidad.infrastructure.LocalAjustesRepository
+import com.gacelas.identidad.infrastructure.LocalAuthRepository
+import com.gacelas.identidad.infrastructure.SupabaseAjustesRepository
+import com.gacelas.identidad.infrastructure.SupabaseAuthRepository
+import com.gacelas.identidad.domain.repositorio.AjustesRepository
+import com.gacelas.identidad.domain.repositorio.AuthRepository
+import com.gacelas.identidad.presentation.AccesoSocialViewModel
+import com.gacelas.identidad.presentation.AjustesViewModel
+import com.gacelas.identidad.presentation.LoginViewModel
+import com.gacelas.identidad.presentation.RecuperarViewModel
+import com.gacelas.identidad.presentation.RegistroViewModel
 import com.gacelas.data.actualizacion.ActualizacionRepository
 import com.gacelas.data.remoto.Backend
 import com.gacelas.rutas.domain.repositorio.ExplorarRepository
-import com.gacelas.rutas.data.LocalRutasRepository
-import com.gacelas.rutas.data.RutasOffline
-import com.gacelas.rutas.data.SupabaseRutasRepository
+import com.gacelas.rutas.infrastructure.LocalRutasRepository
+import com.gacelas.rutas.infrastructure.RutasOffline
+import com.gacelas.rutas.infrastructure.SupabaseRutasRepository
 import com.gacelas.rutas.domain.modelo.Ruta
 import com.gacelas.rutas.domain.repositorio.RutasRepository
 import com.gacelas.rutas.presentation.DetalleRutaViewModel
@@ -139,7 +139,7 @@ class ContenedorApp(
             sincronizar = { remotoAuth.restaurar() }
             enVivo = ModuloComunidad.enVivo(backend, uid)
             mapaVivo = com.gacelas.vivo.MapaVivoRepository(backend, uid)
-            incidentes = com.gacelas.seguridad.data.SupabaseIncidentesRepositorio(backend)
+            incidentes = com.gacelas.seguridad.infrastructure.SupabaseIncidentesRepositorio(backend)
             consentimientos = com.gacelas.legal.ConsentimientosRepository(store, backend, uid)
             social = com.gacelas.social.SocialRepository(store, backend, uid)
             notificaciones = ModuloComunidad.notificaciones(backend, uid)
@@ -147,7 +147,7 @@ class ContenedorApp(
             explorar = ex
             subirPendientes = { c.sincronizar() + ex.subirPendientes() }
             clubes = ModuloComunidad.clubes(backend, uid)
-            feed = com.gacelas.comunidad.data.SupabaseFeedRepository(backend, uid)
+            feed = com.gacelas.comunidad.infrastructure.SupabaseFeedRepository(backend, uid)
         }
     }
 
@@ -163,7 +163,7 @@ class ContenedorApp(
     fun carreraEnCursoViewModel(sesion: SesionCarrera = tracker) = CarreraEnCursoViewModel(sesion)
     fun listaRutasViewModel(idUsuario: String, ejemplo: List<Ruta>) = ListaRutasViewModel(explorar, rutas, idUsuario, ejemplo)
     fun dibujarRutaViewModel() = com.gacelas.rutas.presentation.DibujarRutaViewModel(
-        explorar, { com.gacelas.rutas.data.Elevacion.perfil(it) }, { com.gacelas.rutas.data.Elevacion.desnivelPositivo(it) },
+        explorar, { com.gacelas.rutas.infrastructure.Elevacion.perfil(it) }, { com.gacelas.rutas.infrastructure.Elevacion.desnivelPositivo(it) },
     )
     fun detalleRutaViewModel(id: String) = DetalleRutaViewModel(id, explorar)
     fun eventosViewModel() = EventosViewModel(eventos)

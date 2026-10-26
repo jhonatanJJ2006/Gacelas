@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
-import com.gacelas.carreras.domain.reglas.Estadisticas
+import com.gacelas.actividad.domain.reglas.Estadisticas
 import com.gacelas.data.mock.MockData
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearRitmo
@@ -80,10 +80,10 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
         saludo = saludo, nombre = nombre, semana = semana, hoy = hoy, m = m, racha = com.gacelas.ui.rachaState(), evento = evento,
         onCorrer = onCorrer, onEventos = onEventos, onEvento = onEvento,
         corredor3D = { Runner3D(ClipCorredor.Idle, autoRotar = true, camara = Position(0f, 0.3f, 4.4f)) },
-        totales = remember(carreras) { com.gacelas.carreras.domain.reglas.EstadisticasPerfil.totalesSemana(carreras, ahora) },
+        totales = remember(carreras) { com.gacelas.actividad.domain.reglas.EstadisticasPerfil.totalesSemana(carreras, ahora) },
         meta = ajustes.metaSemanal,
         rango = remember { rangoSemana(ahora) },
-        reto = remember(carreras) { com.gacelas.carreras.domain.reglas.EstadisticasPerfil.retoMes(carreras, ahora) },
+        reto = remember(carreras) { com.gacelas.actividad.domain.reglas.EstadisticasPerfil.retoMes(carreras, ahora) },
         amigos = social.amigos,
         inscrito = evento.id in inscritos,
         onComunidad = onComunidad,
@@ -97,7 +97,7 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
 fun rangoSemana(ahoraMs: Long): String {
     val lunes = com.gacelas.shared.Fechas.fecha(Estadisticas.inicioSemana(ahoraMs))
     val domingo = com.gacelas.shared.Fechas.fecha(com.gacelas.shared.Fechas.sumarDias(Estadisticas.inicioSemana(ahoraMs), 6))
-    return "${lunes.dayOfMonth} - ${domingo.dayOfMonth} ${com.gacelas.carreras.domain.reglas.EstadisticasPerfil.MESES_CORTOS[domingo.monthNumber - 1].lowercase()}"
+    return "${lunes.dayOfMonth} - ${domingo.dayOfMonth} ${com.gacelas.actividad.domain.reglas.EstadisticasPerfil.MESES_CORTOS[domingo.monthNumber - 1].lowercase()}"
 }
 
 /** Sugiere la ruta del catalogo cuya distancia se acerca mas a la media de las ultimas carreras (5 km sin historial). */

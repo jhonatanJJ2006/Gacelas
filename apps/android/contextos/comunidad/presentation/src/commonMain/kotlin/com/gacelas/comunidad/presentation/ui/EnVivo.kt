@@ -17,11 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.actividad.domain.modelo.PuntoGps
 import com.gacelas.comunidad.presentation.DetalleEnVivoViewModel
 import com.gacelas.comunidad.presentation.ListaEnVivoViewModel
 import com.gacelas.correr.TrazadoRuta
-import com.gacelas.cuenta.domain.modelo.Ajustes
+import com.gacelas.identidad.domain.modelo.Ajustes
 import com.gacelas.mapa.Coord
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearHms

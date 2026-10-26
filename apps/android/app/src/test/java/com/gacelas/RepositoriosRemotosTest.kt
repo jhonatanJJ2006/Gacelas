@@ -2,16 +2,16 @@ package com.gacelas
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.gacelas.acceso.GoogleAcceso
-import com.gacelas.cuenta.domain.modelo.Visibilidad
-import com.gacelas.cuenta.domain.modelo.ResultadoAuth
-import com.gacelas.carreras.domain.modelo.Carrera
-import com.gacelas.carreras.domain.modelo.Parcial
-import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.identidad.domain.modelo.Visibilidad
+import com.gacelas.identidad.domain.modelo.ResultadoAuth
+import com.gacelas.actividad.domain.modelo.Carrera
+import com.gacelas.actividad.domain.modelo.Parcial
+import com.gacelas.actividad.domain.modelo.PuntoGps
 import com.gacelas.comunidad.domain.modelo.Evento
-import com.gacelas.carreras.data.carreraDesdeFila
-import com.gacelas.comunidad.data.eventoDesdeFila
+import com.gacelas.actividad.infrastructure.carreraDesdeFila
+import com.gacelas.comunidad.infrastructure.eventoDesdeFila
 import com.gacelas.data.remoto.fila
-import com.gacelas.carreras.data.filaDesdeCarrera
+import com.gacelas.actividad.infrastructure.filaDesdeCarrera
 import com.gacelas.data.remoto.traducirError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

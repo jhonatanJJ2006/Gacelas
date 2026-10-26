@@ -138,9 +138,9 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
     val locales by c.rutasOffline.rutas.collectAsState(initial = emptyList())
     val guardadas by c.rutas.guardadas.collectAsState(initial = emptySet())
     LaunchedEffect(Unit) { c.explorar?.refrescar() }
-    val elegida = remember { com.gacelas.rutas.data.RutaActiva.id }
+    val elegida = remember { com.gacelas.rutas.infrastructure.RutaActiva.id }
     val todas = remember(remotas, locales, guardadas) { rutasNavegables(remotas, locales, guardadas, elegida) }
-    var seleccion by rememberSaveable { mutableStateOf(elegida ?: com.gacelas.rutas.data.RutaActiva.navegarId ?: "primary") }
+    var seleccion by rememberSaveable { mutableStateOf(elegida ?: com.gacelas.rutas.infrastructure.RutaActiva.navegarId ?: "primary") }
     val sugeridas = todas.filter { consulta.isBlank() || it.nombre.contains(consulta.trim(), ignoreCase = true) }.take(8)
     val trazoSeleccion = todas.firstOrNull { it.id == seleccion }?.trazo.orEmpty().map { org.maplibre.android.geometry.LatLng(it.first, it.second) }
     val scope = rememberCoroutineScope()
@@ -208,9 +208,9 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.weight(1f)) {
                     BotonPrimario("Confirmar y comenzar navegación", {
-                        com.gacelas.rutas.data.RutaActiva.navegarId = actual?.id
+                        com.gacelas.rutas.infrastructure.RutaActiva.navegarId = actual?.id
                         // Solo las rutas reales de la comunidad registran la corrida al guardar.
-                        com.gacelas.rutas.data.RutaActiva.id = actual?.id?.takeIf { actual.real }
+                        com.gacelas.rutas.infrastructure.RutaActiva.id = actual?.id?.takeIf { actual.real }
                         onNavegar()
                     }, icono = Icons.Filled.Navigation, enabled = sugeridas.any { it.id == seleccion })
                 }
@@ -252,7 +252,7 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: (conCarrera: Boolea
     val remotas by (c.explorar?.rutas ?: remember { kotlinx.coroutines.flow.MutableStateFlow(null) }).collectAsState()
     val locales by c.rutasOffline.rutas.collectAsState(initial = emptyList())
     val guardadas by c.rutas.guardadas.collectAsState(initial = emptySet())
-    val idRuta = rememberSaveable { com.gacelas.rutas.data.RutaActiva.navegarId ?: "primary" }
+    val idRuta = rememberSaveable { com.gacelas.rutas.infrastructure.RutaActiva.navegarId ?: "primary" }
     val ruta = remember(remotas, locales, guardadas) { rutasNavegables(remotas, locales, guardadas).firstOrNull { it.id == idRuta } }
     val trazo = ruta?.trazo.orEmpty()
     val plan = remember(trazo) { trazo.map { org.maplibre.android.geometry.LatLng(it.first, it.second) } }

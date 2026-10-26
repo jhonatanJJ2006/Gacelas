@@ -1,5 +1,5 @@
 import type { CarreraGuardada } from '../../data/tipos'
-import { calcularRacha } from '../carreras/domain/rachas'
+import { calcularRacha } from '../../contexts/actividad/domain/rachas'
 import { obtenerSupabase } from '../../shared/supabase/client'
 
 export type CodigoLogro = 'primera_carrera' | 'km_5' | 'km_10' | 'racha_7'

@@ -25,9 +25,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.gacelas.carreras.domain.modelo.Carrera
-import com.gacelas.carreras.domain.reglas.Racha
-import com.gacelas.carreras.domain.reglas.Rachas
+import com.gacelas.actividad.domain.modelo.Carrera
+import com.gacelas.actividad.domain.reglas.Racha
+import com.gacelas.actividad.domain.reglas.Rachas
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 

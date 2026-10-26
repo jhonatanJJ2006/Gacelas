@@ -9,8 +9,8 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import com.gacelas.carreras.domain.modelo.Carrera
-import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.actividad.domain.modelo.Carrera
+import com.gacelas.actividad.domain.modelo.PuntoGps
 import com.gacelas.rutas.ListaRutasContenido
 import com.gacelas.rutas.domain.modelo.CategoriaRuta
 import com.gacelas.rutas.domain.modelo.FiltrosRuta

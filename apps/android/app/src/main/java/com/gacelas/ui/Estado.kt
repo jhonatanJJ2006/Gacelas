@@ -10,9 +10,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.gacelas.Contenedor
 import com.gacelas.GacelasApp
-import com.gacelas.cuenta.domain.modelo.Ajustes
-import com.gacelas.cuenta.domain.modelo.Perfil
-import com.gacelas.carreras.domain.modelo.Carrera
+import com.gacelas.identidad.domain.modelo.Ajustes
+import com.gacelas.identidad.domain.modelo.Perfil
+import com.gacelas.actividad.domain.modelo.Carrera
 
 /** Contenedor de dependencias de la app actual. */
 @Composable
@@ -40,11 +40,11 @@ fun carrerasState(): State<List<Carrera>> {
 
 /** Racha vigente calculada con las carreras (misma logica que el servidor). */
 @Composable
-fun rachaState(): com.gacelas.carreras.domain.reglas.Racha {
+fun rachaState(): com.gacelas.actividad.domain.reglas.Racha {
     val carreras by carrerasState()
     val ajustes by ajustesState()
     return remember(carreras, ajustes.metaSemanal) {
-        com.gacelas.carreras.domain.reglas.Rachas.calcular(carreras, System.currentTimeMillis(), ajustes.metaSemanal)
+        com.gacelas.actividad.domain.reglas.Rachas.calcular(carreras, System.currentTimeMillis(), ajustes.metaSemanal)
     }
 }
 
@@ -59,7 +59,7 @@ fun Context.compartir(texto: String) {
 
 /** ViewModel de ajustes compartido (contexto cuenta). */
 @Composable
-fun ajustesViewModel(repo: com.gacelas.cuenta.domain.repositorio.AjustesRepository = contenedor().ajustes): com.gacelas.cuenta.presentation.AjustesViewModel {
+fun ajustesViewModel(repo: com.gacelas.identidad.domain.repositorio.AjustesRepository = contenedor().ajustes): com.gacelas.identidad.presentation.AjustesViewModel {
     val c = contenedor()
     return androidx.lifecycle.viewmodel.compose.viewModel(key = "ajustes") { c.ajustesViewModel(repo) }
 }

@@ -2,8 +2,8 @@ package com.gacelas.comunidad.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gacelas.carreras.domain.modelo.Carrera
-import com.gacelas.carreras.domain.repositorio.CarrerasRepository
+import com.gacelas.actividad.domain.modelo.Carrera
+import com.gacelas.actividad.domain.repositorio.CarrerasRepository
 import com.gacelas.comunidad.domain.modelo.Club
 import com.gacelas.comunidad.domain.modelo.ComentarioFeed
 import com.gacelas.comunidad.domain.modelo.CorredorEvento
@@ -22,9 +22,9 @@ import com.gacelas.comunidad.domain.repositorio.EventosRepository
 import com.gacelas.comunidad.domain.repositorio.FeedRepository
 import com.gacelas.comunidad.domain.repositorio.ClubesRepository
 import com.gacelas.comunidad.domain.repositorio.EnVivoRepository
-import com.gacelas.cuenta.domain.modelo.Ajustes
-import com.gacelas.cuenta.domain.repositorio.AjustesRepository
-import com.gacelas.cuenta.domain.repositorio.AuthRepository
+import com.gacelas.identidad.domain.modelo.Ajustes
+import com.gacelas.identidad.domain.repositorio.AjustesRepository
+import com.gacelas.identidad.domain.repositorio.AuthRepository
 import com.gacelas.data.mock.Actividad
 import com.gacelas.data.mock.MockData
 import kotlinx.coroutines.Job

@@ -6,6 +6,6 @@ plugins {
 kotlin {
     sourceSets.commonMain.dependencies {
         implementation(project(":core:comun"))
-        api(project(":contextos:carreras:domain"))
+        api(project(":contextos:actividad:domain"))
     }
 }

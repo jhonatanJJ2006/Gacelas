@@ -1,6 +1,6 @@
 package com.gacelas
 
-import com.gacelas.carreras.domain.modelo.Carrera
+import com.gacelas.actividad.domain.modelo.Carrera
 import com.gacelas.social.Logro
 import com.gacelas.social.logrosCumplidos
 import org.junit.Assert.assertEquals

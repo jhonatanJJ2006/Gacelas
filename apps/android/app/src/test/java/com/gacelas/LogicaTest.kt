@@ -1,10 +1,10 @@
 package com.gacelas
 
-import com.gacelas.cuenta.domain.modelo.ConfigIntervalos
-import com.gacelas.cuenta.domain.reglas.ValidacionAuth
-import com.gacelas.carreras.domain.modelo.Carrera
-import com.gacelas.carreras.domain.reglas.Estadisticas
-import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.identidad.domain.modelo.ConfigIntervalos
+import com.gacelas.identidad.domain.reglas.ValidacionAuth
+import com.gacelas.actividad.domain.modelo.Carrera
+import com.gacelas.actividad.domain.reglas.Estadisticas
+import com.gacelas.actividad.domain.modelo.PuntoGps
 import com.gacelas.comunidad.domain.modelo.PestanaEventos
 import com.gacelas.comunidad.domain.reglas.filtrarEventos
 import com.gacelas.comunidad.domain.reglas.yaPaso
@@ -12,10 +12,10 @@ import com.gacelas.data.mock.MockData.ID_USUARIO
 import com.gacelas.data.mock.MockData
 import com.gacelas.rutas.domain.modelo.PestanaRutas
 import com.gacelas.rutas.domain.reglas.filtrarRutas
-import com.gacelas.carreras.domain.FaseCarrera
+import com.gacelas.actividad.domain.FaseCarrera
 import com.gacelas.tracking.FaseIntervalo
 import com.gacelas.tracking.PlanIntervalos
-import com.gacelas.carreras.domain.SesionCarrera
+import com.gacelas.actividad.domain.SesionCarrera
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearHms
 import com.gacelas.tracking.formatearMs

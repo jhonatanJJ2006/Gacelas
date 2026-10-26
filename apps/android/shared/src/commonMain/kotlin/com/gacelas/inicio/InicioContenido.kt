@@ -49,9 +49,9 @@ import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
 import androidx.compose.foundation.layout.BoxScope
-import com.gacelas.carreras.domain.reglas.ResumenSemana
+import com.gacelas.actividad.domain.reglas.ResumenSemana
 import com.gacelas.comunidad.domain.modelo.Evento
-import com.gacelas.carreras.domain.reglas.Racha
+import com.gacelas.actividad.domain.reglas.Racha
 
 /** Saludo segun la hora local (0-23), igual en Android e iOS. */
 fun saludoPorHora(hora: Int): String = when (hora) { in 5..11 -> "Buenos días"; in 12..18 -> "Buenas tardes"; else -> "Buenas noches" }
@@ -73,10 +73,10 @@ fun InicioContenido(
     onEventos: () -> Unit,
     onEvento: (String) -> Unit,
     corredor3D: @Composable BoxScope.() -> Unit,
-    totales: com.gacelas.carreras.domain.reglas.ResumenPeriodo = com.gacelas.carreras.domain.reglas.ResumenPeriodo(semana.carreras, semana.km, 0, 0),
+    totales: com.gacelas.actividad.domain.reglas.ResumenPeriodo = com.gacelas.actividad.domain.reglas.ResumenPeriodo(semana.carreras, semana.km, 0, 0),
     meta: Int = 3,
     rango: String = "",
-    reto: com.gacelas.carreras.domain.reglas.RetoMes? = null,
+    reto: com.gacelas.actividad.domain.reglas.RetoMes? = null,
     amigos: List<com.gacelas.comunidad.domain.modelo.Publicacion> = emptyList(),
     inscrito: Boolean = false,
     onComunidad: () -> Unit = {},

@@ -1,15 +1,15 @@
 package com.gacelas
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import com.gacelas.cuenta.data.LocalAjustesRepository
-import com.gacelas.cuenta.domain.modelo.Visibilidad
-import com.gacelas.cuenta.data.LocalAuthRepository
-import com.gacelas.cuenta.domain.modelo.ResultadoAuth
-import com.gacelas.carreras.domain.modelo.Carrera
-import com.gacelas.carreras.data.LocalCarrerasRepository
-import com.gacelas.comunidad.data.LocalEventosRepository
+import com.gacelas.identidad.infrastructure.LocalAjustesRepository
+import com.gacelas.identidad.domain.modelo.Visibilidad
+import com.gacelas.identidad.infrastructure.LocalAuthRepository
+import com.gacelas.identidad.domain.modelo.ResultadoAuth
+import com.gacelas.actividad.domain.modelo.Carrera
+import com.gacelas.actividad.infrastructure.LocalCarrerasRepository
+import com.gacelas.comunidad.infrastructure.LocalEventosRepository
 import com.gacelas.comunidad.domain.modelo.Evento
-import com.gacelas.rutas.data.LocalRutasRepository
+import com.gacelas.rutas.infrastructure.LocalRutasRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

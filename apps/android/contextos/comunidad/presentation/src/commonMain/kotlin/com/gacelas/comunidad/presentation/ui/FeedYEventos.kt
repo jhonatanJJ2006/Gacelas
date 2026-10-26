@@ -435,7 +435,7 @@ private fun TarjetaEvento(e: Evento, inscrito: Boolean, onClick: () -> Unit, onI
     val total = e.participantes + if (inscrito && !e.creadoPorUsuario) 1 else 0
     Tarjeta(onClick = onClick, fondo = GColors.C2Card, padding = 14.dp) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            val dm = e.inicioMs?.let { com.gacelas.carreras.domain.reglas.EstadisticasPerfil.diaYMes(it) }
+            val dm = e.inicioMs?.let { com.gacelas.actividad.domain.reglas.EstadisticasPerfil.diaYMes(it) }
             com.gacelas.ui.components.FechaC2("${dm?.first ?: "--"}", dm?.second ?: "")
             Column(Modifier.weight(1f).padding(start = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(e.titulo, style = GType.titleMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary, maxLines = 2)

@@ -2,12 +2,12 @@ package com.gacelas
 
 import com.gacelas.rutas.domain.modelo.Dificultad
 import com.gacelas.data.mock.MockData
-import com.gacelas.rutas.data.SupabaseExplorarRepository
+import com.gacelas.rutas.infrastructure.SupabaseExplorarRepository
 import com.gacelas.rutas.domain.modelo.FiltroDistancia
 import com.gacelas.rutas.domain.modelo.FiltrosRuta
 import com.gacelas.rutas.domain.reglas.aplicarFiltros
 import com.gacelas.rutas.domain.reglas.ordenarPorCercania
-import com.gacelas.rutas.data.rutaDesdeFila
+import com.gacelas.rutas.infrastructure.rutaDesdeFila
 import com.gacelas.rutas.domain.reglas.simplificar
 import com.gacelas.rutas.domain.reglas.trazoParaRuta
 import kotlinx.coroutines.runBlocking

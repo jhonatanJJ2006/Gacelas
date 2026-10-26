@@ -11,8 +11,8 @@ import com.gacelas.comunidad.domain.repositorio.NotificacionesRepository
 import com.gacelas.comunidad.presentation.ClubesViewModel
 import com.gacelas.comunidad.presentation.EventosViewModel
 import com.gacelas.comunidad.presentation.NotificacionesViewModel
-import com.gacelas.cuenta.domain.modelo.Ajustes
-import com.gacelas.cuenta.domain.repositorio.AjustesRepository
+import com.gacelas.identidad.domain.modelo.Ajustes
+import com.gacelas.identidad.domain.repositorio.AjustesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow

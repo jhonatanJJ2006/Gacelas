@@ -1,1 +1,1 @@
-export * from '../features/carreras/domain/intervalos'
+export * from '../contexts/actividad/domain/intervalos'

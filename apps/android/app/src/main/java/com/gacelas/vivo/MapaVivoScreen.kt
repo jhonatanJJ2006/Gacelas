@@ -176,7 +176,7 @@ fun PublicadorUbicacionVivo() {
             if (c.consentimientos.otorgado(TipoConsentimiento.UbicacionVisible)) {
                 val e = c.tracker.estado.value
                 val p = e.puntos.lastOrNull()?.takeIf { e.activa }?.let { it.lat to it.lng } ?: com.gacelas.rutas.ultimaUbicacion(context)
-                if (p != null) runCatching { repo.publicar(p.first, p.second, e.fase == com.gacelas.carreras.domain.FaseCarrera.Corriendo) }
+                if (p != null) runCatching { repo.publicar(p.first, p.second, e.fase == com.gacelas.actividad.domain.FaseCarrera.Corriendo) }
             }
             delay(5_000)
         }

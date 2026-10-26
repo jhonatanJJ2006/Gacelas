@@ -1,6 +1,6 @@
 package com.gacelas.comunidad.domain.modelo
 
-import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.actividad.domain.modelo.PuntoGps
 import com.gacelas.shared.ahoraMs
 import kotlinx.serialization.Serializable
 

@@ -1,1 +1,1 @@
-export * from '../features/carreras/domain/enVivo'
+export * from '../contexts/actividad/domain/enVivo'

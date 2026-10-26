@@ -1,8 +1,8 @@
 package com.gacelas.analitica.domain
 
-import com.gacelas.carreras.domain.modelo.Carrera
-import com.gacelas.carreras.domain.reglas.EstadisticasPerfil
-import com.gacelas.carreras.domain.reglas.Rachas
+import com.gacelas.actividad.domain.modelo.Carrera
+import com.gacelas.actividad.domain.reglas.EstadisticasPerfil
+import com.gacelas.actividad.domain.reglas.Rachas
 import com.gacelas.shared.Fechas
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate

@@ -34,10 +34,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.gacelas.carreras.domain.reglas.Historico
-import com.gacelas.carreras.domain.reglas.KmMes
-import com.gacelas.carreras.domain.reglas.Medalla
-import com.gacelas.carreras.domain.reglas.RecordPersonal
+import com.gacelas.actividad.domain.reglas.Historico
+import com.gacelas.actividad.domain.reglas.KmMes
+import com.gacelas.actividad.domain.reglas.Medalla
+import com.gacelas.actividad.domain.reglas.RecordPersonal
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearHms
 import com.gacelas.tracking.formatearMs

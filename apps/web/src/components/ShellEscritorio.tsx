@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 import { notificacionesVisibles } from '../lib/filtros'
 import { useApp } from '../store/app'
 import { InsigniaRacha } from './Racha'
-import { FotoPerfil } from '../features/cuenta/ui/perfil/Perfil'
+import { FotoPerfil } from '../contexts/identidad/ui/perfil/Perfil'
 
 const NAV_ESCRITORIO = [
   { path: '/inicio', label: 'Inicio', icon: 'home' },

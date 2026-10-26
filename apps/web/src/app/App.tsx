@@ -5,42 +5,42 @@ import { AppLayout } from '../components/AppLayout'
 import { ShellEscritorio } from '../components/ShellEscritorio'
 
 const Bienvenida = lazy(() =>
-  import('../features/cuenta/ui/acceso/Bienvenida').then((m) => ({ default: m.Bienvenida }))
+  import('../contexts/identidad/ui/acceso/Bienvenida').then((m) => ({ default: m.Bienvenida }))
 )
 const InicioSesion = lazy(() =>
-  import('../features/cuenta/ui/acceso/InicioSesion').then((m) => ({ default: m.InicioSesion }))
+  import('../contexts/identidad/ui/acceso/InicioSesion').then((m) => ({ default: m.InicioSesion }))
 )
 const Registro = lazy(() =>
-  import('../features/cuenta/ui/acceso/Registro').then((m) => ({ default: m.Registro }))
+  import('../contexts/identidad/ui/acceso/Registro').then((m) => ({ default: m.Registro }))
 )
 const RecuperarContrasena = lazy(() =>
-  import('../features/cuenta/ui/acceso/RecuperarContrasena').then((m) => ({
+  import('../contexts/identidad/ui/acceso/RecuperarContrasena').then((m) => ({
     default: m.RecuperarContrasena,
   }))
 )
 const NuevaContrasena = lazy(() =>
-  import('../features/cuenta/ui/acceso/NuevaContrasena').then((m) => ({
+  import('../contexts/identidad/ui/acceso/NuevaContrasena').then((m) => ({
     default: m.NuevaContrasena,
   }))
 )
 const PermisosUbicacion = lazy(() =>
-  import('../features/cuenta/ui/ajustes/PermisosUbicacion').then((m) => ({
+  import('../contexts/identidad/ui/ajustes/PermisosUbicacion').then((m) => ({
     default: m.PermisosUbicacion,
   }))
 )
 
 const Inicio = lazy(() => import('../features/inicio/Inicio').then((m) => ({ default: m.Inicio })))
 const Correr = lazy(() =>
-  import('../features/carreras/ui/Correr').then((m) => ({ default: m.Correr }))
+  import('../contexts/actividad/ui/Correr').then((m) => ({ default: m.Correr }))
 )
 const CarreraEnCurso = lazy(() =>
-  import('../features/carreras/ui/CarreraEnCurso').then((m) => ({ default: m.CarreraEnCurso }))
+  import('../contexts/actividad/ui/CarreraEnCurso').then((m) => ({ default: m.CarreraEnCurso }))
 )
 const Cronometro = lazy(() =>
-  import('../features/carreras/ui/Cronometro').then((m) => ({ default: m.Cronometro }))
+  import('../contexts/actividad/ui/Cronometro').then((m) => ({ default: m.Cronometro }))
 )
 const ResumenPostCarrera = lazy(() =>
-  import('../features/carreras/ui/ResumenPostCarrera').then((m) => ({
+  import('../contexts/actividad/ui/ResumenPostCarrera').then((m) => ({
     default: m.ResumenPostCarrera,
   }))
 )
@@ -88,56 +88,58 @@ const DetalleEnVivo = lazy(() =>
   import('../features/comunidad/EnVivo').then((m) => ({ default: m.DetalleEnVivo }))
 )
 const Perfil = lazy(() =>
-  import('../features/cuenta/ui/perfil/Perfil').then((m) => ({ default: m.Perfil }))
+  import('../contexts/identidad/ui/perfil/Perfil').then((m) => ({ default: m.Perfil }))
 )
 const DetalleCarrera = lazy(() =>
-  import('../features/cuenta/ui/perfil/DetalleCarrera').then((m) => ({ default: m.DetalleCarrera }))
+  import('../contexts/identidad/ui/perfil/DetalleCarrera').then((m) => ({
+    default: m.DetalleCarrera,
+  }))
 )
 const EditarPerfil = lazy(() =>
-  import('../features/cuenta/ui/perfil/EditarPerfil').then((m) => ({ default: m.EditarPerfil }))
+  import('../contexts/identidad/ui/perfil/EditarPerfil').then((m) => ({ default: m.EditarPerfil }))
 )
 const MisReportes = lazy(() =>
   import('../contexts/analitica/ui/MisReportes').then((m) => ({ default: m.MisReportes }))
 )
 const Avatar3D = lazy(() =>
-  import('../features/cuenta/ui/perfil/Avatar3D').then((m) => ({ default: m.Avatar3D }))
+  import('../contexts/identidad/ui/perfil/Avatar3D').then((m) => ({ default: m.Avatar3D }))
 )
 
 const AjustesPreferencias = lazy(() =>
-  import('../features/cuenta/ui/ajustes/AjustesPreferencias').then((m) => ({
+  import('../contexts/identidad/ui/ajustes/AjustesPreferencias').then((m) => ({
     default: m.AjustesPreferencias,
   }))
 )
 const Brujula = lazy(() =>
-  import('../features/cuenta/ui/ajustes/Utilidades').then((m) => ({ default: m.Brujula }))
+  import('../contexts/identidad/ui/ajustes/Utilidades').then((m) => ({ default: m.Brujula }))
 )
 const MapasOffline = lazy(() =>
-  import('../features/cuenta/ui/ajustes/Utilidades').then((m) => ({ default: m.MapasOffline }))
+  import('../contexts/identidad/ui/ajustes/Utilidades').then((m) => ({ default: m.MapasOffline }))
 )
 const PrivacidadUbicacion = lazy(() =>
-  import('../features/cuenta/ui/ajustes/PrivacidadUbicacion').then((m) => ({
+  import('../contexts/identidad/ui/ajustes/PrivacidadUbicacion').then((m) => ({
     default: m.PrivacidadUbicacion,
   }))
 )
 const ConfiguracionNotificaciones = lazy(() =>
-  import('../features/cuenta/ui/ajustes/ConfiguracionNotificaciones').then((m) => ({
+  import('../contexts/identidad/ui/ajustes/ConfiguracionNotificaciones').then((m) => ({
     default: m.ConfiguracionNotificaciones,
   }))
 )
 const Notificaciones = lazy(() =>
-  import('../features/cuenta/ui/notificaciones/Notificaciones').then((m) => ({
+  import('../contexts/identidad/ui/notificaciones/Notificaciones').then((m) => ({
     default: m.Notificaciones,
   }))
 )
 
 const Terminos = lazy(() =>
-  import('../features/legal/Legal').then((m) => ({ default: m.Terminos }))
+  import('../contexts/legal/Legal').then((m) => ({ default: m.Terminos }))
 )
 const PoliticaPrivacidad = lazy(() =>
-  import('../features/legal/Legal').then((m) => ({ default: m.PoliticaPrivacidad }))
+  import('../contexts/legal/Legal').then((m) => ({ default: m.PoliticaPrivacidad }))
 )
 const ReaceptarTerminos = lazy(() =>
-  import('../features/legal/Legal').then((m) => ({ default: m.ReaceptarTerminos }))
+  import('../contexts/legal/Legal').then((m) => ({ default: m.ReaceptarTerminos }))
 )
 const AnfitrionLogros = lazy(() =>
   import('../features/social/Social').then((m) => ({ default: m.AnfitrionLogros }))

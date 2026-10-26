@@ -12,7 +12,8 @@
     "format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:fix": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "test:unit": "pnpm -r --if-present test:unit",
-    "type-check": "pnpm --filter @gacelas/web type-check"
+    "type-check": "pnpm --filter @gacelas/web type-check",
+    "arch": "pnpm --filter @gacelas/web arch"
   },
   "devDependencies": {
     "prettier": "^3.1.0",

@@ -20,7 +20,7 @@ import androidx.core.content.ContextCompat
 import com.gacelas.GacelasApp
 import com.gacelas.MainActivity
 import com.gacelas.R
-import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.actividad.domain.modelo.PuntoGps
 import com.gacelas.navigation.Destinos
 import com.gacelas.tracking.DestinoPendiente
 import com.gacelas.tracking.NotificacionCarrera

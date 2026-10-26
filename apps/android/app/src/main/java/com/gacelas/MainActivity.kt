@@ -27,7 +27,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import com.gacelas.cuenta.domain.modelo.Perfil
+import com.gacelas.identidad.domain.modelo.Perfil
 import com.gacelas.navigation.Destinos
 import com.gacelas.navigation.GacelasNavHost
 import com.gacelas.ui.contenedor

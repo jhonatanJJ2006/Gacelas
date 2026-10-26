@@ -42,7 +42,7 @@ Todo pertenece al contexto DDD Seguridad de rutas (`seguridad`, ver `docs/ARQUIT
 ## Interfaz
 
 - Android: botón "Reportar incidente" en la cabecera de la carrera y sobre el mapa en vivo, hoja inferior oscura con los tipos, marcadores en el mapa (más intensos si están verificados) y la lista con "Yo también lo vi". Código en el contexto Seguridad de rutas: `apps/android/contextos/seguridad/domain` (modelo y puerto `IncidentesRepositorio`), `apps/android/contextos/seguridad/data` (adaptador de Supabase) y las pantallas en `apps/android/app/src/main/java/com/gacelas/seguridad/`.
-- Web: los mismos elementos en `apps/web/src/features/seguridad/`, con capas `domain`, `data` (Supabase y Nominatim), `application` (casos de uso) y `ui`. La UI no llama a Supabase: usa los casos de uso.
+- Web: los mismos elementos en `apps/web/src/contexts/seguridad/`, con capas `domain`, `infrastructure` (Supabase y Nominatim), `application` (casos de uso) y `ui`. La UI no llama a Supabase: usa los casos de uso.
 - Vista previa: `?vista-previa` en la web, o la app sin servidor configurado, muestra reportes de ejemplo ficticios; en ese modo no se envía nada.
 
 ## Privacidad

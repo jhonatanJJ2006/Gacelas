@@ -1,7 +1,7 @@
 package com.gacelas.comunidad
 
-import com.gacelas.carreras.domain.modelo.Carrera
-import com.gacelas.carreras.domain.repositorio.CarrerasRepository
+import com.gacelas.actividad.domain.modelo.Carrera
+import com.gacelas.actividad.domain.repositorio.CarrerasRepository
 import com.gacelas.comunidad.domain.modelo.Club
 import com.gacelas.comunidad.domain.modelo.CorredorEvento
 import com.gacelas.comunidad.domain.modelo.EstadoEvento
@@ -19,11 +19,11 @@ import com.gacelas.comunidad.presentation.DetalleEventoViewModel
 import com.gacelas.comunidad.presentation.EventoEnVivoViewModel
 import com.gacelas.comunidad.presentation.FeedViewModel
 import com.gacelas.comunidad.presentation.ListaEnVivoViewModel
-import com.gacelas.cuenta.domain.modelo.Ajustes
-import com.gacelas.cuenta.domain.modelo.Perfil
-import com.gacelas.cuenta.domain.modelo.ResultadoAuth
-import com.gacelas.cuenta.domain.repositorio.AjustesRepository
-import com.gacelas.cuenta.domain.repositorio.AuthRepository
+import com.gacelas.identidad.domain.modelo.Ajustes
+import com.gacelas.identidad.domain.modelo.Perfil
+import com.gacelas.identidad.domain.modelo.ResultadoAuth
+import com.gacelas.identidad.domain.repositorio.AjustesRepository
+import com.gacelas.identidad.domain.repositorio.AuthRepository
 import com.gacelas.data.mock.Actividad
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers

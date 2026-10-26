@@ -52,7 +52,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import com.gacelas.cuenta.domain.modelo.ResultadoAuth
+import com.gacelas.identidad.domain.modelo.ResultadoAuth
 import com.gacelas.ui.aviso
 import com.gacelas.ui.contenedor
 import kotlinx.coroutines.launch

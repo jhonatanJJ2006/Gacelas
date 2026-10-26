@@ -48,9 +48,9 @@ Los mismos cuatro contextos organizan móvil, web y base de datos.
 
 | Contexto    | Responsabilidad                                            | Tablas principales                                                                                                          |
 | ----------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `carreras`  | Sesión de carrera, tracking, estadísticas, rachas, en vivo | `activities`, `activity_tracks`, `track_points`, `user_streaks`, `live_sessions`, `live_private`, `live_sharing_settings`   |
+| `actividad` | Sesión de carrera, tracking, estadísticas, rachas, en vivo | `activities`, `activity_tracks`, `track_points`, `user_streaks`, `live_sessions`, `live_private`, `live_sharing_settings`   |
 | `rutas`     | Catálogo, exploración, guía, reseñas, offline              | `routes`, `route_reviews`, `route_likes`, `route_photos`, `route_runs`, `saved_routes`                                      |
-| `cuenta`    | Autenticación, perfil, ajustes, privacidad, notificaciones | `profiles`, `user_settings`, `notifications`                                                                                |
+| `identidad` | Autenticación, perfil, ajustes, privacidad, notificaciones | `profiles`, `user_settings`, `notifications`                                                                                |
 | `comunidad` | Seguidores, feed, clubes, eventos                          | `follows`, `post_likes`, `post_comments`, `clubs`, `club_members`, `club_posts`, `events`, `event_rsvps`, `event_reminders` |
 
 Reglas entre contextos:

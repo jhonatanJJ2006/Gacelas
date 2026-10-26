@@ -1,6 +1,6 @@
 package com.gacelas
 
-import com.gacelas.comunidad.data.eventoVisible
+import com.gacelas.comunidad.infrastructure.eventoVisible
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put

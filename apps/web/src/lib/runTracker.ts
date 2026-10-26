@@ -1,1 +1,1 @@
-export * from '../features/carreras/domain/runTracker'
+export * from '../contexts/actividad/domain/runTracker'

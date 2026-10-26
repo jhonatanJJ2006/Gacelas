@@ -12,8 +12,8 @@ import com.gacelas.comunidad.domain.reglas.notificacionesVisibles
 import com.gacelas.comunidad.domain.repositorio.EventosRepository
 import com.gacelas.comunidad.domain.repositorio.ClubesRepository
 import com.gacelas.comunidad.domain.repositorio.NotificacionesRepository
-import com.gacelas.cuenta.domain.modelo.Ajustes
-import com.gacelas.cuenta.domain.repositorio.AjustesRepository
+import com.gacelas.identidad.domain.modelo.Ajustes
+import com.gacelas.identidad.domain.repositorio.AjustesRepository
 import com.gacelas.shared.ahoraMs
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

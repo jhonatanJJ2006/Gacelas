@@ -1,1 +1,1 @@
-export * from '../features/carreras/domain/estadisticas'
+export * from '../contexts/actividad/domain/estadisticas'

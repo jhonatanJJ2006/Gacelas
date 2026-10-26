@@ -1,6 +1,6 @@
 package com.gacelas
 
-import com.gacelas.comunidad.data.SupabaseClubesRepository
+import com.gacelas.comunidad.infrastructure.SupabaseClubesRepository
 import com.gacelas.comunidad.domain.modelo.CorredorEvento
 import com.gacelas.comunidad.domain.modelo.EstadoEvento
 import com.gacelas.comunidad.domain.modelo.MiembroClub

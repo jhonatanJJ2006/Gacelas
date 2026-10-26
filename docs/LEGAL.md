@@ -5,7 +5,7 @@ Importante: los textos de Términos y condiciones y de Política de privacidad s
 ## Dónde están los textos
 
 - Android e iOS: `apps/android/shared/src/commonMain/kotlin/com/gacelas/legal/TextosLegales.kt`.
-- Web: `apps/web/src/features/legal/textos.ts`.
+- Web: `apps/web/src/contexts/legal/textos.ts`.
 
 Las dos copias deben mantenerse iguales.
 

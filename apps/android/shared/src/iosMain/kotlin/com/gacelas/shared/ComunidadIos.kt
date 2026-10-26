@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gacelas.acceso.SesionIos
-import com.gacelas.comunidad.data.EventoDeClub
+import com.gacelas.comunidad.infrastructure.EventoDeClub
 import com.gacelas.comunidad.presentation.ui.ClubesContenido
 import com.gacelas.comunidad.presentation.ui.DetalleClubContenido
 import com.gacelas.comunidad.presentation.ui.DetalleEnVivoContenido
@@ -33,7 +33,7 @@ import com.gacelas.comunidad.presentation.ui.EventosContenido
 import com.gacelas.comunidad.presentation.ui.FeedContenido
 import com.gacelas.comunidad.presentation.ui.ListaEnVivoContenido
 import com.gacelas.comunidad.presentation.ui.NotificacionesContenido
-import com.gacelas.cuenta.domain.modelo.Ajustes
+import com.gacelas.identidad.domain.modelo.Ajustes
 import com.gacelas.data.mock.MockData
 import com.gacelas.mapa.MapaGacelasIos
 import com.gacelas.mapa.MapaIos
