@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
-import { TrazadoRuta } from '../../../components/TrazadoRuta'
-import type { PuntoGps } from '../../../lib/geo'
 import type { Evento } from '../../../mocks/data'
+import type { PuntoGps } from '../../../shared/lib/geo'
+import { TrazadoRuta } from '../../../shared/ui/TrazadoRuta'
 
 /** Nivel corto estilo C2: NV 1, NV 2, NV 3 o ÉLITE (misma regla que Android). */
 export function nivelCorto(nivel: string): string {

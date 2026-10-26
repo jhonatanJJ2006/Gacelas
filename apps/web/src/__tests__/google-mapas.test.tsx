@@ -1,9 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { prepararApp, renderRuta, PERFIL_PRUEBA } from '../test/utils'
-import { MapaGoogle } from '../components/MapaGoogle'
-import { trazoDeOpcion } from '../lib/mapas'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { trazoDeOpcion } from '../shared/lib/mapas'
+import { MapaGoogle } from '../shared/ui/MapaGoogle'
+import { PERFIL_PRUEBA, prepararApp, renderRuta } from '../test/utils'
 
 vi.mock('@vis.gl/react-google-maps', () => ({
   APIProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

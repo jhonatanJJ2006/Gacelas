@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { CampoContrasena } from '../../../../components/CampoContrasena'
+import { Link, useNavigate } from 'react-router-dom'
+import { MensajeError } from '../../../../shared/ui/ui'
 import { useApp } from '../../../../store/app'
-import { MensajeError } from '../../../../components/ui'
 import { registrarConsentimiento } from '../../../legal/api'
-import { BotonGoogle } from '../../../../components/BotonGoogle'
-import { PanelCorredorAcceso } from '../../../../components/PanelCorredorAcceso'
+import { BotonGoogle } from './BotonGoogle'
+import { CampoContrasena } from './CampoContrasena'
+import { PanelCorredorAcceso } from './PanelCorredorAcceso'
 
 export function Registro() {
   const navigate = useNavigate()

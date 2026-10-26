@@ -1,5 +1,10 @@
-import type { Historico, KmMes, Medalla, RecordPersonal } from '../../../../lib/estadisticas'
-import { formatearHms, formatearMs, formatearRitmo, Unidades } from '../../../../lib/geo'
+import type {
+  Historico,
+  KmMes,
+  Medalla,
+  RecordPersonal,
+} from '../../../../shared/kernel/estadisticas'
+import { formatearHms, formatearMs, formatearRitmo, Unidades } from '../../../../shared/lib/geo'
 
 const tarjeta = 'tarjeta-c2'
 

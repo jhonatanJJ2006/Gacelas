@@ -1,8 +1,8 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom'
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { useApp } from '../store/app'
-import { AppLayout } from '../components/AppLayout'
-import { ShellEscritorio } from '../components/ShellEscritorio'
+import { AppLayout } from './AppLayout'
+import { ShellEscritorio } from './ShellEscritorio'
 
 const Bienvenida = lazy(() =>
   import('../contexts/identidad/ui/acceso/Bienvenida').then((m) => ({ default: m.Bienvenida }))

@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BarrasHorizontales, GraficoBarras } from '../../../components/Graficos'
+import { BarrasHorizontales, GraficoBarras } from '../../../shared/ui/Graficos'
+import { useApp } from '../../../store/app'
 import {
+  aCsv,
+  aPdf,
+  descargar,
   duracionTexto,
   etiquetaRango,
   NOMBRE_PERIODO,
@@ -10,11 +14,7 @@ import {
   textoCompartir,
   type Periodo,
   type ReportePersonal,
-  aCsv,
-  aPdf,
-  descargar,
 } from '../api'
-import { useApp } from '../../../store/app'
 
 function Metrica({ valor, etiqueta, nota }: { valor: string; etiqueta: string; nota?: string }) {
   return (

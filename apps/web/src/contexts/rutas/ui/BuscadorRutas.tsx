@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Unidades } from '../../../lib/geo'
+import { Unidades } from '../../../shared/lib/geo'
+import { trazoDeOpcion } from '../../../shared/lib/mapas'
+import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
 import { useApp } from '../../../store/app'
-import { etiquetaOpcion, opcionesBuscador } from '../../../lib/logica'
-import { MapaGoogle } from '../../../components/MapaGoogle'
-import { trazoDeOpcion } from '../../../lib/mapas'
+import { etiquetaOpcion, opcionesBuscador } from '../domain/buscador'
 
 export function BuscadorRutas() {
   const navigate = useNavigate()

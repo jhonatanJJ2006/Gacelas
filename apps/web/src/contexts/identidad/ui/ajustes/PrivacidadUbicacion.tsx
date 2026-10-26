@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { Visibilidad } from '../../../../shared/kernel/tipos'
+import { Interruptor } from '../../../../shared/ui/ui'
 import { useApp } from '../../../../store/app'
-import { FilaC2, GrupoC2, PantallaAjustes } from './Comunes'
-import { Interruptor } from '../../../../components/ui'
 import { SeccionConsentimientos } from '../../../legal'
 import { historial } from '../../../legal/api'
+import { FilaC2, GrupoC2, PantallaAjustes } from './Comunes'
 
 const OPCIONES: { id: Visibilidad; icono: string; titulo: string; descripcion: string }[] = [
   {

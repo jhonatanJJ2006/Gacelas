@@ -1,12 +1,21 @@
-import { unirEventos } from '../../contexts/eventos/infrastructure/eventos'
-import { InsigniaRacha } from '../../components/Racha'
-import { useEsEscritorio } from '../../lib/useEsEscritorio'
-import { MetaSemanal, RankingSemanal } from '../../components/PanelesEscritorio'
 import { lazy, Suspense, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { filtrarEventos } from '../../lib/filtros'
-import { formatearRitmo, Unidades } from '../../lib/geo'
-import { resumenSemana, retoMes, totalesSemana, inicioSemana } from '../../lib/estadisticas'
+import { InsigniaRacha } from '../../contexts/actividad'
+import { MetaSemanal } from '../../contexts/analitica'
+import { InsigniaNivel, RankingSemanal } from '../../contexts/comunidad'
+import { filtrarEventos, unirEventos } from '../../contexts/eventos/api'
+import { eventosMock } from '../../mocks/data'
+import {
+  inicioSemana,
+  resumenSemana,
+  retoMes,
+  totalesSemana,
+} from '../../shared/kernel/estadisticas'
+import { nivelCorredor } from '../../shared/kernel/nivel'
+import { formatearRitmo, Unidades } from '../../shared/lib/geo'
+import { useEsEscritorio } from '../../shared/lib/useEsEscritorio'
+import { useApp } from '../../store/app'
+import { saludo } from './saludo'
 import {
   AmigosEnRuta,
   RutaSugerida,
@@ -14,13 +23,9 @@ import {
   TarjetaEvento,
   TarjetaReto,
 } from './SeccionesInicio'
-import { eventosMock } from '../../mocks/data'
-import { useApp } from '../../store/app'
-import { nivelCorredor, saludo } from '../../lib/logica'
-import { InsigniaNivel } from '../../contexts/comunidad/ui/PostSocial'
 
 const Runner3D = lazy(() =>
-  import('../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
+  import('../../shared/ui/Runner3D').then((m) => ({ default: m.Runner3D }))
 )
 
 export function Inicio() {

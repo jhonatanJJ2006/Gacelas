@@ -1,10 +1,10 @@
 import { lazy, Suspense } from 'react'
-import { BotonGoogle } from '../../../../components/BotonGoogle'
-import { Runner3DFallback } from '../../../../components/Runner3D'
 import { useNavigate } from 'react-router-dom'
+import { Runner3DFallback } from '../../../../shared/ui/Runner3D'
+import { BotonGoogle } from './BotonGoogle'
 
 const Runner3D = lazy(() =>
-  import('../../../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
+  import('../../../../shared/ui/Runner3D').then((m) => ({ default: m.Runner3D }))
 )
 
 export function Bienvenida() {

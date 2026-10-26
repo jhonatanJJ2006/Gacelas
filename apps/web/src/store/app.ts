@@ -1,12 +1,11 @@
 import { create } from 'zustand'
 import { repositoriosPorDefecto, type Repositorios } from '../app/composicion'
-import { conOficiales } from '../contexts/rutas/api'
 import {
+  conOficiales,
   type ExplorarRepository,
   type NuevaRuta,
   type ResenaRuta,
-} from '../contexts/rutas/domain/puertos'
-import { calcularRacha, type Racha } from '../lib/rachas'
+} from '../contexts/rutas/api'
 import {
   notificacionesMock,
   rutasMock,
@@ -19,6 +18,7 @@ import {
   type CorredorPublico,
   type PublicacionRemota,
 } from '../shared/kernel/comunidad'
+import { calcularRacha, type Racha } from '../shared/kernel/rachas'
 import {
   AJUSTES_POR_DEFECTO,
   type Ajustes,

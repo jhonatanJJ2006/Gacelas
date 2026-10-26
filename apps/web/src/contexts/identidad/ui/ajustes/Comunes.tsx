@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Interruptor } from '../../../../components/ui'
+import { Interruptor } from '../../../../shared/ui/ui'
 
 export function PantallaAjustes({
   titulo,

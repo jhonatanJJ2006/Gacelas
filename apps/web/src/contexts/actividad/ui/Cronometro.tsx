@@ -1,17 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Interruptor } from '../../../components/ui'
-import { cambioFase, tick } from '../../../lib/avisos'
-import { formatearMs, formatearRitmo, Unidades } from '../../../lib/geo'
+import { formatearMs, formatearRitmo, Unidades } from '../../../shared/lib/geo'
+import { Interruptor } from '../../../shared/ui/ui'
+import { useApp } from '../../../store/app'
+import {
+  empezarSeguimiento,
+  finalizarCarrera,
+  tracker,
+  useCarrera,
+} from '../application/carreraStore'
 import {
   duracionTotalSeg,
   estadoIntervalo,
   intervaloMetronomoMs,
   type ConfigIntervalos,
-} from '../../../lib/intervalos'
-import { estaActiva, ritmoPromedio } from '../../../lib/runTracker'
-import { useApp } from '../../../store/app'
-import { empezarSeguimiento, finalizarCarrera, tracker, useCarrera } from '../../../store/carrera'
+} from '../domain/intervalos'
+import { estaActiva, ritmoPromedio } from '../domain/runTracker'
+import { cambioFase, tick } from './sonidos'
 
 type Modo = 'libre' | 'fartlek' | 'pacer'
 type Pestana = 'splits' | 'intervals' | 'metronome'

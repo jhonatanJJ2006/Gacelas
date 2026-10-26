@@ -1,26 +1,26 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { NavLink, Navigate, Route, Routes, useNavigate, useSearchParams } from 'react-router-dom'
+import { ModalC2 } from '../../../shared/ui/modales'
 import { useApp } from '../../../store/app'
-import { ModalC2 } from '../../../components/modales'
+import { VERSIONES_LEGALES } from '../../legal/api'
+import { Estadisticas } from './Estadisticas'
 import {
+  definicionTipo,
   fuenteDemo,
   fuenteSupabase,
+  tiposRegistrados,
+  type AccionModeracion,
   type AjusteApp,
   type ClubAdmin,
+  type EstadoReporte,
   type EventoAdmin,
   type FuenteAdmin,
   type Metricas,
-  type AccionModeracion,
-  type EstadoReporte,
   type ReporteAdmin,
-  type TipoReporte,
-  definicionTipo,
-  tiposRegistrados,
   type RutaAdmin,
+  type TipoReporte,
   type UsuarioAdmin,
 } from './fuente'
-import { VERSIONES_LEGALES } from '../../legal/api'
-import { Estadisticas } from './Estadisticas'
 
 const SECCIONES: [string, string, string][] = [
   ['', 'Dashboard', 'dashboard'],

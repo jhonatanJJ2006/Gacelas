@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BarrasHorizontales, GraficoBarras, GraficoLinea } from '../../../components/Graficos'
+import { BarrasHorizontales, GraficoBarras, GraficoLinea } from '../../../shared/ui/Graficos'
 import { aCsv, aPdf, descargar } from '../../analitica/api'
 import type { Estadisticas as Datos, FuenteAdmin } from './fuente'
 

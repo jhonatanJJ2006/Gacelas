@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
+import { construirFeed, filtrarFeed } from '../contexts/comunidad/domain/feed'
 import {
   comentarioDesdeFila,
   publicacionDesdeFilaFeed,
 } from '../contexts/comunidad/infrastructure/comunidadSupabase'
-import { construirFeed, filtrarFeed } from '../lib/logica'
 import type { CarreraGuardada } from '../shared/kernel/tipos'
 
 const ahora = Date.parse('2026-10-20T12:00:00Z')

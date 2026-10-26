@@ -1,11 +1,11 @@
 import { lazy, Suspense, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Interruptor } from '../../../../components/ui'
 import type { ConfigAvatar } from '../../../../shared/kernel/tipos'
+import { Interruptor } from '../../../../shared/ui/ui'
 import { useApp } from '../../../../store/app'
 
 const Runner3D = lazy(() =>
-  import('../../../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
+  import('../../../../shared/ui/Runner3D').then((m) => ({ default: m.Runner3D }))
 )
 
 const EQUIPACIONES = ['bg-primary-600', 'bg-secondary-600', 'bg-danger', 'bg-tertiary']

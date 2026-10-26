@@ -1,10 +1,20 @@
-import { useEsEscritorio } from '../../../../lib/useEsEscritorio'
-import { ListaLogros } from '../../../comunidad'
-import { EstadisticasPerfil } from '../../../../components/PanelesEscritorio'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BotonTexto, Dialogo } from '../../../../components/ui'
-import { historico, kmMensual, medallas, records, resumenMes } from '../../../../lib/estadisticas'
+import { usuarioActualMock } from '../../../../mocks/data'
+import {
+  historico,
+  kmMensual,
+  medallas,
+  records,
+  resumenMes,
+} from '../../../../shared/kernel/estadisticas'
+import { formatearHms, formatearMs, formatearRitmo, Unidades } from '../../../../shared/lib/geo'
+import { useEsEscritorio } from '../../../../shared/lib/useEsEscritorio'
+import { BotonTexto, Dialogo } from '../../../../shared/ui/ui'
+import { useApp } from '../../../../store/app'
+import { TarjetaRacha } from '../../../actividad'
+import { EstadisticasPerfil } from '../../../analitica'
+import { ListaLogros } from '../../../comunidad'
 import {
   Contadores,
   EstadisticasHistoricas,
@@ -12,10 +22,6 @@ import {
   Medallero,
   Records,
 } from './SeccionesPerfil'
-import { formatearHms, formatearMs, formatearRitmo, Unidades } from '../../../../lib/geo'
-import { usuarioActualMock } from '../../../../mocks/data'
-import { TarjetaRacha } from '../../../../components/Racha'
-import { useApp } from '../../../../store/app'
 
 export function FotoPerfil({
   foto,

@@ -1,25 +1,26 @@
 import { Fragment, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ModalC2 } from '../../../components/modales'
-import { ProximosEventos, RankingSemanal } from '../../../components/PanelesEscritorio'
-import { Aviso, BotonTexto, Dialogo } from '../../../components/ui'
 import { compartir, useAviso } from '../../../hooks'
-import { listarEnVivo, suscribirLista, type SesionEnVivo } from '../../../lib/enVivo'
-import { filtrarEventos } from '../../../lib/filtros'
-import { formatearMs, formatearRitmo, Unidades } from '../../../lib/geo'
+import type { ComentarioPublicacion } from '../../../shared/kernel/comunidad'
+import { nivelCorredor } from '../../../shared/kernel/nivel'
+import { formatearMs, formatearRitmo, Unidades } from '../../../shared/lib/geo'
+import { useEsEscritorio } from '../../../shared/lib/useEsEscritorio'
+import { ModalC2 } from '../../../shared/ui/modales'
+import { Aviso, BotonTexto, Dialogo } from '../../../shared/ui/ui'
+import { useApp } from '../../../store/app'
+import { listarEnVivo, suscribirLista, type SesionEnVivo } from '../../actividad/api'
+import { ProximosEventos } from '../../eventos'
+import { filtrarEventos } from '../../eventos/api'
+import { yaReportada, yaReportado } from '../../moderacion/api'
 import {
   construirFeed,
   filtrarFeed,
   kmPorAutor,
-  nivelCorredor,
   type FiltroFeed,
   type Publicacion,
-} from '../../../lib/logica'
-import { useEsEscritorio } from '../../../lib/useEsEscritorio'
-import type { ComentarioPublicacion } from '../../../shared/kernel/comunidad'
-import { useApp } from '../../../store/app'
-import { yaReportada, yaReportado } from '../../moderacion/api'
+} from '../domain/feed'
 import { AvatarLetra, handle, InsigniaNivel, MediaPost, TarjetaClub } from './PostSocial'
+import { RankingSemanal } from './RankingSemanal'
 import { ModalReporte } from './Social'
 
 export function Feed() {

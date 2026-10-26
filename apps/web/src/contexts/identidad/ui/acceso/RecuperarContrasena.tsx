@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { MensajeError } from '../../../../shared/ui/ui'
 import { useApp } from '../../../../store/app'
-import { MensajeError } from '../../../../components/ui'
 
 export function RecuperarContrasena() {
   const navigate = useNavigate()

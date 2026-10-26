@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { MapaGoogle } from '../../../components/MapaGoogle'
-import { TrazadoRuta } from '../../../components/TrazadoRuta'
+import { formatearHms, formatearRitmo, Unidades } from '../../../shared/lib/geo'
+import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
+import { TrazadoRuta } from '../../../shared/ui/TrazadoRuta'
+import { useApp } from '../../../store/app'
 import {
   aPuntosGps,
   leerSesion,
@@ -11,9 +13,7 @@ import {
   suscribirLista,
   suscribirSesion,
   type SesionEnVivo,
-} from '../../../lib/enVivo'
-import { formatearHms, formatearRitmo, Unidades } from '../../../lib/geo'
-import { useApp } from '../../../store/app'
+} from '../../actividad/api'
 
 function Encabezado({ titulo }: { titulo: string }) {
   const navigate = useNavigate()

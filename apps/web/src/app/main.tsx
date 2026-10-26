@@ -1,9 +1,9 @@
 import React from 'react'
-import { cerrarTecladoAlTocarFuera } from '../lib/teclado'
 import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
 import '../index.css'
-import { activarVistaPreviaSiCorresponde } from '../lib/modoVistaPrevia'
+import { cerrarTecladoAlTocarFuera } from '../shared/lib/teclado'
+import App from './App.tsx'
+import { activarVistaPreviaSiCorresponde } from './modoVistaPrevia'
 
 activarVistaPreviaSiCorresponde()
 

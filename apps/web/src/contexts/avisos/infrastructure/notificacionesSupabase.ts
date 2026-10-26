@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { tiempoRelativo } from '../../../lib/logica'
 import type { Notificacion } from '../../../mocks/data'
+import { tiempoRelativo } from '../../../shared/lib/tiempo'
 import { usuario } from '../../../shared/supabase/sesion'
 import { type NotificacionesRepository } from '../domain/puertos'
 
