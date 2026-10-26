@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 data class EstadoLogin(val email: String = "", val password: String = "", val error: String? = null, val cargando: Boolean = false)
 
@@ -97,13 +98,24 @@ sealed interface TokenSocial {
 data class ErrorSocial(val titulo: String, val mensaje: String)
 
 /** Entrar con Google o Apple: fases de carga y errores iguales en Android e iOS. */
-class AccesoSocialViewModel(private val auth: AuthRepository) : ViewModel() {
+/**
+ * [limiteMs]: tiempo maximo esperando al selector del proveedor. Si Google no responde (por ejemplo,
+ * cuando la firma del APK no esta registrada en el cliente OAuth Android), se muestra un error en vez
+ * de dejar la pantalla de carga para siempre. Regresion de v0.8.0, ver docs/REGRESIONES.md.
+ */
+class AccesoSocialViewModel(private val auth: AuthRepository, private val limiteMs: Long = LIMITE_PROVEEDOR_MS) : ViewModel() {
     private val _fase = MutableStateFlow<FaseGoogle?>(null)
     val fase: StateFlow<FaseGoogle?> = _fase.asStateFlow()
     private val _error = MutableStateFlow<ErrorSocial?>(null)
     val error: StateFlow<ErrorSocial?> = _error.asStateFlow()
 
     fun cerrarError() { _error.value = null }
+
+    companion object {
+        const val LIMITE_PROVEEDOR_MS = 45_000L
+        fun sinRespuesta(p: Proveedor) =
+            "${p.nombre} no respondió. Si pasa siempre, la firma de esta versión de la app no está registrada en Google Cloud (cliente OAuth Android de com.gacelas)."
+    }
 
     /**
      * [disponible] false muestra el aviso "no disponible" sin pedir token (sin servidor o sin cliente configurado).
@@ -119,7 +131,7 @@ class AccesoSocialViewModel(private val auth: AuthRepository) : ViewModel() {
         _fase.value = if (p == Proveedor.Apple) FaseGoogle.Servidor else FaseGoogle.Cuenta
         viewModelScope.launch {
             try {
-                when (val t = pedirToken()) {
+                when (val t = withTimeoutOrNull(limiteMs) { pedirToken() } ?: TokenSocial.Error(sinRespuesta(p))) {
                     is TokenSocial.Error -> t.mensaje?.let { _error.value = ErrorSocial(titulo, it) }
                     is TokenSocial.Ok -> {
                         _fase.value = FaseGoogle.Servidor

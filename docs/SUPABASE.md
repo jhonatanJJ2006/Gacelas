@@ -135,6 +135,8 @@ SHA-1: 23:CF:7D:D7:5A:19:B1:54:13:99:38:AD:62:61:DE:AA:BE:DC:23:F9
 
 Antes de publicar un APK, `local.properties` debe tener `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `GOOGLE_WEB_CLIENT_ID`; Gradle avisa si faltan y `-Pgacelas.release=true` hace fallar la compilacion.
 
+Las SHA-1 registradas se listan en `apps/android/gradle.properties` (`gacelas.firmasGoogle`) y la compilacion de release falla si la firma no esta ahi. La regresion de v0.8.0 por este motivo esta en `docs/REGRESIONES.md`.
+
 Cada computadora tiene su propio keystore de depuracion. Si compilas en tu PC, agrega tambien la SHA-1 de tu `debug.keystore`, y la de la firma de release (o la de Play App Signing) antes de publicar.
 
 El cliente Android no lleva secreto ni se configura en Supabase: la app pide el ID token con `GOOGLE_WEB_CLIENT_ID` (el cliente web) y Google lo emite solo si el paquete y la SHA-1 coinciden con un cliente Android del mismo proyecto.
