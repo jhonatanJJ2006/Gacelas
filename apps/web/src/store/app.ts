@@ -23,7 +23,7 @@ import {
   type Ruta,
 } from '../mocks/data'
 import { calcularRacha, type Racha } from '../lib/rachas'
-import { conOficiales } from '../lib/rutas'
+import { conOficiales } from '../contexts/rutas/api'
 import { repositoriosPorDefecto } from '../data/composicion'
 
 export { repositoriosPorDefecto }

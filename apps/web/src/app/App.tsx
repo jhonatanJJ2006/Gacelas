@@ -46,13 +46,13 @@ const ResumenPostCarrera = lazy(() =>
 )
 
 const ListaRutas = lazy(() =>
-  import('../features/rutas/ListaRutas').then((m) => ({ default: m.ListaRutas }))
+  import('../contexts/rutas/ui/ListaRutas').then((m) => ({ default: m.ListaRutas }))
 )
 const BuscadorRutas = lazy(() =>
-  import('../features/rutas/BuscadorRutas').then((m) => ({ default: m.BuscadorRutas }))
+  import('../contexts/rutas/ui/BuscadorRutas').then((m) => ({ default: m.BuscadorRutas }))
 )
 const NavegacionRuta = lazy(() =>
-  import('../features/rutas/NavegacionRuta').then((m) => ({ default: m.NavegacionRuta }))
+  import('../contexts/rutas/ui/NavegacionRuta').then((m) => ({ default: m.NavegacionRuta }))
 )
 
 const Feed = lazy(() => import('../features/comunidad/Feed').then((m) => ({ default: m.Feed })))
@@ -76,10 +76,10 @@ const EventoEnVivo = lazy(() =>
   import('../features/comunidad/EventoEnVivo').then((m) => ({ default: m.EventoEnVivo }))
 )
 const DibujarRuta = lazy(() =>
-  import('../features/rutas/DibujarRuta').then((m) => ({ default: m.DibujarRuta }))
+  import('../contexts/rutas/ui/DibujarRuta').then((m) => ({ default: m.DibujarRuta }))
 )
 const DetalleRuta = lazy(() =>
-  import('../features/rutas/DetalleRuta').then((m) => ({ default: m.DetalleRuta }))
+  import('../contexts/rutas/ui/DetalleRuta').then((m) => ({ default: m.DetalleRuta }))
 )
 const ListaEnVivo = lazy(() =>
   import('../features/comunidad/EnVivo').then((m) => ({ default: m.ListaEnVivo }))

@@ -1,15 +1,15 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { formatearMs, formatearRitmo, Unidades } from '../../lib/geo'
-import { estaActiva } from '../../lib/runTracker'
-import { useApp } from '../../store/app'
-import { empezarSeguimiento, finalizarCarrera, tracker, useCarrera } from '../../store/carrera'
-import { indicacion } from '../../lib/logica'
-import { MapaGoogle } from '../../components/MapaGoogle'
-import { claveMapas, trazoDeOpcion } from '../../lib/mapas'
+import { formatearMs, formatearRitmo, Unidades } from '../../../lib/geo'
+import { estaActiva } from '../../../lib/runTracker'
+import { useApp } from '../../../store/app'
+import { empezarSeguimiento, finalizarCarrera, tracker, useCarrera } from '../../../store/carrera'
+import { indicacion } from '../../../lib/logica'
+import { MapaGoogle } from '../../../components/MapaGoogle'
+import { claveMapas, trazoDeOpcion } from '../../../lib/mapas'
 
 const Runner3D = lazy(() =>
-  import('../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
+  import('../../../components/Runner3D').then((m) => ({ default: m.Runner3D }))
 )
 
 export function NavegacionRuta() {

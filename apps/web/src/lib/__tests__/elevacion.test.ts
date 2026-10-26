@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { desnivelPositivo, muestrear, perfilElevacion } from '../elevacion'
+import { desnivelPositivo, muestrear, perfilElevacion } from '../../contexts/rutas/domain/elevacion'
 
 const recta = [
   { lat: -4, lng: -79.2 },

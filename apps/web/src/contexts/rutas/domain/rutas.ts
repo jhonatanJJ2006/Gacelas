@@ -1,7 +1,7 @@
-import type { CategoriaRuta, Ruta } from '../mocks/data'
-// Catalogo de rutas oficiales: contexto Rutas. Se reexporta por compatibilidad.
-export { CATEGORIAS_RUTA, conOficiales } from '../contexts/rutas/api'
-import { haversineM } from './geo'
+import type { CategoriaRuta, Ruta } from '../../../mocks/data'
+// Catalogo de rutas oficiales: contexto Rutas.
+export { CATEGORIAS_RUTA } from './catalogo'
+import { haversineM } from '../../../shared/lib/geo'
 
 export type Coordenada = { lat: number; lng: number }
 

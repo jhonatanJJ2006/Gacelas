@@ -1,27 +1,19 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js'
-import { ValidacionAuth } from '../../../lib/validacion'
-import { configSupabase } from '../../../lib/supabase'
 import type { AuthRepository } from '../../../data/repositorios'
 import type { Perfil, ResultadoAuth } from '../../../data/tipos'
+import { configSupabase } from '../../../lib/supabase'
+import { ValidacionAuth } from '../../../lib/validacion'
 
 /* Autenticacion y perfil sobre Supabase (contexto Identidad). */
+
+import { traducirError } from '../../../shared/supabase/errores'
+import { usuario } from '../../../shared/supabase/sesion'
+
+export { traducirError, usuario }
 
 type Fila = Record<string, unknown>
 
 const origen = () => (typeof window === 'undefined' ? '' : window.location.origin)
-
-export function traducirError(mensaje: string): string {
-  const m = mensaje.toLowerCase()
-  if (m.includes('invalid login')) return 'Correo o contraseña incorrectos'
-  if (m.includes('already registered') || m.includes('already been registered'))
-    return 'Ya existe una cuenta con ese correo'
-  if (m.includes('not confirmed')) return 'Confirma tu correo antes de iniciar sesión'
-  if (m.includes('rate limit') || m.includes('security purposes'))
-    return 'Demasiados intentos. Espera un momento y vuelve a probar'
-  if (m.includes('fetch') || m.includes('network')) return 'Sin conexión con el servidor'
-  if (m.includes('password')) return 'La contraseña no es válida'
-  return 'No se pudo completar. Intenta de nuevo'
-}
 
 export function perfilDesdeFila(fila: Fila | null, user: User): Perfil {
   const meta = (user.user_metadata ?? {}) as Record<string, string | undefined>
@@ -37,11 +29,6 @@ export function perfilDesdeFila(fila: Fila | null, user: User): Perfil {
     genero: (fila?.gender as string) ?? 'Prefiero no decir',
     foto: (fila?.avatar_url as string) || meta.avatar_url || null,
   }
-}
-
-export async function usuario(sb: SupabaseClient): Promise<User | null> {
-  const { data } = await sb.auth.getSession()
-  return data.session?.user ?? null
 }
 
 export class SupabaseAuthRepository implements AuthRepository {

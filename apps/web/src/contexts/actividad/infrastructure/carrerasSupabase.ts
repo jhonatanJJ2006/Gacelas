@@ -1,4 +1,4 @@
-import type { SupabaseClient, User } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import {
   escribir,
   leer,
@@ -14,10 +14,7 @@ import type { CarreraGuardada } from '../../../data/tipos'
 
 type Fila = Record<string, unknown>
 
-async function usuario(sb: SupabaseClient): Promise<User | null> {
-  const { data } = await sb.auth.getSession()
-  return data.session?.user ?? null
-}
+import { usuario } from '../../../shared/supabase/sesion'
 
 export type OperacionPendiente =
   { tipo: 'guardar'; carrera: CarreraGuardada } | { tipo: 'eliminar'; id: string }
