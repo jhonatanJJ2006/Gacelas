@@ -16,7 +16,8 @@ type Fallo = (e: GeolocationPositionError) => void
 
 let exito: Exito | null = null
 let fallo: Fallo | null = null
-const watch = vi.fn((ok: Exito, err: Fallo, _op?: PositionOptions) => {
+const watch = vi.fn((ok: Exito, err: Fallo, op?: PositionOptions) => {
+  void op
   exito = ok
   fallo = err
   return 7
