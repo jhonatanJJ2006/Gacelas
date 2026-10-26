@@ -56,6 +56,8 @@ kotlin {
             api(project(":contextos:moderacion:domain"))
             api(project(":contextos:legal:domain"))
             api(project(":contextos:legal:infrastructure"))
+            api(project(":contextos:envivo:domain"))
+            api(project(":contextos:envivo:infrastructure"))
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
