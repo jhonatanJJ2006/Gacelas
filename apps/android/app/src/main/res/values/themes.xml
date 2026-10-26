@@ -5,4 +5,11 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
+
+    <!-- Arranque (SplashScreen API): fondo de marca y la gacela del icono. Luego pasa a Theme.Gacelas. -->
+    <style name="Theme.Gacelas.Arranque" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/fondo_marca</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icono</item>
+        <item name="postSplashScreenTheme">@style/Theme.Gacelas</item>
+    </style>
 </resources>

@@ -187,7 +187,7 @@ class LocationService : Service() {
             .setContentTitle(c.titulo)
             .setContentText(c.texto)
             .setStyle(NotificationCompat.BigTextStyle().bigText(c.texto))
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_launcher_monochrome)
             .setContentIntent(abrir)
             .setOnlyAlertOnce(true)
             .setSilent(true)

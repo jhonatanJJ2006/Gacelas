@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generado por tools/marca/generar.py; no editar a mano. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+<group android:scaleX="0.82" android:scaleY="0.82" android:translateX="8.08" android:translateY="14.64">
+<path android:strokeColor="#C084FC" android:strokeAlpha="0.7" android:strokeWidth="2.4" android:strokeLineCap="round" android:pathData="M10,52 H24 M6,60 H22 M12,68 H20"/>
+<path android:pathData="M28,60 C33,52 46,49 60,50 L66,49 C69,45 72,40 75,36 L73,27 C72,23 70,20 67,18 C71,19 74,22 76,27 L78,33 C80,33 83,35 86,38 L83,41 L79,41 C77,45 74,50 72,55 C77,56 83,57 90,55 L91,58 C84,61 77,62 69,61 C64,64 58,66 52,66 C45,71 36,75 24,78 L22,75 C31,72 38,68 42,63 C37,63 32,64 28,66 L22,62 Z"><aapt:attr name="android:fillColor"><gradient android:type="linear" android:startX="22" android:startY="18" android:endX="91" android:endY="78"><item android:offset="0" android:color="#FFF3E8FF"/><item android:offset="0.35" android:color="#FFC084FC"/><item android:offset="0.75" android:color="#FFA855F7"/><item android:offset="1" android:color="#FF7B1FA2"/></gradient></aapt:attr></path>
+<path android:strokeColor="#F3E8FF" android:strokeAlpha="0.7" android:strokeWidth="0.9" android:pathData="M60,50 C66,52 70,56 72,55"/>
+<path android:fillColor="#0C1322" android:pathData="M78.9,37 a1.1,1.1 0 1,0 2.2,0 a1.1,1.1 0 1,0 -2.2,0 Z"/>
+</group>
+</vector>
