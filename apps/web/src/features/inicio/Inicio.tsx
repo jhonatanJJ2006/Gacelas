@@ -1,4 +1,4 @@
-import { unirEventos } from '../../lib/eventos'
+import { unirEventos } from '../../contexts/eventos/infrastructure/eventos'
 import { InsigniaRacha } from '../../components/Racha'
 import { useEsEscritorio } from '../../lib/useEsEscritorio'
 import { MetaSemanal, RankingSemanal } from '../../components/PanelesEscritorio'

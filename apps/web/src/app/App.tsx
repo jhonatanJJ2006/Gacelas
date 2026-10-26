@@ -57,20 +57,20 @@ const NavegacionRuta = lazy(() =>
 
 const Feed = lazy(() => import('../contexts/comunidad/ui/Feed').then((m) => ({ default: m.Feed })))
 const Eventos = lazy(() =>
-  import('../features/comunidad/Eventos').then((m) => ({ default: m.Eventos }))
+  import('../contexts/eventos/ui/Eventos').then((m) => ({ default: m.Eventos }))
 )
 const DetalleEvento = lazy(() =>
-  import('../features/comunidad/DetalleEvento').then((m) => ({ default: m.DetalleEvento }))
+  import('../contexts/eventos/ui/DetalleEvento').then((m) => ({ default: m.DetalleEvento }))
 )
 
 const Corredores = lazy(() =>
   import('../contexts/comunidad/ui/Corredores').then((m) => ({ default: m.Corredores }))
 )
 const Clubes = lazy(() =>
-  import('../features/comunidad/Clubes').then((m) => ({ default: m.Clubes }))
+  import('../contexts/eventos/ui/Clubes').then((m) => ({ default: m.Clubes }))
 )
 const DetalleClub = lazy(() =>
-  import('../features/comunidad/DetalleClub').then((m) => ({ default: m.DetalleClub }))
+  import('../contexts/eventos/ui/DetalleClub').then((m) => ({ default: m.DetalleClub }))
 )
 const EventoEnVivo = lazy(() =>
   import('../features/comunidad/EventoEnVivo').then((m) => ({ default: m.EventoEnVivo }))

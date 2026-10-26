@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { accionClub, puedeGestionar, validarClub } from '../clubes'
+import {
+  accionClub,
+  puedeGestionar,
+  validarClub,
+} from '../../contexts/eventos/infrastructure/clubes'
 import {
   calendarioMes,
   clasificacion,
   posicionesRepeticion,
   textoCupo,
   type CorredorEvento,
-} from '../eventos'
+} from '../../contexts/eventos/infrastructure/eventos'
 import type { Evento } from '../../mocks/data'
 
 const corredor = (id: string, km: number, s: number, puntos = 0): CorredorEvento => ({

@@ -3,7 +3,7 @@ import { Controles } from './mapa/MapaBase'
 import { ESTILO_GACELAS } from '../lib/mapaEstilo'
 import { APIProvider, Map, useMap, type MapMouseEvent } from '@vis.gl/react-google-maps'
 import { MarkerClusterer } from '@googlemaps/markerclusterer'
-import { colorCorredor } from '../lib/eventos'
+import { colorCorredor } from '../contexts/eventos/infrastructure/eventos'
 import { CENTRO_LOJA, claveMapas, type Coordenada } from '../lib/mapas'
 
 function Linea({ puntos }: { puntos: Coordenada[] }) {
