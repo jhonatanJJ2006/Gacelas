@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it } from 'vitest'
 import { screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { useAvisos } from '../contexts/avisos/application/estado'
 import { carreraPrueba, prepararApp, renderRuta } from '../test/utils'
-import { useApp } from '../store/app'
 
 describe('inicio', () => {
   it('resumen semanal con carreras reales', async () => {
@@ -32,7 +32,7 @@ describe('notificaciones', () => {
     expect(screen.getAllByTestId('notificacion')).toHaveLength(1)
     await userEvent.click(screen.getByRole('tab', { name: 'Todas' }))
     await userEvent.click(screen.getByRole('button', { name: /marcar todas/i }))
-    expect(useApp.getState().notificaciones.every((n) => n.leida)).toBe(true)
+    expect(useAvisos.getState().notificaciones.every((n) => n.leida)).toBe(true)
     await userEvent.click(screen.getByRole('tab', { name: 'Sin leer' }))
     expect(screen.getByText('No hay notificaciones.')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('tab', { name: 'Todas' }))

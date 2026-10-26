@@ -3,23 +3,24 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Unidades } from '../../../shared/lib/geo'
 import { trazoDeOpcion } from '../../../shared/lib/mapas'
 import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
-import { useApp } from '../../../store/app'
+import { useIdentidad } from '../../identidad/api'
+import { useRutas } from '../application/estado'
 import { etiquetaOpcion, opcionesBuscador } from '../domain/buscador'
 
 export function BuscadorRutas() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const rutaParam = params.get('ruta')
-  const m = useApp((s) => s.ajustes.unidadesMetricas)
+  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRoute, setSelectedRoute] = useState<string | null>(
     rutaParam ? `ruta-${rutaParam}` : 'primary'
   )
   const routes = opcionesBuscador(searchQuery, rutaParam)
   const seleccionada = routes.find((r) => r.id === selectedRoute) ?? null
-  const rutas = useApp((s) => s.rutas)
-  const guardadas = useApp((s) => s.rutasGuardadas)
-  const alternarGuardada = useApp((s) => s.alternarRutaGuardada)
+  const rutas = useRutas((s) => s.rutas)
+  const guardadas = useRutas((s) => s.rutasGuardadas)
+  const alternarGuardada = useRutas((s) => s.alternarRutaGuardada)
   const destinos = rutas.slice(0, 4).map((r) => r.nombre)
   const rutaId = seleccionada?.id.startsWith('ruta-') ? seleccionada.id.slice(5) : null
   const guardada = rutaId != null && guardadas.includes(rutaId)

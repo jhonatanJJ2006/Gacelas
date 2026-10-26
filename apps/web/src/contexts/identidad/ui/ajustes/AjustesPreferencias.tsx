@@ -3,9 +3,9 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { nivelCorredor } from '../../../../shared/kernel/nivel'
 import { BotonTexto, Dialogo, Interruptor } from '../../../../shared/ui/ui'
-import { useApp } from '../../../../store/app'
-import { descartarCarrera } from '../../../actividad/api'
+import { descartarCarrera, useActividad } from '../../../actividad/api'
 import { InsigniaNivel } from '../../../comunidad'
+import { useIdentidad } from '../../application/estado'
 import { FotoPerfil } from '../perfil/Perfil'
 import { PantallaAjustes, Seccion } from './Comunes'
 
@@ -83,14 +83,14 @@ function Boton({
 
 export function AjustesPreferencias() {
   const navigate = useNavigate()
-  const ajustes = useApp((s) => s.ajustes)
-  const actualizar = useApp((s) => s.actualizarAjustes)
-  const cerrarSesion = useApp((s) => s.cerrarSesion)
+  const ajustes = useIdentidad((s) => s.ajustes)
+  const actualizar = useIdentidad((s) => s.actualizarAjustes)
+  const cerrarSesion = useIdentidad((s) => s.cerrarSesion)
   const [dialogo, setDialogo] = useState<'acerca' | 'ayuda' | 'salir' | null>(null)
   const cerrar = () => setDialogo(null)
 
-  const sesion = useApp((s) => s.sesion)
-  const carreras = useApp((s) => s.carreras)
+  const sesion = useIdentidad((s) => s.sesion)
+  const carreras = useActividad((s) => s.carreras)
   const km = carreras.reduce((a, c) => a + c.distanciaKm, 0)
   const nombre = sesion?.nombre ?? 'Corredor'
   const m = ajustes.unidadesMetricas

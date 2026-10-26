@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MensajeError } from '../../../../shared/ui/ui'
-import { useApp } from '../../../../store/app'
+import { useIdentidad } from '../../application/estado'
 import { CampoContrasena } from './CampoContrasena'
 
 /** Pantalla a la que lleva el enlace de recuperacion: pide la contrasena nueva. */
 export function NuevaContrasena() {
   const navigate = useNavigate()
-  const cambiar = useApp((s) => s.cambiarContrasena)
+  const cambiar = useIdentidad((s) => s.cambiarContrasena)
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [cargando, setCargando] = useState(false)

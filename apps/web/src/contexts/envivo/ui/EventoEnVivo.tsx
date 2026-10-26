@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { eventoPorId } from '../../../mocks/data'
 import { formatearHms } from '../../../shared/lib/geo'
 import { MapaCorredores } from '../../../shared/ui/MapaEditable'
-import { useApp } from '../../../store/app'
 import { elegirEventoEnVivo } from '../../actividad/api'
 import {
   clasificacion,
@@ -11,6 +10,7 @@ import {
   corredoresEvento,
   posicionesRepeticion,
   suscribirEvento,
+  useEventos,
   type CorredorEvento,
 } from '../../eventos/api'
 
@@ -18,7 +18,7 @@ import {
 export function EventoEnVivo() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
-  const creados = useApp((s) => s.eventosCreados)
+  const creados = useEventos((s) => s.eventosCreados)
   const evento = creados.find((e) => e.id === id) ?? eventoPorId(id)
   const [corredores, setCorredores] = useState<CorredorEvento[]>([])
   const [repeticion, setRepeticion] = useState<number | null>(null)

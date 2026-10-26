@@ -1,9 +1,13 @@
 import { lazy, Suspense, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { InsigniaRacha } from '../../contexts/actividad'
+import { useActividad } from '../../contexts/actividad/api'
 import { MetaSemanal } from '../../contexts/analitica'
 import { InsigniaNivel, RankingSemanal } from '../../contexts/comunidad'
-import { filtrarEventos, unirEventos } from '../../contexts/eventos/api'
+import { useComunidad } from '../../contexts/comunidad/api'
+import { filtrarEventos, unirEventos, useEventos } from '../../contexts/eventos/api'
+import { useIdentidad } from '../../contexts/identidad/api'
+import { useRutas } from '../../contexts/rutas/api'
 import { eventosMock } from '../../mocks/data'
 import {
   inicioSemana,
@@ -14,7 +18,6 @@ import {
 import { nivelCorredor } from '../../shared/kernel/nivel'
 import { formatearRitmo, Unidades } from '../../shared/lib/geo'
 import { useEsEscritorio } from '../../shared/lib/useEsEscritorio'
-import { useApp } from '../../store/app'
 import { saludo } from './saludo'
 import {
   AmigosEnRuta,
@@ -30,18 +33,18 @@ const Runner3D = lazy(() =>
 
 export function Inicio() {
   const escritorio = useEsEscritorio()
-  const sesion = useApp((s) => s.sesion)
-  const carreras = useApp((s) => s.carreras)
-  const m = useApp((s) => s.ajustes.unidadesMetricas)
-  const creados = useApp((s) => s.eventosCreados)
-  const inscritos = useApp((s) => s.inscritos)
+  const sesion = useIdentidad((s) => s.sesion)
+  const carreras = useActividad((s) => s.carreras)
+  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
+  const creados = useEventos((s) => s.eventosCreados)
+  const inscritos = useEventos((s) => s.inscritos)
   const ahora = Date.now()
   const semana = useMemo(() => resumenSemana(carreras, ahora), [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
   const hoy = (new Date(ahora).getDay() + 6) % 7
-  const feedSocial = useApp((s) => s.feedSocial)
-  const publicaciones = useApp((s) => s.publicaciones)
-  const refrescarFeed = useApp((s) => s.refrescarFeed)
-  const meta = useApp((s) => s.ajustes.metaSemanal) ?? 3
+  const feedSocial = useComunidad((s) => s.feedSocial)
+  const publicaciones = useComunidad((s) => s.publicaciones)
+  const refrescarFeed = useComunidad((s) => s.refrescarFeed)
+  const meta = useIdentidad((s) => s.ajustes.metaSemanal) ?? 3
   useEffect(() => {
     if (sesion) void refrescarFeed()
   }, [sesion, refrescarFeed])
@@ -60,7 +63,7 @@ export function Inicio() {
     month: 'short',
   })
   const nombre = sesion?.nombre.split(' ')[0] ?? 'Corredor'
-  const rutas = useApp((s) => s.rutas)
+  const rutas = useRutas((s) => s.rutas)
 
   return (
     <div className="flex flex-col w-full px-margin pb-space-3xl space-y-space-xl contenedor-escritorio lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-6 lg:space-y-0 lg:items-start">

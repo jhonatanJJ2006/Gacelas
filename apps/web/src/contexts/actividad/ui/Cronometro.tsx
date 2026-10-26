@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { formatearMs, formatearRitmo, Unidades } from '../../../shared/lib/geo'
 import { Interruptor } from '../../../shared/ui/ui'
-import { useApp } from '../../../store/app'
+import { useIdentidad } from '../../identidad/api'
 import {
   empezarSeguimiento,
   finalizarCarrera,
@@ -98,8 +98,8 @@ function Paso({
 
 /** Entrenamiento por intervalos con su propio reloj y avisos de cambio de fase. */
 export function PanelIntervalos() {
-  const config = useApp((s) => s.ajustes.intervalos)
-  const actualizar = useApp((s) => s.actualizarAjustes)
+  const config = useIdentidad((s) => s.ajustes.intervalos)
+  const actualizar = useIdentidad((s) => s.actualizarAjustes)
   const [transcurrido, setTranscurrido] = useState<number | null>(null)
   const faseAnterior = useRef<string | null>(null)
   const estado = transcurrido == null ? null : estadoIntervalo(config, transcurrido)
@@ -211,8 +211,8 @@ export function PanelIntervalos() {
 
 /** Metronomo con tick audible por Web Audio; el BPM se guarda en ajustes. */
 export function PanelMetronomo() {
-  const bpmGuardado = useApp((s) => s.ajustes.metronomoBpm)
-  const actualizar = useApp((s) => s.actualizarAjustes)
+  const bpmGuardado = useIdentidad((s) => s.ajustes.metronomoBpm)
+  const actualizar = useIdentidad((s) => s.actualizarAjustes)
   const [bpm, setBpm] = useState(bpmGuardado)
   const [sonando, setSonando] = useState(false)
   const [pulso, setPulso] = useState(0)
@@ -286,7 +286,7 @@ export function PanelMetronomo() {
 export function Cronometro() {
   const navigate = useNavigate()
   const e = useCarrera()
-  const ajustes = useApp((s) => s.ajustes)
+  const ajustes = useIdentidad((s) => s.ajustes)
   const m = ajustes.unidadesMetricas
   const [modo, setModo] = useState<Modo>('libre')
   const [pestana, setPestana] = useState<Pestana>('splits')

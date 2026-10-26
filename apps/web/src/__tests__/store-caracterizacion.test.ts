@@ -1,18 +1,19 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { repositoriosLocales, type Repositorios } from '../app/composicion'
+import { cargar, fijarEstado, leerEstado, usarRepositorios } from '../app/estado'
+import { useRacha } from '../contexts/actividad/ui/useRacha'
 import { conOficiales } from '../contexts/rutas/api'
 import { notificacionesMock, rutasMock, type Notificacion } from '../mocks/data'
 import type { Racha } from '../shared/kernel/rachas'
 import type { CarreraGuardada, Perfil } from '../shared/kernel/tipos'
-import { usarRepositorios, useApp, useRacha } from '../store/app'
 
 /*
  * Caracterizacion del estado global de la app antes de dividirlo por contexto: fija como
  * se coordinan sesion, ajustes, carreras, rutas, comunidad y avisos.
  */
 
-const estado = () => useApp.getState()
+const estado = () => leerEstado()
 const configurar = (r: Repositorios) => usarRepositorios(r)
 
 const perfil = (email: string): Perfil => ({
@@ -122,7 +123,7 @@ const esperar = () => new Promise((ok) => setTimeout(ok, 0))
 describe('caracterizacion del estado de la app', () => {
   beforeEach(() => {
     localStorage.clear()
-    useApp.setState({
+    fijarEstado({
       sesion: null,
       carreras: [],
       publicaciones: [],
@@ -139,7 +140,7 @@ describe('caracterizacion del estado de la app', () => {
 
   it('sin backend ni sesion usa los datos de ejemplo', async () => {
     configurar(repositoriosLocales())
-    await estado().cargar()
+    await cargar()
     await esperar()
     expect(estado()).toMatchObject({
       listo: true,
@@ -157,7 +158,7 @@ describe('caracterizacion del estado de la app', () => {
   it('con backend y sesion carga notificaciones, feed, racha y rutas del servidor', async () => {
     const { r } = conBackend()
     configurar(r)
-    await estado().cargar()
+    await cargar()
     await esperar()
     expect(estado().notificaciones.map((n) => n.id)).toEqual(['n-real'])
     expect(estado().publicaciones.map((p) => p.id)).toEqual(['p1'])
@@ -174,7 +175,7 @@ describe('caracterizacion del estado de la app', () => {
   it('reacciona a cambios de sesion externos', async () => {
     const { r, cambiarSesion } = conBackend()
     configurar(r)
-    await estado().cargar()
+    await cargar()
     expect(r.auth.sesionActual).toHaveBeenCalledTimes(1)
     cambiarSesion({ ...perfil('ana@x.ec'), nombre: 'Ana B' })
     expect(estado().sesion?.nombre).toBe('Ana B')
@@ -198,7 +199,7 @@ describe('caracterizacion del estado de la app', () => {
   it('guardar una carrera registra la ruta activa y refresca la racha', async () => {
     const { r } = conBackend()
     configurar(r)
-    await estado().cargar()
+    await cargar()
     r.rachas.leer.mockResolvedValueOnce(racha(5, 3))
     estado().elegirRutaActiva('r9')
     await estado().guardarCarrera(carrera('c1'))
@@ -214,7 +215,7 @@ describe('caracterizacion del estado de la app', () => {
   it('cambiar la meta semanal refresca la racha; otros ajustes no', async () => {
     const { r } = conBackend()
     configurar(r)
-    await estado().cargar()
+    await cargar()
     await estado().actualizarAjustes({ unidadesMetricas: false })
     expect(r.rachas.leer).toHaveBeenCalledTimes(1)
     await estado().actualizarAjustes({ metaSemanal: 4 })
@@ -225,13 +226,13 @@ describe('caracterizacion del estado de la app', () => {
   it('marcar avisos leidos usa el repositorio o, sin el, los ajustes', async () => {
     const { r } = conBackend()
     configurar(r)
-    await estado().cargar()
+    await cargar()
     await estado().marcarNotificacionesLeidas(['n-real'])
     expect(r.notificaciones.marcarLeidas).toHaveBeenCalledWith(['n-real'])
     expect(estado().notificaciones[0].leida).toBe(true)
 
     configurar(repositoriosLocales())
-    await estado().cargar()
+    await cargar()
     const id = notificacionesMock[0].id
     await estado().marcarNotificacionesLeidas([id])
     expect(estado().ajustes.notificacionesLeidas).toContain(id)
@@ -240,7 +241,7 @@ describe('caracterizacion del estado de la app', () => {
   it('los me gusta del feed son optimistas y se revierten si fallan', async () => {
     const { r } = conBackend()
     configurar(r)
-    await estado().cargar()
+    await cargar()
     await estado().alternarMeGustaPost('p1')
     expect(estado().publicaciones[0]).toMatchObject({ meGusta: true, likes: 4 })
     r.comunidad.alternarMeGusta.mockRejectedValueOnce(new Error('red'))
@@ -253,7 +254,7 @@ describe('caracterizacion del estado de la app', () => {
   it('seguir a alguien actualiza la lista y refresca el feed', async () => {
     const { r } = conBackend()
     configurar(r)
-    await estado().cargar()
+    await cargar()
     await estado().alternarSeguir('s2')
     expect(estado().siguiendo).toEqual(['s1', 's2'])
     await esperar()
@@ -264,7 +265,7 @@ describe('caracterizacion del estado de la app', () => {
   it('el feed en tiempo real agrupa cambios en 400 ms', async () => {
     const { r } = conBackend()
     configurar(r)
-    await estado().cargar()
+    await cargar()
     vi.useFakeTimers()
     const baja = estado().suscribirFeed()
     const aviso = r.comunidad.suscribir.mock.calls[0][0]
@@ -282,7 +283,7 @@ describe('caracterizacion del estado de la app', () => {
     await expect(estado().publicarRuta({} as never)).rejects.toThrow('servidor')
     const { r } = conBackend()
     configurar(r)
-    await estado().cargar()
+    await cargar()
     await esperar()
     const nueva = await estado().publicarRuta({} as never)
     expect(nueva.id).toBe('nueva')
@@ -295,10 +296,10 @@ describe('caracterizacion del estado de la app', () => {
   })
 
   it('la racha vigente prefiere la del servidor solo si esta al dia', () => {
-    useApp.setState({ carreras: [carrera('a')], rachaServidor: racha(0, 0) })
+    fijarEstado({ carreras: [carrera('a')], rachaServidor: racha(0, 0) })
     const { result, rerender } = renderHook(() => useRacha())
     expect(result.current.diaria).toBe(1)
-    act(() => useApp.setState({ rachaServidor: racha(9, 9) }))
+    act(() => fijarEstado({ rachaServidor: racha(9, 9) }))
     rerender()
     expect(result.current.diaria).toBe(9)
   })

@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { formatearMs, formatearRitmo, Unidades } from '../../../shared/lib/geo'
 import { claveMapas, trazoDeOpcion } from '../../../shared/lib/mapas'
 import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
-import { useApp } from '../../../store/app'
 import {
   empezarSeguimiento,
   estaActiva,
@@ -11,6 +10,8 @@ import {
   tracker,
   useCarrera,
 } from '../../actividad/api'
+import { useIdentidad } from '../../identidad/api'
+import { useRutas } from '../application/estado'
 import { indicacion } from '../domain/buscador'
 
 const Runner3D = lazy(() =>
@@ -22,14 +23,14 @@ export function NavegacionRuta() {
   const location = useLocation()
   const estado = location.state as { ruta?: string; trazoId?: string } | null
   const nombreRuta = estado?.ruta ?? 'Ruta libre'
-  const rutas = useApp((s) => s.rutas)
-  const rutaActivaId = useApp((s) => s.rutaActivaId)
+  const rutas = useRutas((s) => s.rutas)
+  const rutaActivaId = useRutas((s) => s.rutaActivaId)
   const plan = estado?.trazoId
     ? trazoDeOpcion(estado.trazoId)
     : (rutas.find((r) => r.id === rutaActivaId)?.puntos ?? [])
   const [mapa3d, setMapa3d] = useState(() => !!claveMapas())
   const e = useCarrera()
-  const ajustes = useApp((s) => s.ajustes)
+  const ajustes = useIdentidad((s) => s.ajustes)
   const m = ajustes.unidadesMetricas
   const [errorGps, setErrorGps] = useState<string | null>(null)
   const [animacion, setAnimacion] = useState<'Jog' | 'Run'>('Jog')

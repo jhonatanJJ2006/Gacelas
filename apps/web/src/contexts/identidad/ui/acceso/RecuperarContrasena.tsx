@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MensajeError } from '../../../../shared/ui/ui'
-import { useApp } from '../../../../store/app'
+import { useIdentidad } from '../../application/estado'
 
 export function RecuperarContrasena() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const recuperar = useApp((s) => s.recuperarContrasena)
+  const recuperar = useIdentidad((s) => s.recuperarContrasena)
   const [espera, setEspera] = useState(0)
   useEffect(() => {
     if (espera <= 0) return

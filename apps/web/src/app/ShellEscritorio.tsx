@@ -1,9 +1,9 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { InsigniaRacha } from '../contexts/actividad'
-import { notificacionesVisibles } from '../contexts/avisos/api'
+import { notificacionesVisibles, useAvisos } from '../contexts/avisos/api'
 import { FotoPerfil } from '../contexts/identidad'
+import { useIdentidad } from '../contexts/identidad/api'
 import { useEsEscritorio } from '../shared/lib/useEsEscritorio'
-import { useApp } from '../store/app'
 
 const NAV_ESCRITORIO = [
   { path: '/inicio', label: 'Inicio', icon: 'home' },
@@ -24,9 +24,9 @@ const NAV_ESCRITORIO = [
 export function ShellEscritorio() {
   const { pathname } = useLocation()
   const escritorio = useEsEscritorio()
-  const sesion = useApp((s) => s.sesion)
-  const ajustes = useApp((s) => s.ajustes)
-  const listaNotif = useApp((s) => s.notificaciones)
+  const sesion = useIdentidad((s) => s.sesion)
+  const ajustes = useIdentidad((s) => s.ajustes)
+  const listaNotif = useAvisos((s) => s.notificaciones)
   const sinLeer = notificacionesVisibles(ajustes, listaNotif).filter((n) => !n.leida).length
 
   const activo = (path: string, exacto?: boolean) => {

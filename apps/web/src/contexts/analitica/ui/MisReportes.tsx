@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BarrasHorizontales, GraficoBarras } from '../../../shared/ui/Graficos'
-import { useApp } from '../../../store/app'
+import { useActividad } from '../../actividad/api'
+import { useRutas } from '../../rutas/api'
 import {
   aCsv,
   aPdf,
@@ -80,8 +81,8 @@ export function exportarPdf(rep: ReportePersonal) {
 /** Reporte personal del corredor: semana, mes o año con comparacion y exportacion. */
 export function MisReportes() {
   const navigate = useNavigate()
-  const carreras = useApp((s) => s.carreras)
-  const rutas = useApp((s) => s.rutas)
+  const carreras = useActividad((s) => s.carreras)
+  const rutas = useRutas((s) => s.rutas)
   const [periodo, setPeriodo] = useState<Periodo>('semana')
   const [aviso, setAviso] = useState<string | null>(null)
   const rep = useMemo(

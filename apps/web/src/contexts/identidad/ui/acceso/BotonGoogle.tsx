@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { MensajeError } from '../../../../shared/ui/ui'
-import { useApp } from '../../../../store/app'
+import { useIdentidad } from '../../application/estado'
 
 /** Boton "Continuar con Google" (Supabase OAuth). Muestra un aviso si no esta disponible. */
 export function BotonGoogle() {
-  const entrarConGoogle = useApp((s) => s.entrarConGoogle)
+  const entrarConGoogle = useIdentidad((s) => s.entrarConGoogle)
   const [error, setError] = useState<string | null>(null)
   const [cargando, setCargando] = useState(false)
 

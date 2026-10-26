@@ -1,16 +1,16 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { notificacionesVisibles } from '../contexts/avisos/api'
+import { notificacionesVisibles, useAvisos } from '../contexts/avisos/api'
 import { FotoPerfil } from '../contexts/identidad'
-import { useApp } from '../store/app'
+import { useIdentidad } from '../contexts/identidad/api'
 
 export function AppLayout() {
   const location = useLocation()
 
   const isActive = (path: string) =>
     location.pathname === path || location.pathname.startsWith(`${path}/`)
-  const ajustes = useApp((s) => s.ajustes)
-  const sesion = useApp((s) => s.sesion)
-  const listaNotif = useApp((s) => s.notificaciones)
+  const ajustes = useIdentidad((s) => s.ajustes)
+  const sesion = useIdentidad((s) => s.sesion)
+  const listaNotif = useAvisos((s) => s.notificaciones)
   const sinLeer = notificacionesVisibles(ajustes, listaNotif).filter((n) => !n.leida).length
 
   // Comunidad (Figma C2) trae su propia cabecera: sin barra superior en movil.

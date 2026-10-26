@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Repositorios } from '../app/composicion'
 import { repositoriosSupabase } from '../app/composicion'
+import { cargar, usarRepositorios } from '../app/estado'
 import { eventoDesdeFila } from '../contexts/eventos/infrastructure/eventosSupabase'
+import { useIdentidad } from '../contexts/identidad/application/estado'
 import { perfilDesdeFila, traducirError } from '../contexts/identidad/infrastructure/authSupabase'
 import type { CarreraGuardada } from '../shared/kernel/tipos'
-import { usarRepositorios, useApp } from '../store/app'
 import { crearFakeSupabase, type FakeSupabase } from '../test/fakeSupabase'
 
 const carrera = (id: string, inicioMs = 1_700_000_000_000): CarreraGuardada => ({
@@ -217,11 +218,11 @@ describe('utilidades', () => {
 
   it('el store usa los repositorios de Supabase y entra con Google', async () => {
     usarRepositorios(repos)
-    await useApp.getState().cargar()
-    expect(await useApp.getState().entrarConGoogle()).toBeNull()
-    const r = await useApp.getState().registrar('Jhona Runner', 'j@utpl.edu.ec', 'gacela123')
+    await cargar()
+    expect(await useIdentidad.getState().entrarConGoogle()).toBeNull()
+    const r = await useIdentidad.getState().registrar('Jhona Runner', 'j@utpl.edu.ec', 'gacela123')
     expect(r.ok).toBe(true)
-    expect((await useApp.getState().cambiarContrasena('otra12345')).ok).toBe(true)
+    expect((await useIdentidad.getState().cambiarContrasena('otra12345')).ok).toBe(true)
   })
 })
 

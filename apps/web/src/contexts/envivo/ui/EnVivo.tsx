@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { formatearHms, formatearRitmo, Unidades } from '../../../shared/lib/geo'
 import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
 import { TrazadoRuta } from '../../../shared/ui/TrazadoRuta'
-import { useApp } from '../../../store/app'
 import {
   aPuntosGps,
   leerSesion,
@@ -14,6 +13,7 @@ import {
   suscribirSesion,
   type SesionEnVivo,
 } from '../../actividad/api'
+import { useIdentidad } from '../../identidad/api'
 
 function Encabezado({ titulo }: { titulo: string }) {
   const navigate = useNavigate()
@@ -36,7 +36,7 @@ function Encabezado({ titulo }: { titulo: string }) {
 /** Lista de corredores en vivo que puedo ver. */
 export function ListaEnVivo() {
   const [sesiones, setSesiones] = useState<SesionEnVivo[] | null>(null)
-  const m = useApp((s) => s.ajustes.unidadesMetricas)
+  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
   useEffect(() => {
     let vivo = true
     const cargar = () => void listarEnVivo().then((l) => vivo && setSesiones(l))
@@ -102,7 +102,7 @@ export function ListaEnVivo() {
 /** Mapa en vivo de un corredor, actualizado por Supabase Realtime. */
 export function DetalleEnVivo() {
   const { id = '' } = useParams()
-  const m = useApp((s) => s.ajustes.unidadesMetricas)
+  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
   const [s, setS] = useState<SesionEnVivo | null | undefined>(undefined)
   useEffect(() => {
     let vivo = true

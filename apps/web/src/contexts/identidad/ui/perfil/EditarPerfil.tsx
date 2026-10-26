@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { leerFoto } from '../../../../shared/lib/fotos'
 import { MensajeError } from '../../../../shared/ui/ui'
-import { useApp } from '../../../../store/app'
+import { useIdentidad } from '../../application/estado'
 import { FotoPerfil } from './Perfil'
 
 const entrada =
@@ -11,8 +11,8 @@ const GENEROS = ['Masculino', 'Femenino', 'Otro', 'Prefiero no decir']
 
 export function EditarPerfil() {
   const navigate = useNavigate()
-  const sesion = useApp((s) => s.sesion)
-  const actualizarPerfil = useApp((s) => s.actualizarPerfil)
+  const sesion = useIdentidad((s) => s.sesion)
+  const actualizarPerfil = useIdentidad((s) => s.actualizarPerfil)
   const archivo = useRef<HTMLInputElement>(null)
   const [nombre, setNombre] = useState(sesion?.nombre ?? '')
   const [username, setUsername] = useState(sesion?.username ?? '')
@@ -22,8 +22,8 @@ export function EditarPerfil() {
   const [genero, setGenero] = useState(sesion?.genero ?? 'Prefiero no decir')
   const [foto, setFoto] = useState<string | null>(sesion?.foto ?? null)
   const [error, setError] = useState<string | null>(null)
-  const ajustes = useApp((s) => s.ajustes)
-  const actualizarAjustes = useApp((s) => s.actualizarAjustes)
+  const ajustes = useIdentidad((s) => s.ajustes)
+  const actualizarAjustes = useIdentidad((s) => s.actualizarAjustes)
   const [fis, setFis] = useState({
     pesoKg: ajustes.pesoKg?.toString() ?? '',
     alturaCm: ajustes.alturaCm?.toString() ?? '',

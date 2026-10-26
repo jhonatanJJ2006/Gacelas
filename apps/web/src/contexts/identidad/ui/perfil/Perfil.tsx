@@ -11,10 +11,12 @@ import {
 import { formatearHms, formatearMs, formatearRitmo, Unidades } from '../../../../shared/lib/geo'
 import { useEsEscritorio } from '../../../../shared/lib/useEsEscritorio'
 import { BotonTexto, Dialogo } from '../../../../shared/ui/ui'
-import { useApp } from '../../../../store/app'
 import { TarjetaRacha } from '../../../actividad'
+import { useActividad } from '../../../actividad/api'
 import { EstadisticasPerfil } from '../../../analitica'
 import { ListaLogros } from '../../../comunidad'
+import { useComunidad } from '../../../comunidad/api'
+import { useIdentidad } from '../../application/estado'
 import {
   Contadores,
   EstadisticasHistoricas,
@@ -52,16 +54,16 @@ export function FotoPerfil({
 
 export function Perfil() {
   const escritorio = useEsEscritorio()
-  const sesion = useApp((s) => s.sesion)
-  const carreras = useApp((s) => s.carreras)
-  const m = useApp((s) => s.ajustes.unidadesMetricas)
-  const eliminar = useApp((s) => s.eliminarCarrera)
+  const sesion = useIdentidad((s) => s.sesion)
+  const carreras = useActividad((s) => s.carreras)
+  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
+  const eliminar = useActividad((s) => s.eliminarCarrera)
   const [borrar, setBorrar] = useState<string | null>(null)
   const mes = resumenMes(carreras, Date.now())
   const nombre = sesion?.nombre ?? usuarioActualMock.nombre
-  const seguidores = useApp((s) => s.seguidores)
-  const siguiendo = useApp((s) => s.siguiendo)
-  const refrescarFeed = useApp((s) => s.refrescarFeed)
+  const seguidores = useComunidad((s) => s.seguidores)
+  const siguiendo = useComunidad((s) => s.siguiendo)
+  const refrescarFeed = useComunidad((s) => s.refrescarFeed)
   useEffect(() => {
     if (sesion) void refrescarFeed()
   }, [sesion, refrescarFeed])

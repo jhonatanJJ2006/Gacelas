@@ -5,10 +5,12 @@ import { Unidades } from '../../../shared/lib/geo'
 import { CompartirDialogo } from '../../../shared/ui/CompartirDialogo'
 import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
 import { TrazadoRuta } from '../../../shared/ui/TrazadoRuta'
-import { useApp, useRacha } from '../../../store/app'
+import { useRacha } from '../../actividad'
 import { aPuntosGps } from '../../actividad/api'
+import { useIdentidad } from '../../identidad/api'
 import { TarjetaSeguridad } from '../../seguridad'
 import { subirVistaPrevia } from '../api'
+import { useRutas } from '../application/estado'
 import type { CorredorRuta, FotoRuta, ResenaRuta } from '../domain/puertos'
 import { CATEGORIAS_RUTA, ETIQUETAS_RUTA } from '../domain/rutas'
 import { Estrellas, SelectorEstrellas } from './Estrellas'
@@ -18,23 +20,23 @@ import { PerfilElevacion } from './PerfilElevacion'
 export function DetalleRuta() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
-  const ruta = useApp((s) => s.rutas.find((r) => r.id === id))
-  const m = useApp((s) => s.ajustes.unidadesMetricas)
-  const sesion = useApp((s) => s.sesion)
-  const sociales = useApp((s) => s.rutasSociales)
-  const meGusta = useApp((s) => s.rutasMeGusta.includes(id))
-  const alternarMeGusta = useApp((s) => s.alternarMeGustaRuta)
-  const guardada = useApp((s) => s.rutasGuardadas.includes(id))
-  const alternarGuardada = useApp((s) => s.alternarRutaGuardada)
-  const resenasRuta = useApp((s) => s.resenasRuta)
-  const resenarRuta = useApp((s) => s.resenarRuta)
+  const ruta = useRutas((s) => s.rutas.find((r) => r.id === id))
+  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
+  const sesion = useIdentidad((s) => s.sesion)
+  const sociales = useRutas((s) => s.rutasSociales)
+  const meGusta = useRutas((s) => s.rutasMeGusta.includes(id))
+  const alternarMeGusta = useRutas((s) => s.alternarMeGustaRuta)
+  const guardada = useRutas((s) => s.rutasGuardadas.includes(id))
+  const alternarGuardada = useRutas((s) => s.alternarRutaGuardada)
+  const resenasRuta = useRutas((s) => s.resenasRuta)
+  const resenarRuta = useRutas((s) => s.resenarRuta)
   const [resenas, setResenas] = useState<ResenaRuta[]>([])
   const [estrellas, setEstrellas] = useState(0)
   const [comentario, setComentario] = useState('')
   const [aviso, setAviso] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
-  const explorar = useApp((s) => s.explorar)
-  const elegirRutaActiva = useApp((s) => s.elegirRutaActiva)
+  const explorar = useRutas((s) => s.explorar)
+  const elegirRutaActiva = useRutas((s) => s.elegirRutaActiva)
   const [fotos, setFotos] = useState<FotoRuta[]>([])
   const [corredores, setCorredores] = useState<{ lista: CorredorRuta[]; total: number }>({
     lista: [],

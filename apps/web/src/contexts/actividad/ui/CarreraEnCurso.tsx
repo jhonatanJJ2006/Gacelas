@@ -6,7 +6,7 @@ import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
 import { ModalC2, ResumenModal } from '../../../shared/ui/modales'
 import { TrazadoRuta } from '../../../shared/ui/TrazadoRuta'
 import { BotonTexto, Dialogo } from '../../../shared/ui/ui'
-import { useApp } from '../../../store/app'
+import { useIdentidad } from '../../identidad/api'
 import { HojaReportarIncidente } from '../../seguridad'
 import {
   dejarDeCompartir,
@@ -27,7 +27,7 @@ import { estaActiva, ritmoPromedio } from '../domain/runTracker'
 export function CarreraEnCurso() {
   const navigate = useNavigate()
   const e = useCarrera()
-  const m = useApp((s) => s.ajustes.unidadesMetricas)
+  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
   const [descartar, setDescartar] = useState(false)
   const [modalFin, setModalFin] = useState(false)
   const [modalPausa, setModalPausa] = useState(false)
@@ -35,7 +35,7 @@ export function CarreraEnCurso() {
   const [vista3d, setVista3d] = useState(true)
   const [recentrar, setRecentrar] = useState(0)
   const [reportando, setReportando] = useState(false)
-  const sesion = useApp((s) => s.sesion)
+  const sesion = useIdentidad((s) => s.sesion)
   const vivo = useCompartirEnVivo()
   const compartiendo = vivo.sesionId !== null
   const ultimo = e.puntos.at(-1)
@@ -44,14 +44,14 @@ export function CarreraEnCurso() {
       void enviarPosicion(ultimo, e.distanciaKm, e.segundos)
   }, [compartiendo, e.fase, ultimo, e.distanciaKm, e.segundos])
 
-  const voz = useApp((s) => s.ajustes.anunciosVoz)
-  const actualizar = useApp((s) => s.actualizarAjustes)
+  const voz = useIdentidad((s) => s.ajustes.anunciosVoz)
+  const actualizar = useIdentidad((s) => s.actualizarAjustes)
   const [bloqueo, setBloqueo] = useState(false)
   const altitud = (() => {
     const a = [...e.puntos].reverse().find((p) => p.altitudM != null)?.altitudM
     return a == null ? null : Math.round(a)
   })()
-  const autopausa = useApp((s) => s.ajustes.autopausa)
+  const autopausa = useIdentidad((s) => s.ajustes.autopausa)
   const tramo = Math.floor(m ? e.distanciaKm : e.distanciaKm / 1.609)
   useEffect(() => {
     if (!voz || tramo < 1 || typeof speechSynthesis === 'undefined') return

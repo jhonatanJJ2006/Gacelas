@@ -3,17 +3,17 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { compartir, useAviso } from '../../../hooks'
 import { eventoPorId } from '../../../mocks/data'
 import { Aviso } from '../../../shared/ui/ui'
-import { useApp } from '../../../store/app'
 import { ModalReporte } from '../../comunidad'
 import { yaReportado } from '../../moderacion/api'
 import { estadoEvento, textoCupo, TIPOS_EVENTO, type EstadoEvento } from '../api'
+import { useEventos } from '../application/estado'
 
 export function DetalleEvento() {
   const navigate = useNavigate()
   const { id = '' } = useParams()
-  const creados = useApp((s) => s.eventosCreados)
-  const inscritos = useApp((s) => s.inscritos)
-  const alternar = useApp((s) => s.alternarInscripcion)
+  const creados = useEventos((s) => s.eventosCreados)
+  const inscritos = useEventos((s) => s.inscritos)
+  const alternar = useEventos((s) => s.alternarInscripcion)
   const [aviso, mostrarAviso] = useAviso()
   const [estado, setEstado] = useState<EstadoEvento | null>(null)
   const [reportando, setReportando] = useState(false)

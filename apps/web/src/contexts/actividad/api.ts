@@ -1,6 +1,7 @@
 /** API publicada del contexto Actividad: repositorios de carreras y rachas. */
 export * from './application/carreraStore'
 export * from './application/enVivo'
+export * from './application/estado'
 export * from './domain/enVivo'
 export type * from './domain/puertos'
 export * from './domain/runTracker'

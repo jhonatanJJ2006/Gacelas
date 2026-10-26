@@ -1,14 +1,16 @@
 import { Link } from 'react-router-dom'
 import { Unidades } from '../../../shared/lib/geo'
 import { tarjeta } from '../../../shared/ui/tarjeta'
-import { useApp } from '../../../store/app'
+import { useActividad } from '../../actividad/api'
+import { useIdentidad } from '../../identidad/api'
+import { useComunidad } from '../application/estado'
 import { rankingSemanal } from '../domain/ranking'
 
 export function RankingSemanal() {
-  const carreras = useApp((s) => s.carreras)
-  const remotas = useApp((s) => s.publicaciones)
-  const sesion = useApp((s) => s.sesion)
-  const m = useApp((s) => s.ajustes.unidadesMetricas)
+  const carreras = useActividad((s) => s.carreras)
+  const remotas = useComunidad((s) => s.publicaciones)
+  const sesion = useIdentidad((s) => s.sesion)
+  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
   const filas = rankingSemanal(carreras, sesion?.nombre ?? 'Tú', remotas, Date.now())
   return (
     <section className={tarjeta} aria-labelledby="titulo-ranking" data-testid="panel-ranking">

@@ -1,4 +1,5 @@
 /** API publicada del contexto Eventos y clubes. */
+export * from './application/estado'
 export * from './domain/filtros'
 export type * from './domain/puertos'
 export * from './infrastructure/clubes'

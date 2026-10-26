@@ -2,7 +2,7 @@ import { act, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { descartarCarrera, tracker } from '../contexts/actividad/application/carreraStore'
-import { useApp } from '../store/app'
+import { useIdentidad } from '../contexts/identidad/application/estado'
 import { instalarGpsFalso, prepararApp, renderRuta } from '../test/utils'
 
 const osciladores: { frecuencia: number }[] = []
@@ -77,7 +77,7 @@ describe('cronometro', () => {
     await user.click(screen.getByRole('button', { name: 'Menos Trabajo' }))
     await user.click(screen.getByRole('button', { name: 'Menos Rondas' }))
     await user.click(screen.getByRole('switch', { name: 'Vibración' }))
-    expect(useApp.getState().ajustes.intervalos).toMatchObject({
+    expect(useIdentidad.getState().ajustes.intervalos).toMatchObject({
       trabajoSeg: 50,
       rondas: 5,
       vibracion: false,
@@ -112,7 +112,7 @@ describe('cronometro', () => {
     expect(screen.getByTestId('bpm')).toHaveTextContent('168')
     await user.click(screen.getByRole('button', { name: '180' }))
     expect(screen.getByTestId('bpm')).toHaveTextContent('180')
-    expect(useApp.getState().ajustes.metronomoBpm).toBe(180)
+    expect(useIdentidad.getState().ajustes.metronomoBpm).toBe(180)
     await user.click(screen.getByRole('button', { name: 'Iniciar metrónomo' }))
     await act(async () => {
       vi.advanceTimersByTime(1000)

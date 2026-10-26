@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { BotonTexto, Dialogo, Interruptor, MensajeError } from '../../../shared/ui/ui'
-import { useApp } from '../../../store/app'
+import { useIdentidad } from '../../identidad/api'
 import { clubes, validarClub, type Club } from '../api'
 
 const campo =
@@ -9,7 +9,7 @@ const campo =
 
 export function Clubes() {
   const navigate = useNavigate()
-  const sesion = useApp((s) => s.sesion)
+  const sesion = useIdentidad((s) => s.sesion)
   const [lista, setLista] = useState<Club[] | null>(null)
   const [mios, setMios] = useState<Set<string>>(new Set())
   const [consulta, setConsulta] = useState('')
