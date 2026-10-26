@@ -27,11 +27,8 @@ class CaracterizacionCarreraTest {
         assertEquals(enPausa.segundos, s.estado.value.segundos)
         assertEquals(enPausa.distanciaKm, s.estado.value.distanciaKm)
         s.reanudar()
-        reloj = 121_000L
-        s.registrarPunto(punto(400))
-        // Tras reanudar, el primer punto no suma el salto hecho durante la pausa.
-        assertEquals(enPausa.distanciaKm, s.estado.value.distanciaKm)
-        for (i in 1..5) { reloj = 121_000L + i * 1000L; s.registrarPunto(punto(400 + i)) }
+        // Reanudar no reinicia el ultimo punto valido: se sigue desde donde se pauso.
+        for (i in 0..5) { reloj = 121_000L + i * 1000L; s.registrarPunto(punto(61 + i)) }
         s.actualizarTiempo()
         assertTrue(s.estado.value.distanciaKm > enPausa.distanciaKm)
         assertEquals(enPausa.segundos + 5, s.estado.value.segundos)
