@@ -1,25 +1,20 @@
-import { obtenerSupabase } from '../../shared/supabase/client'
-import {
-  casosDemo,
-  casosSupabase,
-  type AccionModeracion,
-  type ReporteAdmin,
-} from '../../contexts/moderacion/api'
-import {
-  analiticaSupabase,
-  estadisticasDemo,
-  type Estadisticas,
-} from '../../contexts/analitica/api'
+import { obtenerSupabase } from '../../../shared/supabase/client'
 
-// Los tipos de moderacion y analitica viven en sus contextos; se reexportan por compatibilidad.
-export type * from '../../contexts/moderacion/domain/caso'
-export {
-  definicionTipo,
-  tiposRegistrados,
-  type TipoObjetivo as TipoReporte,
-} from '../../contexts/moderacion/api'
-export type { Estadisticas } from '../../contexts/analitica/api'
-export { estadisticasDemo } from '../../contexts/analitica/api'
+/*
+ * Origen de datos del panel de administracion. Los casos de moderacion y las estadisticas
+ * vienen de sus contextos; se reciben como parametros para no depender de su codigo.
+ */
+
+/** Casos de moderacion que el panel lista y resuelve. */
+export interface CasosAdmin<R, A> {
+  pendientes(): Promise<R[]>
+  moderar(r: R, accion: A, nota: string): Promise<void>
+}
+
+/** Estadisticas de uso entre dos fechas. */
+export interface AnaliticaAdmin<E> {
+  estadisticas(desde: string, hasta: string): Promise<E>
+}
 
 export interface Metricas {
   usuarios: number
@@ -67,16 +62,16 @@ export interface AjusteApp {
 }
 
 /** Origen de datos del panel. En produccion es Supabase; en desarrollo hay datos de ejemplo. */
-export interface FuenteAdmin {
+export interface FuenteAdmin<R, A, E> {
   demo: boolean
   esAdmin(): Promise<boolean>
   metricas(): Promise<Metricas>
   usuarios(): Promise<UsuarioAdmin[]>
   suspender(id: string, si: boolean): Promise<void>
   cambiarRol(id: string, rol: UsuarioAdmin['role']): Promise<void>
-  reportes(): Promise<ReporteAdmin[]>
-  moderar(r: ReporteAdmin, accion: AccionModeracion, nota: string): Promise<void>
-  estadisticas(desde: string, hasta: string): Promise<Estadisticas>
+  reportes(): Promise<R[]>
+  moderar(r: R, accion: A, nota: string): Promise<void>
+  estadisticas(desde: string, hasta: string): Promise<E>
   eventos(): Promise<EventoAdmin[]>
   guardarEvento(e: Partial<EventoAdmin> & { title: string }): Promise<void>
   rutas(): Promise<RutaAdmin[]>
@@ -94,10 +89,11 @@ function ok<T>(r: { data: T | null; error: { message: string } | null }): T {
   return r.data as T
 }
 
-export function fuenteSupabase(): FuenteAdmin | null {
+export function fuenteSupabase<R, A, E>(
+  casos: CasosAdmin<R, A> | null,
+  analitica: AnaliticaAdmin<E> | null
+): FuenteAdmin<R, A, E> | null {
   const sb = obtenerSupabase()
-  const casos = casosSupabase()
-  const analitica = analiticaSupabase()
   if (!sb || !casos || !analitica) return null
   return {
     demo: false,
@@ -184,7 +180,10 @@ export function fuenteSupabase(): FuenteAdmin | null {
 }
 
 /** Datos de ejemplo para revisar el panel en desarrollo sin servidor ni rol. */
-export function fuenteDemo(): FuenteAdmin {
+export function fuenteDemo<R extends { status: string }, A, E>(
+  casos: CasosAdmin<R, A>,
+  estadisticas: (desde: string, hasta: string) => E
+): FuenteAdmin<R, A, E> {
   const usuarios: UsuarioAdmin[] = [
     ['Andrea Montaño', 'andre.mont', 214, null],
     ['Kevin Jaramillo', 'kevin.jaramillo', 66, null],
@@ -201,7 +200,6 @@ export function fuenteDemo(): FuenteAdmin {
     carreras: Math.round((km as number) / 6),
     km: km as number,
   }))
-  const casos = casosDemo()
   const eventos: EventoAdmin[] = [
     {
       id: 'e1',
@@ -254,7 +252,7 @@ export function fuenteDemo(): FuenteAdmin {
     },
     reportes: () => casos.pendientes(),
     moderar: (r, accion, nota) => casos.moderar(r, accion, nota),
-    estadisticas: (desde, hasta) => Promise.resolve(estadisticasDemo(desde, hasta)),
+    estadisticas: (desde, hasta) => Promise.resolve(estadisticas(desde, hasta)),
     eventos: () => Promise.resolve(eventos),
     async guardarEvento(e) {
       const i = eventos.findIndex((x) => x.id === e.id)

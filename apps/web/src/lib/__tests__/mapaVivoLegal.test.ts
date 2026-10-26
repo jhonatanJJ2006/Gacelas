@@ -4,7 +4,7 @@ import {
   tocaPublicar,
   visibles,
   type CorredorEnMapa,
-} from '../../features/comunidad/domain/mapaVivo'
+} from '../../contexts/envivo/infrastructure/mapaVivo'
 import {
   historial,
   otorgado,

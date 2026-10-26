@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ModalC2 } from '../../../components/modales'
 import { FilaInterruptor, PantallaAjustes, Seccion } from '../../identidad'
-import { dejarDeCompartir } from '../../../features/comunidad/domain/mapaVivo'
+import { dejarDeCompartir } from '../../envivo/api'
 import {
   eliminarCuenta,
   historial,

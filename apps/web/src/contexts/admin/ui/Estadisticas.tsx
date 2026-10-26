@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { BarrasHorizontales, GraficoBarras, GraficoLinea } from '../../components/Graficos'
-import { aCsv, aPdf, descargar } from '../../contexts/analitica/api'
-import type { Estadisticas as Datos, FuenteAdmin } from './api'
+import { BarrasHorizontales, GraficoBarras, GraficoLinea } from '../../../components/Graficos'
+import { aCsv, aPdf, descargar } from '../../analitica/api'
+import type { Estadisticas as Datos, FuenteAdmin } from './fuente'
 
 const tarjeta = 'bg-c2-card border border-c2-linea'
 const hoy = () => new Date().toLocaleDateString('en-CA')

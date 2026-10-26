@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vitest'
 import { fireEvent, screen } from '@testing-library/react'
 import { prepararApp, renderRuta } from '../test/utils'
-import { fuenteDemo } from '../features/admin/api'
+import { fuenteDemo } from '../contexts/admin/ui/fuente'
 
 describe('panel de administración', () => {
   beforeEach(() => prepararApp())

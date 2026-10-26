@@ -29,7 +29,7 @@ const PermisosUbicacion = lazy(() =>
   }))
 )
 
-const Inicio = lazy(() => import('../features/inicio/Inicio').then((m) => ({ default: m.Inicio })))
+const Inicio = lazy(() => import('./inicio/Inicio').then((m) => ({ default: m.Inicio })))
 const Correr = lazy(() =>
   import('../contexts/actividad/ui/Correr').then((m) => ({ default: m.Correr }))
 )
@@ -73,7 +73,7 @@ const DetalleClub = lazy(() =>
   import('../contexts/eventos/ui/DetalleClub').then((m) => ({ default: m.DetalleClub }))
 )
 const EventoEnVivo = lazy(() =>
-  import('../features/comunidad/EventoEnVivo').then((m) => ({ default: m.EventoEnVivo }))
+  import('../contexts/envivo/ui/EventoEnVivo').then((m) => ({ default: m.EventoEnVivo }))
 )
 const DibujarRuta = lazy(() =>
   import('../contexts/rutas/ui/DibujarRuta').then((m) => ({ default: m.DibujarRuta }))
@@ -82,10 +82,10 @@ const DetalleRuta = lazy(() =>
   import('../contexts/rutas/ui/DetalleRuta').then((m) => ({ default: m.DetalleRuta }))
 )
 const ListaEnVivo = lazy(() =>
-  import('../features/comunidad/EnVivo').then((m) => ({ default: m.ListaEnVivo }))
+  import('../contexts/envivo/ui/EnVivo').then((m) => ({ default: m.ListaEnVivo }))
 )
 const DetalleEnVivo = lazy(() =>
-  import('../features/comunidad/EnVivo').then((m) => ({ default: m.DetalleEnVivo }))
+  import('../contexts/envivo/ui/EnVivo').then((m) => ({ default: m.DetalleEnVivo }))
 )
 const Perfil = lazy(() =>
   import('../contexts/identidad/ui/perfil/Perfil').then((m) => ({ default: m.Perfil }))
@@ -127,7 +127,7 @@ const ConfiguracionNotificaciones = lazy(() =>
   }))
 )
 const Notificaciones = lazy(() =>
-  import('../contexts/identidad/ui/notificaciones/Notificaciones').then((m) => ({
+  import('../contexts/avisos/ui/Notificaciones').then((m) => ({
     default: m.Notificaciones,
   }))
 )
@@ -147,12 +147,12 @@ const AnfitrionLogros = lazy(() =>
 const ModalSinConexion = lazy(() =>
   import('../contexts/comunidad/ui/Social').then((m) => ({ default: m.ModalSinConexion }))
 )
-const Admin = lazy(() => import('../features/admin/Admin').then((m) => ({ default: m.Admin })))
+const Admin = lazy(() => import('../contexts/admin/ui/Admin').then((m) => ({ default: m.Admin })))
 const MapaVivo = lazy(() =>
-  import('../features/comunidad/MapaVivo').then((m) => ({ default: m.MapaVivo }))
+  import('../contexts/envivo/ui/MapaVivo').then((m) => ({ default: m.MapaVivo }))
 )
 const PublicadorUbicacion = lazy(() =>
-  import('../features/comunidad/MapaVivo').then((m) => ({ default: m.PublicadorUbicacion }))
+  import('../contexts/envivo/ui/MapaVivo').then((m) => ({ default: m.PublicadorUbicacion }))
 )
 
 function LoadingFallback() {
