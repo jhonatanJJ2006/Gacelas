@@ -33,6 +33,7 @@ import com.gacelas.analitica.domain.InicioRuta
 import com.gacelas.analitica.domain.PeriodoReporte
 import com.gacelas.analitica.domain.ReportePersonal
 import com.gacelas.analitica.domain.ReportesPersonales
+import com.gacelas.analitica.presentation.EstadoReportes
 import com.gacelas.ui.components.EncabezadoAtras
 import com.gacelas.ui.components.Pantalla
 import com.gacelas.ui.components.Pastilla
@@ -41,7 +42,7 @@ import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
 
-/** Reporte personal C2: semana, mes y año con comparacion, mejores marcas, racha y rutas favoritas. */
+/** Reporte personal C2 calculado en memoria (vistas previas y pruebas); la app usa la version con [EstadoReportes]. */
 @Composable
 fun MisReportesContenido(
     carreras: List<Carrera>,
@@ -52,18 +53,39 @@ fun MisReportesContenido(
 ) {
     var periodo by remember { mutableStateOf(PeriodoReporte.Semana) }
     val r = remember(carreras, periodo, ahoraMs, rutas) { CalcularReportePersonal(carreras, periodo, ahoraMs, rutas) }
+    MisReportesContenido(EstadoReportes(periodo, r), { periodo = it }, onAtras, onCompartir)
+}
+
+/** Reporte personal C2: semana, mes y año con comparacion, mejores marcas, racha y rutas favoritas. */
+@Composable
+fun MisReportesContenido(
+    estado: EstadoReportes,
+    onPeriodo: (PeriodoReporte) -> Unit,
+    onAtras: () -> Unit,
+    onCompartir: (String) -> Unit,
+) {
+    val periodo = estado.periodo
+    val r = estado.reporte
     Column(Modifier.fillMaxSize().background(GColors.C2Bg)) {
         EncabezadoAtras("Mis reportes", onAtras) {
-            IconButton(onClick = { onCompartir(ExportarReporte(r, FormatoExportacion.Texto)) }, modifier = Modifier.testTag("reporte-compartir")) {
-                Icon(Icons.Filled.Share, "Compartir reporte", tint = GColors.C2Violeta)
+            if (r != null) {
+                IconButton(onClick = { onCompartir(ExportarReporte(r, FormatoExportacion.Texto)) }, modifier = Modifier.testTag("reporte-compartir")) {
+                    Icon(Icons.Filled.Share, "Compartir reporte", tint = GColors.C2Violeta)
+                }
+                IconButton(onClick = { onCompartir(ExportarReporte(r, FormatoExportacion.Csv)) }, modifier = Modifier.testTag("reporte-csv")) {
+                    Icon(Icons.Filled.TableChart, "Exportar CSV", tint = GColors.C2Violeta)
+                }
             }
-            IconButton(onClick = { onCompartir(ExportarReporte(r, FormatoExportacion.Csv)) }, modifier = Modifier.testTag("reporte-csv")) {
-                Icon(Icons.Filled.TableChart, "Exportar CSV", tint = GColors.C2Violeta)
+        }
+        if (r == null) {
+            Box(Modifier.weight(1f).fillMaxWidth().testTag("reporte-cargando"), contentAlignment = Alignment.Center) {
+                Text("Calculando tu reporte...", style = GType.bodyMd, color = GColors.C2Muted)
             }
+            return@Column
         }
         Pantalla(Modifier.weight(1f)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PeriodoReporte.entries.forEach { p -> Pastilla(p.etiqueta, p == periodo, { periodo = p }) }
+                PeriodoReporte.entries.forEach { p -> Pastilla(p.etiqueta, p == periodo, { onPeriodo(p) }) }
             }
             ResumenReporte(r)
             GraficoKm(r)

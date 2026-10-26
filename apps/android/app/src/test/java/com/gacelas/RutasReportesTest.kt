@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -78,6 +80,38 @@ class RutasReportesTest {
         captureScreenRoboImage("$dir/reportes/mis-reportes-semana.png")
         compose.onNodeWithText("AÑO").performClick()
         captureScreenRoboImage("$dir/reportes/mis-reportes-anio.png")
+    }
+
+    @Test fun misReportesConViewModel() {
+        val r = RutasLoja.todas.first()
+        val ini = r.puntos.first()
+        val consulta = object : com.gacelas.analitica.domain.ConsultaAnalitica {
+            override val carreras = kotlinx.coroutines.flow.MutableStateFlow(
+                listOf(
+                    Carrera("1", "Mañana", inicioMs = ms(10, 19), segundos = 1500, distanciaKm = 5.0, puntos = listOf(PuntoGps(ini.first, ini.second, ms(10, 19)))),
+                    Carrera("4", "Previa", inicioMs = ms(10, 14), segundos = 1900, distanciaKm = 6.0),
+                ),
+            )
+            override fun iniciosRutas() = com.gacelas.perfil.iniciosRutasLoja
+        }
+        val vm = com.gacelas.analitica.presentation.ReportesPersonalesViewModel(com.gacelas.analitica.application.VerResumenPersonal(consulta)) { ms(10, 21) + 18_000_000 }
+        compose.setContent {
+            GacelasTheme {
+                val estado by vm.estado.collectAsState()
+                com.gacelas.perfil.MisReportesContenido(estado, vm::elegir, {}, {})
+            }
+        }
+        compose.onNodeWithTag("reporte-resumen").assertExists()
+        compose.onNodeWithText(r.nombre).assertExists()
+        compose.onNodeWithText("MES").performClick()
+        compose.waitForIdle()
+        assert(vm.estado.value.periodo == com.gacelas.analitica.domain.PeriodoReporte.Mes)
+        captureScreenRoboImage("$dir/reportes/mis-reportes-viewmodel-mes.png")
+    }
+
+    @Test fun misReportesCargando() {
+        compose.setContent { GacelasTheme { com.gacelas.perfil.MisReportesContenido(com.gacelas.analitica.presentation.EstadoReportes(), {}, {}, {}) } }
+        compose.onNodeWithTag("reporte-cargando").assertExists()
     }
 
     @Test fun reportarEvento() {
