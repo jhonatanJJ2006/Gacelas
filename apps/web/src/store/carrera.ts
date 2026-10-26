@@ -1,2 +1,2 @@
-/** Reexport de compatibilidad; usar features/carreras/application/carreraStore. */
-export * from '../features/carreras/application/carreraStore'
+/** Reexport de compatibilidad; usar contexts/actividad/application/carreraStore. */
+export * from '../contexts/actividad/application/carreraStore'

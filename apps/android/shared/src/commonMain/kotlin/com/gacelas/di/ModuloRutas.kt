@@ -1,8 +1,8 @@
 package com.gacelas.di
 
 import com.gacelas.data.remoto.Backend
-import com.gacelas.rutas.data.RutasOffline
-import com.gacelas.rutas.data.SupabaseExplorarRepository
+import com.gacelas.rutas.infrastructure.RutasOffline
+import com.gacelas.rutas.infrastructure.SupabaseExplorarRepository
 import com.gacelas.rutas.domain.repositorio.ExplorarRepository
 
 /** Ensamblado del bounded context rutas (exploracion social). */

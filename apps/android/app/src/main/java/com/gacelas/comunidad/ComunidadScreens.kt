@@ -16,7 +16,7 @@ import com.gacelas.comunidad.domain.reglas.yaPaso
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.gacelas.comunidad.data.EventoDeClub
+import com.gacelas.comunidad.infrastructure.EventoDeClub
 import com.gacelas.comunidad.domain.modelo.Evento
 import com.gacelas.comunidad.presentation.ui.DetalleEventoContenido
 import com.gacelas.comunidad.presentation.ui.EventosContenido

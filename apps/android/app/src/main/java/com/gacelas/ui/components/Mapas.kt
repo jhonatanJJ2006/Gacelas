@@ -1,6 +1,6 @@
 package com.gacelas.ui.components
 
-import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.actividad.domain.modelo.PuntoGps
 import com.gacelas.ui.three.ClipCorredor
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.geometry.LatLngBounds
@@ -28,7 +28,7 @@ object Mapas {
     fun configurado(): Boolean = android.os.Build.FINGERPRINT != "robolectric"
 
     val trazos: Map<String, List<LatLng>> =
-        com.gacelas.rutas.data.TrazosRutas.puntos.mapValues { (_, p) -> p.map { (lat, lng) -> LatLng(lat, lng) } }
+        com.gacelas.rutas.infrastructure.TrazosRutas.puntos.mapValues { (_, p) -> p.map { (lat, lng) -> LatLng(lat, lng) } }
 
     fun trazo(id: String?): List<LatLng> = id?.removePrefix("ruta-")?.let { trazos[it] } ?: emptyList()
 }

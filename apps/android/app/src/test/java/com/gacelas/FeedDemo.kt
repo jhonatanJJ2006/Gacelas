@@ -1,6 +1,6 @@
 package com.gacelas
 
-import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.actividad.domain.modelo.PuntoGps
 import com.gacelas.comunidad.domain.modelo.ComentarioFeed
 import com.gacelas.comunidad.domain.modelo.Publicacion
 

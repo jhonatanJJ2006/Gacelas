@@ -1,8 +1,14 @@
 # Arquitectura DDD de Gacelas
 
-Propuesta de diseño (fase 1, solo documentación). Basada en `main` del 25 de octubre de 2026, después de fusionar los PR #79, #80 y #81. Amplía el [ADR 003](adr/003-arquitectura-modular.md) y reemplaza la sección "Bounded contexts" de [ARQUITECTURA.md](ARQUITECTURA.md) cuando se apruebe.
+Diseño aprobado ([ADR 004](adr/004-arquitectura-ddd.md)). Fases F0 y F1 aplicadas. Basada en `main` del 25 de octubre de 2026, después de fusionar los PR #79, #80 y #81. Amplía el [ADR 003](adr/003-arquitectura-modular.md) y reemplaza la sección "Bounded contexts" de [ARQUITECTURA.md](ARQUITECTURA.md) cuando se apruebe.
 
-No cambia código. La migración empieza cuando estén fusionados los PR en curso (#82 `fix/c2-carrera-3d-feed` y `feat/rutas-loja-reportes`).
+## Estado de la migración
+
+| Fase | Estado    | Notas                                                                                                                                                                                         |
+| ---- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F0   | Hecha     | ADR 004; avisos de ESLint y dependency-cruiser en web; tarea `verificarArquitectura` en Gradle. Konsist queda para cuando haya módulo `:arquitectura-test`                                    |
+| F1   | Hecha     | `src/shared/kernel` y `com.gacelas.kernel` (en `core:comun`); `packages/contratos`; renombres D1 en web (`src/contexts/{actividad,identidad,legal,seguridad}`) y Android (módulos y paquetes) |
+| F2   | Pendiente | Requiere aviso previo: riesgo alto                                                                                                                                                            |
 
 ## 1. Diagnóstico del estado actual
 

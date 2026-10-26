@@ -61,8 +61,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.gacelas.BuildConfig
-import com.gacelas.cuenta.domain.modelo.Ajustes
-import com.gacelas.cuenta.domain.modelo.Visibilidad
+import com.gacelas.identidad.domain.modelo.Ajustes
+import com.gacelas.identidad.domain.modelo.Visibilidad
 import com.gacelas.ui.ajustesState
 import com.gacelas.ui.aviso
 import com.gacelas.ui.components.EncabezadoAtras
@@ -282,7 +282,7 @@ fun ExtraNotificaciones() {
     val a by ajustesState()
     val guardar = guardarAjuste()
     val carreras by com.gacelas.ui.carrerasState()
-    val reto = remember(carreras) { com.gacelas.carreras.domain.reglas.EstadisticasPerfil.retoMes(carreras, System.currentTimeMillis()) }
+    val reto = remember(carreras) { com.gacelas.actividad.domain.reglas.EstadisticasPerfil.retoMes(carreras, System.currentTimeMillis()) }
     val pct = (reto.km / reto.metaKm).coerceIn(0.0, 1.0)
     EtiquetaGrupo("Esta semana")
     Tarjeta(modifier = Modifier.testTag("reto-notificacion")) {

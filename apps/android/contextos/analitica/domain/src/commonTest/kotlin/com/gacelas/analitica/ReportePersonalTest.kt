@@ -1,11 +1,11 @@
 package com.gacelas.analitica
 
-import com.gacelas.carreras.domain.modelo.Carrera
+import com.gacelas.actividad.domain.modelo.Carrera
 import com.gacelas.analitica.domain.InicioRuta
 import com.gacelas.analitica.domain.PeriodoReporte
 import com.gacelas.analitica.domain.ReportesPersonales
 import com.gacelas.shared.Fechas
-import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.actividad.domain.modelo.PuntoGps
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toInstant
 import kotlin.test.Test

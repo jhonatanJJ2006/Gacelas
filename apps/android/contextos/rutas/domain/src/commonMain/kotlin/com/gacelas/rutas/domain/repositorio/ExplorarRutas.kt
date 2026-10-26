@@ -30,7 +30,7 @@ interface PublicadorRutas {
     suspend fun pendiente(id: String): Boolean
 }
 
-/** Puerto unificado de rutas de la comunidad. Lo implementa [com.gacelas.rutas.data.SupabaseExplorarRepository]. */
+/** Puerto unificado de rutas de la comunidad. Lo implementa [com.gacelas.rutas.infrastructure.SupabaseExplorarRepository]. */
 interface ExplorarRepository : ExplorarRutas, PublicadorRutas {
     suspend fun subirPendientes(): Int
     suspend fun registrarCorrida(rutaId: String, actividadId: String)

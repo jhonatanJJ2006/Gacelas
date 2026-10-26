@@ -13,9 +13,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import com.gacelas.cuenta.domain.modelo.ConfigAvatar
-import com.gacelas.carreras.domain.reglas.Estadisticas
-import com.gacelas.carreras.domain.reglas.EstadisticasPerfil
+import com.gacelas.identidad.domain.modelo.ConfigAvatar
+import com.gacelas.actividad.domain.reglas.Estadisticas
+import com.gacelas.actividad.domain.reglas.EstadisticasPerfil
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearHms
 import com.gacelas.tracking.formatearMs

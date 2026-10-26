@@ -16,7 +16,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
-    "smoke:supabase": "npx -y tsx@4 ../../scripts/supabase-smoke.ts"
+    "smoke:supabase": "npx -y tsx@4 ../../scripts/supabase-smoke.ts",
+    "arch": "depcruise src --config .dependency-cruiser.cjs"
   },
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",
@@ -43,6 +44,7 @@
     "@vitest/coverage-v8": "1.6.1",
     "@vitest/ui": "^1.0.4",
     "autoprefixer": "^10.4.16",
+    "dependency-cruiser": "^16.10.4",
     "eslint": "^9.13.0",
     "eslint-plugin-boundaries": "^7.2.0",
     "eslint-plugin-react-hooks": "^5.0.0",

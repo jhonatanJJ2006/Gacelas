@@ -4,7 +4,7 @@ import { rutasMock } from '../mocks/data'
 import { conOficiales } from './rutas'
 import { RUTAS_LOJA } from '../contexts/rutas/api'
 import { useApp } from '../store/app'
-import { tracker } from '../features/carreras/application/carreraStore'
+import { tracker } from '../contexts/actividad/application/carreraStore'
 
 /*
  * Modo de previsualizacion solo para desarrollo (pnpm dev, URL con ?vista-previa).

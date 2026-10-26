@@ -1,8 +1,8 @@
 package com.gacelas
 
-import com.gacelas.carreras.domain.modelo.Carrera
-import com.gacelas.comunidad.data.comentarioDesdeFila
-import com.gacelas.comunidad.data.publicacionDesdeFilaFeed
+import com.gacelas.actividad.domain.modelo.Carrera
+import com.gacelas.comunidad.infrastructure.comentarioDesdeFila
+import com.gacelas.comunidad.infrastructure.publicacionDesdeFilaFeed
 import com.gacelas.comunidad.domain.modelo.FiltroFeed
 import com.gacelas.comunidad.domain.reglas.filtrarFeed
 import com.gacelas.comunidad.domain.reglas.unirEventos

@@ -8,9 +8,9 @@ import {
   ListaIncidentes,
   useIncidentesRecientes,
   type IncidentePublico,
-} from '../seguridad'
-import { tracker } from '../carreras/application/carreraStore'
-import { historial, otorgado } from '../legal/consentimientos'
+} from '../../contexts/seguridad'
+import { tracker } from '../../contexts/actividad/application/carreraStore'
+import { historial, otorgado } from '../../contexts/legal/consentimientos'
 import {
   listarCorredores,
   publicarPosicion,

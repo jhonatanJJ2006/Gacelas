@@ -11,7 +11,7 @@ import com.gacelas.comunidad.domain.modelo.PestanaEventos
 import com.gacelas.comunidad.domain.modelo.Publicacion
 import com.gacelas.comunidad.domain.modelo.RolClub
 import com.gacelas.comunidad.domain.modelo.TipoNotificacion
-import com.gacelas.cuenta.domain.modelo.Ajustes
+import com.gacelas.identidad.domain.modelo.Ajustes
 import com.gacelas.shared.Fechas
 import com.gacelas.shared.ahoraMs
 import kotlinx.datetime.DatePeriod

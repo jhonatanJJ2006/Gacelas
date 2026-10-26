@@ -53,5 +53,23 @@ export default tseslint.config(
         },
       ],
     },
+  },
+  // Reglas DDD en modo aviso (docs/adr/004-arquitectura-ddd.md): Supabase solo en infrastructure.
+  {
+    files: ['src/contexts/*/{domain,application,ui}/**/*.{ts,tsx}', 'src/features/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.ts', '**/*.test.tsx', '**/__tests__/**'],
+    rules: {
+      'no-restricted-imports': [
+        'warn',
+        {
+          patterns: [
+            {
+              group: ['@supabase/*', '**/shared/supabase/*', '**/lib/supabase'],
+              message: 'Supabase solo se usa desde infrastructure (ADR 004).',
+            },
+          ],
+        },
+      ],
+    },
   }
 )

@@ -4,8 +4,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.gacelas.carreras.domain.modelo.Carrera
-import com.gacelas.carreras.domain.reglas.Estadisticas
+import com.gacelas.actividad.domain.modelo.Carrera
+import com.gacelas.actividad.domain.reglas.Estadisticas
 import com.gacelas.data.remoto.Backend
 import com.gacelas.moderacion.domain.ObjetivoDenuncia
 import com.gacelas.moderacion.domain.tablaDenuncia

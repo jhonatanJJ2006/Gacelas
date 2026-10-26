@@ -1,9 +1,9 @@
 package com.gacelas
 
-import com.gacelas.carreras.domain.modelo.PuntoGps
-import com.gacelas.carreras.domain.FaseCarrera
+import com.gacelas.actividad.domain.modelo.PuntoGps
+import com.gacelas.actividad.domain.FaseCarrera
 import com.gacelas.tracking.NotificacionCarrera
-import com.gacelas.carreras.domain.SesionCarrera
+import com.gacelas.actividad.domain.SesionCarrera
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

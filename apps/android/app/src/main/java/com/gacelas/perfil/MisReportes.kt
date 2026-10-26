@@ -26,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.gacelas.carreras.domain.modelo.Carrera
+import com.gacelas.actividad.domain.modelo.Carrera
 import com.gacelas.analitica.domain.InicioRuta
 import com.gacelas.analitica.domain.PeriodoReporte
 import com.gacelas.analitica.domain.ReportePersonal

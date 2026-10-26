@@ -19,7 +19,7 @@ import {
   type RutaAdmin,
   type UsuarioAdmin,
 } from './api'
-import { VERSIONES_LEGALES } from '../legal/textos'
+import { VERSIONES_LEGALES } from '../../contexts/legal/textos'
 import { Estadisticas } from './Estadisticas'
 
 const SECCIONES: [string, string, string][] = [

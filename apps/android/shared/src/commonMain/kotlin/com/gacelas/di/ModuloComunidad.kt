@@ -1,10 +1,10 @@
 package com.gacelas.di
 
-import com.gacelas.comunidad.data.LocalEventosRepository
-import com.gacelas.comunidad.data.SupabaseClubesRepository
-import com.gacelas.comunidad.data.SupabaseEnVivoRepository
-import com.gacelas.comunidad.data.SupabaseEventosRepository
-import com.gacelas.comunidad.data.SupabaseNotificacionesRepository
+import com.gacelas.comunidad.infrastructure.LocalEventosRepository
+import com.gacelas.comunidad.infrastructure.SupabaseClubesRepository
+import com.gacelas.comunidad.infrastructure.SupabaseEnVivoRepository
+import com.gacelas.comunidad.infrastructure.SupabaseEventosRepository
+import com.gacelas.comunidad.infrastructure.SupabaseNotificacionesRepository
 import com.gacelas.comunidad.domain.repositorio.ClubesRepository
 import com.gacelas.comunidad.domain.repositorio.EnVivoRepository
 import com.gacelas.comunidad.domain.repositorio.EventosRepository

@@ -6,8 +6,8 @@ import com.gacelas.core.sync.Sincronizacion
 import com.gacelas.rutas.domain.modelo.Dificultad
 import com.gacelas.rutas.domain.modelo.Ruta
 import com.gacelas.rutas.domain.reglas.Guia
-import com.gacelas.rutas.data.OperacionRuta
-import com.gacelas.rutas.data.RutasOffline
+import com.gacelas.rutas.infrastructure.OperacionRuta
+import com.gacelas.rutas.infrastructure.RutasOffline
 import com.gacelas.rutas.rutasNavegables
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +50,7 @@ class RutasOfflineTest {
     }
 
     @Test fun crearSinRedQuedaPendienteYSeSubeAlVolverLaRed() = runBlocking {
-        assertTrue(c.auth.registrar("Jhona Runner", "jhona@utpl.edu.ec", "gacela123") is com.gacelas.cuenta.domain.modelo.ResultadoAuth.Ok)
+        assertTrue(c.auth.registrar("Jhona Runner", "jhona@utpl.edu.ec", "gacela123") is com.gacelas.identidad.domain.modelo.ResultadoAuth.Ok)
         backend.sinRed = true
         val id = c.explorar!!.crear("Mi ruta", "", Dificultad.Facil, emptyList(), trazo, 10, null)
         assertTrue(c.explorar!!.pendiente(id))

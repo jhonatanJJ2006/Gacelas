@@ -1,8 +1,8 @@
 package com.gacelas
 
 import com.gacelas.core.sensores.Rumbo
-import com.gacelas.carreras.domain.modelo.PuntoGps
-import com.gacelas.carreras.domain.SesionCarrera
+import com.gacelas.actividad.domain.modelo.PuntoGps
+import com.gacelas.actividad.domain.SesionCarrera
 import com.gacelas.ui.components.ReglasDescarga
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

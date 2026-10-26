@@ -75,20 +75,20 @@ graph LR
 
 ## Mapa de migración
 
-| Hoy                                                                                               | Destino                                 |
-| ------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| `lib/estadisticas.ts`, `lib/rachas.ts`, `lib/intervalos.ts`, `lib/runTracker.ts`, `lib/enVivo.ts` | `features/carreras/{domain,data}`       |
-| `lib/rutas.ts`, `lib/elevacion.ts`, `lib/filtros.ts`                                              | `features/rutas/domain`                 |
-| `lib/clubes.ts`, `lib/eventos.ts`                                                                 | `features/comunidad/{domain,data}`      |
-| `lib/validacion.ts`                                                                               | `features/cuenta/domain`                |
-| `lib/supabase.ts`, `data/tipos.ts`                                                                | `shared/supabase`                       |
-| `data/repositorios.ts`, `data/supabaseRepos.ts`                                                   | dividir en `features/*/data`            |
-| `lib/geo.ts`, `lib/teclado.ts`, `lib/webgl.ts`, `lib/mapas.ts`, `lib/mapaEstilo.ts`               | `shared/lib`                            |
-| `store/carrera.ts`                                                                                | `features/carreras/application`         |
-| `store/app.ts`                                                                                    | `app/` (sesión) y stores por contexto   |
-| `components/*`                                                                                    | `shared/ui` o `features/*/ui` según uso |
-| `features/acceso`, `ajustes`, `perfil`, `notificaciones`                                          | `features/cuenta/ui`                    |
-| `features/correr`                                                                                 | `features/carreras/ui`                  |
+| Hoy                                                                                               | Destino                                      |
+| ------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `lib/estadisticas.ts`, `lib/rachas.ts`, `lib/intervalos.ts`, `lib/runTracker.ts`, `lib/enVivo.ts` | `contexts/actividad/{domain,infrastructure}` |
+| `lib/rutas.ts`, `lib/elevacion.ts`, `lib/filtros.ts`                                              | `features/rutas/domain`                      |
+| `lib/clubes.ts`, `lib/eventos.ts`                                                                 | `features/comunidad/{domain,data}`           |
+| `lib/validacion.ts`                                                                               | `contexts/identidad/domain`                  |
+| `lib/supabase.ts`, `data/tipos.ts`                                                                | `shared/supabase`                            |
+| `data/repositorios.ts`, `data/supabaseRepos.ts`                                                   | dividir en `features/*/data`                 |
+| `lib/geo.ts`, `lib/teclado.ts`, `lib/webgl.ts`, `lib/mapas.ts`, `lib/mapaEstilo.ts`               | `shared/lib`                                 |
+| `store/carrera.ts`                                                                                | `contexts/actividad/application`             |
+| `store/app.ts`                                                                                    | `app/` (sesión) y stores por contexto        |
+| `components/*`                                                                                    | `shared/ui` o `features/*/ui` según uso      |
+| `features/acceso`, `ajustes`, `perfil`, `notificaciones`                                          | `contexts/identidad/ui`                      |
+| `features/correr`                                                                                 | `contexts/actividad/ui`                      |
 
 ## Qué falta para el objetivo
 

@@ -52,7 +52,7 @@ import android.util.Log
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.gacelas.BuildConfig
-import com.gacelas.cuenta.domain.modelo.ResultadoAuth
+import com.gacelas.identidad.domain.modelo.ResultadoAuth
 import com.gacelas.ui.contenedor
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
@@ -163,10 +163,10 @@ fun BotonGoogle(
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         BotonGoogleVisual(
             onClick = {
-                vm.entrar(com.gacelas.cuenta.presentation.Proveedor.Google, pedirToken = {
+                vm.entrar(com.gacelas.identidad.presentation.Proveedor.Google, pedirToken = {
                     when (val t = GoogleAcceso.pedirToken(context)) {
-                        is TokenGoogle.Ok -> com.gacelas.cuenta.presentation.TokenSocial.Ok(t.idToken, t.nonce)
-                        is TokenGoogle.Error -> com.gacelas.cuenta.presentation.TokenSocial.Error(t.mensaje)
+                        is TokenGoogle.Ok -> com.gacelas.identidad.presentation.TokenSocial.Ok(t.idToken, t.nonce)
+                        is TokenGoogle.Error -> com.gacelas.identidad.presentation.TokenSocial.Error(t.mensaje)
                     }
                 }, alEntrar = onEntrar)
             },

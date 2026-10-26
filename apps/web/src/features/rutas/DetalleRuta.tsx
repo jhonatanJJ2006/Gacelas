@@ -14,7 +14,7 @@ import { CATEGORIAS_RUTA, ETIQUETAS_RUTA } from '../../lib/rutas'
 import { InsigniaOficial } from './ListaRutas'
 import { useApp } from '../../store/app'
 import { Estrellas, SelectorEstrellas } from './Estrellas'
-import { TarjetaSeguridad } from '../seguridad'
+import { TarjetaSeguridad } from '../../contexts/seguridad'
 
 export function DetalleRuta() {
   const { id = '' } = useParams()

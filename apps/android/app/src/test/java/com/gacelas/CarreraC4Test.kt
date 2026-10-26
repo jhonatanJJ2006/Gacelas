@@ -19,10 +19,10 @@ import androidx.compose.ui.test.swipeRight
 import com.gacelas.correr.ContenidoCarreraC4
 import com.gacelas.correr.TrazadoRuta
 import com.gacelas.correr.VistaCarrera
-import com.gacelas.carreras.domain.modelo.Parcial
-import com.gacelas.carreras.domain.modelo.PuntoGps
-import com.gacelas.carreras.domain.EstadoCarrera
-import com.gacelas.carreras.domain.FaseCarrera
+import com.gacelas.actividad.domain.modelo.Parcial
+import com.gacelas.actividad.domain.modelo.PuntoGps
+import com.gacelas.actividad.domain.EstadoCarrera
+import com.gacelas.actividad.domain.FaseCarrera
 import com.gacelas.ui.theme.GacelasTheme
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.Assert.assertEquals

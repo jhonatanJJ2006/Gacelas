@@ -6,9 +6,9 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.graphics.asImageBitmap
-import com.gacelas.carreras.domain.reglas.Estadisticas
-import com.gacelas.carreras.domain.reglas.EstadisticasPerfil
-import com.gacelas.carreras.domain.reglas.Racha
+import com.gacelas.actividad.domain.reglas.Estadisticas
+import com.gacelas.actividad.domain.reglas.EstadisticasPerfil
+import com.gacelas.actividad.domain.reglas.Racha
 import com.gacelas.correr.CarreraMuestra
 import com.gacelas.data.mock.MockData
 import com.gacelas.inicio.InicioContenido
@@ -28,7 +28,7 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.gacelas.ajustes.AjustesContenido
-import com.gacelas.comunidad.data.LocalEventosRepository
+import com.gacelas.comunidad.infrastructure.LocalEventosRepository
 import com.gacelas.comunidad.domain.modelo.Evento
 import com.gacelas.comunidad.domain.modelo.Publicacion
 import com.gacelas.comunidad.domain.modelo.ComentarioFeed
@@ -37,10 +37,10 @@ import com.gacelas.comunidad.presentation.EventosViewModel
 import com.gacelas.comunidad.presentation.FeedViewModel
 import com.gacelas.comunidad.presentation.ui.EventosContenido
 import com.gacelas.comunidad.presentation.ui.FeedContenido
-import com.gacelas.carreras.data.LocalCarrerasRepository
-import com.gacelas.cuenta.data.LocalAjustesRepository
-import com.gacelas.cuenta.data.LocalAuthRepository
-import com.gacelas.cuenta.domain.modelo.Ajustes
+import com.gacelas.actividad.infrastructure.LocalCarrerasRepository
+import com.gacelas.identidad.infrastructure.LocalAjustesRepository
+import com.gacelas.identidad.infrastructure.LocalAuthRepository
+import com.gacelas.identidad.domain.modelo.Ajustes
 import androidx.compose.material3.Text
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

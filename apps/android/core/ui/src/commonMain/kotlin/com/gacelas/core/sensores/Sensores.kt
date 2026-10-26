@@ -1,8 +1,8 @@
 package com.gacelas.core.sensores
 
-import com.gacelas.carreras.domain.modelo.PuntoGps
-import com.gacelas.carreras.domain.EstadoCarrera
-import com.gacelas.carreras.domain.SesionCarrera
+import com.gacelas.actividad.domain.modelo.PuntoGps
+import com.gacelas.actividad.domain.EstadoCarrera
+import com.gacelas.actividad.domain.SesionCarrera
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

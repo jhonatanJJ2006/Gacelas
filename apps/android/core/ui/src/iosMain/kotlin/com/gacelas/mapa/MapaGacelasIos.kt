@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.UIKitView
 import com.gacelas.core.sensores.Rumbo
 import com.gacelas.core.sensores.fuenteRumboNativa
-import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.actividad.domain.modelo.PuntoGps
 import com.gacelas.ui.theme.GType
 import kotlinx.coroutines.delay
 import platform.UIKit.UIView

@@ -21,8 +21,8 @@ import androidx.compose.ui.viewinterop.UIKitView
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
-import com.gacelas.cuenta.domain.repositorio.AuthRepository
-import com.gacelas.cuenta.domain.modelo.ResultadoAuth
+import com.gacelas.identidad.domain.repositorio.AuthRepository
+import com.gacelas.identidad.domain.modelo.ResultadoAuth
 import com.gacelas.data.remoto.SupabaseBackend
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -84,7 +84,7 @@ object SesionIos {
     val auth: AuthRepository get() = contenedor.auth
 
     /** iOS guarda los ajustes solo en el dispositivo por ahora. */
-    val ajustes: com.gacelas.cuenta.domain.repositorio.AjustesRepository get() = contenedor.ajustesLocales
+    val ajustes: com.gacelas.identidad.domain.repositorio.AjustesRepository get() = contenedor.ajustesLocales
 }
 
 /** Llamado desde Swift al arrancar. */
@@ -115,11 +115,11 @@ fun BotonesSocialesIos(onEntrar: () -> Unit, portada: Boolean = false, alto: Dp 
     val error by vm.error.collectAsState()
     val entrar by rememberUpdatedState(onEntrar)
     fun flujo(apple: Boolean) {
-        val p = if (apple) com.gacelas.cuenta.presentation.Proveedor.Apple else com.gacelas.cuenta.presentation.Proveedor.Google
+        val p = if (apple) com.gacelas.identidad.presentation.Proveedor.Apple else com.gacelas.identidad.presentation.Proveedor.Google
         val disponible = auth.googleDisponible && puente != null && (apple || puente.googleConfigurado())
         vm.entrar(p, disponible, pedirToken = {
             val (token, nonce, msj) = pedir { h, cb -> if (apple) puente!!.apple(h, cb) else puente!!.google(h, cb) }
-            if (token != null) com.gacelas.cuenta.presentation.TokenSocial.Ok(token, nonce) else com.gacelas.cuenta.presentation.TokenSocial.Error(msj)
+            if (token != null) com.gacelas.identidad.presentation.TokenSocial.Ok(token, nonce) else com.gacelas.identidad.presentation.TokenSocial.Error(msj)
         }, alEntrar = { entrar() })
     }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {

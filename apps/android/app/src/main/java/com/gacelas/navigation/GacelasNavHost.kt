@@ -184,7 +184,7 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
     composable(Destinos.DETALLE_CLUB) { entry ->
         com.gacelas.comunidad.DetalleClubScreen(
             id = entry.arguments?.getString("id").orEmpty(), onAtras = { nav.popBackStack() },
-            onEvento = { nav.navigate(Destinos.detalleEvento(it)) }, onCrearEvento = { com.gacelas.comunidad.data.EventoDeClub.id = it; nav.navigate(Destinos.EVENTOS) },
+            onEvento = { nav.navigate(Destinos.detalleEvento(it)) }, onCrearEvento = { com.gacelas.comunidad.infrastructure.EventoDeClub.id = it; nav.navigate(Destinos.EVENTOS) },
         )
     }
     composable(Destinos.EVENTO_EN_VIVO) { entry ->

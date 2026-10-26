@@ -6,9 +6,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import com.gacelas.carreras.domain.EstadoCarrera
-import com.gacelas.carreras.domain.FaseCarrera
-import com.gacelas.cuenta.domain.modelo.Ajustes
+import com.gacelas.actividad.domain.EstadoCarrera
+import com.gacelas.actividad.domain.FaseCarrera
+import com.gacelas.identidad.domain.modelo.Ajustes
 import kotlinx.coroutines.delay
 import java.util.Locale
 

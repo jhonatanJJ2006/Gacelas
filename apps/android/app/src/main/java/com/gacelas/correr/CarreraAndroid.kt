@@ -27,7 +27,7 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
     val ajustes by ajustesState()
     var confirmar by remember { mutableStateOf(false) }
     val ajustesVm = com.gacelas.ui.ajustesViewModel()
-    val guardarVoz: ((com.gacelas.cuenta.domain.modelo.Ajustes) -> com.gacelas.cuenta.domain.modelo.Ajustes) -> Unit = { t -> ajustesVm.actualizar(t) }
+    val guardarVoz: ((com.gacelas.identidad.domain.modelo.Ajustes) -> com.gacelas.identidad.domain.modelo.Ajustes) -> Unit = { t -> ajustesVm.actualizar(t) }
     MantenerPantallaEncendida()
     RelojCarrera(tracker, estado)
     PreferenciasCarrera(estado, ajustes) { if (!estado.pausada) vm.alternarPausa() }

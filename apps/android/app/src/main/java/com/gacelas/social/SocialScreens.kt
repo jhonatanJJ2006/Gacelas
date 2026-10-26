@@ -29,7 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.gacelas.carreras.domain.modelo.Carrera
+import com.gacelas.actividad.domain.modelo.Carrera
 import com.gacelas.ui.components.AvisosC2
 import com.gacelas.ui.components.ModalC2
 import com.gacelas.ui.components.Tarjeta

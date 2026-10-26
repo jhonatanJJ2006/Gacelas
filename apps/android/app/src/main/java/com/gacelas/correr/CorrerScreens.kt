@@ -97,14 +97,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.gacelas.core.location.LocationService
 import com.gacelas.ajustes.permisosCarrera
-import com.gacelas.cuenta.domain.modelo.ConfigIntervalos
-import com.gacelas.carreras.domain.modelo.PuntoGps
+import com.gacelas.identidad.domain.modelo.ConfigIntervalos
+import com.gacelas.actividad.domain.modelo.PuntoGps
 import com.gacelas.tracking.Avisos
-import com.gacelas.carreras.domain.EstadoCarrera
-import com.gacelas.carreras.domain.FaseCarrera
+import com.gacelas.actividad.domain.EstadoCarrera
+import com.gacelas.actividad.domain.FaseCarrera
 import com.gacelas.tracking.FaseIntervalo
 import com.gacelas.tracking.PlanIntervalos
-import com.gacelas.carreras.domain.SesionCarrera
+import com.gacelas.actividad.domain.SesionCarrera
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearMs
 import com.gacelas.tracking.formatearRitmo
@@ -631,13 +631,13 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
     val scope = rememberCoroutineScope()
     var titulo by rememberSaveable { mutableStateOf("") }
     var nota by rememberSaveable { mutableStateOf("") }
-    var publica by rememberSaveable { mutableStateOf(ajustes.visibilidad != com.gacelas.cuenta.domain.modelo.Visibilidad.Privado) }
+    var publica by rememberSaveable { mutableStateOf(ajustes.visibilidad != com.gacelas.identidad.domain.modelo.Visibilidad.Privado) }
     var guardando by remember { mutableStateOf(false) }
     val carrerasPrevias by com.gacelas.ui.carrerasState()
-    val rachaAntes = remember(carrerasPrevias, ajustes.metaSemanal) { com.gacelas.carreras.domain.reglas.Rachas.calcular(carrerasPrevias, System.currentTimeMillis(), ajustes.metaSemanal) }
+    val rachaAntes = remember(carrerasPrevias, ajustes.metaSemanal) { com.gacelas.actividad.domain.reglas.Rachas.calcular(carrerasPrevias, System.currentTimeMillis(), ajustes.metaSemanal) }
     val rachaDespues = remember(carrerasPrevias, ajustes.metaSemanal) {
         val ahora = System.currentTimeMillis()
-        com.gacelas.carreras.domain.reglas.Rachas.calcular(carrerasPrevias + com.gacelas.carreras.domain.modelo.Carrera(id = "nueva", titulo = "", inicioMs = ahora, segundos = 0, distanciaKm = 0.0), ahora, ajustes.metaSemanal)
+        com.gacelas.actividad.domain.reglas.Rachas.calcular(carrerasPrevias + com.gacelas.actividad.domain.modelo.Carrera(id = "nueva", titulo = "", inicioMs = ahora, segundos = 0, distanciaKm = 0.0), ahora, ajustes.metaSemanal)
     }
     val salirSinGuardar = {
         descartarCarrera(context, tracker)
@@ -649,8 +649,8 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
             onCerrar()
         }
         val record = remember(carrerasPrevias, estado.segundos) {
-            if (estado.segundos > 0) com.gacelas.carreras.domain.reglas.EstadisticasPerfil.nuevoRecord(carrerasPrevias,
-                com.gacelas.carreras.domain.modelo.Carrera(id = "nueva", titulo = "", inicioMs = estado.inicioMs, segundos = estado.segundos, distanciaKm = estado.distanciaKm, parciales = estado.parciales)) else null
+            if (estado.segundos > 0) com.gacelas.actividad.domain.reglas.EstadisticasPerfil.nuevoRecord(carrerasPrevias,
+                com.gacelas.actividad.domain.modelo.Carrera(id = "nueva", titulo = "", inicioMs = estado.inicioMs, segundos = estado.segundos, distanciaKm = estado.distanciaKm, parciales = estado.parciales)) else null
         }
         Tarjeta(fondo = GColors.Primary.copy(alpha = 0.12f)) {
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -724,18 +724,18 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
                 scope.launch {
                     val carrera = tracker.aCarrera(titulo, nota, publica)
                     c.carreras.guardar(carrera)
-                    com.gacelas.rutas.data.RutaActiva.id?.let { r ->
-                        com.gacelas.rutas.data.RutaActiva.id = null
+                    com.gacelas.rutas.infrastructure.RutaActiva.id?.let { r ->
+                        com.gacelas.rutas.infrastructure.RutaActiva.id = null
                         explorar?.registrarCorrida(r, carrera.id)
                     }
                     if (comoRuta && puedeSerRuta) {
                         runCatching {
                             val trazo = com.gacelas.rutas.domain.reglas.trazoParaRuta(estado.puntos.map { it.lat to it.lng })
-                            val perfil = com.gacelas.rutas.data.Elevacion.perfil(trazo)
+                            val perfil = com.gacelas.rutas.infrastructure.Elevacion.perfil(trazo)
                             explorar!!.crear(
                                 titulo.ifBlank { carrera.titulo }, nota, dificultadRuta, etiquetasRuta,
                                 estado.puntos.map { it.lat to it.lng },
-                                if (perfil.size > 1) com.gacelas.rutas.data.Elevacion.desnivelPositivo(perfil) else estado.desnivelM.toInt(), carrera.id, perfil,
+                                if (perfil.size > 1) com.gacelas.rutas.infrastructure.Elevacion.desnivelPositivo(perfil) else estado.desnivelM.toInt(), carrera.id, perfil,
                             )
                         }.onSuccess { context.aviso("Ruta publicada") }.onFailure { context.aviso("No se pudo publicar la ruta: ${it.message}") }
                     }
@@ -762,7 +762,7 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
 
 /** Boton "Compartir en vivo": envia la posicion cada 5 s mientras se corre. */
 @Composable
-internal fun BotonCompartirEnVivo(tracker: com.gacelas.carreras.domain.SesionCarrera) {
+internal fun BotonCompartirEnVivo(tracker: com.gacelas.actividad.domain.SesionCarrera) {
     val repo = contenedor().enVivo ?: return
     val perfil by com.gacelas.ui.sesionState()
     if (perfil == null) return
