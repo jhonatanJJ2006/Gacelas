@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { ModalC2 } from '../../../../components/modales'
-import { useRumboSensor } from '../../../../lib/rumbo'
+import { useRumboSensor } from '../../../../shared/lib/rumbo'
+import { ModalC2 } from '../../../../shared/ui/modales'
 import { PantallaAjustes } from './Comunes'
 
 const PUNTOS = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CampoContrasena } from '../../../../components/CampoContrasena'
+import { MensajeError } from '../../../../shared/ui/ui'
 import { useApp } from '../../../../store/app'
-import { MensajeError } from '../../../../components/ui'
+import { CampoContrasena } from './CampoContrasena'
 
 /** Pantalla a la que lleva el enlace de recuperacion: pide la contrasena nueva. */
 export function NuevaContrasena() {

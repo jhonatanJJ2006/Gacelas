@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ModalC2 } from '../../../components/modales'
-import { FilaInterruptor, PantallaAjustes, Seccion } from '../../identidad'
+import { ModalC2 } from '../../../shared/ui/modales'
 import { dejarDeCompartir } from '../../envivo/api'
+import { FilaInterruptor, PantallaAjustes, Seccion } from '../../identidad'
 import {
   eliminarCuenta,
   historial,
@@ -11,7 +11,7 @@ import {
   requiereAceptarTerminos,
   terminosRemotos,
   vigente,
-} from '../infrastructure/consentimientos'
+} from '../api'
 import { PRIVACIDAD, TERMINOS, TEXTO_UBICACION_VISIBLE, VERSIONES_LEGALES } from '../domain/textos'
 
 function Documento({ terminos }: { terminos: boolean }) {

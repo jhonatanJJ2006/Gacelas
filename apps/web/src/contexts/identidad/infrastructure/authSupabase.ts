@@ -1,7 +1,7 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js'
-import { configSupabase } from '../../../lib/supabase'
-import { ValidacionAuth } from '../../../lib/validacion'
 import type { Perfil, ResultadoAuth } from '../../../shared/kernel/tipos'
+import { ValidacionAuth } from '../../../shared/lib/validacion'
+import { configSupabase } from '../../../shared/supabase/client'
 import type { AuthRepository } from '../domain/puertos'
 
 /* Autenticacion y perfil sobre Supabase (contexto Identidad). */

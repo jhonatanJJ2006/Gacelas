@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { MensajeError } from '../../../components/ui'
-import { estaActiva } from '../../../lib/runTracker'
+import { ModalC2 } from '../../../shared/ui/modales'
+import { MensajeError } from '../../../shared/ui/ui'
 import { useApp } from '../../../store/app'
+import { historial, otorgado, registrarConsentimiento } from '../../legal/api'
 import {
   empezarSeguimiento,
   geolocalizacionDisponible,
   mensajeErrorGps,
   tracker,
-} from '../../../store/carrera'
-import { calidadSenal } from '../../../lib/logica'
-import { ModalC2 } from '../../../components/modales'
-import { historial, otorgado, registrarConsentimiento } from '../../legal/api'
+} from '../application/carreraStore'
+import { calidadSenal } from '../domain/metricas'
+import { estaActiva } from '../domain/runTracker'
 
 type EstadoGps =
   { tipo: 'buscando' } | { tipo: 'listo'; precisionM: number } | { tipo: 'error'; mensaje: string }

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { TrazadoRuta } from '../../../../components/TrazadoRuta'
-import { BotonTexto, Dialogo } from '../../../../components/ui'
-import { formatearMs, formatearRitmo, Unidades } from '../../../../lib/geo'
+import { formatearMs, formatearRitmo, Unidades } from '../../../../shared/lib/geo'
+import { TrazadoRuta } from '../../../../shared/ui/TrazadoRuta'
+import { BotonTexto, Dialogo } from '../../../../shared/ui/ui'
 import { useApp } from '../../../../store/app'
 
 /** Detalle de una carrera guardada: igual que DetalleCarreraContenido de Android. */

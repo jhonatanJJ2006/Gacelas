@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
-import { estadoEvento, textoCupo, TIPOS_EVENTO, type EstadoEvento } from '../infrastructure/eventos'
-import { Aviso } from '../../../components/ui'
 import { compartir, useAviso } from '../../../hooks'
 import { eventoPorId } from '../../../mocks/data'
+import { Aviso } from '../../../shared/ui/ui'
 import { useApp } from '../../../store/app'
 import { ModalReporte } from '../../comunidad'
 import { yaReportado } from '../../moderacion/api'
+import { estadoEvento, textoCupo, TIPOS_EVENTO, type EstadoEvento } from '../api'
 
 export function DetalleEvento() {
   const navigate = useNavigate()

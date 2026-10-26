@@ -1,8 +1,9 @@
-import { notificacionesMock, rutasMock } from '../mocks/data'
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { vi } from 'vitest'
 import { AppRoutes } from '../app/App'
+import { descartarCarrera } from '../contexts/actividad/application/carreraStore'
+import { notificacionesMock, rutasMock } from '../mocks/data'
 import {
   AJUSTES_POR_DEFECTO,
   type Ajustes,
@@ -10,7 +11,6 @@ import {
   type Perfil,
 } from '../shared/kernel/tipos'
 import { useApp } from '../store/app'
-import { descartarCarrera } from '../store/carrera'
 
 export const PERFIL_PRUEBA: Perfil = {
   email: 'jhona@utpl.edu.ec',

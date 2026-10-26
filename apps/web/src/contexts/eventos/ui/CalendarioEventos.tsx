@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { calendarioMes } from '../infrastructure/eventos'
 import type { Evento } from '../../../mocks/data'
+import { calendarioMes } from '../api'
 
 const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 

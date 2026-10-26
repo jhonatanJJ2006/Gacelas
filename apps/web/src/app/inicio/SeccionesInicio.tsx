@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom'
-import type { ResumenPeriodo, RetoMes } from '../../lib/estadisticas'
-import { formatearHms, formatearRitmo, Unidades } from '../../lib/geo'
 import type { Evento, Ruta } from '../../mocks/data'
 import type { PublicacionRemota } from '../../shared/kernel/comunidad'
+import type { ResumenPeriodo, RetoMes } from '../../shared/kernel/estadisticas'
 import type { CarreraGuardada } from '../../shared/kernel/tipos'
+import { formatearHms, formatearRitmo, Unidades } from '../../shared/lib/geo'
 
-import { haceTiempo } from '../../lib/tiempo'
+import { haceTiempo } from '../../shared/lib/tiempo'
 
 const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 

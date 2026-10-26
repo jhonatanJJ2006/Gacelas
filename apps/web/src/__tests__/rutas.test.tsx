@@ -1,9 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, screen, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { instalarGpsFalso, prepararApp, renderRuta } from '../test/utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { descartarCarrera, tracker } from '../contexts/actividad/application/carreraStore'
 import { useApp } from '../store/app'
-import { descartarCarrera, tracker } from '../store/carrera'
+import { instalarGpsFalso, prepararApp, renderRuta } from '../test/utils'
 
 describe('rutas', () => {
   beforeEach(() => prepararApp())

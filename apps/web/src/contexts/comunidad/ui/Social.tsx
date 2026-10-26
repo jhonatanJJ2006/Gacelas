@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { ModalC2 } from '../../../components/modales'
+import { ModalC2 } from '../../../shared/ui/modales'
 import { useApp } from '../../../store/app'
 import {
-  LOGROS,
   desbloquearNuevos,
+  LOGROS,
   logrosDesbloqueados,
   type DefinicionLogro,
 } from '../../logros/api'

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { BotonTexto, Dialogo, Interruptor, MensajeError } from '../../../components/ui'
-import { clubes, validarClub, type Club } from '../infrastructure/clubes'
+import { BotonTexto, Dialogo, Interruptor, MensajeError } from '../../../shared/ui/ui'
 import { useApp } from '../../../store/app'
+import { clubes, validarClub, type Club } from '../api'
 
 const campo =
   'w-full h-11 px-3 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary'

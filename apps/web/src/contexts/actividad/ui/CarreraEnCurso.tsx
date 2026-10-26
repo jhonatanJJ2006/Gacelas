@@ -1,23 +1,28 @@
 import { useEffect, useState } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
+import { formatearHms, formatearRitmo, Unidades } from '../../../shared/lib/geo'
+import { claveMapas } from '../../../shared/lib/mapas'
+import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
+import { ModalC2, ResumenModal } from '../../../shared/ui/modales'
+import { TrazadoRuta } from '../../../shared/ui/TrazadoRuta'
+import { BotonTexto, Dialogo } from '../../../shared/ui/ui'
+import { useApp } from '../../../store/app'
+import { HojaReportarIncidente } from '../../seguridad'
 import {
   dejarDeCompartir,
   empezarACompartir,
   enviarPosicion,
   puedeCompartir,
   useCompartirEnVivo,
-} from '../../../lib/enVivo'
-import { Navigate, useNavigate } from 'react-router-dom'
-import { MapaGoogle } from '../../../components/MapaGoogle'
-import { TrazadoRuta } from '../../../components/TrazadoRuta'
-import { BotonTexto, Dialogo } from '../../../components/ui'
-import { ModalC2, ResumenModal } from '../../../components/modales'
-import { formatearHms, formatearRitmo, Unidades } from '../../../lib/geo'
-import { estaActiva, ritmoPromedio } from '../../../lib/runTracker'
-import { useApp } from '../../../store/app'
-import { descartarCarrera, finalizarCarrera, tracker, useCarrera } from '../../../store/carrera'
-import { caloriasEstimadas } from '../../../lib/logica'
-import { claveMapas } from '../../../lib/mapas'
-import { HojaReportarIncidente } from '../../seguridad'
+} from '../api'
+import {
+  descartarCarrera,
+  finalizarCarrera,
+  tracker,
+  useCarrera,
+} from '../application/carreraStore'
+import { caloriasEstimadas } from '../domain/metricas'
+import { estaActiva, ritmoPromedio } from '../domain/runTracker'
 
 export function CarreraEnCurso() {
   const navigate = useNavigate()

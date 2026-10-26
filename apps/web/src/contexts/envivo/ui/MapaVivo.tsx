@@ -1,22 +1,22 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { MapaCorredores } from '../../../components/MapaEditable'
-import { ModalC2 } from '../../../components/modales'
-import { claveMapas } from '../../../lib/mapas'
+import { claveMapas } from '../../../shared/lib/mapas'
+import { MapaCorredores } from '../../../shared/ui/MapaEditable'
+import { ModalC2 } from '../../../shared/ui/modales'
+import { tracker } from '../../actividad'
+import { historial, otorgado } from '../../legal/api'
 import {
   HojaReportarIncidente,
   ListaIncidentes,
   useIncidentesRecientes,
   type IncidentePublico,
 } from '../../seguridad'
-import { tracker } from '../../actividad'
-import { historial, otorgado } from '../../legal/api'
 import {
   listarCorredores,
   publicarPosicion,
   suscribirCorredores,
   type CorredorEnMapa,
-} from '../infrastructure/mapaVivo'
+} from '../api'
 
 const iniciales = (n: string) =>
   n

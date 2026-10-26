@@ -91,7 +91,7 @@ describe('SupabaseAuthRepository', () => {
   })
 
   it('si Google no esta activo en el servidor lo explica', async () => {
-    const { configSupabase } = await import('../lib/supabase')
+    const { configSupabase } = await import('../shared/supabase/client')
     const antes = { ...configSupabase }
     configSupabase.url = 'https://x.supabase.co'
     const f = vi.fn(async () => new Response(JSON.stringify({ external: { google: false } })))

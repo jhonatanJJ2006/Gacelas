@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import type { Notificacion } from '../../../mocks/data'
+import { retoMes } from '../../../shared/kernel/estadisticas'
+import { useApp } from '../../../store/app'
+import { FilaInterruptor } from '../../identidad'
+import { destinoNotificacion } from '../domain/destino'
 import {
   filtrarNotificaciones,
   notificacionesVisibles,
   type FiltroNotificaciones,
-} from '../../../lib/filtros'
-import type { Notificacion } from '../../../mocks/data'
-import { useApp } from '../../../store/app'
-import { destinoNotificacion } from '../../../lib/logica'
-import { retoMes } from '../../../lib/estadisticas'
-import { FilaInterruptor } from '../../identidad'
+} from '../domain/filtros'
 
 export function Notificaciones() {
   const navigate = useNavigate()

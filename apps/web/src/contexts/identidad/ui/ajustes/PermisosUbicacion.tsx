@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MensajeError } from '../../../../components/ui'
-import { geolocalizacionDisponible, mensajeErrorGps } from '../../../../store/carrera'
+import { MensajeError } from '../../../../shared/ui/ui'
+import { geolocalizacionDisponible, mensajeErrorGps } from '../../../actividad/api'
 
 export function PermisosUbicacion() {
   const navigate = useNavigate()

@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { MensajeError } from '../../../../components/ui'
+import { leerFoto } from '../../../../shared/lib/fotos'
+import { MensajeError } from '../../../../shared/ui/ui'
 import { useApp } from '../../../../store/app'
 import { FotoPerfil } from './Perfil'
-import { leerFoto } from '../../../../lib/logica'
 
 const entrada =
   'w-full h-12 px-4 bg-surface-container border border-border-subtle rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent'

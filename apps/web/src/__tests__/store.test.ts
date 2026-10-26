@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { repositoriosLocales } from '../app/composicion'
-import { usarRepositorios, useApp } from '../store/app'
 import {
   descartarCarrera,
   empezarSeguimiento,
   finalizarCarrera,
   mensajeErrorGps,
   tracker,
-} from '../store/carrera'
+} from '../contexts/actividad/application/carreraStore'
+import { usarRepositorios, useApp } from '../store/app'
 import { instalarGpsFalso } from '../test/utils'
 
 describe('store de la app', () => {
