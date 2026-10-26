@@ -20,6 +20,6 @@ class MapaVivoTest {
         assertTrue(MapaVivo.tocaPublicar(0, true, 15_000, true))
         assertFalse(MapaVivo.tocaPublicar(0, false, 59_999, false))
         assertTrue(MapaVivo.tocaPublicar(0, false, 60_000, false))
-        assertTrue("cambiar de estado publica", MapaVivo.tocaPublicar(0, false, 1, true))
+        assertTrue(MapaVivo.tocaPublicar(0, false, 1, true), "cambiar de estado publica")
     }
 }
