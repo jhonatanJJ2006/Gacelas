@@ -1,21 +1,26 @@
-import { listarEnVivo, suscribirLista, type SesionEnVivo } from '../../../lib/enVivo'
-import { useEsEscritorio } from '../../../lib/useEsEscritorio'
-import { ProximosEventos, RankingSemanal } from '../../../components/PanelesEscritorio'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Aviso, BotonTexto, Dialogo } from '../../../components/ui'
 import { ModalC2 } from '../../../components/modales'
+import { ProximosEventos, RankingSemanal } from '../../../components/PanelesEscritorio'
+import { Aviso, BotonTexto, Dialogo } from '../../../components/ui'
 import { compartir, useAviso } from '../../../hooks'
-import { formatearMs, formatearRitmo, Unidades } from '../../../lib/geo'
-import { useApp } from '../../../store/app'
-import { construirFeed, filtrarFeed, type FiltroFeed, type Publicacion } from '../../../lib/logica'
-import type { ComentarioPublicacion } from '../../../data/repositorios'
-import { Fragment } from 'react'
-import { kmPorAutor, nivelCorredor } from '../../../lib/logica'
+import { listarEnVivo, suscribirLista, type SesionEnVivo } from '../../../lib/enVivo'
 import { filtrarEventos } from '../../../lib/filtros'
-import { ModalReporte } from './Social'
+import { formatearMs, formatearRitmo, Unidades } from '../../../lib/geo'
+import {
+  construirFeed,
+  filtrarFeed,
+  kmPorAutor,
+  nivelCorredor,
+  type FiltroFeed,
+  type Publicacion,
+} from '../../../lib/logica'
+import { useEsEscritorio } from '../../../lib/useEsEscritorio'
+import type { ComentarioPublicacion } from '../../../shared/kernel/comunidad'
+import { useApp } from '../../../store/app'
 import { yaReportada, yaReportado } from '../../moderacion/api'
 import { AvatarLetra, handle, InsigniaNivel, MediaPost, TarjetaClub } from './PostSocial'
+import { ModalReporte } from './Social'
 
 export function Feed() {
   const [enVivo, setEnVivo] = useState<SesionEnVivo[]>([])

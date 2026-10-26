@@ -1,3 +1,5 @@
+import type { Racha } from '../../../shared/kernel/rachas'
+import { type CarreraGuardada } from '../../../shared/kernel/tipos'
 import type { PuntoGps } from '../../../shared/lib/geo'
 
 /** Puerto de salida: fuente de posiciones GPS de la plataforma (navegador, Android, iOS). */
@@ -16,4 +18,15 @@ export interface BloqueoPantalla {
   /** Pide el bloqueo y lo renueva al volver a la app mientras `activa()` sea true. */
   activar(activa: () => boolean): void
   liberar(): void
+}
+
+export interface CarrerasRepository {
+  listar(): Promise<CarreraGuardada[]>
+  guardar(c: CarreraGuardada): Promise<CarreraGuardada[]>
+  eliminar(id: string): Promise<CarreraGuardada[]>
+}
+
+export interface RachasRepository {
+  /** Racha calculada en el servidor, o null si no se pudo leer. */
+  leer(): Promise<Racha | null>
 }

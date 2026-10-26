@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { type RachasRepository } from '../../../data/repositorios'
 import type { Racha } from '../../../shared/kernel/rachas'
 import { usuario } from '../../../shared/supabase/sesion'
+import { type RachasRepository } from '../domain/puertos'
 
 /* Rachas calculadas en Supabase (contexto Actividad). */
 

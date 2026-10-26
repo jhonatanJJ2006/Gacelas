@@ -1,6 +1,4 @@
 /** Logica de pantallas sin dependencias de React, separada para poder probarla. */
-import type { CarreraGuardada, PuntoGps } from '../shared/kernel/tipos'
-import type { PublicacionRemota } from '../data/repositorios'
 import {
   actividadesMock,
   rutasMock,
@@ -8,6 +6,8 @@ import {
   usuarioPorId,
   type Notificacion,
 } from '../mocks/data'
+import type { PublicacionRemota } from '../shared/kernel/comunidad'
+import type { CarreraGuardada, PuntoGps } from '../shared/kernel/tipos'
 
 export interface Publicacion {
   id: string

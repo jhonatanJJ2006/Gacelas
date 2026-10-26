@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { rutaDesdeFila } from '../data/supabaseRepos'
+import { rutaDesdeFila } from '../contexts/rutas/infrastructure/rutasSupabase'
 
 /* Caracterizacion de Rutas (F4, docs/ARQUITECTURA-DDD.md): valores por defecto del mapeo de filas. */
 describe('rutas: rutaDesdeFila con fila minima', () => {

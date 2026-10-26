@@ -1,71 +1,23 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { SupabaseCarrerasRepository } from '../contexts/actividad/infrastructure/carrerasSupabase'
-import { SupabaseRachasRepository } from '../contexts/actividad/infrastructure/rachasSupabase'
-import { SupabaseComunidadRepository } from '../contexts/comunidad/infrastructure/comunidadSupabase'
-import { SupabaseEventosRepository } from '../contexts/eventos/infrastructure/eventosSupabase'
-import { SupabaseAuthRepository, usuario } from '../contexts/identidad/infrastructure/authSupabase'
-import {
-  SupabaseExplorarRepository,
-  SupabaseRutasRepository,
-} from '../contexts/rutas/infrastructure/rutasSupabase'
-import { AJUSTES_POR_DEFECTO, type Ajustes, type Visibilidad } from '../shared/kernel/tipos'
-import {
-  escribir,
-  LocalAjustesRepository,
-  type AjustesRepository,
-  type Repositorios,
-} from './repositorios'
+import { AJUSTES_POR_DEFECTO, type Ajustes, type Visibilidad } from '../../../shared/kernel/tipos'
+import { escribir } from '../../../shared/lib/almacenLocal'
+import { type AjustesRepository } from '../domain/puertos'
+import { usuario } from './authSupabase'
+import { LocalAjustesRepository } from './local'
 
 /*
- * Repositorios sobre Supabase. Mantienen las mismas interfaces que los locales; cuando no hay
- * sesion o la red falla se usa la copia local (cache), y las carreras se encolan para subirlas.
+ * Ajustes sobre Supabase. Mantiene la misma interfaz que el repositorio local; cuando no hay
+ * sesion o la red falla se usa la copia local (cache).
  */
 
 type Fila = Record<string, unknown>
 
-export {
-  perfilDesdeFila,
-  SupabaseAuthRepository,
-  traducirError,
-} from '../contexts/identidad/infrastructure/authSupabase'
-
-/* ---------------- Carreras con cache local y cola sin conexion ---------------- */
-
-export {
-  carreraDesdeFila,
-  filaDesdeCarrera,
-  SupabaseCarrerasRepository,
-  type OperacionPendiente,
-} from '../contexts/actividad/infrastructure/carrerasSupabase'
-export {
-  rachaDesdeFila,
-  SupabaseRachasRepository,
-} from '../contexts/actividad/infrastructure/rachasSupabase'
-export { notificacionDesdeFila, SupabaseNotificacionesRepository } from '../contexts/avisos/api'
-export {
-  comentarioDesdeFila,
-  publicacionDesdeFilaFeed,
-  SupabaseComunidadRepository,
-} from '../contexts/comunidad/infrastructure/comunidadSupabase'
-export {
-  eventoDesdeFila,
-  eventoVisible,
-  SupabaseEventosRepository,
-} from '../contexts/eventos/infrastructure/eventosSupabase'
-export {
-  rutaDesdeFila,
-  SupabaseExplorarRepository,
-  SupabaseRutasRepository,
-} from '../contexts/rutas/infrastructure/rutasSupabase'
-
-/* ---------------- Ajustes, likes y comentarios ---------------- */
-
-import { SupabaseNotificacionesRepository } from '../contexts/avisos/api'
 const VIS_A_DB: Record<Visibilidad, string> = {
   publico: 'public',
   seguidores: 'followers',
   privado: 'private',
 }
+
 const DB_A_VIS: Record<string, Visibilidad> = {
   public: 'publico',
   followers: 'seguidores',
@@ -152,17 +104,3 @@ export class SupabaseAjustesRepository implements AjustesRepository {
     return nuevos
   }
 }
-
-/* ---------------- Eventos ---------------- */
-
-export const repositoriosSupabase = (sb: SupabaseClient): Repositorios => ({
-  auth: new SupabaseAuthRepository(sb),
-  carreras: new SupabaseCarrerasRepository(sb),
-  rutas: new SupabaseRutasRepository(sb),
-  ajustes: new SupabaseAjustesRepository(sb),
-  eventos: new SupabaseEventosRepository(sb),
-  notificaciones: new SupabaseNotificacionesRepository(sb),
-  comunidad: new SupabaseComunidadRepository(sb),
-  rachas: new SupabaseRachasRepository(sb),
-  explorar: new SupabaseExplorarRepository(sb),
-})

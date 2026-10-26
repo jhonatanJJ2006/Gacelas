@@ -1,11 +1,11 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useApp, useRacha, usarRepositorios } from '../store/app'
-import { repositoriosLocales, type Repositorios } from '../data/repositorios'
-import { notificacionesMock, rutasMock, type Notificacion } from '../mocks/data'
+import { repositoriosLocales, type Repositorios } from '../app/composicion'
 import { conOficiales } from '../contexts/rutas/api'
-import type { CarreraGuardada, Perfil } from '../shared/kernel/tipos'
+import { notificacionesMock, rutasMock, type Notificacion } from '../mocks/data'
 import type { Racha } from '../shared/kernel/rachas'
+import type { CarreraGuardada, Perfil } from '../shared/kernel/tipos'
+import { usarRepositorios, useApp, useRacha } from '../store/app'
 
 /*
  * Caracterizacion del estado global de la app antes de dividirlo por contexto: fija como

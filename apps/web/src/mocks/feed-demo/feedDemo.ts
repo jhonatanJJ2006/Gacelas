@@ -1,5 +1,5 @@
 // Generado: datos de ejemplo del feed (solo pnpm dev con ?vista-previa). No se incluye en produccion.
-import type { ComentarioPublicacion, PublicacionRemota } from '../../data/repositorios'
+import type { ComentarioPublicacion, PublicacionRemota } from '../../shared/kernel/comunidad'
 
 import foto1 from './foto-01.jpg'
 import foto2 from './foto-02.jpg'

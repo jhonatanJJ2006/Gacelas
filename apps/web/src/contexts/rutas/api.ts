@@ -8,5 +8,8 @@ export { RUTAS_LOJA }
 
 /** Rutas oficiales de Loja incluidas en la app (antes de aplicar 022 o sin red). */
 export const conOficiales = (rutas: Ruta[]) => mezclarOficiales(rutas, RUTAS_LOJA)
-export * from './domain/rutas'
 export * from './domain/elevacion'
+export type * from './domain/puertos'
+export * from './domain/rutas'
+export { LocalRutasRepository } from './infrastructure/rutasLocal'
+export { SupabaseExplorarRepository, SupabaseRutasRepository } from './infrastructure/rutasSupabase'
