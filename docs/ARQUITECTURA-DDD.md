@@ -1,14 +1,14 @@
 # Arquitectura DDD de Gacelas
 
-Diseño aprobado ([ADR 004](adr/004-arquitectura-ddd.md)). Fases F0 y F1 aplicadas. Basada en `main` del 25 de octubre de 2026, después de fusionar los PR #79, #80 y #81. Amplía el [ADR 003](adr/003-arquitectura-modular.md) y reemplaza la sección "Bounded contexts" de [ARQUITECTURA.md](ARQUITECTURA.md) cuando se apruebe.
+Diseño aprobado ([ADR 004](adr/004-arquitectura-ddd.md)). Fases F0, F1 y F2 aplicadas. Basada en `main` del 25 de octubre de 2026, después de fusionar los PR #79, #80 y #81. Amplía el [ADR 003](adr/003-arquitectura-modular.md) y reemplaza la sección "Bounded contexts" de [ARQUITECTURA.md](ARQUITECTURA.md) cuando se apruebe.
 
 ## Estado de la migración
 
-| Fase | Estado    | Notas                                                                                                                                                                                         |
-| ---- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| F0   | Hecha     | ADR 004; avisos de ESLint y dependency-cruiser en web; tarea `verificarArquitectura` en Gradle. Konsist queda para cuando haya módulo `:arquitectura-test`                                    |
-| F1   | Hecha     | `src/shared/kernel` y `com.gacelas.kernel` (en `core:comun`); `packages/contratos`; renombres D1 en web (`src/contexts/{actividad,identidad,legal,seguridad}`) y Android (módulos y paquetes) |
-| F2   | Pendiente | Requiere aviso previo: riesgo alto                                                                                                                                                            |
+| Fase | Estado | Notas                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ---- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F0   | Hecha  | ADR 004; avisos de ESLint y dependency-cruiser en web; tarea `verificarArquitectura` en Gradle. Konsist queda para cuando haya módulo `:arquitectura-test`                                                                                                                                                                                                                                                                       |
+| F1   | Hecha  | `src/shared/kernel` y `com.gacelas.kernel` (en `core:comun`); `packages/contratos`; renombres D1 en web (`src/contexts/{actividad,identidad,legal,seguridad}`) y Android (módulos y paquetes)                                                                                                                                                                                                                                    |
+| F2   | Hecha  | Pruebas de caracterización del flujo de carrera (Kotlin y web); módulo `:contextos:actividad:application` con los casos de uso; web con puertos `FuenteUbicacion` y `BloqueoPantalla`, adaptadores de GPS del navegador y Supabase en `contexts/actividad/infrastructure`. Los servicios de Android con APIs de plataforma (`LocationService`, avisos, pantallas de `app/correr`) siguen en `app` como adaptadores de plataforma |
 
 ## 1. Diagnóstico del estado actual
 
