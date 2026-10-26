@@ -64,7 +64,7 @@ Al cerrar un reporte, quien lo envió recibe una notificación de tipo `reporte`
 
 ### Cola genérica y nuevos tipos
 
-La cola no conoce los tipos de antemano. Los incidentes de corredores ya están conectados así (migración `031_moderacion_incidentes.sql`, ver `docs/INCIDENTES.md`). Para sumar otro tipo, su migración:
+La cola no conoce los tipos de antemano. Los incidentes de corredores ya están conectados así (migración `031_moderacion_incidentes.sql`, ver `docs/INCIDENTES.md`), y también las comunidades y los grupos de running (tipos `comunidad` y `grupo`, migración `034_comunidades_grupos.sql`; ocultar pone `hidden_at` y el club deja de verse salvo para su owner y los administradores). Para sumar otro tipo, su migración:
 
 1. Crea las funciones del tipo, con firma `(objetivo TEXT)`: resumen (`RETURNS TEXT`), ocultar (`RETURNS VOID`) y, si el contenido tiene autor, autor (`RETURNS UUID`). Opcionalmente, `resolver_fn(objetivo TEXT, resultado TEXT)` recibe `resuelto` o `descartado` al cerrar el caso. Conviene quitarles `EXECUTE` a `PUBLIC`.
 2. Inserta la fila en `report_target_types`:

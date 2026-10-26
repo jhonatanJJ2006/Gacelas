@@ -2,7 +2,10 @@ package com.gacelas.comunidad.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gacelas.comunidad.domain.modelo.BorradorClub
 import com.gacelas.comunidad.domain.modelo.Club
+import com.gacelas.comunidad.domain.reglas.mensajeErrorClub
+import com.gacelas.comunidad.domain.reglas.validarClub
 import com.gacelas.comunidad.domain.modelo.Evento
 import com.gacelas.comunidad.domain.modelo.Notificacion
 import com.gacelas.comunidad.domain.modelo.PestanaEventos
@@ -73,6 +76,17 @@ class ClubesViewModel(private val fuente: ClubesRepository?) : ViewModel() {
     init { recargar() }
     fun recargar() {
         viewModelScope.launch { _datos.value = runCatching { fuente?.listar() }.getOrNull() ?: (emptyList<Club>() to emptySet()) }
+    }
+
+    /** Registra una comunidad o grupo; [onCreado] recibe su id y [onError] el mensaje si falla. */
+    fun crear(b: BorradorClub, onCreado: (String) -> Unit, onError: (String) -> Unit) {
+        val f = fuente ?: return onError("Necesitas conexión con el servidor")
+        validarClub(b, _datos.value?.first.orEmpty())?.let { return onError(it) }
+        viewModelScope.launch {
+            runCatching { f.crear(b) }
+                .onSuccess { onCreado(it); recargar() }
+                .onFailure { onError(mensajeErrorClub(it.message)) }
+        }
     }
 
     /** Crea un club; [onCreado] recibe su id y [onError] el mensaje si falla. */

@@ -22,6 +22,7 @@ const CLAVES: Record<string, string[]> = {
   event_rsvps: ['event_id', 'user_id'],
   post_likes: ['user_id', 'post_id'],
   profiles: ['id'],
+  club_members: ['club_id', 'user_id'],
 }
 
 const b64 = (o: unknown) => Buffer.from(JSON.stringify(o)).toString('base64url')
@@ -164,6 +165,30 @@ export async function instalarFakeSupabase(context: BrowserContext): Promise<Est
     return json(route, 404, { msg: 'no implementado' })
   }
 
+  // Grupo de otra corredora para probar unirse.
+  tabla('clubs').push({
+    id: '00000000-0000-4000-8000-0000000c1ab1',
+    kind: 'grupo',
+    name: 'Gacelas del Jipiro',
+    description: 'Fondos suaves los sábados',
+    city: 'Loja',
+    location: 'Parque Jipiro',
+    meeting_place: 'Parque Jipiro',
+    training_days: [2, 6],
+    training_time: '06:00:00',
+    level: 'principiante',
+    requires_approval: false,
+    owner_id: 'u-maria',
+    members_count: 1,
+    created_at: new Date().toISOString(),
+  })
+  tabla('club_members').push({
+    club_id: '00000000-0000-4000-8000-0000000c1ab1',
+    user_id: 'u-maria',
+    role: 'owner',
+    status: 'active',
+  })
+
   // Publicacion de otra corredora para el feed (lo que devolveria la RPC feed_comunidad).
   const MARIA = 'u-maria'
   tabla('profiles').push({ id: MARIA, full_name: 'María López', username: 'maria_runs' })
@@ -296,6 +321,25 @@ export async function instalarFakeSupabase(context: BrowserContext): Promise<Est
           filas.push(fila)
         }
       }
+      // Como los triggers de clubes (034): el creador queda owner y el servidor decide el estado.
+      if (t === 'clubs')
+        for (const f of filas) {
+          f.members_count = 1
+          tabla('club_members').push({
+            club_id: f.id,
+            user_id: f.owner_id,
+            role: 'owner',
+            status: 'active',
+            created_at: f.created_at,
+          })
+        }
+      if (t === 'club_members')
+        for (const f of filas) {
+          const c = tabla('clubs').find((x) => x.id === f.club_id)
+          f.role = 'member'
+          f.status = c?.requires_approval ? 'pending' : 'active'
+          if (c && f.status === 'active') c.members_count = Number(c.members_count ?? 0) + 1
+        }
       if (!(cab.prefer ?? '').includes('return=representation'))
         return route.fulfill({ status: 201, headers: { 'access-control-allow-origin': '*' } })
       return unObjeto ? json(route, 201, filas[0]) : json(route, 201, filas)
@@ -306,6 +350,13 @@ export async function instalarFakeSupabase(context: BrowserContext): Promise<Est
       return route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*' } })
     }
     if (metodo === 'DELETE') {
+      if (t === 'club_members')
+        tabla(t)
+          .filter(coincide)
+          .forEach((m) => {
+            const c = tabla('clubs').find((x) => x.id === m.club_id)
+            if (c && m.status === 'active') c.members_count = Number(c.members_count) - 1
+          })
       estado.tablas[t] = tabla(t).filter((r) => !coincide(r))
       return route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*' } })
     }

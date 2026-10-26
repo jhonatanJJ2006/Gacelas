@@ -23,7 +23,12 @@ import androidx.compose.ui.unit.dp
 import com.gacelas.comunidad.domain.modelo.Club
 import com.gacelas.comunidad.domain.modelo.Evento
 import com.gacelas.comunidad.domain.modelo.RolClub
+import com.gacelas.comunidad.domain.modelo.TipoClub
 import com.gacelas.comunidad.domain.reglas.accionClub
+import com.gacelas.comunidad.domain.reglas.borradorDesdeClub
+import com.gacelas.comunidad.domain.reglas.estaLleno
+import com.gacelas.comunidad.domain.reglas.textoHorario
+import com.gacelas.comunidad.domain.reglas.textoRitmo
 import com.gacelas.comunidad.domain.reglas.calendarioMes
 import com.gacelas.comunidad.domain.reglas.posicionRepeticion
 import com.gacelas.comunidad.presentation.ClubesViewModel
@@ -51,65 +56,11 @@ fun colorCorredor(i: Int) = Color(colorCorredorArgb(i))
 private fun SinServidor() = Text("Los clubes necesitan conexión con el servidor.", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.padding(16.dp))
 
 @Composable
-fun ClubesContenido(vm: ClubesViewModel, conServidor: Boolean, onAtras: () -> Unit, onClub: (String) -> Unit, onAviso: (String) -> Unit) {
-    val datos by vm.datos.collectAsState()
-    var creando by remember { mutableStateOf(false) }
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.weight(1f)) { EncabezadoAtras("Clubes", onAtras) }
-            if (conServidor) IconButton(onClick = { creando = true }, modifier = Modifier.padding(end = 12.dp).clip(CircleShape).background(GColors.Primary)) { Icon(Icons.Filled.Add, "Crear club", tint = GColors.TextPrimary) }
-        }
-        if (!conServidor) return SinServidor()
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            val (todos, mios) = datos ?: return@Column Text("Cargando...", color = GColors.TextSecondary)
-            if (mios.isNotEmpty()) Text("Mis clubes", style = GType.titleMd, color = GColors.TextPrimary)
-            todos.filter { it.id in mios }.forEach { TarjetaClub(it) { onClub(it.id) } }
-            Text("Descubrir", style = GType.titleMd, color = GColors.TextPrimary)
-            val otros = todos.filter { it.id !in mios }
-            if (otros.isEmpty()) Text("No hay más clubes. ¡Crea el primero!", style = GType.bodySm, color = GColors.TextSecondary)
-            otros.forEach { TarjetaClub(it) { onClub(it.id) } }
-        }
-    }
-    if (creando && conServidor) {
-        var nombre by remember { mutableStateOf("") }
-        var desc by remember { mutableStateOf("") }
-        var lugar by remember { mutableStateOf("Loja") }
-        var aprobacion by remember { mutableStateOf(false) }
-        com.gacelas.ui.components.DialogoC2(
-            onDismissRequest = { creando = false },
-            containerColor = GColors.BgSecondary,
-            title = { Text("Crear club") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CampoTexto("Nombre", nombre, { nombre = it.take(60) }, "Gacelas Loja")
-                    CampoTexto("Descripción", desc, { desc = it.take(500) }, "¿De qué va el club?", lineas = 2)
-                    CampoTexto("Ubicación", lugar, { lugar = it.take(80) })
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Aprobar a quien se una", color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-                        Interruptor(aprobacion) { aprobacion = it }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    vm.crear(nombre, desc, lugar, aprobacion, onCreado = { creando = false; onClub(it) }, onError = onAviso)
-                }) { Text("Crear") }
-            },
-            dismissButton = { com.gacelas.ui.components.BotonModalC2("Cancelar", { creando = false }, secundario = true) },
-        )
-    }
-}
-
-@Composable
-private fun TarjetaClub(c: Club, onClick: () -> Unit) = Tarjeta(onClick = onClick) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Box(Modifier.size(44.dp).clip(CircleShape).background(GColors.Primary.copy(alpha = 0.25f)), contentAlignment = Alignment.Center) { Icon(Icons.Filled.Groups, null, tint = GColors.Primary400) }
-        Column(Modifier.weight(1f)) {
-            Text(c.nombre, style = GType.titleMd, color = GColors.TextPrimary, maxLines = 1)
-            Text("${c.miembros} ${if (c.miembros == 1) "miembro" else "miembros"}" + (if (c.ubicacion.isNotBlank()) " · ${c.ubicacion}" else "") + (if (c.conAprobacion) " · con aprobación" else ""),
-                style = GType.bodySm, color = GColors.TextSecondary, maxLines = 1)
-        }
-    }
+private fun DatoGrupo(etiqueta: String, valor: String, modifier: Modifier = Modifier) = Column(
+    modifier.clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceHigh).padding(10.dp),
+) {
+    Text(etiqueta, style = GType.labelMd, color = GColors.TextSecondary)
+    Text(valor, style = GType.bodyMd, color = GColors.TextPrimary, maxLines = 2)
 }
 
 @Composable
@@ -121,8 +72,23 @@ fun DetalleClubContenido(
     onEvento: (String) -> Unit,
     onCrearEvento: (String) -> Unit,
     onAviso: (String) -> Unit,
+    onClub: (String) -> Unit = {},
+    onReportar: ((Club) -> Unit)? = null,
+    selectorPunto: SelectorPunto? = null,
 ) {
     val datos by vm.estado.collectAsState()
+    var editando by remember { mutableStateOf(false) }
+    var borrando by remember { mutableStateOf(false) }
+    LaunchedEffect(datos.eliminado) { if (datos.eliminado) onAtras() }
+    datos.club?.takeIf { editando }?.let { c ->
+        FormularioClubContenido(
+            titulo = if (c.tipo == TipoClub.comunidad) "Editar comunidad" else "Editar grupo",
+            inicial = borradorDesdeClub(c), comunidades = datos.todos.filter { it.tipo == TipoClub.comunidad && it.id != c.id },
+            permitirTipo = false, selectorPunto = selectorPunto, onCancelar = { editando = false },
+            onGuardar = { b -> vm.editar(b, onListo = { editando = false }, onAviso = onAviso) }, textoGuardar = "Guardar cambios",
+        )
+        return
+    }
     val texto by vm.texto.collectAsState()
     val club = datos.club
     val miembros = datos.miembros
@@ -130,21 +96,46 @@ fun DetalleClubContenido(
     val eventos = datos.eventos
     val aviso = onAviso
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
-        EncabezadoAtras(club?.nombre ?: "Club", onAtras)
+        EncabezadoAtras(club?.nombre ?: "Grupo", onAtras)
         if (!conServidor) return SinServidor()
         val c = club ?: return Text("Cargando...", color = GColors.TextSecondary, modifier = Modifier.padding(16.dp))
         val yo = datos.yo
         val gestiono = datos.gestiono
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Tarjeta {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    LogoClub(c, 56)
+                    Column(Modifier.weight(1f)) {
+                        Text(c.tipo.etiqueta.uppercase(), style = GType.labelMd, color = GColors.Primary400)
+                        datos.comunidad?.let { co -> Text("Parte de ${co.nombre}", style = GType.bodyMd, color = GColors.TextPrimary, modifier = Modifier.clickable { onClub(co.id) }) }
+                    }
+                    if (gestiono) TextButton(onClick = { editando = true }) { Text("Editar", color = GColors.Primary400) }
+                }
                 Text(c.descripcion.ifBlank { "Sin descripción." }, style = GType.bodyMd, color = GColors.TextSecondary)
-                Text("${c.miembros} ${if (c.miembros == 1) "miembro" else "miembros"} · ${if (c.conAprobacion) "Con aprobación" else "Abierto"}", style = GType.bodySm, color = GColors.TextSecondary)
-                accionClub(yo, c.conAprobacion)?.let { a ->
-                    BotonPrimario(a, { vm.accionPrincipal(aviso) }, enabled = yo?.activo != false, icono = null, color = if (yo == null) GColors.Primary else GColors.SurfaceHigh)
+                val miembrosTxt = if (c.cupo != null) "${c.miembros}/${c.cupo} miembros" else "${c.miembros} ${if (c.miembros == 1) "miembro" else "miembros"}"
+                Text("$miembrosTxt · ${c.ciudad} · ${if (c.conAprobacion) "Con solicitud" else "Público"}", style = GType.bodySm, color = GColors.TextSecondary)
+                if (c.tipo == TipoClub.grupo) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        DatoGrupo("Encuentro", c.lugarEncuentro.ifBlank { "Por definir" }, Modifier.weight(1f))
+                        DatoGrupo("Horario", textoHorario(c.dias, c.hora), Modifier.weight(1f))
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        DatoGrupo("Nivel", c.nivel.etiqueta, Modifier.weight(1f))
+                        DatoGrupo("Ritmo", textoRitmo(c.ritmoSegKm) ?: "Libre", Modifier.weight(1f))
+                    }
+                }
+                if (c.contacto.isNotBlank()) Text("Contacto: ${c.contacto}", style = GType.bodySm, color = GColors.TextSecondary)
+                accionClub(yo, c.conAprobacion, c.tipo, estaLleno(c))?.let { a ->
+                    BotonPrimario(a, { vm.accionPrincipal(aviso) }, Modifier.testTag("accion-club"), enabled = yo?.activo != false && !(yo == null && estaLleno(c)), icono = null, color = if (yo == null) GColors.Primary else GColors.SurfaceHigh)
                 }
             }
+            if (c.tipo == TipoClub.comunidad) {
+                Text("Grupos (${datos.grupos.size})", style = GType.titleMd, color = GColors.TextPrimary)
+                if (datos.grupos.isEmpty()) Text("Esta comunidad aún no tiene grupos.", style = GType.bodySm, color = GColors.TextSecondary)
+                datos.grupos.forEach { g -> TarjetaClub(g) { onClub(g.id) } }
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Eventos del club", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+                Text("Eventos", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
                 if (gestiono) TextButton(onClick = { onCrearEvento(id) }) { Text("+ Crear", color = GColors.Primary400) }
             }
             if (eventos.isEmpty()) Text("Sin eventos programados.", style = GType.bodySm, color = GColors.TextSecondary)
@@ -162,7 +153,7 @@ fun DetalleClubContenido(
             }
             Text("Publicaciones", style = GType.titleMd, color = GColors.TextPrimary)
             if (yo?.activo == true) {
-                CampoTexto("Escribe al club", texto, vm::escribir, "Escribe algo al club...", lineas = 2)
+                CampoTexto("Escribe a los miembros", texto, vm::escribir, "Escribe algo a los miembros...", lineas = 2)
                 BotonPrimario("Publicar", { vm.publicar(aviso) }, icono = null)
             }
             if (posts.isEmpty()) Text(if (yo?.activo == true || !c.conAprobacion) "Aún no hay publicaciones." else "Únete para ver las publicaciones.", style = GType.bodySm, color = GColors.TextSecondary)
@@ -175,6 +166,19 @@ fun DetalleClubContenido(
                     if (yo?.rol == RolClub.owner && m.rol != RolClub.owner) TextButton(onClick = { vm.alternarAdmin(m, aviso) }) { Text(if (m.rol == RolClub.admin) "Quitar admin" else "Hacer admin", color = GColors.Primary400) }
                 }
             }
+            Row {
+                if (onReportar != null && yo?.rol != RolClub.owner) TextButton(onClick = { onReportar(c) }) { Text(if (c.tipo == TipoClub.comunidad) "Reportar comunidad" else "Reportar grupo", color = GColors.TextSecondary) }
+                Spacer(Modifier.weight(1f))
+                if (yo?.rol == RolClub.owner) TextButton(onClick = { borrando = true }) { Text("Eliminar", color = GColors.Danger) }
+            }
+            if (borrando) com.gacelas.ui.components.DialogoC2(
+                onDismissRequest = { borrando = false },
+                containerColor = GColors.BgSecondary,
+                title = { Text(if (c.tipo == TipoClub.comunidad) "Eliminar comunidad" else "Eliminar grupo") },
+                text = { Text("Se borran los miembros y las publicaciones. No se puede deshacer.", color = GColors.TextSecondary) },
+                confirmButton = { com.gacelas.ui.components.BotonModalC2("Eliminar", { borrando = false; vm.eliminar(aviso) }, peligro = true) },
+                dismissButton = { com.gacelas.ui.components.BotonModalC2("Cancelar", { borrando = false }, secundario = true) },
+            )
         }
     }
 }

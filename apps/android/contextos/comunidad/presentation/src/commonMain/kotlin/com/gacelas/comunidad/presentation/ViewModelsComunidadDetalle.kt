@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gacelas.actividad.domain.modelo.Carrera
 import com.gacelas.actividad.domain.repositorio.CarrerasRepository
+import com.gacelas.comunidad.domain.modelo.BorradorClub
 import com.gacelas.comunidad.domain.modelo.Club
+import com.gacelas.comunidad.domain.modelo.TipoClub
 import com.gacelas.comunidad.domain.modelo.ComentarioFeed
 import com.gacelas.comunidad.domain.modelo.CorredorEvento
 import com.gacelas.comunidad.domain.modelo.EstadoEvento
@@ -225,6 +227,13 @@ class DetalleEventoViewModel(
 /** Datos del detalle de un club. */
 data class DetalleClub(
     val club: Club? = null,
+    /** Comunidad a la que pertenece el grupo, si tiene. */
+    val comunidad: Club? = null,
+    /** Grupos de la comunidad (solo en comunidades). */
+    val grupos: List<Club> = emptyList(),
+    /** Todos los clubes, para validar nombres al editar. */
+    val todos: List<Club> = emptyList(),
+    val eliminado: Boolean = false,
     val miembros: List<MiembroClub> = emptyList(),
     val posts: List<PostClub> = emptyList(),
     val eventos: List<Evento> = emptyList(),
@@ -246,8 +255,13 @@ class DetalleClubViewModel(private val id: String, private val fuente: ClubesRep
     fun recargar() {
         val f = fuente ?: return
         viewModelScope.launch {
+            val club = runCatching { f.detalle(id) }.getOrNull()
+            val todos = runCatching { f.listar().first }.getOrDefault(emptyList())
             _estado.value = DetalleClub(
-                club = runCatching { f.detalle(id) }.getOrNull(),
+                club = club,
+                comunidad = club?.comunidadId?.let { cid -> todos.firstOrNull { it.id == cid } },
+                grupos = if (club?.tipo == TipoClub.comunidad) todos.filter { it.comunidadId == id } else emptyList(),
+                todos = todos,
                 miembros = runCatching { f.miembros(id) }.getOrDefault(emptyList()),
                 posts = f.posts(id),
                 eventos = f.eventos(id),
@@ -273,8 +287,29 @@ class DetalleClubViewModel(private val id: String, private val fuente: ClubesRep
         val yo = e.yo
         val conAprobacion = e.club?.conAprobacion == true
         when {
-            yo == null -> intentar(if (conAprobacion) "Solicitud enviada" else "Te uniste al club", onAviso) { it.unirse(id) }
-            yo.activo -> intentar("Saliste del club", onAviso) { it.salir(id) }
+            yo == null -> intentar(if (conAprobacion) "Solicitud enviada" else "Te uniste", onAviso) { it.unirse(id) }
+            yo.activo -> intentar("Saliste", onAviso) { it.salir(id) }
+        }
+    }
+
+    /** Guarda la edicion (solo owner o admin; la RLS lo vuelve a comprobar). */
+    fun editar(b: BorradorClub, onListo: () -> Unit, onAviso: (String) -> Unit) {
+        com.gacelas.comunidad.domain.reglas.validarClub(b, _estado.value.todos, id)?.let { return onAviso(it) }
+        val f = fuente ?: return
+        viewModelScope.launch {
+            runCatching { f.editar(id, b) }
+                .onSuccess { onAviso("Cambios guardados"); onListo(); recargar() }
+                .onFailure { onAviso(com.gacelas.comunidad.domain.reglas.mensajeErrorClub(it.message)) }
+        }
+    }
+
+    /** Elimina la comunidad o grupo (solo el owner). */
+    fun eliminar(onAviso: (String) -> Unit) {
+        val f = fuente ?: return
+        viewModelScope.launch {
+            runCatching { f.eliminar(id) }
+                .onSuccess { _estado.value = _estado.value.copy(eliminado = true); onAviso("Eliminado") }
+                .onFailure { onAviso(it.message ?: "No se pudo eliminar") }
         }
     }
     fun aprobar(usuario: String, onAviso: (String) -> Unit) = intentar("Solicitud aprobada", onAviso) { it.aprobar(id, usuario) }

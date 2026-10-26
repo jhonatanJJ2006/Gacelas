@@ -252,14 +252,21 @@ Proceso:
 
 ## 6. Clubes
 
-### 6.1 Creación de Clubes
+### 6.1 Comunidades y grupos de running
 
-**Regla**: Cualquier usuario puede crear un club.
+**Regla**: Cualquier usuario con sesión puede registrar una comunidad o un grupo de running ([ADR 006](adr/006-comunidades-y-grupos.md)).
 
-**Límites**:
+- Comunidad: nombre, descripción, ciudad o zona, logo y portada opcionales, contacto opcional, pública o con solicitud.
+- Grupo: lo mismo más punto de encuentro (texto y punto en el mapa), días y hora, nivel, ritmo en min/km y cupo opcional. Puede pertenecer a una comunidad.
+- El creador queda como `owner` (fundador y administrador).
+- El nombre es único por tipo, sin distinguir mayúsculas ni espacios repetidos.
 
-- Máximo **3 clubes** por usuario
-- El creador automáticamente tiene rol `owner`
+**Límites** (trigger `club_proteger`):
+
+- Máximo **3 comunidades** y **5 grupos** por usuario.
+- Máximo **3 altas por día** entre comunidades y grupos.
+- Los administradores de Gacelas no tienen límite.
+- Un grupo con cupo lleno no acepta nuevos miembros ni aprobaciones.
 
 ### 6.2 Roles en Clubes
 
@@ -288,17 +295,20 @@ Proceso:
 **Regla**:
 
 ```
-SI club.is_public = true:
+SI club.requires_approval = false:
     Usuario se une inmediatamente (role = 'member')
 
-SI club.is_public = false:
-    Usuario envía solicitud
+SI club.requires_approval = true:
+    Usuario envía solicitud (status = 'pending')
     Admin/Owner debe aprobar
+
+SI club.hidden_at no es nulo o el cupo está lleno:
+    No se puede unir
 ```
 
 ### 6.4 Eliminación de Clubes
 
-**Regla**: Solo el `owner` puede eliminar un club.
+**Regla**: Solo el `owner` puede eliminar un club. Owner y admins pueden editarlo; el tipo no cambia. Los administradores de Gacelas pueden ocultarlo desde la cola de moderación.
 
 **Proceso**:
 

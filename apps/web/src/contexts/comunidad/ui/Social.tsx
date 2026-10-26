@@ -8,14 +8,13 @@ import {
   type DefinicionLogro,
 } from '../../logros/api'
 import {
-  MOTIVOS_POR_TIPO,
+  definicionTipo,
   reportarContenido,
-  TITULO_REPORTE,
   type MotivoReporte,
-  type TipoContenido,
+  type TipoObjetivo,
 } from '../../moderacion/api'
 
-/** Modal C2 para reportar una publicacion, un comentario, un corredor o un evento. */
+/** Modal C2 para reportar cualquier tipo registrado en Moderacion (publicacion, evento, grupo...). */
 export function ModalReporte({
   postId,
   tipo = 'post',
@@ -24,18 +23,18 @@ export function ModalReporte({
 }: {
   /** Id del contenido a reportar (null cierra el modal). */
   postId: string | null
-  tipo?: TipoContenido
+  tipo?: TipoObjetivo
   onCerrar: () => void
   onEnviado: (ok: boolean) => void
 }) {
-  const motivos = MOTIVOS_POR_TIPO[tipo]
+  const { motivos, titulo } = definicionTipo(tipo)
   const [motivo, setMotivo] = useState<MotivoReporte>(motivos[0][0])
   const [detalle, setDetalle] = useState('')
   return (
     <ModalC2
       abierto={postId != null}
       icono="flag"
-      titulo={TITULO_REPORTE[tipo]}
+      titulo={titulo}
       texto="Cuéntanos qué pasa. El equipo de moderación lo revisará y te avisará cuando lo resuelva; la persona no sabrá quién la reportó."
       primario="Enviar reporte"
       peligro

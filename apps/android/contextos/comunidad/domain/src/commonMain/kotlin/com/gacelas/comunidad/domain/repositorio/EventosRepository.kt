@@ -1,5 +1,6 @@
 package com.gacelas.comunidad.domain.repositorio
 
+import com.gacelas.comunidad.domain.modelo.BorradorClub
 import com.gacelas.comunidad.domain.modelo.Club
 import com.gacelas.comunidad.domain.modelo.ComentarioFeed
 import com.gacelas.comunidad.domain.modelo.Publicacion
@@ -34,6 +35,10 @@ interface ClubesRepository {
     suspend fun listar(): Pair<List<Club>, Set<String>>
     suspend fun miId(): String? = null
     suspend fun crear(nombre: String, descripcion: String, ubicacion: String, conAprobacion: Boolean): String = throw UnsupportedOperationException()
+    /** Registra una comunidad o grupo; el creador queda como owner (trigger de la base). */
+    suspend fun crear(b: BorradorClub): String = crear(b.nombre, b.descripcion, b.ciudad, b.conAprobacion)
+    suspend fun editar(id: String, b: BorradorClub) {}
+    suspend fun eliminar(id: String) {}
     suspend fun detalle(id: String): Club? = null
     suspend fun miembros(id: String): List<MiembroClub> = emptyList()
     suspend fun unirse(id: String) {}

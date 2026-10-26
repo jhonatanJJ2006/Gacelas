@@ -70,6 +70,9 @@ const Corredores = lazy(() =>
 const Clubes = lazy(() =>
   import('../contexts/eventos/ui/Clubes').then((m) => ({ default: m.Clubes }))
 )
+const FormularioClub = lazy(() =>
+  import('../contexts/eventos/ui/FormularioClub').then((m) => ({ default: m.FormularioClub }))
+)
 const DetalleClub = lazy(() =>
   import('../contexts/eventos/ui/DetalleClub').then((m) => ({ default: m.DetalleClub }))
 )
@@ -242,6 +245,8 @@ export function AppRoutes() {
             <Route path="/comunidad/eventos/:id" element={<DetalleEvento />} />
             <Route path="/comunidad/eventos/:id/en-vivo" element={<EventoEnVivo />} />
             <Route path="/comunidad/clubes" element={<Clubes />} />
+            <Route path="/comunidad/clubes/nuevo" element={<FormularioClub />} />
+            <Route path="/comunidad/clubes/:id/editar" element={<FormularioClub />} />
             <Route path="/comunidad/clubes/:id" element={<DetalleClub />} />
             <Route path="/comunidad/corredores" element={<Corredores />} />
             <Route path="/comunidad/en-vivo" element={<ListaEnVivo />} />

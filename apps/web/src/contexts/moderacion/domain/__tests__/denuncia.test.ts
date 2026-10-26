@@ -3,7 +3,15 @@ import { claveObjetivo, definicionTipo, registrarTipoObjetivo, tiposRegistrados 
 
 describe('cola de moderación genérica', () => {
   it('conoce los tipos de 023 y los incidentes de 031', () => {
-    expect(tiposRegistrados()).toEqual(['post', 'comentario', 'evento', 'usuario', 'incidente'])
+    expect(tiposRegistrados()).toEqual([
+      'post',
+      'comentario',
+      'evento',
+      'usuario',
+      'incidente',
+      'comunidad',
+      'grupo',
+    ])
     expect(definicionTipo('incidente').accionOcultar).toBe('Rechazar incidente')
     expect(definicionTipo('usuario').accionOcultar).toBe('Suspender usuario')
   })

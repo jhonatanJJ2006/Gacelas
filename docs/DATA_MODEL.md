@@ -362,6 +362,8 @@ CREATE INDEX clubs_location_point_idx ON clubs USING GIST(location_point);
 
 **Descripción**: Club o grupo de runners.
 
+**Estado actual** (migraciones 012, 033 y 034): la tabla vive en `eventos.clubs` con la vista `public.clubs`. Columnas reales: `id`, `name`, `description`, `location`, `requires_approval`, `owner_id`, `members_count`, `created_at`, y desde la 034 `kind` (`comunidad` o `grupo`), `community_id`, `city`, `logo_path`, `cover_path`, `contact`, `meeting_place`, `meeting_lat`, `meeting_lng`, `training_days`, `training_time`, `level`, `pace_s_km`, `max_members`, `hidden_at` y `updated_at`. Ver [ADR 006](adr/006-comunidades-y-grupos.md).
+
 ---
 
 ### 9. `club_members`

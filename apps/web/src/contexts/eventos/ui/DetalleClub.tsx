@@ -1,15 +1,24 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAviso } from '../../../hooks'
+import { LogoClub } from './Clubes'
 import type { Evento } from '../../../mocks/data'
-import { Aviso } from '../../../shared/ui/ui'
+import { Aviso, BotonTexto, Dialogo } from '../../../shared/ui/ui'
+import { ModalReporte } from '../../comunidad'
 import { useIdentidad } from '../../identidad/api'
+import { yaReportado } from '../../moderacion/api'
 import {
   accionClub,
   clubes,
+  ETIQUETA_NIVEL,
   ETIQUETA_ROL,
+  ETIQUETA_TIPO,
+  estaLleno,
   eventoDesdeFila,
   puedeGestionar,
+  textoHorario,
+  textoRitmo,
+  urlPublica,
   type Club,
   type MiembroClub,
   type PostClub,
@@ -26,6 +35,10 @@ export function DetalleClub() {
   const [yoId, setYoId] = useState<string | null>(null)
   const [texto, setTexto] = useState('')
   const [aviso, mostrarAviso] = useAviso()
+  const [comunidad, setComunidad] = useState<Club | null>(null)
+  const [gruposComunidad, setGruposComunidad] = useState<Club[]>([])
+  const [reportando, setReportando] = useState(false)
+  const [borrando, setBorrando] = useState(false)
 
   const cargar = useCallback(async () => {
     const c = await clubes.detalle(id).catch(() => null)
@@ -41,6 +54,8 @@ export function DetalleClub() {
     setPosts(p)
     setEventos(e.map((f) => eventoDesdeFila(f, yo ?? undefined)))
     setYoId(yo)
+    setComunidad(c.comunidadId ? await clubes.detalle(c.comunidadId).catch(() => null) : null)
+    setGruposComunidad(c.tipo === 'comunidad' ? await clubes.grupos(c.id).catch(() => []) : [])
   }, [id])
   useEffect(() => {
     void cargar()
@@ -54,9 +69,9 @@ export function DetalleClub() {
   if (club === null)
     return (
       <main className="p-6 text-text-secondary">
-        Club no encontrado.{' '}
+        No encontramos este grupo o comunidad.{' '}
         <Link to="/comunidad/clubes" className="text-primary-400 underline">
-          Ver clubes
+          Ver grupos
         </Link>
       </main>
     )
@@ -64,7 +79,11 @@ export function DetalleClub() {
   const yo = miembros.find((m) => m.usuarioId === yoId) ?? null
   const activo = yo?.estado === 'active'
   const gestiono = activo && puedeGestionar(yo?.rol)
-  const accion = sesion ? accionClub(yo, club.conAprobacion) : null
+  const lleno = estaLleno(club)
+  const accion = sesion ? accionClub(yo, club.conAprobacion, club.tipo, lleno) : null
+  const esGrupo = club.tipo === 'grupo'
+  const portada = urlPublica(club.portada)
+  const horario = textoHorario(club.dias, club.hora)
   const intentar = async (fn: () => Promise<unknown>, ok: string) => {
     try {
       await fn()
@@ -90,26 +109,92 @@ export function DetalleClub() {
         <h1 className="flex-1 font-headline-md text-headline-md text-text-primary truncate">
           {club.nombre}
         </h1>
+        {gestiono && (
+          <button
+            onClick={() => navigate(`/comunidad/clubes/${id}/editar`)}
+            aria-label="Editar"
+            data-testid="editar-club"
+            className="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-text-primary"
+          >
+            <span className="material-symbols-outlined">edit</span>
+          </button>
+        )}
       </header>
+      {portada && (
+        <div className="px-margin lg:px-0 mb-4">
+          <img src={portada} alt="" className="w-full max-h-[200px] object-cover rounded-2xl" />
+        </div>
+      )}
       <div className="px-margin lg:px-0 lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8 space-y-6 lg:space-y-0">
         <div className="space-y-6">
-          <section className="bg-surface-container rounded-2xl p-5 space-y-3">
+          <section className="tarjeta-c2 p-5 space-y-3">
+            <div className="flex items-center gap-3">
+              <LogoClub club={club} grande />
+              <div className="min-w-0">
+                <span className="text-[11px] uppercase tracking-wide text-primary-400">
+                  {ETIQUETA_TIPO[club.tipo]}
+                  {club.oculto && ' · Oculto por moderación'}
+                </span>
+                {comunidad && (
+                  <Link
+                    to={`/comunidad/clubes/${comunidad.id}`}
+                    className="block text-sm text-secondary-400 truncate"
+                  >
+                    Parte de {comunidad.nombre}
+                  </Link>
+                )}
+              </div>
+            </div>
             <p className="text-text-secondary">{club.descripcion || 'Sin descripción.'}</p>
             <p className="text-sm text-text-secondary" data-testid="miembros-club">
-              {club.miembros} {club.miembros === 1 ? 'miembro' : 'miembros'}
-              {club.ubicacion && ` · ${club.ubicacion}`} ·{' '}
-              {club.conAprobacion ? 'Con aprobación' : 'Abierto'}
+              {club.miembros}
+              {club.cupo != null ? `/${club.cupo}` : ''}{' '}
+              {club.miembros === 1 ? 'miembro' : 'miembros'}
+              {club.ciudad && ` · ${club.ciudad}`} ·{' '}
+              {club.conAprobacion ? 'Privado, con solicitud' : 'Público'}
+              {lleno && ' · Cupo lleno'}
             </p>
+            {esGrupo && (
+              <dl className="grid grid-cols-2 gap-2" data-testid="datos-grupo">
+                {(
+                  [
+                    ['Encuentro', club.lugarEncuentro || 'Por definir'],
+                    ['Horario', horario || 'Por definir'],
+                    ['Nivel', ETIQUETA_NIVEL[club.nivel]],
+                    ['Ritmo', textoRitmo(club.ritmoSegKm) || 'Libre'],
+                  ] as const
+                ).map(([t, v]) => (
+                  <div key={t} className="rounded-xl bg-surface-container-high p-2">
+                    <dt className="text-[11px] text-text-secondary">{t}</dt>
+                    <dd className="text-sm text-text-primary">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {esGrupo && club.punto && (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${club.punto.lat},${club.punto.lng}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-sm text-primary-400"
+              >
+                <span className="material-symbols-outlined text-[18px]">location_on</span>
+                Ver punto de encuentro en el mapa
+              </a>
+            )}
+            {club.contacto && (
+              <p className="text-sm text-text-secondary">Contacto: {club.contacto}</p>
+            )}
             {accion && (
               <button
                 data-testid="accion-club"
                 disabled={yo?.estado === 'pending'}
                 onClick={() =>
                   void (yo
-                    ? intentar(() => clubes.salir(id), 'Saliste del club')
+                    ? intentar(() => clubes.salir(id), 'Saliste')
                     : intentar(
                         () => clubes.unirse(id),
-                        club.conAprobacion ? 'Solicitud enviada' : 'Te uniste al club'
+                        club.conAprobacion ? 'Solicitud enviada' : 'Te uniste'
                       ))
                 }
                 className={`h-12 px-5 rounded-xl font-semibold disabled:opacity-60 ${yo ? 'bg-surface-container-high text-text-primary border border-border-subtle' : 'bg-primary-600 text-on-primary'}`}
@@ -118,6 +203,9 @@ export function DetalleClub() {
               </button>
             )}
             {!sesion && <p className="text-sm text-text-secondary">Inicia sesión para unirte.</p>}
+            {sesion && !yo && lleno && (
+              <p className="text-sm text-text-secondary">El grupo está lleno.</p>
+            )}
           </section>
 
           <section aria-labelledby="titulo-feed" className="space-y-3">
@@ -136,8 +224,8 @@ export function DetalleClub() {
                 }}
               >
                 <input
-                  aria-label="Escribe al club"
-                  placeholder="Escribe algo al club…"
+                  aria-label="Escribe al grupo"
+                  placeholder="Escribe algo a los miembros…"
                   value={texto}
                   maxLength={1000}
                   onChange={(e) => setTexto(e.target.value)}
@@ -192,13 +280,55 @@ export function DetalleClub() {
         </div>
 
         <aside className="space-y-6">
+          {club.tipo === 'comunidad' && (
+            <section aria-labelledby="titulo-grupos" className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h2 id="titulo-grupos" className="font-title-md text-title-md text-text-primary">
+                  Grupos ({gruposComunidad.length})
+                </h2>
+                {sesion && (
+                  <Link
+                    to={`/comunidad/clubes/nuevo?tipo=grupo&comunidad=${id}`}
+                    className="text-sm text-primary-400"
+                  >
+                    + Registrar grupo
+                  </Link>
+                )}
+              </div>
+              {gruposComunidad.length === 0 ? (
+                <p className="text-sm text-text-secondary">Aún no hay grupos en esta comunidad.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {gruposComunidad.map((g) => (
+                    <li key={g.id}>
+                      <Link
+                        to={`/comunidad/clubes/${g.id}`}
+                        className="flex items-center gap-2 bg-surface-container rounded-xl p-3"
+                      >
+                        <LogoClub club={g} />
+                        <span className="flex-1 min-w-0">
+                          <span className="block font-semibold text-text-primary truncate">
+                            {g.nombre}
+                          </span>
+                          <span className="block text-xs text-text-secondary truncate">
+                            {g.miembros} miembros ·{' '}
+                            {textoHorario(g.dias, g.hora) || g.lugarEncuentro}
+                          </span>
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
           <section aria-labelledby="titulo-eventos-club" className="space-y-2">
             <div className="flex items-center justify-between">
               <h2
                 id="titulo-eventos-club"
                 className="font-title-md text-title-md text-text-primary"
               >
-                Eventos del club
+                Eventos
               </h2>
               {gestiono && (
                 <Link
@@ -308,6 +438,70 @@ export function DetalleClub() {
           </section>
         </aside>
       </div>
+      <div className="px-margin lg:px-0 py-6 flex flex-wrap items-center gap-4">
+        {sesion && club.ownerId !== yoId && (
+          <button
+            type="button"
+            data-testid="reportar-club"
+            onClick={() =>
+              yaReportado(club.tipo, club.id)
+                ? mostrarAviso('Ya lo reportaste')
+                : setReportando(true)
+            }
+            className="inline-flex items-center gap-1 text-[13px] text-c2-muted hover:text-c2-peligro"
+          >
+            <span className="material-symbols-outlined text-[16px]">flag</span>
+            {esGrupo ? 'Reportar grupo' : 'Reportar comunidad'}
+          </button>
+        )}
+        {yo?.rol === 'owner' && (
+          <button
+            type="button"
+            data-testid="eliminar-club"
+            onClick={() => setBorrando(true)}
+            className="inline-flex items-center gap-1 text-[13px] text-red-300"
+          >
+            <span className="material-symbols-outlined text-[16px]">delete</span>
+            {esGrupo ? 'Eliminar grupo' : 'Eliminar comunidad'}
+          </button>
+        )}
+      </div>
+      <ModalReporte
+        tipo={club.tipo}
+        postId={reportando ? club.id : null}
+        onCerrar={() => setReportando(false)}
+        onEnviado={(ok) => {
+          setReportando(false)
+          mostrarAviso(ok ? 'Reporte enviado' : 'No se pudo enviar el reporte. Revisa tu conexión')
+        }}
+      />
+      <Dialogo
+        titulo={esGrupo ? 'Eliminar grupo' : 'Eliminar comunidad'}
+        abierto={borrando}
+        peligro
+        onCerrar={() => setBorrando(false)}
+        acciones={
+          <>
+            <BotonTexto onClick={() => setBorrando(false)}>Cancelar</BotonTexto>
+            <BotonTexto
+              peligro
+              onClick={() =>
+                void clubes
+                  .eliminar(id)
+                  .then(() => navigate(`/comunidad/clubes${esGrupo ? '' : '?tipo=comunidad'}`))
+                  .catch(() => mostrarAviso('No se pudo eliminar'))
+              }
+            >
+              Eliminar
+            </BotonTexto>
+          </>
+        }
+      >
+        <p className="text-text-secondary text-sm">
+          Se borran sus miembros, publicaciones y eventos. No se puede deshacer.
+          {!esGrupo && ' Los grupos de la comunidad siguen existiendo sin comunidad.'}
+        </p>
+      </Dialogo>
       <Aviso mensaje={aviso} />
     </main>
   )
