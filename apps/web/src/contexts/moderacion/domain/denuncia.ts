@@ -102,9 +102,33 @@ const INCIDENTE: DefinicionTipo = {
   accionOcultar: 'Rechazar incidente',
   tieneAutor: true,
 }
+// Comunidades y grupos de running (contexto Eventos y clubes, migracion 034).
+const MOTIVOS_GRUPO: [MotivoReporte, string][] = [
+  ['falso', 'Falso o estafa'],
+  ['suplantacion', 'Se hace pasar por otro grupo'],
+  ['peligroso', 'Pone en riesgo a los corredores'],
+  ...COMUNES,
+  ['otro', 'Otro motivo'],
+]
+const COMUNIDAD: DefinicionTipo = {
+  etiqueta: 'Comunidad',
+  titulo: 'Reportar comunidad',
+  motivos: MOTIVOS_GRUPO,
+  accionOcultar: 'Ocultar comunidad',
+  tieneAutor: true,
+}
+const GRUPO: DefinicionTipo = {
+  etiqueta: 'Grupo de running',
+  titulo: 'Reportar grupo',
+  motivos: MOTIVOS_GRUPO,
+  accionOcultar: 'Ocultar grupo',
+  tieneAutor: true,
+}
 const registro = new Map<string, DefinicionTipo>([
   ...Object.entries(BASE),
   ['incidente', INCIDENTE],
+  ['comunidad', COMUNIDAD],
+  ['grupo', GRUPO],
 ])
 
 /** Punto de extension para otros contextos. */

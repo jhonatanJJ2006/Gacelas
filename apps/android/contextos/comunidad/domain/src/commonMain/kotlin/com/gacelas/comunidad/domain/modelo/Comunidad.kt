@@ -28,7 +28,51 @@ data class Notificacion(val id: String, val tipo: TipoNotificacion, val usuario:
 
 enum class RolClub(val etiqueta: String) { owner("Fundador"), admin("Admin"), member("Miembro") }
 
-data class Club(val id: String, val nombre: String, val descripcion: String, val ubicacion: String, val conAprobacion: Boolean, val miembros: Int)
+enum class TipoClub(val clave: String, val etiqueta: String) { comunidad("comunidad", "Comunidad"), grupo("grupo", "Grupo de running") }
+
+enum class NivelGrupo(val etiqueta: String) { todos("Todos los niveles"), principiante("Principiante"), intermedio("Intermedio"), avanzado("Avanzado") }
+
+/**
+ * Comunidad o grupo de running (tabla eventos.clubs, migracion 034). Los grupos pueden pertenecer
+ * a una comunidad y tienen punto de encuentro, dias, hora, nivel, ritmo y cupo opcionales.
+ */
+data class Club(
+    val id: String, val nombre: String, val descripcion: String, val ubicacion: String, val conAprobacion: Boolean, val miembros: Int,
+    val tipo: TipoClub = TipoClub.grupo,
+    val ciudad: String = "Loja",
+    val comunidadId: String? = null,
+    val logo: String? = null,
+    val portada: String? = null,
+    val contacto: String = "",
+    val lugarEncuentro: String = "",
+    val lat: Double? = null,
+    val lng: Double? = null,
+    val dias: List<Int> = emptyList(),
+    val hora: String? = null,
+    val nivel: NivelGrupo = NivelGrupo.todos,
+    val ritmoSegKm: Int? = null,
+    val cupo: Int? = null,
+    val propietarioId: String? = null,
+)
+
+/** Datos del formulario de registro o edicion. */
+data class BorradorClub(
+    val tipo: TipoClub = TipoClub.grupo,
+    val nombre: String = "",
+    val descripcion: String = "",
+    val ciudad: String = "Loja",
+    val contacto: String = "",
+    val conAprobacion: Boolean = false,
+    val comunidadId: String? = null,
+    val lugarEncuentro: String = "",
+    val lat: Double? = null,
+    val lng: Double? = null,
+    val dias: List<Int> = emptyList(),
+    val hora: String = "",
+    val nivel: NivelGrupo = NivelGrupo.todos,
+    val ritmo: String = "",
+    val cupo: String = "",
+)
 
 data class MiembroClub(val usuarioId: String, val nombre: String, val rol: RolClub, val activo: Boolean)
 

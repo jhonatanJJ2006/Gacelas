@@ -27,7 +27,7 @@ class Fase5Test {
         assertEquals("Unirme", accionClub(null, false))
         assertEquals("Solicitar unirme", accionClub(null, true))
         assertEquals("Solicitud enviada", accionClub(MiembroClub("a", "A", RolClub.member, false), true))
-        assertEquals("Salir del club", accionClub(MiembroClub("a", "A", RolClub.admin, true), false))
+        assertEquals("Salir del grupo", accionClub(MiembroClub("a", "A", RolClub.admin, true), false))
         assertNull(accionClub(MiembroClub("a", "A", RolClub.owner, true), false))
         assertTrue(validarClub("ab", "")!!.contains("3 letras"))
     }

@@ -22,6 +22,8 @@ enum class TipoContenido(val clave: String, val titulo: String) {
     Comentario("comentario", "Reportar comentario"), Evento("evento", "Reportar evento"),
     /** Incidentes de corredores (contexto Seguridad de rutas, migraciones 030 y 031). */
     Incidente("incidente", "Reportar incidente"),
+    /** Comunidades y grupos de running (contexto Eventos y clubes, migracion 034). */
+    Comunidad("comunidad", "Reportar comunidad"), Grupo("grupo", "Reportar grupo"),
     ;
 
     fun objetivo(id: String) = ObjetivoDenuncia(clave, id)
@@ -49,7 +51,14 @@ fun motivosReporte(tipo: TipoContenido): List<Pair<String, String>> = when (tipo
         "falso" to "Incidente falso o exagerado", "ofensivo" to "Descripción o fotos ofensivas",
         "spam" to "Spam o publicidad", "otro" to "Otro motivo",
     )
+    TipoContenido.Comunidad, TipoContenido.Grupo -> MOTIVOS_GRUPO
 }
+
+/** Motivos para comunidades y grupos, igual que la web. */
+val MOTIVOS_GRUPO = listOf(
+    "falso" to "Falso o estafa", "suplantacion" to "Se hace pasar por otro grupo", "peligroso" to "Pone en riesgo a los corredores",
+    "spam" to "Spam o publicidad", "ofensivo" to "Contenido ofensivo", "acoso" to "Acoso o intimidación", "otro" to "Otro motivo",
+)
 
 /** Motivos para cualquier clave, conocida o no. */
 fun motivosReporte(clave: String): List<Pair<String, String>> =

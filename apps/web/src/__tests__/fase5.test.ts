@@ -31,7 +31,7 @@ describe('clubes', () => {
     ).toBe('Solicitud enviada')
     expect(
       accionClub({ usuarioId: 'a', nombre: 'A', rol: 'member', estado: 'active' }, false)
-    ).toBe('Salir del club')
+    ).toBe('Salir del grupo')
     expect(
       accionClub({ usuarioId: 'a', nombre: 'A', rol: 'owner', estado: 'active' }, false)
     ).toBeNull()

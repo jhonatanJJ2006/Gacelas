@@ -406,35 +406,83 @@ export type Database = {
       }
       clubs: {
         Row: {
+          city: string
+          community_id: string | null
+          contact: string | null
+          cover_path: string | null
           created_at: string
           description: string
+          hidden_at: string | null
           id: string
+          kind: string
+          level: string
           location: string
+          logo_path: string | null
+          max_members: number | null
+          meeting_lat: number | null
+          meeting_lng: number | null
+          meeting_place: string | null
           members_count: number
           name: string
           owner_id: string
+          pace_s_km: number | null
           requires_approval: boolean
+          training_days: number[]
+          training_time: string | null
+          updated_at: string
         }
         ComputedFields: never
         Insert: {
+          city?: string | null
+          community_id?: string | null
+          contact?: string | null
+          cover_path?: string | null
           created_at?: string | null
           description?: string | null
+          hidden_at?: string | null
           id?: string | null
+          kind?: string | null
+          level?: string | null
           location?: string | null
+          logo_path?: string | null
+          max_members?: number | null
+          meeting_lat?: number | null
+          meeting_lng?: number | null
+          meeting_place?: string | null
           members_count?: number | null
           name?: string | null
           owner_id?: string | null
+          pace_s_km?: number | null
           requires_approval?: boolean | null
+          training_days?: number[] | null
+          training_time?: string | null
+          updated_at?: string | null
         }
         Update: {
+          city?: string | null
+          community_id?: string | null
+          contact?: string | null
+          cover_path?: string | null
           created_at?: string | null
           description?: string | null
+          hidden_at?: string | null
           id?: string | null
+          kind?: string | null
+          level?: string | null
           location?: string | null
+          logo_path?: string | null
+          max_members?: number | null
+          meeting_lat?: number | null
+          meeting_lng?: number | null
+          meeting_place?: string | null
           members_count?: number | null
           name?: string | null
           owner_id?: string | null
+          pace_s_km?: number | null
           requires_approval?: boolean | null
+          training_days?: number[] | null
+          training_time?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }

@@ -28,20 +28,39 @@ import org.maplibre.android.maps.MapLibreMap
 
 fun colorCorredor(i: Int) = com.gacelas.comunidad.presentation.ui.colorCorredor(i)
 
+/** Mapa para marcar el punto de encuentro de un grupo (toque = punto). */
+val selectorPuntoMapa: com.gacelas.comunidad.presentation.ui.SelectorPunto = { lat, lng, onElegir ->
+    val punto = if (lat != null && lng != null) LatLng(lat, lng) else null
+    MapaLibre(
+        Modifier.fillMaxSize(),
+        circulos = listOfNotNull(punto?.let { CirculoMapa(it, 9f, Color(0xFFA855F7)) }),
+        centro = punto ?: Mapas.CENTRO_LOJA, zoom = 14.0,
+        alTocar = { onElegir(it.latitude, it.longitude) },
+    )
+}
+
 @Composable
 fun ClubesScreen(onAtras: () -> Unit, onClub: (String) -> Unit) {
     val c = contenedor()
     val context = LocalContext.current
     val vm = viewModel { c.clubesViewModel() }
-    ClubesContenido(vm, conServidor = c.clubes != null, onAtras = onAtras, onClub = onClub, onAviso = { context.aviso(it) })
+    ClubesContenido(vm, conServidor = c.clubes != null, onAtras = onAtras, onClub = onClub, onAviso = { context.aviso(it) }, selectorPunto = selectorPuntoMapa)
 }
 
 @Composable
-fun DetalleClubScreen(id: String, onAtras: () -> Unit, onEvento: (String) -> Unit, onCrearEvento: (String) -> Unit) {
+fun DetalleClubScreen(id: String, onAtras: () -> Unit, onEvento: (String) -> Unit, onCrearEvento: (String) -> Unit, onClub: (String) -> Unit = {}) {
     val c = contenedor()
     val context = LocalContext.current
     val vm = viewModel(key = "detalle-club-$id") { c.detalleClubViewModel(id) }
-    DetalleClubContenido(id, vm, conServidor = c.clubes != null, onAtras = onAtras, onEvento = onEvento, onCrearEvento = onCrearEvento, onAviso = { context.aviso(it) })
+    var reportando by remember { mutableStateOf<com.gacelas.comunidad.domain.modelo.Club?>(null) }
+    DetalleClubContenido(
+        id, vm, conServidor = c.clubes != null, onAtras = onAtras, onEvento = onEvento, onCrearEvento = onCrearEvento, onAviso = { context.aviso(it) },
+        onClub = onClub, onReportar = { reportando = it }, selectorPunto = selectorPuntoMapa,
+    )
+    reportando?.let { club ->
+        val tipo = if (club.tipo == com.gacelas.comunidad.domain.modelo.TipoClub.comunidad) com.gacelas.social.TipoContenido.Comunidad else com.gacelas.social.TipoContenido.Grupo
+        com.gacelas.social.ModalReporte(club.id, c.social, tipo) { reportando = null }
+    }
 }
 
 /** Mapa en vivo de todos los corredores del evento, clasificacion y repeticion (MapLibre Android). */

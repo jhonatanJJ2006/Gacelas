@@ -230,6 +230,7 @@ Notación: agregados en negrita, entidades (E), value objects (VO), eventos de d
 - Repositorios: `ClubRepositorio`, `EventoRepositorio`.
 - Casos de uso: CrearClub, UnirseAClub, CrearEvento, PublicarEvento, Inscribirse, ProgramarRecordatorio, VerCalendario.
 - Tablas: `clubs`, `club_members`, `club_posts`, `events`, `event_rsvps`, `event_reminders`.
+- Comunidades y grupos de running son clubes con `kind` distinto; un grupo puede pertenecer a una comunidad ([ADR 006](adr/006-comunidades-y-grupos.md)). Casos de uso: RegistrarComunidad, RegistrarGrupo, EditarClub, EliminarClub, BuscarGrupos.
 
 ### 3.9 Logros y rachas (`logros`)
 

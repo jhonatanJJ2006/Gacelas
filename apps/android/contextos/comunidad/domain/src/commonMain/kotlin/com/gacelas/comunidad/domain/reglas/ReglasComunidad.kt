@@ -1,6 +1,10 @@
 package com.gacelas.comunidad.domain.reglas
 
+import com.gacelas.comunidad.domain.modelo.BorradorClub
+import com.gacelas.comunidad.domain.modelo.Club
 import com.gacelas.comunidad.domain.modelo.CorredorEvento
+import com.gacelas.comunidad.domain.modelo.NivelGrupo
+import com.gacelas.comunidad.domain.modelo.TipoClub
 import com.gacelas.comunidad.domain.modelo.DiaCalendario
 import com.gacelas.comunidad.domain.modelo.EstadoEvento
 import com.gacelas.comunidad.domain.modelo.Evento
@@ -22,11 +26,37 @@ import kotlinx.datetime.plus
 fun puedeGestionar(rol: RolClub?) = rol == RolClub.owner || rol == RolClub.admin
 
 /** Texto del boton principal segun mi relacion con el club (igual que la web). */
-fun accionClub(yo: MiembroClub?, conAprobacion: Boolean): String? = when {
-    yo == null -> if (conAprobacion) "Solicitar unirme" else "Unirme"
+fun accionClub(yo: MiembroClub?, conAprobacion: Boolean, tipo: TipoClub = TipoClub.grupo, lleno: Boolean = false): String? = when {
+    yo == null -> if (lleno) "Grupo lleno" else if (conAprobacion) "Solicitar unirme" else "Unirme"
     !yo.activo -> "Solicitud enviada"
     yo.rol == RolClub.owner -> null
-    else -> "Salir del club"
+    else -> if (tipo == TipoClub.comunidad) "Salir de la comunidad" else "Salir del grupo"
+}
+
+/** Limites de creacion por usuario (los mismos que aplica el trigger club_proteger). */
+val LIMITE_CREACION = mapOf(TipoClub.comunidad to 3, TipoClub.grupo to 5)
+const val LIMITE_DIARIO = 3
+val DIAS_CORTOS = listOf("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
+
+fun estaLleno(c: Club) = c.cupo != null && c.miembros >= c.cupo
+
+/** Nombre comparable: sin espacios repetidos ni mayusculas (indice clubs_nombre_unico). */
+fun normalizarNombre(n: String) = n.trim().replace(Regex("\\s+"), " ").lowercase()
+
+/** "6:30" o "6:30 min/km" a segundos; null si no es valido. */
+fun leerRitmo(t: String): Int? {
+    val m = Regex("^(\\d{1,2}):([0-5]\\d)").find(t.trim()) ?: return null
+    return m.groupValues[1].toInt() * 60 + m.groupValues[2].toInt()
+}
+
+fun textoRitmo(s: Int?) = s?.let { "${it / 60}:${(it % 60).toString().padStart(2, '0')} min/km" }
+
+/** "Mar y Sáb · 06:00" con los dias ISO 1..7. */
+fun textoHorario(dias: List<Int>, hora: String?): String {
+    val d = dias.sorted().mapNotNull { DIAS_CORTOS.getOrNull(it - 1) }
+    val ds = when (d.size) { 0 -> ""; 1 -> d[0]; else -> d.dropLast(1).joinToString(", ") + " y " + d.last() }
+    val h = hora?.take(5)?.ifBlank { null }
+    return listOfNotNull(ds.ifBlank { null }, h).joinToString(" · ").ifBlank { "Sin horario fijo" }
 }
 
 fun validarClub(nombre: String, descripcion: String): String? = when {
@@ -34,6 +64,42 @@ fun validarClub(nombre: String, descripcion: String): String? = when {
     nombre.trim().length > 60 -> "El nombre es demasiado largo"
     descripcion.length > 500 -> "La descripción es demasiado larga"
     else -> null
+}
+
+/** Valida el borrador como la web y la base: nombre unico por tipo, ritmo, cupo y hora. */
+fun validarClub(b: BorradorClub, existentes: List<Club>, editandoId: String? = null): String? {
+    validarClub(b.nombre, b.descripcion)?.let { return it }
+    if (b.ciudad.trim().isEmpty()) return "Indica la ciudad o zona"
+    val n = normalizarNombre(b.nombre)
+    if (existentes.any { it.tipo == b.tipo && it.id != editandoId && normalizarNombre(it.nombre) == n })
+        return "Ya existe ${if (b.tipo == TipoClub.comunidad) "una comunidad" else "un grupo"} con ese nombre"
+    if (b.tipo == TipoClub.grupo) {
+        if (b.ritmo.isNotBlank()) { val r = leerRitmo(b.ritmo) ?: return "Escribe el ritmo como 6:30"; if (r !in 150..900) return "El ritmo debe estar entre 2:30 y 15:00 min/km" }
+        if (b.cupo.isNotBlank()) { val c = b.cupo.trim().toIntOrNull() ?: return "El cupo debe ser un número"; if (c !in 2..1000) return "El cupo debe estar entre 2 y 1000" }
+        if (b.hora.isNotBlank() && !Regex("^([01]\\d|2[0-3]):[0-5]\\d$").matches(b.hora.trim())) return "Escribe la hora como 06:00"
+    }
+    return null
+}
+
+/** Filtra por tipo, texto (nombre, descripcion, ciudad, punto) y nivel. */
+fun filtrarClubes(c: List<Club>, tipo: TipoClub, q: String, nivel: NivelGrupo? = null): List<Club> {
+    val t = q.trim().lowercase()
+    return c.filter { it.tipo == tipo }
+        .filter { nivel == null || it.nivel == nivel }
+        .filter { t.isEmpty() || listOf(it.nombre, it.descripcion, it.ciudad, it.lugarEncuentro).any { s -> s.lowercase().contains(t) } }
+}
+
+fun borradorDesdeClub(c: Club) = BorradorClub(
+    c.tipo, c.nombre, c.descripcion, c.ciudad, c.contacto, c.conAprobacion, c.comunidadId, c.lugarEncuentro, c.lat, c.lng,
+    c.dias, c.hora?.take(5).orEmpty(), c.nivel, c.ritmoSegKm?.let { "${it / 60}:${(it % 60).toString().padStart(2, '0')}" }.orEmpty(), c.cupo?.toString().orEmpty(),
+)
+
+/** Traduce los errores de la base (trigger club_proteger e indice unico) a texto para el usuario. */
+fun mensajeErrorClub(m: String?): String = when {
+    m == null -> "No se pudo guardar"
+    m.contains("clubs_nombre_unico") || m.contains("23505") -> "Ya existe uno con ese nombre"
+    m.contains("cupo", ignoreCase = true) -> "El grupo está lleno"
+    else -> m
 }
 
 fun textoCupo(e: EstadoEvento): String {

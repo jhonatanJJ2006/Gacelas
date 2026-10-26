@@ -17,12 +17,26 @@ describe('eventos y clubes', () => {
   it('clubDesdeFila con valores por defecto', () => {
     expect(clubDesdeFila({ id: 5 })).toEqual({
       id: '5',
+      tipo: 'grupo',
       nombre: '',
       descripcion: '',
       ubicacion: '',
+      ciudad: 'Loja',
       conAprobacion: false,
       miembros: 0,
       ownerId: '',
+      comunidadId: null,
+      logo: null,
+      portada: null,
+      contacto: '',
+      lugarEncuentro: '',
+      punto: null,
+      dias: [],
+      hora: null,
+      nivel: 'todos',
+      ritmoSegKm: null,
+      cupo: null,
+      oculto: false,
     })
   })
 })
