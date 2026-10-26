@@ -1,5 +1,14 @@
 import { useSyncExternalStore } from 'react'
+import type { BloqueoPantalla, FuenteUbicacion } from '../domain/puertos'
 import { RunTracker, estaActiva, type EstadoCarrera } from '../domain/runTracker'
+import {
+  geolocalizacionDisponible,
+  gpsNavegador,
+  mensajeErrorGps,
+  pantallaNavegador,
+} from '../infrastructure/gpsNavegador'
+
+export { geolocalizacionDisponible, mensajeErrorGps }
 
 /** Carrera en curso compartida por En curso, Cronometro y Navegacion. */
 export const tracker = new RunTracker()
@@ -11,81 +20,46 @@ export function useCarrera(): EstadoCarrera {
   )
 }
 
-let watchId: number | null = null
+const gps: FuenteUbicacion = gpsNavegador
+const pantalla: BloqueoPantalla = pantallaNavegador
+
+let dejarDeObservar: (() => void) | null = null
 let reloj: ReturnType<typeof setInterval> | null = null
-let wakeLock: WakeLockSentinel | null = null
 let errorGps: ((mensaje: string) => void) | null = null
 
-export const geolocalizacionDisponible = () =>
-  typeof navigator !== 'undefined' && 'geolocation' in navigator
-
-export function mensajeErrorGps(e: GeolocationPositionError): string {
-  if (e.code === e.PERMISSION_DENIED)
-    return 'Permiso de ubicación denegado. Actívalo en el navegador para grabar la carrera.'
-  if (e.code === e.TIMEOUT) return 'El GPS tarda en responder. Sal a un lugar abierto.'
-  return 'No se pudo obtener la ubicación.'
-}
-
-async function pedirWakeLock() {
-  try {
-    if ('wakeLock' in navigator) {
-      wakeLock = await navigator.wakeLock.request('screen')
-      wakeLock.addEventListener('release', () => {
-        wakeLock = null
-      })
-    }
-  } catch {
-    // El navegador puede negar el wake lock (por ejemplo con bateria baja); la carrera sigue.
-  }
-}
-
-function alVolverVisible() {
-  if (document.visibilityState === 'visible' && estaActiva(tracker.estado) && !wakeLock)
-    void pedirWakeLock()
-}
-
-/** Inicia la carrera: GPS con watchPosition, reloj de 1 s y pantalla siempre encendida. */
+/** Caso de uso EmpezarCarrera: GPS, reloj de 1 s y pantalla siempre encendida. */
 export function empezarSeguimiento(opciones: { precisa: boolean; onError?: (m: string) => void }) {
   detenerSeguimiento()
   errorGps = opciones.onError ?? null
   tracker.iniciar()
-  if (geolocalizacionDisponible()) {
-    watchId = navigator.geolocation.watchPosition(
-      (pos) =>
-        tracker.registrarPunto({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          tiempoMs: pos.timestamp ?? Date.now(),
-          precisionM: pos.coords.accuracy ?? 0,
-          altitudM: pos.coords.altitude ?? null,
-        }),
-      (e) => errorGps?.(mensajeErrorGps(e)),
-      { enableHighAccuracy: opciones.precisa, maximumAge: 1000, timeout: 20_000 }
-    )
+  if (gps.disponible()) {
+    dejarDeObservar = gps.observar({
+      precisa: opciones.precisa,
+      alPunto: (p) => tracker.registrarPunto(p),
+      alError: (m) => errorGps?.(m),
+    })
   } else {
     errorGps?.('Este navegador no tiene GPS.')
   }
   reloj = setInterval(() => tracker.actualizarTiempo(), 1000)
-  void pedirWakeLock()
-  document.addEventListener('visibilitychange', alVolverVisible)
+  pantalla.activar(() => estaActiva(tracker.estado))
 }
 
 export function detenerSeguimiento() {
-  if (watchId != null && geolocalizacionDisponible()) navigator.geolocation.clearWatch(watchId)
-  watchId = null
+  dejarDeObservar?.()
+  dejarDeObservar = null
   if (reloj) clearInterval(reloj)
   reloj = null
-  void wakeLock?.release().catch(() => undefined)
-  wakeLock = null
-  document.removeEventListener('visibilitychange', alVolverVisible)
+  pantalla.liberar()
 }
 
-/** Termina la carrera y deja el resultado listo para el resumen. */
+/** Caso de uso TerminarCarrera: deja el resultado listo para el resumen. */
 export function finalizarCarrera() {
   detenerSeguimiento()
   return tracker.finalizar()
 }
 
+/** Caso de uso DescartarCarrera. */
 export function descartarCarrera() {
   detenerSeguimiento()
   tracker.reiniciar()
