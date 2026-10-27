@@ -94,7 +94,7 @@ export function MisReportes() {
   const compartir = async () => {
     const texto = textoCompartir(rep)
     try {
-      if (navigator.share) await navigator.share({ title: 'Mi reporte en Gacelas', text: texto })
+      if (navigator.share) await navigator.share({ title: 'Mi reporte en Runcity', text: texto })
       else {
         await navigator.clipboard.writeText(texto)
         setAviso('Resumen copiado al portapapeles')

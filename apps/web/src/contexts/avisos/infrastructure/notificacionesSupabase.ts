@@ -26,7 +26,7 @@ export function notificacionDesdeFila(f: Fila, ahora = Date.now()): Notificacion
   return {
     id: f.id as string,
     tipo,
-    usuario: (f.actor_name as string) ?? 'Gacelas Loja',
+    usuario: (f.actor_name as string) ?? 'Runcity',
     mensaje: (f.message as string) ?? '',
     tiempo: tiempoRelativo(Date.parse(f.created_at as string), ahora),
     leida: Boolean(f.read),

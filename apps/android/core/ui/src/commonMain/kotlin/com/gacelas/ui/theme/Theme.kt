@@ -28,7 +28,7 @@ private fun gacelasScheme(claro: Boolean) = (if (claro) lightColorScheme() else 
     error = GColors.Danger,
 )
 
-/** Tema de Gacelas: oscuro por defecto (igual que la web) y claro si se desactiva el modo oscuro. */
+/** Tema de Runcity: oscuro por defecto (igual que la web) y claro si se desactiva el modo oscuro. */
 @Composable
 fun GacelasTheme(content: @Composable () -> Unit) {
     MaterialTheme(colorScheme = gacelasScheme(GColors.claro), typography = Typography, content = content)

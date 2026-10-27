@@ -42,7 +42,7 @@ export function AppLayout() {
             </Link>
             <div className="flex flex-col min-w-0">
               <span className="font-label-md text-label-md text-primary truncate uppercase tracking-wider">
-                Gacelas Loja
+                Runcity
               </span>
             </div>
           </div>

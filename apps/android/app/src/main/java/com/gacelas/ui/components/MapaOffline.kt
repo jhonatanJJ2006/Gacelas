@@ -36,7 +36,7 @@ sealed interface EstadoDescarga {
 
 /**
  * Descarga de teselas OpenStreetMap (OpenFreeMap) para usar el mapa sin red con MapLibre.
- * Se baja la zona con los dos estilos Gacelas; las teselas son las mismas, asi que la segunda
+ * Se baja la zona con los dos estilos Runcity; las teselas son las mismas, asi que la segunda
  * descarga solo agrega el estilo. Las regiones quedan en la base de datos de MapLibre.
  */
 object MapaOffline {
@@ -46,8 +46,8 @@ object MapaOffline {
     /**
      * El descargador offline de MapLibre solo baja estilos por http(s): con asset://mapas/... se quedaba en 0%.
      * Este estilo publico de OpenFreeMap usa la misma fuente (tiles.openfreemap.org/planet) y las mismas
-     * fuentes (Noto Sans) que los estilos Gacelas, y la cache de teselas es compartida por URL, asi que
-     * el mapa Gacelas (oscuro o claro) las encuentra sin red.
+     * fuentes (Noto Sans) que los estilos Runcity, y la cache de teselas es compartida por URL, asi que
+     * el mapa Runcity (oscuro o claro) las encuentra sin red.
      */
     const val ESTILO_DESCARGA = "https://tiles.openfreemap.org/styles/dark"
 
@@ -179,7 +179,7 @@ object MapaOffline {
 
     const val TILEJSON = "https://tiles.openfreemap.org/planet"
 
-    /** Estilo Gacelas (JSON del asset) apuntando a las teselas fijas de la region descargada. */
+    /** Estilo Runcity (JSON del asset) apuntando a las teselas fijas de la region descargada. */
     fun estiloSinRed(context: Context, asset: String): String? {
         val teselas = teselasGuardadas(context) ?: return null
         val json = runCatching { context.assets.open(asset).bufferedReader().use { it.readText() } }.getOrNull() ?: return null

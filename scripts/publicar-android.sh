@@ -30,7 +30,7 @@ echo "Publicando $NOMBRE (versionCode $CODIGO)"
 (cd "$AND" && ./gradlew clean assembleDebug testDebugUnitTest -Pgacelas.abi=arm64-v8a -Pgacelas.release=true --console=plain -q)
 APK="$AND/app/build/outputs/apk/debug/app-debug.apk"
 SHA="$(sha256sum "$APK" | cut -d' ' -f1)"
-DESTINO="android/gacelas-$NOMBRE-arm64.apk"
+DESTINO="android/runcity-$NOMBRE-arm64.apk"
 PUBLICA="$URL/storage/v1/object/public/app-releases"
 
 subir() { # $1 archivo local, $2 ruta en el bucket, $3 tipo
@@ -48,9 +48,9 @@ jq -n --argjson c "$CODIGO" --arg n "$NOMBRE" --arg notas "$NOTAS" --arg apk "$P
 subir /tmp/latest.json android/latest.json application/json
 curl -fsS "$PUBLICA/android/latest.json" | jq .
 
-cp "$APK" /tmp/gacelas-debug-arm64.apk
+cp "$APK" /tmp/runcity-debug-arm64.apk
 git -C "$RAIZ" tag "v$NOMBRE" && git -C "$RAIZ" push origin "v$NOMBRE"
-gh release create "v$NOMBRE" /tmp/gacelas-debug-arm64.apk --prerelease --target "$(git -C "$RAIZ" rev-parse HEAD)" --title "Gacelas v$NOMBRE" --notes "$(echo "$NOTAS" | tr ';' '\n' | sed 's/^ */- /')
+gh release create "v$NOMBRE" /tmp/runcity-debug-arm64.apk --prerelease --target "$(git -C "$RAIZ" rev-parse HEAD)" --title "Runcity v$NOMBRE" --notes "$(echo "$NOTAS" | tr ';' '\n' | sed 's/^ */- /')
 
 APK debug arm64-v8a."
 "$RAIZ/scripts/verificar-manifiesto.sh"

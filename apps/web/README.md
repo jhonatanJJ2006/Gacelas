@@ -1,6 +1,6 @@
-# Gacelas Web
+# Runcity Web
 
-Aplicación web de Gacelas construida con React + TypeScript + Vite + Tailwind CSS.
+Aplicación web de Runcity (el repositorio y el codigo conservan el nombre Gacelas) construida con React + TypeScript + Vite + Tailwind CSS.
 
 ## Estructura del proyecto
 

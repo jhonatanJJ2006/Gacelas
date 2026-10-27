@@ -17,7 +17,7 @@ import kotlin.math.sqrt
 /** Coordenada del mapa independiente de la plataforma (en Android: LatLng de MapLibre). */
 data class Coord(val lat: Double, val lng: Double)
 
-/** Constantes del mapa Gacelas (los mismos valores que Mapas/MapaOffline/MapaCompacto en Android). */
+/** Constantes del mapa Runcity (los mismos valores que Mapas/MapaOffline/MapaCompacto en Android). */
 object MapaGacelasConst {
     val CENTRO_LOJA = Coord(-3.9931, -79.2042)
     /** Loja y alrededores: mismos limites y zooms (10-16) que MapaOffline.LOJA. */
@@ -60,7 +60,7 @@ fun textoEstadoMapaOffline(e: EstadoMapaOffline): String {
 /**
  * Reglas puras de las teselas offline. OpenFreeMap versiona las teselas (planet/20261004_.../{z}/{x}/{y}.pbf)
  * y cambia la version cada semana: se guarda la plantilla de la version descargada y, sin red, el estilo
- * Gacelas se arma con ella (ver MapaOffline.estiloSinRed en Android).
+ * Runcity se arma con ella (ver MapaOffline.estiloSinRed en Android).
  */
 object ReglasTeselas {
     private val json = Json { ignoreUnknownKeys = true }

@@ -71,8 +71,8 @@ object Compartir {
     }
 
     fun texto(d: DatosCompartir): String {
-        val base = if (d.tipo == DatosCompartir.Tipo.Carrera) "Corrí ${"%.2f".format(java.util.Locale.US, d.distanciaKm)} km" + (if (d.segundos > 0) " en ${tiempo(d.segundos)}" else "") + " con Gacelas"
-        else "Mira esta ruta en Gacelas: ${d.titulo} (${"%.1f".format(java.util.Locale.US, d.distanciaKm)} km)"
+        val base = if (d.tipo == DatosCompartir.Tipo.Carrera) "Corrí ${"%.2f".format(java.util.Locale.US, d.distanciaKm)} km" + (if (d.segundos > 0) " en ${tiempo(d.segundos)}" else "") + " con Runcity"
+        else "Mira esta ruta en Runcity: ${d.titulo} (${"%.1f".format(java.util.Locale.US, d.distanciaKm)} km)"
         val racha = if (d.rachaDias > 1) " · racha de ${d.rachaDias} días" else ""
         return "$base$racha 🦌🔥"
     }

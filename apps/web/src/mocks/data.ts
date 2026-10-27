@@ -45,7 +45,7 @@ export interface Ruta {
   /** Alturas (m) a lo largo del trazo. */
   perfilElevacion?: number[]
   origen?: 'actividad' | 'dibujada' | 'oficial'
-  /** Ruta oficial de Gacelas (catalogo de Loja, migracion 022). */
+  /** Ruta oficial de Runcity (catalogo de Loja, migracion 022). */
   oficial?: boolean
   categoria?: CategoriaRuta
   superficie?: 'pavimento' | 'tierra' | 'mixta' | 'tartan'
@@ -282,7 +282,7 @@ export const notificacionesMock: Notificacion[] = [
   {
     id: '5',
     tipo: 'event',
-    usuario: 'Gacelas Loja',
+    usuario: 'Runcity',
     mensaje: 'Nuevo evento: Carrera Parque Jipiro',
     tiempo: 'hace 1d',
     leida: true,

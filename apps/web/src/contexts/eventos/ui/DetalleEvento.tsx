@@ -33,7 +33,7 @@ export function DetalleEvento() {
   const compartirEvento = async () => {
     const r = await compartir(
       evento.titulo,
-      `${evento.titulo}: ${evento.fecha}, ${evento.hora} en ${evento.ubicacion}. Únete con Gacelas.`
+      `${evento.titulo}: ${evento.fecha}, ${evento.hora} en ${evento.ubicacion}. Únete con Runcity.`
     )
     if (r === 'copiado') mostrarAviso('Enlace copiado')
     else if (r === 'error') mostrarAviso('No se pudo compartir')

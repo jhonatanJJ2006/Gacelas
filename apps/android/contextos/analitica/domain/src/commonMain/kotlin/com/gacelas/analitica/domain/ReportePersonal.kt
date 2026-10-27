@@ -124,7 +124,7 @@ object ReportesPersonales {
     fun textoCompartir(r: ReportePersonal): String {
         val v = r.variacionKm?.let { " (${if (it >= 0) "+" else ""}${formato(it)}% vs. periodo anterior)" } ?: ""
         return listOf(
-            "Mi ${r.periodo.etiqueta.lowercase()} en Gacelas: ${formato1(r.actual.km)} km$v",
+            "Mi ${r.periodo.etiqueta.lowercase()} en Runcity: ${formato1(r.actual.km)} km$v",
             "${r.actual.carreras} carreras, ${duracionTexto(r.actual.segundos)}, ritmo ${ritmoTexto(r.actual.ritmoSegKm)} /km",
             "Racha: ${r.rachaActual} ${if (r.rachaActual == 1) "día" else "días"}",
         ).joinToString("\n")

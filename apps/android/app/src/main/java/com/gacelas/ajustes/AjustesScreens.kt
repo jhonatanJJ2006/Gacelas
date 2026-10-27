@@ -103,7 +103,7 @@ fun AjustesPreferenciasScreen(
         a = a, version = com.gacelas.actualizacion.textoVersion(), guardar = guardarAjuste(),
         onAtras = onAtras, onEditarPerfil = onEditarPerfil, onPrivacidad = onPrivacidad, onNotificaciones = onNotificaciones,
         onSoporte = {
-            val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:soporte@gacelas.app")).putExtra(Intent.EXTRA_SUBJECT, "Ayuda con Gacelas")
+            val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:soporte@gacelas.app")).putExtra(Intent.EXTRA_SUBJECT, "Ayuda con Runcity")
             runCatching { context.startActivity(intent) }.onFailure { context.aviso("No hay app de correo instalada") }
         },
         onCerrarSesion = { scope.launch { c.auth.cerrarSesion(); onCerrarSesion() } },
@@ -250,10 +250,10 @@ fun ConfiguracionNotificacionesScreen(onAtras: () -> Unit) {
     PantallaConEncabezado("Notificaciones", onAtras) {
         GrupoC2("En este teléfono") {
             // Refleja el estado REAL de Android (permiso + canal), no un ajuste guardado.
-            FilaC2("Notificaciones de Gacelas", if (sistema) "Activadas en Android" else "Bloqueadas en Android: no verás la carrera en la barra", sistema) { activar() }
+            FilaC2("Notificaciones de Runcity", if (sistema) "Activadas en Android" else "Bloqueadas en Android: no verás la carrera en la barra", sistema) { activar() }
         }
         if (!sistema) com.gacelas.core.notificaciones.AvisoNotificacionesBloqueadas(
-            "Android tiene bloqueadas las notificaciones de Gacelas. Actívalas para ver el tiempo y la distancia de tu carrera y los avisos de la comunidad.",
+            "Android tiene bloqueadas las notificaciones de Runcity. Actívalas para ver el tiempo y la distancia de tu carrera y los avisos de la comunidad.",
             activar,
         )
         GrupoC2("Push") {

@@ -103,7 +103,7 @@ fun EncabezadoAtras(
     }
 }
 
-/** Marca Gacelas Loja: icono A "Gacela en ruta" con la palabra GACELAS (docs/MARCA.md). */
+/** Marca Runcity: icono A "Gacela en ruta" con la palabra RUNCITY (docs/MARCA.md). */
 @Composable
 fun MarcaGacelas(modifier: Modifier = Modifier) = MarcaGacelasA(44.dp, "LOJA, ECUADOR", modifier)
 

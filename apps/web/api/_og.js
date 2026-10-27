@@ -11,7 +11,7 @@ export const SITIO = 'https://gacelas.vercel.app'
 export const idValido = (id) => typeof id === 'string' && /^[\w-]{1,64}$/.test(id)
 
 export function htmlRuta({ id, ruta, imagen }) {
-  const titulo = ruta ? `${ruta.name} · Gacelas` : 'Gacelas · Rutas para correr en Loja'
+  const titulo = ruta ? `${ruta.name} · Runcity` : 'Runcity · Rutas para correr en Loja'
   const km = ruta?.distance_km != null ? `${Number(ruta.distance_km).toFixed(1)} km` : ''
   const desnivel =
     ruta?.elevation_m != null ? ` · ${Math.round(ruta.elevation_m)} m de desnivel` : ''
@@ -24,7 +24,7 @@ export function htmlRuta({ id, ruta, imagen }) {
 <title>${esc(titulo)}</title>
 <meta name="description" content="${esc(descripcion)}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Gacelas">
+<meta property="og:site_name" content="Runcity">
 <meta property="og:title" content="${esc(titulo)}">
 <meta property="og:description" content="${esc(descripcion)}">
 <meta property="og:url" content="${esc(`${SITIO}/r/${encodeURIComponent(id)}`)}">

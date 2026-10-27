@@ -125,10 +125,10 @@ function linea(
   sinSombra(g)
 }
 
-/** Marca pequena "GACELAS" (texto espaciado, sin fondo). */
+/** Marca pequena "RUNCITY" (texto espaciado, sin fondo). */
 function marca(g: G, x: number, y: number, px: number, alinear: CanvasTextAlign = 'left') {
   sombra(g)
-  texto(g, 'GACELAS', x, y, px, 700, alinear, px * 0.35)
+  texto(g, 'RUNCITY', x, y, px, 700, alinear, px * 0.35)
   sinSombra(g)
 }
 function handle(

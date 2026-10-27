@@ -10,19 +10,19 @@ data class SeccionLegal(val titulo: String, val texto: String)
  */
 object TextosLegales {
     val terminos = listOf(
-        SeccionLegal("1. Aceptación", "Al crear una cuenta en Gacelas aceptas estos Términos. Si no estás de acuerdo, no uses la aplicación. Debes tener al menos 15 años; si eres menor de edad necesitas la autorización de tu representante legal."),
-        SeccionLegal("2. El servicio", "Gacelas permite registrar carreras con GPS, guardar y compartir rutas, unirte a clubes y eventos y, si lo decides, mostrar tu ubicación a otros corredores. El servicio se ofrece tal cual y puede cambiar o interrumpirse."),
+        SeccionLegal("1. Aceptación", "Al crear una cuenta en Runcity aceptas estos Términos. Si no estás de acuerdo, no uses la aplicación. Debes tener al menos 15 años; si eres menor de edad necesitas la autorización de tu representante legal."),
+        SeccionLegal("2. El servicio", "Runcity permite registrar carreras con GPS, guardar y compartir rutas, unirte a clubes y eventos y, si lo decides, mostrar tu ubicación a otros corredores. El servicio se ofrece tal cual y puede cambiar o interrumpirse."),
         SeccionLegal("3. Tu cuenta", "Eres responsable de la información que publicas y de mantener segura tu contraseña. Puedes eliminar tu cuenta en cualquier momento desde Ajustes, Privacidad."),
         SeccionLegal("4. Uso aceptable", "No publiques contenido ofensivo, falso, ilegal o que vulnere derechos de terceros. No acoses a otros corredores ni uses su ubicación para fines distintos al deporte. Podemos retirar contenido reportado y suspender cuentas que incumplan estas normas."),
-        SeccionLegal("5. Salud y seguridad", "Gacelas no es un servicio médico. Corre con precaución, respeta las normas de tránsito y consulta a un profesional de la salud antes de iniciar un entrenamiento exigente."),
+        SeccionLegal("5. Salud y seguridad", "Runcity no es un servicio médico. Corre con precaución, respeta las normas de tránsito y consulta a un profesional de la salud antes de iniciar un entrenamiento exigente."),
         SeccionLegal("6. Contenido", "Conservas los derechos sobre tus fotos, rutas y textos. Nos concedes una licencia limitada para mostrarlos dentro de la aplicación según la visibilidad que elijas."),
-        SeccionLegal("7. Responsabilidad", "En la medida que permita la ley ecuatoriana, Gacelas no responde por lesiones, pérdidas o daños derivados del uso de la aplicación o de la información publicada por otros usuarios."),
+        SeccionLegal("7. Responsabilidad", "En la medida que permita la ley ecuatoriana, Runcity no responde por lesiones, pérdidas o daños derivados del uso de la aplicación o de la información publicada por otros usuarios."),
         SeccionLegal("8. Cambios", "Si cambiamos estos Términos te pediremos que los aceptes de nuevo antes de seguir usando la aplicación. La versión vigente y su fecha se muestran al inicio de este documento."),
         SeccionLegal("9. Ley aplicable", "Estos Términos se rigen por las leyes de la República del Ecuador. Cualquier controversia se resolverá ante los jueces competentes de la ciudad de Loja."),
     )
 
     val privacidad = listOf(
-        SeccionLegal("1. Responsable", "El responsable del tratamiento es el equipo de Gacelas (Loja, Ecuador). Puedes escribirnos para ejercer tus derechos al correo de contacto indicado en la tienda de aplicaciones."),
+        SeccionLegal("1. Responsable", "El responsable del tratamiento es el equipo de Runcity (Loja, Ecuador). Puedes escribirnos para ejercer tus derechos al correo de contacto indicado en la tienda de aplicaciones."),
         SeccionLegal("2. Datos que tratamos", "Datos de cuenta (nombre, correo, foto), datos de actividad (carreras, rutas, tiempos, ritmo, desnivel), datos de ubicación GPS y datos técnicos del dispositivo necesarios para que la aplicación funcione."),
         SeccionLegal("3. Finalidades y base legal", "Prestarte el servicio (ejecución del contrato), registrar tus carreras con GPS (tu consentimiento), mostrar tu ubicación en el mapa en vivo (consentimiento separado y opcional) y mantener la seguridad de la comunidad (interés legítimo)."),
         SeccionLegal("4. Ubicación durante la carrera", "Solo mientras grabas una carrera usamos tu GPS para calcular distancia, ritmo y trazado. El recorrido se guarda en tu cuenta con la visibilidad que elijas y puedes ocultar el inicio y final cerca de tu casa."),

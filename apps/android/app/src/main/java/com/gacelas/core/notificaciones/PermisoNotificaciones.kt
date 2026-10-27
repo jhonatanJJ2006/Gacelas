@@ -38,7 +38,7 @@ import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
 /**
- * Estado REAL de las notificaciones de Gacelas en Android (no el ajuste guardado en la app):
+ * Estado REAL de las notificaciones de Runcity en Android (no el ajuste guardado en la app):
  * permiso/bloqueo del sistema y el canal de la carrera. Antes el switch de Preferencias mostraba
  * "activadas" aunque Android las tuviera bloqueadas y la notificacion de la carrera no salia.
  */
@@ -60,7 +60,7 @@ object PermisoNotificaciones {
         Build.VERSION.SDK_INT >= 33 &&
             ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
 
-    /** Abre los ajustes de notificaciones de Gacelas (o el canal de la carrera si solo este esta apagado). */
+    /** Abre los ajustes de notificaciones de Runcity (o el canal de la carrera si solo este esta apagado). */
     fun intentAjustes(ctx: Context): Intent = when {
         Build.VERSION.SDK_INT >= 26 && appPermitidas(ctx) && !canalCarreraActivo(ctx) ->
             Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)

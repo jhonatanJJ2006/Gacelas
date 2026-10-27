@@ -30,9 +30,9 @@ fun Runner3DFallback(modifier: Modifier = Modifier) {
                     .background(Brush.radialGradient(listOf(GColors.Primary.copy(alpha = 0.55f), GColors.Primary.copy(alpha = 0.05f)))),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.AutoMirrored.Filled.DirectionsRun, contentDescription = "Corredor Gacelas", tint = GColors.Primary400, modifier = Modifier.size(88.dp))
+                Icon(Icons.AutoMirrored.Filled.DirectionsRun, contentDescription = "Corredor Runcity", tint = GColors.Primary400, modifier = Modifier.size(88.dp))
             }
-            Text("Corredor Gacelas", style = GType.labelMd, color = GColors.TextSecondary)
+            Text("Corredor Runcity", style = GType.labelMd, color = GColors.TextSecondary)
         }
     }
 }

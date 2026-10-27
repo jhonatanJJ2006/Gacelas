@@ -53,7 +53,7 @@ export function ShellEscritorio() {
             </div>
             <div className="flex flex-col leading-tight">
               <span className="font-headline-sm text-[20px] font-bold text-text-primary">
-                Gacelas
+                Runcity
               </span>
               <span className="font-label-md text-label-md text-primary uppercase tracking-wider">
                 Loja

@@ -84,7 +84,7 @@ fun Runner3DIos(
         }
     }
     Box(modifier.fillMaxSize().onSizeChanged { ancho = it.width; alto = it.height }) {
-        imagen?.let { Image(it, contentDescription = "Corredor Gacelas", modifier = Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds) }
+        imagen?.let { Image(it, contentDescription = "Corredor Runcity", modifier = Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds) }
     }
 }
 

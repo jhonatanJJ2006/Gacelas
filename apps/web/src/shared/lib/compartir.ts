@@ -90,8 +90,8 @@ export function metricas(d: DatosCompartir): [string, string][] {
 export function textoCompartir(d: DatosCompartir) {
   const base =
     d.tipo === 'carrera'
-      ? `Corrí ${d.distanciaKm.toFixed(2)} km${d.segundos ? ` en ${formatoTiempo(d.segundos)}` : ''} con Gacelas`
-      : `Mira esta ruta en Gacelas: ${d.titulo} (${d.distanciaKm.toFixed(1)} km)`
+      ? `Corrí ${d.distanciaKm.toFixed(2)} km${d.segundos ? ` en ${formatoTiempo(d.segundos)}` : ''} con Runcity`
+      : `Mira esta ruta en Runcity: ${d.titulo} (${d.distanciaKm.toFixed(1)} km)`
   const racha = d.rachaDias && d.rachaDias > 1 ? ` · racha de ${d.rachaDias} días` : ''
   return `${base}${racha} 🦌🔥`
 }
@@ -109,7 +109,7 @@ function cargar(src: string): Promise<HTMLImageElement | null> {
   })
 }
 
-/** Dibuja la imagen de marca de Gacelas en un canvas y la devuelve como PNG. */
+/** Dibuja la imagen de marca de Runcity en un canvas y la devuelve como PNG. */
 export async function generarImagen(d: DatosCompartir, formato: FormatoCompartir): Promise<Blob> {
   const { ancho: W, alto: H } = TAMANOS[formato]
   const cv = document.createElement('canvas')
@@ -248,7 +248,7 @@ function cabecera(
   if (logo) g.drawImage(logo, x - 10, y - px * 1.1, px * 1.6, px * 1.6)
   g.fillStyle = '#fff'
   g.font = fuente(900, px)
-  g.fillText('GACELAS', x + px * 1.6, y + px * 0.25)
+  g.fillText('RUNCITY', x + px * 1.6, y + px * 0.25)
 }
 
 function trazo(

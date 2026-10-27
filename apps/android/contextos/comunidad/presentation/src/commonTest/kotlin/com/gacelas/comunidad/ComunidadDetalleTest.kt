@@ -126,7 +126,7 @@ class ComunidadDetalleTest {
         val fuente = object : ClubesRepository {
             override suspend fun listar() = emptyList<Club>() to emptySet<String>()
             override suspend fun miId() = "yo"
-            override suspend fun detalle(id: String) = Club(id, "Gacelas", "", "Loja", true, miembros.count { it.activo })
+            override suspend fun detalle(id: String) = Club(id, "Runcity", "", "Loja", true, miembros.count { it.activo })
             override suspend fun miembros(id: String) = miembros.toList()
             override suspend fun aprobar(id: String, usuario: String) { hechos += "aprobar:$usuario"; miembros[1] = miembros[1].copy(activo = true) }
             override suspend fun cambiarRol(id: String, usuario: String, rol: RolClub) { hechos += "rol:$usuario:$rol" }

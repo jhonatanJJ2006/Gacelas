@@ -43,7 +43,7 @@ const versionCode = parts[0] * 10000 + parts[1] * 100 + parts[2]
 
 const buf = readFileSync(resolve(apkPath))
 const sha256 = createHash('sha256').update(buf).digest('hex')
-const destino = `android/gacelas-${versionName}-arm64.apk`
+const destino = `android/runcity-${versionName}-arm64.apk`
 const publica = `${url}/storage/v1/object/public/app-releases`
 
 async function subir(rutaLocal, rutaBucket, tipo) {

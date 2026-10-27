@@ -128,7 +128,7 @@ export async function instalarFakeSupabase(context: BrowserContext): Promise<Est
           ['like', 'Carlos Ruiz', 'le gustó tu carrera', false],
           ['comment', 'Ana Martínez', 'comentó tu carrera', true],
           ['follow', 'Pedro Sánchez', 'empezó a seguirte', true],
-          ['event', 'Gacelas Loja', 'Bienvenido a Gacelas', true],
+          ['event', 'Runcity', 'Bienvenido a Runcity', true],
         ] as const
       ).forEach(([type, actor_name, message, read], i) =>
         tabla('notifications').push({

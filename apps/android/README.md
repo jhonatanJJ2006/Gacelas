@@ -1,6 +1,6 @@
-# Gacelas Android
+# Runcity Android
 
-Aplicación nativa de Gacelas para Android, hecha con Kotlin, Jetpack Compose y Material 3. Tiene las mismas 23 pantallas que la app web (`apps/web`) y sigue el diseño exportado de Stitch y `docs/DESIGN.md`.
+Aplicación nativa de Runcity (codigo y paquete conservan el nombre Gacelas) para Android, hecha con Kotlin, Jetpack Compose y Material 3. Tiene las mismas 23 pantallas que la app web (`apps/web`) y sigue el diseño exportado de Stitch y `docs/DESIGN.md`.
 
 Por ahora la app funciona con datos de prueba (`data/mock`). El mapa usa MapLibre con teselas de OpenStreetMap y funciona sin red en las zonas descargadas.
 

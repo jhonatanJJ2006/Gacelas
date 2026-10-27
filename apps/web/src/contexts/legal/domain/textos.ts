@@ -19,12 +19,12 @@ export const TERMINOS: SeccionLegal[] = [
   {
     titulo: '1. Aceptación',
     texto:
-      'Al crear una cuenta en Gacelas aceptas estos Términos. Si no estás de acuerdo, no uses la aplicación. Debes tener al menos 15 años; si eres menor de edad necesitas la autorización de tu representante legal.',
+      'Al crear una cuenta en Runcity aceptas estos Términos. Si no estás de acuerdo, no uses la aplicación. Debes tener al menos 15 años; si eres menor de edad necesitas la autorización de tu representante legal.',
   },
   {
     titulo: '2. El servicio',
     texto:
-      'Gacelas permite registrar carreras con GPS, guardar y compartir rutas, unirte a clubes y eventos y, si lo decides, mostrar tu ubicación a otros corredores. El servicio se ofrece tal cual y puede cambiar o interrumpirse.',
+      'Runcity permite registrar carreras con GPS, guardar y compartir rutas, unirte a clubes y eventos y, si lo decides, mostrar tu ubicación a otros corredores. El servicio se ofrece tal cual y puede cambiar o interrumpirse.',
   },
   {
     titulo: '3. Tu cuenta',
@@ -39,7 +39,7 @@ export const TERMINOS: SeccionLegal[] = [
   {
     titulo: '5. Salud y seguridad',
     texto:
-      'Gacelas no es un servicio médico. Corre con precaución, respeta las normas de tránsito y consulta a un profesional de la salud antes de iniciar un entrenamiento exigente.',
+      'Runcity no es un servicio médico. Corre con precaución, respeta las normas de tránsito y consulta a un profesional de la salud antes de iniciar un entrenamiento exigente.',
   },
   {
     titulo: '6. Contenido',
@@ -49,7 +49,7 @@ export const TERMINOS: SeccionLegal[] = [
   {
     titulo: '7. Responsabilidad',
     texto:
-      'En la medida que permita la ley ecuatoriana, Gacelas no responde por lesiones, pérdidas o daños derivados del uso de la aplicación o de la información publicada por otros usuarios.',
+      'En la medida que permita la ley ecuatoriana, Runcity no responde por lesiones, pérdidas o daños derivados del uso de la aplicación o de la información publicada por otros usuarios.',
   },
   {
     titulo: '8. Cambios',
@@ -67,7 +67,7 @@ export const PRIVACIDAD: SeccionLegal[] = [
   {
     titulo: '1. Responsable',
     texto:
-      'El responsable del tratamiento es el equipo de Gacelas (Loja, Ecuador). Puedes escribirnos para ejercer tus derechos al correo de contacto indicado en la tienda de aplicaciones.',
+      'El responsable del tratamiento es el equipo de Runcity (Loja, Ecuador). Puedes escribirnos para ejercer tus derechos al correo de contacto indicado en la tienda de aplicaciones.',
   },
   {
     titulo: '2. Datos que tratamos',

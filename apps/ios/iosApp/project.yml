@@ -32,7 +32,7 @@ targets:
         buildPhase: resources
       - path: ../../android/shared/src/androidMain/res/drawable/ic_google_g.xml
         buildPhase: resources
-      # Estilos Gacelas del mapa: los mismos archivos que Android (app/src/main/assets/mapas).
+      # Estilos Runcity del mapa: los mismos archivos que Android (app/src/main/assets/mapas).
       - path: ../../android/app/src/main/assets/mapas/gacelas-oscuro.json
         buildPhase: resources
       - path: ../../android/app/src/main/assets/mapas/gacelas-claro.json
@@ -56,7 +56,7 @@ targets:
     info:
       path: iosApp/Info.plist
       properties:
-        CFBundleDisplayName: Gacelas
+        CFBundleDisplayName: Runcity
         # App en español: los botones del sistema (Sign in with Apple) salen como "Continuar con Apple".
         CFBundleDevelopmentRegion: es
         CFBundleLocalizations: [es]
@@ -64,9 +64,9 @@ targets:
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UILaunchScreen: {}
         CADisableMinimumFrameDurationOnPhone: true
-        NSLocationWhenInUseUsageDescription: Gacelas usa tu ubicación para medir distancia, ritmo y ruta de tus carreras.
-        NSLocationAlwaysAndWhenInUseUsageDescription: Gacelas sigue registrando tu carrera con la pantalla apagada o en segundo plano.
-        NSMotionUsageDescription: Gacelas usa la brújula y el movimiento para orientar el mapa hacia donde miras.
+        NSLocationWhenInUseUsageDescription: Runcity usa tu ubicación para medir distancia, ritmo y ruta de tus carreras.
+        NSLocationAlwaysAndWhenInUseUsageDescription: Runcity sigue registrando tu carrera con la pantalla apagada o en segundo plano.
+        NSMotionUsageDescription: Runcity usa la brújula y el movimiento para orientar el mapa hacia donde miras.
         UIBackgroundModes: [location]
         SUPABASE_URL: "$(SUPABASE_URL)"
         SUPABASE_ANON_KEY: "$(SUPABASE_ANON_KEY)"

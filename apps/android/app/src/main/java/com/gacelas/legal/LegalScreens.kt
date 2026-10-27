@@ -70,7 +70,7 @@ fun ReaceptarTerminos(onVer: (terminos: Boolean) -> Unit) {
     if (pedir) ModalC2(
         icono = Icons.Filled.Gavel,
         titulo = "Actualizamos los Términos",
-        texto = "Publicamos una nueva versión (${VersionesLegales.TERMINOS}) de los Términos y la Política de privacidad. Léelos y acéptalos para seguir usando Gacelas.",
+        texto = "Publicamos una nueva versión (${VersionesLegales.TERMINOS}) de los Términos y la Política de privacidad. Léelos y acéptalos para seguir usando Runcity.",
         primario = "Aceptar",
         onPrimario = { scope.launch { repo.registrar(TipoConsentimiento.Terminos, true); repo.registrar(TipoConsentimiento.Privacidad, true); pedir = false } },
         onCerrar = {},
@@ -112,7 +112,7 @@ fun SeccionConsentimientos(onLegal: (terminos: Boolean) -> Unit, onCuentaElimina
                     append("]}")
                 }
                 val i = android.content.Intent(android.content.Intent.ACTION_SEND).setType("application/json")
-                    .putExtra(android.content.Intent.EXTRA_SUBJECT, "Mis datos de Gacelas").putExtra(android.content.Intent.EXTRA_TEXT, datos)
+                    .putExtra(android.content.Intent.EXTRA_SUBJECT, "Mis datos de Runcity").putExtra(android.content.Intent.EXTRA_TEXT, datos)
                 runCatching { context.startActivity(android.content.Intent.createChooser(i, "Descargar mis datos")) }
             }
         }

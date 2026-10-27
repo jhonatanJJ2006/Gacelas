@@ -58,7 +58,7 @@ class Fase5Test {
     @Test fun unirseAUnClubGuardaLaMembresia() = runBlocking {
         val b = FakeBackend().apply { actual = com.gacelas.data.remoto.UsuarioRemoto("u-1", "a@b.c") }
         val repo = SupabaseClubesRepository(b) { "u-1" }
-        val id = repo.crear("Gacelas Loja", "Club", "Loja", false)
+        val id = repo.crear("Runcity", "Club", "Loja", false)
         repo.unirse(id)
         assertEquals(listOf("u-1"), b.select("club_members", mapOf("club_id" to id)).map { (it["user_id"] as kotlinx.serialization.json.JsonPrimitive).content })
     }

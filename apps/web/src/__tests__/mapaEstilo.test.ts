@@ -13,7 +13,7 @@ import {
   VERDE,
 } from '../shared/lib/mapaEstilo'
 
-describe('mapa Gacelas', () => {
+describe('mapa Runcity', () => {
   it('rumbo cardinal', () => {
     expect(rumbo({ lat: 0, lng: 0 }, { lat: 1, lng: 0 })).toBeCloseTo(0)
     expect(rumbo({ lat: 0, lng: 0 }, { lat: 0, lng: 1 })).toBeCloseTo(90)

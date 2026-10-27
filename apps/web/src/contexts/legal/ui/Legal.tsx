@@ -71,7 +71,7 @@ export function ReaceptarTerminos() {
       abierto={pedir}
       icono="gavel"
       titulo="Actualizamos los Términos"
-      texto={`Publicamos una nueva versión (${VERSIONES_LEGALES.terminos}) de los Términos y la Política de privacidad. Léelos y acéptalos para seguir usando Gacelas.`}
+      texto={`Publicamos una nueva versión (${VERSIONES_LEGALES.terminos}) de los Términos y la Política de privacidad. Léelos y acéptalos para seguir usando Runcity.`}
       primario="Aceptar"
       onPrimario={() => void aceptar()}
       onCerrar={() => undefined}

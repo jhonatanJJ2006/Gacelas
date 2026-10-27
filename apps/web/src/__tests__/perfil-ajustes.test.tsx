@@ -74,7 +74,7 @@ describe('ajustes', () => {
     })
     expect(JSON.parse(localStorage.getItem('gacelas:ajustes')!).unidadesMetricas).toBe(false)
     await userEvent.click(screen.getByRole('button', { name: /Acerca de/ }))
-    expect(screen.getByRole('dialog')).toHaveTextContent('Gacelas Loja')
+    expect(screen.getByRole('dialog')).toHaveTextContent('Runcity')
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Cerrar' })
     )

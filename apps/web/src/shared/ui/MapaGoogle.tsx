@@ -18,7 +18,7 @@ import {
 type PuntoMapa = Coordenada & { tiempoMs?: number }
 
 /**
- * Mapa de Gacelas con el recorrido (estilo propio, colores por ritmo, flechas, pines y "estas aqui").
+ * Mapa de Runcity con el recorrido (estilo propio, colores por ritmo, flechas, pines y "estas aqui").
  * `seguir` = camara de seguimiento; `modo3d` = vectorial inclinado con el corredor 3D animado en el mapa.
  * Sin VITE_GOOGLE_MAPS_API_KEY muestra `alternativa`.
  */

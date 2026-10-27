@@ -179,7 +179,7 @@ export function Correr() {
           abierto={pedirGps}
           icono="my_location"
           titulo="Usar tu ubicación durante la carrera"
-          texto="Gacelas usa el GPS del dispositivo solo mientras grabas una carrera, para medir distancia, ritmo y dibujar tu recorrido. La ruta se guarda en tu historial y solo se comparte si tú la publicas. Nadie te ve en el mapa en vivo salvo que actives ese permiso aparte. Puedes revocarlo cuando quieras en Ajustes, Privacidad."
+          texto="Runcity usa el GPS del dispositivo solo mientras grabas una carrera, para medir distancia, ritmo y dibujar tu recorrido. La ruta se guarda en tu historial y solo se comparte si tú la publicas. Nadie te ve en el mapa en vivo salvo que actives ese permiso aparte. Puedes revocarlo cuando quieras en Ajustes, Privacidad."
           primario="Aceptar y empezar"
           onPrimario={() => {
             setPedirGps(false)

@@ -32,7 +32,7 @@ object Instalador {
         carpeta(context).listFiles()?.forEach { it.delete() }
         val id = dm.enqueue(
             DownloadManager.Request(Uri.parse(url))
-                .setTitle("Gacelas $versionName")
+                .setTitle("Runcity $versionName")
                 .setDescription("Descargando actualización")
                 .setMimeType("application/vnd.android.package-archive")
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)

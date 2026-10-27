@@ -14,7 +14,7 @@ import { CENTRO_LOJA, claveMapas, type Coordenada } from '../../lib/mapas'
 import { usePosicionSuave } from './usePosicionSuave'
 
 /**
- * Mapa base de Gacelas: estilo propio (oscuro, sin ruido), controles propios y, en modo 3D,
+ * Mapa base de Runcity: estilo propio (oscuro, sin ruido), controles propios y, en modo 3D,
  * mapa vectorial con inclinacion y giro (necesita Map ID). Sin clave muestra `alternativa`.
  */
 export function MapaBase({
@@ -37,7 +37,7 @@ export function MapaBase({
   testId?: string
 }) {
   const clave = claveMapas()
-  // El vectorial inclinado solo con un Map ID propio (estilo oscuro de Gacelas en la nube). Con el
+  // El vectorial inclinado solo con un Map ID propio (estilo oscuro de Runcity en la nube). Con el
   // DEMO_MAP_ID salia el estilo por defecto de Google con comercios: se usa el raster oscuro propio.
   const vector = modo3d && tieneMapIdPropio()
   if (!clave) return <>{alternativa}</>
