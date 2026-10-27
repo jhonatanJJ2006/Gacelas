@@ -380,7 +380,7 @@ private fun DialogoCrearEvento(onCerrar: () -> Unit, onCrear: (Evento) -> Unit) 
         confirmButton = {
             TextButton(enabled = valido, onClick = {
                 val etiqueta = etiquetaFechaEvento(inicio!!)
-                onCrear(Evento("u-${nuevoUuid()}", titulo.trim(), "Evento creado por la comunidad Gacelas.", etiqueta, hora.trim(), lugar.trim(), 1, km.toInt(),
+                onCrear(Evento("u-${nuevoUuid()}", titulo.trim(), "Evento creado por la comunidad Runcity.", etiqueta, hora.trim(), lugar.trim(), 1, km.toInt(),
                     creadoPorUsuario = true, inicioMs = inicio, cupo = cupo.toIntOrNull()?.coerceAtLeast(1), tipo = tipo))
             }) { Text("Crear") }
         },

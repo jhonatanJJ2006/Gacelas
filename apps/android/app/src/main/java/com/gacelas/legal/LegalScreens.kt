@@ -70,7 +70,7 @@ fun ReaceptarTerminos(onVer: (terminos: Boolean) -> Unit) {
     if (pedir) ModalC2(
         icono = Icons.Filled.Gavel,
         titulo = "Actualizamos los Términos",
-        texto = "Publicamos una nueva versión (${VersionesLegales.TERMINOS}) de los Términos y la Política de privacidad. Léelos y acéptalos para seguir usando Gacelas.",
+        texto = "Publicamos una nueva versión (${VersionesLegales.TERMINOS}) de los Términos y la Política de privacidad. Léelos y acéptalos para seguir usando Runcity.",
         primario = "Aceptar",
         onPrimario = { scope.launch { repo.registrar(TipoConsentimiento.Terminos, true); repo.registrar(TipoConsentimiento.Privacidad, true); pedir = false } },
         onCerrar = {},

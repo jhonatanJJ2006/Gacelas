@@ -253,7 +253,7 @@ fun ConfiguracionNotificacionesScreen(onAtras: () -> Unit) {
             FilaC2("Notificaciones de Runcity", if (sistema) "Activadas en Android" else "Bloqueadas en Android: no verás la carrera en la barra", sistema) { activar() }
         }
         if (!sistema) com.gacelas.core.notificaciones.AvisoNotificacionesBloqueadas(
-            "Android tiene bloqueadas las notificaciones de Gacelas. Actívalas para ver el tiempo y la distancia de tu carrera y los avisos de la comunidad.",
+            "Android tiene bloqueadas las notificaciones de Runcity. Actívalas para ver el tiempo y la distancia de tu carrera y los avisos de la comunidad.",
             activar,
         )
         GrupoC2("Push") {

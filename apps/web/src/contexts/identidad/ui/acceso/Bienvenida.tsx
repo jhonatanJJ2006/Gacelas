@@ -97,7 +97,7 @@ export function Bienvenida() {
           </h1>
 
           <p className="text-text-secondary text-sm font-body-md text-center md:text-left leading-relaxed max-w-[340px] mx-auto md:mx-0 mb-3 md:text-base">
-            Graba tus carreras, descubre rutas locales y entrena con el grupo Gacelas.
+            Graba tus carreras, descubre rutas locales y entrena con el grupo Runcity.
           </p>
 
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-4 short:hidden">

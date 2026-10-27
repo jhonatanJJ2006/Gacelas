@@ -135,7 +135,7 @@ fun ContenidoModal(
                 if (!compacto || obligatoria) {
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        if (obligatoria) "Esta versión es necesaria para seguir usando Gacelas." else "Mejoras listas para tu próxima carrera",
+                        if (obligatoria) "Esta versión es necesaria para seguir usando Runcity." else "Mejoras listas para tu próxima carrera",
                         style = TextStyle(fontFamily = Inter, fontSize = 13.5.sp, lineHeight = 18.6.sp), color = M3.Secondary,
                     )
                 }

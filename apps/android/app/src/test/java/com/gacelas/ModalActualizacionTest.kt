@@ -60,7 +60,7 @@ class ModalActualizacionTest {
     @Test fun obligatoriaSinMasTarde() {
         mostrar(Fase.Info, obligatoria = true)
         compose.onNodeWithTag("badge-obligatoria").assertIsDisplayed()
-        compose.onNodeWithText("Esta versión es necesaria para seguir usando Gacelas.").assertIsDisplayed()
+        compose.onNodeWithText("Esta versión es necesaria para seguir usando Runcity.").assertIsDisplayed()
         compose.onAllNodes(hasTestTag("mas-tarde")).assertCountEquals(0)
     }
 

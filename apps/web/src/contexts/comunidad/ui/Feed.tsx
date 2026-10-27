@@ -147,7 +147,7 @@ export function Feed() {
   const compartirPost = async (p: Publicacion) => {
     const r = await compartir(
       p.titulo,
-      `${p.autor} corrió ${Unidades.texto(p.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)} en ${formatearMs(p.segundos)} con Gacelas.`
+      `${p.autor} corrió ${Unidades.texto(p.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)} en ${formatearMs(p.segundos)} con Runcity.`
     )
     if (r === 'copiado') mostrarAviso('Enlace copiado')
     else if (r === 'error') mostrarAviso('No se pudo compartir')
