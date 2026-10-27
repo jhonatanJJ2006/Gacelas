@@ -1,6 +1,23 @@
 {
   "rewrites": [
-    { "source": "/r/:id", "destination": "/api/r?id=:id" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    {
+      "source": "/r/:id",
+      "destination": "/api/r?id=:id"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    }
   ]
 }

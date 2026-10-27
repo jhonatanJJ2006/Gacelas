@@ -142,7 +142,11 @@ export function Runner3D({
   if (!webgl) return fallback
   return (
     <Runner3DErrorBoundary fallback={fallback}>
-      <div className={`relative w-full h-full ${className}`}>
+      <div
+        className={`relative w-full h-full ${className}`}
+        data-testid="runner3d"
+        data-listo={listo ? '1' : '0'}
+      >
         {!listo && (
           <div className="absolute inset-0 pointer-events-none">
             <Runner3DFallback />

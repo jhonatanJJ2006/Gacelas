@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.geometry.Offset
@@ -185,19 +186,24 @@ fun EscenarioInicioC2(
                 val p = medible.measure(restricciones.copy(minWidth = ancho, maxWidth = ancho))
                 layout(restricciones.maxWidth, p.height) { p.place(-extra / 2, 0) }
             }
-            .fillMaxWidth().height(EscenarioC2.Alto).clip(FormaEscenarioC2).testTag("inicio-escenario"),
+            .fillMaxWidth().height(EscenarioC2.Alto).clipToBounds().testTag("inicio-escenario"),
     ) {
-        FondoEscenarioC2()
-        val trazo = with(LocalDensity.current) { 1.5.dp.toPx() }
-        Text(
-            "CORRE LOJA",
-            style = TextStyle(
-                fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontWeight = FontWeight.Bold, fontSize = 120.sp, lineHeight = 96.sp,
-                drawStyle = Stroke(width = trazo),
-            ),
-            color = EscenarioC2.Palabra, maxLines = 1, softWrap = false,
-            modifier = Modifier.align(Alignment.BottomStart).wrapContentWidth(Alignment.Start, unbounded = true).offset(x = (-6).dp).padding(bottom = 24.dp),
-        )
+        // Solo el fondo lleva la forma inclinada. El corredor 3D en Android es un WebView: dentro de un
+        // recorte con forma no rectangular (clipPath) no se dibuja en muchos equipos y el avatar
+        // desaparecia (regresion 0.9.1). Por eso el 3D queda fuera de ese recorte, con recorte rectangular.
+        Box(Modifier.matchParentSize().clip(FormaEscenarioC2)) {
+            FondoEscenarioC2()
+            val trazo = with(LocalDensity.current) { 1.5.dp.toPx() }
+            Text(
+                "CORRE LOJA",
+                style = TextStyle(
+                    fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontWeight = FontWeight.Bold, fontSize = 120.sp, lineHeight = 96.sp,
+                    drawStyle = Stroke(width = trazo),
+                ),
+                color = EscenarioC2.Palabra, maxLines = 1, softWrap = false,
+                modifier = Modifier.align(Alignment.BottomStart).wrapContentWidth(Alignment.Start, unbounded = true).offset(x = (-6).dp).padding(bottom = 24.dp),
+            )
+        }
         Box(Modifier.fillMaxWidth().fillMaxHeight(0.84f)) { corredor3D() }
         EtiquetaEscenarioC2(etiquetaIzq, valorIzq, Modifier.align(Alignment.TopStart).padding(start = 24.dp, top = 40.dp).testTag("escenario-etiqueta-izq"))
         EtiquetaEscenarioC2(etiquetaDer, valorDer, Modifier.align(Alignment.TopEnd).padding(end = 24.dp, top = 96.dp).testTag("escenario-etiqueta-der"))
