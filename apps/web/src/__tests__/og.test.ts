@@ -8,7 +8,7 @@ describe('pagina Open Graph de rutas', () => {
       ruta: { name: 'Villonaco <b>', description: 'Subida', distance_km: 8.04, elevation_m: 320 },
       imagen: 'https://x/rutas/abc-1.png',
     })
-    expect(html).toContain('<meta property="og:title" content="Villonaco &lt;b&gt; · Gacelas">')
+    expect(html).toContain('<meta property="og:title" content="Villonaco &lt;b&gt; · Runcity">')
     expect(html).toContain('og:image" content="https://x/rutas/abc-1.png"')
     expect(html).toContain('8.0 km · 320 m de desnivel')
     expect(html).toContain('location.replace("https://gacelas.vercel.app/rutas/abc-1")')

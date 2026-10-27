@@ -59,7 +59,7 @@ private fun coleccionCirculos(c: List<CirculoMapa>) = FeatureCollection.fromFeat
 })
 
 /**
- * Mapa MapLibre con el estilo Gacelas (teselas vectoriales de OpenStreetMap). Las teselas que
+ * Mapa MapLibre con el estilo Runcity (teselas vectoriales de OpenStreetMap). Las teselas que
  * se descargan con [MapaOffline] se usan sin red. Dibuja [trazos] y [circulos] como capas GeoJSON.
  */
 @Composable

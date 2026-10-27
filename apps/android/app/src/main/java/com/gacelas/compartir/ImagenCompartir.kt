@@ -86,7 +86,7 @@ object ImagenCompartir {
 
     private fun cabecera(c: Canvas, logo: Bitmap?, x: Float, y: Float, px: Float, texto: (Int, Float, Int) -> Paint) {
         logo?.let { c.drawBitmap(it, null, RectF(x - 10, y - px * 1.1f, x - 10 + px * 1.6f, y - px * 1.1f + px * 1.6f), Paint(Paint.FILTER_BITMAP_FLAG)) }
-        c.drawText("GACELAS", x + px * 1.6f, y + px * 0.25f, texto(900, px, BLANCO))
+        c.drawText("RUNCITY", x + px * 1.6f, y + px * 0.25f, texto(900, px, BLANCO))
     }
 
     private fun trazo(c: Canvas, pts: List<Pair<Float, Float>>, ancho: Float) {

@@ -17,7 +17,7 @@ import org.junit.Test
 
 class NotificacionesRemotasTest {
     @Test fun convierteFila() {
-        val f = Json.parseToJsonElement("""{"id":"n1","type":"streak","actor_name":"Gacelas","message":"Racha de 3 días","read":false,"created_at":"2026-10-11T05:00:00Z"}""").jsonObject
+        val f = Json.parseToJsonElement("""{"id":"n1","type":"streak","actor_name":"Runcity","message":"Racha de 3 días","read":false,"created_at":"2026-10-11T05:00:00Z"}""").jsonObject
         val n = notificacionDesdeFila(f, com.gacelas.data.remoto.FechaIso.leer("2026-10-11T08:00:00Z")!!)!!
         assertEquals(TipoNotificacion.Racha, n.tipo)
         assertEquals("hace 3h", n.tiempo)

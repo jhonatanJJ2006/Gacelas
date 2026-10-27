@@ -186,7 +186,7 @@ export function textoCompartir(rep: ReportePersonal): string {
       ? ''
       : ` (${rep.variacionKm >= 0 ? '+' : ''}${rep.variacionKm}% vs. periodo anterior)`
   return [
-    `Mi ${NOMBRE_PERIODO[rep.periodo].toLowerCase()} en Gacelas: ${rep.actual.km.toFixed(1)} km${v}`,
+    `Mi ${NOMBRE_PERIODO[rep.periodo].toLowerCase()} en Runcity: ${rep.actual.km.toFixed(1)} km${v}`,
     `${rep.actual.carreras} carreras, ${duracionTexto(rep.actual.segundos)}, ritmo ${ritmoTexto(rep.actual.ritmoSegKm)} /km`,
     `Racha: ${rep.racha.actual} días`,
   ].join('\n')

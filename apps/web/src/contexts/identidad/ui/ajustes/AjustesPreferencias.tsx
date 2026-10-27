@@ -286,13 +286,13 @@ export function AjustesPreferencias() {
       </section>
 
       <Dialogo
-        titulo="Gacelas Loja"
+        titulo="Runcity"
         abierto={dialogo === 'acerca'}
         onCerrar={cerrar}
         acciones={<BotonTexto onClick={cerrar}>Cerrar</BotonTexto>}
       >
         <p>
-          Versión {VERSION_APP}. App del grupo de running Gacelas de Loja, Ecuador. Graba tus
+          Versión {VERSION_APP}. App del grupo de running Runcity de Loja, Ecuador. Graba tus
           carreras con GPS, descubre rutas y entrena con la comunidad.
         </p>
       </Dialogo>

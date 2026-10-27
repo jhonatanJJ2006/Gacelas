@@ -96,7 +96,7 @@ export function aPdf(titulo: string, bloques: BloquePdf[]): Uint8Array {
   agregar('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>')
   const hijos: number[] = []
   paginas.forEach((contenido, i) => {
-    const pie = `BT /F1 8 Tf ${margen} 30 Td (${textoPdf(`Gacelas - pagina ${i + 1} de ${paginas.length}`)}) Tj ET`
+    const pie = `BT /F1 8 Tf ${margen} 30 Td (${textoPdf(`Runcity - pagina ${i + 1} de ${paginas.length}`)}) Tj ET`
     const flujo = `${contenido}\n${pie}`
     agregar(`<< /Length ${flujo.length} >>\nstream\n${flujo}\nendstream`)
     const nContenido = objetos.length

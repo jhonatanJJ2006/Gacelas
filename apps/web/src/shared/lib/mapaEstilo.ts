@@ -1,4 +1,4 @@
-/** Estilo y matematicas del mapa Gacelas (estilo Uber: oscuro, limpio, acentos naranja). */
+/** Estilo y matematicas del mapa Runcity (estilo Uber: oscuro, limpio, acentos naranja). */
 import type { Coordenada } from './mapas'
 
 export const NARANJA = '#C084FC'

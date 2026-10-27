@@ -1,5 +1,5 @@
 /**
- * Logo de marca A "Gacela en ruta" (docs/MARCA.md): icono de la app con la palabra GACELAS.
+ * Logo de marca A "Gacela en ruta" (docs/MARCA.md): icono de la app con la palabra RUNCITY.
  * Sustituye al cuadro con el simbolo "sprint" que se usaba antes.
  */
 export function IconoGacelas({ tam = 40, className = '' }: { tam?: number; className?: string }) {
@@ -8,7 +8,7 @@ export function IconoGacelas({ tam = 40, className = '' }: { tam?: number; class
       src="/favicon.svg"
       width={tam}
       height={tam}
-      alt="Gacelas"
+      alt="Runcity"
       className={`shrink-0 rounded-[22%] shadow-[0_0_18px_rgba(168,85,247,0.35)] ${className}`}
       style={{ width: tam, height: tam }}
     />
@@ -31,7 +31,7 @@ export function LogoGacelas({
         <span
           className={`font-headline-md text-text-primary font-extrabold tracking-[0.08em] leading-none ${grande ? 'text-lg' : 'text-base'}`}
         >
-          GACELAS
+          RUNCITY
         </span>
         {subtitulo && (
           <span

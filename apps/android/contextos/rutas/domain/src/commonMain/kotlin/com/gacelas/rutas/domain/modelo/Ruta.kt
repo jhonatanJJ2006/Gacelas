@@ -21,7 +21,7 @@ data class Ruta(
     val autorNombre: String? = null,
     val propia: Boolean = false,
     val perfilElevacion: List<Int> = emptyList(),
-    /** Ruta oficial de Gacelas (catalogo de Loja, migracion 022). */
+    /** Ruta oficial de Runcity (catalogo de Loja, migracion 022). */
     val oficial: Boolean = false,
     val categoria: CategoriaRuta? = null,
     /** pavimento, tierra, mixta o tartan. */

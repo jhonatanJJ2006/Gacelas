@@ -129,14 +129,14 @@ fun Modifier.cerrarTecladoAlTocarFuera(): Modifier {
     return this.pointerInput(Unit) { detectTapGestures { foco.clearFocus(); teclado?.hide() } }
 }
 
-/** Marca de la cabecera C4: cuadro naranja 32dp r8 + GACELAS / LOJA RUNNING CO. */
+/** Marca de la cabecera C4: cuadro naranja 32dp r8 + RUNCITY / LOJA RUNNING CO. */
 @Composable
 fun MarcaC4() {
     Row(verticalAlignment = Alignment.CenterVertically) {
         com.gacelas.ui.components.IconoGacelas(36.dp)
         Spacer(Modifier.width(8.dp))
         Column {
-            Text("GACELAS", style = C4Texto.headlineSm.copy(letterSpacing = 0.015.em), color = Color.White)
+            Text("RUNCITY", style = C4Texto.headlineSm.copy(letterSpacing = 0.015.em), color = Color.White)
             Text("LOJA RUNNING CO.", style = TextStyle(fontFamily = Inter, fontSize = 9.sp, lineHeight = 12.sp, letterSpacing = 0.14.em, fontWeight = FontWeight.SemiBold),
                 color = C4.Secondary, modifier = Modifier.offset(y = (-4).dp))
         }

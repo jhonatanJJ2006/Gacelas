@@ -94,7 +94,7 @@ object MapaOfflineIos {
 
     fun teselasGuardadas(): String? = NSUserDefaults.standardUserDefaults.stringForKey(CLAVE_TESELAS)
 
-    /** Estilo Gacelas del bundle apuntando a las teselas fijas de la region descargada. */
+    /** Estilo Runcity del bundle apuntando a las teselas fijas de la region descargada. */
     fun estiloSinRed(oscuro: Boolean): String? {
         val teselas = teselasGuardadas() ?: return null
         val ruta = NSBundle.mainBundle.pathForResource(if (oscuro) "gacelas-oscuro" else "gacelas-claro", "json") ?: return null

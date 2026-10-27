@@ -34,7 +34,7 @@ import com.gacelas.ui.theme.SpaceGrotesk
  */
 @Composable
 fun IconoGacelas(tam: Dp = 40.dp, modifier: Modifier = Modifier) {
-    Canvas(modifier.size(tam).semantics { contentDescription = "Gacelas" }) {
+    Canvas(modifier.size(tam).semantics { contentDescription = "Runcity" }) {
         val k = size.minDimension / 108f
         drawRoundRect(
             Brush.linearGradient(0f to Tinta.Violeta, .55f to Tinta.Fondo, 1f to Tinta.FondoProfundo, start = Offset.Zero, end = Offset(size.width, size.height)),
@@ -62,7 +62,7 @@ fun IconoGacelas(tam: Dp = 40.dp, modifier: Modifier = Modifier) {
     }
 }
 
-/** Icono A con la palabra GACELAS (como el final de la intro) y un subtitulo opcional. */
+/** Icono A con la palabra RUNCITY (como el final de la intro) y un subtitulo opcional. */
 @Composable
 fun MarcaGacelasA(
     tam: Dp = 44.dp,
@@ -73,7 +73,7 @@ fun MarcaGacelasA(
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         IconoGacelas(tam)
         Column {
-            Text("GACELAS", style = TextStyle(fontFamily = SpaceGrotesk, fontSize = tamTexto.sp, fontWeight = FontWeight.Black, letterSpacing = .08.em), color = Color.White)
+            Text("RUNCITY", style = TextStyle(fontFamily = SpaceGrotesk, fontSize = tamTexto.sp, fontWeight = FontWeight.Black, letterSpacing = .08.em), color = Color.White)
             if (subtitulo != null) Text(subtitulo, style = TextStyle(fontSize = (tamTexto * .45f).sp, fontWeight = FontWeight.SemiBold, letterSpacing = .14.em), color = Tinta.MoradoClaro)
         }
     }

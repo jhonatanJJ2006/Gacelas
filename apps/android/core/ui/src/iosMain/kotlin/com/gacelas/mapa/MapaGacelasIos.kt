@@ -97,7 +97,7 @@ fun MapaLibreIos(
 }
 
 /**
- * Mapa estilo Gacelas en iOS: misma logica que MapaGacelas (Android): trazo con contorno y brillo, pines
+ * Mapa estilo Runcity en iOS: misma logica que MapaGacelas (Android): trazo con contorno y brillo, pines
  * de inicio y meta, "estas aqui" con halo, seguimiento centrado, rumbo (sensor + GPS con Rumbo.combinar)
  * y vista de navegacion inclinada con [modo3d]. El corredor 3D (SceneView) no existe en iOS: se usa el
  * mismo halo que Android cuando el telefono no soporta 3D. Sin puente MapLibre se muestra [alternativa].

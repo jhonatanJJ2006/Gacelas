@@ -171,7 +171,7 @@ def main():
             '<body style="margin:0;width:1200px;height:630px;display:flex;align-items:center;justify-content:center;gap:56px;'
             'background:radial-gradient(circle at 50% 45%,#1A1030,#0C1322 60%,#070E1D);font-family:Anton,Impact,sans-serif">'
             f'<div style="width:300px;height:300px;border-radius:22%;overflow:hidden;box-shadow:0 0 80px #A855F755">{s}</div>'
-            '<div><div style="color:#fff;font-size:120px;letter-spacing:10px;font-weight:800">GACELAS</div>'
+            '<div><div style="color:#fff;font-size:120px;letter-spacing:10px;font-weight:800">RUNCITY</div>'
             '<div style="color:#C084FC;font:600 36px Inter,sans-serif">Rutas para correr en Loja</div></div></body>')
         Image.open(io.BytesIO(pg.screenshot())).convert("RGB").save(WEB / "og-default.png", optimize=True)
         b.close()

@@ -80,7 +80,7 @@ object Plantillas {
         c.drawPath(path, Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = grosor; strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND; color = NARANJA })
     }
 
-    private fun marca(c: Canvas, x: Float, y: Float, px: Float, a: Paint.Align = Paint.Align.LEFT) = c.drawText("GACELAS", x, y, pintura(px, 700, a, 0.35f))
+    private fun marca(c: Canvas, x: Float, y: Float, px: Float, a: Paint.Align = Paint.Align.LEFT) = c.drawText("RUNCITY", x, y, pintura(px, 700, a, 0.35f))
 
     private fun handle(c: Canvas, h: String, x: Float, y: Float, px: Float, a: Paint.Align = Paint.Align.LEFT) {
         if (h.isEmpty()) return

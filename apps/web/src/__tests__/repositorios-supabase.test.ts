@@ -234,7 +234,7 @@ describe('notificaciones', () => {
       {
         id: 'x',
         type: 'raro',
-        actor_name: 'Gacelas Loja',
+        actor_name: 'Runcity',
         message: 'Hola',
         read: false,
         created_at: '2026-10-10T11:00:00Z',
@@ -244,7 +244,7 @@ describe('notificaciones', () => {
     expect(n).toEqual({
       id: 'x',
       tipo: 'event',
-      usuario: 'Gacelas Loja',
+      usuario: 'Runcity',
       mensaje: 'Hola',
       tiempo: 'hace 1h',
       leida: false,

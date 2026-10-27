@@ -161,7 +161,7 @@ fun FeedContenido(
             val likes = if (p.remota) p.likesBase else p.likesBase + if (gusta) 1 else 0
             val locales = if (p.remota) emptyList() else ajustes.comentarios[p.id].orEmpty()
             var menu by remember { mutableStateOf(false) }
-            val texto = "${p.titulo}: ${Unidades.texto(p.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)} en ${formatearMs(p.segundos)} con Gacelas Loja"
+            val texto = "${p.titulo}: ${Unidades.texto(p.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)} en ${formatearMs(p.segundos)} con Runcity"
             val hilo = p.ultimoComentario != null
             Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 10.dp).testTag("post-c2")) {
                 Column(Modifier.fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -479,7 +479,7 @@ fun DetalleEventoContenido(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Atrás", tint = GColors.TextPrimary)
                     }
                     Spacer(Modifier.weight(1f))
-                    IconButton(onClick = { onCompartir("${e.titulo} - ${e.fecha}, ${e.hora} en ${e.ubicacion}. Corre con Gacelas Loja.") }, modifier = Modifier.clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.6f))) {
+                    IconButton(onClick = { onCompartir("${e.titulo} - ${e.fecha}, ${e.hora} en ${e.ubicacion}. Corre con Runcity.") }, modifier = Modifier.clip(CircleShape).background(GColors.BgPrimary.copy(alpha = 0.6f))) {
                         Icon(Icons.Filled.Share, "Compartir evento", tint = GColors.TextPrimary)
                     }
                     if (onReportar != null && !e.creadoPorUsuario) {

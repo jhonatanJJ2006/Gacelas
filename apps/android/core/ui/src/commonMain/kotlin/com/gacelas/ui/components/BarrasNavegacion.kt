@@ -61,7 +61,7 @@ fun BarraSuperior(sinLeer: Int, onNotificaciones: () -> Unit, onPerfil: () -> Un
             Text("GL", style = GType.labelMd, color = GColors.OnPrimary)
         }
         Spacer(Modifier.width(8.dp))
-        Text("GACELAS LOJA", style = GType.labelMd, color = GColors.PrimaryLight, modifier = Modifier.weight(1f))
+        Text("RUNCITY LOJA", style = GType.labelMd, color = GColors.PrimaryLight, modifier = Modifier.weight(1f))
         Box {
             IconButton(onClick = onNotificaciones) {
                 Icon(Icons.Filled.Notifications, contentDescription = "Notificaciones", tint = GColors.TextSecondary)

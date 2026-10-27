@@ -76,7 +76,7 @@ object MockData {
         Notificacion("2", TipoNotificacion.Like, "Carlos Ruiz", "le dio like a tu carrera matutina", "hace 1h", false),
         Notificacion("3", TipoNotificacion.Comentario, "Ana Martínez", "comentó en tu actividad: \"Excelente ritmo\"", "hace 2h", true),
         Notificacion("4", TipoNotificacion.Seguidor, "Pedro Sánchez", "comenzó a seguirte", "hace 3h", true),
-        Notificacion("5", TipoNotificacion.Evento, "Gacelas Loja", "Nuevo evento: Carrera Parque Jipiro", "hace 1d", true),
+        Notificacion("5", TipoNotificacion.Evento, "Runcity", "Nuevo evento: Carrera Parque Jipiro", "hace 1d", true),
     )
 
     fun usuario(id: String): Usuario? = usuarios.firstOrNull { it.id == id }

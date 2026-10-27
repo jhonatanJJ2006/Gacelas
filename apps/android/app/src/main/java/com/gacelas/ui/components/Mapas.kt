@@ -15,7 +15,7 @@ import kotlin.math.sqrt
 object Mapas {
     val CENTRO_LOJA = LatLng(-3.9931, -79.2042)
 
-    /** Estilos Gacelas en assets/mapas (teselas OpenFreeMap con datos de OpenStreetMap, sin clave). */
+    /** Estilos Runcity en assets/mapas (teselas OpenFreeMap con datos de OpenStreetMap, sin clave). */
     const val ESTILO_OSCURO = "asset://mapas/gacelas-oscuro.json"
     const val ESTILO_CLARO = "asset://mapas/gacelas-claro.json"
     /** Alias: todas las pantallas usan el estilo Gacelas. */

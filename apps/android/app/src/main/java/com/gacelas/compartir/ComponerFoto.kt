@@ -118,7 +118,7 @@ fun ComponerFotoDialogo(datos: DatosCompartir, onCerrar: () -> Unit, onImagenMar
                     }, modifier = Modifier.weight(1f)) { Text("Instagram Historia", color = GColors.Primary400) }
                     TextButton(onClick = { lanzar(Intenciones.whatsapp(exportar(), texto), "WhatsApp no está instalado") }, modifier = Modifier.weight(1f)) { Text("WhatsApp", color = GColors.Secondary500) }
                 }
-                TextButton(onClick = onImagenMarca) { Text("Usar imagen Gacelas (sin foto)", color = GColors.TextSecondary) }
+                TextButton(onClick = onImagenMarca) { Text("Usar imagen Runcity (sin foto)", color = GColors.TextSecondary) }
             }
         },
         confirmButton = { TextButton(onClick = onCerrar) { Text("Cerrar", color = GColors.TextSecondary) } },

@@ -47,7 +47,7 @@ test.describe('bienvenida sin scroll', () => {
       await page.setViewportSize({ width: w, height: h })
       await page.goto('/bienvenida')
       await expect(page.getByTestId('bienvenida-corredor')).toBeVisible()
-      await expect(page.getByRole('img', { name: 'Corredor de Gacelas' }).first()).toBeVisible({
+      await expect(page.getByRole('img', { name: 'Corredor de Runcity' }).first()).toBeVisible({
         timeout: 30_000,
       })
       const { sh, ih } = await page.evaluate(() => ({

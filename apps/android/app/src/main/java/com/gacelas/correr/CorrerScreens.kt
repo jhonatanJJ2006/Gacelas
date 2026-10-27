@@ -243,7 +243,7 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
     }
     if (pedirGps) com.gacelas.ui.components.ModalC2(
         icono = Icons.Filled.GpsFixed, titulo = "Usar tu ubicación durante la carrera",
-        texto = "Gacelas usa el GPS del teléfono solo mientras grabas una carrera, para medir distancia, ritmo y dibujar tu recorrido. La ruta se guarda en tu historial y solo se comparte si tú la publicas. Nadie te ve en el mapa en vivo salvo que actives ese permiso aparte. Puedes revocarlo cuando quieras en Ajustes, Privacidad.",
+        texto = "Runcity usa el GPS del teléfono solo mientras grabas una carrera, para medir distancia, ritmo y dibujar tu recorrido. La ruta se guarda en tu historial y solo se comparte si tú la publicas. Nadie te ve en el mapa en vivo salvo que actives ese permiso aparte. Puedes revocarlo cuando quieras en Ajustes, Privacidad.",
         primario = "Aceptar y empezar", secundario = "Ahora no", tag = "modal-consentimiento-gps",
         onCerrar = { pedirGps = false },
         onPrimario = {

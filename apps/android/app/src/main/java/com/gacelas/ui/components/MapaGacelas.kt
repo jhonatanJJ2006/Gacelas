@@ -58,7 +58,7 @@ private val NARANJA = Color(0xFFC084FC)
 private val MAGENTA = Color(0xFFD6338A)
 
 /**
- * Mapa estilo Gacelas (MapLibre + OpenStreetMap, funciona sin red en las zonas descargadas):
+ * Mapa estilo Runcity (MapLibre + OpenStreetMap, funciona sin red en las zonas descargadas):
  * trazo con contorno y brillo, pines de inicio y meta, "estas aqui" con halo y controles propios.
  * Con [seguir] la camara sigue al corredor; con [modo3d] se inclina con el rumbo hacia arriba,
  * acerca el zoom segun la velocidad (ver [ZoomNavegacion]) y dibuja el corredor 3D encima.
@@ -221,7 +221,7 @@ fun MapaGacelas(
     }
 }
 
-/** Zoom y brujula propios (estilo Gacelas). */
+/** Zoom y brujula propios (estilo Runcity). */
 @Composable
 private fun ControlesMapa(mapa: MapLibreMap?, rumbo: Float, modifier: Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {

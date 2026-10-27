@@ -104,7 +104,7 @@ export function CompartirDialogo({
           {(
             [
               ['foto', 'Sobre tu foto'],
-              ['marca', 'Imagen Gacelas'],
+              ['marca', 'Imagen Runcity'],
             ] as const
           ).map(([m, e]) => (
             <button

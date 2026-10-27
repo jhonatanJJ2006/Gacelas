@@ -41,7 +41,7 @@ object ColoresC4 {
 }
 
 /**
- * Pantalla de arranque compartida (etapa 1 de iOS): fondo C4, marca Gacelas y tarjeta glass.
+ * Pantalla de arranque compartida (etapa 1 de iOS): fondo C4, marca Runcity y tarjeta glass.
  * Usa logica comun real (Rumbo) para comprobar que el modulo compartido funciona en cada plataforma.
  */
 @Composable
@@ -54,7 +54,7 @@ fun InicioComun(version: String = VersionGacelas.NOMBRE, onEmpezar: () -> Unit =
                 com.gacelas.ui.components.IconoGacelas(32.dp)
                 Spacer(Modifier.width(8.dp))
                 Column {
-                    Text("GACELAS", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text("RUNCITY", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Text("LOJA RUNNING CO.", color = ColoresC4.Secondary, fontSize = 9.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
@@ -70,7 +70,7 @@ fun InicioComun(version: String = VersionGacelas.NOMBRE, onEmpezar: () -> Unit =
                     Text("RUNNING EN LOJA, ECUADOR", color = ColoresC4.Magenta, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                 }
                 Text("Corre. Comparte.\nSupera.", color = Color.White, fontSize = 26.sp, lineHeight = 30.sp, fontWeight = FontWeight.Bold)
-                Text("Gacelas para ${Plataforma.nombre}: versión en preparación.", color = ColoresC4.Secondary, fontSize = 15.sp)
+                Text("Runcity para ${Plataforma.nombre}: versión en preparación.", color = ColoresC4.Secondary, fontSize = 15.sp)
                 Spacer(Modifier.height(6.dp))
                 Box(Modifier.fillMaxWidth().height(52.dp).clip(CircleShape).background(ColoresC4.Naranja).clickable(onClick = onEmpezar).testTag("empezar"), contentAlignment = Alignment.Center) {
                     Text("Empezar", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)

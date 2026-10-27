@@ -408,7 +408,7 @@ const DEMO: Demo[] = [
     autor: 'Sebastián Ludeña',
     autorKm: 210,
     horas: 26,
-    titulo: 'Primera vez bajando de 5:00 en 5 km. Gracias Gacelas por el empujón.',
+    titulo: 'Primera vez bajando de 5:00 en 5 km. Gracias Runcity por el empujón.',
     km: 5.0,
     seg: 1490,
     des: 38,

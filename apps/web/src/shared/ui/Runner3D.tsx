@@ -75,7 +75,7 @@ export function Runner3DFallback({ className = '' }: { className?: string }) {
     <div
       data-testid="runner3d-fallback"
       role="img"
-      aria-label="Corredor de Gacelas"
+      aria-label="Corredor de Runcity"
       className={`w-full h-full flex items-center justify-center ${className}`}
     >
       {poster ? (

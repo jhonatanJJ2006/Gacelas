@@ -41,7 +41,7 @@ class MapaMatTest {
             assertTrue(j.getJSONObject("sources").getJSONObject("openmaptiles").getString("url").startsWith("https://tiles.openfreemap.org/"))
             val capas = j.getJSONArray("layers")
             assertTrue(capas.length() > 10)
-            // Sin capa de POIs: el estilo Gacelas los oculta.
+            // Sin capa de POIs: el estilo Runcity los oculta.
             assertTrue((0 until capas.length()).none { capas.getJSONObject(it).optString("source-layer") == "poi" })
         }
         assertTrue(Mapas.ESTILO_GACELAS.startsWith("asset://"))

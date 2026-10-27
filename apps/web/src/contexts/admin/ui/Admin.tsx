@@ -642,7 +642,7 @@ function Push() {
           Envío de notificaciones push
         </h2>
         <p className="text-c2-muted mt-2">
-          Gacelas todavía no tiene un servicio de envío push (FCM o APNs) conectado al servidor.
+          Runcity todavía no tiene un servicio de envío push (FCM o APNs) conectado al servidor.
           Cuando exista, desde aquí se podrán redactar avisos y elegir el público. Mientras tanto
           las notificaciones de la app son locales: recordatorios de eventos y estado de la carrera.
         </p>
@@ -793,7 +793,7 @@ function LoginAdmin() {
         className={`${tarjeta} p-6 w-full max-w-sm space-y-4`}
       >
         <p className="font-display italic uppercase text-white text-[26px]">
-          Gacelas <Etiqueta color="violeta">Admin</Etiqueta>
+          Runcity <Etiqueta color="violeta">Admin</Etiqueta>
         </p>
         <input
           aria-label="Correo"
@@ -865,7 +865,7 @@ export function Admin() {
         className="lg:w-[220px] lg:min-h-screen lg:border-r border-b lg:border-b-0 border-c2-linea p-3 lg:p-4 flex lg:flex-col gap-1 overflow-x-auto no-scrollbar"
       >
         <p className="hidden lg:block font-display italic uppercase text-white text-[22px] mb-4">
-          Gacelas <Etiqueta color="violeta">Admin</Etiqueta>
+          Runcity <Etiqueta color="violeta">Admin</Etiqueta>
         </p>
         {SECCIONES.map(([ruta, t, icono]) => (
           <NavLink

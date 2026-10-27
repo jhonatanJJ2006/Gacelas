@@ -154,7 +154,7 @@ private fun Cabecera(actual: String, nueva: String) {
         com.gacelas.ui.components.IconoGacelas(32.dp)
         Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
-            Text("GACELAS", style = TextStyle(fontFamily = display, fontSize = 13.sp, lineHeight = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.05.em), color = Color.White)
+            Text("RUNCITY", style = TextStyle(fontFamily = display, fontSize = 13.sp, lineHeight = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.05.em), color = Color.White)
             Text("LOJA RUNNING CO.", style = TextStyle(fontFamily = Inter, fontSize = 8.5.sp, lineHeight = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.1.em), color = M3.Secondary.copy(alpha = 0.8f))
         }
         Row(
@@ -260,7 +260,7 @@ private fun Pie(fase: Fase, versionNueva: String, obligatoria: Boolean, onActual
             }
         }
         is Fase.Permiso -> Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Para instalar, permite a Gacelas instalar apps desconocidas. Luego vuelve aquí.", style = TextStyle(fontFamily = Inter, fontSize = 13.sp, lineHeight = 18.sp), color = M3.Secondary)
+            Text("Para instalar, permite a Runcity instalar apps desconocidas. Luego vuelve aquí.", style = TextStyle(fontFamily = Inter, fontSize = 13.sp, lineHeight = 18.sp), color = M3.Secondary)
             BotonNaranja("Dar permiso", onPermiso); masTarde()
         }
         is Fase.Error -> Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {

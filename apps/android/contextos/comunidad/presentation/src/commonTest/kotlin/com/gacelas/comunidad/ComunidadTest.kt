@@ -86,7 +86,7 @@ class ComunidadTest {
     }
 
     @Test fun clubes() = runTest {
-        val club = Club("c", "Gacelas Loja", "", "Loja", false, 3)
+        val club = Club("c", "Runcity", "", "Loja", false, 3)
         val vm = ClubesViewModel(object : ClubesRepository { override suspend fun listar() = listOf(club) to setOf("c") })
         assertEquals(setOf("c"), vm.datos.value?.second)
         assertEquals(emptyList(), ClubesViewModel(null).datos.value?.first)

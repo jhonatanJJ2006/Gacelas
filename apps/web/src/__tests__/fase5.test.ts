@@ -40,7 +40,7 @@ describe('clubes', () => {
     expect(puedeGestionar('admin')).toBe(true)
     expect(puedeGestionar('member')).toBe(false)
     expect(validarClub({ nombre: 'ab', descripcion: '' })).toMatch(/3 letras/)
-    expect(validarClub({ nombre: 'Gacelas Loja', descripcion: '' })).toBeNull()
+    expect(validarClub({ nombre: 'Runcity', descripcion: '' })).toBeNull()
   })
 })
 

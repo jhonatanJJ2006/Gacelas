@@ -112,7 +112,7 @@ fun SeccionConsentimientos(onLegal: (terminos: Boolean) -> Unit, onCuentaElimina
                     append("]}")
                 }
                 val i = android.content.Intent(android.content.Intent.ACTION_SEND).setType("application/json")
-                    .putExtra(android.content.Intent.EXTRA_SUBJECT, "Mis datos de Gacelas").putExtra(android.content.Intent.EXTRA_TEXT, datos)
+                    .putExtra(android.content.Intent.EXTRA_SUBJECT, "Mis datos de Runcity").putExtra(android.content.Intent.EXTRA_TEXT, datos)
                 runCatching { context.startActivity(android.content.Intent.createChooser(i, "Descargar mis datos")) }
             }
         }

@@ -43,7 +43,7 @@ export function csvEstadisticas(d: Datos): string {
 
 export function pdfEstadisticas(d: Datos): Uint8Array {
   const t = d.totales
-  return aPdf(`Estadísticas Gacelas ${d.desde} a ${d.hasta}`, [
+  return aPdf(`Estadísticas Runcity ${d.desde} a ${d.hasta}`, [
     {
       titulo: 'Resumen',
       lineas: [
