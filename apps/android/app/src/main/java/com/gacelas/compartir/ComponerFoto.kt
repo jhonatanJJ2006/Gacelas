@@ -87,7 +87,7 @@ fun ComponerFotoDialogo(datos: DatosCompartir, onCerrar: () -> Unit, onImagenMar
         containerColor = GColors.Surface,
         title = { Text("Compartir sobre tu foto", style = GType.titleMd, color = GColors.TextPrimary) },
         text = {
-            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Pastilla(if (foto == null) "Elegir foto" else "Cambiar foto", false, { galeria.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) })
                     Pastilla("Cámara", false, { runCatching { camara.launch(null) }.onFailure { context.aviso("No hay cámara disponible") } })

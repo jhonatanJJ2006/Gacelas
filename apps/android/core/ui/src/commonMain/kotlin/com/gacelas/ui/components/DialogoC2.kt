@@ -1,6 +1,12 @@
 package com.gacelas.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.platform.testTag
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -65,42 +71,55 @@ fun DialogoC2(
     @Suppress("UNUSED_PARAMETER") textContentColor: Color = GColors.C2Muted,
 ) {
     Dialog(onDismissRequest = onDismissRequest, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Box(
-            Modifier.fillMaxSize().clickable(remember { MutableInteractionSource() }, null, onClick = onDismissRequest),
+        BoxWithConstraints(
+            Modifier.fillMaxSize().clickable(remember { MutableInteractionSource() }, null, onClick = onDismissRequest)
+                .statusBarsPadding().navigationBarsPadding().imePadding(),
             contentAlignment = Alignment.BottomCenter,
         ) {
+            // Alto maximo relativo a la ventana: nunca mas que lo visible (antes era un fijo de 640dp
+            // y en pantallas pequenas o con fuente grande el modal se cortaba a la mitad).
+            val altoMax = maxHeight - 24.dp
             Column(
-                modifier.fillMaxWidth().heightIn(max = 640.dp)
+                modifier.fillMaxWidth().widthIn(max = 560.dp).heightIn(max = altoMax)
                     .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
                     .background(GColors.C2Card)
-                    .clickable(remember { MutableInteractionSource() }, null) {}
-                    .navigationBarsPadding().imePadding(),
+                    .clickable(remember { MutableInteractionSource() }, null) {},
             ) {
                 Box(Modifier.fillMaxWidth().height(3.dp).background(Brush.horizontalGradient(listOf(Color.Transparent, GColors.C2Violeta))))
                 Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
                     Box(Modifier.width(40.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(GColors.C2Linea))
                 }
-                Column(Modifier.padding(horizontal = 24.dp, vertical = 18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    MaterialTheme(colorScheme = darkColorScheme(primary = GColors.C2Violeta, onPrimary = GColors.C2Bg, surface = GColors.C2Card)) {
+                MaterialTheme(colorScheme = darkColorScheme(primary = GColors.C2Violeta, onPrimary = GColors.C2Bg, surface = GColors.C2Card)) {
+                    // Cuerpo scrolleable: titulo y texto ceden espacio; las acciones quedan siempre visibles.
+                    Column(
+                        Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())
+                            .padding(start = 24.dp, end = 24.dp, top = 18.dp).testTag("dialogo-c2-cuerpo"),
+                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                    ) {
                         if (icon != null || title != null) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                             if (icon != null) Box(
                                 Modifier.size(52.dp).clip(FormaBotonC2).background(GColors.C2S2),
                                 contentAlignment = Alignment.Center,
                             ) { CompositionLocalProvider(LocalContentColor provides GColors.C2Violeta) { icon() } }
-                            if (title != null) CompositionLocalProvider(
-                                LocalContentColor provides Color.White,
-                                LocalTextStyle provides TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 26.sp, lineHeight = 30.sp),
-                            ) { title() }
+                            if (title != null) Box(Modifier.weight(1f)) {
+                                CompositionLocalProvider(
+                                    LocalContentColor provides Color.White,
+                                    LocalTextStyle provides TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 26.sp, lineHeight = 30.sp),
+                                ) { title() }
+                            }
                         }
                         if (text != null) CompositionLocalProvider(
                             LocalContentColor provides GColors.C2Muted,
                             LocalTextStyle provides GType.bodyMd.copy(color = GColors.C2Muted),
                         ) { text() }
-                        Column(Modifier.fillMaxWidth().padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            CompositionLocalProvider(LocalContentColor provides Color.White) {
-                                confirmButton()
-                                dismissButton?.invoke()
-                            }
+                    }
+                    Column(
+                        Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 14.dp, bottom = 18.dp).testTag("dialogo-c2-acciones"),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        CompositionLocalProvider(LocalContentColor provides Color.White) {
+                            confirmButton()
+                            dismissButton?.invoke()
                         }
                     }
                 }

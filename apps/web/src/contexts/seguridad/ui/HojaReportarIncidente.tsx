@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useState } from 'react'
 import { obtenerDireccion, reportarIncidente } from '../application/incidentes'
 import { MAX_FOTOS, TIPOS_INCIDENTE, type TipoIncidente } from '../domain/incidentes'
@@ -68,9 +69,9 @@ export function HojaReportarIncidente({
     }
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
+      className="fixed inset-0 z-[100] flex items-end justify-center"
       role="dialog"
       aria-modal="true"
       aria-labelledby="titulo-reportar"
@@ -78,7 +79,7 @@ export function HojaReportarIncidente({
       <button aria-label="Cerrar" className="absolute inset-0 bg-black/60" onClick={onCerrar} />
       <div
         data-testid="hoja-reportar"
-        className="relative w-full max-w-lg rounded-t-[14px] bg-c2-card border-t-2 border-c2-violeta px-5 pt-2 pb-[max(env(safe-area-inset-bottom),20px)] space-y-4 max-h-[90vh] overflow-y-auto"
+        className="relative w-full max-w-lg rounded-t-[14px] bg-c2-card border-t-2 border-c2-violeta px-5 pt-2 pb-[max(env(safe-area-inset-bottom),20px)] space-y-4 max-h-[90dvh] overflow-y-auto"
       >
         <div className="mx-auto h-1.5 w-12 rounded-full bg-white/20" />
         <h2
@@ -164,6 +165,7 @@ export function HojaReportarIncidente({
           {enviando ? 'Enviando...' : 'Enviar reporte'}
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

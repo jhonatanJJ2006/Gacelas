@@ -67,3 +67,32 @@ La app no lee GitHub. Lee el manifiesto publico `app-releases/android/latest.jso
 
 - Publicar versiones de Android solo con `scripts/publicar-android.sh`, nunca con `gh release create` a mano.
 - Despues de publicar, `scripts/verificar-manifiesto.sh` debe decir "Manifiesto al dia".
+
+## 2026-10-26: Modales cortados a la mitad (web y Android)
+
+### Sintoma
+
+En Android los modales (crear evento, terminos, terminar carrera, compartir sobre foto, reportar incidente) se cortaban a la mitad en telefonos pequenos o con fuente grande: el boton principal quedaba fuera de pantalla y el contenido no se podia desplazar.
+
+### Causa
+
+- `DialogoC2` (core/ui) tenia un alto maximo fijo de 640 dp y ningun scroll. En una ventana de 640 dp menos barras del sistema, o con `fontScale` 1.3, el contenido y las acciones quedaban fuera.
+- Los insets (`navigationBarsPadding`, `imePadding`) estaban dentro de la hoja, asi que el teclado empujaba el contenido sin dejar espacio.
+- La hoja de reportar incidente (`IncidentesUi`) no tenia scroll.
+- En web, `Dialogo` no tenia alto maximo ni scroll, y se renderizaba dentro de la pantalla actual (si un ancestro crea contexto de apilamiento, el `fixed` queda recortado). Las hojas usaban `vh`, que en moviles incluye la barra del navegador.
+
+### Arreglo
+
+1. Android `DialogoC2`: alto maximo relativo a la ventana (`BoxWithConstraints`, `maxHeight - 24.dp`), insets de barras del sistema y teclado aplicados al contenedor, cuerpo con `verticalScroll` y acciones fijas siempre visibles debajo. Se quitaron los scroll anidados en crear evento y compartir sobre foto.
+2. `IncidentesUi`: contenido scrolleable y `imePadding`. El modal de actualizacion ya se compacta por alto (`ModalActualizacionTest` exige que no tenga scroll) y no se toco.
+3. Web `Dialogo`, `CompartirDialogo` y `HojaReportarIncidente`: se renderizan con portal en `document.body`, alto maximo en `dvh`, cuerpo scrolleable, acciones fijas y safe areas.
+
+### Test de regresion
+
+- Android: `ModalesTamanosTest` (Roborazzi) abre un modal largo en 360x640 dp, 393x852 dp y 360x640 dp con `fontScale` 1.3 y verifica que el boton principal y el secundario se ven completos.
+- Web: `e2e/modales.spec.ts` abre crear evento, cerrar sesion y ayuda en 360x640 y verifica que el boton principal queda dentro de la ventana. Con `QA_CAPTURAS=<carpeta>` guarda capturas en 360x640, 390x844 y 1440x900.
+
+### Como evitarlo
+
+- No usar alturas fijas en modales: siempre relativas a la ventana.
+- Todo modal nuevo debe usar `DialogoC2` / `Dialogo` (o seguir el mismo patron: cuerpo scrolleable y acciones fijas).
