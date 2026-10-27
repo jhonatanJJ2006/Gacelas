@@ -87,7 +87,10 @@ export function Inicio() {
       </section>
 
       <section className="lg:col-span-7 lg:row-span-3 relative flex flex-col overflow-hidden bg-c2-card tarjeta-c2">
-        <div className="relative w-full h-[320px] lg:h-[520px] escenario-c2" data-testid="inicio-escenario">
+        <div
+          className="relative w-full h-[320px] lg:h-[520px] escenario-c2"
+          data-testid="inicio-escenario"
+        >
           <Suspense
             fallback={
               <div className="w-full h-full flex items-center justify-center text-text-secondary">

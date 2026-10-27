@@ -55,6 +55,11 @@ export async function caminar(context: BrowserContext, pasos: number, metrosPorP
 /** La primera carrera pregunta una vez si compartir en vivo (v0.9.1); se responde que no. */
 export async function responderCompartirEnVivo(page: Page) {
   const modal = page.getByRole('dialog', { name: '¿Compartir tu carrera en vivo?' })
-  if (await modal.waitFor({ state: 'visible', timeout: 3000 }).then(() => true, () => false))
+  if (
+    await modal.waitFor({ state: 'visible', timeout: 3000 }).then(
+      () => true,
+      () => false
+    )
+  )
     await modal.getByRole('button', { name: 'No, gracias' }).click()
 }
