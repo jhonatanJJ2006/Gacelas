@@ -54,5 +54,7 @@ data class Ajustes(
     val alturaCm: Int? = null,
     val distanciaFavorita: String = "10K",
     val metaKmSemana: Int = 25,
+    /** Compartir la ubicacion en vivo al correr: null = aun no se pregunto (modal la primera vez). */
+    val compartirEnVivo: Boolean? = null,
 )
 

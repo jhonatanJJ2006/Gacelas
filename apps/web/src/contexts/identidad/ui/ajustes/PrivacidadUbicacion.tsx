@@ -185,6 +185,12 @@ export function PrivacidadUbicacion() {
           activo={ajustes.ubicacionPrecisa}
           onCambiar={(v) => void actualizar({ ubicacionPrecisa: v })}
         />
+        <FilaC2
+          titulo="Compartir en vivo al correr"
+          descripcion="Tus seguidores ven tu posición mientras corres (la zona de casa se oculta)"
+          activo={ajustes.compartirEnVivo === true}
+          onCambiar={(v) => void actualizar({ compartirEnVivo: v })}
+        />
       </GrupoC2>
 
       <SeccionConsentimientos />

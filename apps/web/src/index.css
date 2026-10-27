@@ -119,6 +119,31 @@ body {
 
 /* Componentes C2 Deporte cinetico (mismos que Android: core/ui Componentes.kt y DialogoC2.kt). */
 @layer components {
+  /* Escenario de Inicio (Figma C2, Movil / Inicio, clase .stage): halo morado sobre degradado 160deg,
+     rayas a 115deg y brillo del piso. */
+  .escenario-c2 {
+    background:
+      radial-gradient(60% 55% at 55% 55%, #7b1fa2aa 0, #4a154b66 45%, #0c132200 75%),
+      linear-gradient(160deg, #191f2f, #0c1322);
+  }
+  .escenario-c2::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(115deg, #c084fc14 0 2px, transparent 2px 38px);
+  }
+  .escenario-c2::after {
+    content: '';
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    bottom: 30px;
+    height: 90px;
+    pointer-events: none;
+    background: radial-gradient(50% 50% at 50% 50%, #c084fc55, transparent 70%);
+    transform: skewX(-20deg);
+  }
   .tarjeta-c2 {
     @apply bg-c2-card border border-c2-linea;
     clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);

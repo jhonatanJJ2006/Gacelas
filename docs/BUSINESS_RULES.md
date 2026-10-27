@@ -75,7 +75,7 @@ SI distance(track_point, home_location) < home_radius_meters:
 Condiciones para iniciar live tracking:
 1. Usuario debe tener una actividad en curso
 2. Usuario debe tener al menos 1 seguidor (o ser miembro de un club/evento)
-3. Usuario debe activar manualmente "Compartir en vivo"
+3. La primera vez que abre el mapa de Carrera se pregunta una sola vez si compartir en vivo; la respuesta se guarda en Ajustes (user_settings.prefs) y se cambia en Configuracion > Privacidad > "Compartir en vivo al correr". El mapa ya no tiene boton de compartir.
 ```
 
 **Opciones de compartición**:

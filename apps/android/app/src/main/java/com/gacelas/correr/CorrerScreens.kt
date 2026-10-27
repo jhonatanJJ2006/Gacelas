@@ -760,25 +760,46 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
     }
 }
 
-/** Boton "Compartir en vivo": envia la posicion cada 5 s mientras se corre. */
+/**
+ * Compartir en vivo sin boton en el mapa: la primera vez que se abre la carrera se pregunta con un modal
+ * y la respuesta queda en Ajustes (sincronizada en user_settings.prefs). Se cambia desde Privacidad.
+ */
 @Composable
-internal fun BotonCompartirEnVivo(tracker: com.gacelas.actividad.domain.SesionCarrera) {
-    val repo = contenedor().enVivo ?: return
+internal fun CompartirEnVivoAutomatico(tracker: com.gacelas.actividad.domain.SesionCarrera) {
+    val c = contenedor()
+    val repo = c.enVivo ?: return
     val perfil by com.gacelas.ui.sesionState()
     if (perfil == null) return
+    // null mientras DataStore no responde: evita mostrar el modal a quien ya contesto.
+    val cargados by c.ajustes.ajustes.collectAsState(initial = null)
+    val ajustesVm = com.gacelas.ui.ajustesViewModel()
+    val a = cargados ?: return
+    val decision = a.compartirEnVivo
+    if (decision == null) {
+        ModalCompartirEnVivo(
+            onSi = { ajustesVm.actualizar { it.copy(compartirEnVivo = true) } },
+            onNo = { ajustesVm.actualizar { it.copy(compartirEnVivo = false) } },
+        )
+        return
+    }
     val estado by tracker.estado.collectAsState()
-    val scope = rememberCoroutineScope()
     var activo by remember { mutableStateOf(repo.sesionId != null) }
-    var visible by remember { mutableStateOf(repo.visible) }
+    LaunchedEffect(decision) {
+        if (decision && !activo) activo = repo.iniciar() != null
+        if (!decision && activo) { repo.terminar(); activo = false }
+    }
     LaunchedEffect(activo, estado.puntos.size, estado.pausada) {
         val p = estado.puntos.lastOrNull()
-        if (activo && !estado.pausada && p != null && repo.enviar(p.lat, p.lng, estado.distanciaKm, estado.segundos)) visible = repo.visible
+        if (activo && !estado.pausada && p != null) repo.enviar(p.lat, p.lng, estado.distanciaKm, estado.segundos)
     }
-    androidx.compose.material3.TextButton(
-        onClick = { scope.launch { if (activo) { repo.terminar(); activo = false } else activo = repo.iniciar() != null } },
-        modifier = Modifier.height(44.dp).clip(CircleShape).background(if (activo) GColors.Danger else GColors.SurfaceContainer),
-    ) {
-        Icon(Icons.Filled.Sensors, null, tint = if (activo) Color.White else GColors.TextPrimary, modifier = Modifier.size(18.dp))
-        Text(if (!activo) " Compartir en vivo" else if (visible == false) " En vivo · casa oculta" else " En vivo", style = GType.labelMd, color = if (activo) Color.White else GColors.TextPrimary)
-    }
+}
+
+@Composable
+internal fun ModalCompartirEnVivo(onSi: () -> Unit, onNo: () -> Unit) {
+    com.gacelas.ui.components.ModalC2(
+        icono = Icons.Filled.Sensors, titulo = "¿Compartir tu carrera en vivo?",
+        texto = "Tus seguidores podrán ver tu posición mientras corres. La zona de tu casa siempre se oculta. Puedes cambiarlo cuando quieras en Configuración > Privacidad.",
+        primario = "Sí, compartir", onPrimario = onSi, onCerrar = onNo,
+        secundario = "No, gracias", tag = "modal-compartir-en-vivo",
+    )
 }

@@ -1,4 +1,4 @@
-import { expect, test, caminar, prepararGps, registrarse } from './ayuda'
+import { expect, test, caminar, prepararGps, registrarse, responderCompartirEnVivo } from './ayuda'
 
 test.describe('Correr con GPS simulado', () => {
   test.beforeEach(async ({ page, context }) => {
@@ -17,6 +17,7 @@ test.describe('Correr con GPS simulado', () => {
     await page.getByRole('button', { name: 'Comenzar carrera' }).click()
     await page.getByRole('button', { name: 'Aceptar y empezar' }).click()
     await expect(page).toHaveURL(/\/correr\/en-curso/)
+    await responderCompartirEnVivo(page)
     // Los botones de arriba no quedan tapados por el contenido.
     await page
       .getByRole('button', { name: 'Abrir cronómetro' })

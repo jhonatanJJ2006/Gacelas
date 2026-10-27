@@ -78,7 +78,7 @@ fun DialogoC2(
     @Suppress("UNUSED_PARAMETER") titleContentColor: Color = Color.White,
     @Suppress("UNUSED_PARAMETER") textContentColor: Color = GColors.C2Muted,
 ) {
-    Dialog(onDismissRequest = onDismissRequest, properties = propiedadesHojaC2()) {
+    CapaHojaC2(onDismissRequest) {
         BoxWithConstraints(
             Modifier.fillMaxSize().clickable(remember { MutableInteractionSource() }, null, onClick = onDismissRequest)
                 .statusBarsPadding().imePadding().testTag("dialogo-c2-ventana"),

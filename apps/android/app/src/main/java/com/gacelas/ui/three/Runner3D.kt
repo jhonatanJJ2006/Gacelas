@@ -94,9 +94,15 @@ fun Runner3D(
     camara: Position = Position(0f, 1.2f, 3.5f),
     /** Giro del corredor (grados, horario) respecto a "hacia adelante" en pantalla. */
     rumboRelativo: Float = 0f,
+    /**
+     * Fondo de Compose visible detras del corredor (Inicio, v0.9.1). El SurfaceView de Filament como capa
+     * de medios perfora la ventana y se veia NEGRO en lugar del degradado; el WebView transparente se
+     * compone con el resto de la UI y deja ver el escenario morado.
+     */
+    sobreFondo: Boolean = false,
 ) {
     val context = LocalContext.current
-    val disponible = !LocalInspectionMode.current && remember { soporta3D(context) }
+    val disponible = !sobreFondo && !LocalInspectionMode.current && remember { soporta3D(context) }
     if (!disponible) {
         // Sin Filament (GPU emulada con SwiftShader, drivers problematicos) se dibuja el mismo GLB con WebGL.
         if (LocalInspectionMode.current || Build.FINGERPRINT == "robolectric") Runner3DFallback(modifier)

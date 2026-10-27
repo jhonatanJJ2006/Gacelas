@@ -55,8 +55,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -129,12 +127,10 @@ fun ModalActualizacion(info: InfoVersion, obligatoria: Boolean, onMasTarde: () -
     }
 
     val cerrable = !obligatoria && fase !is Fase.Descargando
-    Dialog(
-        onDismissRequest = { if (cerrable) onMasTarde() },
-        properties = DialogProperties(dismissOnClickOutside = false, dismissOnBackPress = !obligatoria, usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
-    ) {
-        // Sin backdrop-blur en Compose: la tarjeta va al 98% (Stitch 95% + blur-xl) para que no se lea lo de atrás.
-        // El scrim es el del diseño (negro 60%); se quita el atenuado propio del Dialog para no oscurecer doble.
+    // Capa en la ventana de la actividad (v0.9.1); sin anfitrion cae a un Dialog sin ajuste del sistema.
+    // El scrim es el del diseño (negro 60%, dentro de ContenidoModal): la capa no añade velo propio.
+    com.gacelas.ui.components.CapaHojaC2(onDismissRequest = { if (cerrable) onMasTarde() }, velo = false) {
+        // Si cae al Dialog, se quita su atenuado propio para no oscurecer doble.
         (androidx.compose.ui.platform.LocalView.current.parent as? androidx.compose.ui.window.DialogWindowProvider)?.window?.setDimAmount(0f)
         ContenidoModal(
             versionActual = BuildConfig.VERSION_NAME, info = info, obligatoria = obligatoria, fase = fase, bytes = bytes,

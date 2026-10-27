@@ -39,6 +39,15 @@ export function CarreraEnCurso() {
   const sesion = useIdentidad((s) => s.sesion)
   const vivo = useCompartirEnVivo()
   const compartiendo = vivo.sesionId !== null
+  // Compartir en vivo sin boton en el mapa: se pregunta una vez y queda en Ajustes (user_settings.prefs).
+  const decisionVivo = useIdentidad((s) => s.ajustes.compartirEnVivo)
+  const actualizarAjustes = useIdentidad((s) => s.actualizarAjustes)
+  const puedeVivo = !!sesion && puedeCompartir()
+  useEffect(() => {
+    if (!puedeVivo) return
+    if (decisionVivo === true && !compartiendo) void empezarACompartir()
+    if (decisionVivo === false && compartiendo) void dejarDeCompartir()
+  }, [puedeVivo, decisionVivo, compartiendo])
   const ultimo = e.puntos.at(-1)
   useEffect(() => {
     if (compartiendo && e.fase === 'corriendo')
@@ -141,6 +150,16 @@ export function CarreraEnCurso() {
         onPrimario={() => setGpsAvisado(true)}
         onCerrar={() => setGpsAvisado(true)}
       />
+      <ModalC2
+        abierto={puedeVivo && decisionVivo == null && !modalFin}
+        icono="sensors"
+        titulo="¿Compartir tu carrera en vivo?"
+        texto="Tus seguidores podrán ver tu posición mientras corres. La zona de tu casa siempre se oculta. Puedes cambiarlo cuando quieras en Configuración > Privacidad."
+        primario="Sí, compartir"
+        onPrimario={() => void actualizarAjustes({ compartirEnVivo: true })}
+        onCerrar={() => void actualizarAjustes({ compartirEnVivo: false })}
+        secundario="No, gracias"
+      />
     </>
   )
   const dialogo = (
@@ -181,25 +200,6 @@ export function CarreraEnCurso() {
       >
         <span className="material-symbols-outlined">close</span>
       </button>
-      {sesion && puedeCompartir() && (
-        <button
-          onClick={() => void (compartiendo ? dejarDeCompartir() : empezarACompartir())}
-          aria-pressed={compartiendo}
-          data-testid="compartir-en-vivo"
-          className={`h-11 px-4 rounded-full flex items-center gap-2 font-semibold shadow-lg ${
-            compartiendo
-              ? 'bg-danger text-white'
-              : 'bg-surface/90 backdrop-blur-md text-text-primary'
-          }`}
-        >
-          <span className="material-symbols-outlined text-[20px]">sensors</span>
-          {compartiendo
-            ? vivo.visible === false
-              ? 'En vivo · casa oculta'
-              : 'En vivo'
-            : 'Compartir en vivo'}
-        </button>
-      )}
       <button
         onClick={() => navigate('/correr/cronometro')}
         aria-label="Abrir cronómetro"
@@ -313,17 +313,6 @@ export function CarreraEnCurso() {
               {voz ? 'volume_up' : 'volume_off'}
             </span>
           </button>
-          {sesion && puedeCompartir() && (
-            <button
-              onClick={() => void (compartiendo ? dejarDeCompartir() : empezarACompartir())}
-              aria-pressed={compartiendo}
-              aria-label={compartiendo ? 'Dejar de compartir en vivo' : 'Compartir en vivo'}
-              data-testid="compartir-en-vivo"
-              className={`${ctl} ${compartiendo ? '!bg-c2-peligro' : ''}`}
-            >
-              <span className="material-symbols-outlined text-[20px]">sensors</span>
-            </button>
-          )}
           <button
             onClick={() => setDescartar(true)}
             aria-label="Salir de la carrera"

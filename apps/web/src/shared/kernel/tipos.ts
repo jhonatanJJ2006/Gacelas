@@ -91,6 +91,8 @@ export interface Ajustes {
   distanciaFavorita: '5K' | '10K' | '21K' | '42K'
   /** Meta de kilometraje semanal. */
   metaKmSemana: number
+  /** Compartir la ubicacion en vivo al correr; null = aun no se pregunto (modal la primera vez). */
+  compartirEnVivo: boolean | null
 }
 
 export const AJUSTES_POR_DEFECTO: Ajustes = {
@@ -126,4 +128,5 @@ export const AJUSTES_POR_DEFECTO: Ajustes = {
   alturaCm: null,
   distanciaFavorita: '10K',
   metaKmSemana: 25,
+  compartirEnVivo: null,
 }
