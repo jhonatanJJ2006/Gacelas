@@ -42,7 +42,6 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
                 com.gacelas.seguridad.ui.BotonReportarIncidente(compacto = true) {
                     estado.puntos.lastOrNull()?.let { it.lat to it.lng } ?: com.gacelas.rutas.ultimaUbicacion(context)
                 }
-                BotonCompartirEnVivo(tracker)
             }
         },
         vozActiva = ajustes.anunciosVoz,
@@ -58,6 +57,7 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
             else TrazadoRuta(estado.puntos, Modifier.fillMaxSize())
         },
     )
+    CompartirEnVivoAutomatico(tracker)
     if (confirmar) {
         DialogoDescartarCarrera(onConfirmar = {
             confirmar = false

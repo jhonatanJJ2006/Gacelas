@@ -236,6 +236,8 @@ fun PrivacidadUbicacionScreen(onAtras: () -> Unit, onLegal: (Boolean) -> Unit = 
             FilaC2("Ocultar datos biométricos", "Pulsaciones y cadencia fuera de los resúmenes públicos", a.ocultarBiometricos) { v -> guardar { it.copy(ocultarBiometricos = v) } }
             Divisor()
             FilaC2("Ubicación precisa", "GPS de alta precisión durante las carreras", a.ubicacionPrecisa) { v -> guardar { it.copy(ubicacionPrecisa = v) } }
+            Divisor()
+            FilaC2("Compartir en vivo al correr", "Tus seguidores ven tu posición mientras corres (la zona de casa se oculta)", a.compartirEnVivo == true) { v -> guardar { it.copy(compartirEnVivo = v) } }
         }
         com.gacelas.legal.SeccionConsentimientos(onLegal, onCuentaEliminada)
     }

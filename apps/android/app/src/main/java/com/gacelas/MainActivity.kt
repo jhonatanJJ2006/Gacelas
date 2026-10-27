@@ -128,8 +128,13 @@ class MainActivity : ComponentActivity() {
                         montarApp = true
                     }
                     if (montarApp) {
-                        GacelasRaiz()
-                        com.gacelas.actualizacion.AvisoActualizacion()
+                        // Hojas C2 en la ventana de la actividad (no en una ventana de Dialog): v0.9.1.
+                        val hojas = remember { com.gacelas.ui.components.HojasC2() }
+                        androidx.compose.runtime.CompositionLocalProvider(com.gacelas.ui.components.LocalHojasC2 provides hojas) {
+                            GacelasRaiz()
+                            com.gacelas.actualizacion.AvisoActualizacion()
+                            com.gacelas.ui.components.AnfitrionHojasC2(hojas)
+                        }
                     } else Box(Modifier.fillMaxSize().background(com.gacelas.intro.FondoIntro))
                 }
             }

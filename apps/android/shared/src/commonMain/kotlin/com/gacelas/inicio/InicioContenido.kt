@@ -34,6 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import com.gacelas.tracking.Unidades
 import com.gacelas.tracking.formatearRitmo
@@ -60,6 +62,7 @@ fun saludoPorHora(hora: Int): String = when (hora) { in 5..11 -> "Buenos días";
  * Pantalla de inicio compartida (Android/iOS). Recibe los datos ya calculados; la figura 3D
  * (SceneView en Android) llega como slot porque depende de la plataforma.
  */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun InicioContenido(
     saludo: String,
@@ -94,31 +97,25 @@ fun InicioContenido(
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(saludo, style = GType.labelMd, color = GColors.C2Muted)
                 Text("Hola, $nombre".uppercase(), style = GType.headlineLg, color = GColors.TextPrimary)
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    PildoraC2("Loja 14° Fresco", GColors.C2Bg, GColors.TextPrimary, borde = true)
-                    InsigniaRacha(racha)
-                }
-                nivel?.let {
-                    PildoraC2(it, GColors.C2Violeta, GColors.C2Bg, modifier = Modifier.testTag("insignia-nivel"))
+                // Chips .wx del Figma: clima, racha (borde menta) y nivel (degradado morado).
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
+                    ChipC2("Loja", "14 °C", " nublado", acento = Color(0xFF96CCFF))
+                    ChipC2("Racha", "${racha.diaria} " + if (racha.diaria == 1) "día" else "días", acento = GColors.C2Menta, borde = GColors.C2Menta, modifier = Modifier.testTag("insignia-racha"))
+                    nivel?.let {
+                        ChipC2("Nivel", it, acento = Color(0xFFE9D5FF), borde = GColors.C2Violeta,
+                            fondo = Brush.linearGradient(listOf(Color(0xFF5E1781), Color(0xFF7B1FA2))), modifier = Modifier.testTag("insignia-nivel"))
+                    }
                 }
             }
         }
-        // Heroe con el corredor 3D destacado.
-        Box(
-            Modifier.fillMaxWidth().height(320.dp).clip(com.gacelas.ui.components.FormaC2)
-                .background(Brush.verticalGradient(listOf(GColors.C2Bg, GColors.Primary.copy(alpha = 0.25f)))),
-        ) {
-            corredor3D()
-            Column(Modifier.align(Alignment.TopStart).padding(16.dp)) {
-                EtiquetaC2("Avatar")
-                Text("${semana.diasCorridos.size} " + if (semana.diasCorridos.size == 1) "día" else "días", style = GType.headlineSm, color = GColors.TextPrimary)
-            }
-            Column(Modifier.align(Alignment.TopEnd).padding(16.dp), horizontalAlignment = Alignment.End) {
-                EtiquetaC2("Esta semana")
-                Text("${Unidades.texto(semana.km, m, 1)} ${Unidades.etiquetaDistancia(m)}", style = GType.headlineSm, color = GColors.C2Violeta)
-            }
-        }
-        com.gacelas.ui.components.BotonPrimario("Empezar a correr", onCorrer, icono = Icons.Filled.PlayArrow)
+        // Escenario C2 (Figma Movil / Inicio, "stage"): degradado morado a todo el ancho con el corredor 3D,
+        // etiquetas y el boton de empezar dentro. Ver EscenarioInicioC2.kt.
+        EscenarioInicioC2(
+            etiquetaIzq = "Avatar", valorIzq = nivel ?: ("${semana.diasCorridos.size} " + if (semana.diasCorridos.size == 1) "día" else "días"),
+            etiquetaDer = if (reto != null) "Este mes" else "Esta semana",
+            valorDer = "${Unidades.texto(reto?.km ?: semana.km, m, 1)} ${Unidades.etiquetaDistancia(m)}",
+            onCorrer = onCorrer, margenLateral = 16.dp, corredor3D = corredor3D,
+        )
         Row(Modifier.fillMaxWidth().clip(com.gacelas.ui.components.FormaC2).background(GColors.C2Card).padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
             MetricaC2("${semana.diasCorridos.size}", "Días")
             MetricaC2(Unidades.texto(semana.km, m, 1), Unidades.etiquetaDistancia(m), color = GColors.C2Violeta)
@@ -170,4 +167,23 @@ fun RutaSugeridaC2(ruta: com.gacelas.rutas.domain.modelo.Ruta?, m: Boolean, onRu
             nota?.let { Text(it, style = GType.bodySm, color = GColors.C2Menta, modifier = Modifier.testTag("ruta-sugerida-segura")) }
         }
     }
+}
+
+/** Chip .wx del Figma C2: 12sp cursiva 800 en mayusculas, inclinado -10deg, valor resaltado en [acento]. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+fun ChipC2(
+    rotulo: String, valor: String, resto: String = "", acento: Color, modifier: Modifier = Modifier,
+    borde: Color = Color(0xFF2C3446), fondo: Brush = Brush.linearGradient(listOf(GColors.C2Card, GColors.C2Card)),
+) {
+    val estilo = GType.labelMd.copy(fontFamily = com.gacelas.ui.theme.Inter, fontSize = 12.sp, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold)
+    Text(
+        androidx.compose.ui.text.buildAnnotatedString {
+            append(rotulo.uppercase() + " ")
+            pushStyle(androidx.compose.ui.text.SpanStyle(color = acento)); append(valor.uppercase()); pop()
+            append(resto.uppercase())
+        },
+        style = estilo, color = Color.White,
+        modifier = modifier.sesgoX(-10f).background(fondo).border(1.dp, borde).padding(horizontal = 10.dp, vertical = 6.dp),
+    )
 }

@@ -103,3 +103,17 @@ En Android los modales (crear evento, terminos, terminar carrera, compartir sobr
 - Causa: cada pantalla dibujaba su propio boton de reporte (pildora ancha) y la cabecera de Carrera y Navegacion no incluia accion de retroceso.
 - Arreglo: componentes compartidos BotonReportarMapa y BotonVolverMapa (web: shared/ui/BotonesMapa.tsx; Android: core/ui BotonesMapa.kt). Reportar es un boton lateral de 42 px al borde derecho, color C2 de alerta, icono de advertencia y etiqueta accesible. Volver va arriba a la izquierda respetando las areas seguras; vuelve a la pantalla anterior o a Inicio. En Carrera activa usa el comportamiento existente (web: la carrera sigue en segundo plano; Android: onAtras con confirmacion). En Navegacion de ruta Android se guarda la carrera igual que al cerrar.
 - Pruebas: apps/web/e2e/mapa.spec.ts y apps/android/app/src/test/java/com/gacelas/MapaBotonesTest.kt.
+
+## 2026-10-26: Modales cortados o con botones bajo la barra de navegacion (v0.9.1)
+
+- Sintoma: en algunos telefonos "¿Descartar la carrera?" y otras hojas no quedaban pegadas al borde inferior; parte del contenido y el ultimo boton quedaban bajo la barra de navegacion.
+- Causa: la ventana de `Dialog` se posiciona mal en esos equipos aunque se use `decorFitsSystemWindows = false`.
+- Arreglo: las hojas C2 (`DialogoC2`, `HojaC2`, incidentes, aviso de actualizacion) se dibujan en la ventana de la actividad mediante `AnfitrionHojasC2` (core/ui HojasC2.kt), montado en MainActivity. Sin anfitrion (previews, iOS, pruebas aisladas) se usa `Dialog` como respaldo. `CargandoGoogle` sigue como dialogo centrado.
+- Pruebas: `ModalesBordeTest` comprueba en 360x640, 393x873 y fuente 1.3 que no hay ventana de dialogo, que la hoja toca el borde inferior y que el ultimo boton se ve completo (acerca, descartar, compartir en vivo y una hoja larga).
+
+## 2026-10-26: Fondo negro en la tarjeta del avatar de Inicio (v0.9.1)
+
+- Sintoma: la escena del avatar en Inicio se veia sobre negro en vez del escenario morado del diseno C2.
+- Causa: el SurfaceView de Filament con `setZOrderMediaOverlay` perfora la ventana y se ve negro detras.
+- Arreglo: Inicio usa `Runner3D(sobreFondo = true)`, que dibuja el avatar en la vista transparente, sobre `EscenarioInicioC2` (degradado 160 grados, halo morado, rayas a 115 grados, brillo del piso y texto CORRE LOJA). Web usa la clase `.escenario-c2`.
+- Pruebas: `InicioC2Test` (Roborazzi) y `e2e/v091.spec.ts`.

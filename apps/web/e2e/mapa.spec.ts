@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { expect, test, prepararGps, registrarse } from './ayuda'
+import { expect, test, prepararGps, registrarse, responderCompartirEnVivo } from './ayuda'
 
 /**
  * Pantallas de mapa: "Reportar incidente" va al borde derecho (no centrado) y hay una flecha
@@ -33,6 +33,7 @@ test.describe('Pantallas de mapa en 390x844', () => {
     await page.getByRole('button', { name: 'Comenzar carrera' }).click()
     await page.getByRole('button', { name: 'Aceptar y empezar' }).click()
     await expect(page).toHaveURL(/\/correr\/en-curso/)
+    await responderCompartirEnVivo(page)
     await page.waitForTimeout(500)
     await capturar(page, 'carrera')
     await reportarAlLado(page)
@@ -45,6 +46,7 @@ test.describe('Pantallas de mapa en 390x844', () => {
     // La carrera sigue activa: Correr lleva de vuelta a la carrera en curso.
     await page.getByRole('link', { name: 'Correr', exact: true }).click()
     await expect(page).toHaveURL(/\/correr\/en-curso/)
+    await responderCompartirEnVivo(page)
   })
 
   test('mapa en vivo: reportar al lado y volver atras', async ({ page }) => {

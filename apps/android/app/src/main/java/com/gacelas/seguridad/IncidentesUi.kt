@@ -30,7 +30,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ReportProblem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -182,8 +181,8 @@ fun HojaReportarIncidente(posicion: Pair<Double, Double>?, onCerrar: () -> Unit,
         }
     }
     LaunchedEffect(posicion) { posicion?.let { direccion = direccionDe(context, it.first, it.second) } }
-    // Abierta del todo (sin estado a medias) y pegada al borde inferior; Material 3 aplica los insets.
-    ModalBottomSheet(onDismissRequest = onCerrar, sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = GColors.C2Bg, contentColor = GColors.TextPrimary) {
+    // Hoja C2 en la ventana de la actividad: pegada al borde inferior y con los insets reales (v0.9.1).
+    com.gacelas.ui.components.HojaC2(onCerrar = onCerrar, fondo = GColors.C2Bg) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).navigationBarsPadding().padding(bottom = 16.dp).testTag("hoja-reportar"),
             verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Reportar incidente", style = GType.headlineSm, color = GColors.TextPrimary)
