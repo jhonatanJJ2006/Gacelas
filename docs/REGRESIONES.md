@@ -42,3 +42,28 @@ El APK de v0.8.0 (commit 876739e, release v0.8.0) se compilo con otro `debug.key
 - Publicar siempre con `-Pgacelas.release=true`.
 - Si cambia la maquina o el keystore, registrar la nueva SHA-1 en Google Cloud antes de publicar y agregarla a `gacelas.firmasGoogle`.
 - A futuro: una firma de release fija guardada fuera del repositorio, para que la SHA-1 no dependa de la maquina.
+
+## 2026-10-26: Android no avisa de versiones nuevas (0.8.1 a 0.8.3)
+
+### Que paso
+
+Con v0.8.1, v0.8.2 o v0.8.3 instalada, la app no mostraba el aviso "Hay una nueva version" ni se actualizaba.
+
+### Causa
+
+La app no lee GitHub. Lee el manifiesto publico `app-releases/android/latest.json` en Supabase Storage y compara su `versionCode` con el instalado. Ese manifiesto solo lo actualiza `scripts/publicar-android.sh`. Las versiones 0.8.1, 0.8.2 y 0.8.3 se publicaron solo con `gh release create`, asi que el manifiesto siguio anunciando 0.8.0 (versionCode 800). Una app con 801 o mas ve un servidor mas viejo y no avisa nada. El codigo de comparacion estaba bien.
+
+### Arreglo
+
+1. v0.8.4 se publica con `scripts/publicar-android.sh`, que sube el APK y `latest.json` con versionCode 804.
+2. El script crea el release con `--target` igual al commit publicado y al final ejecuta `scripts/verificar-manifiesto.sh`.
+3. `scripts/verificar-manifiesto.sh` falla si el manifiesto publico no anuncia el `versionName` de `build.gradle.kts`.
+
+### Test de regresion
+
+`ActualizacionTest.versionInstaladaDetectaLaSiguiente`: una app 0.8.3 (803) que lee un manifiesto 0.8.4 (804) recibe el aviso de version nueva, y una 0.8.4 no lo recibe.
+
+### Como evitarlo
+
+- Publicar versiones de Android solo con `scripts/publicar-android.sh`, nunca con `gh release create` a mano.
+- Despues de publicar, `scripts/verificar-manifiesto.sh` debe decir "Manifiesto al dia".

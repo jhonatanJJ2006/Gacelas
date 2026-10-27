@@ -2,6 +2,8 @@
 # Publica una version de la app Android: compila el APK (con las claves de local.properties),
 # lo sube a Supabase Storage (bucket publico app-releases) junto con android/latest.json y crea
 # el tag y el release de GitHub (pre-release) con el mismo APK.
+# Es la UNICA forma de publicar: un "gh release create" a mano no actualiza latest.json y las apps
+# instaladas no ven la version nueva (regresion 0.8.1-0.8.3, ver docs/REGRESIONES.md).
 #
 # Uso: scripts/publicar-android.sh "Novedad 1; Novedad 2; Novedad 3" [--obligatoria]
 # Las novedades separadas por ";" van como lista (items) al modal; notes guarda el texto completo.
@@ -48,6 +50,7 @@ curl -fsS "$PUBLICA/android/latest.json" | jq .
 
 cp "$APK" /tmp/gacelas-debug-arm64.apk
 git -C "$RAIZ" tag "v$NOMBRE" && git -C "$RAIZ" push origin "v$NOMBRE"
-gh release create "v$NOMBRE" /tmp/gacelas-debug-arm64.apk --prerelease --title "Gacelas v$NOMBRE" --notes "$(echo "$NOTAS" | tr ';' '\n' | sed 's/^ */- /')
+gh release create "v$NOMBRE" /tmp/gacelas-debug-arm64.apk --prerelease --target "$(git -C "$RAIZ" rev-parse HEAD)" --title "Gacelas v$NOMBRE" --notes "$(echo "$NOTAS" | tr ';' '\n' | sed 's/^ */- /')
 
 APK debug arm64-v8a."
+"$RAIZ/scripts/verificar-manifiesto.sh"

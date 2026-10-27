@@ -317,7 +317,7 @@ private val etiqueta = TextStyle(fontFamily = Inter, fontSize = 10.sp, lineHeigh
 private fun MetricaLado(titulo: String, valor: String, unidad: String, modifier: Modifier, color: Color = Color.White) {
     Column(modifier) {
         Text(titulo, style = etiqueta.copy(fontWeight = FontWeight.ExtraBold), color = K1.Secondary)
-        Text(valor, style = TextStyle(fontFamily = num, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.025).em), color = color, maxLines = 1)
+        Text(valor, style = TextStyle(fontFamily = num, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.015.em), color = color, maxLines = 1)
         if (unidad.isNotEmpty()) Text(unidad, style = TextStyle(fontFamily = Inter, fontSize = 10.sp, lineHeight = 13.sp, fontWeight = FontWeight.Medium), color = K1.Secondary)
     }
 }
@@ -417,7 +417,7 @@ private fun PanelCronometro(e: EstadoCarrera, m: Boolean, bajo: Boolean, onVuelt
                 Text(buildAnnotatedString {
                     append(t.dropLast(2))
                     withStyle(SpanStyle(color = K1.Naranja)) { append(t.takeLast(2)) }
-                }, style = TextStyle(fontFamily = num, fontSize = 36.sp, lineHeight = 38.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.025).em), color = Color.White, modifier = Modifier.testTag("cronometro-grande"))
+                }, style = TextStyle(fontFamily = num, fontSize = 36.sp, lineHeight = 38.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.015.em), color = Color.White, modifier = Modifier.testTag("cronometro-grande"))
                 Spacer(Modifier.height(12.dp))
                 Text(buildAnnotatedString {
                     append("Ritmo prom: ")

@@ -109,7 +109,7 @@ body {
 .font-display {
   font-style: italic;
   font-weight: 400;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 body {
@@ -136,6 +136,7 @@ body {
   }
   .valor-c2 {
     font-family: 'Anton', 'Archivo', sans-serif;
+    letter-spacing: 0.03em;
     @apply italic text-[22px] leading-none whitespace-nowrap;
   }
   .boton-c2 {

@@ -30,12 +30,12 @@ object GType {
     val bodyLg = TextStyle(fontFamily = Inter, fontSize = 16.sp, lineHeight = 24.sp)
     val labelMd = TextStyle(fontFamily = RobotoFlex, fontSize = 12.sp, lineHeight = 16.sp, letterSpacing = 0.02.em, fontWeight = FontWeight.SemiBold)
     val labelLg = TextStyle(fontFamily = RobotoFlex, fontSize = 14.sp, lineHeight = 20.sp, letterSpacing = 0.01.em, fontWeight = FontWeight.SemiBold)
-    val titleMd = TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.SemiBold)
-    val headlineSm = TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 20.sp, lineHeight = 28.sp, fontWeight = FontWeight.SemiBold)
-    val headlineMd = TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 24.sp, lineHeight = 32.sp, letterSpacing = (-0.01).em, fontWeight = FontWeight.SemiBold)
-    val headlineLg = TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 30.sp, lineHeight = 36.sp, letterSpacing = (-0.01).em, fontWeight = FontWeight.Bold)
-    val headlineXl = TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 32.sp, lineHeight = 34.sp, letterSpacing = (-0.02).em, fontWeight = FontWeight.Bold)
-    val metricHuge = TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 36.sp, lineHeight = 38.sp, letterSpacing = (-0.03).em, fontWeight = FontWeight.Bold)
+    val titleMd = TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 18.sp, lineHeight = 24.sp, letterSpacing = 0.03.em, fontWeight = FontWeight.SemiBold)
+    val headlineSm = TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 20.sp, lineHeight = 28.sp, letterSpacing = 0.03.em, fontWeight = FontWeight.SemiBold)
+    val headlineMd = TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 24.sp, lineHeight = 32.sp, letterSpacing = 0.03.em, fontWeight = FontWeight.SemiBold)
+    val headlineLg = TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 30.sp, lineHeight = 36.sp, letterSpacing = 0.03.em, fontWeight = FontWeight.Bold)
+    val headlineXl = TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 32.sp, lineHeight = 34.sp, letterSpacing = 0.02.em, fontWeight = FontWeight.Bold)
+    val metricHuge = TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 36.sp, lineHeight = 38.sp, letterSpacing = 0.01.em, fontWeight = FontWeight.Bold)
 }
 
 val Typography = Typography(
