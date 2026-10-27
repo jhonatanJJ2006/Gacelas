@@ -90,6 +90,8 @@ class MainActivity : ComponentActivity() {
         // Arranque con el fondo de marca (Theme.Gacelas.Arranque). El SplashScreen no se retiene: en
         // el primer cuadro de la ventana ya corre la intro (vector animado en el RenderThread) sobre
         // el mismo #0C1322 y la gacela del splash se desvanece encima (docs/MARCA.md).
+        android.os.Trace.beginSection("MainActivity.onCreate")
+        val t0 = SystemClock.uptimeMillis()
         val splash = installSplashScreen()
         super.onCreate(savedInstanceState)
         // La intro se decide en onStart (cada vez que la app pasa a primer plano, docs/MARCA.md).
@@ -114,15 +116,33 @@ class MainActivity : ComponentActivity() {
                 val foco = LocalFocusManager.current
                 val teclado = LocalSoftwareKeyboardController.current
                 Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { foco.clearFocus(); teclado?.hide() } }) {
-                    // La app se monta enseguida, debajo de la intro: la intro corre en el RenderThread y
-                    // no se entrecorta aunque montar la app ocupe el hilo principal.
-                    GacelasRaiz()
-                    com.gacelas.actualizacion.AvisoActualizacion()
+                    // El primer cuadro es solo el fondo de marca (y la intro encima): asi el splash se suelta
+                    // al instante. La app se monta despues, cuando el contenedor (Supabase, datos) ya se
+                    // construyo en segundo plano; tocarlo antes bloqueaba el hilo principal ~5 s y el splash
+                    // se quedaba fijo (v0.8.9). La intro corre en el RenderThread y no se entrecorta.
+                    var montarApp by remember { mutableStateOf(false) }
+                    androidx.compose.runtime.LaunchedEffect(Unit) {
+                        androidx.compose.runtime.withFrameNanos { }
+                        (application as GacelasApp).esperarContenedor()
+                        android.util.Log.i("Arranque", "app lista a ${SystemClock.uptimeMillis() - android.os.Process.getStartUptimeMillis()} ms del inicio del proceso")
+                        montarApp = true
+                    }
+                    if (montarApp) {
+                        GacelasRaiz()
+                        com.gacelas.actualizacion.AvisoActualizacion()
+                    } else Box(Modifier.fillMaxSize().background(com.gacelas.intro.FondoIntro))
                 }
             }
         }
         if (conIntro) iniciarIntro()
+        duracionOnCreateMs = SystemClock.uptimeMillis() - t0
+        android.util.Log.i("Arranque", "onCreate ${duracionOnCreateMs} ms, intro=$conIntro")
+        android.os.Trace.endSection()
     }
+
+    /** Lo que tardo el ultimo onCreate (debe ser poco: nada pesado en el hilo principal). */
+    var duracionOnCreateMs = 0L
+        private set
 
     private var vistaIntro: android.view.View? = null
 

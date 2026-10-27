@@ -82,7 +82,7 @@ export function CompartirDialogo({
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-compartir"
-        className="w-full sm:max-w-md bg-c2-card border-t-2 border-c2-violeta rounded-t-[14px] sm:rounded-[14px] p-5 space-y-4 max-h-[95dvh] overflow-y-auto"
+        className="w-full sm:max-w-md bg-c2-card border-t-2 border-c2-violeta rounded-t-[14px] sm:rounded-[14px] p-5 pb-[max(env(safe-area-inset-bottom),20px)] space-y-4 max-h-[calc(100dvh-16px)] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
