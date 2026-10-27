@@ -272,6 +272,11 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: (conCarrera: Boolea
             }
         }
         Column(Modifier.statusBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Volver: igual que cerrar la navegacion; si hubo carrera se guarda y va al resumen (no se pierden datos).
+            com.gacelas.ui.components.BotonVolverMapa({
+                if (estado.segundos > 0) terminarCarrera(context, tracker) else descartarCarrera(context, tracker)
+                onCerrar(estado.segundos > 0)
+            })
             Tarjeta(fondo = GColors.Secondary700, borde = null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconoCirculo(Icons.Filled.Navigation, GColors.TextPrimary.copy(alpha = 0.2f), GColors.TextPrimary, 44.dp)
