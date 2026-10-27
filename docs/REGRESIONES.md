@@ -2,6 +2,28 @@
 
 Registro de fallos que ya se habian corregido y volvieron. Cada entrada dice que paso, la causa, el arreglo y como evitar que se repita.
 
+## 2026-10-26: el avatar 3D no aparece en Inicio (Android, v0.9.1 y v0.9.2)
+
+### Que paso
+
+En Inicio se veia el escenario morado pero no el corredor 3D. No aparecia tampoco el icono de respaldo, asi que la vista 3D existia pero no se dibujaba.
+
+### Causa
+
+En v0.9.1 el escenario C2 recorto todo su contenido con una forma no rectangular (`clip(FormaEscenarioC2)`). El corredor en Android es un `WebView` transparente, y en muchos dispositivos un `WebView` dentro de un recorte de forma no se pinta. El GLB, el HTML y el JS ya venian dentro del APK y se servian desde los assets, asi que la red no tenia nada que ver. No se pudo reproducir en un dispositivo real (el emulador no arranca en el entorno de CI local); es la causa mas probable y por eso tambien se agrego un respaldo.
+
+### Arreglo (v0.9.3)
+
+- La forma solo recorta el fondo y el texto del escenario. El corredor 3D queda dentro de un recorte rectangular (`clipToBounds`).
+- `Runner3DWeb` cambia al icono de respaldo si el proceso de render del WebView muere, o si a los 10 s la escena no marca `data-listo="1"`.
+- Web: nuevo service worker (`public/sw.js`). Guarda la app, el GLB y las fuentes en la primera visita y los sirve sin red.
+- iOS ya empaquetaba el GLB en el bundle (`project.yml`), sin cambios.
+
+### Como evitar que se repita
+
+- No poner `WebView`, `SurfaceView` ni otras vistas nativas dentro de un `clip` con forma no rectangular.
+- Prueba e2e `apps/web/e2e/v093.spec.ts`: primera visita con red, luego `setOffline(true)` y recarga; el corredor tiene que quedar listo.
+
 ## 2026-10-25: Google se queda cargando tras elegir la cuenta (Android)
 
 ### Que paso

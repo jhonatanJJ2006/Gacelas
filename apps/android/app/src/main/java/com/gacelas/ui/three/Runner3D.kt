@@ -1,5 +1,7 @@
 package com.gacelas.ui.three
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import android.app.ActivityManager
 import android.content.Context
 import android.opengl.EGL14
@@ -175,6 +177,10 @@ fun Runner3DWeb(
     val url = remember(autoRotar, camara) {
         "${HOST_ASSETS}runner3d/index.html?clip=${clip.nombre}&rotar=${if (autoRotar) 1 else 0}&cam=${camara.x},${camara.y},${camara.z}"
     }
+    // Si el GLB no llega a dibujarse (WebGL no disponible, proceso del WebView caido) se muestra el
+    // corredor de respaldo en vez de dejar el hueco vacio. El GLB va empaquetado en assets: no usa red.
+    var fallo by remember { androidx.compose.runtime.mutableStateOf(false) }
+    if (fallo) { Runner3DFallback(modifier); return }
     androidx.compose.ui.viewinterop.AndroidView(
         modifier = modifier.fillMaxSize().then(Modifier.testTag("corredor-3d-webgl")),
         factory = { ctx ->
@@ -202,8 +208,19 @@ fun Runner3DWeb(
                         return runCatching { android.webkit.WebResourceResponse(tipo, "utf-8", ctx.assets.open(ruta)) }
                             .onFailure { Log.w(TAG, "Asset no encontrado: $ruta", it) }.getOrNull()
                     }
+
+                    @androidx.annotation.RequiresApi(26)
+                    override fun onRenderProcessGone(view: android.webkit.WebView, detail: android.webkit.RenderProcessGoneDetail): Boolean {
+                        Log.w(TAG, "WebView del corredor 3D cerrado"); fallo = true; return true
+                    }
                 }
                 loadUrl(url)
+                // Vigilante: a los 10 s el modelo debe estar listo (document.body.dataset.listo).
+                postDelayed({
+                    if (isAttachedToWindow) evaluateJavascript("document.body&&document.body.dataset.listo||''") { r ->
+                        if (r?.contains("1") != true) { Log.w(TAG, "El corredor 3D no cargo en el WebView ($r)"); fallo = true }
+                    }
+                }, 10_000)
             }
         },
         update = { w ->
