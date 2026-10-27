@@ -98,6 +98,9 @@ class ContenedorApp(
     /** Descarga los datos de la cuenta y sube lo pendiente. No hace nada sin servidor. */
     val sincronizar: suspend () -> Unit
 
+    /** Ruta sugerida para hoy (migracion 035); sin servidor solo usa la cache local. */
+    val rutaSugerida = com.gacelas.rutas.infrastructure.RutaSugeridaRepository(backend, store)
+
     /** Rutas guardadas en el celular y cambios pendientes. */
     val rutasOffline = RutasOffline(store)
 

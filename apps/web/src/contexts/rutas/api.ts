@@ -11,3 +11,5 @@ export { LocalRutasRepository } from './infrastructure/rutasLocal'
 export { SupabaseExplorarRepository, SupabaseRutasRepository } from './infrastructure/rutasSupabase'
 export * from './infrastructure/vistaPrevia'
 export { RUTAS_LOJA }
+export * from './domain/sugerida'
+export * from './infrastructure/sugeridaSupabase'

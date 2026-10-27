@@ -76,6 +76,14 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
     val hora = remember { java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY) }
     val saludo = saludoPorHora(hora)
     val nombre = perfil?.nombre?.substringBefore(' ')?.ifBlank { null } ?: "Corredor"
+    // Ruta sugerida para hoy: la decide Supabase (ruta_sugerida_hoy); ver docs/RUTA-SUGERIDA.md.
+    val delDia by androidx.compose.runtime.produceState<com.gacelas.rutas.infrastructure.RutaDelDia?>(null, carreras.size) {
+        value = cont.rutaSugerida.hoy(
+            com.gacelas.data.mock.MockData.rutas,
+            carreras.map { c -> com.gacelas.rutas.domain.reglas.CarreraSugerida(c.inicioMs, c.distanciaKm, c.puntos.firstOrNull()?.let { it.lat to it.lng }) },
+            System.currentTimeMillis(),
+        )
+    }
     InicioContenido(
         saludo = saludo, nombre = nombre, semana = semana, hoy = hoy, m = m, racha = com.gacelas.ui.rachaState(), evento = evento,
         onCorrer = onCorrer, onEventos = onEventos, onEvento = onEvento,
@@ -87,7 +95,13 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
         amigos = social.amigos,
         inscrito = evento.id in inscritos,
         onComunidad = onComunidad,
-        rutaSugerida = remember(carreras) { rutaSugerida(carreras.map { it.distanciaKm }) },
+        rutaSugerida = (delDia as? com.gacelas.rutas.infrastructure.RutaDelDia.Ok)?.ruta,
+        rutaSugeridaNota = when (val d = delDia) {
+            is com.gacelas.rutas.infrastructure.RutaDelDia.Ok ->
+                if (d.sinConexion) "Segura según la última consulta. No la corriste en 3 días" else "Zona segura a esta hora. No la corriste en 3 días"
+            is com.gacelas.rutas.infrastructure.RutaDelDia.SinRuta -> d.motivo
+            null -> "Buscando una ruta segura para hoy..."
+        },
         onRutas = onRutas,
         nivel = com.gacelas.comunidad.domain.modelo.nivelCorredor(carreras.sumOf { it.distanciaKm }),
     )
@@ -98,10 +112,4 @@ fun rangoSemana(ahoraMs: Long): String {
     val lunes = com.gacelas.shared.Fechas.fecha(Estadisticas.inicioSemana(ahoraMs))
     val domingo = com.gacelas.shared.Fechas.fecha(com.gacelas.shared.Fechas.sumarDias(Estadisticas.inicioSemana(ahoraMs), 6))
     return "${lunes.dayOfMonth} - ${domingo.dayOfMonth} ${com.gacelas.actividad.domain.reglas.EstadisticasPerfil.MESES_CORTOS[domingo.monthNumber - 1].lowercase()}"
-}
-
-/** Sugiere la ruta del catalogo cuya distancia se acerca mas a la media de las ultimas carreras (5 km sin historial). */
-fun rutaSugerida(distancias: List<Double>): com.gacelas.rutas.domain.modelo.Ruta? {
-    val objetivo = distancias.takeLast(5).takeIf { it.isNotEmpty() }?.average() ?: 5.0
-    return com.gacelas.data.mock.MockData.rutas.minByOrNull { kotlin.math.abs(it.distanciaKm - objetivo) }
 }
