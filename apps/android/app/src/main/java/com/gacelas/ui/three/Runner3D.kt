@@ -97,15 +97,19 @@ fun Runner3D(
     /** Giro del corredor (grados, horario) respecto a "hacia adelante" en pantalla. */
     rumboRelativo: Float = 0f,
     /**
-     * Fondo de Compose visible detras del corredor (Inicio, v0.9.1). El SurfaceView de Filament como capa
-     * de medios perfora la ventana y se veia NEGRO en lugar del degradado; el WebView transparente se
-     * compone con el resto de la UI y deja ver el escenario morado.
+     * Fondo de Compose visible detras del corredor (Inicio). Desde 0.9.5 usa Filament en un TextureView
+     * translucido (Runner3DFilamentTransparente); el SurfaceView de SceneView perforaba la ventana en negro y
+     * el WebView transparente de 0.9.1-0.9.4 no se dibujaba en telefonos reales.
      */
     sobreFondo: Boolean = false,
 ) {
     val context = LocalContext.current
-    val disponible = !sobreFondo && !LocalInspectionMode.current && remember { soporta3D(context) }
-    if (!disponible) {
+    val filament = !LocalInspectionMode.current && remember { soporta3D(context) }
+    // Inicio (sobreFondo): Filament en un TextureView translucido. Desde 0.9.1 aqui se usaba el WebView
+    // transparente y en telefonos reales el corredor no se dibujaba; 0.9.0 (Filament) si se veia.
+    val motor = motorCorredor(sobreFondo, filament)
+    if (motor == MotorCorredor.FilamentTranslucido) { Runner3DFilamentTransparente(clip, modifier, autoRotar, camara); return }
+    if (motor == MotorCorredor.WebGL) {
         // Sin Filament (GPU emulada con SwiftShader, drivers problematicos) se dibuja el mismo GLB con WebGL.
         if (LocalInspectionMode.current || Build.FINGERPRINT == "robolectric") Runner3DFallback(modifier)
         else Runner3DWeb(clip, modifier, autoRotar, camara, rumboRelativo)
@@ -230,4 +234,130 @@ fun Runner3DWeb(
         onRelease = { it.destroy() },
     )
     }
+}
+
+
+enum class MotorCorredor { Filament, FilamentTranslucido, WebGL }
+
+/**
+ * Que render usa el corredor. Con Filament disponible nunca se usa el WebView: en 0.9.1-0.9.4 Inicio
+ * (sobreFondo) pasaba al WebView transparente y el corredor no se dibujaba en telefonos reales.
+ */
+fun motorCorredor(sobreFondo: Boolean, filament: Boolean): MotorCorredor = when {
+    !filament -> MotorCorredor.WebGL
+    sobreFondo -> MotorCorredor.FilamentTranslucido
+    else -> MotorCorredor.Filament
+}
+
+/**
+ * Corredor de Inicio con Filament sobre un TextureView translucido: se compone con la UI de Compose
+ * (escenario C2 detras, etiquetas y boton delante), a diferencia del SurfaceView de SceneView que perfora
+ * la ventana en negro. Vista TRANSLUCENT, limpieza con alfa 0 y sin skybox. El GLB sale de los assets del
+ * APK (sin red). El respaldo queda debajo hasta que el TextureView entrega un cuadro con pixeles.
+ */
+@Composable
+fun Runner3DFilamentTransparente(
+    clip: ClipCorredor,
+    modifier: Modifier = Modifier,
+    autoRotar: Boolean = false,
+    camara: Position = Position(0f, 1.2f, 3.5f),
+) {
+    var visto by remember { androidx.compose.runtime.mutableStateOf(false) }
+    var fallo by remember { androidx.compose.runtime.mutableStateOf(false) }
+    Box(modifier.fillMaxSize()) {
+        if (!visto || fallo) Runner3DFallback(Modifier.testTag("corredor-3d-respaldo"))
+        if (!fallo) androidx.compose.ui.viewinterop.AndroidView(
+            modifier = Modifier.fillMaxSize().testTag("corredor-3d-filament"),
+            factory = { ctx ->
+                val tv = android.view.TextureView(ctx).apply { isOpaque = false }
+                runCatching { CorredorFilament(ctx, tv, clip.nombre, autoRotar, camara) { visto = true } }
+                    .onSuccess { tv.tag = it }
+                    .onFailure { Log.w(TAG, "Filament no pudo iniciar el corredor", it); fallo = true }
+                tv
+            },
+            onRelease = { (it.tag as? CorredorFilament)?.cerrar() },
+        )
+    }
+}
+
+/** Bucle de render: Choreographer -> animacion + giro -> ModelViewer.render. */
+internal class CorredorFilament(
+    ctx: android.content.Context,
+    private val tv: android.view.TextureView,
+    clip: String,
+    private val autoRotar: Boolean,
+    camara: Position,
+    private val onPrimerCuadro: () -> Unit,
+) : android.view.Choreographer.FrameCallback {
+    private val engine: com.google.android.filament.Engine
+    private val uiHelper = com.google.android.filament.android.UiHelper(com.google.android.filament.android.UiHelper.ContextErrorPolicy.DONT_CHECK).apply { isOpaque = false }
+    private val viewer: com.google.android.filament.utils.ModelViewer
+    private val indice: Int
+    private val escala: Float
+    private val centro: com.google.android.filament.utils.Float3
+    private var inicio = -1L
+    private var cuadros = 0
+    private var visto = false
+    private var activo = true
+
+    init {
+        com.google.android.filament.utils.Utils.init()
+        engine = com.google.android.filament.Engine.create()
+        val manipulador = com.google.android.filament.utils.Manipulator.Builder()
+            .targetPosition(0f, 0f, 0f)
+            .orbitHomePosition(camara.x, camara.y, camara.z)
+            .viewport(1, 1)
+            .build(com.google.android.filament.utils.Manipulator.Mode.ORBIT)
+        viewer = com.google.android.filament.utils.ModelViewer(tv, engine, uiHelper, manipulador)
+        viewer.view.blendMode = com.google.android.filament.View.BlendMode.TRANSLUCENT
+        viewer.scene.skybox = null
+        viewer.renderer.clearOptions = viewer.renderer.clearOptions.apply { clear = true; clearColor = floatArrayOf(0f, 0f, 0f, 0f) }
+        val bytes = ctx.assets.open(MODELO_CORREDOR).use { it.readBytes() }
+        viewer.loadModelGlb(java.nio.ByteBuffer.allocateDirect(bytes.size).put(bytes).apply { rewind() })
+        val asset = checkNotNull(viewer.asset) { "GLB sin escena" }
+        // ModelViewer ya trae una luz direccional; se agrega un IBL plano para que el PBR no quede oscuro.
+        viewer.scene.indirectLight = com.google.android.filament.IndirectLight.Builder()
+            .irradiance(1, floatArrayOf(0.9f, 0.85f, 1f)).intensity(30_000f).build(engine)
+        val animador = viewer.animator
+        indice = (0 until (animador?.animationCount ?: 0)).firstOrNull { animador?.getAnimationName(it) == clip } ?: 0
+        val caja = asset.boundingBox
+        centro = com.google.android.filament.utils.Float3(caja.center[0], caja.center[1], caja.center[2])
+        escala = 0.9f / caja.halfExtent[1].coerceAtLeast(0.001f)
+        android.view.Choreographer.getInstance().postFrameCallback(this)
+    }
+
+    override fun doFrame(t: Long) {
+        if (!activo) return
+        android.view.Choreographer.getInstance().postFrameCallback(this)
+        if (inicio < 0) inicio = t
+        val s = (t - inicio) / 1e9f
+        val asset = viewer.asset ?: return
+        viewer.animator?.let { a ->
+            if (a.animationCount > 0) { a.applyAnimation(indice, s % a.getAnimationDuration(indice)); a.updateBoneMatrices() }
+        }
+        val giro = if (autoRotar) (s * 18f) % 360f else 0f
+        val m = com.google.android.filament.utils.rotation(com.google.android.filament.utils.Float3(0f, 1f, 0f), giro) *
+            com.google.android.filament.utils.scale(com.google.android.filament.utils.Float3(escala)) *
+            com.google.android.filament.utils.translation(-centro)
+        val tm = engine.transformManager
+        tm.setTransform(tm.getInstance(asset.root), com.google.android.filament.utils.transpose(m).toFloatArray())
+        viewer.render(t)
+        if (!visto && ++cuadros % 10 == 0 && tv.isAvailable) {
+            val b = tv.getBitmap(48, 48)
+            if (b != null && tienePixeles(b)) { visto = true; onPrimerCuadro() }
+            b?.recycle()
+        }
+    }
+
+    fun cerrar() {
+        activo = false
+        android.view.Choreographer.getInstance().removeFrameCallback(this)
+        runCatching { viewer.destroyModel(); uiHelper.detach(); engine.destroy() }
+    }
+}
+
+/** true si el cuadro tiene algun pixel no transparente (hay corredor dibujado). */
+internal fun tienePixeles(b: android.graphics.Bitmap): Boolean {
+    for (y in 0 until b.height step 2) for (x in 0 until b.width step 2) if (android.graphics.Color.alpha(b.getPixel(x, y)) > 0) return true
+    return false
 }

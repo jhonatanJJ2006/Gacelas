@@ -2,6 +2,24 @@
 
 Registro de fallos que ya se habian corregido y volvieron. Cada entrada dice que paso, la causa, el arreglo y como evitar que se repita.
 
+## 2026-10-27: el corredor 3D de Inicio no se dibuja en Android desde 0.9.1 (v0.9.5)
+
+### Cambio que lo introdujo
+
+v0.9.0 a v0.9.1, `InicioScreen.kt`: `Runner3D(..., sobreFondo = true)`. En `Runner3D.kt` eso hacia `disponible = !sobreFondo && ...`, asi que Inicio dejaba de usar Filament (que en 0.9.0 se veia en el telefono de Jhona, sobre fondo negro) y pasaba siempre al WebView transparente con three.js. Ese WebView solo se habia probado en el emulador; en su telefono no pinta nada. 0.9.3 y 0.9.4 solo agregaron respaldos.
+
+### Arreglo
+
+- `motorCorredor`: con Filament disponible Inicio usa `Runner3DFilamentTransparente`. El WebView queda solo para equipos sin Filament.
+- `Runner3DFilamentTransparente`: Filament (ModelViewer) en un `TextureView` con `isOpaque = false`, vista `BlendMode.TRANSLUCENT`, limpieza con alfa 0 y sin skybox. El TextureView se compone como una vista normal: escenario detras, etiquetas y boton delante. El SurfaceView de SceneView perforaba la ventana en negro.
+- El GLB se lee de los assets del APK (sin red).
+- El respaldo sigue debajo hasta que el TextureView entrega un cuadro con pixeles.
+
+### Como evitar que se repita
+
+- `MotorCorredorTest` falla si Inicio vuelve al WebView teniendo Filament.
+- Un cambio de motor de render se prueba en un telefono real, no solo en el emulador.
+
 ## 2026-10-27: el avatar sigue sin verse en Inicio y tampoco aparece el respaldo (v0.9.4)
 
 ### Que paso
