@@ -117,3 +117,10 @@ En Android los modales (crear evento, terminos, terminar carrera, compartir sobr
 - Causa: el SurfaceView de Filament con `setZOrderMediaOverlay` perfora la ventana y se ve negro detras.
 - Arreglo: Inicio usa `Runner3D(sobreFondo = true)`, que dibuja el avatar en la vista transparente, sobre `EscenarioInicioC2` (degradado 160 grados, halo morado, rayas a 115 grados, brillo del piso y texto CORRE LOJA). Web usa la clase `.escenario-c2`.
 - Pruebas: `InicioC2Test` (Roborazzi) y `e2e/v091.spec.ts`.
+
+## 2026-10-26: El APK dependia del limite de 50 MiB de Supabase Storage (v0.9.2)
+
+- Sintoma: el APK de 0.9.1 pesaba 49,2 MiB y quedaban unos 0,8 MiB antes de que Supabase Storage (plan gratuito, 50 MiB por archivo) rechazara la subida y no se pudiera publicar.
+- Arreglo: `scripts/publicar-android.sh` sube el APK como asset del release de GitHub (`runcity-X.Y.Z-arm64.apk`, limite 2 GB), descarga ese asset con `curl -L` y compara sha256, y solo despues sube a Supabase `android/latest.json` con `apkUrl` apuntando a GitHub. Si el APK cabe, deja ademas una copia de respaldo en Supabase que las apps no usan. Aviso blando si pasa de 150 MiB.
+- Compatibilidad: 0.9.1 y anteriores leen el mismo `latest.json` con los mismos campos. `ReglasActualizacion.aviso` acepta cualquier `apkUrl` https, el parser ignora campos desconocidos, DownloadManager sigue la redireccion 302 a release-assets.githubusercontent.com y la app compara el sha256 al terminar. No hizo falta cambiar la app.
+- Pruebas: `ActualizacionTest.manifiestoConApkEnGithubReleases` y `scripts/verificar-manifiesto.sh`, que ahora comprueba que `apkUrl` responde con el tamano de `apkBytes` (`VERIFICAR_SHA=1` compara tambien el sha256).

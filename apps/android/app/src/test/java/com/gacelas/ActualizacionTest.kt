@@ -26,6 +26,14 @@ class ActualizacionTest {
     private val json = """{"versionCode":602,"versionName":"0.6.2","notes":"Novedades","apkUrl":"https://x.supabase.co/storage/v1/object/public/app-releases/android/a.apk"}"""
     private fun info(code: Int, min: Int? = null) = InfoVersion(code, "v", apkUrl = "https://x/a.apk", minVersionCode = min)
 
+    /** Desde 0.9.2 el APK vive en GitHub Releases; 0.9.1 ya acepta cualquier https y campos nuevos. */
+    @Test fun manifiestoConApkEnGithubReleases() {
+        val m = """{"versionCode":902,"versionName":"0.9.2","notes":"n","items":["n"],"apkUrl":"https://github.com/jhonatanJJ2006/Gacelas/releases/download/v0.9.2/runcity-0.9.2-arm64.apk","apkBytes":51600000,"sha256":"ab","campoFuturo":1}"""
+        val info = com.gacelas.data.jsonGacelas.decodeFromString(InfoVersion.serializer(), m)
+        assertTrue(ReglasActualizacion.aviso(901, info) is Aviso.Nueva)
+        assertEquals(51600000L, info.apkBytes)
+    }
+
     @Test fun reglas() {
         assertEquals(Aviso.Nada, ReglasActualizacion.aviso(602, info(602)))
         assertTrue(ReglasActualizacion.aviso(601, info(602)) is Aviso.Nueva)
