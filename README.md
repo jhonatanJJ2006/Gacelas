@@ -2,7 +2,7 @@
 
 **Aplicación de running con seguimiento en tiempo real para runners ecuatorianos**
 
-Nota: el producto se llama Runcity desde la version 0.8.6. El repositorio, el paquete Android (com.gacelas), los modulos de codigo, el dominio gacelas.vercel.app y el proyecto de Supabase conservan el nombre Gacelas.
+Nota: el producto se llama Runcity desde la version 0.8.7. El repositorio, el paquete Android (com.gacelas), los modulos de codigo, el dominio gacelas.vercel.app y el proyecto de Supabase conservan el nombre Gacelas.
 
 Runcity es una plataforma integral para corredores que permite grabar rutas, compartir actividades, unirse a eventos, y seguir a otros corredores en tiempo real usando GPS y Google Maps.
 
