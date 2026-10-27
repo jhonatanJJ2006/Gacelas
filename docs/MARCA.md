@@ -58,8 +58,8 @@ Es un video pre-renderizado cuadro por cuadro a 60 fps (motion blur con 4 submue
 
 | Archivo                                       | Formato            | Peso   |
 | --------------------------------------------- | ------------------ | ------ |
-| `apps/android/app/src/main/res/raw/intro.mp4` | H.264 main, CRF 24 | 102 KB |
-| `apps/web/public/marca/intro.mp4`             | el mismo MP4       | 102 KB |
+| `apps/android/app/src/main/res/drawable/intro_marca.xml` | vector animado (Android) | 33 KB |
+| `apps/web/public/marca/intro.mp4`             | H.264 main, CRF 24 | 102 KB |
 | `apps/web/public/marca/intro.webm`            | VP9, CRF 34        | 112 KB |
 
 El primer y el ultimo cuadro son el fondo de marca `#0C1322`, igual que el SplashScreen, `windowBackground` y el theme-color de la web.
@@ -87,14 +87,17 @@ Excepcion: si la app estuvo fuera de primer plano menos de 30 s (`UMBRAL_AUSENCI
 
 ### Android
 
-1. `Theme.Gacelas.Arranque` (SplashScreen API) muestra el fondo `#0C1322` con la gacela. Con intro, `MainActivity` retiene el splash con `setKeepOnScreenCondition` hasta que el video pinta su primer cuadro (`MEDIA_INFO_VIDEO_RENDERING_START`), como mucho 1 s (`IntroArranque.ESPERA_PRIMER_CUADRO_MS`). Al soltarlo, `setOnExitAnimationListener` desvanece la gacela del splash en 180 ms sobre el mismo `#0C1322` con que empieza el video: no hay salto de color ni pantalla en blanco.
-2. `MainActivity` decide en `onCreate` (y en cada `onStart` posterior) con `IntroArranque.alEntrar(ahora, escalaAnimaciones)`, y registra la salida en `onStop` con `IntroArranque.alSalir(ahora)`. El reloj es `SystemClock.elapsedRealtime()`. La regla pura es `IntroArranque.debeMostrar(ahora, ultimaSalida, escala)`.
-3. `IntroVideo` (`app/.../intro/IntroVideo.kt`) reproduce `res/raw/intro.mp4` con el `MediaPlayer` del sistema en un `TextureView` a pantalla completa, escalado para cubrir como `RESIZE_MODE_ZOOM`, volumen 0, sobre el fondo `#0C1322` (el `TextureView` es transparente hasta el primer cuadro, sin negro). En la v0.8.6 se uso Media3 ExoPlayer, pero sumaba 3,4 MB y el APK debug paso los 50 MB que acepta Supabase Storage (limite global del plan), asi que no se pudo publicar; se cambio al reproductor del sistema en la v0.8.7. `ControlIntro` garantiza que el aviso de primer cuadro y el fin ocurran una sola vez.
-4. La intro termina al llegar a `onCompletion`, con un toque, si el reproductor da error o no se puede crear, si no hay primer cuadro en 1 s (fallback) o por un tope de seguridad de 3,7 s. Siempre suelta el splash.
-5. La app (`GacelasRaiz`: sesion, Supabase, NavHost, mapas) se monta debajo cuando el video ya pinto su primer cuadro y el contenedor de dependencias esta listo (`GacelasApp.esperarContenedor()`). La preparacion del mapa sin conexion se aplaza 3 s. Al terminar la intro, la pantalla que corresponda ya esta lista.
-6. `app/src/main/baseline-prof.txt` con `androidx.profileinstaller` sigue compilando AOT el arranque y la primera pantalla.
+En Android la intro no es un video sino un vector animado (`AnimatedVectorDrawable`), la misma tecnica que usan los splash animados de apps como Prime Video o Netflix. Desde Android 7.1 el sistema anima ese vector en el RenderThread: no necesita reproductor, ni decodificador de video, ni red, ni el hilo principal. Por eso empieza en el primer cuadro de la ventana y corre entera a 60 fps aunque la app este cargando debajo. En la v0.8.6 era un MP4 (Media3, luego `MediaPlayer`): el reproductor tardaba en dar su primer cuadro en arranque en frio y competia con el montaje de la app, por eso en telefono se trababa o salia cortada.
 
-iOS todavia no muestra la intro. Para hacerlo, `MainViewController` puede reproducir el mismo MP4 con `AVPlayerLayer` y la misma regla de `IntroArranque` (codigo comun en `core/ui`).
+1. `Theme.Gacelas.Arranque` (SplashScreen API) muestra el fondo `#0C1322` con la gacela. El splash no se retiene: en el primer cuadro de la actividad ya corre la intro sobre el mismo `#0C1322` y `setOnExitAnimationListener` desvanece la gacela del splash encima en 180 ms.
+2. `MainActivity` decide en `onCreate` (y en cada `onStart` posterior) con `IntroArranque.alEntrar(ahora, escalaAnimaciones)`, y registra la salida en `onStop` con `IntroArranque.alSalir(ahora)`. El reloj es `SystemClock.elapsedRealtime()`. La regla pura es `IntroArranque.debeMostrar(ahora, ultimaSalida, escala)`.
+3. `IntroAnimada` (`app/.../intro/IntroAnimada.kt`) pone una `ImageView` nativa a pantalla completa encima de Compose (`addContentView`, `centerCrop`, fondo `#0C1322`) con `res/drawable/intro_marca.xml` y la arranca en `onCreate`. Como es una vista nativa, se pinta antes de que Compose componga nada.
+4. `intro_marca.xml` lo genera `tools/marca/generar_intro_avd.py` (ruta, cometa, destello, gacela y RUNCITY en Anton convertida a trazos, sin fuente en tiempo de ejecucion). Solo anima propiedades que corren en el RenderThread (`trimPathStart`, `trimPathEnd`, `fillAlpha`, `strokeAlpha`, `scaleX`, `scaleY`, `translateX`, `translateY`); si una no lo fuera, todo el vector pasaria al hilo principal. `IntroMarcaTest` lo comprueba. `tools/marca/previsualizar_intro_avd.py` dibuja cuadros del vector para revisarlo sin telefono.
+5. La intro no se corta porque la app este lista: termina cuando el vector avisa su fin (`onAnimationEnd`, 2,2 s) o con un toque, y siempre sale con un fundido de 160 ms (`FUNDIDO_SALIDA_MS`). Hay un tope de seguridad de 3,7 s (`IntroArranque.TOPE_MS`). `ControlIntro` garantiza que el fin ocurra una sola vez.
+6. La app (`GacelasRaiz`) se monta enseguida, debajo de la intro: el trabajo del hilo principal no frena la animacion. La preparacion del mapa sin conexion se aplaza 3 s. El vector pesa unos 33 KB y no hay nada que precargar: viene dentro del APK.
+7. `app/src/main/baseline-prof.txt` con `androidx.profileinstaller` sigue compilando AOT el arranque y la primera pantalla.
+
+iOS todavia no muestra la intro. Para hacerlo, `MainViewController` puede reproducir `public/marca/intro.mp4` con `AVPlayerLayer` y la misma regla de `IntroArranque` (codigo comun en `core/ui`).
 
 `core/ui/.../ui/intro/Marca.kt` conserva la paleta y la silueta de la gacela que usa el icono dibujado en la app.
 
@@ -127,8 +130,8 @@ Todo sale de `python3 tools/marca/generar.py`. Capturas antes y despues: `/works
 
 | Prueba                             | Que verifica                                                                                                                                    |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `core/ui` `IntroArranqueTest`      | arranque en frio, regla de 30 s, ciclo salir y volver, animaciones desactivadas, saltar, duracion, espera de 1 s                                |
-| `app` `IntroMarcaTest` (Roborazzi) | `ControlIntro` (un solo fin, suelta el splash), fallback sin primer cuadro, salto con toque, fondo igual al splash, capturas                    |
+| `core/ui` `IntroArranqueTest`      | arranque en frio, regla de 30 s, ciclo salir y volver, animaciones desactivadas, saltar, duracion, tope de 3,7 s                                |
+| `app` `IntroMarcaTest` (Roborazzi) | `ControlIntro` (un solo fin), vector solo con propiedades del RenderThread y 2,2 s exactos, no se corta a mitad, salto con toque y fundido, fondo igual al splash |
 | web `introVideo.test.ts`           | regla de 30 s, fin por `ended`, salto con clic y tecla, fallback sin primer cuadro y por error, tope de seguridad                               |
 | web `e2e/intro.spec.ts`            | aparece sobre `#0C1322`, se salta, no reaparece al recargar enseguida, termina sola, fallback sin video, movimiento reducido, manifest e iconos |
 

@@ -6,7 +6,7 @@ import android.provider.Settings
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.gacelas.intro.IntroVideo
+import com.gacelas.intro.IntroAnimada
 import com.gacelas.ui.intro.IntroArranque
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -46,8 +46,6 @@ import kotlinx.coroutines.flow.map
 
 class MainActivity : ComponentActivity() {
     private val intro = mutableStateOf(false)
-    /** El video de la intro ya pinto su primer cuadro (o se cerro): el SplashScreen se puede soltar. */
-    private val primerCuadro = mutableStateOf(false)
     private var decidida = false
 
     private fun decidirIntro(): Boolean {
@@ -59,7 +57,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         // onCreate ya decidio en este ciclo; en las vueltas siguientes se decide aqui.
-        if (!decidida && decidirIntro()) { primerCuadro.value = false; intro.value = true }
+        if (!decidida && decidirIntro()) iniciarIntro()
         decidida = false
     }
 
@@ -89,18 +87,13 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Arranque con el fondo de marca (Theme.Gacelas.Arranque). Con intro, el SplashScreen se
-        // retiene hasta que el video pinta su primer cuadro (como mucho 1 s, luego se cierra la
-        // intro) y la gacela del splash se desvanece sobre el mismo #0C1322 con que empieza el video.
+        // Arranque con el fondo de marca (Theme.Gacelas.Arranque). El SplashScreen no se retiene: en
+        // el primer cuadro de la ventana ya corre la intro (vector animado en el RenderThread) sobre
+        // el mismo #0C1322 y la gacela del splash se desvanece encima (docs/MARCA.md).
         val splash = installSplashScreen()
         super.onCreate(savedInstanceState)
         // La intro se decide en onStart (cada vez que la app pasa a primer plano, docs/MARCA.md).
-        intro.value = decidirIntro()
-        val inicioSplash = SystemClock.uptimeMillis()
-        splash.setKeepOnScreenCondition {
-            intro.value && !primerCuadro.value &&
-                SystemClock.uptimeMillis() - inicioSplash < IntroArranque.ESPERA_PRIMER_CUADRO_MS
-        }
+        val conIntro = decidirIntro()
         splash.setOnExitAnimationListener { vista ->
             vista.iconView.animate().alpha(0f).setDuration(180).withEndAction { vista.remove() }.start()
         }
@@ -121,26 +114,23 @@ class MainActivity : ComponentActivity() {
                 val foco = LocalFocusManager.current
                 val teclado = LocalSoftwareKeyboardController.current
                 Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { foco.clearFocus(); teclado?.hide() } }) {
-                    // Con intro, la app (sesion, Supabase, NavHost, mapas) se monta debajo cuando el video
-                    // ya pinto su primer cuadro y el contenedor esta construido. El video se decodifica y
-                    // se compone fuera del hilo principal (SurfaceView), asi que montar la app no lo
-                    // entrecorta (docs/MARCA.md).
-                    var montarApp by remember { mutableStateOf(!intro.value) }
-                    if (!montarApp && primerCuadro.value) androidx.compose.runtime.LaunchedEffect(Unit) {
-                        (application as GacelasApp).esperarContenedor()
-                        montarApp = true
-                    }
-                    if (montarApp) {
-                        GacelasRaiz()
-                        com.gacelas.actualizacion.AvisoActualizacion()
-                    }
-                    if (intro.value) IntroVideo(
-                        alPrimerCuadro = { primerCuadro.value = true },
-                        alTerminar = { primerCuadro.value = true; intro.value = false; montarApp = true },
-                    )
+                    // La app se monta enseguida, debajo de la intro: la intro corre en el RenderThread y
+                    // no se entrecorta aunque montar la app ocupe el hilo principal.
+                    GacelasRaiz()
+                    com.gacelas.actualizacion.AvisoActualizacion()
                 }
             }
         }
+        if (conIntro) iniciarIntro()
+    }
+
+    private var vistaIntro: android.view.View? = null
+
+    /** Intro sobre todo; se retira sola al completar la animacion (o al tocarla) con un fundido. */
+    private fun iniciarIntro() {
+        if (vistaIntro != null) return
+        intro.value = true
+        vistaIntro = IntroAnimada.mostrar(this) { vistaIntro = null; intro.value = false }
     }
 }
 

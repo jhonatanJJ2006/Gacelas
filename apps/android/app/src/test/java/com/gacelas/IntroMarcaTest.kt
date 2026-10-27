@@ -22,7 +22,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import com.gacelas.intro.ControlIntro
 import com.gacelas.intro.FondoIntro
-import com.gacelas.intro.IntroVideo
+import com.gacelas.intro.IntroAnimada
+import com.gacelas.intro.FUNDIDO_SALIDA_MS
 import com.gacelas.ui.intro.IntroArranque
 import androidx.compose.ui.graphics.toArgb
 import com.github.takahirom.roborazzi.captureRoboImage
@@ -44,50 +45,49 @@ class IntroMarcaTest {
 
     private fun dir() = System.getProperty("gacelas.shots") ?: "build/outputs/roborazzi"
 
-    @Test fun controlTerminaUnaSolaVezYSueltaElSplash() {
-        var listo = 0; var fin = 0
-        val c = ControlIntro({ listo++ }, { fin++ })
-        c.cuadroListo(); c.cuadroListo()
-        assertEquals(1, listo)
-        c.esperaAgotada()            // ya habia cuadro: no cierra
-        assertEquals(0, fin)
+    @Test fun controlTerminaUnaSolaVez() {
+        var fin = 0
+        val c = ControlIntro { fin++ }
         c.terminar(); c.terminar()
-        assertEquals(1, fin)
-        assertEquals(1, listo)
-    }
-
-    @Test fun fallbackSinPrimerCuadroCierraYSueltaElSplash() {
-        var listo = 0; var fin = 0
-        val c = ControlIntro({ listo++ }, { fin++ })
-        c.esperaAgotada()
-        assertEquals(1, listo)
         assertEquals(1, fin)
         assertTrue(c.terminada)
     }
 
-    @Test fun seMuestraSobreElFondoDeMarcaYSeCierraSolaSiElVideoNoArranca() {
-        var fin = 0; var listo = 0
-        compose.mainClock.autoAdvance = false
-        compose.setContent { IntroVideo(alPrimerCuadro = { listo++ }, alTerminar = { fin++ }) }
-        compose.mainClock.advanceTimeBy(50)
-        compose.onNodeWithTag("intro-animada").assertExists()
-        compose.onRoot().captureRoboImage("${dir()}/intro-primer-cuadro.png")
-        // En Robolectric el decodificador no pinta cuadros: a los 1 s el fallback cierra la intro.
-        compose.mainClock.advanceTimeBy(IntroArranque.ESPERA_PRIMER_CUADRO_MS + 200)
-        assertEquals(1, fin)
-        assertEquals(1, listo)
-        compose.mainClock.advanceTimeBy(5_000)
-        assertEquals(1, fin)
+    /** El vector solo anima propiedades que Android corre en el RenderThread (si una no lo es, todo cae al hilo principal). */
+    @Test fun soloPropiedadesDelRenderThreadYDuracionCompleta() {
+        val xml = java.io.File("src/main/res/drawable/intro_marca.xml").readText()
+        val props = Regex("propertyName=\"(\\w+)\"").findAll(xml).map { it.groupValues[1] }.toSet()
+        val permitidas = setOf("trimPathStart", "trimPathEnd", "fillAlpha", "strokeAlpha", "scaleX", "scaleY", "translateX", "translateY")
+        assertTrue("propiedades: $props", permitidas.containsAll(props))
+        val fin = Regex("startOffset=\"(\\d+)\" android:duration=\"(\\d+)\"").findAll(xml).maxOf { it.groupValues[1].toInt() + it.groupValues[2].toInt() }
+        assertEquals((IntroArranque.DURACION_S * 1000).toInt(), fin)
+        assertTrue(xml.contains("RUNCITY") || xml.contains("Runcity"))
+        assertTrue(!xml.contains("GACELAS"))
     }
 
-    @Test fun unToqueLaSalta() {
-        var fin = 0
-        compose.mainClock.autoAdvance = false
-        compose.setContent { IntroVideo(alPrimerCuadro = {}, alTerminar = { fin++ }) }
-        compose.mainClock.advanceTimeBy(100)
-        compose.onNodeWithTag("intro-animada").performClick()
-        compose.mainClock.advanceTimeBy(4000)
+    private fun actividad() = org.robolectric.Robolectric.buildActivity(androidx.activity.ComponentActivity::class.java).setup().get()
+
+    @Test fun seMuestraEnteraYSeRetiraConFundido() {
+        val act = actividad(); var fin = 0
+        val vista = IntroAnimada.mostrar(act) { fin++ }
+        assertEquals(IntroAnimada.ETIQUETA, vista.tag)
+        assertTrue(vista.isAttachedToWindow)
+        vista.captureRoboImage("${dir()}/intro-primer-cuadro.png")
+        // A mitad de la intro sigue ahi aunque la app ya este lista.
+        org.robolectric.shadows.ShadowLooper.idleMainLooper(1_000, java.util.concurrent.TimeUnit.MILLISECONDS)
+        assertEquals(0, fin)
+        org.robolectric.shadows.ShadowLooper.idleMainLooper(IntroArranque.TOPE_MS + 500, java.util.concurrent.TimeUnit.MILLISECONDS)
         assertEquals(1, fin)
+        assertTrue(vista.parent == null)
+    }
+
+    @Test fun unToqueLaSaltaConFundido() {
+        val act = actividad(); var fin = 0
+        val vista = IntroAnimada.mostrar(act) { fin++ }
+        vista.performClick(); vista.performClick()
+        org.robolectric.shadows.ShadowLooper.idleMainLooper(FUNDIDO_SALIDA_MS + 100, java.util.concurrent.TimeUnit.MILLISECONDS)
+        assertEquals(1, fin)
+        assertTrue(vista.parent == null)
     }
 
     @Test fun fondoIgualAlSplash() {

@@ -36,5 +36,5 @@ class IntroArranqueTest {
     }
 
     @Test fun duraComoMaximoTresSegundos() = assertTrue(IntroArranque.DURACION_S <= 3f)
-    @Test fun esperaElPrimerCuadroUnSegundo() = assertEquals(1_000L, IntroArranque.ESPERA_PRIMER_CUADRO_MS)
+    @Test fun elTopeNoCortaLaIntro() = assertTrue(IntroArranque.TOPE_MS >= (IntroArranque.DURACION_S * 1000).toLong() + 1_000)
 }
