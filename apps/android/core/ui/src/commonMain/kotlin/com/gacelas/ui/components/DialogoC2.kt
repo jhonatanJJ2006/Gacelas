@@ -50,6 +50,14 @@ import com.gacelas.ui.theme.GType
 import com.gacelas.ui.theme.Inter
 import com.gacelas.ui.theme.SpaceGrotesk
 
+/**
+ * Ventana de las hojas C2: a pantalla completa y sin margenes del sistema, para que la hoja quede
+ * pegada al borde inferior y reciba los insets reales. En Android es decorFitsSystemWindows = false:
+ * con el valor por defecto, en Android 15 (edge-to-edge obligatorio) la ventana del dialogo se
+ * desplazaba hacia abajo y el boton final quedaba tapado por la barra de navegacion (v0.8.9).
+ */
+expect fun propiedadesHojaC2(): DialogProperties
+
 /** Rojo de las acciones destructivas en los modales C2. */
 val PeligroC2 = Color(0xFFBE185D)
 
@@ -70,19 +78,21 @@ fun DialogoC2(
     @Suppress("UNUSED_PARAMETER") titleContentColor: Color = Color.White,
     @Suppress("UNUSED_PARAMETER") textContentColor: Color = GColors.C2Muted,
 ) {
-    Dialog(onDismissRequest = onDismissRequest, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+    Dialog(onDismissRequest = onDismissRequest, properties = propiedadesHojaC2()) {
         BoxWithConstraints(
             Modifier.fillMaxSize().clickable(remember { MutableInteractionSource() }, null, onClick = onDismissRequest)
-                .statusBarsPadding().navigationBarsPadding().imePadding(),
+                .statusBarsPadding().imePadding().testTag("dialogo-c2-ventana"),
             contentAlignment = Alignment.BottomCenter,
         ) {
             // Alto maximo relativo a la ventana: nunca mas que lo visible (antes era un fijo de 640dp
             // y en pantallas pequenas o con fuente grande el modal se cortaba a la mitad).
+            // La hoja llega hasta el borde inferior de la pantalla (su fondo pasa por detras de la barra
+            // de navegacion) y solo su contenido se separa de esa barra (navigationBarsPadding abajo).
             val altoMax = maxHeight - 24.dp
             Column(
                 modifier.fillMaxWidth().widthIn(max = 560.dp).heightIn(max = altoMax)
                     .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-                    .background(GColors.C2Card)
+                    .background(GColors.C2Card).testTag("dialogo-c2-hoja")
                     .clickable(remember { MutableInteractionSource() }, null) {},
             ) {
                 Box(Modifier.fillMaxWidth().height(3.dp).background(Brush.horizontalGradient(listOf(Color.Transparent, GColors.C2Violeta))))
@@ -114,7 +124,7 @@ fun DialogoC2(
                         ) { text() }
                     }
                     Column(
-                        Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 14.dp, bottom = 18.dp).testTag("dialogo-c2-acciones"),
+                        Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 14.dp, bottom = 18.dp).navigationBarsPadding().testTag("dialogo-c2-acciones"),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         CompositionLocalProvider(LocalContentColor provides Color.White) {

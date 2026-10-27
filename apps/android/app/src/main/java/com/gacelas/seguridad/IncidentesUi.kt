@@ -182,7 +182,8 @@ fun HojaReportarIncidente(posicion: Pair<Double, Double>?, onCerrar: () -> Unit,
         }
     }
     LaunchedEffect(posicion) { posicion?.let { direccion = direccionDe(context, it.first, it.second) } }
-    ModalBottomSheet(onDismissRequest = onCerrar, containerColor = GColors.C2Bg, contentColor = GColors.TextPrimary) {
+    // Abierta del todo (sin estado a medias) y pegada al borde inferior; Material 3 aplica los insets.
+    ModalBottomSheet(onDismissRequest = onCerrar, sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = GColors.C2Bg, contentColor = GColors.TextPrimary) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).navigationBarsPadding().padding(bottom = 16.dp).testTag("hoja-reportar"),
             verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Reportar incidente", style = GType.headlineSm, color = GColors.TextPrimary)

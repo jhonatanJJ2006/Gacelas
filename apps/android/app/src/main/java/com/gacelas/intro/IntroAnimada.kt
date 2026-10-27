@@ -4,6 +4,9 @@ import android.app.Activity
 import android.graphics.drawable.Animatable2
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.Drawable
+import android.os.Process
+import android.os.SystemClock
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -39,9 +42,21 @@ class ControlIntro(private val alTerminar: () -> Unit) {
 object IntroAnimada {
     const val ETIQUETA = "intro-animada"
 
+    /** Momento (uptimeMillis) en que empezo a correr la ultima intro; 0 si aun no se dibujo. */
+    @Volatile var iniciadaEn = 0L
+        private set
+
     /** Pone la intro sobre [actividad] y la arranca; [alTerminar] se llama una vez, ya retirada. */
     fun mostrar(actividad: Activity, alTerminar: () -> Unit): View {
-        val vista = ImageView(actividad)
+        var alPrimerDibujo: (() -> Unit)? = null
+        // La animacion y el tope de seguridad empiezan cuando la intro se dibuja de verdad por primera
+        // vez, no al crearla: si el arranque tarda, la intro no se da por vencida antes de verse.
+        val vista = object : ImageView(actividad) {
+            override fun onDraw(canvas: android.graphics.Canvas) {
+                super.onDraw(canvas)
+                alPrimerDibujo?.let { alPrimerDibujo = null; post(it) }
+            }
+        }
         val control = ControlIntro {
             vista.animate().cancel()
             vista.animate().alpha(0f).setDuration(FUNDIDO_SALIDA_MS).withEndAction {
@@ -62,10 +77,16 @@ object IntroAnimada {
         avd.registerAnimationCallback(object : Animatable2.AnimationCallback() {
             override fun onAnimationEnd(drawable: Drawable?) { control.terminar() }
         })
+        alPrimerDibujo = {
+            if (!control.terminada) {
+                iniciadaEn = SystemClock.uptimeMillis()
+                Log.i("Arranque", "intro empieza a ${iniciadaEn - Process.getStartUptimeMillis()} ms del inicio del proceso")
+                avd.start()
+                // Tope por si onAnimationEnd nunca llega (no corta una intro normal: dura 2,2 s).
+                vista.postDelayed({ control.terminar() }, IntroArranque.TOPE_MS)
+            }
+        }
         actividad.addContentView(vista, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
-        avd.start()
-        // Tope por si onAnimationEnd nunca llega (no corta una intro normal: dura 2,2 s).
-        vista.postDelayed({ control.terminar() }, IntroArranque.TOPE_MS)
         return vista
     }
 }

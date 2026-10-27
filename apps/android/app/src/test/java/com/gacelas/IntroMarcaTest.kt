@@ -67,11 +67,29 @@ class IntroMarcaTest {
 
     private fun actividad() = org.robolectric.Robolectric.buildActivity(androidx.activity.ComponentActivity::class.java).setup().get()
 
+    private fun dibujar(v: android.view.View) {
+        v.draw(android.graphics.Canvas(android.graphics.Bitmap.createBitmap(108, 192, android.graphics.Bitmap.Config.ARGB_8888)))
+        org.robolectric.shadows.ShadowLooper.idleMainLooper()
+    }
+
+    /** Regresion v0.8.9: con un arranque lento la intro se daba por vencida antes de verse. */
+    @Test fun elTopeCuentaDesdeQueLaIntroSeVeNoDesdeQueSeCrea() {
+        val act = actividad(); var fin = 0
+        val vista = IntroAnimada.mostrar(act) { fin++ }
+        // Hilo principal ocupado 5 s antes del primer cuadro: el reloj avanza sin que nada corra.
+        org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofSeconds(5))
+        org.robolectric.shadows.ShadowLooper.idleMainLooper()
+        assertEquals(0, fin)
+        assertTrue(vista.isAttachedToWindow)
+    }
+
     @Test fun seMuestraEnteraYSeRetiraConFundido() {
         val act = actividad(); var fin = 0
         val vista = IntroAnimada.mostrar(act) { fin++ }
         assertEquals(IntroAnimada.ETIQUETA, vista.tag)
         assertTrue(vista.isAttachedToWindow)
+        dibujar(vista)
+        assertTrue(IntroAnimada.iniciadaEn > 0)
         vista.captureRoboImage("${dir()}/intro-primer-cuadro.png")
         // A mitad de la intro sigue ahi aunque la app ya este lista.
         org.robolectric.shadows.ShadowLooper.idleMainLooper(1_000, java.util.concurrent.TimeUnit.MILLISECONDS)
@@ -79,6 +97,12 @@ class IntroMarcaTest {
         org.robolectric.shadows.ShadowLooper.idleMainLooper(IntroArranque.TOPE_MS + 500, java.util.concurrent.TimeUnit.MILLISECONDS)
         assertEquals(1, fin)
         assertTrue(vista.parent == null)
+    }
+
+    /** Nada pesado en el hilo principal al arrancar: onCreate corto y la app no se compone en el primer cuadro. */
+    @Test fun onCreateNoBloqueaElArranque() {
+        val act = org.robolectric.Robolectric.buildActivity(MainActivity::class.java).setup().get()
+        assertTrue("onCreate tardo ${act.duracionOnCreateMs} ms", act.duracionOnCreateMs < 1_500)
     }
 
     @Test fun unToqueLaSaltaConFundido() {

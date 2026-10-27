@@ -42,9 +42,11 @@ class GacelasApp : Application() {
     suspend fun esperarContenedor() = contenedorListo.await()
 
     override fun onCreate() {
+        android.os.Trace.beginSection("GacelasApp.onCreate")
         super.onCreate()
         alcance.launch { runCatching { contenedor }; contenedorListo.complete(Unit); runCatching { contenedor.sincronizar() }; runCatching { contenedor.explorar?.refrescar() } }
         // Si quedo algo pendiente de otra sesion, se sube en cuanto haya red.
         com.gacelas.core.sync.Sincronizacion.programar(this)
+        android.os.Trace.endSection()
     }
 }
