@@ -131,9 +131,6 @@ dependencies {
     implementation(project(":shared"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
-    // Intro de marca en video (res/raw/intro.mp4, docs/MARCA.md).
-    implementation(libs.androidx.media3.exoplayer)
-    implementation(libs.androidx.media3.ui)
     // Instala baseline-prof.txt en el dispositivo: arranque y primer cuadro de la intro precompilados.
     implementation(libs.androidx.profileinstaller)
     implementation(libs.androidx.lifecycle.runtime.ktx)
