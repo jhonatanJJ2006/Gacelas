@@ -136,7 +136,7 @@ export function dibujarIntro(x: CanvasRenderingContext2D, ancho: number, alto: n
     x.save()
     x.globalAlpha = al * e((t - 1.6) / 0.4)
     x.fillStyle = '#fff'
-    x.font = "700 120px 'Saira Semi Condensed', Impact, sans-serif"
+    x.font = '120px Anton, Impact, sans-serif'
     x.textAlign = 'center'
     ;(x as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing =
       `${20 - 10 * kk}px`

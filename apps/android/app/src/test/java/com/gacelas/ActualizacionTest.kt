@@ -39,6 +39,16 @@ class ActualizacionTest {
         assertEquals("https://p.supabase.co/storage/v1/object/public/app-releases/android/latest.json", ReglasActualizacion.urlManifiesto("https://p.supabase.co/"))
     }
 
+    /** Regresion 0.8.1-0.8.3: el manifiesto se quedo en 0.8.0. Una 0.8.3 instalada debe ver la 0.8.4 publicada. */
+    @Test fun versionInstaladaDetectaLaSiguiente() = runBlocking {
+        val manifiesto = """{"versionCode":804,"versionName":"0.8.4","items":["Titulares"],"apkUrl":"https://x.supabase.co/storage/v1/object/public/app-releases/android/gacelas-0.8.4-arm64.apk"}"""
+        val r = ActualizacionRepository(store, "https://m", ReglasActualizacion.codigoDe("0.8.3"), { 1L }) { manifiesto }
+        val aviso = r.revisar()
+        assertTrue(aviso is Aviso.Nueva)
+        assertEquals(804, (aviso as Aviso.Nueva).info.versionCode)
+        assertEquals(Aviso.Nada, ActualizacionRepository(store, "https://m", 804, { 1L }) { manifiesto }.revisar())
+    }
+
     // (Reemplazado por Feedback068Test.revisaSiempreYMasTardeSoloEnLaSesion: ya no hay cache diaria.)
     @Test fun sinRedUsaLoUltimoConocido() = runBlocking {
         var falla = false

@@ -131,7 +131,7 @@ fun ContenidoModal(
                     }
                     Spacer(Modifier.height(8.dp))
                 }
-                Text("Hay una nueva versión", style = TextStyle(fontFamily = display, fontSize = 26.sp, lineHeight = 30.sp), color = Color.White)
+                Text("Hay una nueva versión", style = TextStyle(fontFamily = display, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 26.sp, lineHeight = 30.sp), color = Color.White)
                 if (!compacto || obligatoria) {
                     Spacer(Modifier.height(4.dp))
                     Text(

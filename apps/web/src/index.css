@@ -98,7 +98,7 @@ body {
   display: none;
 }
 
-/* Rediseño C2 Deporte cinetico: titulares display en Saira Semi Condensed 700, rectos y en mayusculas. */
+/* Rediseño C2 Deporte cinetico: titulares display en Anton, cursiva y mayusculas. */
 .font-headline-sm,
 .font-headline-md,
 .font-headline-lg,
@@ -107,9 +107,9 @@ body {
 .font-headline-xl-mobile,
 .font-metric-huge,
 .font-display {
-  font-style: normal;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 body {
@@ -135,9 +135,9 @@ body {
     border-radius: 3px;
   }
   .valor-c2 {
-    font-family: 'Saira Semi Condensed', 'Archivo', sans-serif;
-    font-weight: 700;
-    @apply text-[22px] leading-none whitespace-nowrap;
+    font-family: 'Anton', 'Archivo', sans-serif;
+    letter-spacing: 0.03em;
+    @apply italic text-[22px] leading-none whitespace-nowrap;
   }
   .boton-c2 {
     @apply relative flex w-full items-center justify-center gap-2 h-14 text-white font-black italic uppercase text-[16px] tracking-wide transition-transform active:translate-x-[2px] active:translate-y-[2px];

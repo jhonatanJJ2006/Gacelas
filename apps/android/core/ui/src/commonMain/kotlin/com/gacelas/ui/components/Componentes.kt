@@ -337,7 +337,7 @@ fun EtiquetaC2(texto: String, modifier: Modifier = Modifier, color: Color = GCol
     Text(texto.uppercase(), style = GType.labelMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold, letterSpacing = androidx.compose.ui.unit.TextUnit(0.12f, androidx.compose.ui.unit.TextUnitType.Em)), color = color, modifier = modifier)
 }
 
-/** Metrica C2 compacta: numero Saira Semi Condensed pequeno y etiqueta en mayusculas. */
+/** Metrica C2 compacta: numero Anton pequeno y etiqueta en mayusculas. */
 @Composable
 fun MetricaC2(valor: String, etiqueta: String, modifier: Modifier = Modifier, color: Color = GColors.TextPrimary) {
     Column(modifier) {
@@ -346,7 +346,7 @@ fun MetricaC2(valor: String, etiqueta: String, modifier: Modifier = Modifier, co
     }
 }
 
-/** Bloque de fecha C2: dia en Saira Semi Condensed sobre violeta oscuro y mes en mayusculas. */
+/** Bloque de fecha C2: dia en Anton cursiva sobre violeta oscuro y mes en mayusculas. */
 @Composable
 fun FechaC2(dia: String, mes: String, modifier: Modifier = Modifier) {
     Column(

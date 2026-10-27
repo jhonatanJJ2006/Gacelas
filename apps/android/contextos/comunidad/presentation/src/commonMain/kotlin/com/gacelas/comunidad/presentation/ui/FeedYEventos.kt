@@ -88,7 +88,7 @@ fun FeedContenido(
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
             AvatarLetra("Tú", 34.dp)
             Text(
-                "COMUNIDAD", style = GType.headlineMd.copy(fontWeight = negra), color = GColors.TextPrimary,
+                "COMUNIDAD", style = GType.headlineMd.copy(fontStyle = italica, fontWeight = negra), color = GColors.TextPrimary,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.weight(1f),
             )
             Box {
@@ -207,7 +207,7 @@ fun FeedContenido(
                         @Composable
                         fun Dato(valor: String, unidad: String, color: androidx.compose.ui.graphics.Color) {
                             Row(verticalAlignment = Alignment.Bottom) {
-                                Text(valor, style = GType.titleMd.copy(fontWeight = negra), color = color)
+                                Text(valor, style = GType.titleMd.copy(fontStyle = italica, fontWeight = negra), color = color)
                                 Text(unidad, style = GType.bodySm, color = GColors.C2Muted)
                             }
                         }
@@ -431,7 +431,7 @@ private fun EventoPrincipal(e: Evento, inscrito: Boolean, onClick: () -> Unit, o
 
 @Composable
 private fun TarjetaEvento(e: Evento, inscrito: Boolean, onClick: () -> Unit, onInscribir: () -> Unit) {
-    // C2: bloque de fecha, titular Saira Semi Condensed, datos en una linea y boton inclinado.
+    // C2: bloque de fecha, titular Anton en cursiva, datos en una linea y boton inclinado.
     val total = e.participantes + if (inscrito && !e.creadoPorUsuario) 1 else 0
     Tarjeta(onClick = onClick, fondo = GColors.C2Card, padding = 14.dp) {
         Row(verticalAlignment = Alignment.CenterVertically) {

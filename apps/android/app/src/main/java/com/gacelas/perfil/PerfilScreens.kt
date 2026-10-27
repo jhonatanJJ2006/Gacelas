@@ -126,7 +126,7 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
     val recs = remember(carreras) { EstadisticasPerfil.records(carreras) }
     val meds = remember(carreras) { EstadisticasPerfil.medallas(carreras) }
     Pantalla {
-        // C2: cabecera en fila con foto, nombre en Saira Semi Condensed y datos en una linea.
+        // C2: cabecera en fila con foto, nombre en Anton cursiva y datos en una linea.
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             FotoPerfil(perfil?.fotoPath, 80.dp)
             Column(Modifier.weight(1f).padding(start = 14.dp)) {

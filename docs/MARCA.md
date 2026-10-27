@@ -14,7 +14,7 @@ Elegidos por Jhona el 26 de octubre de 2026: icono propuesta A "Gacela en ruta" 
 | Fondo profundo                              | `#070E1D`             |
 | Acento GPS                                  | `#10B981`             |
 
-Titulares en Saira Semi Condensed 700, sin cursiva y con espaciado de 0.02em (incluida la palabra GACELAS de la intro); textos en Archivo. Saira Semi Condensed se distribuye bajo SIL Open Font License 1.1 (assets/fuentes/OFL-SairaSemiCondensed.txt). Reemplaza a Anton desde la version 0.8.3 porque sus letras eran demasiado juntas. Ver tambien docs/PALETA.md.
+Titulares en Anton cursiva (la palabra GACELAS de la intro) y textos en Archivo. Desde la version 0.8.4 los titulares Anton llevan 0.04em mas de espaciado entre letras que el diseno original (por ejemplo 0.03em en lugar de -0.01em) y sin tracking negativo, para que se lean mejor. Se probo Saira Semi Condensed en la 0.8.3 y se descarto. Ver tambien docs/PALETA.md.
 
 ## Icono
 
