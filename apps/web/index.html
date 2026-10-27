@@ -11,6 +11,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Gacelas Loja</title>
 
+    <style>
+      #intro {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #0c1322;
+        cursor: pointer;
+      }
+      #intro[hidden] {
+        display: none;
+      }
+      #intro video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        background: #0c1322;
+      }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -24,6 +43,46 @@
   </head>
   <body class="bg-bg-primary text-text-primary min-h-screen antialiased">
     <div id="root"></div>
+    <!-- Intro de marca (docs/MARCA.md): video fuera de React para que se vea antes de cargar la app.
+         src/app/introArranque.ts (src/shared/lib/introVideo.ts) la retira al terminar, al tocar, con una tecla o si falla. -->
+    <div
+      id="intro"
+      data-testid="intro-animada"
+      role="button"
+      tabindex="-1"
+      aria-label="Intro de Runcity, toca para saltar"
+    >
+      <video autoplay muted playsinline preload="auto" disablepictureinpicture aria-hidden="true">
+        <source src="/marca/intro.webm" type="video/webm" />
+        <source src="/marca/intro.mp4" type="video/mp4" />
+      </video>
+    </div>
+    <script>
+      // Misma regla que debeMostrarIntro (src/shared/lib/intro.ts): cada apertura salvo si se salio
+      // hace menos de 30 s, y nunca con prefers-reduced-motion.
+      ;(function () {
+        var el = document.getElementById('intro')
+        var ver = false
+        try {
+          var v = localStorage.getItem('gacelas.intro.vista')
+          ver =
+            !matchMedia('(prefers-reduced-motion: reduce)').matches &&
+            (v == null || (isFinite(Number(v)) && Date.now() - Number(v) >= 30000))
+        } catch (e) {
+          ver = false
+        }
+        if (!ver) {
+          el.hidden = true
+          el.querySelector('video').removeAttribute('autoplay')
+          el.querySelector('video').pause()
+        } else {
+          try {
+            localStorage.setItem('gacelas.intro.vista', String(Date.now()))
+          } catch (e) {}
+        }
+      })()
+    </script>
+    <script type="module" src="/src/app/introArranque.ts"></script>
     <script type="module" src="/src/app/main.tsx"></script>
   </body>
 </html>
