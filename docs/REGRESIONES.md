@@ -96,3 +96,10 @@ En Android los modales (crear evento, terminos, terminar carrera, compartir sobr
 
 - No usar alturas fijas en modales: siempre relativas a la ventana.
 - Todo modal nuevo debe usar `DialogoC2` / `Dialogo` (o seguir el mismo patron: cuerpo scrolleable y acciones fijas).
+
+## 2026-10-26: Pantallas de mapa sin flecha de retroceso y reportar incidente centrado
+
+- Sintoma: en Carrera, Navegacion de ruta y Mapa en vivo el boton "Reportar incidente" aparecia centrado o a lo ancho bajo el mapa, y algunas pantallas de mapa no tenian forma visible de volver.
+- Causa: cada pantalla dibujaba su propio boton de reporte (pildora ancha) y la cabecera de Carrera y Navegacion no incluia accion de retroceso.
+- Arreglo: componentes compartidos BotonReportarMapa y BotonVolverMapa (web: shared/ui/BotonesMapa.tsx; Android: core/ui BotonesMapa.kt). Reportar es un boton lateral de 42 px al borde derecho, color C2 de alerta, icono de advertencia y etiqueta accesible. Volver va arriba a la izquierda respetando las areas seguras; vuelve a la pantalla anterior o a Inicio. En Carrera activa usa el comportamiento existente (web: la carrera sigue en segundo plano; Android: onAtras con confirmacion). En Navegacion de ruta Android se guarda la carrera igual que al cerrar.
+- Pruebas: apps/web/e2e/mapa.spec.ts y apps/android/app/src/test/java/com/gacelas/MapaBotonesTest.kt.

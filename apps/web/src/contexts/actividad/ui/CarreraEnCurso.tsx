@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { formatearHms, formatearRitmo, Unidades } from '../../../shared/lib/geo'
 import { claveMapas } from '../../../shared/lib/mapas'
 import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
+import { BotonReportarMapa, BotonVolverMapa } from '../../../shared/ui/BotonesMapa'
 import { ModalC2, ResumenModal } from '../../../shared/ui/modales'
 import { TrazadoRuta } from '../../../shared/ui/TrazadoRuta'
 import { BotonTexto, Dialogo } from '../../../shared/ui/ui'
@@ -170,7 +171,9 @@ export function CarreraEnCurso() {
     </Dialogo>
   )
   const barra = (
-    <div className="absolute top-4 inset-x-4 z-20 flex justify-between items-center gap-2">
+    <div className="absolute top-[max(env(safe-area-inset-top),16px)] inset-x-4 z-20 flex justify-between items-center gap-2">
+      {/* Volver no detiene la carrera: sigue grabando y se retoma desde Correr. */}
+      <BotonVolverMapa onVolver={() => navigate('/inicio')} />
       <button
         onClick={() => setDescartar(true)}
         aria-label="Salir de la carrera"
@@ -208,15 +211,10 @@ export function CarreraEnCurso() {
   )
 
   const botonReportar = (
-    <button
+    <BotonReportarMapa
       onClick={() => setReportando(true)}
-      data-testid="reportar-incidente"
-      aria-label="Reportar incidente"
-      className="absolute top-4 left-1/2 -translate-x-1/2 z-30 h-10 px-3 rounded-full bg-c2-card/90 backdrop-blur-md text-white border border-c2-linea shadow-lg flex items-center gap-1 text-sm font-semibold"
-    >
-      <span className="material-symbols-outlined text-[18px] text-[#F5C451]">warning</span>
-      Reportar
-    </button>
+      className="absolute right-3 top-3 z-10"
+    />
   )
   const hojaReportar = (
     <HojaReportarIncidente
@@ -263,7 +261,8 @@ export function CarreraEnCurso() {
           recentrar={recentrar}
         />
         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-c2-bg/80 to-transparent pointer-events-none" />
-        <div className="absolute top-[max(env(safe-area-inset-top),12px)] inset-x-3 z-20 flex gap-2">
+        <div className="absolute top-[max(env(safe-area-inset-top),12px)] inset-x-3 z-20 flex gap-2 items-center">
+          <BotonVolverMapa onVolver={() => navigate('/inicio')} />
           <span className={chip} data-testid="chip-gps">
             <span
               className={`w-2.5 h-2.5 rounded-full ${pausada ? 'bg-c2-muted' : gps === 'FUERTE' ? 'bg-c2-menta' : gps === 'MEDIO' ? 'bg-amber-400' : 'bg-c2-peligro'}`}
@@ -278,14 +277,7 @@ export function CarreraEnCurso() {
           className="absolute right-3 top-[58px] z-20 flex flex-col gap-2"
           data-testid="controles-carrera"
         >
-          <button
-            onClick={() => setReportando(true)}
-            aria-label="Reportar incidente"
-            data-testid="reportar-incidente"
-            className={ctl}
-          >
-            <span className="material-symbols-outlined text-[20px] text-[#F5C451]">warning</span>
-          </button>
+          <BotonReportarMapa onClick={() => setReportando(true)} />
           <button
             onClick={() => setRecentrar((n) => n + 1)}
             aria-label="Recentrar"
@@ -471,7 +463,6 @@ export function CarreraEnCurso() {
         <div className="absolute inset-0 bg-gradient-to-b from-surface-container-low via-surface to-surface"></div>
 
         {barra}
-        {botonReportar}
         {hojaReportar}
 
         <div className="relative z-10 flex flex-col gap-3 px-4 pt-20 pb-6 max-w-md mx-auto w-full">
@@ -541,13 +532,14 @@ export function CarreraEnCurso() {
             </Metrica>
           </div>
 
-          <div className="w-full h-44 rounded-2xl bg-surface-container/40 border border-border-subtle p-2">
+          <div className="relative w-full h-44 rounded-2xl bg-surface-container/40 border border-border-subtle p-2">
             <MapaGoogle
               puntos={e.puntos}
               seguir
               className="w-full h-full"
               alternativa={<TrazadoRuta puntos={e.puntos} className="w-full h-full" />}
             />
+            {botonReportar}
           </div>
 
           <div className="flex justify-between">

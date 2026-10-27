@@ -178,6 +178,8 @@ fun ContenidoCarreraC4(
         // Cabecera C2: chips de estado y ritmo sobre el mapa (sin logo, como el frame Carrera en curso).
         Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 14.dp).padding(top = 10.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                // Volver pasa por onAtras: la app pide confirmacion antes de interrumpir la carrera.
+                com.gacelas.ui.components.BotonVolverMapa(onAtras)
                 val gps = e.ultimaPrecisionM
                 val senal = when { gps == null -> "BUSCANDO GPS"; gps < 15f -> "GPS FUERTE"; gps < 50f -> "GPS MEDIO"; else -> "GPS DÉBIL" }
                 ChipC2(

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { BotonReportarMapa } from '../../../shared/ui/BotonesMapa'
 import { claveMapas } from '../../../shared/lib/mapas'
 import { MapaCorredores } from '../../../shared/ui/MapaEditable'
 import { ModalC2 } from '../../../shared/ui/modales'
@@ -190,7 +191,7 @@ export function MapaVivo({
           </Link>
         )}
         <div
-          className="h-[380px] lg:h-[460px] rounded-2xl overflow-hidden bg-[#191F2F]"
+          className="relative h-[380px] lg:h-[460px] rounded-2xl overflow-hidden bg-[#191F2F]"
           data-testid="mapa-vivo"
         >
           {claveMapas() && !inicial ? (
@@ -207,15 +208,8 @@ export function MapaVivo({
           ) : (
             <Esquema lista={lista} onTocar={setElegido} incidentes={incidentes} />
           )}
+          <BotonReportarMapa onClick={abrirReporte} className="absolute right-3 top-3 z-10" />
         </div>
-        <button
-          onClick={abrirReporte}
-          data-testid="reportar-incidente"
-          className="w-full h-11 rounded-xl bg-c2-card border border-c2-linea text-text-primary font-semibold flex items-center justify-center gap-2"
-        >
-          <span className="material-symbols-outlined text-[#F5C451]">warning</span>
-          Reportar incidente
-        </button>
         {avisoReporte && (
           <p role="status" className="text-sm text-[#68DBA9]">
             {avisoReporte}

@@ -154,16 +154,10 @@ fun TarjetaSeguridad(rutaId: String, inicial: SeguridadZona? = null) {
 
 /** Boton "Reportar incidente" que abre la hoja. [posicion] da la ubicacion actual. */
 @Composable
-fun BotonReportarIncidente(modifier: Modifier = Modifier, compacto: Boolean = false, posicion: () -> Pair<Double, Double>?) {
+fun BotonReportarIncidente(modifier: Modifier = Modifier, @Suppress("UNUSED_PARAMETER") compacto: Boolean = true, posicion: () -> Pair<Double, Double>?) {
     var abierta by remember { mutableStateOf(false) }
-    Row(
-        modifier.clip(RoundedCornerShape(50)).background(GColors.C2Card).border(1.dp, GColors.C2Peligro, RoundedCornerShape(50))
-            .clickable { abierta = true }.padding(horizontal = if (compacto) 10.dp else 14.dp, vertical = 8.dp).testTag("boton-reportar-incidente"),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(Icons.Filled.ReportProblem, "Reportar incidente", tint = GColors.C2Peligro, modifier = Modifier.size(18.dp))
-        if (!compacto) Text("  Reportar incidente", style = GType.labelLg, color = GColors.TextPrimary)
-    }
+    // Boton lateral (borde derecho del mapa), nunca centrado: color de alerta y advertencia.
+    com.gacelas.ui.components.BotonReportarMapa(onClick = { abierta = true }, modifier = modifier)
     if (abierta) HojaReportarIncidente(posicion(), onCerrar = { abierta = false })
 }
 

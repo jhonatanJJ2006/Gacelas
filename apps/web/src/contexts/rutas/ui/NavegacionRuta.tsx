@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { formatearMs, formatearRitmo, Unidades } from '../../../shared/lib/geo'
 import { claveMapas, trazoDeOpcion } from '../../../shared/lib/mapas'
 import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
+import { BotonVolverMapa } from '../../../shared/ui/BotonesMapa'
 import {
   empezarSeguimiento,
   estaActiva,
@@ -59,8 +60,9 @@ export function NavegacionRuta() {
   return (
     <main className="w-full min-h-screen bg-[#0c1322] relative overflow-hidden">
       <h1 className="sr-only">Navegación de ruta</h1>
-      <div className="absolute top-3 inset-x-0 z-50 px-6 flex justify-between items-center text-xs text-slate-300">
-        <span className="pl-2 truncate">{nombreRuta}</span>
+      <div className="absolute top-[max(env(safe-area-inset-top),12px)] inset-x-0 z-50 px-4 flex justify-between items-center gap-2 text-xs text-slate-300">
+        <BotonVolverMapa />
+        <span className="flex-1 min-w-0 truncate">{nombreRuta}</span>
         <div className="flex gap-1">
           {claveMapas() && (
             <button
