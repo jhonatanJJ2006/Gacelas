@@ -131,7 +131,7 @@ Los mapas usan MapLibre (`ui/components/MapaLibre.kt` y `MapaGacelas.kt`) con te
 
 ## Actualizaciones y publicar una versión
 
-La app revisa al abrir (como máximo una vez al día) `android/latest.json` en el bucket público `app-releases` de Supabase Storage. Si `versionCode` es mayor que el instalado, muestra "Hay una nueva versión" con las novedades, "Actualizar" (descarga con DownloadManager, verifica SHA-256 e instala con FileProvider, pidiendo permiso para instalar apps desconocidas si hace falta) y "Más tarde" (no vuelve a avisar de esa versión). Con `minVersionCode` la actualización es obligatoria. El repo de GitHub es privado: la app no lee GitHub ni lleva tokens.
+La app revisa al abrir (como máximo una vez al día) `android/latest.json` en el bucket público `app-releases` de Supabase Storage. Si `versionCode` es mayor que el instalado, muestra "Hay una nueva versión" con las novedades, "Actualizar" (descarga con DownloadManager, verifica SHA-256 e instala con FileProvider, pidiendo permiso para instalar apps desconocidas si hace falta) y "Más tarde" (no vuelve a avisar de esa versión). Con `minVersionCode` la actualización es obligatoria. El APK se descarga desde la URL `apkUrl` del manifiesto; desde 0.9.2 es el asset publico del release de GitHub (`https://github.com/jhonatanJJ2006/Gacelas/releases/download/vX.Y.Z/runcity-X.Y.Z-arm64.apk`). DownloadManager sigue la redireccion 302 al almacenamiento de GitHub, muestra el progreso y la app verifica SHA-256 antes de instalar. La app no usa la API de GitHub ni lleva tokens.
 
 `versionCode` se calcula desde `versionName` (0.6.1 -> 601, 1.2.3 -> 10203), así que basta con subir `versionName`.
 
@@ -139,7 +139,7 @@ Para publicar:
 
 1. Sube `versionName` en `app/build.gradle.kts`, haz commit y push a `main`.
 2. Comprueba que `local.properties` tenga `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `GOOGLE_WEB_CLIENT_ID`, y que el keystore de depuración sea el de SHA-1 23:CF:...:F9.
-3. `SUPABASE_SERVICE_ROLE_KEY=... scripts/publicar-android.sh "Notas cortas"` (agrega `--obligatoria` para forzarla). Compila, prueba, sube el APK y `latest.json`, crea el tag y el pre-release de GitHub.
+3. `SUPABASE_SERVICE_ROLE_KEY=... scripts/publicar-android.sh "Notas cortas"` (agrega `--obligatoria` para forzarla). Compila y prueba, crea el tag y el pre-release de GitHub con el APK como asset `runcity-X.Y.Z-arm64.apk`, comprueba que el asset descarga con el mismo sha256 y sube a Supabase solo `latest.json` apuntando a ese asset (mas una copia de respaldo del APK si pesa 50 MiB o menos). El limite de 50 MiB de Supabase ya no aplica al APK; el script avisa si pasa de 150 MiB. Es la unica forma de publicar.
 
 El bucket se crea con `backend/migrations/013_app_releases.sql`.
 
