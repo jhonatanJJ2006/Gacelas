@@ -1,5 +1,5 @@
 import { OrbitControls, useAnimations, useGLTF } from '@react-three/drei'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import {
   Component,
   Suspense,
@@ -8,10 +8,20 @@ import {
   useMemo,
   useRef,
   useState,
+  type MutableRefObject,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react'
 import * as THREE from 'three'
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js'
+import {
+  arrastrar,
+  avanzar,
+  empezarArrastre,
+  nuevoGiro,
+  soltar,
+  type GiroEstado,
+} from '../lib/giroArrastre'
 import { isWebGLAvailable } from '../lib/webgl'
 
 interface Runner3DProps {
@@ -25,6 +35,11 @@ interface Runner3DProps {
   giroY?: number
   /** Falso quita los controles de orbita (corredor sobre el mapa). */
   interactivo?: boolean
+  /**
+   * Inicio: el corredor gira sobre su propio eje vertical; arrastrar en horizontal lo gira con inercia
+   * y luego vuelve el giro automatico. Sin orbita y con touch-action pan-y para no romper el scroll.
+   */
+  giroArrastre?: boolean
 }
 
 /** Imagen estatica del corredor: se ve mientras carga el 3D o si WebGL/el modelo fallan. */
@@ -67,6 +82,33 @@ function RunnerModel({
       rotation={[0, (-giroY * Math.PI) / 180, 0]}
     />
   )
+}
+
+/** Gira el grupo del modelo con el estado de arrastre en cada cuadro; la camara mira al objetivo. */
+function GiroArrastrable({
+  giro,
+  auto,
+  target,
+  salida,
+  children,
+}: {
+  giro: MutableRefObject<GiroEstado>
+  auto: number
+  target?: [number, number, number]
+  salida: MutableRefObject<HTMLDivElement | null>
+  children: ReactNode
+}) {
+  const grupo = useRef<THREE.Group>(null)
+  const camera = useThree((st) => st.camera)
+  useEffect(() => {
+    camera.lookAt(...(target ?? [0, 0, 0]))
+  }, [camera, target])
+  useFrame((_, dt) => {
+    giro.current = avanzar(giro.current, Math.min(dt, 0.1), auto)
+    if (grupo.current) grupo.current.rotation.y = THREE.MathUtils.degToRad(giro.current.angulo)
+    if (salida.current) salida.current.dataset.giro = giro.current.angulo.toFixed(1)
+  })
+  return <group ref={grupo}>{children}</group>
 }
 
 export function Runner3DFallback({ className = '' }: { className?: string }) {
@@ -128,7 +170,56 @@ export function Runner3D({
   target,
   giroY = 0,
   interactivo = true,
+  giroArrastre = false,
 }: Runner3DProps) {
+  const giro = useRef<GiroEstado>(nuevoGiro())
+  const contenedor = useRef<HTMLDivElement | null>(null)
+  const puntero = useRef<{
+    id: number
+    x: number
+    t: number
+    v: number
+    horizontal: boolean | null
+    y: number
+  } | null>(null)
+  const alBajar = (e: ReactPointerEvent<HTMLDivElement>) => {
+    puntero.current = {
+      id: e.pointerId,
+      x: e.clientX,
+      y: e.clientY,
+      t: e.timeStamp,
+      v: 0,
+      horizontal: null,
+    }
+  }
+  const alMover = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const p = puntero.current
+    if (!p || p.id !== e.pointerId) return
+    const dx = e.clientX - p.x
+    if (p.horizontal === null) {
+      const dy = e.clientY - p.y
+      if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return
+      p.horizontal = Math.abs(dx) > Math.abs(dy)
+      if (!p.horizontal) return
+      giro.current = empezarArrastre(giro.current)
+      e.currentTarget.setPointerCapture?.(e.pointerId)
+    }
+    if (!p.horizontal) return
+    const dt = Math.max(1, e.timeStamp - p.t) / 1000
+    p.v = 0.6 * (dx / dt) + 0.4 * p.v
+    p.x = e.clientX
+    p.t = e.timeStamp
+    giro.current = arrastrar(giro.current, dx)
+  }
+  const alSoltar = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const p = puntero.current
+    if (!p || p.id !== e.pointerId) return
+    puntero.current = null
+    if (p.horizontal) {
+      const quieto = e.timeStamp - p.t > 80
+      giro.current = soltar(giro.current, quieto ? 0 : p.v)
+    }
+  }
   const [webgl] = useState(isWebGLAvailable)
   const [menosMovimiento] = useState(
     () =>
@@ -143,9 +234,15 @@ export function Runner3D({
   return (
     <Runner3DErrorBoundary fallback={fallback}>
       <div
+        ref={contenedor}
         className={`relative w-full h-full ${className}`}
         data-testid="runner3d"
         data-listo={listo ? '1' : '0'}
+        style={giroArrastre ? { touchAction: 'pan-y' } : undefined}
+        onPointerDown={giroArrastre ? alBajar : undefined}
+        onPointerMove={giroArrastre ? alMover : undefined}
+        onPointerUp={giroArrastre ? alSoltar : undefined}
+        onPointerCancel={giroArrastre ? alSoltar : undefined}
       >
         {!listo && (
           <div className="absolute inset-0 pointer-events-none">
@@ -156,8 +253,19 @@ export function Runner3D({
           <Suspense fallback={null}>
             <ambientLight intensity={0.5} />
             <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
-            <RunnerModel animation={animation} onReady={marcarListo} giroY={giroY} />
-            {interactivo && (
+            {giroArrastre ? (
+              <GiroArrastrable
+                giro={giro}
+                auto={autoRotate && !menosMovimiento ? 18 : 0}
+                target={target}
+                salida={contenedor}
+              >
+                <RunnerModel animation={animation} onReady={marcarListo} />
+              </GiroArrastrable>
+            ) : (
+              <RunnerModel animation={animation} onReady={marcarListo} giroY={giroY} />
+            )}
+            {interactivo && !giroArrastre && (
               <OrbitControls
                 enableZoom={false}
                 enablePan={false}

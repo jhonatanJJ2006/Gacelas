@@ -49,6 +49,14 @@ window.gacelasClip = (nombre) => {
 window.gacelasRumbo = (g) => {
   rumbo = g
 }
+// Arrastre horizontal desde la app (GiroArrastre.kt): giro relativo en grados mientras se arrastra o dura
+// la inercia; con activo=false el giro automatico sigue desde donde quedo.
+let baseGiro = null
+window.gacelasGiro = (g, activo) => {
+  if (baseGiro === null) baseGiro = angulo
+  angulo = (((baseGiro + g) % 360) + 360) % 360
+  if (!activo) baseGiro = null
+}
 
 new GLTFLoader().load(q.get('modelo') || '../models/gacelas-runner-animated.glb', (gltf) => {
   const m = gltf.scene
@@ -70,7 +78,7 @@ let angulo = 0
 renderer.setAnimationLoop(() => {
   const dt = reloj.getDelta()
   if (mezclador) mezclador.update(dt)
-  if (autoRotar) angulo = (angulo + 0.3) % 360
+  if (autoRotar && baseGiro === null) angulo = (angulo + 0.3) % 360
   grupo.rotation.y = THREE.MathUtils.degToRad(autoRotar ? angulo : -rumbo)
   renderer.render(escena, camara)
   avisarPrimerCuadro()
