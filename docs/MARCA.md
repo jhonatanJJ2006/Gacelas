@@ -56,11 +56,11 @@ Aprobada por Jhona el 26 de octubre de 2026 (reemplaza a la intro A dibujada en 
 
 Es un video pre-renderizado cuadro por cuadro a 60 fps (motion blur con 4 submuestras por cuadro, easing cuidado, grano leve contra el banding) con `tools/marca/render_intro.py b <carpeta>` (requiere `skia-python`, `numpy`, `pillow` y la fuente Anton). Exportacion, 720 x 1280, sin audio:
 
-| Archivo                                       | Formato            | Peso   |
-| --------------------------------------------- | ------------------ | ------ |
-| `apps/android/app/src/main/res/drawable/intro_marca.xml` | vector animado (Android) | 33 KB |
-| `apps/web/public/marca/intro.mp4`             | H.264 main, CRF 24 | 102 KB |
-| `apps/web/public/marca/intro.webm`            | VP9, CRF 34        | 112 KB |
+| Archivo                                                  | Formato                  | Peso   |
+| -------------------------------------------------------- | ------------------------ | ------ |
+| `apps/android/app/src/main/res/drawable/intro_marca.xml` | vector animado (Android) | 33 KB  |
+| `apps/web/public/marca/intro.mp4`                        | H.264 main, CRF 24       | 102 KB |
+| `apps/web/public/marca/intro.webm`                       | VP9, CRF 34              | 112 KB |
 
 El primer y el ultimo cuadro son el fondo de marca `#0C1322`, igual que el SplashScreen, `windowBackground` y el theme-color de la web.
 
@@ -128,11 +128,11 @@ Todo sale de `python3 tools/marca/generar.py`. Capturas antes y despues: `/works
 
 ## Pruebas
 
-| Prueba                             | Que verifica                                                                                                                                    |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `core/ui` `IntroArranqueTest`      | arranque en frio, regla de 30 s, ciclo salir y volver, animaciones desactivadas, saltar, duracion, tope de 3,7 s                                |
+| Prueba                             | Que verifica                                                                                                                                                      |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `core/ui` `IntroArranqueTest`      | arranque en frio, regla de 30 s, ciclo salir y volver, animaciones desactivadas, saltar, duracion, tope de 3,7 s                                                  |
 | `app` `IntroMarcaTest` (Roborazzi) | `ControlIntro` (un solo fin), vector solo con propiedades del RenderThread y 2,2 s exactos, no se corta a mitad, salto con toque y fundido, fondo igual al splash |
-| web `introVideo.test.ts`           | regla de 30 s, fin por `ended`, salto con clic y tecla, fallback sin primer cuadro y por error, tope de seguridad                               |
-| web `e2e/intro.spec.ts`            | aparece sobre `#0C1322`, se salta, no reaparece al recargar enseguida, termina sola, fallback sin video, movimiento reducido, manifest e iconos |
+| web `introVideo.test.ts`           | regla de 30 s, fin por `ended`, salto con clic y tecla, fallback sin primer cuadro y por error, tope de seguridad                                                 |
+| web `e2e/intro.spec.ts`            | aparece sobre `#0C1322`, se salta, no reaparece al recargar enseguida, termina sola, fallback sin video, movimiento reducido, manifest e iconos                   |
 
 Los demas e2e dan la intro por vista (`e2e/ayuda.ts`). Capturas de Roborazzi: `./gradlew :app:testDebugUnitTest --tests '*IntroMarca*' -Proborazzi.test.record=true -Pgacelas.shots=<carpeta>`.
