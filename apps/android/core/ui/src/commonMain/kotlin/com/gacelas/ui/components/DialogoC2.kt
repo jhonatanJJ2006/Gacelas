@@ -36,7 +36,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -49,7 +48,7 @@ import com.gacelas.ui.theme.SpaceGrotesk
 val PeligroC2 = Color(0xFFBE185D)
 
 /**
- * Modal C2 (extra/modales): hoja inferior oscura con linea violeta, titular Saira Semi Condensed,
+ * Modal C2 (extra/modales): hoja inferior oscura con linea violeta, titular Anton en cursiva,
  * texto atenuado y acciones apiladas. Misma forma de uso que AlertDialog para sustituirlo sin tocar la logica.
  */
 @Composable
@@ -90,7 +89,7 @@ fun DialogoC2(
                             ) { CompositionLocalProvider(LocalContentColor provides GColors.C2Violeta) { icon() } }
                             if (title != null) CompositionLocalProvider(
                                 LocalContentColor provides Color.White,
-                                LocalTextStyle provides TextStyle(fontFamily = SpaceGrotesk, fontWeight = FontWeight.Bold, letterSpacing = 0.02.em, fontSize = 24.sp, lineHeight = 30.sp),
+                                LocalTextStyle provides TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 26.sp, lineHeight = 30.sp),
                             ) { title() }
                         }
                         if (text != null) CompositionLocalProvider(

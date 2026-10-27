@@ -92,7 +92,7 @@ export function Bienvenida() {
             <div className="h-2 w-2 rounded-full bg-border-subtle"></div>
           </div>
 
-          <h1 className="text-text-primary font-headline-lg text-[23px] md:text-4xl font-bold text-center md:text-left leading-tight mb-2">
+          <h1 className="text-text-primary font-headline-lg text-[26px] md:text-4xl font-extrabold text-center md:text-left tracking-tight leading-tight mb-2">
             Corre con la manada de Loja
           </h1>
 

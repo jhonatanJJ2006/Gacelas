@@ -19,7 +19,7 @@ actual val RobotoFlex: FontFamily = FontFamily(
     listOf(FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold, FontWeight.Black).map { variable(R.font.archivo, it) },
 )
 
-/** Saira Semi Condensed 700 (titulares); se registra para todos los pesos usados en titulares. */
+/** Anton tiene un solo peso; se registra para todos los pesos usados en titulares. */
 actual val SpaceGrotesk: FontFamily = FontFamily(
-    listOf(FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold, FontWeight.Black).map { Font(R.font.saira_semi_condensed, it) },
+    listOf(FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold, FontWeight.Black).map { Font(R.font.anton, it) },
 )

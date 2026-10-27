@@ -196,7 +196,7 @@ fun IntroAnimada(alTerminar: () -> Unit, modifier: Modifier = Modifier) {
     ) { dibujarIntro(t.coerceAtMost(IntroArranque.DURACION_S), medidor) }
 }
 
-/** Saira Semi Condensed (familia de titulares) a [px] pixeles de pantalla, con el espaciado del prototipo. */
+/** Anton (familia de titulares) a [px] pixeles de pantalla, con el espaciado del prototipo. */
 private fun DrawScope.estiloPalabra(px: Float, espaciadoPx: Float) = TextStyle(
     fontFamily = SpaceGrotesk,
     fontSize = px.toSp(),
