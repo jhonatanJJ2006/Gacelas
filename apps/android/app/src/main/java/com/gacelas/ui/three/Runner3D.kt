@@ -186,6 +186,24 @@ fun Runner3DWeb(
     // pintar transparente, y en ese caso el escenario quedaba vacio sin ningun error. El GLB va en assets.
     var visto by remember { androidx.compose.runtime.mutableStateOf(false) }
     var fallo by remember { androidx.compose.runtime.mutableStateOf(false) }
+    // Con autoRotar (Inicio) la pagina gira sola; el arrastre horizontal (con su inercia) se calcula aqui
+    // con GiroArrastre y se manda como giro relativo. El bucle de cuadros solo corre mientras hay arrastre o
+    // inercia: un bucle permanente mantendria Compose ocupado y gastaria bateria.
+    val giro = remember { GiroArrastre(gradosAuto = 0f) }
+    var vista by remember { androidx.compose.runtime.mutableStateOf<android.webkit.WebView?>(null) }
+    var arrastres by remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    if (autoRotar && arrastres > 0) androidx.compose.runtime.LaunchedEffect(arrastres) {
+        var previo = 0L
+        while (giro.enMovimiento) {
+            androidx.compose.runtime.withFrameNanos { t ->
+                val dt = if (previo == 0L) 0f else ((t - previo) / 1e9f).coerceIn(0f, 0.1f)
+                previo = t
+                giro.avanzar(dt)
+                vista?.evaluateJavascript("window.gacelasGiro&&gacelasGiro(${giro.angulo},true)", null)
+            }
+        }
+        vista?.evaluateJavascript("window.gacelasGiro&&gacelasGiro(${giro.angulo},false)", null)
+    }
     androidx.compose.foundation.layout.Box(modifier.fillMaxSize()) {
     if (!visto || fallo) Runner3DFallback(Modifier.testTag("corredor-3d-respaldo"))
     if (!fallo) androidx.compose.ui.viewinterop.AndroidView(
@@ -226,12 +244,16 @@ fun Runner3DWeb(
                     }
                 }
                 loadUrl(url)
+                vista = this
             }
         },
         update = { w ->
             w.evaluateJavascript("window.gacelasClip&&gacelasClip('${clip.nombre}');window.gacelasRumbo&&gacelasRumbo($rumboRelativo)", null)
         },
-        onRelease = { it.destroy() },
+        onRelease = { vista = null; it.destroy() },
+    )
+    if (autoRotar && !fallo) androidx.compose.foundation.layout.Box(
+        Modifier.fillMaxSize().testTag("corredor-3d-arrastre").giroPorArrastre(giro) { giro.reiniciar(); arrastres++ }
     )
     }
 }
@@ -252,8 +274,11 @@ fun motorCorredor(sobreFondo: Boolean, filament: Boolean): MotorCorredor = when 
 /**
  * Corredor de Inicio con Filament sobre un TextureView translucido: se compone con la UI de Compose
  * (escenario C2 detras, etiquetas y boton delante), a diferencia del SurfaceView de SceneView que perfora
- * la ventana en negro. Vista TRANSLUCENT, limpieza con alfa 0 y sin skybox. El GLB sale de los assets del
- * APK (sin red). El respaldo queda debajo hasta que el TextureView entrega un cuadro con pixeles.
+ * la ventana en negro. El GLB sale de los assets del APK (sin red). El respaldo queda debajo hasta que el
+ * TextureView entrega un cuadro con pixeles. Arrastrar en horizontal gira el corredor sobre su eje.
+ *
+ * 0.9.6: ciclo de vida propio (sin ModelViewer). ModelViewer ponia la proyeccion con el aspecto del
+ * TextureView aunque midiera 0 y Filament aborta el proceso (PreconditionPanic en Camera::setProjection).
  */
 @Composable
 fun Runner3DFilamentTransparente(
@@ -262,97 +287,206 @@ fun Runner3DFilamentTransparente(
     autoRotar: Boolean = false,
     camara: Position = Position(0f, 1.2f, 3.5f),
 ) {
+    val context = LocalContext.current
+    val salvaguarda = remember { SalvaguardaCorredor(context, com.gacelas.BuildConfig.VERSION_CODE.toLong()) }
+    val permitido = remember { salvaguarda.puedeUsar3D() }
     var visto by remember { androidx.compose.runtime.mutableStateOf(false) }
-    var fallo by remember { androidx.compose.runtime.mutableStateOf(false) }
+    var fallo by remember { androidx.compose.runtime.mutableStateOf(!permitido) }
+    val giro = remember { GiroArrastre(gradosAuto = if (autoRotar) 18f else 0f) }
     Box(modifier.fillMaxSize()) {
         if (!visto || fallo) Runner3DFallback(Modifier.testTag("corredor-3d-respaldo"))
-        if (!fallo) androidx.compose.ui.viewinterop.AndroidView(
-            modifier = Modifier.fillMaxSize().testTag("corredor-3d-filament"),
-            factory = { ctx ->
-                val tv = android.view.TextureView(ctx).apply { isOpaque = false }
-                runCatching { CorredorFilament(ctx, tv, clip.nombre, autoRotar, camara) { visto = true } }
-                    .onSuccess { tv.tag = it }
-                    .onFailure { Log.w(TAG, "Filament no pudo iniciar el corredor", it); fallo = true }
-                tv
-            },
-            onRelease = { (it.tag as? CorredorFilament)?.cerrar() },
-        )
+        if (!fallo) {
+            androidx.compose.ui.viewinterop.AndroidView(
+                modifier = Modifier.fillMaxSize().testTag("corredor-3d-filament"),
+                factory = { ctx ->
+                    val tv = android.view.TextureView(ctx).apply { isOpaque = false }
+                    runCatching { CorredorFilament(ctx, tv, clip.nombre, camara, giro, salvaguarda) { visto = true } }
+                        .onSuccess { tv.tag = it }
+                        .onFailure { Log.w(TAG, "Filament no pudo iniciar el corredor", it); fallo = true }
+                    tv
+                },
+                onRelease = { (it.tag as? CorredorFilament)?.cerrar() },
+            )
+            Box(Modifier.fillMaxSize().testTag("corredor-3d-arrastre").giroPorArrastre(giro))
+        }
     }
 }
 
-/** Bucle de render: Choreographer -> animacion + giro -> ModelViewer.render. */
+/** Estado del ciclo de vida del corredor: solo se dibuja con superficie valida y tamano mayor que 0. */
+internal class CicloCorredor {
+    var superficie = false
+        private set
+    var ancho = 0
+        private set
+    var alto = 0
+        private set
+    var cerrado = false
+        private set
+
+    fun conSuperficie() { if (!cerrado) superficie = true }
+    fun sinSuperficie() { superficie = false }
+    /** Devuelve true si el tamano es valido para poner viewport y proyeccion. */
+    fun redimensionar(w: Int, h: Int): Boolean { ancho = w; alto = h; return w > 0 && h > 0 }
+    fun puedeDibujar() = !cerrado && superficie && ancho > 0 && alto > 0
+    /** Devuelve true solo la primera vez: destruir dos veces aborta Filament. */
+    fun cerrar(): Boolean { if (cerrado) return false; cerrado = true; superficie = false; return true }
+}
+
+/** Motor Filament propio del corredor; todo ocurre en el hilo principal (Choreographer y callbacks de UiHelper). */
 internal class CorredorFilament(
     ctx: android.content.Context,
-    private val tv: android.view.TextureView,
+    tv: android.view.TextureView,
     clip: String,
-    private val autoRotar: Boolean,
-    camara: Position,
+    private val camara: Position,
+    private val giro: GiroArrastre,
+    private val salvaguarda: SalvaguardaCorredor,
     private val onPrimerCuadro: () -> Unit,
 ) : android.view.Choreographer.FrameCallback {
+    private val ciclo = CicloCorredor()
+    private val tv = tv
     private val engine: com.google.android.filament.Engine
-    private val uiHelper = com.google.android.filament.android.UiHelper(com.google.android.filament.android.UiHelper.ContextErrorPolicy.DONT_CHECK).apply { isOpaque = false }
-    private val viewer: com.google.android.filament.utils.ModelViewer
+    private val renderer: com.google.android.filament.Renderer
+    private val scene: com.google.android.filament.Scene
+    private val view: com.google.android.filament.View
+    private val camaraEntidad: Int
+    private val cam: com.google.android.filament.Camera
+    private val sol: Int
+    private val ibl: com.google.android.filament.IndirectLight
+    private val materiales: com.google.android.filament.gltfio.UbershaderProvider
+    private val cargador: com.google.android.filament.gltfio.AssetLoader
+    private val recursos: com.google.android.filament.gltfio.ResourceLoader
+    private val asset: com.google.android.filament.gltfio.FilamentAsset
+    private val animador: com.google.android.filament.gltfio.Animator?
     private val indice: Int
     private val escala: Float
     private val centro: com.google.android.filament.utils.Float3
+    private val uiHelper = com.google.android.filament.android.UiHelper(com.google.android.filament.android.UiHelper.ContextErrorPolicy.DONT_CHECK).apply { isOpaque = false }
+    private var swapChain: com.google.android.filament.SwapChain? = null
     private var inicio = -1L
+    private var anterior = -1L
     private var cuadros = 0
     private var visto = false
-    private var activo = true
 
     init {
+        salvaguarda.empezarPaso()
         com.google.android.filament.utils.Utils.init()
         engine = com.google.android.filament.Engine.create()
-        val manipulador = com.google.android.filament.utils.Manipulator.Builder()
-            .targetPosition(0f, 0f, 0f)
-            .orbitHomePosition(camara.x, camara.y, camara.z)
-            .viewport(1, 1)
-            .build(com.google.android.filament.utils.Manipulator.Mode.ORBIT)
-        viewer = com.google.android.filament.utils.ModelViewer(tv, engine, uiHelper, manipulador)
-        viewer.view.blendMode = com.google.android.filament.View.BlendMode.TRANSLUCENT
-        viewer.scene.skybox = null
-        viewer.renderer.clearOptions = viewer.renderer.clearOptions.apply { clear = true; clearColor = floatArrayOf(0f, 0f, 0f, 0f) }
+        renderer = engine.createRenderer()
+        scene = engine.createScene()
+        view = engine.createView()
+        camaraEntidad = com.google.android.filament.EntityManager.get().create()
+        cam = engine.createCamera(camaraEntidad)
+        view.scene = scene
+        view.camera = cam
+        view.blendMode = com.google.android.filament.View.BlendMode.TRANSLUCENT
+        renderer.clearOptions = renderer.clearOptions.apply { clear = true; clearColor = floatArrayOf(0f, 0f, 0f, 0f) }
+        sol = com.google.android.filament.EntityManager.get().create()
+        com.google.android.filament.LightManager.Builder(com.google.android.filament.LightManager.Type.DIRECTIONAL)
+            .color(1f, 1f, 1f).intensity(100_000f).direction(-0.4f, -1f, -0.6f).castShadows(false).build(engine, sol)
+        scene.addEntity(sol)
+        ibl = com.google.android.filament.IndirectLight.Builder().irradiance(1, floatArrayOf(0.9f, 0.85f, 1f)).intensity(30_000f).build(engine)
+        scene.indirectLight = ibl
+        materiales = com.google.android.filament.gltfio.UbershaderProvider(engine)
+        cargador = com.google.android.filament.gltfio.AssetLoader(engine, materiales, com.google.android.filament.EntityManager.get())
+        recursos = com.google.android.filament.gltfio.ResourceLoader(engine)
         val bytes = ctx.assets.open(MODELO_CORREDOR).use { it.readBytes() }
-        viewer.loadModelGlb(java.nio.ByteBuffer.allocateDirect(bytes.size).put(bytes).apply { rewind() })
-        val asset = checkNotNull(viewer.asset) { "GLB sin escena" }
-        // ModelViewer ya trae una luz direccional; se agrega un IBL plano para que el PBR no quede oscuro.
-        viewer.scene.indirectLight = com.google.android.filament.IndirectLight.Builder()
-            .irradiance(1, floatArrayOf(0.9f, 0.85f, 1f)).intensity(30_000f).build(engine)
-        val animador = viewer.animator
+        asset = checkNotNull(cargador.createAsset(java.nio.ByteBuffer.allocateDirect(bytes.size).put(bytes).apply { rewind() })) { "GLB sin escena" }
+        recursos.loadResources(asset)
+        asset.releaseSourceData()
+        scene.addEntities(asset.entities)
+        animador = asset.instance.animator
         indice = (0 until (animador?.animationCount ?: 0)).firstOrNull { animador?.getAnimationName(it) == clip } ?: 0
         val caja = asset.boundingBox
         centro = com.google.android.filament.utils.Float3(caja.center[0], caja.center[1], caja.center[2])
         escala = 0.9f / caja.halfExtent[1].coerceAtLeast(0.001f)
+        uiHelper.renderCallback = object : com.google.android.filament.android.UiHelper.RendererCallback {
+            override fun onNativeWindowChanged(surface: android.view.Surface) {
+                if (ciclo.cerrado) return
+                salvaguarda.empezarPaso()
+                swapChain?.let { engine.destroySwapChain(it) }
+                swapChain = engine.createSwapChain(surface, uiHelper.swapChainFlags)
+                ciclo.conSuperficie()
+                salvaguarda.terminarPaso()
+            }
+
+            override fun onDetachedFromSurface() {
+                ciclo.sinSuperficie()
+                swapChain?.let { engine.destroySwapChain(it); engine.flushAndWait() }
+                swapChain = null
+            }
+
+            override fun onResized(width: Int, height: Int) {
+                if (ciclo.cerrado || !ciclo.redimensionar(width, height)) return
+                view.viewport = com.google.android.filament.Viewport(0, 0, width, height)
+                cam.setLensProjection(28.0, width.toDouble() / height, 0.05, 100.0)
+            }
+        }
+        uiHelper.attachTo(tv)
+        salvaguarda.terminarPaso()
+        salvaguarda.empezarPaso() // primeros cuadros vigilados
         android.view.Choreographer.getInstance().postFrameCallback(this)
     }
 
     override fun doFrame(t: Long) {
-        if (!activo) return
+        if (ciclo.cerrado) return
         android.view.Choreographer.getInstance().postFrameCallback(this)
+        val sc = swapChain
+        if (sc == null || !ciclo.puedeDibujar() || !uiHelper.isReadyToRender) return
         if (inicio < 0) inicio = t
         val s = (t - inicio) / 1e9f
-        val asset = viewer.asset ?: return
-        viewer.animator?.let { a ->
-            if (a.animationCount > 0) { a.applyAnimation(indice, s % a.getAnimationDuration(indice)); a.updateBoneMatrices() }
+        val dt = if (anterior < 0) 0f else ((t - anterior) / 1e9f).coerceIn(0f, 0.1f)
+        anterior = t
+        animador?.let { a ->
+            if (a.animationCount > 0) {
+                val dur = a.getAnimationDuration(indice)
+                a.applyAnimation(indice, if (dur > 0f) s % dur else 0f)
+                a.updateBoneMatrices()
+            }
         }
-        val giro = if (autoRotar) (s * 18f) % 360f else 0f
-        val m = com.google.android.filament.utils.rotation(com.google.android.filament.utils.Float3(0f, 1f, 0f), giro) *
+        val angulo = giro.avanzar(dt)
+        val m = com.google.android.filament.utils.rotation(com.google.android.filament.utils.Float3(0f, 1f, 0f), angulo) *
             com.google.android.filament.utils.scale(com.google.android.filament.utils.Float3(escala)) *
             com.google.android.filament.utils.translation(-centro)
         val tm = engine.transformManager
         tm.setTransform(tm.getInstance(asset.root), com.google.android.filament.utils.transpose(m).toFloatArray())
-        viewer.render(t)
-        if (!visto && ++cuadros % 10 == 0 && tv.isAvailable) {
+        cam.lookAt(camara.x.toDouble(), camara.y.toDouble(), camara.z.toDouble(), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
+        if (renderer.beginFrame(sc, t)) { renderer.render(view); renderer.endFrame() }
+        cuadros++
+        if (cuadros == SalvaguardaCorredor.CUADROS_VIGILADOS) salvaguarda.terminarPaso()
+        if (!visto && cuadros % 10 == 0 && tv.isAvailable) {
             val b = tv.getBitmap(48, 48)
             if (b != null && tienePixeles(b)) { visto = true; onPrimerCuadro() }
             b?.recycle()
         }
     }
 
+    /** Orden: parar el bucle, soltar la superficie, esperar a la GPU y destruir de hojas a motor. Una sola vez. */
     fun cerrar() {
-        activo = false
+        if (!ciclo.cerrar()) return
         android.view.Choreographer.getInstance().removeFrameCallback(this)
-        runCatching { viewer.destroyModel(); uiHelper.detach(); engine.destroy() }
+        salvaguarda.empezarPaso()
+        runCatching {
+            uiHelper.detach()
+            swapChain?.let { engine.destroySwapChain(it) }
+            swapChain = null
+            engine.flushAndWait()
+            scene.removeEntities(asset.entities)
+            cargador.destroyAsset(asset)
+            recursos.destroy()
+            cargador.destroy()
+            materiales.destroyMaterials()
+            materiales.destroy()
+            engine.destroyIndirectLight(ibl)
+            engine.lightManager.destroy(sol)
+            com.google.android.filament.EntityManager.get().destroy(sol)
+            engine.destroyRenderer(renderer)
+            engine.destroyView(view)
+            engine.destroyScene(scene)
+            engine.destroyCameraComponent(camaraEntidad)
+            com.google.android.filament.EntityManager.get().destroy(camaraEntidad)
+            engine.destroy()
+        }.onFailure { Log.w(TAG, "Error al cerrar Filament", it) }
+        salvaguarda.terminarPaso()
     }
 }
 

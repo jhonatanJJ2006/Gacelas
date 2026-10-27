@@ -74,14 +74,19 @@ fun Runner3DIos(
     // (modelo fuera de camara, render sin contenido) el escenario no queda en blanco.
     var visto by remember { mutableStateOf(false) }
     val rumbo by rememberUpdatedState(rumboRelativo)
+    // Mismo giro que Android: automatico + arrastre horizontal con inercia (GiroArrastre, commonMain).
+    val giroArrastre = remember { GiroArrastre(gradosAuto = GRADOS_POR_SEGUNDO.toFloat()) }
     LaunchedEffect(nativo, ancho, alto) {
         if (ancho <= 0 || alto <= 0) return@LaunchedEffect
         var inicio = -1L
+        var previo = -1L
         while (true) {
             withFrameNanos { t ->
                 if (inicio < 0) inicio = t
+                val dt = if (previo < 0) 0f else ((t - previo) / 1e9f).coerceIn(0f, 0.1f)
+                previo = t
                 val s = (t - inicio) / 1e9
-                val giro = if (autoRotar) (s * GRADOS_POR_SEGUNDO) % 360.0 else -rumbo.toDouble()
+                val giro = if (autoRotar) { giroArrastre.avanzar(dt); giroArrastre.angulo.toDouble() } else -rumbo.toDouble()
                 nativo.cuadro(s, giro, ancho, alto)?.let { datos ->
                     val bytes = aBytes(datos, ancho, alto) ?: return@let
                     if (!visto && tienePixeles(bytes)) visto = true
@@ -90,7 +95,8 @@ fun Runner3DIos(
             }
         }
     }
-    Box(modifier.fillMaxSize().onSizeChanged { ancho = it.width; alto = it.height }) {
+    val base = modifier.fillMaxSize().onSizeChanged { ancho = it.width; alto = it.height }
+    Box(if (autoRotar) base.giroPorArrastre(giroArrastre) else base) {
         if (!visto) Runner3DFallback()
         imagen?.let { Image(it, contentDescription = "Corredor Runcity", modifier = Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds) }
     }

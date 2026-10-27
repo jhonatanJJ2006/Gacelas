@@ -2,6 +2,29 @@
 
 Registro de fallos que ya se habian corregido y volvieron. Cada entrada dice que paso, la causa, el arreglo y como evitar que se repita.
 
+## 2026-10-27: cierre forzado nativo al abrir Inicio en Android (v0.9.6)
+
+### Que paso
+
+Con 0.9.5 instalada en un Redmi (emerald, Android 16, HyperOS OS3.0.307.0) la app se cerraba sola. El tombstone muestra un abort desde `libfilament-jni.so` en `utils::TPanic<utils::PreconditionPanic>::panic`: una precondicion de Filament fallo y Filament aborta el proceso (no es una excepcion de Kotlin, no se puede capturar).
+
+### Cambio que lo introdujo
+
+v0.9.5, `Runner3DFilamentTransparente`: Inicio paso a Filament sobre un `TextureView` usando `ModelViewer` de gltfio. `ModelViewer` pone la proyeccion de la camara en cada cambio de tamano con `width / height` sin comprobar el tamano; si el TextureView mide 0 (al medirse, al volver de segundo plano, al cerrarse) el aspecto queda en 0 o infinito y `Camera::setProjection` lanza el PreconditionPanic. Ademas su ciclo de vida (superficie, swapchain y destruccion) no estaba atado al de la vista de Compose. No se pudo reproducir en el telefono, asi que la causa exacta es probable, no confirmada: el panic es de precondicion y estas eran las llamadas sin proteger.
+
+### Arreglo
+
+- `CorredorFilament` reemplaza a `ModelViewer`: motor, escena, camara y cargadores propios, todo en el hilo principal.
+- `CicloCorredor`: solo se dibuja con superficie, swapchain y tamano mayor que 0; la proyeccion solo se pone con tamano valido.
+- Cierre idempotente y en orden: quitar el callback de cuadros, soltar la superficie, destruir el swapchain, esperar al motor, destruir recursos y al final el motor.
+- `SalvaguardaCorredor`: marca persistente con commit() antes de crear el motor, en los primeros 120 cuadros y al destruir. Si la app arranca con la marca puesta, el proceso murio con el 3D activo y esa version usa la imagen de respaldo, sin bucle de cierres. Una version nueva vuelve a intentar el 3D.
+
+### Como evitar que se repita
+
+- `CicloCorredorTest` y `SalvaguardaCorredorTest` cubren el dibujo sin tamano, el cierre doble y el bloqueo tras un cierre.
+- No usar `ModelViewer` en vistas que se crean y destruyen con Compose; cualquier llamada a Filament con tamanos de la vista se protege contra 0.
+- Un cambio de motor de render se prueba en un telefono real antes de publicar.
+
 ## 2026-10-27: el corredor 3D de Inicio no se dibuja en Android desde 0.9.1 (v0.9.5)
 
 ### Cambio que lo introdujo

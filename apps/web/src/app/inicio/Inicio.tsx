@@ -104,6 +104,7 @@ export function Inicio() {
             <Runner3D
               animation="Idle"
               autoRotate
+              giroArrastre
               cameraPosition={[0, 1.1, 5.3]}
               target={[0, 0.8, 0]}
             />
