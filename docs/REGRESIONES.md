@@ -2,6 +2,36 @@
 
 Registro de fallos que ya se habian corregido y volvieron. Cada entrada dice que paso, la causa, el arreglo y como evitar que se repita.
 
+## 2026-10-27: el avatar sigue sin verse en Inicio y tampoco aparece el respaldo (v0.9.4)
+
+### Que paso
+
+Despues de 0.9.3 el escenario de Inicio seguia vacio, sin corredor y sin icono de respaldo. La captura nueva tiene barra de estado y barra de inicio de iPhone, asi que puede ser la app de iOS.
+
+### Diff que lo introdujo
+
+v0.9.0 a v0.9.1, `InicioScreen.kt`: `Runner3D(..., sobreFondo = true)`. Con eso Inicio dejo de usar Filament (SurfaceView, que en 0.9.0 si se veia sobre fondo negro) y paso a un WebView transparente. En iOS el corredor ya era un render de SceneKit dibujado como imagen de Compose.
+
+### Causa
+
+En las dos plataformas el respaldo dependia de un error que nunca llega:
+
+- Android: el respaldo de 0.9.3 solo aparecia si el proceso del WebView moria o si la pagina no marcaba `listo` (modelo cargado). Un WebView que carga bien pero pinta transparente pasa ese control y deja el hueco vacio.
+- iOS: `Runner3DIos` solo muestra el respaldo si el GLB no carga. Si SceneKit devuelve cuadros vacios (modelo fuera de camara o render sin contenido) se dibuja una imagen transparente.
+
+Sin dispositivo no se pudo ver cual de los dos renders pinta vacio en el telefono de Jhona.
+
+### Arreglo
+
+- El respaldo se dibuja debajo del 3D hasta recibir una senal positiva: un cuadro que ya tiene pixeles del corredor.
+- Android: `runner3d.js` lee los pixeles despues de dibujar y llama a `GacelasCorredor.primerCuadro()` (JavascriptInterface).
+- iOS: `Runner3DIos` revisa el canal alfa de cada cuadro de SceneKit.
+
+### Como evitar que se repita
+
+- Un respaldo nunca debe depender de que algo falle: debe quedarse hasta que el 3D confirme que dibujo.
+- Test `Runner3DWebRespaldoTest`: falla con el codigo de 0.9.3 y pasa con 0.9.4.
+
 ## 2026-10-26: el avatar 3D no aparece en Inicio (Android, v0.9.1 y v0.9.2)
 
 ### Que paso

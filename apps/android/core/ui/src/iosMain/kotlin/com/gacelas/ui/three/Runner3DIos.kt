@@ -70,6 +70,9 @@ fun Runner3DIos(
     var ancho by remember { mutableIntStateOf(0) }
     var alto by remember { mutableIntStateOf(0) }
     var imagen by remember { mutableStateOf<ImageBitmap?>(null) }
+    // Respaldo debajo hasta el primer cuadro con pixeles del corredor: si SceneKit devuelve cuadros vacios
+    // (modelo fuera de camara, render sin contenido) el escenario no queda en blanco.
+    var visto by remember { mutableStateOf(false) }
     val rumbo by rememberUpdatedState(rumboRelativo)
     LaunchedEffect(nativo, ancho, alto) {
         if (ancho <= 0 || alto <= 0) return@LaunchedEffect
@@ -79,11 +82,16 @@ fun Runner3DIos(
                 if (inicio < 0) inicio = t
                 val s = (t - inicio) / 1e9
                 val giro = if (autoRotar) (s * GRADOS_POR_SEGUNDO) % 360.0 else -rumbo.toDouble()
-                nativo.cuadro(s, giro, ancho, alto)?.let { imagen = aImagen(it, ancho, alto) }
+                nativo.cuadro(s, giro, ancho, alto)?.let { datos ->
+                    val bytes = aBytes(datos, ancho, alto) ?: return@let
+                    if (!visto && tienePixeles(bytes)) visto = true
+                    imagen = aImagen(bytes, ancho, alto)
+                }
             }
         }
     }
     Box(modifier.fillMaxSize().onSizeChanged { ancho = it.width; alto = it.height }) {
+        if (!visto) Runner3DFallback()
         imagen?.let { Image(it, contentDescription = "Corredor Runcity", modifier = Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds) }
     }
 }
@@ -91,11 +99,22 @@ fun Runner3DIos(
 /** Mismos clips y alturas que ClipCorredor (Android). */
 enum class ClipCorredorIos(val nombre: String, val alturaY: Double) { Idle("Idle", -1.8), Jog("Jog", -0.9), Run("Run", -0.9) }
 
-private fun aImagen(datos: NSData, ancho: Int, alto: Int): ImageBitmap? {
+private fun aBytes(datos: NSData, ancho: Int, alto: Int): ByteArray? {
     val n = ancho * alto * 4
     if (datos.length.toInt() < n) return null
     val bytes = ByteArray(n)
     bytes.usePinned { memcpy(it.addressOf(0), datos.bytes, n.toULong()) }
+    return bytes
+}
+
+/** true si algun pixel (muestreado) no es transparente: hay corredor dibujado en el cuadro. */
+internal fun tienePixeles(rgba: ByteArray): Boolean {
+    var i = 3
+    while (i < rgba.size) { if (rgba[i].toInt() != 0) return true; i += 4 * 7 }
+    return false
+}
+
+private fun aImagen(bytes: ByteArray, ancho: Int, alto: Int): ImageBitmap? {
     val info = ImageInfo(ancho, alto, ColorType.RGBA_8888, ColorAlphaType.PREMUL)
     return SkiaImage.makeRaster(info, bytes, ancho * 4).toComposeImageBitmap()
 }

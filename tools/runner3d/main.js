@@ -73,4 +73,25 @@ renderer.setAnimationLoop(() => {
   if (autoRotar) angulo = (angulo + 0.3) % 360
   grupo.rotation.y = THREE.MathUtils.degToRad(autoRotar ? angulo : -rumbo)
   renderer.render(escena, camara)
+  avisarPrimerCuadro()
 })
+
+// Senal positiva para la app: solo cuando un cuadro ya tiene pixeles del corredor (no basta con que
+// cargue la pagina). Android oculta el respaldo al recibirla (Runner3DWeb, JavascriptInterface).
+let cuadroVisto = false
+function avisarPrimerCuadro() {
+  if (cuadroVisto || !mezclador) return
+  const gl = renderer.getContext()
+  const w = gl.drawingBufferWidth
+  const h = gl.drawingBufferHeight
+  const px = new Uint8Array(w * h * 4)
+  gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px)
+  for (let i = 3; i < px.length; i += 4 * 7) {
+    if (px[i] > 0) {
+      cuadroVisto = true
+      document.body.dataset.cuadro = '1'
+      if (window.GacelasCorredor) window.GacelasCorredor.primerCuadro()
+      return
+    }
+  }
+}

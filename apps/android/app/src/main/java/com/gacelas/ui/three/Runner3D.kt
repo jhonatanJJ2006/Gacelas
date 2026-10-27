@@ -177,12 +177,15 @@ fun Runner3DWeb(
     val url = remember(autoRotar, camara) {
         "${HOST_ASSETS}runner3d/index.html?clip=${clip.nombre}&rotar=${if (autoRotar) 1 else 0}&cam=${camara.x},${camara.y},${camara.z}"
     }
-    // Si el GLB no llega a dibujarse (WebGL no disponible, proceso del WebView caido) se muestra el
-    // corredor de respaldo en vez de dejar el hueco vacio. El GLB va empaquetado en assets: no usa red.
+    // El respaldo se dibuja DEBAJO del WebView hasta que runner3d.js confirma un cuadro con pixeles del
+    // corredor (GacelasCorredor.primerCuadro). Que la pagina cargue no basta: un WebView puede cargar bien y
+    // pintar transparente, y en ese caso el escenario quedaba vacio sin ningun error. El GLB va en assets.
+    var visto by remember { androidx.compose.runtime.mutableStateOf(false) }
     var fallo by remember { androidx.compose.runtime.mutableStateOf(false) }
-    if (fallo) { Runner3DFallback(modifier); return }
-    androidx.compose.ui.viewinterop.AndroidView(
-        modifier = modifier.fillMaxSize().then(Modifier.testTag("corredor-3d-webgl")),
+    androidx.compose.foundation.layout.Box(modifier.fillMaxSize()) {
+    if (!visto || fallo) Runner3DFallback(Modifier.testTag("corredor-3d-respaldo"))
+    if (!fallo) androidx.compose.ui.viewinterop.AndroidView(
+        modifier = Modifier.fillMaxSize().then(Modifier.testTag("corredor-3d-webgl")),
         factory = { ctx ->
             android.webkit.WebView(ctx).apply {
                 setBackgroundColor(android.graphics.Color.TRANSPARENT)
@@ -194,6 +197,10 @@ fun Runner3DWeb(
                 setOnTouchListener { _, _ -> false }
                 isClickable = false
                 isFocusable = false
+                addJavascriptInterface(object {
+                    @android.webkit.JavascriptInterface
+                    fun primerCuadro() { post { visto = true } }
+                }, "GacelasCorredor")
                 webViewClient = object : android.webkit.WebViewClient() {
                     override fun shouldInterceptRequest(view: android.webkit.WebView, request: android.webkit.WebResourceRequest): android.webkit.WebResourceResponse? {
                         val u = request.url.toString()
@@ -215,12 +222,6 @@ fun Runner3DWeb(
                     }
                 }
                 loadUrl(url)
-                // Vigilante: a los 10 s el modelo debe estar listo (document.body.dataset.listo).
-                postDelayed({
-                    if (isAttachedToWindow) evaluateJavascript("document.body&&document.body.dataset.listo||''") { r ->
-                        if (r?.contains("1") != true) { Log.w(TAG, "El corredor 3D no cargo en el WebView ($r)"); fallo = true }
-                    }
-                }, 10_000)
             }
         },
         update = { w ->
@@ -228,4 +229,5 @@ fun Runner3DWeb(
         },
         onRelease = { it.destroy() },
     )
+    }
 }
