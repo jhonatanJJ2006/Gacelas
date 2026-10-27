@@ -1,6 +1,6 @@
 # Marca: icono e intro animada
 
-Elegidos por Jhona el 26 de octubre de 2026: icono propuesta A "Gacela en ruta" e intro A "Ruta y destello" (estilo Netflix, 2,8 s).
+Elegidos por Jhona el 26 de octubre de 2026: icono propuesta A "Gacela en ruta" e intro A "Ruta y destello" (estilo Netflix, 2,8 s). El mismo dia la intro paso a ser el video "Ruta y destello v2b" con la palabra RUNCITY (2,2 s).
 
 ## Paleta y tipografia
 
@@ -14,7 +14,7 @@ Elegidos por Jhona el 26 de octubre de 2026: icono propuesta A "Gacela en ruta" 
 | Fondo profundo                              | `#070E1D`             |
 | Acento GPS                                  | `#10B981`             |
 
-Titulares en Anton cursiva (la palabra GACELAS de la intro) y textos en Archivo. Desde la version 0.8.4 los titulares Anton llevan 0.04em mas de espaciado entre letras que el diseno original (por ejemplo 0.03em en lugar de -0.01em) y sin tracking negativo, para que se lean mejor. Se probo Saira Semi Condensed en la 0.8.3 y se descarto. Ver tambien docs/PALETA.md.
+Titulares en Anton cursiva (la palabra RUNCITY de la intro) y textos en Archivo. Desde la version 0.8.4 los titulares Anton llevan 0.04em mas de espaciado entre letras que el diseno original (por ejemplo 0.03em en lugar de -0.01em) y sin tracking negativo, para que se lean mejor. Se probo Saira Semi Condensed en la 0.8.3 y se descarto. Ver tambien docs/PALETA.md.
 
 ## Icono
 
@@ -50,11 +50,30 @@ python3 tools/marca/generar.py
 
 Si se cambia el dibujo, editar los SVG de `assets/marca/` y las constantes del script (trazo de la gacela y de la ruta), que convierten los SVG a VectorDrawable. VectorDrawable no tiene filtros: el brillo neon de la ruta se aproxima con un halo semitransparente y la sombra de la gacela con una copia desplazada.
 
-## Intro animada "Ruta y destello"
+## Intro "Ruta y destello v2b" (video)
 
-Una ruta morada luminosa se dibuja con un punto verde en la punta (0 a 1,3 s), estalla en un destello (1,45 s), se convierte en la gacela con la palabra GACELAS, hace zoom hacia dentro (2,2 s) y se funde al fondo de la app (2,8 s). Lienzo de diseno de 1080 x 1920 encajado en la pantalla. El prototipo original esta en `assets/marca/intro-prototipo.html?v=A`.
+Aprobada por Jhona el 26 de octubre de 2026 (reemplaza a la intro A dibujada en tiempo real). Una ruta morada luminosa con un cometa entra directo, sin preambulo, estalla en un destello anamorfico al llegar al centro, revela la gacela con un brillo que la cruza y la palabra RUNCITY en Anton con espaciado amplio que se cierra, y se funde al fondo `#0C1322`. Dura 2,2 s.
 
-![Cuadros 0,6 / 1,2 / 1,45 / 1,9 / 2,4 s: MP4 aprobado, web y Android](capturas/marca/intro-mp4-web-android.jpg)
+Es un video pre-renderizado cuadro por cuadro a 60 fps (motion blur con 4 submuestras por cuadro, easing cuidado, grano leve contra el banding) con `tools/marca/render_intro.py b <carpeta>` (requiere `skia-python`, `numpy`, `pillow` y la fuente Anton). Exportacion, 720 x 1280, sin audio:
+
+| Archivo                                       | Formato            | Peso   |
+| --------------------------------------------- | ------------------ | ------ |
+| `apps/android/app/src/main/res/raw/intro.mp4` | H.264 main, CRF 24 | 102 KB |
+| `apps/web/public/marca/intro.mp4`             | el mismo MP4       | 102 KB |
+| `apps/web/public/marca/intro.webm`            | VP9, CRF 34        | 112 KB |
+
+El primer y el ultimo cuadro son el fondo de marca `#0C1322`, igual que el SplashScreen, `windowBackground` y el theme-color de la web.
+
+![Cuadros clave de la intro v2b con RUNCITY](capturas/marca/intro-v2b-runcity.jpg)
+
+### Por que se cambio la intro A
+
+- Corte entre splash e intro: el splash mostraba la gacela sobre `#0C1322` plano y la intro empezaba con un degradado violeta sin gacela; la gacela volvia recien a los 1,35 s.
+- Tirones: la palabra se volvia a medir en cada cuadro de su entrada, el destello creaba un pincel nuevo por cuadro y la app se montaba durante la animacion en el hilo principal.
+- Fuente: la intro dependia de la familia de titulares en Compose y, en web, de que la fuente del canvas ya estuviera cargada (si no, se dibujaba con Impact y saltaba a mitad).
+- Web: `shadowBlur` en canvas es caro en moviles y la intro solo aparecia cuando ya habia cargado el bundle de React.
+
+Un video se decodifica por hardware y se compone fuera del hilo principal, asi que lo que se ve es exactamente lo aprobado, en cualquier telefono.
 
 ### Cuando se muestra (regla comun Android y web)
 
@@ -66,30 +85,31 @@ La intro se ve cada vez que se abre la app:
 
 Excepcion: si la app estuvo fuera de primer plano menos de 30 s (`UMBRAL_AUSENCIA_MS`), no se repite. Asi un cambio rapido de app, abrir una notificacion o rotar la pantalla no la vuelve a lanzar. Nunca se muestra con las animaciones del sistema desactivadas (Android: escala 0; web: `prefers-reduced-motion`).
 
-### Android (y iOS via KMP)
+### Android
 
-1. `Theme.Gacelas.Arranque` (SplashScreen API) muestra el fondo `#0C1322` con la gacela mientras arranca el proceso. No usa `setKeepOnScreenCondition`: se cierra en el primer cuadro. `Theme.Gacelas` usa el mismo `#0C1322` como `windowBackground`, y la intro empieza con ese color, asi el paso del splash a la intro es continuo.
+1. `Theme.Gacelas.Arranque` (SplashScreen API) muestra el fondo `#0C1322` con la gacela. Con intro, `MainActivity` retiene el splash con `setKeepOnScreenCondition` hasta que el video pinta su primer cuadro (`onRenderedFirstFrame`), como mucho 1 s (`IntroArranque.ESPERA_PRIMER_CUADRO_MS`). Al soltarlo, `setOnExitAnimationListener` desvanece la gacela del splash en 180 ms sobre el mismo `#0C1322` con que empieza el video: no hay salto de color ni pantalla en blanco.
 2. `MainActivity` decide en `onCreate` (y en cada `onStart` posterior) con `IntroArranque.alEntrar(ahora, escalaAnimaciones)`, y registra la salida en `onStop` con `IntroArranque.alSalir(ahora)`. El reloj es `SystemClock.elapsedRealtime()`. La regla pura es `IntroArranque.debeMostrar(ahora, ultimaSalida, escala)`.
-3. Con intro, la app (`GacelasRaiz`: sesion, Supabase, NavHost, mapas) se monta despues de los dos primeros cuadros de la intro y cuando el contenedor de dependencias ya esta construido en segundo plano (`GacelasApp.esperarContenedor()`). La preparacion del mapa sin conexion se aplaza 3 s. Al terminar la intro, la pantalla que corresponda ya esta lista debajo.
-4. `IntroAnimada` (core/ui, `commonMain`) dibuja en un `Canvas`: el tiempo se lee solo en la fase de dibujo (sin recomposiciones por cuadro), la ruta, los trazos, los pinceles y el texto medido se reutilizan entre cuadros (sin asignaciones en el bucle de dibujo) y el brillo se imita con trazos semitransparentes (sin blur).
-5. Dura 2,8 s de reloj (no se estira con la escala de animaciones) y un toque la salta.
-6. `app/src/main/baseline-prof.txt` con `androidx.profileinstaller`: el arranque, la intro y la primera pantalla se compilan AOT al instalar, sin esperar al JIT.
+3. `IntroVideo` (`app/.../intro/IntroVideo.kt`) reproduce `res/raw/intro.mp4` con Media3 ExoPlayer en un `PlayerView` a pantalla completa (`RESIZE_MODE_ZOOM`, sin controles, volumen 0, obturador y fondo `#0C1322`). `ControlIntro` garantiza que el aviso de primer cuadro y el fin ocurran una sola vez.
+4. La intro termina al llegar a `STATE_ENDED`, con un toque, si el reproductor da error o no se puede crear, si no hay primer cuadro en 1 s (fallback) o por un tope de seguridad de 3,7 s. Siempre suelta el splash.
+5. La app (`GacelasRaiz`: sesion, Supabase, NavHost, mapas) se monta debajo cuando el video ya pinto su primer cuadro y el contenedor de dependencias esta listo (`GacelasApp.esperarContenedor()`). La preparacion del mapa sin conexion se aplaza 3 s. Al terminar la intro, la pantalla que corresponda ya esta lista.
+6. `app/src/main/baseline-prof.txt` con `androidx.profileinstaller` sigue compilando AOT el arranque y la primera pantalla.
 
-El codigo de la intro es comun (`core/ui/src/commonMain/.../ui/intro/`), listo para usarse en `MainViewController` de iOS; por ahora iOS no la muestra.
+iOS todavia no muestra la intro. Para hacerlo, `MainViewController` puede reproducir el mismo MP4 con `AVPlayerLayer` y la misma regla de `IntroArranque` (codigo comun en `core/ui`).
+
+`core/ui/.../ui/intro/Marca.kt` conserva la paleta y la silueta de la gacela que usa el icono dibujado en la app.
 
 #### Causa del fallo de la v0.8.1 (corregido en la v0.8.2)
 
 - Solo salia la primera vez: la regla usaba una bandera por proceso (`mostradaEnProceso`). Al salir con atras Android conserva el proceso, asi que al reabrir la bandera seguia activa.
-- Pantalla oscura un buen rato: la intro se componia en el mismo cuadro que toda la app. El primer cuadro esperaba a `GacelasRaiz`, que pedia el contenedor de dependencias (Supabase) mientras otro hilo lo estaba construyendo, y a la preparacion del mapa sin conexion en `onCreate`. Ademas `windowBackground` (`#111827`) no coincidia con el splash (`#0C1322`).
+- Pantalla oscura un buen rato: la intro se componia en el mismo cuadro que toda la app. Ademas `windowBackground` (`#111827`) no coincidia con el splash (`#0C1322`).
 
 ### Web
 
-`src/shared/ui/IntroAnimada.tsx` (montada en `main.tsx`) y `src/shared/lib/intro.ts` (logica y dibujo en canvas 2D, misma animacion):
+La intro es un `<video autoplay muted playsinline preload="auto">` en `index.html`, fuera de React, dentro de `#intro` (fondo `#0C1322`, `object-fit: cover`, `data-testid="intro-animada"`), con WebM VP9 y MP4 de respaldo (`preload="auto"`). Se ve antes de que cargue el bundle de la app.
 
-- Misma regla: se muestra al abrir la app y al volver a la pestana tras 30 s o mas fuera. `localStorage`, clave `gacelas.intro.vista`, guarda el instante de la ultima salida (`visibilitychange` y `pagehide`).
-- Se omite con `prefers-reduced-motion: reduce`.
-- Se salta con clic, toque o cualquier tecla. La app carga debajo mientras tanto.
-- El lienzo usa como maximo 1,5x de densidad para que el brillo no sea pesado.
+- Un script en linea en `index.html` aplica la misma regla que `debeMostrarIntro` (`src/shared/lib/intro.ts`): se muestra al abrir salvo si se salio hace menos de 30 s, y nunca con `prefers-reduced-motion: reduce`. `localStorage`, clave `gacelas.intro.vista`, guarda el instante de la ultima salida.
+- `src/shared/lib/introVideo.ts` (`iniciarIntroVideo`, cargado por su propia entrada diminuta `src/app/introArranque.ts`, antes y sin esperar a `main.tsx`) la oculta al terminar (`ended`), con clic, toque o cualquier tecla, si el video falla, si no hay primer cuadro en 1 s (fallback, por ejemplo autoplay bloqueado) o por un tope de 3,7 s; y la repite al volver a la pestana tras 30 s o mas fuera (`visibilitychange`, `pagehide`).
+- La app carga debajo mientras tanto.
 
 ## Logo dentro de la app
 
@@ -105,11 +125,11 @@ Todo sale de `python3 tools/marca/generar.py`. Capturas antes y despues: `/works
 
 ## Pruebas
 
-| Prueba                             | Que verifica                                                                                                |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `core/ui` `IntroArranqueTest`      | arranque en frio, regla de 30 s, ciclo salir y volver, animaciones desactivadas, saltar, duracion           |
-| `app` `IntroMarcaTest` (Roborazzi) | cuadros clave de la intro, fin por tiempo, salto con toque, capturas del icono adaptativo                   |
-| web `IntroAnimada.test.tsx`        | regla de 30 s, salto con clic y tecla, movimiento reducido                                                  |
-| web `e2e/intro.spec.ts`            | aparece, se salta, no reaparece al recargar enseguida, termina sola, movimiento reducido, manifest e iconos |
+| Prueba                             | Que verifica                                                                                                                                    |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `core/ui` `IntroArranqueTest`      | arranque en frio, regla de 30 s, ciclo salir y volver, animaciones desactivadas, saltar, duracion, espera de 1 s                                |
+| `app` `IntroMarcaTest` (Roborazzi) | `ControlIntro` (un solo fin, suelta el splash), fallback sin primer cuadro, salto con toque, fondo igual al splash, capturas                    |
+| web `introVideo.test.ts`           | regla de 30 s, fin por `ended`, salto con clic y tecla, fallback sin primer cuadro y por error, tope de seguridad                               |
+| web `e2e/intro.spec.ts`            | aparece sobre `#0C1322`, se salta, no reaparece al recargar enseguida, termina sola, fallback sin video, movimiento reducido, manifest e iconos |
 
 Los demas e2e dan la intro por vista (`e2e/ayuda.ts`). Capturas de Roborazzi: `./gradlew :app:testDebugUnitTest --tests '*IntroMarca*' -Proborazzi.test.record=true -Pgacelas.shots=<carpeta>`.

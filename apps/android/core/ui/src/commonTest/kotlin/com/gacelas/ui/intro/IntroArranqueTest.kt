@@ -36,11 +36,5 @@ class IntroArranqueTest {
     }
 
     @Test fun duraComoMaximoTresSegundos() = assertTrue(IntroArranque.DURACION_S <= 3f)
-    @Test fun curvasIgualesAlPrototipo() {
-        assertEquals(0f, CurvasIntro.e(0f))
-        assertEquals(1f, CurvasIntro.e(1f))
-        assertEquals(.5f, CurvasIntro.io(.5f))
-        assertEquals(201, CurvasIntro.ruta.size)
-        assertEquals(140f, CurvasIntro.ruta.first().x)
-    }
+    @Test fun esperaElPrimerCuadroUnSegundo() = assertEquals(1_000L, IntroArranque.ESPERA_PRIMER_CUADRO_MS)
 }

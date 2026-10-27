@@ -1,7 +1,7 @@
 package com.gacelas.ui.intro
 
 /**
- * Reglas de cuando se muestra la intro de marca (comunes a Android e iOS, ver docs/MARCA.md).
+ * Reglas de cuando se muestra la intro de marca (video res/raw/intro.mp4) (comunes a Android e iOS, ver docs/MARCA.md).
  *
  * Se muestra cada vez que la app pasa a primer plano (arranque en frio, volver tras salir con
  * atras o volver desde inicio/recientes con el proceso vivo), salvo que la app haya estado fuera
@@ -9,8 +9,11 @@ package com.gacelas.ui.intro
  * Nunca con las animaciones del sistema desactivadas.
  */
 object IntroArranque {
-    /** Duracion de la animacion A "Ruta y destello", en segundos. */
-    const val DURACION_S = 2.8f
+    /** Duracion del video de la intro "Ruta y destello v2b", en segundos. */
+    const val DURACION_S = 2.2f
+
+    /** Si el video no muestra su primer cuadro en este tiempo, la intro se cierra (fallback). */
+    const val ESPERA_PRIMER_CUADRO_MS = 1_000L
 
     /** Ausencia minima para repetir la intro al volver: 30 s. */
     const val UMBRAL_AUSENCIA_MS = 30_000L

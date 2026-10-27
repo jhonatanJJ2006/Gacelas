@@ -14,16 +14,25 @@ test.describe('Intro de marca', () => {
     const intro = page.getByTestId('intro-animada')
     await expect(intro).toBeVisible()
     await intro.click()
-    await expect(intro).toHaveCount(0)
+    await expect(intro).toBeHidden()
     await page.reload()
     await page.waitForTimeout(500)
-    await expect(intro).toHaveCount(0)
+    await expect(intro).toBeHidden()
   })
 
-  test('termina sola en unos 3 segundos', async ({ page }) => {
+  test('es un video sobre fondo de marca que termina solo en unos 2 segundos', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByTestId('intro-animada')).toBeVisible()
-    await expect(page.getByTestId('intro-animada')).toHaveCount(0, { timeout: 4500 })
+    const intro = page.getByTestId('intro-animada')
+    await expect(intro).toBeVisible()
+    await expect(intro).toHaveCSS('background-color', 'rgb(12, 19, 34)')
+    await expect(intro.locator('video')).toHaveAttribute('playsinline', '')
+    await expect(intro).toBeHidden({ timeout: 6000 })
+  })
+
+  test('fallback: si el video no carga, la app se muestra igual', async ({ page }) => {
+    await page.route('**/marca/intro.*', (r) => r.abort())
+    await page.goto('/')
+    await expect(page.getByTestId('intro-animada')).toBeHidden({ timeout: 3000 })
   })
 
   test('con movimiento reducido no se muestra', async ({ browser }) => {
@@ -32,7 +41,7 @@ test.describe('Intro de marca', () => {
     const page = await context.newPage()
     await page.goto('http://localhost:4173/')
     await page.waitForTimeout(500)
-    await expect(page.getByTestId('intro-animada')).toHaveCount(0)
+    await expect(page.getByTestId('intro-animada')).toBeHidden()
     await context.close()
   })
 

@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -22,10 +20,14 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
-import com.gacelas.ui.intro.IntroAnimada
-import com.gacelas.ui.intro.IntroCuadro
+import com.gacelas.intro.ControlIntro
+import com.gacelas.intro.FondoIntro
+import com.gacelas.intro.IntroVideo
+import com.gacelas.ui.intro.IntroArranque
+import androidx.compose.ui.graphics.toArgb
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,7 +35,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** Intro de marca "Ruta y destello" e icono adaptativo (docs/MARCA.md). */
+/** Intro de marca en video ("Ruta y destello v2b") e icono adaptativo (docs/MARCA.md). */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], qualifiers = "w390dp-h844dp-xxhdpi")
@@ -42,36 +44,55 @@ class IntroMarcaTest {
 
     private fun dir() = System.getProperty("gacelas.shots") ?: "build/outputs/roborazzi"
 
-    @Test fun cuadrosClaveDeLaIntro() {
-        var t by androidx.compose.runtime.mutableFloatStateOf(0f)
-        compose.setContent { IntroCuadro(t) }
-        listOf(0.6f, 1.2f, 1.45f, 1.9f, 2.4f, 2.75f).forEach { s ->
-            t = s
-            compose.waitForIdle()
-            compose.onRoot().captureRoboImage("${dir()}/intro-%.2f.png".format(java.util.Locale.ROOT, s))
-        }
+    @Test fun controlTerminaUnaSolaVezYSueltaElSplash() {
+        var listo = 0; var fin = 0
+        val c = ControlIntro({ listo++ }, { fin++ })
+        c.cuadroListo(); c.cuadroListo()
+        assertEquals(1, listo)
+        c.esperaAgotada()            // ya habia cuadro: no cierra
+        assertEquals(0, fin)
+        c.terminar(); c.terminar()
+        assertEquals(1, fin)
+        assertEquals(1, listo)
     }
 
-    @Test fun terminaSolaUnaVezAlAcabar() {
-        var fin = 0
-        compose.mainClock.autoAdvance = false
-        compose.setContent { IntroAnimada(alTerminar = { fin++ }) }
-        compose.mainClock.advanceTimeBy(1500)
-        assertEquals(0, fin)
-        compose.mainClock.advanceTimeBy(2000)
+    @Test fun fallbackSinPrimerCuadroCierraYSueltaElSplash() {
+        var listo = 0; var fin = 0
+        val c = ControlIntro({ listo++ }, { fin++ })
+        c.esperaAgotada()
+        assertEquals(1, listo)
         assertEquals(1, fin)
-        compose.mainClock.advanceTimeBy(1000)
+        assertTrue(c.terminada)
+    }
+
+    @Test fun seMuestraSobreElFondoDeMarcaYSeCierraSolaSiElVideoNoArranca() {
+        var fin = 0; var listo = 0
+        compose.mainClock.autoAdvance = false
+        compose.setContent { IntroVideo(alPrimerCuadro = { listo++ }, alTerminar = { fin++ }) }
+        compose.mainClock.advanceTimeBy(50)
+        compose.onNodeWithTag("intro-animada").assertExists()
+        compose.onRoot().captureRoboImage("${dir()}/intro-primer-cuadro.png")
+        // En Robolectric el decodificador no pinta cuadros: a los 1 s el fallback cierra la intro.
+        compose.mainClock.advanceTimeBy(IntroArranque.ESPERA_PRIMER_CUADRO_MS + 200)
+        assertEquals(1, fin)
+        assertEquals(1, listo)
+        compose.mainClock.advanceTimeBy(5_000)
         assertEquals(1, fin)
     }
 
     @Test fun unToqueLaSalta() {
         var fin = 0
         compose.mainClock.autoAdvance = false
-        compose.setContent { IntroAnimada(alTerminar = { fin++ }) }
-        compose.mainClock.advanceTimeBy(500)
+        compose.setContent { IntroVideo(alPrimerCuadro = {}, alTerminar = { fin++ }) }
+        compose.mainClock.advanceTimeBy(100)
         compose.onNodeWithTag("intro-animada").performClick()
         compose.mainClock.advanceTimeBy(4000)
         assertEquals(1, fin)
+    }
+
+    @Test fun fondoIgualAlSplash() {
+        val ctx = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
+        assertEquals(ctx.getColor(R.color.fondo_marca), FondoIntro.toArgb())
     }
 
     @Test fun iconoAdaptativo() {
