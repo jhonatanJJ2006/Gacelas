@@ -85,6 +85,8 @@ fun InicioContenido(
     /** Ruta sugerida para hoy; null muestra el estado vacio. */
     rutaSugerida: com.gacelas.rutas.domain.modelo.Ruta? = null,
     onRutas: () -> Unit = {},
+    /** Linea bajo la ruta (por que es segura) o, sin ruta, el motivo del estado vacio. */
+    rutaSugeridaNota: String? = null,
 ) {
     Pantalla {
         // Encabezado C2: saludo en Anton, pildoras de clima, racha y nivel.
@@ -124,7 +126,7 @@ fun InicioContenido(
         }
         SemanaAtletica(totales, semana.diasCorridos, hoy, meta, rango, m)
         reto?.let { TarjetaReto(it, m) }
-        RutaSugeridaC2(rutaSugerida, m, onRutas)
+        RutaSugeridaC2(rutaSugerida, m, onRutas, rutaSugeridaNota)
         AmigosEnRuta(amigos, m, onComunidad)
         TituloSeccion("Próximo evento", accion = "Ver todos", onAccion = onEventos)
         TarjetaEvento(evento, inscrito) { onEvento(evento.id) }
@@ -145,7 +147,7 @@ fun PildoraC2(texto: String, fondo: androidx.compose.ui.graphics.Color, color: a
 
 /** Ruta sugerida para hoy; si no hay rutas muestra un estado vacio con acceso a Rutas. */
 @Composable
-fun RutaSugeridaC2(ruta: com.gacelas.rutas.domain.modelo.Ruta?, m: Boolean, onRutas: () -> Unit) {
+fun RutaSugeridaC2(ruta: com.gacelas.rutas.domain.modelo.Ruta?, m: Boolean, onRutas: () -> Unit, nota: String? = null) {
     Column(
         Modifier.fillMaxWidth().clip(com.gacelas.ui.components.FormaC2).background(GColors.C2Card).clickable(onClick = onRutas).padding(16.dp).testTag("ruta-sugerida"),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -155,13 +157,17 @@ fun RutaSugeridaC2(ruta: com.gacelas.rutas.domain.modelo.Ruta?, m: Boolean, onRu
             EtiquetaC2("Ver rutas")
         }
         if (ruta == null) {
-            Text("Aún no hay rutas cerca. Explora o dibuja la tuya.", style = GType.bodyMd, color = GColors.C2Muted)
+            Text(
+                (nota ?: "Aún no hay rutas cerca.") + " Explora o dibuja la tuya.",
+                style = GType.bodyMd, color = GColors.C2Muted, modifier = Modifier.testTag("ruta-sugerida-vacia"),
+            )
         } else {
             Text(ruta.nombre.uppercase(), style = GType.headlineSm, color = GColors.TextPrimary)
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 MetricaC2("${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}", "Distancia", color = GColors.C2Violeta)
                 MetricaC2("+${ruta.elevacionM} m", "Desnivel", color = GColors.C2Cielo)
             }
+            nota?.let { Text(it, style = GType.bodySm, color = GColors.C2Menta, modifier = Modifier.testTag("ruta-sugerida-segura")) }
         }
     }
 }

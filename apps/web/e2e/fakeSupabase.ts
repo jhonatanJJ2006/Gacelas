@@ -32,10 +32,27 @@ export interface EstadoFake {
   usuarios: Usuario[]
   peticiones: string[]
   googleActivo: boolean
+  /** Respuesta de ruta_sugerida_hoy (migracion 035). */
+  rutaSugerida: Fila
 }
 
 export async function instalarFakeSupabase(context: BrowserContext): Promise<EstadoFake> {
-  const estado: EstadoFake = { tablas: {}, usuarios: [], peticiones: [], googleActivo: true }
+  const estado: EstadoFake = {
+    tablas: {},
+    usuarios: [],
+    peticiones: [],
+    googleActivo: true,
+    rutaSugerida: {
+      estado: 'ok',
+      dia: '2026-10-26',
+      nueva: true,
+      ruta: { id: 'loja-la-tebaida', nombre: 'Parque Lineal La Tebaida', distancia_km: 2.98 },
+      nivel: 'medio',
+      indice: 1,
+      objetivo_km: 5,
+      seguras: ['loja-la-tebaida'],
+    },
+  }
   let n = 0
   const tabla = (t: string) => (estado.tablas[t] ??= [])
 
@@ -250,6 +267,7 @@ export async function instalarFakeSupabase(context: BrowserContext): Promise<Est
           .map((c) => ({ ...c, autor: 'Corredor' }))
       )
     if (nombre === 'participantes_eventos') return json(route, 200, [])
+    if (nombre === 'ruta_sugerida_hoy') return json(route, 200, estado.rutaSugerida)
     // Otras RPC: mismo comportamiento que antes (sin cuerpo).
     return route.fulfill({ status: 201, headers: { 'access-control-allow-origin': '*' } })
   }

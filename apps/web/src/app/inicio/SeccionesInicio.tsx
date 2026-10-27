@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Evento, Ruta } from '../../mocks/data'
 import type { PublicacionRemota } from '../../shared/kernel/comunidad'
@@ -6,6 +7,13 @@ import type { CarreraGuardada } from '../../shared/kernel/tipos'
 import { formatearHms, formatearRitmo, Unidades } from '../../shared/lib/geo'
 
 import { haceTiempo } from '../../shared/lib/tiempo'
+import {
+  elegirRutaSugerida,
+  guardarCacheSugerida,
+  leerCacheSugerida,
+  rutaSugeridaRemota,
+  type RespuestaSugerida,
+} from '../../contexts/rutas/api'
 
 const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 
@@ -229,17 +237,69 @@ export function AmigosEnRuta({ lista, m }: { lista: PublicacionRemota[]; m: bool
   )
 }
 
-/** Ruta del catalogo mas cercana a la distancia media de las ultimas 5 carreras (5 km sin historial), igual que Android. */
-export function rutaSugerida(rutas: Ruta[], carreras: CarreraGuardada[]): Ruta | undefined {
-  if (rutas.length === 0) return undefined
-  const ultimas = [...carreras].sort((a, b) => b.inicioMs - a.inicioMs).slice(0, 5)
-  const objetivo = ultimas.length
-    ? ultimas.reduce((t, c) => t + c.distanciaKm, 0) / ultimas.length
-    : 5
-  return [...rutas].sort(
-    (a, b) => Math.abs(a.distanciaKm - objetivo) - Math.abs(b.distanciaKm - objetivo)
-  )[0]
+/**
+ * Ruta sugerida para hoy: la decide Supabase (ruta_sugerida_hoy) con las reglas de
+ * docs/RUTA-SUGERIDA.md; sin red se usa la misma regla local con la ultima lista de rutas seguras.
+ */
+export function useRutaSugerida(
+  rutas: Ruta[],
+  carreras: CarreraGuardada[]
+): ResultadoSugerida | null {
+  const [remota, setRemota] = useState<RespuestaSugerida | null | undefined>(undefined)
+  useEffect(() => {
+    let vivo = true
+    const pedir = (u?: { lat: number; lng: number } | null) =>
+      rutaSugeridaRemota(u)
+        .catch(() => null)
+        .then((r) => {
+          if (!vivo) return
+          if (r) guardarCacheSugerida(r)
+          setRemota(r)
+        })
+    // Solo usa la ubicacion si ya hay permiso; nunca pide permiso desde Inicio.
+    const permisos = typeof navigator !== 'undefined' ? navigator.permissions : undefined
+    if (permisos?.query && navigator.geolocation) {
+      permisos
+        .query({ name: 'geolocation' as PermissionName })
+        .then((p) => {
+          if (p.state !== 'granted') return pedir(null)
+          navigator.geolocation.getCurrentPosition(
+            (pos) => pedir({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+            () => pedir(null),
+            { maximumAge: 600_000, timeout: 4000 }
+          )
+        })
+        .catch(() => pedir(null))
+    } else pedir(null)
+    return () => {
+      vivo = false
+    }
+  }, [])
+  if (remota === undefined) return null
+  if (remota) {
+    if (remota.estado === 'sin_ruta') return { estado: 'sin_ruta', motivo: remota.motivo ?? '' }
+    const ruta = rutas.find((r) => r.id === remota.rutaId)
+    if (ruta) return { estado: 'ok', ruta, nivel: remota.nivel }
+  }
+  const cache = leerCacheSugerida()
+  const local = elegirRutaSugerida({
+    rutas,
+    carreras,
+    seguras: new Set(cache.seguras),
+    historial: cache.historial,
+    ahoraMs: Date.now(),
+  })
+  if (local.estado === 'sin_ruta' && cache.seguras.length === 0) {
+    return { estado: 'sin_ruta', motivo: 'Conéctate para ver la ruta segura de hoy.' }
+  }
+  return local.estado === 'ok'
+    ? { estado: 'ok', ruta: local.ruta, offline: true }
+    : { estado: 'sin_ruta', motivo: local.motivo }
 }
+
+export type ResultadoSugerida =
+  | { estado: 'ok'; ruta: Ruta; nivel?: string; offline?: boolean }
+  | { estado: 'sin_ruta'; motivo: string }
 
 export function RutaSugerida({
   rutas,
@@ -250,7 +310,18 @@ export function RutaSugerida({
   carreras: CarreraGuardada[]
   m: boolean
 }) {
-  const ruta = rutaSugerida(rutas, carreras)
+  const sugerida = useRutaSugerida(rutas, carreras)
+  return <TarjetaRutaSugerida sugerida={sugerida} m={m} />
+}
+
+export function TarjetaRutaSugerida({
+  sugerida,
+  m,
+}: {
+  sugerida: ResultadoSugerida | null
+  m: boolean
+}) {
+  const ruta = sugerida?.estado === 'ok' ? sugerida.ruta : undefined
   return (
     <section className="space-y-space-md lg:col-span-5" data-testid="ruta-sugerida">
       <div className="flex items-center justify-between">
@@ -281,11 +352,28 @@ export function RutaSugerida({
               <span className="text-c2-cielo">+{ruta.elevacionM} m</span>
               <span className="text-c2-menta">{ruta.dificultad}</span>
             </span>
+            <span
+              className="mt-1 flex items-center gap-1 text-[12px] text-c2-menta"
+              data-testid="ruta-sugerida-segura"
+            >
+              <span className="material-symbols-outlined text-[14px]">verified_user</span>
+              {sugerida?.estado === 'ok' && sugerida.offline
+                ? 'Segura según la última consulta. No la corriste en 3 días'
+                : 'Zona segura a esta hora. No la corriste en 3 días'}
+            </span>
           </span>
         </Link>
-      ) : (
+      ) : sugerida === null ? (
         <p className="tarjeta-c2 bg-c2-card p-4 text-body-md text-c2-muted">
-          Aún no hay rutas cargadas. Explora Rutas para encontrar tu próximo recorrido.
+          Buscando una ruta segura para hoy...
+        </p>
+      ) : (
+        <p
+          className="tarjeta-c2 bg-c2-card p-4 text-body-md text-c2-muted"
+          data-testid="ruta-sugerida-vacia"
+        >
+          {sugerida.estado === 'sin_ruta' ? sugerida.motivo : 'No encontramos la ruta de hoy.'}{' '}
+          Explora Rutas para ver todas las opciones.
         </p>
       )}
     </section>

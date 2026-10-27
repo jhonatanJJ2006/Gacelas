@@ -2055,6 +2055,7 @@ export type Database = {
           id: string
         }[]
       }
+      ruta_sugerida_hoy: { Args: { p_lat?: number | null; p_lng?: number | null }; Returns: Json }
       seguridad_zona_ruta: { Args: { p_ruta_id: string }; Returns: Json }
       skip:
         | { Args: { '': string }; Returns: string }
