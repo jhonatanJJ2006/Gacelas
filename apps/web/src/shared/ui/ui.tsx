@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useEffect, type ReactNode } from 'react'
 
 export function MensajeError({ mensaje }: { mensaje: string | null }) {
@@ -41,20 +42,23 @@ export function Dialogo({
     return () => window.removeEventListener('keydown', alTeclear)
   }, [abierto, onCerrar])
   if (!abierto) return null
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 sm:p-4"
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 sm:p-4 pt-[max(env(safe-area-inset-top),16px)]"
       onClick={onCerrar}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-label={titulo}
-        className="w-full max-w-md bg-c2-card border border-c2-linea border-t-2 border-t-c2-violeta rounded-t-[14px] sm:rounded-[14px] px-6 pt-3 pb-6 shadow-2xl"
+        className="w-full max-w-md bg-c2-card border border-c2-linea border-t-2 border-t-c2-violeta rounded-t-[14px] sm:rounded-[14px] px-6 pt-3 pb-[max(env(safe-area-inset-bottom),24px)] shadow-2xl flex flex-col max-h-[calc(100dvh-16px)] sm:max-h-[calc(100dvh-32px)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-c2-linea" aria-hidden="true" />
-        <div className="flex items-center gap-3 mb-3">
+        <div
+          className="mx-auto mb-4 h-1.5 w-12 shrink-0 rounded-full bg-c2-linea"
+          aria-hidden="true"
+        />
+        <div className="flex items-center gap-3 mb-3 shrink-0">
           {icono && (
             <span
               aria-hidden="true"
@@ -67,10 +71,18 @@ export function Dialogo({
             {titulo}
           </h2>
         </div>
-        <div className="text-c2-muted text-sm space-y-3">{children}</div>
-        {acciones && <div className="flex justify-end gap-2 mt-6">{acciones}</div>}
+        <div
+          data-testid="dialogo-contenido"
+          className="text-c2-muted text-sm space-y-3 min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        >
+          {children}
+        </div>
+        {acciones && (
+          <div className="flex flex-wrap justify-end gap-2 mt-6 shrink-0">{acciones}</div>
+        )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

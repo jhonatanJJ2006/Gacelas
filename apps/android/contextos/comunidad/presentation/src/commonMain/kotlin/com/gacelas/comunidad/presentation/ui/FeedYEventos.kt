@@ -365,7 +365,7 @@ private fun DialogoCrearEvento(onCerrar: () -> Unit, onCrear: (Evento) -> Unit) 
         onDismissRequest = onCerrar,
         title = { Text("Nuevo evento") },
         text = {
-            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 CampoTexto("Título", titulo, { titulo = it }, "Fondo del sábado")
                 CampoTexto("Fecha (AAAA-MM-DD)", fecha, { fecha = it.take(10) }, "2026-10-18")
                 CampoTexto("Hora (HH:MM)", hora, { hora = it.take(5) })

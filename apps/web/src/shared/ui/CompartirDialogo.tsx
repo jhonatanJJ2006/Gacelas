@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useState } from 'react'
 import {
   compartirNativo,
@@ -72,16 +73,16 @@ export function CompartirDialogo({
   }
   const { ancho, alto } = TAMANOS[formato]
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center"
+      className="fixed inset-0 z-[100] bg-black/70 flex items-end sm:items-center justify-center"
       onClick={onCerrar}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-compartir"
-        className="w-full sm:max-w-md bg-c2-card border-t-2 border-c2-violeta rounded-t-[14px] sm:rounded-[14px] p-5 space-y-4 max-h-[95vh] overflow-y-auto"
+        className="w-full sm:max-w-md bg-c2-card border-t-2 border-c2-violeta rounded-t-[14px] sm:rounded-[14px] p-5 space-y-4 max-h-[95dvh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -190,6 +191,7 @@ export function CompartirDialogo({
           </p>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

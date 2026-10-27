@@ -1,5 +1,8 @@
 package com.gacelas.seguridad.ui
 
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -186,7 +189,7 @@ fun HojaReportarIncidente(posicion: Pair<Double, Double>?, onCerrar: () -> Unit,
     }
     LaunchedEffect(posicion) { posicion?.let { direccion = direccionDe(context, it.first, it.second) } }
     ModalBottomSheet(onDismissRequest = onCerrar, containerColor = GColors.C2Bg, contentColor = GColors.TextPrimary) {
-        Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).navigationBarsPadding().padding(bottom = 16.dp).testTag("hoja-reportar"),
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).navigationBarsPadding().padding(bottom = 16.dp).testTag("hoja-reportar"),
             verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Reportar incidente", style = GType.headlineSm, color = GColors.TextPrimary)
             TarjetaC2 {
