@@ -21,6 +21,14 @@ src/
 
 Problemas: `lib/` mezcla reglas de negocio, acceso a datos y utilidades de UI; las pantallas de `features` importan `lib/supabase` y stores directamente; no hay frontera clara entre contextos.
 
+## Rutas públicas
+
+- `/`: landing (`src/app/landing/`). Sin sesión muestra la presentación de Runcity; con sesión, `SoloInvitados` redirige a `/inicio`. La app instalada como PWA (`display-mode: standalone`) salta la landing y va a `/bienvenida`, porque el `start_url` del manifest es `/`.
+- `/bienvenida`, `/inicio-sesion`, `/registro`, `/recuperar-contrasena`: acceso, solo para invitados.
+- `/legal/terminos` y `/legal/privacidad`: documentos legales, públicos y sin modales (ver [LEGAL.md](../LEGAL.md)).
+
+La landing usa los tokens de [PALETA.md](../PALETA.md) y las clases C2 de `index.css` (`tarjeta-c2`, `boton-c2`, `escenario-c2`); los datos que muestra (rutas de Loja, reglas de privacidad) salen de [RUTAS-LOJA.md](../RUTAS-LOJA.md) y [BUSINESS_RULES.md](../BUSINESS_RULES.md).
+
 ## Arquitectura recomendada: feature-based con capas
 
 Las features se agrupan por los mismos bounded contexts que móvil y base de datos.

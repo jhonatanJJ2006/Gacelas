@@ -8,6 +8,9 @@ import { ShellEscritorio } from './ShellEscritorio'
 const Bienvenida = lazy(() =>
   import('../contexts/identidad/ui/acceso/Bienvenida').then((m) => ({ default: m.Bienvenida }))
 )
+const RaizPublica = lazy(() =>
+  import('./landing/RaizPublica').then((m) => ({ default: m.RaizPublica }))
+)
 const InicioSesion = lazy(() =>
   import('../contexts/identidad/ui/acceso/InicioSesion').then((m) => ({ default: m.InicioSesion }))
 )
@@ -210,6 +213,7 @@ export function AppRoutes() {
       <TemaDocumento />
       <Routes>
         <Route element={<SoloInvitados />}>
+          <Route path="/" element={<RaizPublica />} />
           <Route path="/bienvenida" element={<Bienvenida />} />
           <Route path="/inicio-sesion" element={<InicioSesion />} />
           <Route path="/registro" element={<Registro />} />
@@ -223,8 +227,7 @@ export function AppRoutes() {
         <Route element={<RutaProtegida />}>
           <Route path="/permisos-ubicacion" element={<PermisosUbicacion />} />
           <Route element={<ShellEscritorio />}>
-            <Route path="/" element={<AppLayout />}>
-              <Route index element={<Navigate to="/inicio" replace />} />
+            <Route element={<AppLayout />}>
               <Route path="inicio" element={<Inicio />} />
               <Route path="rutas" element={<ListaRutas />} />
               <Route path="comunidad" element={<Feed />} />

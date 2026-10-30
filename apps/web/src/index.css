@@ -179,3 +179,70 @@ body {
     clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
   }
 }
+
+/* Landing (docs/DESIGN.md: animar solo cuando agrega valor). La ruta se dibuja una vez al cargar y
+   queda fija; con "reducir movimiento" aparece ya terminada. */
+@keyframes trazar-ruta {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes aparecer-punto {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes latido-gps {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3);
+  }
+}
+
+@layer components {
+  .ruta-trazo {
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1.02;
+    animation: trazar-ruta 2.4s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+  }
+  .punto-vivo {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+    animation: aparecer-punto 0.4s ease-out 2.4s forwards;
+  }
+  .punto-vivo-onda {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+    animation: latido-gps 2s ease-out 2.8s infinite;
+  }
+  /* Boton chico de la cabecera, mismo corte angular que .boton-c2. */
+  .boton-c2-chico {
+    @apply inline-flex h-10 items-center justify-center bg-primary-600 px-5 text-[13px] font-extrabold italic uppercase tracking-wide text-white hover:bg-primary-700;
+    clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ruta-trazo {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .punto-vivo {
+    animation: none;
+    opacity: 1;
+  }
+  .punto-vivo-onda {
+    animation: none;
+  }
+}

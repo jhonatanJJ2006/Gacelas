@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ModalC2 } from '../../../shared/ui/modales'
 import { dejarDeCompartir } from '../../envivo/api'
-import { FilaInterruptor, PantallaAjustes, Seccion } from '../../identidad'
+import { FilaInterruptor, Seccion } from '../../identidad'
 import {
   eliminarCuenta,
   historial,
@@ -12,37 +12,11 @@ import {
   terminosRemotos,
   vigente,
 } from '../api'
-import { PRIVACIDAD, TERMINOS, TEXTO_UBICACION_VISIBLE, VERSIONES_LEGALES } from '../domain/textos'
+import { TEXTO_UBICACION_VISIBLE, VERSIONES_LEGALES } from '../domain/textos'
+import { DocumentoLegal } from './DocumentoLegal'
 
-function Documento({ terminos }: { terminos: boolean }) {
-  const secciones = terminos ? TERMINOS : PRIVACIDAD
-  const version = terminos ? VERSIONES_LEGALES.terminos : VERSIONES_LEGALES.privacidad
-  return (
-    <PantallaAjustes
-      titulo={terminos ? 'Términos y condiciones' : 'Política de privacidad'}
-      volverA={-1}
-    >
-      <div
-        data-testid={terminos ? 'doc-terminos' : 'doc-privacidad'}
-        className="p-4 rounded-xl bg-[#191F2F] border border-[#2C3446]"
-      >
-        <p className="text-[#C084FC] font-semibold text-sm">Versión {version}</p>
-        <p className="text-[#A8B0C2] text-sm mt-1">
-          Adaptado a la Ley Orgánica de Protección de Datos Personales del Ecuador.
-        </p>
-      </div>
-      {secciones.map((s) => (
-        <section key={s.titulo}>
-          <h2 className="font-title-md text-title-md text-text-primary">{s.titulo}</h2>
-          <p className="text-[#A8B0C2] text-body-md mt-1 leading-relaxed">{s.texto}</p>
-        </section>
-      ))}
-    </PantallaAjustes>
-  )
-}
-
-export const Terminos = () => <Documento terminos />
-export const PoliticaPrivacidad = () => <Documento terminos={false} />
+export const Terminos = () => <DocumentoLegal tipo="terminos" />
+export const PoliticaPrivacidad = () => <DocumentoLegal tipo="privacidad" />
 
 /** Pide aceptar los Terminos si la version aceptada en Supabase (o, sin conexion, en el dispositivo) no es la vigente. */
 export function ReaceptarTerminos() {
