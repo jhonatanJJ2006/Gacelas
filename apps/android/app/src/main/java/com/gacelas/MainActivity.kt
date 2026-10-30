@@ -48,10 +48,10 @@ class MainActivity : ComponentActivity() {
     private val intro = mutableStateOf(false)
     private var decidida = false
 
-    private fun decidirIntro(): Boolean {
+    private fun decidirIntro(aperturaNueva: Boolean = false): Boolean {
         decidida = true
         val escala = Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
-        return IntroArranque.alEntrar(SystemClock.elapsedRealtime(), escala)
+        return IntroArranque.alEntrar(SystemClock.elapsedRealtime(), escala, aperturaNueva)
     }
 
     override fun onStart() {
@@ -95,7 +95,9 @@ class MainActivity : ComponentActivity() {
         val splash = installSplashScreen()
         super.onCreate(savedInstanceState)
         // La intro se decide en onStart (cada vez que la app pasa a primer plano, docs/MARCA.md).
-        val conIntro = decidirIntro()
+        // Actividad nueva (sin estado guardado) = la app se abrio de nuevo: intro siempre, aunque el
+        // proceso siguiera vivo tras cerrarla con atras o desde recientes hace pocos segundos.
+        val conIntro = decidirIntro(aperturaNueva = savedInstanceState == null)
         splash.setOnExitAnimationListener { vista ->
             vista.iconView.animate().alpha(0f).setDuration(180).withEndAction { vista.remove() }.start()
         }

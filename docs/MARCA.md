@@ -80,17 +80,17 @@ Un video se decodifica por hardware y se compone fuera del hilo principal, asi q
 La intro se ve cada vez que se abre la app:
 
 - arranque en frio (proceso nuevo);
-- volver a abrirla despues de salir con atras (la actividad se destruye pero el proceso sigue vivo);
-- volver desde la pantalla de inicio o desde recientes con el proceso vivo.
+- volver a abrirla despues de salir con atras o de cerrarla desde recientes, aunque el proceso siga vivo y hayan pasado solo unos segundos (la actividad se crea de nuevo, sin estado guardado: siempre intro);
+- traerla de segundo plano (inicio, recientes, notificacion) con la actividad todavia viva, si estuvo fuera al menos 30 s (`UMBRAL_AUSENCIA_MS`).
 
-Excepcion: si la app estuvo fuera de primer plano menos de 30 s (`UMBRAL_AUSENCIA_MS`), no se repite. Asi un cambio rapido de app, abrir una notificacion o rotar la pantalla no la vuelve a lanzar. Nunca se muestra con las animaciones del sistema desactivadas (Android: escala 0; web: `prefers-reduced-motion`).
+Si solo se trae de segundo plano tras menos de 30 s, o se rota la pantalla, no se repite: es un cambio rapido de app, no una apertura. (Hasta la v0.9.x la regla de 30 s se aplicaba tambien a las aperturas nuevas con el proceso vivo, y por eso al cerrar y reabrir rapido solo se veia el icono del splash.) Nunca se muestra con las animaciones del sistema desactivadas (Android: escala 0; web: `prefers-reduced-motion`).
 
 ### Android
 
 En Android la intro no es un video sino un vector animado (`AnimatedVectorDrawable`), la misma tecnica que usan los splash animados de apps como Prime Video o Netflix. Desde Android 7.1 el sistema anima ese vector en el RenderThread: no necesita reproductor, ni decodificador de video, ni red, ni el hilo principal. Por eso empieza en el primer cuadro de la ventana y corre entera a 60 fps aunque la app este cargando debajo. En la v0.8.6 y v0.8.7 era un MP4 (Media3, luego `MediaPlayer`): el reproductor tardaba en dar su primer cuadro en arranque en frio y competia con el montaje de la app, por eso en telefono se trababa o salia cortada.
 
 1. `Theme.Gacelas.Arranque` (SplashScreen API) muestra el fondo `#0C1322` con la gacela. El splash no se retiene: en el primer cuadro de la actividad ya corre la intro sobre el mismo `#0C1322` y `setOnExitAnimationListener` desvanece la gacela del splash encima en 180 ms.
-2. `MainActivity` decide en `onCreate` (y en cada `onStart` posterior) con `IntroArranque.alEntrar(ahora, escalaAnimaciones)`, y registra la salida en `onStop` con `IntroArranque.alSalir(ahora)`. El reloj es `SystemClock.elapsedRealtime()`. La regla pura es `IntroArranque.debeMostrar(ahora, ultimaSalida, escala)`.
+2. `MainActivity` decide en `onCreate` (y en cada `onStart` posterior) con `IntroArranque.alEntrar(ahora, escalaAnimaciones, aperturaNueva = savedInstanceState == null)`, y registra la salida en `onStop` con `IntroArranque.alSalir(ahora)`. El reloj es `SystemClock.elapsedRealtime()`. La regla pura es `IntroArranque.debeMostrar(ahora, ultimaSalida, escala)`.
 3. `IntroAnimada` (`app/.../intro/IntroAnimada.kt`) pone una `ImageView` nativa a pantalla completa encima de Compose (`addContentView`, `centerCrop`, fondo `#0C1322`) con `res/drawable/intro_marca.xml`. La animacion y el tope de seguridad arrancan en su primer dibujo real, no al crearla.
 
 #### Causa del splash fijo de 5 s de la v0.8.9 (corregido en la v0.9.0)
