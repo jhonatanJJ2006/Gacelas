@@ -29,6 +29,14 @@ class IntroArranqueTest {
         assertEquals(20_000 + u, IntroArranque.ultimaSalidaMs)
     }
 
+    @Test fun aperturaNuevaSiempreMuestraAunqueHayaSalidoHacePoco() {
+        IntroArranque.alSalir(10_000)                          // cerro con atras o desde recientes
+        assertTrue(IntroArranque.alEntrar(12_000, 1f, aperturaNueva = true)) // reabre a los 2 s
+        assertFalse(IntroArranque.alEntrar(12_500, 1f))       // su onStart (o una rotacion) no la repite
+    }
+
+    @Test fun aperturaNuevaRespetaAnimacionesDesactivadas() = assertFalse(IntroArranque.debeMostrar(0, 0, 0f, aperturaNueva = true))
+
     @Test fun saltarSoloCuentaUnaVez() {
         val e = EstadoIntro()
         assertTrue(e.terminar())
