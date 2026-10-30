@@ -6,7 +6,6 @@ import { registrarConsentimiento } from '../../../legal/api'
 import { useIdentidad } from '../../application/estado'
 import { BotonGoogle } from './BotonGoogle'
 import { CampoContrasena } from './CampoContrasena'
-import { PanelCorredorAcceso } from './PanelCorredorAcceso'
 
 export function Registro() {
   const navigate = useNavigate()
@@ -41,7 +40,8 @@ export function Registro() {
       <header className="w-full z-20 px-margin py-2 short:py-1 md:absolute md:top-2 md:left-2 md:w-auto">
         <button
           onClick={() => navigate('/bienvenida')}
-          className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+          aria-label="Atrás"
+          className="w-12 h-12 -ml-2 rounded-full flex items-center justify-center text-text-primary"
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
@@ -60,7 +60,6 @@ export function Registro() {
             <p className="text-text-secondary text-sm">
               Crea tu cuenta y empieza a correr con la comunidad
             </p>
-            <PanelCorredorAcceso />
           </div>
 
           <form
@@ -83,7 +82,7 @@ export function Registro() {
                   setNombre(e.target.value)
                   setError(null)
                 }}
-                className="w-full h-12 short:h-10 px-4 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+                className="w-full h-14 short:h-12 px-4 text-base bg-surface-container border border-border-subtle rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary-600"
                 placeholder="Tu nombre"
                 required
               />
@@ -101,7 +100,7 @@ export function Registro() {
                   setEmail(e.target.value)
                   setError(null)
                 }}
-                className="w-full h-12 short:h-10 px-4 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+                className="w-full h-14 short:h-12 px-4 text-base bg-surface-container border border-border-subtle rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary-600"
                 placeholder="tu@email.com"
                 required
               />
@@ -121,12 +120,16 @@ export function Registro() {
                   setPassword(e.target.value)
                   setError(null)
                 }}
-                className="w-full h-12 short:h-10 px-4 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+                className="w-full h-14 short:h-12 px-4 text-base bg-surface-container border border-border-subtle rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary-600"
                 placeholder="Mínimo 8 caracteres"
                 required
                 minLength={8}
               />
-              <div className="flex gap-1 mt-2" aria-label={`Fuerza de la clave ${fuerza} de 4`}>
+              <p className="text-xs text-text-secondary mt-1.5">
+                Usa mínimo 8 caracteres con letras y números
+                {password && (fuerza >= 3 ? ' • Segura' : ' • Débil')}
+              </p>
+              <div className="flex gap-1 mt-3" aria-label={`Fuerza de la clave ${fuerza} de 4`}>
                 {[0, 1, 2, 3].map((i) => (
                   <span
                     key={i}
@@ -134,10 +137,6 @@ export function Registro() {
                   />
                 ))}
               </div>
-              <p className="text-xs text-text-secondary mt-1">
-                Usa mínimo 8 caracteres con letras y números
-                {password && (fuerza >= 3 ? ' • Segura' : ' • Débil')}
-              </p>
             </div>
 
             <fieldset>
@@ -159,42 +158,47 @@ export function Registro() {
                     onClick={() => setNivel(id)}
                     className={`p-2 rounded-xl border text-center ${nivel === id ? 'border-primary-600 bg-primary-600/15' : 'border-border-subtle bg-surface-container'}`}
                   >
-                    <span className="block text-sm text-text-primary font-semibold">{t}</span>
+                    <span className="block text-[13px] text-text-primary font-semibold">{t}</span>
                     <span className="block text-xs text-text-secondary">{d}</span>
                   </button>
                 ))}
               </div>
             </fieldset>
 
-            <label className="flex items-start gap-3 p-3 rounded-xl bg-[#191F2F] border border-[#2C3446] cursor-pointer">
+            <div
+              data-testid="aceptar-terminos"
+              className={`flex items-center gap-3 p-3 rounded-xl bg-surface-container border ${acepta ? 'border-primary-600' : 'border-border-subtle'}`}
+            >
               <input
+                id="acepta"
                 type="checkbox"
                 checked={acepta}
                 onChange={(e) => setAcepta(e.target.checked)}
                 aria-label="Acepto los Términos y la Política de privacidad"
-                className="mt-1 w-4 h-4 accent-[#A855F7]"
+                className="m-3 w-[18px] h-[18px] shrink-0 accent-[#7B1FA2]"
               />
-              <span className="text-sm text-text-primary">
-                He leído y acepto los{' '}
-                <Link to="/legal/terminos" className="text-primary-500 underline">
-                  Términos
-                </Link>{' '}
-                y la{' '}
-                <Link to="/legal/privacidad" className="text-primary-500 underline">
-                  Política de privacidad
-                </Link>
-              </span>
-            </label>
+              <div className="flex-1">
+                <label htmlFor="acepta" className="text-[15px] leading-[22px] text-text-primary cursor-pointer">
+                  He leído y acepto los Términos y la Política de privacidad
+                </label>
+                <div className="flex text-[13px] font-semibold text-primary-500">
+                  <Link to="/legal/terminos" className="pt-1 pr-3" data-testid="ver-terminos">
+                    Ver términos
+                  </Link>
+                  <Link to="/legal/privacidad" className="pt-1" data-testid="ver-privacidad">
+                    Ver privacidad
+                  </Link>
+                </div>
+              </div>
+            </div>
 
             <MensajeError mensaje={error} />
 
-            <button
-              type="submit"
-              disabled={cargando}
-              className="w-full h-12 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-on-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition-all cursor-pointer mt-6"
-            >
-              <span>{cargando ? 'Creando...' : 'Crear cuenta'}</span>
-              <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+            <button type="submit" disabled={cargando || !acepta} className="boton-c2 !mt-6">
+              <span>{cargando ? 'Creando cuenta...' : 'Crear cuenta'}</span>
+              <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
+                arrow_forward
+              </span>
             </button>
 
             <div className="text-center pt-2">
@@ -211,10 +215,6 @@ export function Registro() {
           </form>
 
           <div className="mt-4 space-y-3 md:col-start-2">
-            <div className="flex items-center gap-3 text-xs text-text-secondary">
-              <span className="flex-1 h-px bg-border-subtle" />o
-              <span className="flex-1 h-px bg-border-subtle" />
-            </div>
             <BotonGoogle />
           </div>
         </div>

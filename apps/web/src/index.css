@@ -205,6 +205,14 @@ body {
   .boton-c2[aria-disabled='true']::after {
     display: none;
   }
+  /* Deshabilitado como Material3 en Android: fondo onSurface 12% y texto 38%. */
+  .boton-c2:disabled {
+    color: rgb(255 255 255 / 0.38);
+    cursor: not-allowed;
+  }
+  .boton-c2:disabled::before {
+    background: rgb(220 226 248 / 0.12);
+  }
   /* Boton de la landing (solo web, sin equivalente en la app): corte en paralelogramo y degradado. */
   .boton-landing {
     @apply relative flex w-full items-center justify-center gap-2 h-14 text-white font-black italic uppercase text-[16px] tracking-wide transition-transform active:translate-x-[2px] active:translate-y-[2px];
