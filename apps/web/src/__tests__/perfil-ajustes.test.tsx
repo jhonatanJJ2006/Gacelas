@@ -82,7 +82,7 @@ describe('ajustes', () => {
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Cerrar sesión' })
     )
-    expect(await screen.findByText('Corre con la manada de Loja')).toBeInTheDocument()
+    expect(await screen.findByTestId('pantalla-bienvenida')).toBeInTheDocument()
     expect(useIdentidad.getState().sesion).toBeNull()
   })
 

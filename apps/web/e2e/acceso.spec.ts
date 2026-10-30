@@ -46,7 +46,7 @@ test.describe('bienvenida sin scroll', () => {
     test(`cabe en ${w}x${h} y muestra el corredor`, async ({ page }) => {
       await page.setViewportSize({ width: w, height: h })
       await page.goto('/bienvenida')
-      await expect(page.getByTestId('bienvenida-corredor')).toBeVisible()
+      await expect(page.getByTestId('pantalla-bienvenida')).toBeVisible()
       await expect(page.getByRole('img', { name: 'Corredor de Runcity' }).first()).toBeVisible({
         timeout: 30_000,
       })

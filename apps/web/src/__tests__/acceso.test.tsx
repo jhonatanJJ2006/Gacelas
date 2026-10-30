@@ -9,7 +9,7 @@ describe('acceso y rutas protegidas', () => {
 
   it('sin sesion, una ruta protegida redirige a bienvenida', async () => {
     renderRuta('/perfil')
-    expect(await screen.findByRole('button', { name: /crear cuenta/i })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /empezar/i })).toBeInTheDocument()
   })
 
   it('Saltar lleva a inicio de sesion', async () => {
