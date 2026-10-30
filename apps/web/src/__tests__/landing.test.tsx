@@ -94,6 +94,16 @@ describe('landing publica en /', () => {
     })
   })
 
+  it('el hero muestra una ruta oficial real y cifras de las rutas, sin testimonios', async () => {
+    renderRuta('/')
+    await screen.findByTestId('landing')
+    expect(screen.getByText('Centro histórico de Loja')).toBeInTheDocument()
+    expect(screen.getByText('1.55')).toBeInTheDocument()
+    const cifras = within(screen.getByRole('list', { name: 'Runcity en cifras' }))
+    expect(cifras.getByText('26')).toBeInTheDocument()
+    expect(cifras.getByText('rutas oficiales')).toBeInTheDocument()
+  })
+
   it('con sesion, "/" lleva a inicio', async () => {
     prepararApp()
     renderRuta('/')
