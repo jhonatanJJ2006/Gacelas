@@ -58,7 +58,7 @@ export function TarjetaRacha() {
           : 'bg-primary'
   return (
     <section
-      className="bg-surface-container border border-border-subtle rounded-2xl p-5 mb-6"
+      className="tarjeta-c2 p-4 mb-4"
       data-testid="tarjeta-racha"
       aria-labelledby="titulo-racha"
     >
@@ -80,7 +80,7 @@ export function TarjetaRacha() {
         )}
       </div>
       <div className="grid grid-cols-2 gap-3 mb-5">
-        <div className="rounded-xl bg-primary/10 border border-primary/30 p-3">
+        <div className="rounded-lg bg-primary/15 p-3">
           <p className="text-xs text-text-secondary">Racha diaria</p>
           <p className="font-headline-sm text-headline-sm text-primary" data-testid="racha-diaria">
             {plural(r.diaria, 'día', 'días')}
@@ -89,7 +89,7 @@ export function TarjetaRacha() {
             Mejor: {plural(r.mejorDiaria, 'día', 'días')}
           </p>
         </div>
-        <div className="rounded-xl bg-secondary/10 border border-secondary/30 p-3">
+        <div className="rounded-lg bg-secondary/15 p-3">
           <p className="text-xs text-text-secondary">Racha semanal</p>
           <p
             className="font-headline-sm text-headline-sm text-secondary"

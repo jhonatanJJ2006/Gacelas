@@ -30,7 +30,7 @@ export function Contadores({
   siguiendo: number
 }) {
   return (
-    <div className={`${tarjeta} grid grid-cols-3 divide-x divide-border-subtle py-3 mb-4`}>
+    <div className={`${tarjeta} grid grid-cols-3 py-3 mb-4`}>
       {[
         ['Carreras', carreras, 'total-carreras'],
         ['Seguidores', seguidores, 'total-seguidores'],

@@ -149,6 +149,17 @@ body {
     background: radial-gradient(50% 50% at 50% 50%, #c084fc55, transparent 70%);
     transform: skewX(-20deg);
   }
+  /* Android FormaBotonC2: esquinas superior izquierda e inferior derecha cortadas 10dp. */
+  .forma-boton-c2 {
+    clip-path: polygon(
+      10px 0,
+      100% 0,
+      100% calc(100% - 10px),
+      calc(100% - 10px) 100%,
+      0 100%,
+      0 10px
+    );
+  }
   .tarjeta-c2 {
     /* Android FormaC2: sin borde, solo la esquina inferior derecha cortada 18dp. */
     @apply bg-c2-card;
