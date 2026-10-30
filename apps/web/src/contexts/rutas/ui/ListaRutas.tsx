@@ -15,7 +15,6 @@ import {
   ordenarPorCercania,
   type FiltroDistancia,
 } from '../domain/rutas'
-import { Estrellas } from './Estrellas'
 
 /** Insignia C2 de las rutas del catalogo oficial de Loja. */
 export function InsigniaOficial() {
@@ -62,18 +61,23 @@ export function ListaRutas() {
       { maximumAge: 60_000, timeout: 10_000 }
     )
   }
-  const chip = (activo: boolean) =>
-    `shrink-0 min-h-[40px] px-3 rounded-full font-label-md text-label-md border transition-colors ${
-      activo
-        ? 'bg-primary-600 text-on-primary border-primary-600'
-        : 'bg-surface-container text-text-secondary border-border-subtle hover:text-text-primary'
-    }`
+  const chip = (activo: boolean) => (activo ? 'pastilla-c2' : 'pastilla-c2')
+  // Linea de datos extra, igual que Android: valoracion, me gusta, distancia a ti y autor.
+  const extras = (r: (typeof rutas)[number]) =>
+    [
+      r.valoracion != null ? `★ ${r.valoracion.toFixed(1)} (${r.resenas ?? 0})` : null,
+      (r.meGusta ?? 0) > 0 ? `♥ ${r.meGusta}` : null,
+      cerca?.[r.id] != null
+        ? `a ${Unidades.texto(cerca[r.id], m, 1)} ${Unidades.etiquetaDistancia(m)}`
+        : null,
+      r.autorNombre ? `por ${r.autorNombre}` : null,
+    ].filter((x): x is string => x != null)
 
   return (
     <div className="flex flex-col w-full contenedor-escritorio">
       <div className="px-margin pt-space-md pb-space-sm lg:px-0 lg:pb-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="font-display italic uppercase text-[26px] text-text-primary">
+          <h1 className="font-headline-lg text-headline-lg leading-9 text-text-primary">
             Rutas de Loja
           </h1>
           <div className="flex items-center gap-2">
@@ -81,28 +85,26 @@ export function ListaRutas() {
               onClick={() => setVerMapa((v) => !v)}
               aria-pressed={verMapa}
               data-testid="ver-mapa-rutas"
-              className="h-10 px-3 rounded-full bg-surface-container text-text-primary flex items-center gap-1"
+              aria-label={verMapa ? 'Ver lista' : 'Ver mapa'}
+              className="w-12 h-12 rounded-full text-text-primary flex items-center justify-center"
             >
-              <span className="material-symbols-outlined text-[20px]">
-                {verMapa ? 'list' : 'map'}
-              </span>
-              {verMapa ? 'Lista' : 'Mapa'}
+              <span className="material-symbols-outlined fill">{verMapa ? 'list' : 'map'}</span>
             </button>
             {sociales && (
               <Link
                 to="/rutas/crear"
                 aria-label="Dibujar ruta"
-                className="w-10 h-10 rounded-full bg-surface-container text-text-primary flex items-center justify-center"
+                className="w-12 h-12 rounded-full text-text-primary flex items-center justify-center"
               >
-                <span className="material-symbols-outlined">draw</span>
+                <span className="material-symbols-outlined fill">draw</span>
               </Link>
             )}
             <Link
               to="/rutas/buscar"
               aria-label="Planificar ruta"
-              className="w-10 h-10 rounded-full bg-primary-600 text-on-primary flex items-center justify-center shadow-lg"
+              className="w-12 h-12 rounded-full text-text-primary flex items-center justify-center"
             >
-              <span className="material-symbols-outlined">directions</span>
+              <span className="material-symbols-outlined fill">directions</span>
             </Link>
           </div>
         </div>
@@ -114,27 +116,33 @@ export function ListaRutas() {
               role="tab"
               aria-selected={tab === pestana}
               onClick={() => setPestana(tab)}
-              className={`px-4 py-2 rounded-full font-label-md text-label-md transition-colors ${
-                tab === pestana
-                  ? 'bg-primary-600 text-on-primary'
-                  : 'bg-surface-container text-text-secondary hover:text-text-primary'
-              }`}
+              className="pastilla-c2"
             >
               {tab === 'Guardadas' ? `Guardadas (${guardadas.length})` : tab}
             </button>
           ))}
         </div>
 
+        <label
+          htmlFor="buscar-rutas"
+          className="block text-sm font-semibold text-text-secondary mb-1.5"
+        >
+          Buscar
+        </label>
         <div className="relative">
           <input
+            id="buscar-rutas"
             type="search"
             aria-label="Buscar rutas"
             value={consulta}
             onChange={(e) => setConsulta(e.target.value)}
             placeholder="Buscar rutas..."
-            className="w-full h-12 pl-12 pr-4 bg-surface-container border border-border-subtle rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+            className="w-full h-14 pl-4 pr-12 text-base bg-surface-container border border-border-subtle rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary-600"
           />
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">
+          <span
+            aria-hidden="true"
+            className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary"
+          >
             search
           </span>
         </div>
@@ -174,9 +182,8 @@ export function ListaRutas() {
             onClick={alternarCerca}
             aria-pressed={!!cerca}
             data-testid="rutas-cerca"
-            className={chip(!!cerca) + ' flex items-center gap-1'}
+            className={chip(!!cerca)}
           >
-            <span className="material-symbols-outlined text-[18px]">near_me</span>
             {buscandoCerca ? 'Buscando…' : 'Cerca de mí'}
           </button>
           {(['Todas', 'Fácil', 'Moderado', 'Difícil'] as const).map((d) => (
@@ -232,7 +239,9 @@ export function ListaRutas() {
         </div>
       )}
       <div className="px-margin pb-2 lg:px-0" data-testid="encabezado-lista-rutas">
-        <h2 className="font-title-md text-title-md text-text-primary">Rutas locales de Loja</h2>
+        <h2 className="font-title-md text-title-md tracking-[0.03em] text-text-primary">
+          Rutas locales de Loja
+        </h2>
         <p className="font-body-sm text-body-sm text-text-secondary">
           {rutas.length} {rutas.length === 1 ? 'sendero' : 'senderos'}
         </p>
@@ -240,99 +249,67 @@ export function ListaRutas() {
       <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6 lg:space-y-0">
         {rutas.length === 0 && (
           <p
-            className="text-center text-text-secondary py-8 lg:col-span-full"
+            className="tarjeta-c2 p-4 text-body-md text-text-secondary lg:col-span-full"
             data-testid="rutas-vacio"
           >
-            {pestana === 'Guardadas' && !consulta
+            {pestana === 'Guardadas'
               ? 'Aún no guardas rutas. Toca el marcador de una ruta para guardarla.'
-              : 'No hay rutas que coincidan.'}
+              : pestana === 'Mis Rutas'
+                ? 'Todavía no creaste rutas.'
+                : 'No hay rutas que coincidan con la búsqueda.'}
           </p>
         )}
         {rutas.map((ruta) => {
           const guardada = guardadas.includes(ruta.id)
           return (
-            <article
-              key={ruta.id}
-              className="relative tarjeta-c2 overflow-hidden hover:border-c2-violeta/60 transition-colors"
-            >
+            <article key={ruta.id} className="relative tarjeta-c2 overflow-hidden">
               <Link to={`/rutas/${ruta.id}`} className="block" aria-label={`Abrir ${ruta.nombre}`}>
                 <div className="flex gap-3 p-3 pr-12">
-                  <div className="w-[88px] h-[88px] shrink-0 rounded-lg bg-c2-s2 border border-c2-linea flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[36px] text-c2-violeta">
+                  <div className="w-[88px] h-[88px] shrink-0 rounded bg-gradient-to-br from-c2-s2 to-[#0c1322] flex items-center justify-center">
+                    <span className="material-symbols-outlined fill text-[36px] text-c2-violeta">
                       route
                     </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h2 className="font-semibold text-[15px] text-text-primary mb-0.5 truncate">
+                  <div className="flex-1 min-w-0 flex flex-col gap-1">
+                    <h2 className="font-title-md text-title-md tracking-[0.03em] text-text-primary line-clamp-2">
                       {ruta.nombre}
                     </h2>
-                    <p className="text-[12px] text-c2-muted mb-1 line-clamp-1">
-                      {ruta.descripcion}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-sm text-text-secondary">
-                      {ruta.valoracion != null && (
-                        <span className="flex items-center gap-1">
-                          <Estrellas valor={ruta.valoracion} tamano={16} />
-                          {ruta.valoracion.toFixed(1)} ({ruta.resenas})
-                        </span>
-                      )}
-                      {(ruta.meGusta ?? 0) > 0 && (
-                        <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">favorite</span>
-                          {ruta.meGusta}
-                        </span>
-                      )}
-                      {cerca?.[ruta.id] != null && (
-                        <span className="flex items-center gap-1" data-testid="ruta-cerca-km">
-                          <span className="material-symbols-outlined text-[16px]">near_me</span>a{' '}
-                          {Unidades.texto(cerca[ruta.id], m, 1)} {Unidades.etiquetaDistancia(m)}
-                        </span>
-                      )}
-                      {ruta.autorNombre && <span>por {ruta.autorNombre}</span>}
-                    </div>
-                    <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                      {ruta.oficial && <InsigniaOficial />}
+                    {ruta.oficial && (
+                      <span className="self-start">
+                        <InsigniaOficial />
+                      </span>
+                    )}
+                    <p className="text-body-sm text-c2-muted line-clamp-2">{ruta.descripcion}</p>
+                    {extras(ruta).length > 0 && (
+                      <p
+                        className="text-label-md font-semibold text-c2-muted"
+                        data-testid="ruta-extra"
+                      >
+                        {extras(ruta).join('  ·  ')}
+                      </p>
+                    )}
+                    <div
+                      className="flex flex-wrap items-center gap-x-3.5 gap-y-1"
+                      data-testid="metricas-ruta"
+                    >
+                      <span className="text-label-lg font-semibold text-c2-violeta">
+                        {Unidades.texto(ruta.distanciaKm, m, 1)} {Unidades.etiquetaDistancia(m)}
+                      </span>
+                      <span className="text-label-lg font-semibold text-c2-cielo">
+                        +{ruta.elevacionM} m
+                      </span>
                       <span
-                        className={`font-label-md text-label-md px-2 py-0.5 rounded-full ${
+                        className={`text-label-md font-semibold px-2 py-0.5 rounded-full ${
                           ruta.dificultad === 'Fácil'
-                            ? 'bg-secondary-600/20 text-secondary-500'
+                            ? 'bg-secondary-500/20 text-secondary-500'
                             : ruta.dificultad === 'Moderado'
-                              ? 'bg-primary-600/20 text-primary-500'
-                              : 'bg-danger/20 text-red-300'
+                              ? 'bg-primary-500/20 text-primary-500'
+                              : 'bg-danger/20 text-danger'
                         }`}
                       >
                         {ruta.dificultad}
                       </span>
                     </div>
-                    <div
-                      className="grid grid-cols-3 gap-1 pt-1 border-t border-c2-linea"
-                      data-testid="metricas-ruta"
-                    >
-                      <div>
-                        <div className="text-[11px] text-text-secondary">Distancia</div>
-                        <div className="text-[13px] font-semibold text-text-primary">
-                          {Unidades.texto(ruta.distanciaKm, m, 1)} {Unidades.etiquetaDistancia(m)}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[11px] text-text-secondary">Desnivel</div>
-                        <div className="text-[13px] font-semibold text-text-primary">
-                          +{ruta.elevacionM} m
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[11px] text-text-secondary">Valoración</div>
-                        <div className="text-[13px] font-semibold text-c2-violeta">
-                          {ruta.valoracion != null
-                            ? `${ruta.valoracion.toFixed(1)} (${ruta.resenas ?? 0})`
-                            : '--'}
-                        </div>
-                      </div>
-                    </div>
-                    <span className="mt-1 inline-flex items-center gap-1 text-[12px] font-semibold text-c2-violeta">
-                      <span className="material-symbols-outlined text-[16px]">info</span>
-                      Ver detalles
-                    </span>
                   </div>
                 </div>
               </Link>
@@ -342,7 +319,7 @@ export function ListaRutas() {
                   guardada ? `Quitar ${ruta.nombre} de guardadas` : `Guardar ${ruta.nombre}`
                 }
                 aria-pressed={guardada}
-                className="absolute top-2 right-2 w-9 h-9 rounded-full bg-c2-s2 backdrop-blur flex items-center justify-center text-primary-400"
+                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-c2-violeta"
               >
                 <span
                   className="material-symbols-outlined"

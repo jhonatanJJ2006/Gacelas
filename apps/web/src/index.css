@@ -94,11 +94,15 @@ body {
 .no-scrollbar {
   scrollbar-width: none;
 }
+.material-symbols-outlined.fill {
+  font-variation-settings: 'FILL' 1;
+}
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
 /* Rediseño C2 Deporte cinetico: titulares display en Anton, cursiva y mayusculas. */
+.font-title-md,
 .font-headline-sm,
 .font-headline-md,
 .font-headline-lg,
@@ -146,8 +150,19 @@ body {
     transform: skewX(-20deg);
   }
   .tarjeta-c2 {
-    @apply bg-c2-card border border-c2-linea;
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
+    /* Android FormaC2: sin borde, solo la esquina inferior derecha cortada 18dp. */
+    @apply bg-c2-card;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+  }
+  /* Pastilla de filtro (Android Pastilla): r2, violeta activa con texto oscuro, mayusculas cursiva. */
+  .pastilla-c2 {
+    @apply inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap bg-c2-s2 px-4 py-2 text-[12px] font-black uppercase italic leading-4 tracking-[0.02em] text-text-secondary;
+    border-radius: 2px;
+    font-synthesis: style;
+  }
+  .pastilla-c2[aria-pressed='true'],
+  .pastilla-c2[aria-selected='true'] {
+    @apply bg-c2-violeta text-[#0c1322];
   }
   .pildora-c2 {
     @apply inline-flex items-center gap-1 px-2.5 py-1 bg-c2-s2 text-[12px] font-semibold text-text-primary;
