@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { useIdentidad } from '../contexts/identidad/api'
 import { AppLayout } from './AppLayout'
+import NoEncontrado from './NoEncontrado'
 import { cargar } from './estado'
 import { ShellEscritorio } from './ShellEscritorio'
 
@@ -271,7 +272,7 @@ export function AppRoutes() {
         </Route>
 
         <Route path="/admin/*" element={<Admin />} />
-        <Route path="*" element={<Navigate to="/bienvenida" replace />} />
+        <Route path="*" element={<NoEncontrado />} />
       </Routes>
     </Suspense>
   )
