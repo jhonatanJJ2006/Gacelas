@@ -178,7 +178,10 @@ export function Registro() {
                 className="m-3 w-[18px] h-[18px] shrink-0 accent-[#7B1FA2]"
               />
               <div className="flex-1">
-                <label htmlFor="acepta" className="text-[15px] leading-[22px] text-text-primary cursor-pointer">
+                <label
+                  htmlFor="acepta"
+                  className="text-[15px] leading-[22px] text-text-primary cursor-pointer"
+                >
                   He leído y acepto los Términos y la Política de privacidad
                 </label>
                 <div className="flex text-[13px] font-semibold text-primary-500">

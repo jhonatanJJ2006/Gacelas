@@ -33,47 +33,43 @@ export function RecuperarContrasena() {
   if (submitted) {
     return (
       <div className="w-full min-h-[100dvh] bg-surface flex flex-col">
-        <header className="w-full z-20 px-margin py-4">
+        <header className="w-full z-20 px-margin py-2">
           <button
             onClick={() => navigate('/inicio-sesion')}
-            className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+            aria-label="Atrás"
+            className="w-12 h-12 -ml-2 rounded-full flex items-center justify-center text-text-primary"
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
         </header>
 
         <main className="flex-1 px-6 pb-8 flex flex-col">
-          <div className="flex-1 flex flex-col justify-center items-center max-w-md mx-auto w-full text-center">
-            <div className="w-16 h-16 rounded-full bg-secondary-600/20 flex items-center justify-center mb-6">
-              <span className="material-symbols-outlined text-[32px] text-secondary-500">
+          <div className="flex flex-col items-center gap-4 pt-12 max-w-md mx-auto w-full text-center">
+            <div className="w-24 h-24 rounded-full bg-secondary-600/20 flex items-center justify-center">
+              <span className="material-symbols-outlined text-[48px] text-secondary-500">
                 mark_email_read
               </span>
             </div>
 
-            <h1 className="text-text-primary font-headline-lg text-2xl font-bold mb-3">
+            <h1 className="text-text-primary font-headline-lg text-[32px] leading-10">
               Revisa tu correo
             </h1>
-            <p className="text-text-secondary text-sm mb-4">
-              Te hemos enviado un enlace para restablecer tu contraseña a{' '}
-              <span className="text-text-primary font-medium">{email}</span>. Si no lo encuentras en
-              unos instantes, revisa la carpeta de spam.
+            <p className="text-text-secondary text-base">
+              Te hemos enviado un enlace para restablecer tu contraseña a {email}
             </p>
-            <div className="w-full flex items-center justify-between p-3 mb-8 rounded-xl bg-surface-container border border-border-subtle text-sm">
+            <div className="w-full flex items-center justify-between p-3 rounded-xl bg-surface-container text-xs">
               <span className="text-text-secondary">¿No recibiste el correo?</span>
               <button
                 onClick={() => void reenviar()}
                 disabled={espera > 0}
-                className="px-3 py-1 rounded-lg bg-primary-600/15 text-primary font-semibold disabled:opacity-60"
+                className="p-1 text-[13px] text-primary-500 font-semibold"
               >
                 {espera > 0 ? `Reenviar en 0:${String(espera).padStart(2, '0')}` : 'Reenviar'}
               </button>
             </div>
             <MensajeError mensaje={error} />
 
-            <button
-              onClick={() => navigate('/inicio-sesion')}
-              className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-on-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition-all cursor-pointer"
-            >
+            <button onClick={() => navigate('/inicio-sesion')} className="boton-c2">
               Volver al inicio de sesión
             </button>
           </div>
@@ -84,35 +80,36 @@ export function RecuperarContrasena() {
 
   return (
     <div className="w-full min-h-[100dvh] bg-surface flex flex-col">
-      <header className="w-full z-20 px-margin py-4">
+      <header className="w-full z-20 px-margin py-2">
         <button
           onClick={() => navigate('/inicio-sesion')}
-          className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+          aria-label="Atrás"
+          className="w-12 h-12 -ml-2 rounded-full flex items-center justify-center text-text-primary"
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
       </header>
 
       <main className="flex-1 px-6 pb-8 flex flex-col">
-        <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-          <div className="mb-8">
-            <div className="w-12 h-12 rounded-full bg-primary-600/20 flex items-center justify-center mb-6">
-              <span className="material-symbols-outlined text-[24px] text-primary-500">
+        <div className="flex flex-col gap-5 pt-6 max-w-md mx-auto w-full">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <div className="w-20 h-20 rounded-full bg-primary-600/20 flex items-center justify-center">
+              <span className="material-symbols-outlined text-[40px] text-primary-500">
                 lock_reset
               </span>
             </div>
 
-            <h1 className="text-text-primary font-headline-lg text-3xl font-bold mb-2">
+            <h1 className="text-text-primary font-headline-lg text-[32px] leading-10">
               Recuperar contraseña
             </h1>
-            <p className="text-text-secondary text-sm">
+            <p className="text-text-secondary text-base">
               Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate className="space-y-6">
+          <form onSubmit={handleSubmit} noValidate className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-1.5">
                 Correo electrónico
               </label>
               <input
@@ -123,7 +120,7 @@ export function RecuperarContrasena() {
                   setEmail(e.target.value)
                   setError(null)
                 }}
-                className="w-full h-12 px-4 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
+                className="w-full h-14 px-4 text-base bg-surface-container border border-border-subtle rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary-600"
                 placeholder="tu@email.com"
                 required
               />
@@ -131,12 +128,11 @@ export function RecuperarContrasena() {
 
             <MensajeError mensaje={error} />
 
-            <button
-              type="submit"
-              className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-on-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition-all cursor-pointer"
-            >
+            <button type="submit" className="boton-c2">
               <span>Enviar enlace</span>
-              <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+              <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
+                arrow_forward
+              </span>
             </button>
           </form>
         </div>
