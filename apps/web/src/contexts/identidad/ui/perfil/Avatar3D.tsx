@@ -38,21 +38,21 @@ export function Avatar3D() {
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
-      <header className="px-margin py-4 border-b border-border-subtle">
-        <div className="flex items-center justify-between">
+      <header className="px-margin h-16 flex items-center bg-bg-secondary">
+        <div className="flex items-center gap-1 w-full">
           <button
             onClick={() => navigate('/perfil')}
             aria-label="Volver"
-            className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+            className="w-12 h-12 -ml-3 shrink-0 flex items-center justify-center text-text-primary"
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
-          <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
+          <h1 className="flex-1 min-w-0 font-title-md text-title-md text-text-primary">
             Personalizar Avatar
           </h1>
           <button
             onClick={() => void guardar()}
-            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-on-primary font-label-lg text-label-lg rounded-lg transition-colors"
+            className="px-2 py-2 text-primary-500 font-label-lg text-label-lg"
           >
             Guardar
           </button>
@@ -80,21 +80,21 @@ export function Avatar3D() {
           </Suspense>
 
           <div className="absolute bottom-4 left-4 right-4">
-            <div className="bg-surface/90 backdrop-blur-xl border border-border-subtle rounded-2xl p-4 shadow-2xl">
+            <div className="tarjeta-c2 p-4">
               <div className="flex items-center gap-2 mb-3">
                 <span className="material-symbols-outlined text-[20px] text-primary-500">
                   palette
                 </span>
                 <span className="font-title-md text-title-md text-text-primary">Equipación</span>
               </div>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="flex gap-3">
                 {EQUIPACIONES.map((color, i) => (
                   <button
                     key={color}
                     onClick={() => cambiar({ equipacion: i })}
                     aria-label={`Equipación ${NOMBRES_EQUIPACION[i]}`}
                     aria-pressed={avatar.equipacion === i}
-                    className={`aspect-square lg:aspect-auto lg:h-12 rounded-lg ${color} border-2 ${avatar.equipacion === i ? 'border-white shadow-lg' : 'border-transparent hover:border-border-subtle'}`}
+                    className={`w-12 h-12 rounded-full ${color} border-[3px] ${avatar.equipacion === i ? 'border-white' : 'border-transparent'}`}
                   ></button>
                 ))}
               </div>
@@ -104,23 +104,23 @@ export function Avatar3D() {
 
         <div className="px-margin py-6 space-y-4 bg-surface lg:flex-1 lg:px-0 lg:py-0">
           <section aria-label="Rasgos del corredor" className="space-y-3">
-            <h2 className="font-label-lg text-label-lg text-text-secondary uppercase">
-              1. Género y complexión
+            <h2 className="text-[12px] font-extrabold text-c2-violeta uppercase tracking-[.12em]">
+              Género y complexión
             </h2>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-wrap gap-2">
               {(['hombre', 'mujer'] as const).map((c) => (
                 <button
                   key={c}
                   aria-pressed={(avatar.complexion ?? 'hombre') === c}
                   onClick={() => cambiar({ complexion: c })}
-                  className={`h-11 rounded-xl border capitalize ${(avatar.complexion ?? 'hombre') === c ? 'border-primary bg-primary-600 text-on-primary' : 'border-border-subtle text-text-secondary'}`}
+                  className="pastilla-c2 justify-center"
                 >
                   {c}
                 </button>
               ))}
             </div>
-            <h2 className="font-label-lg text-label-lg text-text-secondary uppercase">
-              2. Tono de piel
+            <h2 className="text-[12px] font-extrabold text-c2-violeta uppercase tracking-[.12em]">
+              Tono de piel
             </h2>
             <div className="flex gap-3">
               {TONOS.map((t, i) => (
@@ -134,10 +134,10 @@ export function Avatar3D() {
                 />
               ))}
             </div>
-            <h2 className="font-label-lg text-label-lg text-text-secondary uppercase">
-              3. Cabello y peinado
+            <h2 className="text-[12px] font-extrabold text-c2-violeta uppercase tracking-[.12em]">
+              Cabello y peinado
             </h2>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="flex flex-wrap gap-2">
               {(
                 [
                   ['corto', 'Corto runner'],
@@ -149,13 +149,15 @@ export function Avatar3D() {
                   key={id}
                   aria-pressed={(avatar.peinado ?? 'corto') === id}
                   onClick={() => cambiar({ peinado: id })}
-                  className={`h-10 rounded-lg border text-label-md ${(avatar.peinado ?? 'corto') === id ? 'border-primary bg-primary-600/15 text-primary' : 'border-border-subtle text-text-secondary'}`}
+                  className="pastilla-c2 justify-center"
                 >
                   {t}
                 </button>
               ))}
             </div>
-            <h2 className="font-label-lg text-label-lg text-text-secondary uppercase">4. Shorts</h2>
+            <h2 className="text-[12px] font-extrabold text-c2-violeta uppercase tracking-[.12em]">
+              Shorts
+            </h2>
             <div className="flex gap-3">
               {SHORTS.map(([c, n], i) => (
                 <button

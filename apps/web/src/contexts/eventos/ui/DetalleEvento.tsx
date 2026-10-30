@@ -41,7 +41,7 @@ export function DetalleEvento() {
 
   return (
     <main className="w-full min-h-screen bg-surface flex flex-col lg:max-w-5xl lg:mx-auto lg:px-8 lg:py-8">
-      <div className="h-64 lg:h-80 lg:rounded-3xl lg:overflow-hidden bg-gradient-to-br from-primary-600 to-secondary-600 relative">
+      <div className="h-60 lg:h-80 lg:overflow-hidden bg-gradient-to-b from-primary-600 to-surface relative">
         <button
           onClick={() => navigate('/comunidad/eventos')}
           aria-label="Volver"
@@ -57,13 +57,11 @@ export function DetalleEvento() {
           <span className="material-symbols-outlined">share</span>
         </button>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="material-symbols-outlined text-[120px] text-white/20">event</span>
+          <span className="material-symbols-outlined fill text-[80px] text-white/40">event</span>
         </div>
         <div className="absolute bottom-4 left-4 right-4">
-          <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full inline-flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-primary-400">
-              directions_run
-            </span>
+          <div className="bg-primary-600 px-3 py-1 rounded-full inline-flex items-center gap-1">
+            <span className="material-symbols-outlined text-[16px] text-white">directions_run</span>
             <span className="text-white font-label-md text-label-md">{evento.distanciaKm} km</span>
           </div>
         </div>
@@ -103,10 +101,10 @@ export function DetalleEvento() {
           </Link>
         </div>
 
-        <div className="space-y-3 mb-6">
+        <div className="tarjeta-c2 p-4 space-y-3 mb-6">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[20px] text-primary-500">
+            <div className="w-6 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[24px] text-primary-500">
                 calendar_today
               </span>
             </div>
@@ -118,8 +116,8 @@ export function DetalleEvento() {
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[20px] text-secondary-500">
+            <div className="w-6 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[24px] text-primary-500">
                 location_on
               </span>
             </div>
@@ -132,14 +130,14 @@ export function DetalleEvento() {
           </div>
         </div>
 
-        <div className="bg-surface-container rounded-2xl p-4 mb-6">
+        <div className="mb-6">
           <h2 className="font-title-md text-title-md text-text-primary mb-3">Descripción</h2>
           <p className="font-body-md text-body-md text-text-secondary leading-relaxed">
             {evento.descripcion}
           </p>
         </div>
 
-        <div className="bg-surface-container rounded-2xl p-4 mb-6">
+        <div className="mb-6">
           <h2
             className="font-title-md text-title-md text-text-primary mb-1"
             data-testid="participantes"
@@ -156,7 +154,7 @@ export function DetalleEvento() {
             {Array.from({ length: Math.min(participantes, 24) }, (_, i) => (
               <div
                 key={i}
-                className={`w-12 h-12 rounded-full border-2 border-border-subtle ${inscrito && i === 0 ? 'bg-primary-600/50' : 'bg-surface-variant'}`}
+                className={`w-9 h-9 rounded-full border-2 border-surface ${inscrito && i === 0 ? 'bg-primary-600' : ['bg-primary-500', 'bg-emerald-600', 'bg-sky-400'][i % 3]}`}
               ></div>
             ))}
           </div>

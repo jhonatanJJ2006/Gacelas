@@ -98,15 +98,15 @@ export function DetalleClub() {
 
   return (
     <main className="w-full min-h-screen bg-surface contenedor-escritorio lg:max-w-5xl pb-28">
-      <header className="flex items-center gap-3 px-margin py-4 lg:px-0">
+      <header className="flex items-center gap-1 px-margin h-16 bg-bg-secondary mb-4">
         <button
           onClick={() => navigate('/comunidad/clubes')}
           aria-label="Volver"
-          className="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-text-primary"
+          className="w-12 h-12 -ml-3 shrink-0 flex items-center justify-center text-text-primary"
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
-        <h1 className="flex-1 font-headline-md text-headline-md text-text-primary truncate">
+        <h1 className="flex-1 min-w-0 font-title-md text-title-md text-text-primary truncate">
           {club.nombre}
         </h1>
         {gestiono && (

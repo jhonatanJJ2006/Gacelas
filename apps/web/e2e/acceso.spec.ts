@@ -31,6 +31,9 @@ test.describe('Acceso y sesión', () => {
 
   test('registro valida los campos', async ({ page }) => {
     await page.goto('/registro')
+    // Android: el boton queda deshabilitado hasta aceptar los terminos.
+    await expect(page.getByRole('button', { name: /crear cuenta/i })).toBeDisabled()
+    await page.getByTestId('aceptar-terminos').click()
     await page.getByRole('button', { name: /crear cuenta/i }).click()
     await expect(page.getByRole('alert')).toBeVisible()
   })
@@ -46,8 +49,8 @@ test.describe('bienvenida sin scroll', () => {
     test(`cabe en ${w}x${h} y muestra el corredor`, async ({ page }) => {
       await page.setViewportSize({ width: w, height: h })
       await page.goto('/bienvenida')
-      await expect(page.getByTestId('bienvenida-corredor')).toBeVisible()
-      await expect(page.getByRole('img', { name: 'Corredor de Runcity' }).first()).toBeVisible({
+      await expect(page.getByTestId('pantalla-bienvenida')).toBeVisible()
+      await expect(page.getByRole('img', { name: /Mapa de Loja/ }).first()).toBeVisible({
         timeout: 30_000,
       })
       const { sh, ih } = await page.evaluate(() => ({

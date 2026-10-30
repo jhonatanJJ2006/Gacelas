@@ -128,7 +128,7 @@ export default {
         'body-lg': ['Archivo', 'sans-serif'],
         'label-md': ['Archivo', 'sans-serif'],
         'label-lg': ['Archivo', 'sans-serif'],
-        'title-md': ['Archivo', 'sans-serif'],
+        'title-md': ['Anton', 'Archivo', 'sans-serif'],
         'headline-sm': ['Anton', 'Archivo', 'sans-serif'],
         'headline-md': ['Anton', 'Archivo', 'sans-serif'],
         'headline-lg': ['Anton', 'Archivo', 'sans-serif'],

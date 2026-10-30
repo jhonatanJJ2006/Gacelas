@@ -9,7 +9,9 @@ test.describe('Ajustes, perfil y notificaciones', () => {
     await expect(page.locator('html')).toHaveClass(/tema-claro/)
     await page.getByRole('button', { name: 'mi', exact: true }).click()
     await page.getByRole('switch', { name: 'Anuncios de voz' }).click()
-    await page.getByLabel('Cuenta regresiva').selectOption('10')
+    // Android: la cuenta regresiva cicla 0/3/5/10 al tocarla.
+    await page.getByLabel('Cuenta regresiva').click()
+    await page.getByLabel('Cuenta regresiva').click()
     await page.reload()
     await expect(page.locator('html')).toHaveClass(/tema-claro/)
     await expect(page.getByRole('button', { name: 'mi', exact: true })).toHaveAttribute(
@@ -20,7 +22,7 @@ test.describe('Ajustes, perfil y notificaciones', () => {
       'aria-checked',
       'false'
     )
-    await expect(page.getByLabel('Cuenta regresiva')).toHaveValue('10')
+    await expect(page.getByLabel('Cuenta regresiva')).toHaveText(/10/)
     await page.goto('/rutas')
     await expect(page.getByText(/ mi/).first()).toBeVisible()
   })

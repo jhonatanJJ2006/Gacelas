@@ -55,20 +55,18 @@ export function Notificaciones() {
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
-      <header className="fixed top-0 inset-x-0 z-50 bg-bg-secondary/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)] pt-safe">
+      <header className="fixed top-0 inset-x-0 z-50 bg-bg-secondary pt-safe">
         <div className="h-16 px-margin flex items-center justify-between gap-space-sm">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
               aria-label="Volver"
-              className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+              className="w-12 h-12 flex items-center justify-center text-text-primary"
             >
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
             <div>
-              <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
-                Notificaciones
-              </h1>
+              <h1 className="font-title-md text-title-md text-text-primary">Notificaciones</h1>
               <p className="text-body-sm text-text-secondary hidden sm:block">
                 Actualizaciones de ruta, club y rendimiento
               </p>
@@ -92,7 +90,7 @@ export function Notificaciones() {
                 role="tab"
                 aria-selected={filtro === f}
                 onClick={() => setFiltro(f)}
-                className={`px-4 py-2 rounded-full font-label-md text-label-md ${filtro === f ? 'bg-primary-600 text-on-primary' : 'bg-surface-container text-text-secondary hover:text-text-primary'}`}
+                className="pastilla-c2"
               >
                 {f}
               </button>
@@ -101,7 +99,7 @@ export function Notificaciones() {
         </div>
 
         <div className="px-margin flex items-center justify-between mb-2">
-          <span className="text-label-md text-primary uppercase tracking-wide flex items-center gap-2">
+          <span className="text-[12px] font-extrabold text-c2-violeta uppercase tracking-[.12em] flex items-center gap-2">
             Recientes
             {nuevas > 0 && (
               <span className="px-2 py-0.5 rounded-full bg-primary-600/20 text-primary normal-case">
@@ -111,7 +109,7 @@ export function Notificaciones() {
           </span>
           <span className="text-body-sm text-text-secondary">Loja, Ecuador</span>
         </div>
-        <div className="px-margin space-y-2">
+        <div>
           {notificaciones.length === 0 && (
             <p className="px-margin py-8 text-center text-text-secondary">No hay notificaciones.</p>
           )}
@@ -122,14 +120,12 @@ export function Notificaciones() {
                 key={notif.id}
                 onClick={() => abrir(notif)}
                 data-testid="notificacion"
-                className={`w-full px-4 py-4 rounded-2xl border flex items-start gap-3 hover:bg-surface-container-high transition-colors text-left bg-surface-container ${
-                  !notif.leida ? 'border-primary-600/40' : 'border-border-subtle'
-                }`}
+                className="w-full px-margin py-4 border-b border-border-subtle flex items-start gap-3 hover:bg-surface-container-high transition-colors text-left bg-bg-secondary"
               >
                 <div
-                  className={`w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center shrink-0 ${color}`}
+                  className={`w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0 ${color}`}
                 >
-                  <span className="material-symbols-outlined text-[20px]">{icon}</span>
+                  <span className="material-symbols-outlined fill text-[24px]">{icon}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-body-md text-body-md text-text-primary">
@@ -149,8 +145,10 @@ export function Notificaciones() {
         </div>
 
         <section className="px-margin mt-6" data-testid="reto-notificacion">
-          <h2 className="text-label-md text-primary uppercase tracking-wide mb-2">Esta semana</h2>
-          <div className="p-4 rounded-2xl bg-surface-container border border-border-subtle space-y-2">
+          <h2 className="text-[12px] font-extrabold text-c2-violeta uppercase tracking-[.12em] mb-2">
+            Esta semana
+          </h2>
+          <div className="tarjeta-c2 p-4 space-y-2">
             <div className="flex items-center gap-3">
               <span className="material-symbols-outlined text-primary">flag</span>
               <div>
@@ -178,7 +176,7 @@ export function Notificaciones() {
 
         <section className="px-margin mt-6 space-y-2">
           <div className="flex justify-between items-baseline">
-            <h2 className="text-label-md text-primary uppercase tracking-wide">
+            <h2 className="text-[12px] font-extrabold text-c2-violeta uppercase tracking-[.12em]">
               Preferencias de alertas
             </h2>
             <span className="text-body-sm text-text-secondary">Ajustes directos</span>

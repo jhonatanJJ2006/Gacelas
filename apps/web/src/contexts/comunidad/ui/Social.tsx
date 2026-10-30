@@ -117,7 +117,7 @@ export function ListaLogros() {
   const [hechos, setHechos] = useState(logrosDesbloqueados)
   useEffect(() => setHechos(logrosDesbloqueados()), [carreras])
   return (
-    <section aria-label="Logros" className="bg-c2-card border border-c2-linea p-4">
+    <section aria-label="Logros" className="tarjeta-c2 p-4">
       <h2 className="font-display italic uppercase text-white text-[18px] mb-3">Logros</h2>
       <ul className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         {LOGROS.map((l) => {

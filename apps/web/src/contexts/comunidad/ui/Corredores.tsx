@@ -35,11 +35,11 @@ export function Corredores() {
           <button
             onClick={() => navigate('/comunidad')}
             aria-label="Volver"
-            className="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary"
+            className="w-12 h-12 -ml-3 shrink-0 flex items-center justify-center text-text-primary"
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
-          <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
+          <h1 className="flex-1 min-w-0 font-title-md text-title-md text-text-primary">
             Buscar corredores
           </h1>
         </div>

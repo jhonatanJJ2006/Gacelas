@@ -35,7 +35,7 @@ describe('rutas', () => {
     prepararApp({ ajustes: { unidadesMetricas: false } })
     renderRuta('/rutas')
     const tarjeta = (await screen.findByText('Parque Jipiro')).closest('article')!
-    expect(within(tarjeta).getByText(/3\.2 mi/)).toBeInTheDocument()
+    expect(within(tarjeta).getByText(/1\.1 mi/)).toBeInTheDocument()
   })
 
   it('abrir una ruta la preselecciona en el buscador y navega', async () => {

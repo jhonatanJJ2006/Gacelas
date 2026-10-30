@@ -75,31 +75,30 @@ export function Perfil() {
   return (
     <div className="flex flex-col w-full contenedor-escritorio lg:max-w-5xl">
       <div className="px-margin pt-space-md pb-space-xl">
-        <div className="relative flex flex-col items-center text-center mb-4">
+        {/* Android: cabecera en fila con foto 80, nombre Anton y datos en una linea. */}
+        <div className="flex items-center mb-4">
+          <FotoPerfil foto={sesion?.foto} nombre={nombre} className="w-20 h-20 shrink-0" />
+          <div className="flex-1 min-w-0 pl-3.5">
+            <h1 className="font-headline-md text-headline-md text-text-primary truncate">
+              {nombre}
+            </h1>
+            <p className="text-body-sm text-c2-muted truncate">
+              {[`@${sesion?.username ?? usuarioActualMock.username}`, sesion?.ubicacion]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+            {sesion?.bio && <p className="text-body-sm text-c2-muted line-clamp-2">{sesion.bio}</p>}
+            <p className="mt-1 text-[12px] font-extrabold uppercase tracking-[0.12em] text-c2-violeta">
+              Club Gacelas Loja
+            </p>
+          </div>
           <Link
             to="/perfil/editar"
             aria-label="Editar perfil"
-            className="absolute right-0 top-0 w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+            className="self-start w-12 h-12 rounded bg-c2-s2 flex items-center justify-center text-c2-violeta"
           >
-            <span className="material-symbols-outlined">edit</span>
+            <span className="material-symbols-outlined fill">edit</span>
           </Link>
-          <FotoPerfil foto={sesion?.foto} nombre={nombre} className="w-24 h-24" />
-          <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary mt-3">
-            {nombre}
-          </h1>
-          <p className="font-body-md text-body-md text-text-secondary">
-            @{sesion?.username ?? usuarioActualMock.username}
-          </p>
-          {sesion?.ubicacion && (
-            <p className="font-body-sm text-body-sm text-text-secondary flex items-center gap-1">
-              <span className="material-symbols-outlined text-[16px]">location_on</span>
-              {sesion.ubicacion}
-            </p>
-          )}
-          {sesion?.bio && <p className="text-body-sm text-text-secondary mt-1">{sesion.bio}</p>}
-          <span className="mt-2 rounded-full bg-surface-container border border-border-subtle px-3 py-1 font-label-md text-label-md text-text-secondary">
-            Club Gacelas Loja
-          </span>
         </div>
 
         <Contadores
@@ -108,19 +107,19 @@ export function Perfil() {
           siguiendo={siguiendo.length}
         />
 
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="grid grid-cols-2 gap-2 mb-2">
           <Link
             to="/perfil/avatar"
-            className="flex items-center justify-center gap-2 rounded-xl bg-primary-600 hover:bg-primary-700 text-on-primary py-3 font-label-lg text-label-lg"
+            className="forma-boton-c2 flex items-center justify-center gap-1 bg-c2-morado text-on-primary py-3 font-label-lg text-label-lg"
           >
-            <span className="material-symbols-outlined text-[18px]">person</span>
+            <span className="material-symbols-outlined fill text-[18px]">person</span>
             Editar avatar 3D
           </Link>
           <Link
             to="/ajustes"
-            className="flex items-center justify-center gap-2 rounded-xl bg-surface-container border border-border-subtle text-text-primary py-3 font-label-lg text-label-lg"
+            className="forma-boton-c2 flex items-center justify-center gap-1 bg-c2-s2 text-text-primary py-3 font-label-lg text-label-lg"
           >
-            <span className="material-symbols-outlined text-[18px]">settings</span>
+            <span className="material-symbols-outlined fill text-[18px]">settings</span>
             Configuración
           </Link>
         </div>
@@ -128,16 +127,12 @@ export function Perfil() {
         <Link
           to="/perfil/reportes"
           data-testid="ir-reportes"
-          className="tarjeta-c2 mb-6 flex items-center gap-3 p-4"
+          className="forma-boton-c2 mb-4 flex items-center justify-center gap-1 bg-c2-s2 py-3 font-label-lg text-label-lg text-text-primary"
         >
-          <span className="material-symbols-outlined text-c2-violeta">bar_chart</span>
-          <span className="flex-1">
-            <span className="block text-white font-semibold">Mis reportes</span>
-            <span className="block text-[12px] text-c2-muted">
-              Semana, mes y año con comparación y exportación
-            </span>
+          <span className="material-symbols-outlined fill text-[18px] text-c2-violeta">
+            bar_chart
           </span>
-          <span className="material-symbols-outlined text-c2-muted">chevron_right</span>
+          Mis reportes
         </Link>
         <TarjetaRacha />
         <div className="mb-6">

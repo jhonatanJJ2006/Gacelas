@@ -111,7 +111,7 @@ export function DocumentoLegal({ tipo }: { tipo: Tipo }) {
               type="button"
               onClick={volver}
               aria-label="Volver"
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-container text-text-secondary transition-colors hover:text-text-primary ${FOCO}`}
+              className={`flex h-12 w-12 -ml-3 shrink-0 items-center justify-center text-text-primary ${FOCO}`}
             >
               <span className="material-symbols-outlined" aria-hidden="true">
                 arrow_back
@@ -199,7 +199,7 @@ export function DocumentoLegal({ tipo }: { tipo: Tipo }) {
               >
                 <h2
                   id={`titulo-seccion-${i + 1}`}
-                  className="text-xl font-bold text-text-primary print:text-black sm:text-2xl"
+                  className="font-title-md text-title-md text-text-primary print:text-black sm:text-2xl"
                 >
                   {s.titulo}
                 </h2>

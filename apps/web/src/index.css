@@ -94,11 +94,15 @@ body {
 .no-scrollbar {
   scrollbar-width: none;
 }
+.material-symbols-outlined.fill {
+  font-variation-settings: 'FILL' 1;
+}
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
 /* Rediseño C2 Deporte cinetico: titulares display en Anton, cursiva y mayusculas. */
+.font-title-md,
 .font-headline-sm,
 .font-headline-md,
 .font-headline-lg,
@@ -108,9 +112,10 @@ body {
 .font-metric-huge,
 .font-display {
   font-style: italic;
+  /* Anton no trae cursiva: se sintetiza igual que Compose (FontStyle.Italic) en Android. */
+  font-synthesis: style;
   font-weight: 400;
   letter-spacing: 0.03em;
-  text-transform: uppercase;
 }
 body {
   background: #0c1322;
@@ -144,9 +149,31 @@ body {
     background: radial-gradient(50% 50% at 50% 50%, #c084fc55, transparent 70%);
     transform: skewX(-20deg);
   }
+  /* Android FormaBotonC2: esquinas superior izquierda e inferior derecha cortadas 10dp. */
+  .forma-boton-c2 {
+    clip-path: polygon(
+      10px 0,
+      100% 0,
+      100% calc(100% - 10px),
+      calc(100% - 10px) 100%,
+      0 100%,
+      0 10px
+    );
+  }
   .tarjeta-c2 {
-    @apply bg-c2-card border border-c2-linea;
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
+    /* Android FormaC2: sin borde, solo la esquina inferior derecha cortada 18dp. */
+    @apply bg-c2-card;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+  }
+  /* Pastilla de filtro (Android Pastilla): r2, violeta activa con texto oscuro, mayusculas cursiva. */
+  .pastilla-c2 {
+    @apply inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap bg-c2-s2 px-4 py-2 text-[12px] font-black uppercase italic leading-4 tracking-[0.02em] text-text-secondary;
+    border-radius: 2px;
+    font-synthesis: style;
+  }
+  .pastilla-c2[aria-pressed='true'],
+  .pastilla-c2[aria-selected='true'] {
+    @apply bg-c2-violeta text-[#0c1322];
   }
   .pildora-c2 {
     @apply inline-flex items-center gap-1 px-2.5 py-1 bg-c2-s2 text-[12px] font-semibold text-text-primary;
@@ -162,17 +189,67 @@ body {
   .valor-c2 {
     font-family: 'Anton', 'Archivo', sans-serif;
     letter-spacing: 0.03em;
+    font-synthesis: style;
     @apply italic text-[22px] leading-none whitespace-nowrap;
   }
+  .boton-c2,
+  .boton-c2-secundario,
+  .boton-c2-chico {
+    font-synthesis: style;
+  }
+  /* Boton primario (Android BotonPrimario): morado solido, esquinas cortadas (arriba-izq y abajo-der 10px)
+     y sombra solida violeta desplazada 5px. */
   .boton-c2 {
+    @apply relative isolate flex w-full items-center justify-center gap-2 h-14 text-white font-black italic uppercase text-[16px] transition-transform active:translate-x-[2px] active:translate-y-[2px];
+    --boton-c2-fondo: #7b1fa2;
+    --boton-c2-sombra: #c084fc;
+  }
+  .boton-c2::before,
+  .boton-c2::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(
+      10px 0,
+      100% 0,
+      100% calc(100% - 10px),
+      calc(100% - 10px) 100%,
+      0 100%,
+      0 10px
+    );
+  }
+  .boton-c2::before {
+    z-index: -1;
+    background: var(--boton-c2-fondo);
+  }
+  .boton-c2::after {
+    z-index: -2;
+    transform: translate(5px, 5px);
+    background: var(--boton-c2-sombra);
+  }
+  .boton-c2:disabled::after,
+  .boton-c2[aria-disabled='true']::after {
+    display: none;
+  }
+  /* Deshabilitado como Material3 en Android: fondo onSurface 12% y texto 38%. */
+  .boton-c2:disabled {
+    color: rgb(255 255 255 / 0.38);
+    cursor: not-allowed;
+  }
+  .boton-c2:disabled::before {
+    background: rgb(220 226 248 / 0.12);
+  }
+  /* Boton de la landing (solo web, sin equivalente en la app): corte en paralelogramo y degradado. */
+  .boton-landing {
     @apply relative flex w-full items-center justify-center gap-2 h-14 text-white font-black italic uppercase text-[16px] tracking-wide transition-transform active:translate-x-[2px] active:translate-y-[2px];
+    font-synthesis: style;
     background: linear-gradient(90deg, #7b1fa2, #a855f7);
     clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
     filter: drop-shadow(4px 4px 0 #c084fc);
   }
   .boton-c2-peligro {
-    background: linear-gradient(90deg, #9d174d, #be185d);
-    filter: drop-shadow(4px 4px 0 #f472b6);
+    --boton-c2-fondo: #be185d;
+    --boton-c2-sombra: #f472b6;
   }
   .boton-c2-secundario {
     @apply relative flex w-full items-center justify-center gap-2 h-12 bg-c2-s2 text-white font-black italic uppercase text-[15px];

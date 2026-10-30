@@ -136,7 +136,7 @@ export const rutasMock: Ruta[] = [
   {
     id: '1',
     nombre: 'Parque Jipiro',
-    distanciaKm: 5.2,
+    distanciaKm: 1.8,
     dificultad: 'Fácil',
     elevacionM: 45,
     descripcion: 'Ruta panorámica alrededor del Parque Jipiro, ideal para principiantes.',
@@ -146,7 +146,7 @@ export const rutasMock: Ruta[] = [
   {
     id: '2',
     nombre: 'Río Zamora',
-    distanciaKm: 8.5,
+    distanciaKm: 2.2,
     dificultad: 'Moderado',
     elevacionM: 120,
     descripcion: 'Ruta junto al río con algunas subidas moderadas.',
@@ -155,7 +155,7 @@ export const rutasMock: Ruta[] = [
   {
     id: '3',
     nombre: 'Cerro Villonaco',
-    distanciaKm: 12.3,
+    distanciaKm: 4.4,
     dificultad: 'Difícil',
     elevacionM: 380,
     descripcion: 'Ruta de montaña desafiante con vistas espectaculares de Loja.',

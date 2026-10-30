@@ -23,9 +23,9 @@ function Fila({
   children: ReactNode
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 px-4 py-3 bg-surface-container rounded-xl">
+    <div className="flex items-center justify-between gap-3 px-4 py-3.5">
       <div className="flex items-center gap-3 min-w-0">
-        <span className="w-9 h-9 rounded-lg bg-surface-container-highest flex items-center justify-center material-symbols-outlined text-[20px] text-text-secondary">
+        <span className="w-[34px] h-[34px] shrink-0 rounded bg-c2-s2 flex items-center justify-center material-symbols-outlined fill text-[18px] text-primary-500">
           {icono}
         </span>
         <div className="min-w-0">
@@ -42,10 +42,12 @@ function Enlace({ to, icono, texto }: { to: string; icono: string; texto: string
   return (
     <Link
       to={to}
-      className="flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl hover:bg-surface-container-high transition-colors"
+      className="flex items-center justify-between px-4 py-3.5 hover:bg-white/5 transition-colors"
     >
       <div className="flex items-center gap-3">
-        <span className="material-symbols-outlined text-text-secondary">{icono}</span>
+        <span className="w-[34px] h-[34px] shrink-0 rounded bg-c2-s2 flex items-center justify-center material-symbols-outlined fill text-[18px] text-primary-500">
+          {icono}
+        </span>
         <span className="font-body-md text-body-md text-text-primary">{texto}</span>
       </div>
       <span className="material-symbols-outlined text-text-secondary">chevron_right</span>
@@ -67,10 +69,12 @@ function Boton({
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center justify-between px-4 py-3 bg-surface-container rounded-xl hover:bg-surface-container-high transition-colors"
+      className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-white/5 transition-colors"
     >
       <div className="flex items-center gap-3">
-        <span className="material-symbols-outlined text-text-secondary">{icono}</span>
+        <span className="w-[34px] h-[34px] shrink-0 rounded bg-c2-s2 flex items-center justify-center material-symbols-outlined fill text-[18px] text-primary-500">
+          {icono}
+        </span>
         <span className="font-body-md text-body-md text-text-primary">{texto}</span>
       </div>
       <span className="text-body-sm text-text-secondary flex items-center">
@@ -95,7 +99,6 @@ export function AjustesPreferencias() {
   const nombre = sesion?.nombre ?? 'Corredor'
   const m = ajustes.unidadesMetricas
   const ritmo = ajustes.ritmoObjetivoSeg
-  const ritmoTxt = `${String(Math.floor(ritmo / 60)).padStart(2, '0')}:${String(ritmo % 60).padStart(2, '0')}`
 
   return (
     <PantallaAjustes titulo="Ajustes" subtitulo="Club Gacelas Loja • 2,100 msnm" volverA="/perfil">
@@ -152,19 +155,26 @@ export function AjustesPreferencias() {
           titulo="Objetivo de ritmo (Pacer)"
           descripcion="Ritmo objetivo predeterminado"
         >
-          <select
-            aria-label="Ritmo objetivo"
-            value={ritmo}
-            onChange={(e) => void actualizar({ ritmoObjetivoSeg: Number(e.target.value) })}
-            className="rounded-lg bg-surface-container-highest text-primary font-mono px-2 py-1 border border-border-subtle"
-          >
-            {Array.from({ length: 25 }, (_, i) => 210 + i * 15).map((s) => (
-              <option key={s} value={s}>
-                {`${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} /${m ? 'km' : 'mi'}`}
-              </option>
-            ))}
-          </select>
-          <span className="sr-only">{ritmoTxt}</span>
+          {/* Android Paso: menos / valor / mas en pasos de 15 s (3:00 a 10:00). */}
+          <div className="flex items-center" data-testid="paso-ritmo">
+            <button
+              aria-label="Bajar ritmo objetivo"
+              onClick={() => void actualizar({ ritmoObjetivoSeg: Math.max(180, ritmo - 15) })}
+              className="w-10 h-10 flex items-center justify-center text-primary"
+            >
+              <span className="material-symbols-outlined">remove</span>
+            </button>
+            <span className="text-label-md font-semibold text-primary whitespace-nowrap">
+              {`${Math.floor(ritmo / 60)}:${String(ritmo % 60).padStart(2, '0')} /${m ? 'km' : 'mi'}`}
+            </span>
+            <button
+              aria-label="Subir ritmo objetivo"
+              onClick={() => void actualizar({ ritmoObjetivoSeg: Math.min(600, ritmo + 15) })}
+              className="w-10 h-10 flex items-center justify-center text-primary"
+            >
+              <span className="material-symbols-outlined">add</span>
+            </button>
+          </div>
         </Fila>
         <Fila
           icono="motion_photos_paused"
@@ -193,18 +203,18 @@ export function AjustesPreferencias() {
           titulo="Cuenta regresiva de inicio"
           descripcion="Tiempo antes de arrancar el GPS"
         >
-          <select
+          <button
             aria-label="Cuenta regresiva"
-            value={ajustes.cuentaRegresivaSeg}
-            onChange={(e) => void actualizar({ cuentaRegresivaSeg: Number(e.target.value) })}
-            className="rounded-lg bg-surface-container-highest text-success font-mono px-2 py-1 border border-border-subtle"
+            data-testid="cuenta-regresiva"
+            onClick={() => {
+              const op = [0, 3, 5, 10]
+              const i = op.indexOf(ajustes.cuentaRegresivaSeg)
+              void actualizar({ cuentaRegresivaSeg: op[(i + 1) % op.length] })
+            }}
+            className="rounded-lg bg-surface-container-highest text-secondary-500 text-label-md font-semibold px-2.5 py-1 whitespace-nowrap"
           >
-            {[0, 3, 5, 10].map((n) => (
-              <option key={n} value={n}>
-                {n === 0 ? 'Sin cuenta' : `${n} seg`}
-              </option>
-            ))}
-          </select>
+            {ajustes.cuentaRegresivaSeg === 0 ? 'Sin cuenta' : `${ajustes.cuentaRegresivaSeg} seg`}
+          </button>
         </Fila>
       </Seccion>
 
@@ -217,7 +227,7 @@ export function AjustesPreferencias() {
           <button
             onClick={() => void actualizar({ modoOscuro: !ajustes.modoOscuro })}
             aria-label="Cambiar tema"
-            className="px-3 py-1 rounded-lg bg-surface-container-highest text-primary text-label-md font-semibold"
+            className="text-primary text-label-md font-semibold"
           >
             {ajustes.modoOscuro ? 'Oscuro' : 'Claro'}
           </button>
@@ -227,15 +237,13 @@ export function AjustesPreferencias() {
           titulo="Idioma de la aplicación"
           descripcion="Configuración regional"
         >
-          <select
+          <button
             aria-label="Idioma"
-            value={ajustes.idioma}
-            onChange={(e) => void actualizar({ idioma: e.target.value as 'es-EC' | 'en' })}
-            className="rounded-lg bg-surface-container-highest text-text-primary px-2 py-1 border border-border-subtle"
+            onClick={() => void actualizar({ idioma: ajustes.idioma === 'en' ? 'es-EC' : 'en' })}
+            className="text-label-md font-semibold text-text-primary whitespace-nowrap"
           >
-            <option value="es-EC">Español (Ecuador)</option>
-            <option value="en">English</option>
-          </select>
+            {ajustes.idioma === 'en' ? 'English' : 'Español (Ecuador)'}
+          </button>
         </Fila>
       </Seccion>
 
@@ -245,18 +253,25 @@ export function AjustesPreferencias() {
           titulo="Meta semanal"
           descripcion="Carreras por semana para mantener la racha"
         >
-          <select
-            aria-label="Meta semanal de carreras"
-            value={ajustes.metaSemanal}
-            onChange={(e) => void actualizar({ metaSemanal: Number(e.target.value) })}
-            className="rounded-lg bg-surface-container-highest text-text-primary px-2 py-1 border border-border-subtle"
-          >
-            {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center" aria-label="Meta semanal de carreras" role="group">
+            <button
+              aria-label="Menos carreras por semana"
+              onClick={() => void actualizar({ metaSemanal: Math.max(1, ajustes.metaSemanal - 1) })}
+              className="w-10 h-10 flex items-center justify-center text-primary-500"
+            >
+              <span className="material-symbols-outlined">remove</span>
+            </button>
+            <span className="font-title-md text-title-md text-text-primary">
+              {ajustes.metaSemanal}
+            </span>
+            <button
+              aria-label="Más carreras por semana"
+              onClick={() => void actualizar({ metaSemanal: Math.min(7, ajustes.metaSemanal + 1) })}
+              className="w-10 h-10 flex items-center justify-center text-primary-500"
+            >
+              <span className="material-symbols-outlined">add</span>
+            </button>
+          </div>
         </Fila>
       </Seccion>
 

@@ -9,7 +9,7 @@ describe('acceso y rutas protegidas', () => {
 
   it('sin sesion, una ruta protegida redirige a bienvenida', async () => {
     renderRuta('/perfil')
-    expect(await screen.findByRole('button', { name: /crear cuenta/i })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /empezar/i })).toBeInTheDocument()
   })
 
   it('Saltar lleva a inicio de sesion', async () => {
@@ -37,11 +37,11 @@ describe('acceso y rutas protegidas', () => {
   it('registro enlaza terminos y privacidad', async () => {
     renderRuta('/registro')
     await screen.findByLabelText('Acepto los Términos y la Política de privacidad')
-    expect(screen.getByRole('link', { name: 'Términos' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Ver términos' })).toHaveAttribute(
       'href',
       '/legal/terminos'
     )
-    expect(screen.getByRole('link', { name: 'Política de privacidad' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Ver privacidad' })).toHaveAttribute(
       'href',
       '/legal/privacidad'
     )

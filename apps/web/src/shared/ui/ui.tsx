@@ -132,10 +132,11 @@ export function Interruptor({
     >
       <span
         aria-hidden="true"
-        className={`relative w-12 h-7 rounded-full transition-colors ${activo ? 'bg-primary-600' : 'bg-surface-container-highest'}`}
+        className={`relative block w-[52px] h-8 rounded-full border-2 transition-colors ${activo ? 'bg-primary-600 border-primary-600' : 'bg-surface-container-highest border-border-subtle'}`}
       >
+        {/* Switch Material 3 como Android: pulgar grande blanco activo, pequeno gris inactivo. */}
         <span
-          className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform ${activo ? 'translate-x-5' : ''}`}
+          className={`absolute top-1/2 -translate-y-1/2 rounded-full transition-all ${activo ? 'left-[22px] w-6 h-6 bg-white' : 'left-1.5 w-4 h-4 bg-text-secondary/60'}`}
         />
       </span>
     </button>

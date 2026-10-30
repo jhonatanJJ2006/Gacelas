@@ -88,7 +88,7 @@ export function PrivacidadUbicacion() {
             <circle cx="180" cy="22" r="7" fill="#68DBA9" />
           </svg>
           {ajustes.ocultarHogar && (
-            <span className="absolute left-3 top-3 -skew-x-12 bg-c2-violeta px-3 py-1 text-[12px] font-black italic uppercase text-[#0C1322]">
+            <span className="absolute left-3 top-3 bg-c2-violeta px-2.5 py-1 text-[12px] font-bold uppercase text-[#0C1322]">
               Casa · {radio >= 1000 ? `${radio / 1000} km` : `${radio} m`}
             </span>
           )}
@@ -106,7 +106,7 @@ export function PrivacidadUbicacion() {
                   key={r}
                   aria-pressed={ajustes.radioHogarM === r}
                   onClick={() => void actualizar({ radioHogarM: r })}
-                  className={`flex-1 h-9 -skew-x-12 text-[12px] font-black italic uppercase ${ajustes.radioHogarM === r ? 'bg-c2-violeta text-[#0C1322]' : 'bg-c2-s2 text-white border border-c2-linea'}`}
+                  className={`pastilla-c2 ${ajustes.radioHogarM === r ? '!bg-c2-violeta !text-[#0C1322]' : ''}`}
                 >
                   {r >= 1000 ? `${r / 1000} km` : `${r} m`}
                 </button>
@@ -154,7 +154,7 @@ export function PrivacidadUbicacion() {
                 aria-checked={activo}
                 title={o.descripcion}
                 onClick={() => void actualizar({ visibilidad: o.id })}
-                className={`h-9 px-4 -skew-x-12 text-[12px] font-black italic uppercase ${activo ? 'bg-c2-violeta text-[#0C1322]' : 'bg-c2-s2 text-white border border-c2-linea'}`}
+                className={`pastilla-c2 ${activo ? '!bg-c2-violeta !text-[#0C1322]' : ''}`}
               >
                 {o.titulo}
               </button>

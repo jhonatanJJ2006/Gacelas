@@ -18,15 +18,15 @@ import { useIdentidad } from '../../identidad/api'
 function Encabezado({ titulo }: { titulo: string }) {
   const navigate = useNavigate()
   return (
-    <header className="flex items-center gap-3 px-margin py-4">
+    <header className="flex items-center gap-1 px-margin py-4">
       <button
         onClick={() => navigate(-1)}
         aria-label="Volver"
-        className="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-text-primary"
+        className="w-12 h-12 -ml-3 shrink-0 flex items-center justify-center text-text-primary"
       >
         <span className="material-symbols-outlined">arrow_back</span>
       </button>
-      <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
+      <h1 className="flex-1 min-w-0 font-headline-md text-headline-md text-text-primary">
         {titulo}
       </h1>
     </header>
@@ -56,11 +56,13 @@ export function ListaEnVivo() {
         <Link
           to="/comunidad/mapa"
           data-testid="ir-mapa-vivo"
-          className="flex items-center gap-3 p-4 rounded-2xl bg-[#191F2F] border border-[#C084FC]/50"
+          className="tarjeta-c2 flex items-center gap-3 p-4 border border-[#C084FC]/50"
         >
           <span className="w-2.5 h-2.5 rounded-full bg-[#68DBA9]" />
           <span className="flex-1">
-            <span className="block text-text-primary font-semibold">Mapa de corredores</span>
+            <span className="block text-text-primary font-title-md text-title-md">
+              Mapa de corredores
+            </span>
             <span className="block text-body-sm text-text-secondary">
               Quién está visible cerca de ti ahora
             </span>
@@ -69,7 +71,7 @@ export function ListaEnVivo() {
         </Link>
         {sesiones === null && <p className="text-text-secondary">Buscando corredores…</p>}
         {sesiones?.length === 0 && (
-          <div className="bg-surface-container rounded-2xl p-6 text-center text-text-secondary">
+          <div className="tarjeta-c2 p-4 text-text-secondary">
             Nadie a quien sigues está corriendo en vivo ahora.
           </div>
         )}
@@ -79,7 +81,7 @@ export function ListaEnVivo() {
               <Link
                 to={`/comunidad/en-vivo/${s.id}`}
                 data-testid="sesion-en-vivo"
-                className="flex items-center gap-3 min-h-[64px] bg-surface-container border border-border-subtle rounded-2xl p-4"
+                className="tarjeta-c2 flex items-center gap-3 min-h-[64px] p-4"
               >
                 <span className="w-3 h-3 rounded-full bg-danger animate-pulse shrink-0" />
                 <span className="flex-1 min-w-0">

@@ -1,7 +1,7 @@
 // Service worker de Runcity: deja la app y el corredor 3D disponibles sin red despues de la
 // primera visita. Solo atiende navegacion y recursos estaticos del mismo origen; Supabase, /api y
 // el resto de peticiones van directo a la red.
-const VERSION = 'runcity-v1'
+const VERSION = 'runcity-v2'
 const PRECACHE = [
   '/',
   '/index.html',
@@ -17,7 +17,14 @@ self.addEventListener('install', (e) => {
   e.waitUntil(
     caches
       .open(VERSION)
-      .then((c) => c.addAll(PRECACHE))
+      .then(async (c) => {
+        await c.addAll(PRECACHE)
+        // Chunks del build (pantallas con carga diferida); si falta la lista, se sigue igual.
+        const lista = await fetch('/precache.json', { cache: 'no-store' })
+          .then((r) => (r.ok ? r.json() : []))
+          .catch(() => [])
+        await Promise.all(lista.map((u) => c.add(u).catch(() => undefined)))
+      })
       .then(() => self.skipWaiting())
   )
 })

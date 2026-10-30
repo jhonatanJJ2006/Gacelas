@@ -63,8 +63,9 @@ describe('ajustes', () => {
     expect(document.documentElement).toHaveClass('tema-claro')
     await userEvent.click(screen.getByRole('button', { name: 'mi' }))
     await userEvent.click(screen.getByRole('switch', { name: 'Autopausa' }))
-    await userEvent.selectOptions(screen.getByLabelText('Cuenta regresiva'), '5')
-    await userEvent.selectOptions(screen.getByLabelText('Ritmo objetivo'), '300')
+    await userEvent.click(screen.getByRole('button', { name: 'Cuenta regresiva' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Bajar ritmo objetivo' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Bajar ritmo objetivo' }))
     expect(useIdentidad.getState().ajustes).toMatchObject({
       modoOscuro: false,
       unidadesMetricas: false,
@@ -82,7 +83,7 @@ describe('ajustes', () => {
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Cerrar sesión' })
     )
-    expect(await screen.findByText('Corre con la manada de Loja')).toBeInTheDocument()
+    expect(await screen.findByTestId('pantalla-bienvenida')).toBeInTheDocument()
     expect(useIdentidad.getState().sesion).toBeNull()
   })
 

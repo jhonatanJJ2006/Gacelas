@@ -68,11 +68,11 @@ export function EventoEnVivo() {
 
   return (
     <main className="w-full min-h-screen bg-surface contenedor-escritorio lg:max-w-6xl pb-28">
-      <header className="flex items-center gap-3 px-margin py-4 lg:px-0">
+      <header className="flex items-center gap-1 px-margin h-16 bg-bg-secondary mb-4">
         <button
           onClick={() => navigate(`/comunidad/eventos/${id}`)}
           aria-label="Volver"
-          className="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-text-primary"
+          className="w-12 h-12 -ml-3 shrink-0 flex items-center justify-center text-text-primary"
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </button>

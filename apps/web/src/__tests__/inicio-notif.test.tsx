@@ -9,7 +9,7 @@ describe('inicio', () => {
     prepararApp({ carreras: [carreraPrueba({ distanciaKm: 7.5, inicioMs: Date.now() })] })
     renderRuta('/inicio')
     expect(await screen.findByTestId('km-semana')).toHaveTextContent('7.5')
-    expect(screen.getByTestId('racha')).toHaveTextContent('1')
+    expect(screen.getByTestId('insignia-racha')).toHaveTextContent('1 día')
     await userEvent.click(screen.getByRole('link', { name: /empezar a correr/i }))
     expect(await screen.findByText('¿Listo para correr?')).toBeInTheDocument()
   })

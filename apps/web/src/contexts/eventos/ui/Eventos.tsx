@@ -81,59 +81,50 @@ export function Eventos() {
   return (
     <div className="flex flex-col w-full contenedor-escritorio">
       <div className="px-margin pt-space-md pb-space-sm lg:px-0 lg:pb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Link
-              to="/comunidad"
-              aria-label="Volver al feed"
-              className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary"
-            >
-              <span className="material-symbols-outlined">arrow_back</span>
-            </Link>
-            <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
-              Eventos
-            </h1>
-          </div>
-          <div className="flex items-center gap-2 ml-auto mr-2">
-            <Link
-              to="/comunidad/clubes"
-              className="h-10 px-3 rounded-full bg-surface-container text-text-primary flex items-center gap-1"
-              data-testid="ir-clubes"
-            >
-              <span className="material-symbols-outlined text-[20px]">groups</span>Clubes
-            </Link>
-            <button
-              onClick={() => setVista(vista === 'lista' ? 'calendario' : 'lista')}
-              aria-pressed={vista === 'calendario'}
-              data-testid="ver-calendario"
-              aria-label={vista === 'lista' ? 'Ver calendario' : 'Ver lista'}
-              className="w-10 h-10 rounded-full bg-surface-container text-text-primary flex items-center justify-center"
-            >
-              <span className="material-symbols-outlined">
-                {vista === 'lista' ? 'calendar_month' : 'list'}
-              </span>
-            </button>
-          </div>
+        {/* Android: titulo EVENTOS headlineLg y acciones como IconButton; crear en circulo violeta. */}
+        <div className="flex items-center mb-4">
+          <h1 className="flex-1 font-headline-lg text-headline-lg leading-9 uppercase text-text-primary">
+            Eventos
+          </h1>
+          <Link
+            to="/comunidad/clubes"
+            aria-label="Clubes"
+            className="w-12 h-12 rounded-full text-text-primary flex items-center justify-center"
+            data-testid="ir-clubes"
+          >
+            <span className="material-symbols-outlined fill">groups</span>
+          </Link>
+          <button
+            onClick={() => setVista(vista === 'lista' ? 'calendario' : 'lista')}
+            aria-pressed={vista === 'calendario'}
+            data-testid="ver-calendario"
+            aria-label={vista === 'lista' ? 'Ver calendario' : 'Ver lista'}
+            className="w-12 h-12 rounded-full text-text-primary flex items-center justify-center"
+          >
+            <span className="material-symbols-outlined fill">
+              {vista === 'lista' ? 'calendar_month' : 'list'}
+            </span>
+          </button>
           <button
             onClick={() => {
               setError(null)
               setCreando(true)
             }}
             aria-label="Crear evento"
-            className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-on-primary hover:bg-primary-700 transition-colors shadow-lg"
+            className="w-12 h-12 rounded-full bg-primary-600 flex items-center justify-center text-text-primary"
           >
             <span className="material-symbols-outlined">add</span>
           </button>
         </div>
 
-        <div className="flex gap-2 mb-4" role="tablist">
+        <div className="flex gap-2 mb-3" role="tablist">
           {PESTANAS_EVENTOS.map((p) => (
             <button
               key={p}
               role="tab"
               aria-selected={pestana === p}
               onClick={() => setPestana(p)}
-              className={`px-4 py-2 rounded-full font-label-md text-label-md ${pestana === p ? 'bg-primary-600 text-on-primary' : 'bg-surface-container text-text-secondary hover:text-text-primary'}`}
+              className="pastilla-c2"
             >
               {p}
             </button>
@@ -145,7 +136,7 @@ export function Eventos() {
               key={t}
               aria-pressed={tipo === t}
               onClick={() => setTipo(tipo === t ? null : t)}
-              className={`px-3 py-1.5 rounded-lg border text-label-md whitespace-nowrap ${tipo === t ? 'border-primary-600 bg-primary-600/15 text-primary' : 'border-border-subtle text-text-secondary'}`}
+              className={`px-3 py-1.5 rounded-lg border text-label-md whitespace-nowrap ${tipo === t ? 'border-primary-600 text-primary-500' : 'border-border-subtle text-text-secondary'}`}
             >
               {TIPOS_EVENTO[t]}
             </button>

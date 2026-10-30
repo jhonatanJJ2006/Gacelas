@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { nuevoRecord } from '../../../shared/kernel/estadisticas'
 import { rachaTrasCarrera } from '../../../shared/kernel/rachas'
 import { recortarExtremos, SITIO, type DatosCompartir } from '../../../shared/lib/compartir'
@@ -74,7 +74,25 @@ export function ResumenPostCarrera() {
 
   // Tras guardar se va a Perfil; no se redirige a Inicio al reiniciar la carrera.
   if (saliendo.current) return null
-  if (e.fase !== 'terminada') return <Navigate to="/inicio" replace />
+  if (e.fase !== 'terminada')
+    return (
+      <div
+        className="pb-6 px-margin pt-8 flex flex-col items-center gap-4 text-center"
+        data-testid="resumen-vacio"
+      >
+        <h1 className="font-title-md text-title-md text-text-primary">Resumen de Carrera</h1>
+        <p className="font-body-lg text-body-lg text-text-secondary">
+          No hay datos de carrera para guardar
+        </p>
+        <p className="font-body-sm text-body-sm text-text-secondary">Loja, Ecuador</p>
+        <Link
+          to="/inicio"
+          className="forma-boton-c2 bg-primary-600 text-on-primary px-6 h-12 inline-flex items-center font-label-lg"
+        >
+          Volver al inicio
+        </Link>
+      </div>
+    )
 
   const guardar = async () => {
     setGuardando(true)
