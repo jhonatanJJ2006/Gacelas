@@ -19,7 +19,7 @@ export function AppLayout() {
   const navItems = [
     { path: '/inicio', label: 'Inicio', icon: 'home' },
     { path: '/rutas', label: 'Rutas', icon: 'map' },
-    { path: '/correr', label: '', icon: 'play_circle', isMain: true },
+    { path: '/correr', label: '', icon: 'play_arrow', isMain: true },
     { path: '/comunidad', label: 'Comunidad', icon: 'groups' },
     { path: '/perfil', label: 'Perfil', icon: 'person' },
   ]
@@ -35,14 +35,14 @@ export function AppLayout() {
               {sesion?.foto ? (
                 <FotoPerfil foto={sesion.foto} nombre={sesion.nombre} className="h-8 w-8" />
               ) : (
-                <div className="h-8 w-8 bg-primary-600 rounded-full flex items-center justify-center">
+                <div className="h-8 w-8 bg-[#E9D5FF] rounded-full flex items-center justify-center">
                   <span className="text-on-primary font-bold text-sm">GL</span>
                 </div>
               )}
             </Link>
             <div className="flex flex-col min-w-0">
-              <span className="font-label-md text-label-md text-primary truncate uppercase tracking-wider">
-                Runcity
+              <span className="font-label-md text-label-md text-[#E9D5FF] truncate uppercase">
+                Runcity Loja
               </span>
             </div>
           </div>
@@ -52,7 +52,12 @@ export function AppLayout() {
               aria-label={sinLeer ? `Notificaciones (${sinLeer} sin leer)` : 'Notificaciones'}
               className="relative w-12 h-12 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-container active:scale-95 transition-all"
             >
-              <span className="material-symbols-outlined text-[24px]">notifications</span>
+              <span
+                className="material-symbols-outlined text-[24px]"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                notifications
+              </span>
               {sinLeer > 0 && (
                 <span
                   data-testid="punto-notificaciones"
@@ -80,8 +85,13 @@ export function AppLayout() {
                 aria-label="Correr"
                 className="flex flex-col items-center justify-center -mt-8"
               >
-                <div className="w-14 h-14 rounded-full bg-primary-600 shadow-lg flex items-center justify-center text-on-primary active:scale-95 transition-transform">
-                  <span className="material-symbols-outlined text-[32px]">{item.icon}</span>
+                <div className="w-14 h-14 rounded-full bg-[#E9D5FF] shadow-lg flex items-center justify-center text-on-primary active:scale-95 transition-transform">
+                  <span
+                    className="material-symbols-outlined text-[32px]"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    {item.icon}
+                  </span>
                 </div>
               </Link>
             ) : (
@@ -90,11 +100,16 @@ export function AppLayout() {
                 to={item.path}
                 className={`flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors ${
                   isActive(item.path)
-                    ? 'text-primary'
+                    ? 'text-[#E9D5FF]'
                     : 'text-text-secondary hover:text-text-primary'
                 }`}
               >
-                <span className="material-symbols-outlined text-[24px]">{item.icon}</span>
+                <span
+                  className="material-symbols-outlined text-[24px]"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  {item.icon}
+                </span>
                 <span className="font-label-md text-label-md">{item.label}</span>
               </Link>
             )

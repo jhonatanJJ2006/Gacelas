@@ -465,7 +465,7 @@ function LlamadaFinal() {
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className={`${FOCO_CONTENEDOR} w-full sm:w-auto`}>
-              <Link to="/registro" className="boton-c2 focus-visible:outline-none sm:px-10">
+              <Link to="/registro" className="boton-landing focus-visible:outline-none sm:px-10">
                 Crear cuenta
               </Link>
             </div>
@@ -583,7 +583,7 @@ export function Landing() {
                 <div className={`${FOCO_CONTENEDOR} w-full sm:w-auto`}>
                   <Link
                     to="/registro"
-                    className="boton-c2 whitespace-nowrap focus-visible:outline-none sm:px-10"
+                    className="boton-landing whitespace-nowrap focus-visible:outline-none sm:px-10"
                   >
                     Crear cuenta
                     <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
