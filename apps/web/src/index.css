@@ -202,6 +202,27 @@ body {
 .landing-aparecer {
   animation: landing-subir 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+.landing-retraso-1 {
+  animation-delay: 0.08s;
+}
+.landing-retraso-2 {
+  animation-delay: 0.16s;
+}
+.landing-retraso-3 {
+  animation-delay: 0.26s;
+}
+/* El mapa del hero entra con un leve zoom, como el fondo del login de la app. */
+@keyframes landing-mapa-entrar {
+  from {
+    transform: scale(1.06);
+  }
+  to {
+    transform: none;
+  }
+}
+.landing-mapa img {
+  animation: landing-mapa-entrar 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
 .landing-panel {
   transition:
     border-color 0.2s ease,
@@ -215,7 +236,8 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-aparecer {
+  .landing-aparecer,
+  .landing-mapa img {
     animation: none;
   }
   .landing-panel,

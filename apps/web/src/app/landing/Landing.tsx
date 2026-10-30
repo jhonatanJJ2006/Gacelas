@@ -47,10 +47,26 @@ const PRIVACIDAD = [
 
 // Lo que la app hace hoy, en corto, para el hero.
 const RESUMEN = [
-  'GPS en cada carrera',
-  'Rutas reales de Loja',
-  'Mapa sin conexión (Android)',
-  'Eventos y clubes',
+  { icono: 'my_location', texto: 'GPS en cada carrera' },
+  { icono: 'route', texto: 'Rutas reales de Loja' },
+  { icono: 'offline_pin', texto: 'Mapa sin conexión (Android)' },
+  { icono: 'groups', texto: 'Eventos y clubes' },
+] as const
+
+// Una de las 26 rutas oficiales (docs/RUTAS-LOJA.md), en la misma zona del mapa del hero.
+const RUTA_DESTACADA = {
+  nombre: 'Centro histórico de Loja',
+  tipo: 'Urbana',
+  km: '1.55',
+  desnivel: '30 m',
+  dificultad: 'Fácil',
+} as const
+
+// Cifras que salen de docs/RUTAS-LOJA.md, sin inventar usuarios ni opiniones.
+const DATOS_REALES = [
+  { valor: '26', texto: 'rutas oficiales' },
+  { valor: '0.20–10.19', texto: 'km por ruta' },
+  { valor: '628 m', texto: 'de desnivel en el Villonaco' },
 ] as const
 
 const DIAS = [
@@ -117,16 +133,19 @@ function PuntosRuta({ datos }: { datos: DatosMapa }) {
   )
 }
 
-/** Mapa nocturno del centro de Loja (datos OSM) con una ruta, la manada y el corredor en vivo. */
+/**
+ * Mapa nocturno del centro de Loja (datos OSM) con una ruta, la manada y el corredor en vivo.
+ * En movil va de fondo detras del titulo (como el login de la app); en escritorio, a la derecha.
+ */
 function EscenaRuta() {
   return (
-    <figure className="mx-auto w-full max-w-[480px]">
+    <figure className="pointer-events-none absolute inset-x-0 top-0 -z-0 mx-auto w-full max-w-[560px] lg:pointer-events-auto lg:relative lg:z-auto lg:order-2 lg:max-w-[460px]">
       <div
         role="img"
         aria-label="Mapa del centro de Loja con calles y edificios, una ruta de carrera desde la Puerta de la Ciudad, corredores de la manada y uno compartiendo en vivo"
         data-testid="landing-escena"
-        className="relative w-full overflow-hidden border border-c2-linea bg-surface"
-        style={{ aspectRatio: '4 / 5', clipPath: CORTE_GRANDE }}
+        className="landing-mapa relative w-full overflow-hidden bg-surface opacity-50 lg:border lg:border-c2-linea lg:opacity-100 lg:[clip-path:var(--corte)]"
+        style={{ aspectRatio: '4 / 5', ['--corte' as string]: CORTE_GRANDE }}
       >
         <img
           src="/images/landing-mapa-hero.webp"
@@ -139,27 +158,63 @@ function EscenaRuta() {
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-surface/70 via-transparent to-transparent"
+          className="absolute inset-0 bg-gradient-to-b from-surface/60 via-surface/20 to-surface lg:bg-gradient-to-t lg:from-surface/70 lg:via-transparent lg:to-transparent"
         />
-        <PuntosRuta datos={MAPAS_LANDING.hero} />
-        <div className="absolute bottom-[5%] left-[5%] border border-c2-linea bg-c2-card/90 px-3 py-2.5 backdrop-blur-sm sm:px-4 sm:py-3">
-          <p className="flex items-center gap-2 text-xs font-bold text-c2-menta">
-            <span className="h-2 w-2 rounded-full bg-secondary-500"></span>
-            En vivo
-          </p>
-          <p className="valor-c2 mt-1.5 text-[28px] text-text-primary sm:text-[34px]">
-            5.23{' '}
-            <span className="font-sans text-sm font-semibold not-italic text-c2-muted">km</span>
-          </p>
-          <p className="mt-1 hidden text-xs text-c2-muted sm:block sm:text-sm">
-            28:34, 5:28 por km
-          </p>
+        <div className="hidden lg:contents">
+          <PuntosRuta datos={MAPAS_LANDING.hero} />
         </div>
+        <p className="absolute right-3 top-3 hidden items-center gap-2 rounded-full border border-c2-linea bg-surface/90 px-3 py-1 text-xs font-bold text-c2-menta backdrop-blur-sm lg:flex">
+          <span className="h-2 w-2 rounded-full bg-secondary-500"></span>
+          Así se ve compartir en vivo
+        </p>
       </div>
-      <figcaption className="mt-2 text-right text-xs text-c2-muted">
+      <figcaption className="mt-2 hidden text-right text-xs text-c2-muted lg:block">
         Mapa: © colaboradores de OpenStreetMap
       </figcaption>
     </figure>
+  )
+}
+
+/** Tarjeta con los datos reales de una ruta oficial, estilo tarjeta C2 de la app. */
+function TarjetaRuta() {
+  const r = RUTA_DESTACADA
+  return (
+    <div className="tarjeta-c2 landing-aparecer landing-retraso-3 relative p-4 backdrop-blur-sm sm:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="etiqueta-c2 flex items-center gap-1.5 text-primary-400">
+            <span aria-hidden="true" className="material-symbols-outlined text-[14px]">
+              verified
+            </span>
+            Ruta oficial
+          </p>
+          <p className="mt-1 truncate font-semibold text-text-primary">{r.nombre}</p>
+          <p className="text-sm text-c2-muted">
+            {r.tipo}, {r.dificultad.toLowerCase()}
+          </p>
+        </div>
+        <span aria-hidden="true" className="material-symbols-outlined text-[28px] text-[#F472B6]">
+          route
+        </span>
+      </div>
+      <dl className="mt-3 grid grid-cols-3 gap-2">
+        <div className="metrica-c2">
+          <dt className="etiqueta-c2">Distancia</dt>
+          <dd className="valor-c2 text-text-primary">
+            {r.km}{' '}
+            <span className="font-sans text-xs font-semibold not-italic text-c2-muted">km</span>
+          </dd>
+        </div>
+        <div className="metrica-c2">
+          <dt className="etiqueta-c2">Desnivel</dt>
+          <dd className="valor-c2 text-text-primary">+{r.desnivel}</dd>
+        </div>
+        <div className="metrica-c2">
+          <dt className="etiqueta-c2">Nivel</dt>
+          <dd className="valor-c2 text-c2-menta">{r.dificultad}</dd>
+        </div>
+      </dl>
+    </div>
   )
 }
 
@@ -196,7 +251,7 @@ function Cabecera() {
           <span className="sm:hidden">Entrar</span>
           <span className="hidden sm:inline">Iniciar sesión</span>
         </Link>
-        <div className={FOCO_CONTENEDOR}>
+        <div className={`hidden sm:block ${FOCO_CONTENEDOR}`}>
           <Link
             to="/registro"
             className="boton-c2-chico whitespace-nowrap px-4 focus-visible:outline-none sm:px-5"
@@ -487,62 +542,96 @@ export function Landing() {
       </a>
       <Cabecera />
       <main id="contenido">
-        <section
-          aria-labelledby="hero-titulo"
-          className="mx-auto grid w-full max-w-6xl gap-10 px-4 pb-16 pt-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:items-center lg:gap-14 lg:px-8 lg:pb-24 lg:pt-12"
-        >
-          <div className="landing-aparecer">
-            <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-primary-400 sm:text-sm">
-              App de running en Loja, Ecuador
-            </p>
-            <h1
-              id="hero-titulo"
-              className="text-balance font-display text-[44px] leading-[1.02] sm:text-6xl lg:text-[76px]"
-            >
-              Corre con la manada de Loja
-            </h1>
-            <p className="mt-5 max-w-[34rem] text-lg leading-relaxed text-on-surface sm:text-xl">
-              Runcity graba tus carreras con GPS, te lleva por rutas reales de Loja y deja que tu
-              grupo te siga en vivo, solo cuando tú lo decidas.
-            </p>
-            <ul aria-label="Qué hace Runcity" className="mt-6 flex flex-wrap gap-2">
-              {RESUMEN.map((t) => (
-                <li
-                  key={t}
-                  className="border border-c2-linea bg-c2-card/70 px-3 py-1.5 text-sm font-semibold text-on-surface"
-                >
-                  {t}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-              <div className={`${FOCO_CONTENEDOR} w-full sm:w-auto`}>
-                <Link to="/registro" className="boton-c2 focus-visible:outline-none sm:px-12">
-                  Crear cuenta
-                </Link>
+        <section aria-labelledby="hero-titulo" className="relative isolate overflow-hidden">
+          <div aria-hidden="true" className="escenario-c2 absolute inset-0 -z-10 hidden lg:block" />
+          <div className="relative mx-auto grid w-full max-w-6xl gap-10 px-4 pb-14 pt-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)] lg:items-center lg:gap-14 lg:px-8 lg:pb-20 lg:pt-10">
+            <EscenaRuta />
+            <div className="relative">
+              <p className="landing-aparecer mb-3 inline-flex items-center gap-2 rounded-full border border-primary-400/30 bg-surface/70 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary-200 backdrop-blur-sm sm:text-xs">
+                <span aria-hidden="true" className="material-symbols-outlined text-[14px]">
+                  location_on
+                </span>
+                App de running en Loja, Ecuador
+              </p>
+              <h1
+                id="hero-titulo"
+                className="landing-aparecer text-balance font-display text-[52px] leading-[0.95] drop-shadow-[0_2px_12px_rgba(12,19,34,0.8)] sm:text-6xl lg:text-[68px]"
+              >
+                Corre con la <span className="text-primary-400">manada</span> de Loja
+              </h1>
+              <p className="landing-aparecer landing-retraso-1 mt-4 max-w-[32rem] text-base leading-relaxed text-on-surface sm:text-lg">
+                Graba tus carreras con GPS, sal por rutas reales de la ciudad y deja que tu grupo te
+                siga en vivo, solo cuando tú lo decidas.
+              </p>
+              <ul
+                aria-label="Qué hace Runcity"
+                className="landing-aparecer landing-retraso-1 mt-5 grid grid-cols-2 gap-x-4 gap-y-2.5 sm:max-w-[30rem]"
+              >
+                {RESUMEN.map((b) => (
+                  <li key={b.texto} className="flex items-center gap-2 text-sm text-on-surface">
+                    <span
+                      aria-hidden="true"
+                      className="material-symbols-outlined shrink-0 text-[20px] text-primary-400"
+                    >
+                      {b.icono}
+                    </span>
+                    {b.texto}
+                  </li>
+                ))}
+              </ul>
+              <div className="landing-aparecer landing-retraso-2 mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+                <div className={`${FOCO_CONTENEDOR} w-full sm:w-auto`}>
+                  <Link
+                    to="/registro"
+                    className="boton-c2 whitespace-nowrap focus-visible:outline-none sm:px-10"
+                  >
+                    Crear cuenta
+                    <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
+                      arrow_forward
+                    </span>
+                  </Link>
+                </div>
+                <p className="text-center text-sm text-c2-muted sm:text-left">
+                  ¿Ya tienes cuenta?{' '}
+                  <Link
+                    to="/inicio-sesion"
+                    className={`rounded py-2 font-semibold text-text-primary underline underline-offset-4 hover:text-primary-200 ${FOCO}`}
+                  >
+                    Iniciar sesión
+                  </Link>
+                </p>
               </div>
-              <Link
-                to="/inicio-sesion"
-                className={`self-center rounded py-2 font-semibold text-text-primary underline underline-offset-4 hover:text-primary-200 sm:self-auto ${FOCO}`}
+              <div className="mt-6 lg:max-w-[30rem]">
+                <TarjetaRuta />
+              </div>
+              <ul
+                aria-label="Runcity en cifras"
+                className="landing-aparecer landing-retraso-3 mt-5 grid grid-cols-3 gap-3 border-t border-c2-linea pt-4"
               >
-                Ya tengo cuenta
-              </Link>
+                {DATOS_REALES.map((d) => (
+                  <li key={d.texto}>
+                    <p className="valor-c2 text-[20px] text-text-primary sm:text-[24px]">
+                      {d.valor}
+                    </p>
+                    <p className="mt-1 text-xs leading-snug text-c2-muted">{d.texto}</p>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-4 text-xs text-c2-muted">
+                Funciona en el navegador y tiene{' '}
+                <a
+                  href={URL_ANDROID}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`rounded font-semibold text-text-primary underline underline-offset-4 hover:text-primary-200 ${FOCO}`}
+                >
+                  app para Android
+                  <span className="sr-only"> (se abre en una pestaña nueva)</span>
+                </a>
+                . Rutas y mapa: © colaboradores de OpenStreetMap.
+              </p>
             </div>
-            <p className="mt-5 text-center text-sm text-c2-muted sm:text-left">
-              Funciona en el navegador y tiene{' '}
-              <a
-                href={URL_ANDROID}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`rounded font-semibold text-text-primary underline underline-offset-4 hover:text-primary-200 ${FOCO}`}
-              >
-                app para Android
-                <span className="sr-only"> (se abre en una pestaña nueva)</span>
-              </a>
-              .
-            </p>
           </div>
-          <EscenaRuta />
         </section>
         <Funciones />
         <Privacidad />
