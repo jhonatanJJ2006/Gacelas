@@ -74,8 +74,23 @@ describe('landing publica en /', () => {
 
   it('la ilustracion tiene una descripcion accesible', async () => {
     renderRuta('/')
-    const escena = await screen.findByRole('img', { name: /ruta GPS/ })
+    const escena = await screen.findByRole('img', { name: /Mapa de Loja con una ruta/ })
     expect(escena).toHaveAttribute('data-testid', 'landing-escena')
+  })
+
+  it('resume lo que hace la app y enlaza la descarga Android en una pestana nueva', async () => {
+    renderRuta('/')
+    await screen.findByTestId('landing')
+    const resumen = within(screen.getByRole('list', { name: 'Qué hace Runcity' }))
+    expect(resumen.getAllByRole('listitem')).toHaveLength(4)
+    expect(resumen.getByText(/Mapa sin conexión/)).toBeInTheDocument()
+    const android = screen.getAllByRole('link', { name: /android/i })
+    expect(android.length).toBeGreaterThanOrEqual(2)
+    android.forEach((a) => {
+      expect(a).toHaveAttribute('href', 'https://github.com/jhonatanJJ2006/Gacelas/releases/latest')
+      expect(a).toHaveAttribute('target', '_blank')
+      expect(a).toHaveAttribute('rel', 'noopener noreferrer')
+    })
   })
 
   it('con sesion, "/" lleva a inicio', async () => {

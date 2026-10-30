@@ -180,52 +180,7 @@ body {
   }
 }
 
-/* Landing (docs/DESIGN.md: animar solo cuando agrega valor). La ruta se dibuja una vez al cargar y
-   queda fija; con "reducir movimiento" aparece ya terminada. */
-@keyframes trazar-ruta {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-@keyframes aparecer-punto {
-  from {
-    opacity: 0;
-    transform: scale(0.4);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-@keyframes latido-gps {
-  from {
-    opacity: 0.55;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(3);
-  }
-}
-
 @layer components {
-  .ruta-trazo {
-    stroke-dasharray: 1 1;
-    stroke-dashoffset: 1.02;
-    animation: trazar-ruta 2.4s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
-  }
-  .punto-vivo {
-    transform-box: fill-box;
-    transform-origin: center;
-    opacity: 0;
-    animation: aparecer-punto 0.4s ease-out 2.4s forwards;
-  }
-  .punto-vivo-onda {
-    transform-box: fill-box;
-    transform-origin: center;
-    opacity: 0;
-    animation: latido-gps 2s ease-out 2.8s infinite;
-  }
   /* Boton chico de la cabecera, mismo corte angular que .boton-c2. */
   .boton-c2-chico {
     @apply inline-flex h-10 items-center justify-center bg-primary-600 px-5 text-[13px] font-extrabold italic uppercase tracking-wide text-white hover:bg-primary-700;
@@ -233,16 +188,39 @@ body {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ruta-trazo {
-    animation: none;
-    stroke-dashoffset: 0;
+/* Entrada suave del texto del hero y realce de las tarjetas al pasar el puntero. */
+@keyframes landing-subir {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
   }
-  .punto-vivo {
-    animation: none;
+  to {
     opacity: 1;
+    transform: none;
   }
-  .punto-vivo-onda {
+}
+.landing-aparecer {
+  animation: landing-subir 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.landing-panel {
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+@media (hover: hover) {
+  .landing-panel:hover {
+    border-color: rgb(168 85 247 / 0.45);
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-aparecer {
     animation: none;
+  }
+  .landing-panel,
+  .landing-panel:hover {
+    transition: none;
+    transform: none;
   }
 }
