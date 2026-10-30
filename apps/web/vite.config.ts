@@ -3,7 +3,25 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      // Lista de recursos con hash para que el service worker los guarde al instalarse y la
+      // app funcione sin red tambien en pantallas que aun no se visitaron.
+      name: 'lista-precache',
+      apply: 'build',
+      generateBundle(_, bundle) {
+        const archivos = Object.keys(bundle)
+          .filter((f) => f.startsWith('assets/') && /\.(js|css)$/.test(f))
+          .map((f) => '/' + f)
+        this.emitFile({
+          type: 'asset',
+          fileName: 'precache.json',
+          source: JSON.stringify(archivos),
+        })
+      },
+    },
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
