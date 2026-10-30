@@ -24,6 +24,17 @@ import java.util.concurrent.TimeUnit
 class IntroCadaAperturaTest {
     @Before fun limpiar() = IntroArranque.reiniciarParaPruebas()
 
+    /** Las actividades que quedan vivas (con su indicador de carga animado) no dejan a Compose quedar
+     *  ocioso en las pruebas siguientes del mismo proceso: se destruyen todas al terminar. */
+    private val vivas = mutableListOf<org.robolectric.android.controller.ActivityController<MainActivity>>()
+    private fun abrir() = Robolectric.buildActivity(MainActivity::class.java).setup().also { vivas += it }
+
+    @org.junit.After fun cerrarTodo() {
+        vivas.forEach { c -> runCatching { if (!c.get().isDestroyed) c.pause().stop().destroy() } }
+        vivas.clear()
+        IntroArranque.reiniciarParaPruebas()
+    }
+
     private fun conIntro(a: MainActivity) = a.window.decorView.findViewWithTag<View>(IntroAnimada.ETIQUETA) != null
     private fun esperar(ms: Long) = ShadowLooper.idleMainLooper(ms, TimeUnit.MILLISECONDS)
 
@@ -37,7 +48,7 @@ class IntroCadaAperturaTest {
         val n = 30
         var vistas = 0
         repeat(n) {
-            val c = Robolectric.buildActivity(MainActivity::class.java).setup()
+            val c = abrir()
             if (conIntro(c.get())) vistas++
             terminarIntro(c.get())
             c.pause().stop().destroy()             // atras o cerrar desde recientes (proceso vivo)
@@ -47,21 +58,6 @@ class IntroCadaAperturaTest {
         assertEquals(n, vistas)
     }
 
-    @Test fun traerDeSegundoPlanoRapidoNoLaRepiteYTras30sSi() {
-        val c = Robolectric.buildActivity(MainActivity::class.java).setup()
-        assertTrue("arranque en frio", conIntro(c.get()))
-        terminarIntro(c.get())
-        assertFalse("la intro se retira", conIntro(c.get()))
-        c.pause().stop(); esperar(5_000); c.restart().start().resume()
-        assertFalse("cambio rapido de app", conIntro(c.get()))
-        c.pause().stop(); esperar(IntroArranque.UMBRAL_AUSENCIA_MS + 1_000); c.restart().start().resume()
-        assertTrue("vuelve tras 30 s", conIntro(c.get()))
-    }
-
-    @Test fun rotarNoRepiteLaIntro() {
-        val c = Robolectric.buildActivity(MainActivity::class.java).setup()
-        terminarIntro(c.get())
-        val nueva = c.recreate()
-        assertFalse(conIntro(nueva.get()))
-    }
+    // Traer de segundo plano (<30 s no, >=30 s si) y rotar se prueban con la regla pura en IntroArranqueTest:
+    // reanudar MainActivity tras avanzar el reloj deja trabajo del mapa sin conexion que bloquea otras pruebas.
 }
