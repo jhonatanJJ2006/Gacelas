@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { LogoGacelas } from '../../shared/ui/LogoGacelas'
+import { MAPAS_LANDING } from './mapasLanding'
 
 /**
  * Landing publica en "/" (sin sesion). Presenta el producto con lo que de verdad hace hoy
@@ -68,83 +69,97 @@ function Panel({ className = '', children }: { className?: string; children: Rea
   )
 }
 
-// Mismo mapa que el fondo de inicio de sesion (public/images/mapa-login.webp, ~22 KB, diseño C4).
-// Se encuadra el tramo de la ruta; las posiciones de abajo estan en % de ese encuadre.
-const MAPA_FONDO = "url('/images/mapa-login.webp')"
-const MANADA = [
-  { x: 36, y: 32, color: 'bg-primary-400' },
-  { x: 58, y: 50, color: 'bg-[#F472B6]' },
-] as const
+type Punto = { readonly x: number; readonly y: number }
+type DatosMapa = {
+  readonly inicio: Punto
+  readonly fin: Punto
+  readonly manada: readonly Punto[]
+  readonly vivo: Punto
+}
 
-/** Mapa nocturno de Loja con una ruta de carrera, la manada y el corredor en vivo. */
-function EscenaRuta() {
+const COLORES_MANADA = ['bg-primary-400', 'bg-[#F472B6]'] as const
+
+/**
+ * Capa de puntos sobre un mapa generado desde OpenStreetMap (scripts/generar-mapas-landing.py).
+ * Las posiciones salen del mismo script, asi que quedan sobre la ruta real.
+ */
+function PuntosRuta({ datos }: { datos: DatosMapa }) {
+  const en = (p: Punto) => ({ left: `${p.x}%`, top: `${p.y}%` })
   return (
-    <div
-      role="img"
-      aria-label="Mapa de Loja con una ruta de carrera resaltada, corredores de la manada y uno compartiendo en vivo"
-      data-testid="landing-escena"
-      className="relative mx-auto w-full max-w-[480px] overflow-hidden border border-c2-linea bg-surface"
-      style={{ aspectRatio: '4 / 5', clipPath: CORTE_GRANDE }}
-    >
-      <div
+    <>
+      <span
         aria-hidden="true"
-        className="absolute inset-0 bg-no-repeat"
-        style={{
-          backgroundImage: MAPA_FONDO,
-          backgroundSize: '100% auto',
-          backgroundPosition: '50% 43%',
-        }}
+        className="absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-[#F472B6] bg-surface"
+        style={en(datos.inicio)}
       />
-      {/* Manzanas tenues para que se lea como mapa a cualquier tamaño. */}
-      <svg
+      <span
         aria-hidden="true"
-        focusable="false"
-        className="absolute inset-0 h-full w-full opacity-[0.07]"
-      >
-        <defs>
-          <pattern
-            id="landing-manzanas"
-            width="56"
-            height="44"
-            patternUnits="userSpaceOnUse"
-            patternTransform="rotate(-8)"
-          >
-            <path d="M0 0H56M0 0V44" fill="none" stroke="#E9D5FF" strokeWidth="1" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#landing-manzanas)" />
-      </svg>
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-t from-surface/80 via-transparent to-surface/30"
+        className="absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-surface bg-[#F472B6]"
+        style={en(datos.fin)}
       />
-      {MANADA.map((m) => (
+      {datos.manada.map((m, i) => (
         <span
           key={`${m.x}-${m.y}`}
           aria-hidden="true"
-          className={`absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface ${m.color}`}
-          style={{ left: `${m.x}%`, top: `${m.y}%` }}
+          className={`absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface ${COLORES_MANADA[i % COLORES_MANADA.length]}`}
+          style={en(m)}
         />
       ))}
       <span
         aria-hidden="true"
         className="absolute -translate-x-1/2 -translate-y-1/2"
-        style={{ left: '46%', top: '79%' }}
+        style={en(datos.vivo)}
       >
         <span className="absolute inset-0 animate-ping rounded-full bg-secondary-500/60 motion-reduce:animate-none"></span>
         <span className="relative block h-4 w-4 rounded-full border-[3px] border-surface bg-secondary-500"></span>
       </span>
-      <div className="absolute bottom-[5%] right-[5%] border border-c2-linea bg-c2-card/90 px-3 py-2.5 backdrop-blur-sm sm:px-4 sm:py-3">
-        <p className="flex items-center gap-2 text-xs font-bold text-c2-menta">
-          <span className="h-2 w-2 rounded-full bg-secondary-500"></span>
-          En vivo
-        </p>
-        <p className="valor-c2 mt-1.5 text-[28px] text-text-primary sm:text-[34px]">
-          5.23 <span className="font-sans text-sm font-semibold not-italic text-c2-muted">km</span>
-        </p>
-        <p className="mt-1 hidden text-xs text-c2-muted sm:block sm:text-sm">28:34, 5:28 por km</p>
+    </>
+  )
+}
+
+/** Mapa nocturno del centro de Loja (datos OSM) con una ruta, la manada y el corredor en vivo. */
+function EscenaRuta() {
+  return (
+    <figure className="mx-auto w-full max-w-[480px]">
+      <div
+        role="img"
+        aria-label="Mapa del centro de Loja con calles y edificios, una ruta de carrera desde la Puerta de la Ciudad, corredores de la manada y uno compartiendo en vivo"
+        data-testid="landing-escena"
+        className="relative w-full overflow-hidden border border-c2-linea bg-surface"
+        style={{ aspectRatio: '4 / 5', clipPath: CORTE_GRANDE }}
+      >
+        <img
+          src="/images/landing-mapa-hero.webp"
+          alt=""
+          width={960}
+          height={1200}
+          decoding="async"
+          fetchPriority="high"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-surface/70 via-transparent to-transparent"
+        />
+        <PuntosRuta datos={MAPAS_LANDING.hero} />
+        <div className="absolute bottom-[5%] left-[5%] border border-c2-linea bg-c2-card/90 px-3 py-2.5 backdrop-blur-sm sm:px-4 sm:py-3">
+          <p className="flex items-center gap-2 text-xs font-bold text-c2-menta">
+            <span className="h-2 w-2 rounded-full bg-secondary-500"></span>
+            En vivo
+          </p>
+          <p className="valor-c2 mt-1.5 text-[28px] text-text-primary sm:text-[34px]">
+            5.23{' '}
+            <span className="font-sans text-sm font-semibold not-italic text-c2-muted">km</span>
+          </p>
+          <p className="mt-1 hidden text-xs text-c2-muted sm:block sm:text-sm">
+            28:34, 5:28 por km
+          </p>
+        </div>
       </div>
-    </div>
+      <figcaption className="mt-2 text-right text-xs text-c2-muted">
+        Mapa: © colaboradores de OpenStreetMap
+      </figcaption>
+    </figure>
   )
 }
 
@@ -253,39 +268,37 @@ function Funciones() {
             Activa compartir en vivo y tus seguidores, tu club o un evento verán tu posición en el
             mapa mientras corres. Se detiene solo cuando terminas.
           </p>
-          <svg
-            viewBox="0 0 320 150"
-            className="mt-6 min-h-[140px] w-full flex-1 bg-c2-s2"
-            preserveAspectRatio="xMidYMid slice"
-            aria-hidden="true"
-            focusable="false"
+          <div
+            role="img"
+            aria-label="Mapa junto al río Zamora con la ruta de un grupo, sus corredores y uno compartiendo su posición en vivo"
+            data-testid="landing-mapa-vivo"
+            className="relative mt-6 w-full overflow-hidden border border-c2-linea bg-surface"
+            style={{ aspectRatio: '2 / 1' }}
           >
-            <path
-              d="M-10 118C40 118 60 70 110 72C160 74 170 120 220 112C270 104 280 50 335 44"
-              fill="none"
-              stroke="#E9D5FF"
-              strokeOpacity="0.4"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeDasharray="1 9"
+            <img
+              src="/images/landing-mapa-vivo.webp"
+              alt=""
+              width={1280}
+              height={640}
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover"
             />
-            <circle cx="64" cy="82" r="6" fill="#A855F7" stroke="#0C1322" strokeWidth="2.5" />
-            <circle cx="150" cy="96" r="6" fill="#C084FC" stroke="#0C1322" strokeWidth="2.5" />
-            <circle cx="262" cy="70" r="14" fill="#10B981" fillOpacity="0.25" />
-            <circle cx="262" cy="70" r="6" fill="#10B981" stroke="#0C1322" strokeWidth="2.5" />
-          </svg>
+            <PuntosRuta datos={MAPAS_LANDING.vivo} />
+          </div>
           <div
             aria-hidden="true"
             className="mt-4 flex items-center justify-between gap-4 bg-c2-s2 px-4 py-3"
           >
             <div>
               <p className="text-sm font-semibold text-text-primary">Compartir en vivo</p>
-              <p className="text-xs text-c2-muted">Apagado hasta que lo actives</p>
+              <p className="text-xs text-c2-muted">Lo activaste tú. Se apaga al terminar.</p>
             </div>
-            <span className="relative h-7 w-12 shrink-0 rounded-full bg-c2-linea">
-              <span className="absolute left-1 top-1 h-5 w-5 rounded-full bg-c2-muted"></span>
+            <span className="relative h-7 w-12 shrink-0 rounded-full bg-secondary-500/80">
+              <span className="absolute right-1 top-1 h-5 w-5 rounded-full bg-white"></span>
             </span>
           </div>
+          <p className="mt-2 text-xs text-c2-muted">Mapa: © colaboradores de OpenStreetMap</p>
         </Panel>
 
         <Panel className="lg:col-span-7">

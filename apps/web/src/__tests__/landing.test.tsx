@@ -68,13 +68,14 @@ describe('landing publica en /', () => {
   it('atribuye los trazados de OpenStreetMap y los datos del ECU 911', async () => {
     renderRuta('/')
     await screen.findByTestId('landing')
-    expect(screen.getByText(/colaboradores de OpenStreetMap/)).toBeInTheDocument()
+    expect(screen.getAllByText(/colaboradores de OpenStreetMap/).length).toBeGreaterThanOrEqual(2)
+    expect(screen.getByTestId('landing-mapa-vivo')).toHaveAttribute('role', 'img')
     expect(screen.getByText(/ECU 911, licencia CC-BY/)).toBeInTheDocument()
   })
 
   it('la ilustracion tiene una descripcion accesible', async () => {
     renderRuta('/')
-    const escena = await screen.findByRole('img', { name: /Mapa de Loja con una ruta/ })
+    const escena = await screen.findByRole('img', { name: /Mapa del centro de Loja/ })
     expect(escena).toHaveAttribute('data-testid', 'landing-escena')
   })
 
