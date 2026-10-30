@@ -74,7 +74,7 @@ describe('landing publica en /', () => {
 
   it('la ilustracion tiene una descripcion accesible', async () => {
     renderRuta('/')
-    const escena = await screen.findByRole('img', { name: /ruta GPS/ })
+    const escena = await screen.findByRole('img', { name: /Mapa de Loja con una ruta/ })
     expect(escena).toHaveAttribute('data-testid', 'landing-escena')
   })
 

@@ -68,89 +68,75 @@ function Panel({ className = '', children }: { className?: string; children: Rea
   )
 }
 
-const RUTA_TRAZO =
-  'M36 486C92 486 110 432 160 426C222 418 230 484 290 468C352 452 344 360 308 326C272 292 214 300 196 252C180 206 240 176 302 170C354 164 392 140 408 92'
+// Mismo mapa que el fondo de inicio de sesion (public/images/mapa-login.webp, ~22 KB, diseño C4).
+// Se encuadra el tramo de la ruta; las posiciones de abajo estan en % de ese encuadre.
+const MAPA_FONDO = "url('/images/mapa-login.webp')"
+const MANADA = [
+  { x: 36, y: 32, color: 'bg-primary-400' },
+  { x: 58, y: 50, color: 'bg-[#F472B6]' },
+] as const
 
-/** Ruta GPS que sube a una cima de Loja y termina en el punto verde del corredor en vivo. */
+/** Mapa nocturno de Loja con una ruta de carrera, la manada y el corredor en vivo. */
 function EscenaRuta() {
   return (
     <div
       role="img"
-      aria-label="Ilustración de una ruta GPS que sube a la cima de un cerro, con el corredor en vivo marcado en la cima"
+      aria-label="Mapa de Loja con una ruta de carrera resaltada, corredores de la manada y uno compartiendo en vivo"
       data-testid="landing-escena"
-      className="relative mx-auto w-full max-w-[520px] overflow-hidden border border-c2-linea"
-      style={{ aspectRatio: '480 / 520', clipPath: CORTE_GRANDE }}
+      className="relative mx-auto w-full max-w-[480px] overflow-hidden border border-c2-linea bg-surface"
+      style={{ aspectRatio: '4 / 5', clipPath: CORTE_GRANDE }}
     >
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-no-repeat"
+        style={{
+          backgroundImage: MAPA_FONDO,
+          backgroundSize: '100% auto',
+          backgroundPosition: '50% 43%',
+        }}
+      />
+      {/* Manzanas tenues para que se lea como mapa a cualquier tamaño. */}
       <svg
-        viewBox="0 0 480 520"
-        className="absolute inset-0 h-full w-full"
         aria-hidden="true"
         focusable="false"
+        className="absolute inset-0 h-full w-full opacity-[0.07]"
       >
         <defs>
-          <linearGradient id="landing-cielo" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#7B1FA2" stopOpacity="0.55" />
-            <stop offset="0.6" stopColor="#4A154B" stopOpacity="0.25" />
-            <stop offset="1" stopColor="#0C1322" stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id="landing-traza" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0" stopColor="#7B1FA2" />
-            <stop offset="1" stopColor="#C084FC" />
-          </linearGradient>
+          <pattern
+            id="landing-manzanas"
+            width="56"
+            height="44"
+            patternUnits="userSpaceOnUse"
+            patternTransform="rotate(-8)"
+          >
+            <path d="M0 0H56M0 0V44" fill="none" stroke="#E9D5FF" strokeWidth="1" />
+          </pattern>
         </defs>
-        <rect width="480" height="520" fill="#0C1322" />
-        <rect width="480" height="520" fill="url(#landing-cielo)" />
-        <circle cx="96" cy="112" r="44" fill="#C084FC" fillOpacity="0.14" />
-        <circle cx="96" cy="112" r="24" fill="#E9D5FF" fillOpacity="0.2" />
-        <path
-          d="M0 520V318L66 262L118 304L190 226L252 290L330 214L408 92L480 206V520Z"
-          fill="#202842"
-        />
-        <path
-          d="M0 520V392L76 338L134 378L212 312L282 384L346 336L416 392L480 352V520Z"
-          fill="#191F2F"
-        />
-        <path d="M0 520V470L84 430L160 462L240 418L330 466L410 436L480 462V520Z" fill="#232A3A" />
-        <path
-          d={RUTA_TRAZO}
-          fill="none"
-          stroke="#E9D5FF"
-          strokeOpacity="0.45"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeDasharray="1 9"
-        />
-        <path
-          d={RUTA_TRAZO}
-          pathLength={1}
-          className="ruta-trazo"
-          fill="none"
-          stroke="#A855F7"
-          strokeOpacity="0.35"
-          strokeWidth="14"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d={RUTA_TRAZO}
-          pathLength={1}
-          className="ruta-trazo"
-          fill="none"
-          stroke="url(#landing-traza)"
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <circle cx="36" cy="486" r="7" fill="#0C1322" stroke="#E9D5FF" strokeWidth="2.5" />
-        <g className="punto-vivo">
-          <circle cx="408" cy="92" r="16" fill="#10B981" fillOpacity="0.25" />
-          <circle cx="408" cy="92" r="8" fill="#10B981" stroke="#0C1322" strokeWidth="3" />
-        </g>
-        <circle className="punto-vivo-onda" cx="408" cy="92" r="8" fill="#10B981" />
+        <rect width="100%" height="100%" fill="url(#landing-manzanas)" />
       </svg>
-      <div className="absolute left-[4%] top-[60%] max-w-[40%] border border-c2-linea bg-c2-card/95 px-3 py-2.5 backdrop-blur-sm sm:px-4 sm:py-3">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-t from-surface/80 via-transparent to-surface/30"
+      />
+      {MANADA.map((m) => (
+        <span
+          key={`${m.x}-${m.y}`}
+          aria-hidden="true"
+          className={`absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface ${m.color}`}
+          style={{ left: `${m.x}%`, top: `${m.y}%` }}
+        />
+      ))}
+      <span
+        aria-hidden="true"
+        className="absolute -translate-x-1/2 -translate-y-1/2"
+        style={{ left: '46%', top: '79%' }}
+      >
+        <span className="absolute inset-0 animate-ping rounded-full bg-secondary-500/60 motion-reduce:animate-none"></span>
+        <span className="relative block h-4 w-4 rounded-full border-[3px] border-surface bg-secondary-500"></span>
+      </span>
+      <div className="absolute bottom-[5%] right-[5%] border border-c2-linea bg-c2-card/90 px-3 py-2.5 backdrop-blur-sm sm:px-4 sm:py-3">
         <p className="flex items-center gap-2 text-xs font-bold text-c2-menta">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-secondary-500"></span>
+          <span className="h-2 w-2 rounded-full bg-secondary-500"></span>
           En vivo
         </p>
         <p className="valor-c2 mt-1.5 text-[28px] text-text-primary sm:text-[34px]">
