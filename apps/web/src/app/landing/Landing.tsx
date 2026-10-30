@@ -44,6 +44,14 @@ const PRIVACIDAD = [
   },
 ] as const
 
+// Lo que la app hace hoy, en corto, para el hero.
+const RESUMEN = [
+  'GPS en cada carrera',
+  'Rutas reales de Loja',
+  'Mapa sin conexión (Android)',
+  'Eventos y clubes',
+] as const
+
 const DIAS = [
   { letra: 'L', hecho: true },
   { letra: 'M', hecho: true },
@@ -55,7 +63,9 @@ const DIAS = [
 ] as const
 
 function Panel({ className = '', children }: { className?: string; children: ReactNode }) {
-  return <article className={`tarjeta-c2 p-6 sm:p-7 ${className}`}>{children}</article>
+  return (
+    <article className={`tarjeta-c2 landing-panel p-6 sm:p-8 ${className}`}>{children}</article>
+  )
 }
 
 const RUTA_TRAZO =
@@ -154,8 +164,12 @@ function EscenaRuta() {
 
 function Cabecera() {
   return (
-    <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-      <Link to="/" aria-label="Runcity, inicio" className={`rounded-lg ${FOCO}`}>
+    <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
+      <Link
+        to="/"
+        aria-label="Runcity, inicio"
+        className={`shrink-0 whitespace-nowrap rounded-lg ${FOCO}`}
+      >
         <LogoGacelas tam={36} />
       </Link>
       <nav aria-label="Secciones" className="hidden items-center gap-7 md:flex">
@@ -172,15 +186,20 @@ function Cabecera() {
           Privacidad
         </a>
       </nav>
-      <div className="flex items-center gap-3 sm:gap-5">
+      <div className="flex shrink-0 items-center gap-3 sm:gap-5">
         <Link
           to="/inicio-sesion"
-          className={`hidden rounded py-2 text-sm font-semibold text-text-primary hover:text-primary-400 sm:inline-block ${FOCO}`}
+          aria-label="Iniciar sesión"
+          className={`rounded py-2 text-sm font-semibold text-text-primary hover:text-primary-400 ${FOCO}`}
         >
-          Iniciar sesión
+          <span className="sm:hidden">Entrar</span>
+          <span className="hidden sm:inline">Iniciar sesión</span>
         </Link>
         <div className={FOCO_CONTENEDOR}>
-          <Link to="/registro" className="boton-c2-chico focus-visible:outline-none">
+          <Link
+            to="/registro"
+            className="boton-c2-chico whitespace-nowrap px-4 focus-visible:outline-none sm:px-5"
+          >
             Crear cuenta
           </Link>
         </div>
@@ -196,7 +215,7 @@ function Funciones() {
       aria-labelledby="funciones-titulo"
       className="mx-auto w-full max-w-6xl scroll-mt-4 px-4 py-16 sm:px-6 lg:px-8 lg:py-20"
     >
-      <h2 id="funciones-titulo" className="font-display text-3xl sm:text-5xl">
+      <h2 id="funciones-titulo" className="text-balance font-display text-4xl sm:text-5xl">
         Hecho para correr en Loja
       </h2>
       <p className="mt-4 max-w-[34rem] text-lg leading-relaxed text-c2-muted">
@@ -208,7 +227,8 @@ function Funciones() {
           <h3 className="font-display text-2xl">Rutas de Loja listas para salir</h3>
           <p className="mt-3 max-w-[34rem] leading-relaxed text-c2-muted">
             Runcity trae 26 rutas oficiales de Loja y sus alrededores, con distancia, desnivel y
-            dificultad. También puedes grabar tus carreras, dibujar rutas a mano y compartirlas.
+            dificultad. También puedes grabar tus carreras, dibujar rutas a mano y compartirlas. En
+            la app Android puedes descargar el mapa para usarlo sin conexión.
           </p>
           <ul className="mt-5">
             {RUTAS.map((r) => (
@@ -341,7 +361,7 @@ function Privacidad() {
     >
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16 lg:px-8 lg:py-20">
         <div>
-          <h2 id="privacidad-titulo" className="font-display text-3xl sm:text-5xl">
+          <h2 id="privacidad-titulo" className="text-balance font-display text-4xl sm:text-5xl">
             Tu ubicación es tuya
           </h2>
           <p className="mt-4 max-w-[30rem] text-lg leading-relaxed text-c2-muted">
@@ -402,6 +422,7 @@ function LlamadaFinal() {
               className={`rounded py-2 font-semibold text-text-primary underline underline-offset-4 hover:text-primary-200 ${FOCO}`}
             >
               Descargar para Android
+              <span className="sr-only"> (se abre en una pestaña nueva)</span>
             </a>
           </div>
           <p className="mt-5 text-sm text-on-surface">
@@ -471,32 +492,55 @@ export function Landing() {
           aria-labelledby="hero-titulo"
           className="mx-auto grid w-full max-w-6xl gap-10 px-4 pb-16 pt-6 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:items-center lg:gap-14 lg:px-8 lg:pb-24 lg:pt-12"
         >
-          <div>
+          <div className="landing-aparecer">
+            <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-primary-400 sm:text-sm">
+              App de running en Loja, Ecuador
+            </p>
             <h1
               id="hero-titulo"
-              className="font-display text-[46px] leading-[1.05] sm:text-6xl lg:text-[76px]"
+              className="text-balance font-display text-[44px] leading-[1.02] sm:text-6xl lg:text-[76px]"
             >
               Corre con la manada de Loja
             </h1>
-            <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-c2-muted">
+            <p className="mt-5 max-w-[34rem] text-lg leading-relaxed text-on-surface sm:text-xl">
               Runcity graba tus carreras con GPS, te lleva por rutas reales de Loja y deja que tu
               grupo te siga en vivo, solo cuando tú lo decidas.
             </p>
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
+            <ul aria-label="Qué hace Runcity" className="mt-6 flex flex-wrap gap-2">
+              {RESUMEN.map((t) => (
+                <li
+                  key={t}
+                  className="border border-c2-linea bg-c2-card/70 px-3 py-1.5 text-sm font-semibold text-on-surface"
+                >
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
               <div className={`${FOCO_CONTENEDOR} w-full sm:w-auto`}>
-                <Link to="/registro" className="boton-c2 focus-visible:outline-none sm:px-10">
+                <Link to="/registro" className="boton-c2 focus-visible:outline-none sm:px-12">
                   Crear cuenta
                 </Link>
               </div>
               <Link
                 to="/inicio-sesion"
-                className={`rounded py-2 font-semibold text-text-primary underline underline-offset-4 hover:text-primary-200 ${FOCO}`}
+                className={`self-center rounded py-2 font-semibold text-text-primary underline underline-offset-4 hover:text-primary-200 sm:self-auto ${FOCO}`}
               >
                 Ya tengo cuenta
               </Link>
             </div>
-            <p className="mt-5 text-sm text-c2-muted">
-              Funciona en el navegador y tiene app para Android.
+            <p className="mt-5 text-center text-sm text-c2-muted sm:text-left">
+              Funciona en el navegador y tiene{' '}
+              <a
+                href={URL_ANDROID}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`rounded font-semibold text-text-primary underline underline-offset-4 hover:text-primary-200 ${FOCO}`}
+              >
+                app para Android
+                <span className="sr-only"> (se abre en una pestaña nueva)</span>
+              </a>
+              .
             </p>
           </div>
           <EscenaRuta />
