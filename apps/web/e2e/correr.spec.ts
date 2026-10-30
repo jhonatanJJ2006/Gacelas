@@ -61,7 +61,7 @@ test.describe('Correr con GPS simulado', () => {
     await expect(page.getByTestId('detalle-carrera')).toBeVisible()
     await expect(page).toHaveURL(/\/perfil\/carrera\//)
     await page.goto('/inicio')
-    await expect(page.getByTestId('racha')).toContainText('1')
+    await expect(page.getByTestId('insignia-racha')).toContainText('1')
     await expect(page.getByTestId('semana-atletica')).toContainText('Meta semanal')
     await expect(page.getByTestId('reto-mes')).toContainText('Termina en')
     await expect(page.getByTestId('amigos-en-ruta')).toBeVisible()

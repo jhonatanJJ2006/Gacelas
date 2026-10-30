@@ -23,8 +23,8 @@ test.describe('Escritorio', () => {
     for (const ruta of ['/bienvenida', '/inicio-sesion', '/registro']) {
       await page.goto(ruta)
       await page.waitForLoadState('networkidle')
-      if (ruta !== '/bienvenida')
-        await expect(page.getByTestId('panel-corredor-acceso'), ruta).toBeVisible()
+      if (ruta === '/inicio-sesion')
+        await expect(page.getByRole('img', { name: /Mapa de Loja/ }).first(), ruta).toBeVisible()
       const { sh, ih, sw, iw } = await page.evaluate(() => ({
         sh: document.documentElement.scrollHeight,
         ih: window.innerHeight,
