@@ -63,8 +63,9 @@ describe('ajustes', () => {
     expect(document.documentElement).toHaveClass('tema-claro')
     await userEvent.click(screen.getByRole('button', { name: 'mi' }))
     await userEvent.click(screen.getByRole('switch', { name: 'Autopausa' }))
-    await userEvent.selectOptions(screen.getByLabelText('Cuenta regresiva'), '5')
-    await userEvent.selectOptions(screen.getByLabelText('Ritmo objetivo'), '300')
+    await userEvent.click(screen.getByRole('button', { name: 'Cuenta regresiva' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Bajar ritmo objetivo' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Bajar ritmo objetivo' }))
     expect(useIdentidad.getState().ajustes).toMatchObject({
       modoOscuro: false,
       unidadesMetricas: false,
