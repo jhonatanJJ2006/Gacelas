@@ -38,21 +38,21 @@ export function Avatar3D() {
 
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
-      <header className="px-margin py-4 border-b border-border-subtle">
-        <div className="flex items-center justify-between">
+      <header className="px-margin h-16 flex items-center bg-bg-secondary">
+        <div className="flex items-center gap-1 w-full">
           <button
             onClick={() => navigate('/perfil')}
             aria-label="Volver"
-            className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+            className="w-12 h-12 -ml-3 shrink-0 flex items-center justify-center text-text-primary"
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
-          <h1 className="font-display italic uppercase text-[26px] leading-tight text-text-primary">
+          <h1 className="flex-1 min-w-0 font-title-md text-title-md text-text-primary">
             Personalizar Avatar
           </h1>
           <button
             onClick={() => void guardar()}
-            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-on-primary font-label-lg text-label-lg rounded-lg transition-colors"
+            className="px-2 py-2 text-primary-500 font-label-lg text-label-lg"
           >
             Guardar
           </button>
