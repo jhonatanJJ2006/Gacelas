@@ -95,6 +95,9 @@ class ContenedorApp(
     val clubes: ClubesRepository?
     val feed: com.gacelas.comunidad.domain.repositorio.FeedRepository?
 
+    /** Panel de administracion (mismas RPC que la web); null sin servidor. El servidor valida el rol. */
+    val admin: com.gacelas.administracion.domain.AdminRepositorio?
+
     /** Descarga los datos de la cuenta y sube lo pendiente. No hace nada sin servidor. */
     val sincronizar: suspend () -> Unit
 
@@ -125,6 +128,7 @@ class ContenedorApp(
             explorar = null
             clubes = null
             feed = null
+            admin = null
         } else {
             lateinit var remotoAuth: SupabaseAuthRepository
             val uid: suspend () -> String? = { remotoAuth.userId() }
@@ -151,6 +155,7 @@ class ContenedorApp(
             subirPendientes = { c.sincronizar() + ex.subirPendientes() }
             clubes = ModuloComunidad.clubes(backend, uid)
             feed = com.gacelas.comunidad.infrastructure.SupabaseFeedRepository(backend, uid)
+            admin = com.gacelas.administracion.infrastructure.SupabaseAdminRepositorio(backend)
         }
     }
 

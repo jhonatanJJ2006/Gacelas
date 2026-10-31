@@ -33,13 +33,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gacelas.administracion.application.ConsultarAccesoAdmin
 import com.gacelas.administracion.domain.AccesoAdmin
 import com.gacelas.administracion.domain.AdminRepositorio
@@ -65,8 +65,7 @@ fun PanelAdmin(repo: AdminRepositorio?, onAtras: () -> Unit) {
         MarcoAdmin("Administración", onAtras) { AccesoDenegado(onAtras, "El panel necesita conexión con el servidor.") }
         return
     }
-    val vm = viewModel { AccesoAdminViewModel(ConsultarAccesoAdmin(repo)) }
-    val acceso by vm.acceso.collectAsState()
+    val acceso = consultarAcceso(repo)
     PanelAdminContenido(acceso, repo, onAtras)
 }
 
@@ -205,3 +204,20 @@ internal fun <T> SegunCarga(carga: Carga<T>, onReintentar: () -> Unit, vacio: (T
     }
 }
 
+
+/**
+ * Rol de la sesion para decidir si Ajustes muestra la entrada al panel. Se consulta al servidor cada
+ * vez que se abre la pantalla (sin cache); null mientras responde o sin servidor.
+ */
+@Composable
+fun accesoAdminActual(repo: AdminRepositorio?): AccesoAdmin? {
+    if (repo == null) return null
+    return consultarAcceso(repo)
+}
+
+/** Consulta nueva cada vez que la pantalla entra en composicion (sin ViewModel compartido ni cache). */
+@Composable
+private fun consultarAcceso(repo: AdminRepositorio): AccesoAdmin? {
+    val acceso by produceState<AccesoAdmin?>(null, repo) { value = ConsultarAccesoAdmin(repo)() }
+    return acceso
+}

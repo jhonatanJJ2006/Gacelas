@@ -94,11 +94,14 @@ fun AjustesPreferenciasScreen(
     onMapasOffline: (() -> Unit)? = null,
     onBrujula: (() -> Unit)? = null,
     onLegal: ((Boolean) -> Unit)? = null,
+    onAdmin: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val c = contenedor()
     val scope = rememberCoroutineScope()
     val a by ajustesState()
+    // Se pregunta al servidor cada vez que se abre Ajustes; sin rol no hay entrada.
+    val accesoAdmin = com.gacelas.administracion.presentation.accesoAdminActual(c.admin)
     AjustesContenido(
         a = a, version = com.gacelas.actualizacion.textoVersion(), guardar = guardarAjuste(),
         onAtras = onAtras, onEditarPerfil = onEditarPerfil, onPrivacidad = onPrivacidad, onNotificaciones = onNotificaciones,
@@ -112,6 +115,7 @@ fun AjustesPreferenciasScreen(
         onMapasOffline = onMapasOffline,
         onBrujula = onBrujula,
         onLegal = onLegal,
+        onAdmin = onAdmin.takeIf { accesoAdmin?.puedeEntrar == true },
     )
 }
 

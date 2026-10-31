@@ -2,11 +2,9 @@ package com.gacelas.administracion.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gacelas.administracion.application.ConsultarAccesoAdmin
 import com.gacelas.administracion.application.GuardarEvento
 import com.gacelas.administracion.application.GuardarVersionMinima
 import com.gacelas.administracion.application.ModerarReporte
-import com.gacelas.administracion.domain.AccesoAdmin
 import com.gacelas.administracion.domain.AccionModeracion
 import com.gacelas.administracion.domain.AdminRepositorio
 import com.gacelas.administracion.domain.AjusteApp
@@ -88,21 +86,6 @@ abstract class SeccionViewModel<T> : ViewModel() {
         throw e
     } catch (e: Exception) {
         Carga.Error(e.texto())
-    }
-}
-
-/**
- * Rol de la sesion para mostrar la entrada "Administración" y proteger el panel. null = comprobando.
- * Se pregunta al servidor en cada creacion (al entrar a Ajustes o al panel), sin cache en disco.
- */
-class AccesoAdminViewModel(private val consultar: ConsultarAccesoAdmin) : ViewModel() {
-    private val _acceso = MutableStateFlow<AccesoAdmin?>(null)
-    val acceso: StateFlow<AccesoAdmin?> = _acceso.asStateFlow()
-
-    init { recargar() }
-
-    fun recargar() {
-        viewModelScope.launch { _acceso.value = consultar() }
     }
 }
 
