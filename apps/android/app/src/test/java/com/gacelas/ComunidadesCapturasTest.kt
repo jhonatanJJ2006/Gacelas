@@ -59,6 +59,9 @@ class ComunidadesCapturasTest {
     @Test fun listaGrupos() = captura("lista-grupos") { ClubesContenido(ClubesViewModel(repo), true, {}, {}, {}) }
     @Test fun listaComunidades() = captura("lista-comunidades") { ClubesContenido(ClubesViewModel(repo), true, {}, {}, {}, tipoInicial = TipoClub.comunidad) }
     @Test fun listaVacia() = captura("lista-vacia") { ClubesContenido(ClubesViewModel(object : ClubesRepository { override suspend fun listar() = emptyList<Club>() to emptySet<String>() }), true, {}, {}, {}) }
+    @Test fun listaVaciaComunidades() = captura("lista-vacia-comunidades") { ClubesContenido(ClubesViewModel(object : ClubesRepository { override suspend fun listar() = emptyList<Club>() to emptySet<String>() }), true, {}, {}, {}, tipoInicial = TipoClub.comunidad) }
+    @Test fun listaError() = captura("lista-error") { ClubesContenido(ClubesViewModel(object : ClubesRepository { override suspend fun listar(): Pair<List<Club>, Set<String>> = error("sin red") }), true, {}, {}, {}) }
+    @Test fun listaCargando() = captura("lista-cargando") { ClubesContenido(ClubesViewModel(object : ClubesRepository { override suspend fun listar(): Pair<List<Club>, Set<String>> = kotlinx.coroutines.awaitCancellation() }), true, {}, {}, {}) }
     @Test fun registrarGrupo() = captura("registrar-grupo") {
         FormularioClubContenido("Registrar grupo", BorradorClub(nombre = "Madrugadores Zamora Huayco", lugarEncuentro = "Parque Lineal La Tebaida", dias = listOf(1, 3), hora = "05:45", ritmo = "6:15", nivel = NivelGrupo.intermedio, comunidadId = "c1"),
             listOf(runners, utpl), true, null, {}, {})

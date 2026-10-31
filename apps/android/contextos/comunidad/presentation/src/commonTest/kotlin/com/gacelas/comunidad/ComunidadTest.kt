@@ -24,6 +24,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 private class AjustesMemoria : AjustesRepository {
@@ -92,5 +93,24 @@ class ComunidadTest {
         assertEquals(emptyList(), ClubesViewModel(null).datos.value?.first)
         val falla = ClubesViewModel(object : ClubesRepository { override suspend fun listar(): Pair<List<Club>, Set<String>> = error("sin red") })
         assertEquals(emptyList(), falla.datos.value?.first)
+        assertTrue(falla.error.value!!.contains("No pudimos cargar"))
+        assertNull(vm.error.value)
+    }
+
+    @Test fun unirseDesdeLaLista() = runTest {
+        val abierto = Club("a", "Abierto", "", "Loja", false, 3)
+        val privado = Club("p", "Privado", "", "Loja", true, 3)
+        val unidos = mutableListOf<String>()
+        val vm = ClubesViewModel(object : ClubesRepository {
+            override suspend fun listar() = listOf(abierto, privado) to unidos.toSet()
+            override suspend fun unirse(id: String) { unidos += id }
+        })
+        val avisos = mutableListOf<String>()
+        vm.unirse(abierto) { avisos += it }
+        vm.unirse(privado) { avisos += it }
+        assertEquals(listOf("a", "p"), unidos)
+        assertEquals(setOf("p"), vm.solicitados.value)
+        assertTrue(avisos.first().contains("Te uniste"))
+        assertEquals(setOf("a"), vm.datos.value?.second)
     }
 }
