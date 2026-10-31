@@ -6,5 +6,6 @@ plugins {
 kotlin {
     sourceSets.commonMain.dependencies {
         api(project(":contextos:moderacion:domain"))
+        api(libs.kotlinx.serialization.json)
     }
 }
