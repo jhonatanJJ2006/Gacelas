@@ -275,6 +275,7 @@ Notación: agregados en negrita, entidades (E), value objects (VO), eventos de d
 - Repositorios: `RolRepositorio`.
 - Casos de uso: AsignarRol, BuscarUsuarios, SuspenderUsuario (delega en Moderación e Identidad), PublicarEvento (delega en Eventos), PublicarRutaOficial (delega en Rutas).
 - Tablas: `user_roles`, `app_settings`, `app_releases`.
+- Móvil (KMP): módulos `:contextos:administracion:domain|application|infrastructure|presentation`. El dominio define `RolAdmin`, `AccesoAdmin` (secciones por rol) y el puerto `AdminRepositorio`; `application` tiene `ConsultarAccesoAdmin` (falla cerrado), `ModerarReporte`, `GuardarVersionMinima` y `GuardarEvento`; `infrastructure` tiene `SupabaseAdminRepositorio` (mismas RPC que la web) y `AdminRepositorioMemoria` para pruebas; `presentation` tiene `PanelAdmin` y un ViewModel por sección. Identidad solo recibe un `onAdmin` opcional en `AjustesContenido`; `app` e iOS deciden si pasarlo según el rol.
 
 ## 4. Capas
 
