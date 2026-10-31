@@ -1,7 +1,7 @@
 package com.gacelas.ui.intro
 
 /**
- * Reglas de cuando se muestra la intro de marca (Android: vector animado res/drawable/intro_marca.xml) (comunes a Android e iOS, ver docs/MARCA.md).
+ * Reglas de cuando se muestra la intro de marca ("Opcion E", IntroMarcaE en Compose) (comunes a Android e iOS, ver docs/MARCA.md).
  *
  * Se muestra SIEMPRE que se abre la app de nuevo: arranque en frio y cualquier actividad nueva
  * (volver tras salir con atras o tras cerrarla desde recientes, aunque el proceso siga vivo y
@@ -11,11 +11,11 @@ package com.gacelas.ui.intro
  * desactivadas.
  */
 object IntroArranque {
-    /** Duracion de la intro "Ruta y destello v2b", en segundos. */
-    const val DURACION_S = 2.2f
+    /** Duracion de la intro "Opcion E", en segundos. */
+    const val DURACION_S = LineaTiempoIntroE.DURACION_S
 
-    /** Tope de seguridad: si la animacion no avisa su fin, la intro se retira a los 3,7 s. */
-    const val TOPE_MS = 3_700L
+    /** Tope de seguridad: si la animacion no avisa su fin, la intro se retira a los 4,2 s (3,0 s + margen). */
+    const val TOPE_MS = 4_200L
 
     /** Ausencia minima para repetir la intro al volver: 30 s. */
     const val UMBRAL_AUSENCIA_MS = 30_000L

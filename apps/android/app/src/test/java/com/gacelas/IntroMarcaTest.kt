@@ -36,7 +36,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** Intro de marca en video ("Ruta y destello v2b") e icono adaptativo (docs/MARCA.md). */
+/** Intro de marca "Opcion E" (Compose) e icono adaptativo (docs/MARCA.md). */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], qualifiers = "w390dp-h844dp-xxhdpi")
@@ -53,16 +53,10 @@ class IntroMarcaTest {
         assertTrue(c.terminada)
     }
 
-    /** El vector solo anima propiedades que Android corre en el RenderThread (si una no lo es, todo cae al hilo principal). */
-    @Test fun soloPropiedadesDelRenderThreadYDuracionCompleta() {
-        val xml = java.io.File("src/main/res/drawable/intro_marca.xml").readText()
-        val props = Regex("propertyName=\"(\\w+)\"").findAll(xml).map { it.groupValues[1] }.toSet()
-        val permitidas = setOf("trimPathStart", "trimPathEnd", "fillAlpha", "strokeAlpha", "scaleX", "scaleY", "translateX", "translateY")
-        assertTrue("propiedades: $props", permitidas.containsAll(props))
-        val fin = Regex("startOffset=\"(\\d+)\" android:duration=\"(\\d+)\"").findAll(xml).maxOf { it.groupValues[1].toInt() + it.groupValues[2].toInt() }
-        assertEquals((IntroArranque.DURACION_S * 1000).toInt(), fin)
-        assertTrue(xml.contains("RUNCITY") || xml.contains("Runcity"))
-        assertTrue(!xml.contains("GACELAS"))
+    /** La intro E dura 3,0 s y el tope de seguridad deja margen (nunca la corta ni la deja colgada). */
+    @Test fun duracionYTope() {
+        assertEquals(3.0f, IntroArranque.DURACION_S)
+        assertTrue(IntroArranque.TOPE_MS in 3_500L..5_000L)
     }
 
     private fun actividad() = org.robolectric.Robolectric.buildActivity(androidx.activity.ComponentActivity::class.java).setup().get()
