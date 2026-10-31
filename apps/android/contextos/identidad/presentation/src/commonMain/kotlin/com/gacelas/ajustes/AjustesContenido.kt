@@ -1,6 +1,7 @@
 package com.gacelas.ajustes
 
 import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.foundation.background
@@ -117,6 +118,8 @@ fun AjustesContenido(
     onMapasOffline: (() -> Unit)? = null,
     onBrujula: (() -> Unit)? = null,
     onLegal: ((terminos: Boolean) -> Unit)? = null,
+    // Solo llega con valor si el servidor confirmo rol admin o moderador (docs/ADMIN.md).
+    onAdmin: (() -> Unit)? = null,
 ) {
     var dialogo by remember { mutableStateOf<String?>(null) }
     PantallaConEncabezado("Ajustes", onAtras) {
@@ -177,6 +180,12 @@ fun AjustesContenido(
                     }
                 }
             })
+        }
+        if (onAdmin != null) {
+            EtiquetaSeccion("Administración", "Solo para tu rol")
+            Tarjeta(padding = 0.dp, modifier = Modifier.testTag("ajustes-admin")) {
+                FilaAjuste(Icons.Filled.AdminPanelSettings, "Panel de administración", "Usuarios, moderación y métricas", colorIcono = GColors.C2Violeta, onClick = onAdmin)
+            }
         }
         EtiquetaSeccion("Cuenta", "Seguridad y dispositivos")
         Tarjeta(padding = 0.dp) {

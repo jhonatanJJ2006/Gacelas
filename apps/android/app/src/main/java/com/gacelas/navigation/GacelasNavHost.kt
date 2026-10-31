@@ -217,7 +217,12 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
             onMapasOffline = { nav.navigate(Destinos.MAPAS_OFFLINE) },
             onBrujula = { nav.navigate(Destinos.BRUJULA) },
             onLegal = { t -> nav.navigate(if (t) Destinos.TERMINOS else Destinos.POLITICA_PRIVACIDAD) },
+            onAdmin = { nav.navigate(Destinos.ADMIN) },
         )
+    }
+    // El panel vuelve a comprobar el rol en el servidor: sin rol muestra "Acceso denegado".
+    composable(Destinos.ADMIN) {
+        com.gacelas.administracion.presentation.PanelAdmin(com.gacelas.ui.contenedor().admin, onAtras = { nav.popBackStack() })
     }
     composable(Destinos.BRUJULA) { com.gacelas.ajustes.BrujulaScreen(onAtras = { nav.popBackStack() }) }
     composable(Destinos.MAPAS_OFFLINE) { com.gacelas.ajustes.MapasOfflineScreen(onAtras = { nav.popBackStack() }) }

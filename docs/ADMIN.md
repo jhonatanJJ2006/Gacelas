@@ -32,6 +32,25 @@ ON CONFLICT (user_id) DO UPDATE SET role = 'admin';
 
 Desde ahí, ese administrador puede dar o quitar roles a otras personas en Usuarios.
 
+## Panel en la app móvil (Android e iOS)
+
+El mismo panel existe en la app móvil, con código compartido en el contexto `contextos/administracion` (dominio, casos de uso, repositorio Supabase y pantallas Compose Multiplatform), así que Android e iOS usan las mismas pantallas.
+
+- Entrada: en Ajustes aparece la sección "Administración" con la fila "Panel de administración" solo si la cuenta tiene rol. El rol se consulta en el servidor (`is_admin()` y después `es_moderador()`) cada vez que se abre Ajustes, sin caché; si la consulta falla, la entrada no aparece.
+- Ruta: `ajustes/admin` en Android y la pantalla `Admin` en iOS. El panel vuelve a consultar el rol al abrirse; sin rol muestra "Acceso denegado".
+- Roles: el administrador ve todas las secciones; el moderador solo ve Moderación, igual que en el servidor.
+- Secciones: Dashboard, Usuarios, Moderación, Estadísticas (rango de fechas, sin exportar), Eventos (crear, editar, publicar y despublicar; fecha y hora como texto `aaaa-mm-dd` y `hh:mm`), Rutas y clubes (listar y eliminar) y Versiones y ajustes (versión mínima de Android editable; el resto de `app_settings` en solo lectura).
+- Estados: cada sección tiene carga, vacío y error con botón Reintentar.
+- Sin funciones nuevas: usa las mismas RPC y tablas que la web, y la seguridad real sigue en RLS y en las funciones `admin_*`.
+- No incluye: notificaciones, versión de los Términos ni gestión del equipo con rol (siguen en la web).
+- Modo demo (sin Supabase): la entrada no aparece.
+
+Capturas en `docs/capturas/admin-movil/`, generadas con Roborazzi:
+
+```
+./gradlew :app:testDebugUnitTest --tests '*AdminMovil*' -Proborazzi.test.record=true -Pgacelas.shots=<ruta absoluta a docs/capturas>
+```
+
 ## Estado en producción
 
 El 25 de octubre de 2026 se aplicaron en el proyecto las migraciones 019 a 023, 030, 031 y 032, con respaldo previo, y quedaron registradas en `supabase_migrations.schema_migrations`. La cuenta 2jhonatanjara2@gmail.com tiene rol `admin`.

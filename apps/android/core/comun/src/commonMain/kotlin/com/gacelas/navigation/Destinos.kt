@@ -45,6 +45,7 @@ object Destinos {
     fun detalleCarrera(id: String) = "perfil/carrera/$id"
 
     const val AJUSTES = "ajustes"
+    const val ADMIN = "ajustes/admin"
     const val PRIVACIDAD = "ajustes/privacidad"
     const val CONFIG_NOTIFICACIONES = "ajustes/notificaciones"
     const val NOTIFICACIONES = "notificaciones"

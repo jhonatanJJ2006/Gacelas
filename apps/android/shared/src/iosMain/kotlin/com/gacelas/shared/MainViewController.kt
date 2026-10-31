@@ -128,7 +128,8 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
                         onActualizar = {}, onMasTarde = { modal = false }, onPermiso = {},
                     )
                 }
-                PantallaIos.Ajustes -> AjustesIos(onAtras = { pantalla = PantallaIos.Inicio }, onCerrarSesion = { pantalla = PantallaIos.Bienvenida })
+                PantallaIos.Ajustes -> AjustesIos(onAtras = { pantalla = PantallaIos.Inicio }, onCerrarSesion = { pantalla = PantallaIos.Bienvenida }, onAdmin = { pantalla = PantallaIos.Admin })
+                PantallaIos.Admin -> com.gacelas.administracion.presentation.PanelAdmin(com.gacelas.acceso.SesionIos.contenedor.admin, onAtras = { pantalla = PantallaIos.Ajustes })
                 PantallaIos.Detalle -> com.gacelas.perfil.DetalleCarreraContenido(
                     c = com.gacelas.correr.CarreraMuestra.guardada,
                     fecha = fechaLarga(com.gacelas.correr.CarreraMuestra.guardada.inicioMs), m = true,
@@ -173,7 +174,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
     }
 }
 
-private enum class PantallaIos { Bienvenida, Login, Registro, Recuperar, Inicio, Carrera, Ajustes, Detalle, Rutas, Comunidad, Dibujar }
+private enum class PantallaIos { Bienvenida, Login, Registro, Recuperar, Inicio, Carrera, Ajustes, Detalle, Rutas, Comunidad, Dibujar, Admin }
 
 /** --ruta=<ruta de Destinos> (capturas de CI): abre esa pantalla de comunidad, p. ej. --ruta=comunidad/eventos/1. */
 private fun rutaArgumento(): String? =
@@ -303,7 +304,9 @@ private fun fechaLarga(ms: Long): String = platform.Foundation.NSDateFormatter()
 
 /** Ajustes compartidos con AjustesViewModel, guardados en DataStore como en Android. */
 @Composable
-private fun AjustesIos(onAtras: () -> Unit, onCerrarSesion: () -> Unit) {
+private fun AjustesIos(onAtras: () -> Unit, onCerrarSesion: () -> Unit, onAdmin: () -> Unit) {
+    // Entrada al panel solo si el servidor confirma rol admin o moderador (sin cache).
+    val accesoAdmin = com.gacelas.administracion.presentation.accesoAdminActual(com.gacelas.acceso.SesionIos.contenedor.admin)
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     val repo = com.gacelas.acceso.SesionIos.ajustes
     val vm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.acceso.SesionIos.contenedor.ajustesViewModel(repo) }
@@ -329,6 +332,7 @@ private fun AjustesIos(onAtras: () -> Unit, onCerrarSesion: () -> Unit) {
                 onEliminar = { com.gacelas.mapa.MapaIos.offline?.eliminar() },
             )
         },
+        onAdmin = onAdmin.takeIf { accesoAdmin?.puedeEntrar == true },
     )
 }
 
