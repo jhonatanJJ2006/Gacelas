@@ -173,6 +173,8 @@ fun CampoTexto(
     onListo: (() -> Unit)? = null,
     /** En pantallas sin espacio (teclado abierto) la etiqueta se omite y se usa como placeholder. */
     mostrarEtiqueta: Boolean = true,
+    /** Icono al inicio del campo (por ejemplo la lupa de un buscador). */
+    inicio: (@Composable () -> Unit)? = null,
 ) {
     val foco = LocalFocusManager.current
     val teclado = LocalSoftwareKeyboardController.current
@@ -206,6 +208,7 @@ fun CampoTexto(
                     }
                 }
             } else trailing,
+            leadingIcon = inicio,
             shape = RoundedCornerShape(12.dp),
             textStyle = GType.bodyLg,
             colors = OutlinedTextFieldDefaults.colors(

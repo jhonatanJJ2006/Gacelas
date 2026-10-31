@@ -69,13 +69,41 @@ class NotificacionesViewModel(
     }
 }
 
-/** Lista de clubes: null mientras carga; sin servidor queda vacia. */
+/**
+ * Lista de clubes: null mientras carga; sin servidor queda vacia. Si la carga falla, [error] trae el
+ * mensaje para el usuario y la lista queda vacia hasta [recargar].
+ */
 class ClubesViewModel(private val fuente: ClubesRepository?) : ViewModel() {
     private val _datos = MutableStateFlow<Pair<List<Club>, Set<String>>?>(null)
     val datos: StateFlow<Pair<List<Club>, Set<String>>?> = _datos.asStateFlow()
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+    /** Clubes con aprobacion a los que pedi entrar en esta sesion (quedan pendientes). */
+    private val _solicitados = MutableStateFlow<Set<String>>(emptySet())
+    val solicitados: StateFlow<Set<String>> = _solicitados.asStateFlow()
     init { recargar() }
     fun recargar() {
-        viewModelScope.launch { _datos.value = runCatching { fuente?.listar() }.getOrNull() ?: (emptyList<Club>() to emptySet()) }
+        // Al reintentar tras un error se vuelve a mostrar la carga.
+        if (_error.value != null) { _error.value = null; _datos.value = null }
+        viewModelScope.launch {
+            val f = fuente ?: run { _datos.value = emptyList<Club>() to emptySet(); return@launch }
+            runCatching { f.listar() }
+                .onSuccess { _datos.value = it }
+                .onFailure { _error.value = "No pudimos cargar los grupos y comunidades. Revisa tu conexión."; _datos.value = emptyList<Club>() to emptySet() }
+        }
+    }
+
+    /** Unirse desde la tarjeta; si el club pide aprobacion queda como solicitud enviada. */
+    fun unirse(c: Club, onAviso: (String) -> Unit) {
+        val f = fuente ?: return onAviso("Necesitas conexión con el servidor")
+        viewModelScope.launch {
+            runCatching { f.unirse(c.id) }
+                .onSuccess {
+                    if (c.conAprobacion) { _solicitados.value = _solicitados.value + c.id; onAviso("Solicitud enviada a ${c.nombre}") }
+                    else { onAviso("Te uniste a ${c.nombre}"); recargar() }
+                }
+                .onFailure { onAviso(it.message?.let(::mensajeErrorClub) ?: "No pudimos unirte. Inténtalo de nuevo.") }
+        }
     }
 
     /** Registra una comunidad o grupo; [onCreado] recibe su id y [onError] el mensaje si falla. */
