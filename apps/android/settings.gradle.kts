@@ -51,4 +51,8 @@ includeModule(":contextos:analitica:presentation", "contextos/analitica/presenta
 includeModule(":contextos:envivo:domain", "contextos/envivo/domain")
 includeModule(":contextos:envivo:infrastructure", "contextos/envivo/infrastructure")
 
+listOf("domain", "application", "infrastructure", "presentation").forEach { capa ->
+    includeModule(":contextos:administracion:$capa", "contextos/administracion/$capa")
+}
+
 include(":shared")
