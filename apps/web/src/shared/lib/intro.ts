@@ -3,7 +3,7 @@
  * La animacion es un video pre-renderizado (public/marca/intro.webm y intro.mp4); el mismo MP4 va en Android.
  */
 
-export const DURACION_INTRO_S = 2.2
+export const DURACION_INTRO_S = 3.0
 export const CLAVE_INTRO = 'gacelas.intro.vista'
 /** Ausencia minima para repetir la intro al volver a abrir la app: 30 s (igual que Android). */
 export const UMBRAL_AUSENCIA_MS = 30_000

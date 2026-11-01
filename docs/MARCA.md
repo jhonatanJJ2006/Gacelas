@@ -1,6 +1,6 @@
 # Marca: icono e intro animada
 
-Elegidos por Jhona el 26 de octubre de 2026: icono propuesta A "Gacela en ruta" e intro A "Ruta y destello" (estilo Netflix, 2,8 s). El mismo dia la intro paso a ser el video "Ruta y destello v2b" con la palabra RUNCITY (2,2 s).
+Elegidos por Jhona el 26 de octubre de 2026: icono propuesta A "Gacela en ruta" e intro A "Ruta y destello" (estilo Netflix, 2,8 s). El mismo dia la intro paso a ser el video "Ruta y destello v2b" con la palabra RUNCITY (2,2 s). En octubre de 2026 la reemplazo la intro "Opcion E" (3,0 s, ver abajo).
 
 ## Paleta y tipografia
 
@@ -50,17 +50,17 @@ python3 tools/marca/generar.py
 
 Si se cambia el dibujo, editar los SVG de `assets/marca/` y las constantes del script (trazo de la gacela y de la ruta), que convierten los SVG a VectorDrawable. VectorDrawable no tiene filtros: el brillo neon de la ruta se aproxima con un halo semitransparente y la sombra de la gacela con una copia desplazada.
 
-## Intro "Ruta y destello v2b" (video)
+## Intro "Opcion E" (3,0 s, sin mapa)
 
-Aprobada por Jhona el 26 de octubre de 2026 (reemplaza a la intro A dibujada en tiempo real). Una ruta morada luminosa con un cometa entra directo, sin preambulo, estalla en un destello anamorfico al llegar al centro, revela la gacela con un brillo que la cruza y la palabra RUNCITY en Anton con espaciado amplio que se cierra, y se funde al fondo `#0C1322`. Dura 2,2 s.
+Elegida por Jhona en octubre de 2026 (reemplaza a "Ruta y destello v2b", 2,2 s). Una linea de aproximacion morada entra con su estela, el contorno de la gacela se dibuja con una cabeza brillante, se rellena con un barrido de luz y un anillo, y aparece RUNCITY en Anton cursiva letra a letra con el lema; todo sobre `#0C1322`. Dura 3,0 s. Referencia exacta de tiempos, curvas y geometria: `escena_E` en `tools/marca/render_intro_opciones.py`.
 
-Es un video pre-renderizado cuadro por cuadro a 60 fps (motion blur con 4 submuestras por cuadro, easing cuidado, grano leve contra el banding) con `tools/marca/render_intro.py b <carpeta>` (requiere `skia-python`, `numpy`, `pillow` y la fuente Anton). Exportacion, 720 x 1280, sin audio:
+| Plataforma | Implementacion                                                                                                  | Peso   |
+| ---------- | --------------------------------------------------------------------------------------------------------------- | ------ |
+| Android    | Compose Canvas en `core/ui` commonMain (`LineaTiempoIntroE`, `IntroMarcaE`), sin dependencias nuevas, sin video | codigo |
+| Web        | `apps/web/public/marca/intro.mp4` (H.264 main, CRF 24, 720 x 1280)                                              | 134 KB |
+| Web        | `apps/web/public/marca/intro.webm` (VP9, CRF 34, 720 x 1280)                                                    | 142 KB |
 
-| Archivo                                                  | Formato                  | Peso   |
-| -------------------------------------------------------- | ------------------------ | ------ |
-| `apps/android/app/src/main/res/drawable/intro_marca.xml` | vector animado (Android) | 33 KB  |
-| `apps/web/public/marca/intro.mp4`                        | H.264 main, CRF 24       | 102 KB |
-| `apps/web/public/marca/intro.webm`                       | VP9, CRF 34              | 112 KB |
+Capturas (t = 0,2 a 3,0 s) y tira de contacto contra el video de referencia: `docs/capturas/intro-e/`.
 
 El primer y el ultimo cuadro son el fondo de marca `#0C1322`, igual que el SplashScreen, `windowBackground` y el theme-color de la web.
 
@@ -87,15 +87,15 @@ Si solo se trae de segundo plano tras menos de 30 s, o se rota la pantalla, no s
 
 ### Android
 
-En Android la intro no es un video sino un vector animado (`AnimatedVectorDrawable`), la misma tecnica que usan los splash animados de apps como Prime Video o Netflix. Desde Android 7.1 el sistema anima ese vector en el RenderThread: no necesita reproductor, ni decodificador de video, ni red, ni el hilo principal. Por eso empieza en el primer cuadro de la ventana y corre entera a 60 fps aunque la app este cargando debajo. En la v0.8.6 y v0.8.7 era un MP4 (Media3, luego `MediaPlayer`): el reproductor tardaba en dar su primer cuadro en arranque en frio y competia con el montaje de la app, por eso en telefono se trababa o salia cortada.
+En Android la intro no es un video: se dibuja en Compose Canvas (`IntroMarcaEAnimada`, en `core/ui` commonMain, reutilizable en iOS) con un solo reloj (`withFrameNanos`) guardado en un estado de punto flotante que solo lee la fase de dibujo, asi que no hay recomposicion por cuadro. La geometria (rutas, `PathMeasure.getSegment`, degradados, medicion de texto) se prepara una vez en `drawWithCache`; los halos son trazos concentricos en vez de `blur`. Las curvas de easing y los canales de tiempo son funciones puras en `LineaTiempoIntroE` (probadas en `LineaTiempoIntroETest`). Cada cuadro suma el delta real con tope de 100 ms, asi que un tiron no se come la animacion. Antes (v0.8.10 a v0.9.x) era un `AnimatedVectorDrawable` (`intro_marca.xml`), y antes un MP4.
 
 1. `Theme.Gacelas.Arranque` (SplashScreen API) muestra el fondo `#0C1322` con la gacela. El splash no se retiene: en el primer cuadro de la actividad ya corre la intro sobre el mismo `#0C1322` y `setOnExitAnimationListener` desvanece la gacela del splash encima en 180 ms.
 2. `MainActivity` decide en `onCreate` (y en cada `onStart` posterior) con `IntroArranque.alEntrar(ahora, escalaAnimaciones, aperturaNueva = savedInstanceState == null)`, y registra la salida en `onStop` con `IntroArranque.alSalir(ahora)`. El reloj es `SystemClock.elapsedRealtime()`. La regla pura es `IntroArranque.debeMostrar(ahora, ultimaSalida, escala)`.
-3. `IntroAnimada` (`app/.../intro/IntroAnimada.kt`) pone una `ImageView` nativa a pantalla completa encima de Compose (`addContentView`, `centerCrop`, fondo `#0C1322`) con `res/drawable/intro_marca.xml`. La animacion y el tope de seguridad arrancan en su primer dibujo real, no al crearla.
+3. `IntroAnimada` (`app/.../intro/IntroAnimada.kt`) pone una `ComposeView` a pantalla completa encima del contenido (`addContentView`, fondo `#0C1322`) con `IntroMarcaEAnimada`. El reloj de la animacion y el tope de seguridad arrancan en su primer dibujo real, no al crearla.
 
 #### Causa del splash fijo de 5 s de la v0.8.9 (corregido en la v0.9.0)
 
-En la v0.8.9 `GacelasRaiz` se componia en el primer cuadro y leia el contenedor de dependencias (Supabase, repositorios), que es `lazy` y se construye en segundo plano: el hilo principal quedaba esperando unos 5 s, el primer cuadro no salia y el splash seguia fijo. Mientras tanto vencia el tope de 3,7 s, que se contaba desde `onCreate`, asi que la intro se retiraba antes de verse. Ahora el primer cuadro es solo el fondo de marca con la intro, la app se monta cuando `GacelasApp.esperarContenedor()` termina, y el tope cuenta desde que la intro se dibuja. `MainActivity` y `GacelasApp` marcan `Trace` y registran en el log `Arranque` los tiempos (onCreate, inicio de la intro y app lista, en ms desde el inicio del proceso). 4. `intro_marca.xml` lo genera `tools/marca/generar_intro_avd.py` (ruta, cometa, destello, gacela y RUNCITY en Anton convertida a trazos, sin fuente en tiempo de ejecucion). Solo anima propiedades que corren en el RenderThread (`trimPathStart`, `trimPathEnd`, `fillAlpha`, `strokeAlpha`, `scaleX`, `scaleY`, `translateX`, `translateY`); si una no lo fuera, todo el vector pasaria al hilo principal. `IntroMarcaTest` lo comprueba. `tools/marca/previsualizar_intro_avd.py` dibuja cuadros del vector para revisarlo sin telefono. 5. La intro no se corta porque la app este lista: termina cuando el vector avisa su fin (`onAnimationEnd`, 2,2 s) o con un toque, y siempre sale con un fundido de 160 ms (`FUNDIDO_SALIDA_MS`). Hay un tope de seguridad de 3,7 s (`IntroArranque.TOPE_MS`). `ControlIntro` garantiza que el fin ocurra una sola vez. 6. La app (`GacelasRaiz`) se monta enseguida, debajo de la intro: el trabajo del hilo principal no frena la animacion. La preparacion del mapa sin conexion se aplaza 3 s. El vector pesa unos 33 KB y no hay nada que precargar: viene dentro del APK. 7. `app/src/main/baseline-prof.txt` con `androidx.profileinstaller` sigue compilando AOT el arranque y la primera pantalla.
+En la v0.8.9 `GacelasRaiz` se componia en el primer cuadro y leia el contenedor de dependencias (Supabase, repositorios), que es `lazy` y se construye en segundo plano: el hilo principal quedaba esperando unos 5 s, el primer cuadro no salia y el splash seguia fijo. Mientras tanto vencia el tope de 3,7 s, que se contaba desde `onCreate`, asi que la intro se retiraba antes de verse. Ahora el primer cuadro es solo el fondo de marca con la intro, la app se monta cuando `GacelasApp.esperarContenedor()` termina, y el tope cuenta desde que la intro se dibuja. `MainActivity` y `GacelasApp` marcan `Trace` y registran en el log `Arranque` los tiempos (onCreate, inicio de la intro y app lista, en ms desde el inicio del proceso). 4. `IntroECuadrosTest` (Roborazzi) dibuja los cuadros t = 0,2, 0,7, 1,1, 1,5, 2,0, 2,5 y 3,0 s para revisarla sin telefono. 5. La intro no se corta porque la app este lista: termina cuando el reloj llega a 3,0 s o con un toque, y siempre sale con un fundido de 160 ms (`FUNDIDO_SALIDA_MS`). Hay un tope de seguridad de 4,2 s (`IntroArranque.TOPE_MS`). `ControlIntro` garantiza que el fin ocurra una sola vez. 6. La app (`GacelasRaiz`) se monta enseguida, debajo de la intro: el trabajo del hilo principal no frena la animacion. La preparacion del mapa sin conexion se aplaza 3 s. No hay nada que precargar: es codigo dentro del APK. 7. `app/src/main/baseline-prof.txt` con `androidx.profileinstaller` sigue compilando AOT el arranque y la primera pantalla.
 
 iOS todavia no muestra la intro. Para hacerlo, `MainViewController` puede reproducir `public/marca/intro.mp4` con `AVPlayerLayer` y la misma regla de `IntroArranque` (codigo comun en `core/ui`).
 
@@ -111,7 +111,7 @@ iOS todavia no muestra la intro. Para hacerlo, `MainViewController` puede reprod
 La intro es un `<video autoplay muted playsinline preload="auto">` en `index.html`, fuera de React, dentro de `#intro` (fondo `#0C1322`, `object-fit: cover`, `data-testid="intro-animada"`), con WebM VP9 y MP4 de respaldo (`preload="auto"`). Se ve antes de que cargue el bundle de la app.
 
 - Un script en linea en `index.html` aplica la misma regla que `debeMostrarIntro` (`src/shared/lib/intro.ts`): se muestra al abrir salvo si se salio hace menos de 30 s, y nunca con `prefers-reduced-motion: reduce`. `localStorage`, clave `gacelas.intro.vista`, guarda el instante de la ultima salida.
-- `src/shared/lib/introVideo.ts` (`iniciarIntroVideo`, cargado por su propia entrada diminuta `src/app/introArranque.ts`, antes y sin esperar a `main.tsx`) la oculta al terminar (`ended`), con clic, toque o cualquier tecla, si el video falla, si no hay primer cuadro en 1 s (fallback, por ejemplo autoplay bloqueado) o por un tope de 3,7 s; y la repite al volver a la pestana tras 30 s o mas fuera (`visibilitychange`, `pagehide`).
+- `src/shared/lib/introVideo.ts` (`iniciarIntroVideo`, cargado por su propia entrada diminuta `src/app/introArranque.ts`, antes y sin esperar a `main.tsx`) la oculta al terminar (`ended`), con clic, toque o cualquier tecla, si el video falla, si no hay primer cuadro en 1 s (fallback, por ejemplo autoplay bloqueado) o por un tope de 4,5 s (duracion + 1,5 s); y la repite al volver a la pestana tras 30 s o mas fuera (`visibilitychange`, `pagehide`).
 - La app carga debajo mientras tanto.
 
 ## Logo dentro de la app
@@ -128,11 +128,11 @@ Todo sale de `python3 tools/marca/generar.py`. Capturas antes y despues: `/works
 
 ## Pruebas
 
-| Prueba                             | Que verifica                                                                                                                                                      |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `core/ui` `IntroArranqueTest`      | arranque en frio, regla de 30 s, ciclo salir y volver, animaciones desactivadas, saltar, duracion, tope de 3,7 s                                                  |
-| `app` `IntroMarcaTest` (Roborazzi) | `ControlIntro` (un solo fin), vector solo con propiedades del RenderThread y 2,2 s exactos, no se corta a mitad, salto con toque y fundido, fondo igual al splash |
-| web `introVideo.test.ts`           | regla de 30 s, fin por `ended`, salto con clic y tecla, fallback sin primer cuadro y por error, tope de seguridad                                                 |
-| web `e2e/intro.spec.ts`            | aparece sobre `#0C1322`, se salta, no reaparece al recargar enseguida, termina sola, fallback sin video, movimiento reducido, manifest e iconos                   |
+| Prueba                             | Que verifica                                                                                                                                         |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `core/ui` `IntroArranqueTest`      | arranque en frio, regla de 30 s, ciclo salir y volver, animaciones desactivadas, saltar, duracion, tope de 4,2 s                                     |
+| `app` `IntroMarcaTest` (Roborazzi) | `ControlIntro` (un solo fin), duracion de 3,0 s y tope, cuadros de la intro E, no se corta a mitad, salto con toque y fundido, fondo igual al splash |
+| web `introVideo.test.ts`           | regla de 30 s, fin por `ended`, salto con clic y tecla, fallback sin primer cuadro y por error, tope de seguridad                                    |
+| web `e2e/intro.spec.ts`            | aparece sobre `#0C1322`, se salta, no reaparece al recargar enseguida, termina sola, fallback sin video, movimiento reducido, manifest e iconos      |
 
 Los demas e2e dan la intro por vista (`e2e/ayuda.ts`). Capturas de Roborazzi: `./gradlew :app:testDebugUnitTest --tests '*IntroMarca*' -Proborazzi.test.record=true -Pgacelas.shots=<carpeta>`.
