@@ -58,6 +58,18 @@ Reglas entre contextos:
 - Un contexto no importa `data` ni `presentation` de otro. Si necesita algo, depende de un modelo o puerto (interfaz) del `domain` del otro, o se usa un identificador (`carreraId`, `rutaId`).
 - `shared` (utilidades puras: fechas, geo, uuid, plataforma) puede usarse desde cualquier capa; no puede depender de ningún contexto.
 
+## Clima de Inicio (contexto `clima`)
+
+El chip de clima de Inicio (C2, mismo diseño) muestra datos reales de Open-Meteo (`https://api.open-meteo.com/v1/forecast`, `current=temperature_2m,weather_code,is_day`), gratis y sin clave. Atribución CC BY 4.0: "Datos del clima: Open-Meteo.com" en Ajustes > Acerca de (Android, iOS y web).
+
+- Móvil (KMP): `contextos/clima/domain` (modelo `ClimaActual`, puertos `FuenteClima`, `CacheClima`, `ClimaRepositorio` y `ReglasClima`: códigos WMO a español, refresco de 15 min, etiqueta de lugar, coordenadas a 2 decimales) y `contextos/clima/infrastructure` (`OpenMeteoFuenteClima` sobre `Red` de Ktor, `CacheClimaDataStore`, `ClimaRepositorioOpenMeteo`). `ContenedorApp.clima` y `ClimaInicioViewModel` (shared, Inicio).
+- Web: `src/contexts/clima` (mismas reglas en `domain/clima.ts`, `fetch` directo con cache en `localStorage` y el hook `useClima`).
+- Reglas: se muestra la cache al instante; se llama a la red al abrir Inicio como mucho cada 15 min (también tras un fallo), con timeout de 5 s. Sin cache ni red el chip dice "LOJA --"; nunca un valor inventado.
+- Ubicación: solo la última ubicación conocida y solo si el permiso de ubicación (el de carreras) ya está concedido; no se pide permiso nuevo ni se rastrea. Sin permiso o si falla, Loja (-3.9931, -79.2042). En la web se usa `navigator.permissions` para no abrir el aviso del navegador.
+- Etiqueta del lugar: "Loja" con el respaldo o a menos de 30 km de Loja. Más lejos, Android usa el `Geocoder` del sistema (ciudad) y, si no hay o falla, "Tu zona". La web no tiene geocodificación inversa barata: "Tu zona".
+- iOS: Inicio es compartido y usa el mismo repositorio, pero la ubicación para el clima aún no se lee (requiere código nativo de CoreLocation fuera de la carrera): siempre Loja.
+- Privacidad: la ubicación no va a ningún servidor propio; a Open-Meteo solo van coordenadas redondeadas a 2 decimales (unos 1 km).
+
 ## Backend Supabase
 
 ### Estado actual

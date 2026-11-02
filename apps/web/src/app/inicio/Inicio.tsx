@@ -4,6 +4,7 @@ import { useRacha } from '../../contexts/actividad/ui/useRacha'
 import { useActividad } from '../../contexts/actividad/api'
 import { MetaSemanal } from '../../contexts/analitica'
 import { RankingSemanal } from '../../contexts/comunidad'
+import { useClima } from '../../contexts/clima/api'
 import { useComunidad } from '../../contexts/comunidad/api'
 import { filtrarEventos, unirEventos, useEventos } from '../../contexts/eventos/api'
 import { useIdentidad } from '../../contexts/identidad/api'
@@ -32,6 +33,7 @@ const Runner3D = lazy(() =>
 )
 
 export function Inicio() {
+  const clima = useClima()
   const escritorio = useEsEscritorio()
   const sesion = useIdentidad((s) => s.sesion)
   const carreras = useActividad((s) => s.carreras)
@@ -73,7 +75,14 @@ export function Inicio() {
           Hola, {nombre}
         </h1>
         <div className="flex flex-wrap gap-2 pt-1">
-          <ChipC2 rotulo="Loja" valor="14 °C" resto=" nublado" acento="#96CCFF" />
+          {/* Clima real (Open-Meteo); sin dato muestra "--" en vez de un valor falso. */}
+          <ChipC2
+            rotulo={clima?.lugar ?? 'Loja'}
+            valor={clima ? `${clima.temperatura} °C` : '--'}
+            resto={clima ? ` ${clima.descripcion}` : ''}
+            acento="#96CCFF"
+            testId="chip-clima"
+          />
           <ChipC2
             rotulo="Racha"
             valor={`${racha.diaria} ${racha.diaria === 1 ? 'día' : 'días'}`}
