@@ -84,6 +84,10 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
             System.currentTimeMillis(),
         )
     }
+    // Clima real: cache al instante y refresco al abrir Inicio (el repositorio respeta 15 min).
+    val climaVm = androidx.lifecycle.viewmodel.compose.viewModel { cont.climaInicioViewModel { System.currentTimeMillis() } }
+    val clima by climaVm.clima.collectAsState()
+    androidx.compose.runtime.LaunchedEffect(Unit) { climaVm.refrescar() }
     InicioContenido(
         saludo = saludo, nombre = nombre, semana = semana, hoy = hoy, m = m, racha = com.gacelas.ui.rachaState(), evento = evento,
         onCorrer = onCorrer, onEventos = onEventos, onEvento = onEvento,
@@ -104,6 +108,7 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
         },
         onRutas = onRutas,
         nivel = com.gacelas.comunidad.domain.modelo.nivelCorredor(carreras.sumOf { it.distanciaKm }),
+        clima = clima,
     )
 }
 

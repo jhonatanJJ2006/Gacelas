@@ -261,6 +261,8 @@ await supabase.auth.updateUser({
 
 ## Privacidad de Ubicación
 
+Clima de Inicio: con permiso ya concedido se usa la última ubicación conocida, redondeada a 2 decimales, solo para pedir el clima a Open-Meteo (sin pasar por Supabase). Sin permiso se usa Loja. Ver docs/ARQUITECTURA.md.
+
 ### Home Zone Fuzzing
 
 **Implementación en backend** (Edge Function):

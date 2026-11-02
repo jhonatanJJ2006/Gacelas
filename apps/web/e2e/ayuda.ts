@@ -9,6 +9,15 @@ export const test = base.extend<{ supabase: EstadoFake }>({
       await context.addInitScript(() =>
         localStorage.setItem('gacelas.intro.vista', String(Date.now() + 1e12))
       )
+      // Clima de Inicio: Open-Meteo simulado, las pruebas no salen a internet.
+      await context.route('https://api.open-meteo.com/**', (r) =>
+        r.fulfill({
+          status: 200,
+          headers: { 'access-control-allow-origin': '*' },
+          contentType: 'application/json',
+          body: JSON.stringify({ current: { temperature_2m: 16.1, weather_code: 3, is_day: 1 } }),
+        })
+      )
       await use(await instalarFakeSupabase(context))
     },
     { auto: true },

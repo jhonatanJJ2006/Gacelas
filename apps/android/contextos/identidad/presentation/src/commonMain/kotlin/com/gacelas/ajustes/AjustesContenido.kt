@@ -208,7 +208,7 @@ fun AjustesContenido(
             onDismissRequest = { dialogo = null },
             confirmButton = { com.gacelas.ui.components.BotonModalC2("Cerrar", { dialogo = null }) },
             title = { com.gacelas.ui.components.MarcaGacelasA(40.dp, "LOJA, ECUADOR", tamTexto = 18f) },
-            text = { Text("${version}. App del grupo de running Runcity de Loja, Ecuador. Graba tus carreras con GPS, descubre rutas y entrena con la comunidad.") },
+            text = { Text("${version}. App del grupo de running Runcity de Loja, Ecuador. Graba tus carreras con GPS, descubre rutas y entrena con la comunidad.\n\nDatos del clima: Open-Meteo.com (CC BY 4.0).") },
             containerColor = GColors.BgSecondary,
         )
         "ayuda" -> com.gacelas.ui.components.DialogoC2(

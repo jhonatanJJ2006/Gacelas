@@ -57,6 +57,10 @@ class ContenedorApp(
     backend: Backend? = null,
     val actualizacion: ActualizacionRepository? = null,
     descargarAlEntrar: Boolean = true,
+    /** Ultima ubicacion conocida si ya hay permiso (Android); null usa Loja (iOS por ahora). */
+    ubicacionAproximada: suspend () -> com.gacelas.clima.domain.Coordenadas? = { null },
+    /** Geocodificacion inversa de la plataforma; null muestra "Tu zona" fuera de Loja. */
+    nombreLugar: suspend (com.gacelas.clima.domain.Coordenadas) -> String? = { null },
     programarSincronizacion: () -> Unit = {},
 ) {
     val auth: AuthRepository
@@ -103,6 +107,14 @@ class ContenedorApp(
 
     /** Ruta sugerida para hoy (migracion 035); sin servidor solo usa la cache local. */
     val rutaSugerida = com.gacelas.rutas.infrastructure.RutaSugeridaRepository(backend, store)
+
+    /** Clima del chip de Inicio (Open-Meteo con cache local); ver docs/ARQUITECTURA.md. */
+    val clima: com.gacelas.clima.domain.ClimaRepositorio = com.gacelas.clima.infrastructure.ClimaRepositorioOpenMeteo(
+        com.gacelas.clima.infrastructure.OpenMeteoFuenteClima(),
+        com.gacelas.clima.infrastructure.CacheClimaDataStore(store),
+        ubicacionAproximada,
+        nombreLugar,
+    )
 
     /** Rutas guardadas en el celular y cambios pendientes. */
     val rutasOffline = RutasOffline(store)
@@ -179,6 +191,7 @@ class ContenedorApp(
         explorar, { com.gacelas.rutas.infrastructure.Elevacion.perfil(it) }, { com.gacelas.rutas.infrastructure.Elevacion.desnivelPositivo(it) },
     )
     fun detalleRutaViewModel(id: String) = DetalleRutaViewModel(id, explorar)
+    fun climaInicioViewModel(ahora: () -> Long) = com.gacelas.inicio.ClimaInicioViewModel(clima, ahora)
     fun eventosViewModel() = EventosViewModel(eventos)
     fun clubesViewModel() = ClubesViewModel(clubes)
     fun feedViewModel(ajustesRepo: AjustesRepository = ajustes) = com.gacelas.comunidad.presentation.FeedViewModel(carreras, auth, ajustesRepo, feed = feed)

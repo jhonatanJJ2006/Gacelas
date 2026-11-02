@@ -97,7 +97,7 @@ export const PRIVACIDAD: SeccionLegal[] = [
   {
     titulo: '7. Con quién compartimos',
     texto:
-      'Usamos Supabase como proveedor de base de datos y autenticación y servicios de mapas para mostrar teselas. No vendemos tus datos ni los usamos para publicidad. Estos proveedores pueden estar fuera de Ecuador con garantías adecuadas según la LOPDP.',
+      'Usamos Supabase como proveedor de base de datos y autenticación y servicios de mapas para mostrar teselas. Para el clima de Inicio enviamos a Open-Meteo solo coordenadas aproximadas (redondeadas a unos 1 km), o las de Loja si no diste permiso de ubicación; no pasan por nuestros servidores. No vendemos tus datos ni los usamos para publicidad. Estos proveedores pueden estar fuera de Ecuador con garantías adecuadas según la LOPDP.',
   },
   {
     titulo: '8. Conservación',

@@ -310,6 +310,13 @@ export function AjustesPreferencias() {
           Versión {VERSION_APP}. App del grupo de running Runcity de Loja, Ecuador. Graba tus
           carreras con GPS, descubre rutas y entrena con la comunidad.
         </p>
+        <p className="mt-3">
+          Datos del clima:{' '}
+          <a href="https://open-meteo.com/" target="_blank" rel="noreferrer" className="underline">
+            Open-Meteo.com
+          </a>{' '}
+          (CC BY 4.0).
+        </p>
       </Dialogo>
       <Dialogo
         titulo="Ayuda y soporte"
