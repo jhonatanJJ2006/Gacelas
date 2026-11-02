@@ -90,6 +90,8 @@ fun InicioContenido(
     onRutas: () -> Unit = {},
     /** Linea bajo la ruta (por que es segura) o, sin ruta, el motivo del estado vacio. */
     rutaSugeridaNota: String? = null,
+    /** Clima del chip; null (sin cache ni red, o cargando sin cache) muestra "LOJA --". */
+    clima: com.gacelas.clima.domain.ClimaActual? = null,
 ) {
     Pantalla {
         // Encabezado C2: saludo en Anton, pildoras de clima, racha y nivel.
@@ -99,7 +101,13 @@ fun InicioContenido(
                 Text("Hola, $nombre".uppercase(), style = GType.headlineLg, color = GColors.TextPrimary)
                 // Chips .wx del Figma: clima, racha (borde menta) y nivel (degradado morado).
                 androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
-                    ChipC2("Loja", "14 °C", " nublado", acento = Color(0xFF96CCFF))
+                    // Clima real (Open-Meteo); sin dato todavia muestra "--" en vez de un valor falso.
+                    ChipC2(
+                        clima?.lugar ?: com.gacelas.clima.domain.ReglasClima.NOMBRE_LOJA,
+                        clima?.let { "${it.temperatura} °C" } ?: "--",
+                        clima?.let { " ${it.descripcion}" } ?: "",
+                        acento = Color(0xFF96CCFF), modifier = Modifier.testTag("chip-clima"),
+                    )
                     ChipC2("Racha", "${racha.diaria} " + if (racha.diaria == 1) "día" else "días", acento = GColors.C2Menta, borde = GColors.C2Menta, modifier = Modifier.testTag("insignia-racha"))
                     nivel?.let {
                         ChipC2("Nivel", it, acento = Color(0xFFE9D5FF), borde = GColors.C2Violeta,

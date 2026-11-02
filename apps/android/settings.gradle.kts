@@ -48,6 +48,8 @@ includeModule(":contextos:seguridad:application", "contextos/seguridad/applicati
 includeModule(":contextos:analitica:application", "contextos/analitica/application")
 includeModule(":contextos:analitica:infrastructure", "contextos/analitica/infrastructure")
 includeModule(":contextos:analitica:presentation", "contextos/analitica/presentation")
+includeModule(":contextos:clima:domain", "contextos/clima/domain")
+includeModule(":contextos:clima:infrastructure", "contextos/clima/infrastructure")
 includeModule(":contextos:envivo:domain", "contextos/envivo/domain")
 includeModule(":contextos:envivo:infrastructure", "contextos/envivo/infrastructure")
 

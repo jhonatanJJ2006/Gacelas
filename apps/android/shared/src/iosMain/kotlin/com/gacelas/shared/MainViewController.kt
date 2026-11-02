@@ -244,6 +244,10 @@ private fun InicioIos(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (St
     val evento = remember {
         MockData.eventos.firstOrNull { !it.yaPaso(ahora) } ?: MockData.eventos.maxBy { it.inicioMs ?: 0L }
     }
+    // Clima real compartido; en iOS la ubicacion aun no se lee para esto: usa Loja (docs/ARQUITECTURA.md).
+    val climaVm = androidx.lifecycle.viewmodel.compose.viewModel { com.gacelas.acceso.SesionIos.contenedor.climaInicioViewModel { ahoraMs() } }
+    val clima by climaVm.clima.collectAsState()
+    androidx.compose.runtime.LaunchedEffect(Unit) { climaVm.refrescar() }
     com.gacelas.inicio.InicioContenido(
         saludo = com.gacelas.inicio.saludoPorHora(Fechas.hora(ahora)),
         nombre = perfil?.nombre?.substringBefore(' ')?.ifBlank { null } ?: "Corredor",
@@ -255,6 +259,7 @@ private fun InicioIos(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (St
         onCorrer = onCorrer, onEventos = onEventos, onEvento = onEvento,
         // Igual que InicioScreen (Android): Idle girando, camara (0, 0.3, 4.4).
         corredor3D = { com.gacelas.ui.three.Runner3DIos(com.gacelas.ui.three.ClipCorredorIos.Idle, autoRotar = true, camara = Triple(0.0, 0.3, 4.4)) },
+        clima = clima,
     )
 }
 

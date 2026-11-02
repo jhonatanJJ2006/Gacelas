@@ -33,7 +33,11 @@ class GacelasApp : Application() {
     private val alcance = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val contenedor: Contenedor by lazy {
         val store = applicationContext.almacenGacelas
-        Contenedor(store, backendConfigurado(), actualizacion = actualizacionAndroid(store)) { com.gacelas.core.sync.Sincronizacion.programar(this) }
+        Contenedor(
+            store, backendConfigurado(), actualizacion = actualizacionAndroid(store),
+            ubicacionAproximada = { com.gacelas.inicio.ubicacionParaClima(this) },
+            nombreLugar = { com.gacelas.inicio.nombreLugarParaClima(this, it) },
+        ) { com.gacelas.core.sync.Sincronizacion.programar(this) }
     }
 
     private val contenedorListo = kotlinx.coroutines.CompletableDeferred<Unit>()
