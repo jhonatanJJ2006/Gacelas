@@ -10,32 +10,32 @@ Leyenda: ✅ pasa · 🔧 arreglado en esta rama · 📱 requiere dispositivo re
 Todas las rutas de `Destinos.todas` (ahora incluye también MIS_REPORTES, DETALLE_CARRERA y ADMIN) se prueban en `QaTotalTest`:
 abrir la ruta → se dibuja sin excepción → atrás vuelve a la pantalla anterior. Se repite con fuente 1.5x y con pantalla pequeña 360×640.
 
-| Pantalla | Elemento | Acción esperada | Cómo se probó | Resultado |
-|---|---|---|---|---|
-| Bienvenida / acceso | Saltar, Crear cuenta, Iniciar sesión, Google | Navegan a su pantalla | QaTotalTest.flujoAcceso + AccesoTest existentes | ✅ / Google 📱 |
-| Inicio | Correr, Eventos, evento, Comunidad, Rutas | Abren su destino | Humo de rutas + revisión de cableado en GacelasNavHost | ✅ |
-| Rutas | Buscar, ruta, Dibujar | Buscador / detalle / crear ruta | Humo de rutas | ✅ |
-| Comunidad / Eventos / Clubes | Eventos, En vivo, Clubes, evento, club | Abren su destino | Humo de rutas | ✅ |
-| Detalle de evento | Atrás, En vivo | Vuelve / abre evento en vivo | Humo de rutas | ✅ |
-| Perfil | Editar, Avatar, Ajustes, carrera, Reportes | Abren su destino | Humo de rutas | ✅ |
-| Editar perfil / Avatar | Atrás, Guardar | Vuelven | Humo de rutas | ✅ |
-| Correr / en curso / resumen | Iniciar, pausar, descartar | Flujo de carrera | Tests existentes de carrera + modal descartar | ✅ / GPS 📱 |
-| Ajustes, Privacidad, Config. notificaciones, Legales | Atrás, enlaces legales, eliminar cuenta | Navegan | Humo de rutas | ✅ |
-| Notificaciones | Abrir notificación de evento | Antes abría siempre el evento "1" (fijo) | Revisión estática + test | 🔧 ahora abre la lista de eventos |
-| Brújula, Mapas offline, Mapa vivo | Abrir / atrás | Se dibujan y vuelven | Humo de rutas | ✅ / sensores 📱 |
-| Admin, Mis reportes, Detalle carrera | Abrir / atrás | No estaban en el humo | Añadidas a `Destinos.todas` | 🔧 cubiertas |
-| Todas | Doble toque rápido en un botón | Una sola navegación | QaTotalTest.dobleIr / dobleAtras | 🔧 antes apilaba la pantalla 2 veces o hacía doble atrás |
-| Todas | Rotación / recreación | Mantiene la pantalla | StateRestorationTester (AJUSTES) | ✅ |
-| Todas | Fuente grande 1.5x, pantalla 360×640 | Sin crash | QaTotalTest | ✅ |
+| Pantalla                                             | Elemento                                     | Acción esperada                          | Cómo se probó                                          | Resultado                                                |
+| ---------------------------------------------------- | -------------------------------------------- | ---------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------- |
+| Bienvenida / acceso                                  | Saltar, Crear cuenta, Iniciar sesión, Google | Navegan a su pantalla                    | QaTotalTest.flujoAcceso + AccesoTest existentes        | ✅ / Google 📱                                           |
+| Inicio                                               | Correr, Eventos, evento, Comunidad, Rutas    | Abren su destino                         | Humo de rutas + revisión de cableado en GacelasNavHost | ✅                                                       |
+| Rutas                                                | Buscar, ruta, Dibujar                        | Buscador / detalle / crear ruta          | Humo de rutas                                          | ✅                                                       |
+| Comunidad / Eventos / Clubes                         | Eventos, En vivo, Clubes, evento, club       | Abren su destino                         | Humo de rutas                                          | ✅                                                       |
+| Detalle de evento                                    | Atrás, En vivo                               | Vuelve / abre evento en vivo             | Humo de rutas                                          | ✅                                                       |
+| Perfil                                               | Editar, Avatar, Ajustes, carrera, Reportes   | Abren su destino                         | Humo de rutas                                          | ✅                                                       |
+| Editar perfil / Avatar                               | Atrás, Guardar                               | Vuelven                                  | Humo de rutas                                          | ✅                                                       |
+| Correr / en curso / resumen                          | Iniciar, pausar, descartar                   | Flujo de carrera                         | Tests existentes de carrera + modal descartar          | ✅ / GPS 📱                                              |
+| Ajustes, Privacidad, Config. notificaciones, Legales | Atrás, enlaces legales, eliminar cuenta      | Navegan                                  | Humo de rutas                                          | ✅                                                       |
+| Notificaciones                                       | Abrir notificación de evento                 | Antes abría siempre el evento "1" (fijo) | Revisión estática + test                               | 🔧 ahora abre la lista de eventos                        |
+| Brújula, Mapas offline, Mapa vivo                    | Abrir / atrás                                | Se dibujan y vuelven                     | Humo de rutas                                          | ✅ / sensores 📱                                         |
+| Admin, Mis reportes, Detalle carrera                 | Abrir / atrás                                | No estaban en el humo                    | Añadidas a `Destinos.todas`                            | 🔧 cubiertas                                             |
+| Todas                                                | Doble toque rápido en un botón               | Una sola navegación                      | QaTotalTest.dobleIr / dobleAtras                       | 🔧 antes apilaba la pantalla 2 veces o hacía doble atrás |
+| Todas                                                | Rotación / recreación                        | Mantiene la pantalla                     | StateRestorationTester (AJUSTES)                       | ✅                                                       |
+| Todas                                                | Fuente grande 1.5x, pantalla 360×640         | Sin crash                                | QaTotalTest                                            | ✅                                                       |
 
 ## Matriz: modales
 
-| Modal | Botón | Toque fuera | Atrás | Toque dentro no cierra | Prueba |
-|---|---|---|---|---|---|
-| DialogoC2 (todos los diálogos: cerrar sesión, eliminar, etc.) | ✅ y el botón ejecuta SU acción, no el descarte | ✅ | ✅ | ✅ | ModalesCierreQaTest |
-| HojaC2 (hojas inferiores: compartir, reportar incidente, en vivo…) | ✅ | ✅ | ✅ | ✅ | ModalesCierreQaTest |
-| DialogoDescartarCarrera | ✅ (tests existentes) | hereda de DialogoC2 | ✅ | hereda de DialogoC2 | ModalesCierreQaTest (atrás) + tests existentes |
-| Tamaños / bordes / paridad | — | — | — | — | ModalesTamanosTest, ModalesBordeTest, ParidadModalTest |
+| Modal                                                              | Botón                                           | Toque fuera         | Atrás | Toque dentro no cierra | Prueba                                                 |
+| ------------------------------------------------------------------ | ----------------------------------------------- | ------------------- | ----- | ---------------------- | ------------------------------------------------------ |
+| DialogoC2 (todos los diálogos: cerrar sesión, eliminar, etc.)      | ✅ y el botón ejecuta SU acción, no el descarte | ✅                  | ✅    | ✅                     | ModalesCierreQaTest                                    |
+| HojaC2 (hojas inferiores: compartir, reportar incidente, en vivo…) | ✅                                              | ✅                  | ✅    | ✅                     | ModalesCierreQaTest                                    |
+| DialogoDescartarCarrera                                            | ✅ (tests existentes)                           | hereda de DialogoC2 | ✅    | hereda de DialogoC2    | ModalesCierreQaTest (atrás) + tests existentes         |
+| Tamaños / bordes / paridad                                         | —                                               | —                   | —     | —                      | ModalesTamanosTest, ModalesBordeTest, ParidadModalTest |
 
 Capturas: `docs/capturas/qa-total/` (dialogo-abierto, hoja-abierta, descartar-carrera).
 
