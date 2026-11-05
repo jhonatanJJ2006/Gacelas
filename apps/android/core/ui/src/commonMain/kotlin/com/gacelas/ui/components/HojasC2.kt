@@ -23,6 +23,16 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.animation.core.Animatable
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import com.gacelas.ui.movimiento.Mov
+import com.gacelas.ui.movimiento.MovimientoC2
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -41,16 +51,58 @@ import androidx.compose.ui.window.Dialog
  * (edge-to-edge) y la hoja queda pegada al borde inferior en todos los dispositivos.
  */
 class HojasC2 {
-    internal val pila = mutableStateListOf<Pair<Any, @Composable () -> Unit>>()
-    val abiertas: Int get() = pila.size
+    internal val pila = mutableStateListOf<CapaC2>()
+    /** Hojas abiertas (las que estan saliendo con su animacion ya no cuentan). */
+    val abiertas: Int get() = pila.count { !it.saliendo.value }
+}
+
+/** Una capa del anfitrion: su contenido y si esta animando la salida. */
+internal class CapaC2(val clave: Any, val contenido: @Composable () -> Unit, val atras: () -> Unit, val velo: Boolean) {
+    val saliendo = mutableStateOf(false)
 }
 
 val LocalHojasC2 = staticCompositionLocalOf<HojasC2?> { null }
 
-/** Colocar al final del contenedor raiz (fillMaxSize), encima de toda la app. */
+/**
+ * Colocar al final del contenedor raiz (fillMaxSize), encima de toda la app.
+ *
+ * Movimiento (MovimientoC2): el velo se funde y la hoja sube desde abajo al abrir (MEDIO, curva
+ * Entrar); al cerrar baja y se funde en CORTO con curva Salir. Durante la salida la capa ya no tiene
+ * semantica ni atiende "atras", y un escudo invisible evita pulsar dos veces un boton de la hoja.
+ * Con animaciones quitadas la hoja aparece y desaparece al instante.
+ */
 @Composable
 fun AnfitrionHojasC2(hojas: HojasC2) {
-    hojas.pila.forEach { (clave, contenido) -> key(clave) { contenido() } }
+    val escala = Mov.escala
+    hojas.pila.forEach { capa ->
+        key(capa.clave) {
+            val progreso = remember { Animatable(if (escala <= 0f) 1f else 0f) }
+            val saliendo = capa.saliendo.value
+            LaunchedEffect(saliendo) {
+                if (!saliendo) progreso.animateTo(1f, MovimientoC2.spec(MovimientoC2.MEDIO, escala, MovimientoC2.Entrar))
+                else {
+                    progreso.animateTo(0f, MovimientoC2.spec(MovimientoC2.CORTO, escala, MovimientoC2.Salir))
+                    hojas.pila.remove(capa)
+                }
+            }
+            val desplazamiento = with(LocalDensity.current) { 96.dp.toPx() }
+            if (!saliendo) AtrasHojaC2 { capa.atras() }
+            Box(
+                Modifier.fillMaxSize()
+                    .drawBehind { if (capa.velo) drawRect(Color.Black.copy(alpha = 0.6f * progreso.value)) }
+                    .then(if (saliendo) Modifier.clearAndSetSemantics { } else Modifier.testTag("hoja-c2-velo")),
+            ) {
+                Box(Modifier.fillMaxSize().graphicsLayer {
+                    val p = progreso.value
+                    alpha = (p * 1.6f).coerceAtMost(1f)
+                    translationY = (1f - p) * desplazamiento
+                }) { capa.contenido() }
+                if (saliendo) Box(Modifier.fillMaxSize().pointerInput(Unit) {
+                    awaitPointerEventScope { while (true) awaitPointerEvent().changes.forEach { it.consume() } }
+                })
+            }
+        }
+    }
 }
 
 /** Atras del sistema mientras la hoja esta abierta. */
@@ -71,12 +123,14 @@ fun CapaHojaC2(onDismissRequest: () -> Unit, velo: Boolean = true, contenido: @C
     val actual by rememberUpdatedState(contenido)
     val cerrar by rememberUpdatedState(onDismissRequest)
     val clave = remember { Any() }
+    val sinAnimacion = !Mov.activo
     DisposableEffect(hojas, clave) {
-        hojas.pila.add(clave to @Composable {
-            AtrasHojaC2 { cerrar() }
-            Box(Modifier.fillMaxSize().background(if (velo) Color.Black.copy(alpha = 0.6f) else Color.Transparent).testTag("hoja-c2-velo")) { actual() }
-        })
-        onDispose { hojas.pila.removeAll { it.first === clave } }
+        val capa = CapaC2(clave, @Composable { actual() }, { cerrar() }, velo)
+        hojas.pila.add(capa)
+        onDispose {
+            // Con animaciones se marca como saliendo y el anfitrion la quita al terminar la salida.
+            if (sinAnimacion) hojas.pila.remove(capa) else capa.saliendo.value = true
+        }
     }
 }
 

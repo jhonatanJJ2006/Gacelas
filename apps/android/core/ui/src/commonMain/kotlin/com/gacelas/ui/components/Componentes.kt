@@ -1,5 +1,10 @@
 package com.gacelas.ui.components
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
+import androidx.compose.animation.animateColorAsState
+import com.gacelas.ui.movimiento.Mov
+import com.gacelas.ui.movimiento.pulsacionC2
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -116,7 +121,8 @@ fun BotonPrimario(
     enabled: Boolean = true,
     color: Color = GColors.Primary,
 ) {
-    Box(modifier.fillMaxWidth().height(56.dp)) {
+    val interaccion = remember { MutableInteractionSource() }
+    Box(modifier.fillMaxWidth().height(56.dp).pulsacionC2(interaccion)) {
         // Sombra solida desplazada en violeta, firma visual C2.
         if (enabled) Box(Modifier.matchParentSize().offset(5.dp, 5.dp).clip(FormaBotonC2).background(GColors.C2Violeta))
     Button(
@@ -124,6 +130,7 @@ fun BotonPrimario(
         enabled = enabled,
         modifier = Modifier.fillMaxWidth().height(56.dp),
         shape = FormaBotonC2,
+        interactionSource = interaccion,
         colors = ButtonDefaults.buttonColors(containerColor = color, contentColor = GColors.SobreColor),
     ) {
         Text(texto.uppercase(), style = GType.labelLg.copy(fontSize = GType.bodyLg.fontSize, fontWeight = androidx.compose.ui.text.font.FontWeight.Black, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic))
@@ -152,9 +159,10 @@ fun Tarjeta(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val shape = FormaC2
-    var m = modifier.fillMaxWidth().clip(shape).background(fondo)
+    val interaccion = remember { MutableInteractionSource() }
+    var m = (if (onClick != null) modifier.pulsacionC2(interaccion) else modifier).fillMaxWidth().clip(shape).background(fondo)
     if (borde != null && borde != GColors.BorderSubtle) m = m.border(BorderStroke(1.dp, borde), shape)
-    if (onClick != null) m = m.clickable(onClick = onClick)
+    if (onClick != null) m = m.clickable(interaccion, androidx.compose.material3.ripple(), onClick = onClick)
     Column(m.padding(padding), verticalArrangement = Arrangement.spacedBy(8.dp), content = content)
 }
 
@@ -288,10 +296,12 @@ fun FilaInterruptor(icono: ImageVector, titulo: String, descripcion: String? = n
 
 @Composable
 fun Pastilla(texto: String, activo: Boolean, onClick: () -> Unit = {}, icono: ImageVector? = null) {
+    val interaccion = remember { MutableInteractionSource() }
+    val fondo by animateColorAsState(if (activo) GColors.C2Violeta else GColors.C2S2, Mov.corto(), label = "pastilla")
     Row(
-        Modifier.clip(RoundedCornerShape(2.dp))
-            .background(if (activo) GColors.C2Violeta else GColors.C2S2)
-            .clickable(onClick = onClick)
+        Modifier.pulsacionC2(interaccion).clip(RoundedCornerShape(2.dp))
+            .background(fondo)
+            .clickable(interaccion, androidx.compose.material3.ripple(), onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -364,12 +374,14 @@ fun FechaC2(dia: String, mes: String, modifier: Modifier = Modifier) {
 /** Boton pequeno C2 inclinado (Asistire, Seguir, Inscribirse). [activo] lo pinta en gris como estado ya elegido. */
 @Composable
 fun BotonChipC2(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier, activo: Boolean = false) {
+    val interaccion = remember { MutableInteractionSource() }
+    val fondo by animateColorAsState(if (activo) GColors.C2S2 else GColors.C2Morado, Mov.corto(), label = "chip")
     Text(
         texto.uppercase(),
         style = GType.labelMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic),
         color = if (activo) GColors.C2Violeta else GColors.SobreColor,
-        modifier = modifier.clip(FormaBotonC2).background(if (activo) GColors.C2S2 else GColors.C2Morado)
-            .clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 7.dp),
+        modifier = modifier.pulsacionC2(interaccion).clip(FormaBotonC2).background(fondo)
+            .clickable(interaccion, androidx.compose.material3.ripple(), onClick = onClick).padding(horizontal = 14.dp, vertical = 7.dp),
     )
 }
 

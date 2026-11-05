@@ -1,5 +1,6 @@
 package com.gacelas.ui.components
 
+import com.gacelas.ui.movimiento.pulsacionC2
 import androidx.compose.foundation.background
 import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.verticalScroll
@@ -147,10 +148,11 @@ fun BotonModalC2(texto: String, onClick: () -> Unit, modifier: Modifier = Modifi
         peligro -> Brush.linearGradient(listOf(Color(0xFF9D174D), PeligroC2))
         else -> Brush.linearGradient(listOf(Color(0xFF7B1FA2), GColors.C2Morado))
     }
-    Box(modifier.fillMaxWidth().height(52.dp)) {
+    val interaccion = remember { MutableInteractionSource() }
+    Box(modifier.fillMaxWidth().height(52.dp).pulsacionC2(interaccion)) {
         if (!secundario && enabled) Box(Modifier.matchParentSize().offset(4.dp, 4.dp).clip(forma).background(if (peligro) Color(0xFFF472B6) else GColors.C2Violeta))
         Box(
-            Modifier.matchParentSize().clip(forma).background(fondo).clickable(enabled = enabled, onClick = onClick),
+            Modifier.matchParentSize().clip(forma).background(fondo).clickable(interaccion, androidx.compose.material3.ripple(), enabled = enabled, onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
             Text(

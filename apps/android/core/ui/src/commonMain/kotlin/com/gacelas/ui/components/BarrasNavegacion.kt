@@ -1,5 +1,12 @@
 package com.gacelas.ui.components
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.graphics.graphicsLayer
+import com.gacelas.ui.movimiento.Mov
+import com.gacelas.ui.movimiento.pulsacionC2
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -79,22 +86,29 @@ fun BarraInferior(rutaActual: String, onNavegar: (String) -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         itemsNav.forEach { item ->
+            val interaccion = remember { MutableInteractionSource() }
             if (item.principal) {
                 Box(
-                    Modifier.offset(y = (-14).dp).size(56.dp).shadow(8.dp, CircleShape).clip(CircleShape)
-                        .background(GColors.PrimaryLight).clickable { onNavegar(item.ruta) }.testTag("nav-correr"),
+                    Modifier.offset(y = (-14).dp).pulsacionC2(interaccion).size(56.dp).shadow(8.dp, CircleShape).clip(CircleShape)
+                        .background(GColors.PrimaryLight).clickable(interaccion, androidx.compose.material3.ripple()) { onNavegar(item.ruta) }.testTag("nav-correr"),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(item.icono, contentDescription = item.etiqueta, tint = GColors.OnPrimary, modifier = Modifier.size(32.dp))
                 }
             } else {
                 val activo = rutaActual == item.ruta || (item.ruta == Destinos.COMUNIDAD && rutaActual == Destinos.EVENTOS)
-                val color = if (activo) GColors.PrimaryLight else GColors.TextSecondary
+                // Pestana activa: color e icono animados (CORTO); el icono sube 2 dp y crece un poco.
+                val color by animateColorAsState(if (activo) GColors.PrimaryLight else GColors.TextSecondary, Mov.corto(), label = "pestana")
+                val realce by animateFloatAsState(if (activo) 1f else 0f, Mov.medio(), label = "pestana-realce")
                 Column(
-                    Modifier.clip(CircleShape).clickable { onNavegar(item.ruta) }.padding(horizontal = 10.dp, vertical = 6.dp),
+                    Modifier.pulsacionC2(interaccion).clip(CircleShape).clickable(interaccion, androidx.compose.material3.ripple()) { onNavegar(item.ruta) }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Icon(item.icono, contentDescription = null, tint = color)
+                    Icon(item.icono, contentDescription = null, tint = color, modifier = Modifier.graphicsLayer {
+                        val e = 1f + 0.1f * realce
+                        scaleX = e; scaleY = e; translationY = -2.dp.toPx() * realce
+                    })
                     Text(item.etiqueta, style = GType.labelMd, color = color)
                 }
             }
