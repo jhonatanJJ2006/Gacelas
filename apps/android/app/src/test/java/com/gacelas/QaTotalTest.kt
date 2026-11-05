@@ -14,6 +14,8 @@ import org.junit.Assert.assertFalse
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.assertCountEquals
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
@@ -114,5 +116,17 @@ class QaTotalTest {
         compose.waitForIdle()
         tester.emulateSavedInstanceStateRestore()
         compose.runOnIdle { assertEquals(Destinos.AJUSTES, nav.currentDestination?.route) }
+    }
+}
+
+/** Regresion: el perfil sin datos cargados no muestra un usuario de prueba ("María López"). */
+@RunWith(org.robolectric.RobolectricTestRunner::class)
+@org.robolectric.annotation.Config(sdk = [34])
+class PerfilSinDatosFalsosTest {
+    @get:org.junit.Rule val compose = androidx.compose.ui.test.junit4.createComposeRule()
+    @org.junit.Test fun sinPerfilNoMuestraUsuarioDePrueba() {
+        compose.setContent { com.gacelas.ui.theme.GacelasTheme { com.gacelas.perfil.PerfilScreen(onEditar = {}, onAvatar = {}, onAjustes = {}) } }
+        compose.onAllNodesWithText("María López").assertCountEquals(0)
+        compose.onAllNodesWithText("@maria_runs", substring = true).assertCountEquals(0)
     }
 }

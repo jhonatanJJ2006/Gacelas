@@ -130,9 +130,9 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             FotoPerfil(perfil?.fotoPath, 80.dp)
             Column(Modifier.weight(1f).padding(start = 14.dp)) {
-                Text(perfil?.nombre ?: MockData.usuarioActual.nombre, style = GType.headlineMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary, maxLines = 1)
+                Text(perfil?.nombre ?: "Tu perfil", style = GType.headlineMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary, maxLines = 1)
                 Text(
-                    listOfNotNull("@${perfil?.username ?: MockData.usuarioActual.username}", perfil?.ubicacion?.takeIf { it.isNotBlank() }).joinToString(" · "),
+                    listOfNotNull(perfil?.username?.let { "@$it" }, perfil?.ubicacion?.takeIf { it.isNotBlank() }).joinToString(" · "),
                     style = GType.bodySm, color = GColors.C2Muted, maxLines = 1,
                 )
                 perfil?.bio?.takeIf { it.isNotBlank() }?.let { Text(it, style = GType.bodySm, color = GColors.C2Muted, maxLines = 2) }
