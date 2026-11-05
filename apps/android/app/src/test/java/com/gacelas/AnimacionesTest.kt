@@ -54,7 +54,7 @@ import org.robolectric.annotation.GraphicsMode
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [34], qualifiers = "w393dp-h852dp-xxhdpi")
+@Config(sdk = [34], qualifiers = "w393dp-h852dp-xhdpi")
 class AnimacionesTest {
     @get:Rule val compose = createComposeRule()
     private val frames: String? = System.getProperty("gacelas.frames")
@@ -185,4 +185,30 @@ class AnimacionesTest {
         captureScreenRoboImage("$dir/animaciones/hoja-mitad.png")
         assertEquals(1, 1)
     }
+    private fun inicioEntrada(escala: Float) {
+        val ahora = com.gacelas.correr.CarreraMuestra.guardada.inicioMs + 3_600_000L
+        val carreras = listOf(com.gacelas.correr.CarreraMuestra.guardada)
+        montar(escala) {
+            com.gacelas.inicio.InicioContenido(
+                saludo = "Buenos días", nombre = "Jhona",
+                semana = com.gacelas.actividad.domain.reglas.Estadisticas.semana(carreras, ahora),
+                hoy = com.gacelas.actividad.domain.reglas.Estadisticas.diaSemana(ahora), m = true,
+                racha = com.gacelas.actividad.domain.reglas.Racha(diaria = 12), evento = com.gacelas.data.mock.MockData.eventos.first(),
+                onCorrer = {}, onEventos = {}, onEvento = {},
+                corredor3D = { com.gacelas.ui.three.Runner3DFallback(Modifier.fillMaxSize()) },
+                totales = com.gacelas.actividad.domain.reglas.EstadisticasPerfil.totalesSemana(carreras, ahora), meta = 3,
+                rango = com.gacelas.inicio.rangoSemana(ahora),
+                reto = com.gacelas.actividad.domain.reglas.EstadisticasPerfil.retoMes(carreras, ahora), nivel = "Gacela Intermedia",
+                clima = com.gacelas.clima.domain.ClimaActual(16, "nublado", "Loja", 0L),
+            )
+        }
+        avanzar(MovimientoC2.CONTEO + 500L, "inicio")
+        compose.onNodeWithTag("chip-clima").assertExists()
+        compose.onNodeWithTag("insignia-nivel").assertExists()
+        captureScreenRoboImage("$dir/animaciones/inicio-final-${if (escala > 0f) "con" else "sin"}.png")
+    }
+
+    @Test fun inicioConAnimaciones() = inicioEntrada(1f)
+
+    @Test fun inicioSinAnimaciones() = inicioEntrada(0f)
 }

@@ -126,6 +126,31 @@ El logo anterior (cuadro naranja con el corredor de Material o el simbolo `sprin
 
 Todo sale de `python3 tools/marca/generar.py`. Capturas antes y despues: `/workspace/gacelas/marca/implementado/logo-interno/`.
 
+## Movimiento
+
+Fuente unica: `core/ui/.../movimiento/MovimientoC2.kt` (Android e iOS) y
+`apps/web/src/shared/lib/movimiento.ts` + variables `--mov-*` de `index.css` (web).
+
+| Token          | Valor          | Uso                                                                      |
+| -------------- | -------------- | ------------------------------------------------------------------------ |
+| CORTO          | 150 ms         | pulsacion, salida de hojas y avisos, cambio de color de chips y pestanas |
+| MEDIO          | 250 ms         | entrada de pantallas, hojas, dialogos y avisos; escalonados              |
+| LARGO          | 350 ms         | latido de la cuenta regresiva                                            |
+| ESCALON        | 45 ms (tope 6) | retraso entre elementos de una lista o secciones de Inicio               |
+| CONTEO         | 900 ms         | cifras que cuentan y barras que se llenan                                |
+| ESCALA_PULSADO | 0,96           | botones, FAB, pestanas, chips y tarjetas pulsables                       |
+
+- Curvas: Entrar `cubic-bezier(0.2, 0, 0, 1)`, Salir `cubic-bezier(0.3, 0, 1, 1)`.
+- Navegacion: avanzar entra desde la derecha un 8 % con fundido; volver es el espejo; entre
+  pestanas solo fundido (la barra inferior no se mueve). Web: fundido de 250 ms sin desmontar.
+- Hojas C2: velo que se funde al 60 % y hoja que sube 96 dp; al cerrar baja en 150 ms sin
+  semantica y con un escudo que evita una segunda pulsacion.
+- Resumen de carrera: cifras que cuentan desde 0, tarjetas escalonadas y destello de confeti
+  morado y menta (1,2 s, no bloquea toques).
+- "Quitar animaciones" (Android) y `prefers-reduced-motion` (web): todo aparece en su estado final.
+- Videos de referencia: `docs/capturas/animaciones/` (fotogramas Robolectric cada 16 ms, a
+  media velocidad).
+
 ## Pruebas
 
 | Prueba                             | Que verifica                                                                                                                                         |
