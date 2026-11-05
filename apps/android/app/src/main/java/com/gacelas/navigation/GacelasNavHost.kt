@@ -36,6 +36,20 @@ import com.gacelas.rutas.ListaRutasScreen
 import com.gacelas.rutas.NavegacionRutaScreen
 import com.gacelas.ui.components.ScaffoldPrincipal
 
+/**
+ * Solo navega si la pantalla visible esta RESUMED: un doble toque rapido (o dos botones a la vez)
+ * ya no apila dos veces el mismo destino ni hace dos "atras" seguidos que sacaban de la app.
+ */
+fun NavHostController.ir(ruta: String, opciones: androidx.navigation.NavOptionsBuilder.() -> Unit = {}) {
+    if (estaActiva()) navigate(ruta, opciones)
+}
+
+/** "Atras" protegido contra doble toque; devuelve false si se ignoro. */
+fun NavHostController.atras(): Boolean = if (estaActiva()) popBackStack() else false
+
+private fun NavHostController.estaActiva(): Boolean =
+    currentBackStackEntry?.lifecycle?.currentState?.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED) ?: true
+
 /** Navega a una pestana principal sin apilar pantallas repetidas. */
 fun NavHostController.irAPestana(ruta: String) {
     navigate(ruta) {
@@ -103,145 +117,146 @@ fun GacelasNavHost(
 private fun NavGraphBuilder.accesoGraph(nav: NavHostController) {
     composable(Destinos.BIENVENIDA) {
         BienvenidaScreen(
-            onSaltar = { nav.navigate(Destinos.INICIO_SESION) },
-            onCrearCuenta = { nav.navigate(Destinos.REGISTRO) },
-            onIniciarSesion = { nav.navigate(Destinos.INICIO_SESION) },
+            onSaltar = { nav.ir(Destinos.INICIO_SESION) },
+            onCrearCuenta = { nav.ir(Destinos.REGISTRO) },
+            onIniciarSesion = { nav.ir(Destinos.INICIO_SESION) },
             onEntrarGoogle = nav::entrarApp,
         )
     }
     composable(Destinos.INICIO_SESION) {
         InicioSesionScreen(
-            onAtras = { nav.popBackStack() },
+            onAtras = { nav.atras() },
             onEntrar = nav::entrarApp,
-            onRecuperar = { nav.navigate(Destinos.RECUPERAR_CONTRASENA) },
-            onRegistro = { nav.navigate(Destinos.REGISTRO) },
-            onLegal = { t -> nav.navigate(if (t) Destinos.TERMINOS else Destinos.POLITICA_PRIVACIDAD) },
+            onRecuperar = { nav.ir(Destinos.RECUPERAR_CONTRASENA) },
+            onRegistro = { nav.ir(Destinos.REGISTRO) },
+            onLegal = { t -> nav.ir(if (t) Destinos.TERMINOS else Destinos.POLITICA_PRIVACIDAD) },
         )
     }
     composable(Destinos.REGISTRO) {
         RegistroScreen(
-            onAtras = { nav.popBackStack() },
-            onCrear = { nav.navigate(Destinos.PERMISOS_UBICACION) },
-            onIniciarSesion = { nav.navigate(Destinos.INICIO_SESION) },
-            onLegal = { t -> nav.navigate(if (t) Destinos.TERMINOS else Destinos.POLITICA_PRIVACIDAD) },
+            onAtras = { nav.atras() },
+            onCrear = { nav.ir(Destinos.PERMISOS_UBICACION) },
+            onIniciarSesion = { nav.ir(Destinos.INICIO_SESION) },
+            onLegal = { t -> nav.ir(if (t) Destinos.TERMINOS else Destinos.POLITICA_PRIVACIDAD) },
         )
     }
-    composable(Destinos.RECUPERAR_CONTRASENA) { RecuperarContrasenaScreen(onAtras = { nav.popBackStack() }) }
+    composable(Destinos.RECUPERAR_CONTRASENA) { RecuperarContrasenaScreen(onAtras = { nav.atras() }) }
     composable(Destinos.PERMISOS_UBICACION) { PermisosUbicacionScreen(onPermitir = nav::entrarApp, onMasTarde = nav::entrarApp) }
 }
 
 private fun NavGraphBuilder.conBarra(nav: NavHostController, ruta: String, content: @Composable () -> Unit) {
     composable(ruta) {
         ScaffoldPrincipal(ruta, onNavegar = { destino ->
-            if (destino in Destinos.conBarraInferior) nav.irAPestana(destino) else nav.navigate(destino)
+            if (destino in Destinos.conBarraInferior) nav.irAPestana(destino) else nav.ir(destino)
         }) { content() }
     }
 }
 
 private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
     conBarra(nav, Destinos.INICIO) {
-        InicioScreen(onCorrer = { nav.navigate(Destinos.CORRER) }, onEventos = { nav.navigate(Destinos.EVENTOS) }, onEvento = { nav.navigate(Destinos.detalleEvento(it)) }, onComunidad = { nav.irAPestana(Destinos.COMUNIDAD) }, onRutas = { nav.irAPestana(Destinos.RUTAS) })
+        InicioScreen(onCorrer = { nav.ir(Destinos.CORRER) }, onEventos = { nav.ir(Destinos.EVENTOS) }, onEvento = { nav.ir(Destinos.detalleEvento(it)) }, onComunidad = { nav.irAPestana(Destinos.COMUNIDAD) }, onRutas = { nav.irAPestana(Destinos.RUTAS) })
     }
     conBarra(nav, Destinos.RUTAS) {
-        ListaRutasScreen(onBuscar = { nav.navigate(Destinos.BUSCADOR_RUTAS) }, onRuta = { nav.navigate(Destinos.detalleRuta(it)) }, onDibujar = { nav.navigate(Destinos.CREAR_RUTA) })
+        ListaRutasScreen(onBuscar = { nav.ir(Destinos.BUSCADOR_RUTAS) }, onRuta = { nav.ir(Destinos.detalleRuta(it)) }, onDibujar = { nav.ir(Destinos.CREAR_RUTA) })
     }
-    conBarra(nav, Destinos.COMUNIDAD) { FeedScreen(onEventos = { nav.navigate(Destinos.EVENTOS) }, onEnVivo = { nav.navigate(Destinos.EN_VIVO) }, onClubes = { nav.navigate(Destinos.CLUBES) }, onEvento = { nav.navigate(Destinos.detalleEvento(it)) }) }
-    conBarra(nav, Destinos.EVENTOS) { EventosScreen(onEvento = { nav.navigate(Destinos.detalleEvento(it)) }, onClubes = { nav.navigate(Destinos.CLUBES) }) }
+    conBarra(nav, Destinos.COMUNIDAD) { FeedScreen(onEventos = { nav.ir(Destinos.EVENTOS) }, onEnVivo = { nav.ir(Destinos.EN_VIVO) }, onClubes = { nav.ir(Destinos.CLUBES) }, onEvento = { nav.ir(Destinos.detalleEvento(it)) }) }
+    conBarra(nav, Destinos.EVENTOS) { EventosScreen(onEvento = { nav.ir(Destinos.detalleEvento(it)) }, onClubes = { nav.ir(Destinos.CLUBES) }) }
     conBarra(nav, Destinos.PERFIL) {
         PerfilScreen(
-            onEditar = { nav.navigate(Destinos.EDITAR_PERFIL) },
-            onAvatar = { nav.navigate(Destinos.AVATAR) },
-            onAjustes = { nav.navigate(Destinos.AJUSTES) },
-            onCarrera = { nav.navigate(Destinos.detalleCarrera(it)) },
-            onReportes = { nav.navigate(Destinos.MIS_REPORTES) },
+            onEditar = { nav.ir(Destinos.EDITAR_PERFIL) },
+            onAvatar = { nav.ir(Destinos.AVATAR) },
+            onAjustes = { nav.ir(Destinos.AJUSTES) },
+            onCarrera = { nav.ir(Destinos.detalleCarrera(it)) },
+            onReportes = { nav.ir(Destinos.MIS_REPORTES) },
         )
     }
 }
 
 private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
-    composable(Destinos.CORRER) { CorrerScreen(onCerrar = { nav.popBackStack() }, onEmpezar = { nav.navigate(Destinos.CARRERA_EN_CURSO) }) }
+    composable(Destinos.CORRER) { CorrerScreen(onCerrar = { nav.atras() }, onEmpezar = { nav.ir(Destinos.CARRERA_EN_CURSO) }) }
     composable(Destinos.CARRERA_EN_CURSO) {
         CarreraEnCursoScreen(
             onCerrar = { nav.irAPestana(Destinos.INICIO) },
-            onFinalizar = { nav.navigate(Destinos.RESUMEN) },
-            onCronometro = { nav.navigate(Destinos.CRONOMETRO) },
+            onFinalizar = { nav.ir(Destinos.RESUMEN) },
+            onCronometro = { nav.ir(Destinos.CRONOMETRO) },
         )
     }
-    composable(Destinos.CRONOMETRO) { CronometroScreen(onAtras = { nav.popBackStack() }, onFin = { nav.navigate(Destinos.RESUMEN) }) }
+    composable(Destinos.CRONOMETRO) { CronometroScreen(onAtras = { nav.atras() }, onFin = { nav.ir(Destinos.RESUMEN) }) }
     composable(Destinos.RESUMEN) {
         val volver = { nav.volverAInicio() }
         ResumenPostCarreraScreen(onCerrar = volver, onGuardar = volver, onDescartar = volver)
     }
-    composable(Destinos.BUSCADOR_RUTAS) { BuscadorRutasScreen(onAtras = { nav.popBackStack() }, onNavegar = { nav.navigate(Destinos.NAVEGACION) }) }
+    composable(Destinos.BUSCADOR_RUTAS) { BuscadorRutasScreen(onAtras = { nav.atras() }, onNavegar = { nav.ir(Destinos.NAVEGACION) }) }
     composable(Destinos.NAVEGACION) {
-        NavegacionRutaScreen(onCronometro = { nav.navigate(Destinos.CRONOMETRO) }, onCerrar = { conCarrera -> if (conCarrera) nav.navigate(Destinos.RESUMEN) else nav.irAPestana(Destinos.RUTAS) })
+        NavegacionRutaScreen(onCronometro = { nav.ir(Destinos.CRONOMETRO) }, onCerrar = { conCarrera -> if (conCarrera) nav.ir(Destinos.RESUMEN) else nav.irAPestana(Destinos.RUTAS) })
     }
     composable(Destinos.DETALLE_EVENTO) { entry ->
         val idEvento = entry.arguments?.getString("id") ?: "1"
-        DetalleEventoScreen(id = idEvento, onAtras = { nav.popBackStack() }, onEnVivo = { nav.navigate(Destinos.eventoEnVivo(idEvento)) })
+        DetalleEventoScreen(id = idEvento, onAtras = { nav.atras() }, onEnVivo = { nav.ir(Destinos.eventoEnVivo(idEvento)) })
     }
-    composable(Destinos.CLUBES) { com.gacelas.comunidad.ClubesScreen(onAtras = { nav.popBackStack() }, onClub = { nav.navigate(Destinos.detalleClub(it)) }) }
+    composable(Destinos.CLUBES) { com.gacelas.comunidad.ClubesScreen(onAtras = { nav.atras() }, onClub = { nav.ir(Destinos.detalleClub(it)) }) }
     composable(Destinos.DETALLE_CLUB) { entry ->
         com.gacelas.comunidad.DetalleClubScreen(
-            id = entry.arguments?.getString("id").orEmpty(), onAtras = { nav.popBackStack() },
-            onEvento = { nav.navigate(Destinos.detalleEvento(it)) }, onCrearEvento = { com.gacelas.comunidad.infrastructure.EventoDeClub.id = it; nav.navigate(Destinos.EVENTOS) },
-            onClub = { nav.navigate(Destinos.detalleClub(it)) },
+            id = entry.arguments?.getString("id").orEmpty(), onAtras = { nav.atras() },
+            onEvento = { nav.ir(Destinos.detalleEvento(it)) }, onCrearEvento = { com.gacelas.comunidad.infrastructure.EventoDeClub.id = it; nav.ir(Destinos.EVENTOS) },
+            onClub = { nav.ir(Destinos.detalleClub(it)) },
         )
     }
     composable(Destinos.EVENTO_EN_VIVO) { entry ->
-        com.gacelas.comunidad.EventoEnVivoScreen(id = entry.arguments?.getString("id").orEmpty(), onAtras = { nav.popBackStack() }, onCorrer = { nav.navigate(Destinos.CORRER) })
+        com.gacelas.comunidad.EventoEnVivoScreen(id = entry.arguments?.getString("id").orEmpty(), onAtras = { nav.atras() }, onCorrer = { nav.ir(Destinos.CORRER) })
     }
     composable(Destinos.CREAR_RUTA) {
-        com.gacelas.rutas.DibujarRutaScreen(onAtras = { nav.popBackStack() }, onCreada = { id ->
-            nav.navigate(Destinos.detalleRuta(id)) { popUpTo(Destinos.CREAR_RUTA) { inclusive = true } }
+        com.gacelas.rutas.DibujarRutaScreen(onAtras = { nav.atras() }, onCreada = { id ->
+            nav.ir(Destinos.detalleRuta(id)) { popUpTo(Destinos.CREAR_RUTA) { inclusive = true } }
         })
     }
     composable(Destinos.DETALLE_RUTA) { entry ->
-        com.gacelas.rutas.DetalleRutaScreen(id = entry.arguments?.getString("id") ?: "", onAtras = { nav.popBackStack() }, onCorrer = { nav.navigate(Destinos.BUSCADOR_RUTAS) })
+        com.gacelas.rutas.DetalleRutaScreen(id = entry.arguments?.getString("id") ?: "", onAtras = { nav.atras() }, onCorrer = { nav.ir(Destinos.BUSCADOR_RUTAS) })
     }
-    composable(Destinos.EN_VIVO) { com.gacelas.envivo.ListaEnVivoScreen(onAtras = { nav.popBackStack() }, onSesion = { nav.navigate(Destinos.detalleEnVivo(it)) }, onMapa = { nav.navigate(Destinos.MAPA_VIVO) }) }
+    composable(Destinos.EN_VIVO) { com.gacelas.envivo.ListaEnVivoScreen(onAtras = { nav.atras() }, onSesion = { nav.ir(Destinos.detalleEnVivo(it)) }, onMapa = { nav.ir(Destinos.MAPA_VIVO) }) }
     composable(Destinos.DETALLE_EN_VIVO) { entry ->
-        com.gacelas.envivo.DetalleEnVivoScreen(id = entry.arguments?.getString("id") ?: "", onAtras = { nav.popBackStack() })
+        com.gacelas.envivo.DetalleEnVivoScreen(id = entry.arguments?.getString("id") ?: "", onAtras = { nav.atras() })
     }
-    composable(Destinos.MIS_REPORTES) { com.gacelas.perfil.MisReportesScreen(onAtras = { nav.popBackStack() }) }
-    composable(Destinos.EDITAR_PERFIL) { EditarPerfilScreen(onAtras = { nav.popBackStack() }, onGuardar = { nav.popBackStack() }, onAvatar = { nav.navigate(Destinos.AVATAR) }) }
-    composable(Destinos.DETALLE_CARRERA) { e -> com.gacelas.perfil.DetalleCarreraScreen(e.arguments?.getString("id").orEmpty(), onAtras = { nav.popBackStack() }) }
-    composable(Destinos.AVATAR) { Avatar3DScreen(onAtras = { nav.popBackStack() }, onGuardar = { nav.popBackStack() }) }
+    composable(Destinos.MIS_REPORTES) { com.gacelas.perfil.MisReportesScreen(onAtras = { nav.atras() }) }
+    composable(Destinos.EDITAR_PERFIL) { EditarPerfilScreen(onAtras = { nav.atras() }, onGuardar = { nav.atras() }, onAvatar = { nav.ir(Destinos.AVATAR) }) }
+    composable(Destinos.DETALLE_CARRERA) { e -> com.gacelas.perfil.DetalleCarreraScreen(e.arguments?.getString("id").orEmpty(), onAtras = { nav.atras() }) }
+    composable(Destinos.AVATAR) { Avatar3DScreen(onAtras = { nav.atras() }, onGuardar = { nav.atras() }) }
     composable(Destinos.AJUSTES) {
         AjustesPreferenciasScreen(
-            onAtras = { nav.popBackStack() },
-            onEditarPerfil = { nav.navigate(Destinos.EDITAR_PERFIL) },
-            onPrivacidad = { nav.navigate(Destinos.PRIVACIDAD) },
-            onNotificaciones = { nav.navigate(Destinos.CONFIG_NOTIFICACIONES) },
-            onCerrarSesion = { nav.navigate(Destinos.BIENVENIDA) { popUpTo(0) { inclusive = true } } },
-            onMapasOffline = { nav.navigate(Destinos.MAPAS_OFFLINE) },
-            onBrujula = { nav.navigate(Destinos.BRUJULA) },
-            onLegal = { t -> nav.navigate(if (t) Destinos.TERMINOS else Destinos.POLITICA_PRIVACIDAD) },
-            onAdmin = { nav.navigate(Destinos.ADMIN) },
+            onAtras = { nav.atras() },
+            onEditarPerfil = { nav.ir(Destinos.EDITAR_PERFIL) },
+            onPrivacidad = { nav.ir(Destinos.PRIVACIDAD) },
+            onNotificaciones = { nav.ir(Destinos.CONFIG_NOTIFICACIONES) },
+            onCerrarSesion = { nav.ir(Destinos.BIENVENIDA) { popUpTo(0) { inclusive = true } } },
+            onMapasOffline = { nav.ir(Destinos.MAPAS_OFFLINE) },
+            onBrujula = { nav.ir(Destinos.BRUJULA) },
+            onLegal = { t -> nav.ir(if (t) Destinos.TERMINOS else Destinos.POLITICA_PRIVACIDAD) },
+            onAdmin = { nav.ir(Destinos.ADMIN) },
         )
     }
     // El panel vuelve a comprobar el rol en el servidor: sin rol muestra "Acceso denegado".
     composable(Destinos.ADMIN) {
-        com.gacelas.administracion.presentation.PanelAdmin(com.gacelas.ui.contenedor().admin, onAtras = { nav.popBackStack() })
+        com.gacelas.administracion.presentation.PanelAdmin(com.gacelas.ui.contenedor().admin, onAtras = { nav.atras() })
     }
-    composable(Destinos.BRUJULA) { com.gacelas.ajustes.BrujulaScreen(onAtras = { nav.popBackStack() }) }
-    composable(Destinos.MAPAS_OFFLINE) { com.gacelas.ajustes.MapasOfflineScreen(onAtras = { nav.popBackStack() }) }
+    composable(Destinos.BRUJULA) { com.gacelas.ajustes.BrujulaScreen(onAtras = { nav.atras() }) }
+    composable(Destinos.MAPAS_OFFLINE) { com.gacelas.ajustes.MapasOfflineScreen(onAtras = { nav.atras() }) }
     composable(Destinos.PRIVACIDAD) {
         PrivacidadUbicacionScreen(
-            onAtras = { nav.popBackStack() },
-            onLegal = { t -> nav.navigate(if (t) Destinos.TERMINOS else Destinos.POLITICA_PRIVACIDAD) },
-            onCuentaEliminada = { nav.navigate(Destinos.BIENVENIDA) { popUpTo(0) { inclusive = true } } },
+            onAtras = { nav.atras() },
+            onLegal = { t -> nav.ir(if (t) Destinos.TERMINOS else Destinos.POLITICA_PRIVACIDAD) },
+            onCuentaEliminada = { nav.ir(Destinos.BIENVENIDA) { popUpTo(0) { inclusive = true } } },
         )
     }
-    composable(Destinos.TERMINOS) { com.gacelas.legal.DocumentoLegalScreen(terminos = true, onAtras = { nav.popBackStack() }) }
-    composable(Destinos.POLITICA_PRIVACIDAD) { com.gacelas.legal.DocumentoLegalScreen(terminos = false, onAtras = { nav.popBackStack() }) }
-    composable(Destinos.MAPA_VIVO) { com.gacelas.vivo.MapaVivoScreen(onAtras = { nav.popBackStack() }, onPrivacidad = { nav.navigate(Destinos.PRIVACIDAD) }) }
-    composable(Destinos.CONFIG_NOTIFICACIONES) { ConfiguracionNotificacionesScreen(onAtras = { nav.popBackStack() }) }
+    composable(Destinos.TERMINOS) { com.gacelas.legal.DocumentoLegalScreen(terminos = true, onAtras = { nav.atras() }) }
+    composable(Destinos.POLITICA_PRIVACIDAD) { com.gacelas.legal.DocumentoLegalScreen(terminos = false, onAtras = { nav.atras() }) }
+    composable(Destinos.MAPA_VIVO) { com.gacelas.vivo.MapaVivoScreen(onAtras = { nav.atras() }, onPrivacidad = { nav.ir(Destinos.PRIVACIDAD) }) }
+    composable(Destinos.CONFIG_NOTIFICACIONES) { ConfiguracionNotificacionesScreen(onAtras = { nav.atras() }) }
     composable(Destinos.NOTIFICACIONES) {
-        NotificacionesScreen(onAtras = { nav.popBackStack() }, onAbrir = { n ->
+        NotificacionesScreen(onAtras = { nav.atras() }, onAbrir = { n ->
             when (n.tipo) {
-                TipoNotificacion.Evento -> nav.navigate(Destinos.detalleEvento("1"))
-                TipoNotificacion.EnVivo -> nav.navigate(Destinos.EN_VIVO)
+                // La notificacion no trae el id del evento: se abre la lista en vez de un evento fijo.
+                TipoNotificacion.Evento -> nav.ir(Destinos.EVENTOS)
+                TipoNotificacion.EnVivo -> nav.ir(Destinos.EN_VIVO)
                 TipoNotificacion.Comentario, TipoNotificacion.Like -> nav.irAPestana(Destinos.COMUNIDAD)
                 TipoNotificacion.Seguidor, TipoNotificacion.Racha, TipoNotificacion.Reporte -> nav.irAPestana(Destinos.PERFIL)
             }
