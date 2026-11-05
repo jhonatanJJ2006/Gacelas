@@ -75,7 +75,7 @@ export function CompartirDialogo({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] bg-black/70 flex items-end sm:items-center justify-center"
+      className="mov-velo fixed inset-0 z-[100] bg-black/70 flex items-end sm:items-center justify-center"
       onClick={onCerrar}
     >
       <div

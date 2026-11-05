@@ -43,7 +43,11 @@ export function SemanaAtletica({
   const pct = Math.min(100, Math.round((semana.carreras / Math.max(1, metaCarreras)) * 100))
   const ritmo = semana.km > 0.01 ? Math.floor(semana.segundos / semana.km) : null
   return (
-    <section className="space-y-space-md lg:col-span-5" data-testid="semana-atletica">
+    <section
+      className="mov-escalon space-y-space-md lg:col-span-5"
+      style={{ '--i': 3 } as React.CSSProperties}
+      data-testid="semana-atletica"
+    >
       <div className="flex items-center justify-between">
         <h2 className="font-title-md text-title-md text-text-primary">Tu semana atlética</h2>
         <span className="font-label-md text-label-md text-text-secondary">{rango}</span>
@@ -59,7 +63,10 @@ export function SemanaAtletica({
           </span>
         </div>
         <div className="h-2 rounded-full bg-surface-container-highest overflow-hidden">
-          <div className="h-full rounded-full bg-secondary" style={{ width: `${pct}%` }} />
+          <div
+            className="mov-barra h-full rounded-full bg-secondary"
+            style={{ width: `${pct}%` }}
+          />
         </div>
         <div className="flex justify-between font-body-sm text-body-sm text-text-secondary">
           <span>
@@ -161,7 +168,11 @@ export function TarjetaEvento({ evento, inscrito }: { evento: Evento; inscrito: 
 export function TarjetaReto({ reto, m }: { reto: RetoMes; m: boolean }) {
   const pct = Math.min(100, (reto.km / reto.metaKm) * 100)
   return (
-    <section className="lg:col-span-5" data-testid="reto-mes">
+    <section
+      className="mov-escalon lg:col-span-5"
+      style={{ '--i': 4 } as React.CSSProperties}
+      data-testid="reto-mes"
+    >
       <div className="rounded-2xl border border-border-subtle p-4 bg-gradient-to-br from-primary-700/40 to-surface-container">
         <div className="flex justify-between items-center">
           <span className="font-label-md text-label-md text-primary uppercase tracking-wide">
@@ -173,7 +184,7 @@ export function TarjetaReto({ reto, m }: { reto: RetoMes; m: boolean }) {
         </div>
         <h3 className="font-title-lg text-title-lg text-text-primary mt-1">{reto.titulo}</h3>
         <div className="h-2 rounded-full bg-surface-container-highest overflow-hidden mt-3">
-          <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+          <div className="mov-barra h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
         </div>
         <div className="flex justify-between font-body-sm text-body-sm text-text-secondary mt-1">
           <span className="text-text-primary">
@@ -190,7 +201,11 @@ export function TarjetaReto({ reto, m }: { reto: RetoMes; m: boolean }) {
 
 export function AmigosEnRuta({ lista, m }: { lista: PublicacionRemota[]; m: boolean }) {
   return (
-    <section className="space-y-space-md lg:col-span-5" data-testid="amigos-en-ruta">
+    <section
+      className="mov-escalon space-y-space-md lg:col-span-5"
+      style={{ '--i': 6 } as React.CSSProperties}
+      data-testid="amigos-en-ruta"
+    >
       <div className="flex items-center justify-between">
         <h2 className="font-title-md text-title-md text-text-primary">Amigos en ruta</h2>
         <Link
@@ -323,7 +338,11 @@ export function TarjetaRutaSugerida({
 }) {
   const ruta = sugerida?.estado === 'ok' ? sugerida.ruta : undefined
   return (
-    <section className="space-y-space-md lg:col-span-5" data-testid="ruta-sugerida">
+    <section
+      className="mov-escalon space-y-space-md lg:col-span-5"
+      style={{ '--i': 5 } as React.CSSProperties}
+      data-testid="ruta-sugerida"
+    >
       <div className="flex items-center justify-between">
         <h2 className="font-title-md text-title-md text-text-primary">Ruta sugerida para hoy</h2>
         <Link to="/rutas" className="inline-block py-2 font-label-md text-label-md text-primary">

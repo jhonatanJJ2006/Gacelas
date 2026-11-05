@@ -155,7 +155,10 @@ export function Inicio() {
         </Link>
       </section>
 
-      <section className="lg:col-span-5 flex justify-between bg-c2-card p-4 tarjeta-c2">
+      <section
+        className="mov-escalon lg:col-span-5 flex justify-between bg-c2-card p-4 tarjeta-c2"
+        style={{ '--i': 2 } as React.CSSProperties}
+      >
         <MetricaInicio valor={`${semana.diasCorridos.size}`} etiqueta="Días" />
         <MetricaInicio
           valor={Unidades.texto(semana.km, m, 1)}
@@ -186,7 +189,10 @@ export function Inicio() {
 
       <AmigosEnRuta lista={amigos} m={m} />
 
-      <section className="space-y-space-md lg:col-span-5">
+      <section
+        className="mov-escalon space-y-space-md lg:col-span-5"
+        style={{ '--i': 6 } as React.CSSProperties}
+      >
         <div className="flex items-center justify-between">
           <h2 className="font-title-md text-title-md text-text-primary">Próximo evento</h2>
           <Link

@@ -44,14 +44,14 @@ export function Dialogo({
   if (!abierto) return null
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 sm:p-4 pt-[max(env(safe-area-inset-top),16px)]"
+      className="mov-velo fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 sm:p-4 pt-[max(env(safe-area-inset-top),16px)]"
       onClick={onCerrar}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-label={titulo}
-        className="w-full max-w-md bg-c2-card border border-c2-linea border-t-2 border-t-c2-violeta rounded-t-[14px] sm:rounded-[14px] px-6 pt-3 pb-[max(env(safe-area-inset-bottom),24px)] shadow-2xl flex flex-col max-h-[calc(100dvh-16px)] sm:max-h-[calc(100dvh-32px)]"
+        className="mov-hoja w-full max-w-md bg-c2-card border border-c2-linea border-t-2 border-t-c2-violeta rounded-t-[14px] sm:rounded-[14px] px-6 pt-3 pb-[max(env(safe-area-inset-bottom),24px)] shadow-2xl flex flex-col max-h-[calc(100dvh-16px)] sm:max-h-[calc(100dvh-32px)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div
