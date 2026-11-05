@@ -107,7 +107,16 @@ fun GacelasNavHost(
             if (nav.currentDestination?.route != d) runCatching { nav.navigate(d) { launchSingleTop = true } }
         }
     }
-    NavHost(navController = nav, startDestination = inicio) {
+    // Transiciones C2 (MovimientoC2 / TransicionesC2); entre pestanas, fundido sin desplazamiento.
+    val escala = com.gacelas.ui.movimiento.LocalEscalaMovimiento.current
+    fun entrePestanas(a: String?, b: String?) = a in Destinos.conBarraInferior && b in Destinos.conBarraInferior
+    NavHost(
+        navController = nav, startDestination = inicio,
+        enterTransition = { com.gacelas.ui.movimiento.TransicionesC2.entrar(escala, entrePestanas(initialState.destination.route, targetState.destination.route)) },
+        exitTransition = { com.gacelas.ui.movimiento.TransicionesC2.salir(escala) },
+        popEnterTransition = { com.gacelas.ui.movimiento.TransicionesC2.volverEntrar(escala) },
+        popExitTransition = { com.gacelas.ui.movimiento.TransicionesC2.volverSalir(escala, entrePestanas(initialState.destination.route, targetState.destination.route)) },
+    ) {
         accesoGraph(nav)
         principalGraph(nav)
         secundariasGraph(nav)

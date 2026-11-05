@@ -1,5 +1,6 @@
 package com.gacelas.inicio
 
+import com.gacelas.ui.movimiento.entradaEscalonada
 import com.gacelas.ui.components.InsigniaRacha
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -106,12 +107,12 @@ fun InicioContenido(
                         clima?.lugar ?: com.gacelas.clima.domain.ReglasClima.NOMBRE_LOJA,
                         clima?.let { "${it.temperatura} °C" } ?: "--",
                         clima?.let { " ${it.descripcion}" } ?: "",
-                        acento = Color(0xFF96CCFF), modifier = Modifier.testTag("chip-clima"),
+                        acento = Color(0xFF96CCFF), modifier = Modifier.entradaEscalonada(1).testTag("chip-clima"),
                     )
-                    ChipC2("Racha", "${racha.diaria} " + if (racha.diaria == 1) "día" else "días", acento = GColors.C2Menta, borde = GColors.C2Menta, modifier = Modifier.testTag("insignia-racha"))
+                    ChipC2("Racha", "${racha.diaria} " + if (racha.diaria == 1) "día" else "días", acento = GColors.C2Menta, borde = GColors.C2Menta, modifier = Modifier.entradaEscalonada(2).testTag("insignia-racha"))
                     nivel?.let {
                         ChipC2("Nivel", it, acento = Color(0xFFE9D5FF), borde = GColors.C2Violeta,
-                            fondo = Brush.linearGradient(listOf(Color(0xFF5E1781), Color(0xFF7B1FA2))), modifier = Modifier.testTag("insignia-nivel"))
+                            fondo = Brush.linearGradient(listOf(Color(0xFF5E1781), Color(0xFF7B1FA2))), modifier = Modifier.entradaEscalonada(3).testTag("insignia-nivel"))
                     }
                 }
             }
@@ -124,17 +125,20 @@ fun InicioContenido(
             valorDer = "${Unidades.texto(reto?.km ?: semana.km, m, 1)} ${Unidades.etiquetaDistancia(m)}",
             onCorrer = onCorrer, margenLateral = 16.dp, corredor3D = corredor3D,
         )
-        Row(Modifier.fillMaxWidth().clip(com.gacelas.ui.components.FormaC2).background(GColors.C2Card).padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(Modifier.entradaEscalonada(2).fillMaxWidth().clip(com.gacelas.ui.components.FormaC2).background(GColors.C2Card).padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
             MetricaC2("${semana.diasCorridos.size}", "Días")
             MetricaC2(Unidades.texto(semana.km, m, 1), Unidades.etiquetaDistancia(m), color = GColors.C2Violeta)
             MetricaC2(formatearRitmo(Unidades.ritmo(semana.ritmoSegKm, m)), Unidades.etiquetaRitmo(m), color = GColors.C2Menta)
         }
-        SemanaAtletica(totales, semana.diasCorridos, hoy, meta, rango, m)
-        reto?.let { TarjetaReto(it, m) }
-        RutaSugeridaC2(rutaSugerida, m, onRutas, rutaSugeridaNota)
-        AmigosEnRuta(amigos, m, onComunidad)
-        TituloSeccion("Próximo evento", accion = "Ver todos", onAccion = onEventos)
-        TarjetaEvento(evento, inscrito) { onEvento(evento.id) }
+        // Secciones escalonadas (45 ms entre cada una, tope 6): suben 16 dp y aparecen.
+        Box(Modifier.entradaEscalonada(3)) { SemanaAtletica(totales, semana.diasCorridos, hoy, meta, rango, m) }
+        reto?.let { Box(Modifier.entradaEscalonada(4)) { TarjetaReto(it, m) } }
+        Box(Modifier.entradaEscalonada(5)) { RutaSugeridaC2(rutaSugerida, m, onRutas, rutaSugeridaNota) }
+        Box(Modifier.entradaEscalonada(6)) { AmigosEnRuta(amigos, m, onComunidad) }
+        Column(Modifier.entradaEscalonada(6), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            TituloSeccion("Próximo evento", accion = "Ver todos", onAccion = onEventos)
+            TarjetaEvento(evento, inscrito) { onEvento(evento.id) }
+        }
     }
 }
 

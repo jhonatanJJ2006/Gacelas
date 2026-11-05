@@ -112,7 +112,14 @@ fun AnfitrionAvisosC2(modifier: Modifier = Modifier) {
     val id = AvisosC2.id
     LaunchedEffect(id) { if (a != null) { delay(2800); AvisosC2.ocultar() } }
     Box(modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp), contentAlignment = Alignment.TopCenter) {
-        AnimatedVisibility(a != null, enter = slideInVertically { -it } + fadeIn(), exit = slideOutVertically { -it } + fadeOut()) {
+        val escMov = com.gacelas.ui.movimiento.Mov.escala
+        AnimatedVisibility(
+            a != null,
+            enter = slideInVertically(com.gacelas.ui.movimiento.MovimientoC2.spec(com.gacelas.ui.movimiento.MovimientoC2.MEDIO, escMov, com.gacelas.ui.movimiento.MovimientoC2.Entrar)) { -it } +
+                fadeIn(com.gacelas.ui.movimiento.MovimientoC2.spec(com.gacelas.ui.movimiento.MovimientoC2.MEDIO, escMov, com.gacelas.ui.movimiento.MovimientoC2.Entrar)),
+            exit = slideOutVertically(com.gacelas.ui.movimiento.MovimientoC2.spec(com.gacelas.ui.movimiento.MovimientoC2.CORTO, escMov, com.gacelas.ui.movimiento.MovimientoC2.Salir)) { -it } +
+                fadeOut(com.gacelas.ui.movimiento.MovimientoC2.spec(com.gacelas.ui.movimiento.MovimientoC2.CORTO, escMov, com.gacelas.ui.movimiento.MovimientoC2.Salir)),
+        ) {
             val (texto, error) = a ?: ("" to false)
             ToastC2(texto, error)
         }

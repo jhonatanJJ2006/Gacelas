@@ -1,10 +1,12 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
+import { useEntradaPagina } from '../shared/lib/movimiento'
 import { notificacionesVisibles, useAvisos } from '../contexts/avisos/api'
 import { FotoPerfil } from '../contexts/identidad'
 import { useIdentidad } from '../contexts/identidad/api'
 
 export function AppLayout() {
   const location = useLocation()
+  const refPagina = useEntradaPagina<HTMLDivElement>(location.pathname)
 
   const isActive = (path: string) =>
     location.pathname === path || location.pathname.startsWith(`${path}/`)
@@ -72,7 +74,9 @@ export function AppLayout() {
       <main
         className={`flex-1 ${sinBarra ? 'pt-0' : 'pt-16'} pb-24 lg:pt-8 lg:pb-12 overflow-auto`}
       >
-        <Outlet />
+        <div ref={refPagina}>
+          <Outlet />
+        </div>
       </main>
 
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-bg-secondary/95 backdrop-blur-xl border-t border-border-subtle pb-safe">

@@ -323,3 +323,77 @@ body {
     transform: none;
   }
 }
+
+/*
+ * Movimiento C2 (ver docs/MARCA.md, "Movimiento"): mismas duraciones y curvas que Android/iOS
+ * (MovimientoC2.kt, shared/lib/movimiento.ts). El bloque prefers-reduced-motion de arriba las anula.
+ */
+:root {
+  --mov-corto: 150ms;
+  --mov-medio: 250ms;
+  --mov-conteo: 900ms;
+  --mov-entrar: cubic-bezier(0.2, 0, 0, 1);
+  --mov-salir: cubic-bezier(0.3, 0, 1, 1);
+}
+
+@keyframes mov-fundido {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes mov-subir {
+  from {
+    opacity: 0;
+    translate: 0 96px;
+  }
+}
+@keyframes mov-escalon {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+}
+
+/* Velo de hojas y dialogos: se funde. La hoja sube 96 px desde abajo. */
+.mov-velo {
+  animation: mov-fundido var(--mov-medio) var(--mov-entrar) both;
+}
+.mov-hoja {
+  animation: mov-subir var(--mov-medio) var(--mov-entrar) both;
+}
+
+/* Listas y secciones escalonadas: style="--i: n" (tope 6, 45 ms entre cada una). */
+.mov-escalon {
+  animation: mov-escalon var(--mov-medio) var(--mov-entrar) both;
+  animation-delay: calc(min(var(--i, 0), 6) * 45ms);
+}
+
+/* Barras de progreso que se llenan desde la izquierda al aparecer. */
+@keyframes mov-llenar {
+  from {
+    scale: 0 1;
+  }
+}
+.mov-barra {
+  transform-origin: left center;
+  animation: mov-llenar var(--mov-conteo) var(--mov-entrar) both;
+}
+
+/*
+ * Pulsacion: los botones se encogen al 96 %. Se usa la propiedad scale (no transform) para no
+ * pisar el sesgo -skew-x de los botones C2.
+ */
+@layer base {
+  button,
+  [role='button'],
+  a.c2-boton {
+    transition-property: scale, color, background-color, border-color, opacity;
+    transition-duration: var(--mov-corto);
+    transition-timing-function: var(--mov-entrar);
+  }
+}
+button:active:not(:disabled),
+[role='button']:active,
+a.c2-boton:active {
+  scale: 0.96;
+}

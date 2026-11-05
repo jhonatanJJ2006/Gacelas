@@ -1,4 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
+import { useEntradaPagina } from '../shared/lib/movimiento'
 import { InsigniaRacha } from '../contexts/actividad'
 import { notificacionesVisibles, useAvisos } from '../contexts/avisos/api'
 import { FotoPerfil } from '../contexts/identidad'
@@ -23,6 +24,7 @@ const NAV_ESCRITORIO = [
  */
 export function ShellEscritorio() {
   const { pathname } = useLocation()
+  const refPagina = useEntradaPagina<HTMLDivElement>(pathname)
   const escritorio = useEsEscritorio()
   const sesion = useIdentidad((s) => s.sesion)
   const ajustes = useIdentidad((s) => s.ajustes)
@@ -114,7 +116,7 @@ export function ShellEscritorio() {
           </div>
         </aside>
       )}
-      <div className="lg:pl-[260px]">
+      <div ref={refPagina} className="lg:pl-[260px]">
         <Outlet />
       </div>
     </div>

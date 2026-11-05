@@ -115,6 +115,7 @@ android {
             all {
                 it.maxHeapSize = "2g"
                 (project.findProperty("gacelas.shots") as String?)?.let { dir -> it.systemProperty("gacelas.shots", dir) }
+                (project.findProperty("gacelas.frames") as String?)?.let { dir -> it.systemProperty("gacelas.frames", dir) }
             }
         }
     }

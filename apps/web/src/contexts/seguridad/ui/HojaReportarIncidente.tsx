@@ -71,7 +71,7 @@ export function HojaReportarIncidente({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center"
+      className="mov-velo fixed inset-0 z-[100] flex items-end justify-center"
       role="dialog"
       aria-modal="true"
       aria-labelledby="titulo-reportar"

@@ -132,7 +132,14 @@ class MainActivity : ComponentActivity() {
                     if (montarApp) {
                         // Hojas C2 en la ventana de la actividad (no en una ventana de Dialog): v0.9.1.
                         val hojas = remember { com.gacelas.ui.components.HojasC2() }
-                        androidx.compose.runtime.CompositionLocalProvider(com.gacelas.ui.components.LocalHojasC2 provides hojas) {
+                        // "Quitar animaciones" del sistema: escala 0 = transiciones y escalonados instantaneos.
+                        // Otras escalas (0,5x, 2x) ya las aplica Compose a cada tween en Android, asi que aqui
+                        // solo se distingue apagado/encendido para no escalar dos veces.
+                        val escalaMov = remember { if (Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) <= 0f) 0f else 1f }
+                        androidx.compose.runtime.CompositionLocalProvider(
+                            com.gacelas.ui.components.LocalHojasC2 provides hojas,
+                            com.gacelas.ui.movimiento.LocalEscalaMovimiento provides escalaMov,
+                        ) {
                             GacelasRaiz()
                             com.gacelas.actualizacion.AvisoActualizacion()
                             com.gacelas.ui.components.AnfitrionHojasC2(hojas)

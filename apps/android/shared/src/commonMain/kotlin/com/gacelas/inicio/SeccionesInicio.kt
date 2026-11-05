@@ -1,5 +1,6 @@
 package com.gacelas.inicio
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -54,7 +55,8 @@ private val DIAS = listOf("L", "M", "X", "J", "V", "S", "D")
 @Composable
 private fun Barra(pct: Float, color: androidx.compose.ui.graphics.Color) {
     Box(Modifier.fillMaxWidth().height(8.dp).clip(CircleShape).background(GColors.SurfaceHighest)) {
-        Box(Modifier.fillMaxWidth(pct.coerceIn(0f, 1f)).fillMaxHeight().clip(CircleShape).background(color))
+        // Se llena desde 0 al aparecer (MovimientoC2.CONTEO); instantanea con animaciones quitadas.
+        com.gacelas.ui.movimiento.BarraLlenadoC2(pct, color, Modifier.fillMaxSize())
     }
 }
 
