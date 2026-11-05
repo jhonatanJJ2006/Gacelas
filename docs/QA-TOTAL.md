@@ -34,7 +34,7 @@ abrir la ruta → se dibuja sin excepción → atrás vuelve a la pantalla anter
 |---|---|---|---|---|---|
 | DialogoC2 (todos los diálogos: cerrar sesión, eliminar, etc.) | ✅ y el botón ejecuta SU acción, no el descarte | ✅ | ✅ | ✅ | ModalesCierreQaTest |
 | HojaC2 (hojas inferiores: compartir, reportar incidente, en vivo…) | ✅ | ✅ | ✅ | ✅ | ModalesCierreQaTest |
-| DialogoDescartarCarrera | ✅ | ✅ | ✅ | ✅ | ModalesCierreQaTest + tests existentes |
+| DialogoDescartarCarrera | ✅ (tests existentes) | hereda de DialogoC2 | ✅ | hereda de DialogoC2 | ModalesCierreQaTest (atrás) + tests existentes |
 | Tamaños / bordes / paridad | — | — | — | — | ModalesTamanosTest, ModalesBordeTest, ParidadModalTest |
 
 Capturas: `docs/capturas/qa-total/` (dialogo-abierto, hoja-abierta, descartar-carrera).
