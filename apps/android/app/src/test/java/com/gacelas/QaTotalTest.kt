@@ -44,7 +44,7 @@ class QaTotalTest {
 
     private fun recorrerTodo() {
         montar()
-        val rutas = Destinos.todas.filter { it !in Destinos.acceso && it != Destinos.INICIO }
+        val rutas = (Destinos.todas + listOf(Destinos.MIS_REPORTES, Destinos.DETALLE_CARRERA, Destinos.ADMIN)).filter { it !in Destinos.acceso && it != Destinos.INICIO }
         rutas.forEach { ruta ->
             compose.runOnIdle { nav.ir(concreta(ruta)) }
             compose.waitForIdle()
