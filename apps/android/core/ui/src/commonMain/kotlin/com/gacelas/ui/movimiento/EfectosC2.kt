@@ -1,5 +1,7 @@
 package com.gacelas.ui.movimiento
 
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -69,14 +71,14 @@ private fun Int.dp2px(densidad: Float) = this * densidad
  * fillMaxWidth(fraccion) leido en la fase de layout de un Box pequeno: es barato.
  */
 @Composable
-fun BarraLlenadoC2(fraccion: Float, color: Color, modifier: Modifier, fondoModifier: Modifier = Modifier) {
+fun BarraLlenadoC2(fraccion: Float, color: Color, modifier: Modifier, forma: androidx.compose.ui.graphics.Shape = androidx.compose.foundation.shape.CircleShape) {
     val escala = Mov.escala
     val valor = remember { Animatable(if (escala <= 0f) fraccion.coerceIn(0f, 1f) else 0f) }
     LaunchedEffect(fraccion) {
         valor.animateTo(fraccion.coerceIn(0f, 1f), MovimientoC2.spec(MovimientoC2.CONTEO, escala, MovimientoC2.Estandar, MovimientoC2.CORTO))
     }
     Box(modifier) {
-        Box(fondoModifier.fillMaxWidth(valor.value).fillMaxHeight().testTag("barra-llenado"))
+        Box(Modifier.fillMaxWidth(valor.value).fillMaxHeight().clip(forma).background(color).testTag("barra-llenado"))
     }
 }
 

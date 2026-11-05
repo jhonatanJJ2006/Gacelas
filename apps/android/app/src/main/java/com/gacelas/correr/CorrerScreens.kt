@@ -1,5 +1,7 @@
 package com.gacelas.correr
 
+import com.gacelas.ui.movimiento.entradaEscalonada
+import androidx.compose.ui.graphics.graphicsLayer
 import com.gacelas.ui.components.Pastilla
 
 import com.gacelas.ui.components.Mapas
@@ -260,8 +262,12 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
         PantallaCompleta {
             Column(Modifier.fillMaxWidth().padding(top = 120.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text("Prepárate, arrancamos en", style = GType.bodyLg, color = GColors.TextSecondary)
+                // Cada numero "late": entra grande (1,5x) y transparente y se asienta en 350 ms.
+                val escalaMov = com.gacelas.ui.movimiento.Mov.escala
+                val latido = remember(n) { androidx.compose.animation.core.Animatable(if (escalaMov <= 0f) 1f else 0f) }
+                LaunchedEffect(n) { latido.animateTo(1f, com.gacelas.ui.movimiento.MovimientoC2.spec(com.gacelas.ui.movimiento.MovimientoC2.LARGO, escalaMov, com.gacelas.ui.movimiento.MovimientoC2.Entrar)) }
                 Text("$n", style = GType.headlineLg.copy(fontSize = androidx.compose.ui.unit.TextUnit(96f, androidx.compose.ui.unit.TextUnitType.Sp)), color = GColors.Primary500,
-                    modifier = Modifier.testTag("cuenta-regresiva"))
+                    modifier = Modifier.graphicsLayer { val p = latido.value; alpha = p; scaleX = 1.5f - 0.5f * p; scaleY = scaleX }.testTag("cuenta-regresiva"))
                 TextButton(onClick = { cuenta = null; empezarCarrera(context, tracker); onEmpezar() }) { Text("Empezar ya") }
             }
         }
@@ -652,7 +658,8 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
             if (estado.segundos > 0) com.gacelas.actividad.domain.reglas.EstadisticasPerfil.nuevoRecord(carrerasPrevias,
                 com.gacelas.actividad.domain.modelo.Carrera(id = "nueva", titulo = "", inicioMs = estado.inicioMs, segundos = estado.segundos, distanciaKm = estado.distanciaKm, parciales = estado.parciales)) else null
         }
-        Tarjeta(fondo = GColors.Primary.copy(alpha = 0.12f)) {
+        // Destello C2 (confeti morado/menta, 1,2 s, sin bloquear toques) al terminar una carrera con datos.
+        Box { Tarjeta(fondo = GColors.Primary.copy(alpha = 0.12f)) {
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 IconoCirculo(if (record != null) Icons.Filled.MilitaryTech else Icons.Filled.CheckCircle, GColors.Primary.copy(alpha = 0.2f), GColors.Primary500, 88.dp)
                 Text(if (estado.segundos > 0) "¡Excelente zancada, gacela!" else "Carrera completada", style = GType.headlineMd, color = GColors.TextPrimary, textAlign = TextAlign.Center)
@@ -661,16 +668,19 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
                 Text("Loja, Ecuador", style = GType.bodySm, color = GColors.TextSecondary)
             }
         }
+            com.gacelas.ui.movimiento.DestelloC2(Modifier.matchParentSize(), activo = estado.segundos > 0)
+        }
         if (estado.segundos > 0) com.gacelas.ui.components.CelebracionRacha(rachaAntes, rachaDespues)
         if (estado.puntos.size >= 2) Tarjeta(padding = 8.dp) {
             MapaGacelas(estado.puntos.aLatLng(), Modifier.fillMaxWidth().height(180.dp)) { TrazadoRuta(estado.puntos, Modifier.fillMaxWidth().height(180.dp)) }
             val alturas = estado.puntos.mapNotNull { it.altitudM }
             if (alturas.size > 1) Text("${alturas.min().toInt()} m - ${alturas.max().toInt()} m", style = GType.labelMd, color = GColors.TextSecondary)
         }
-        Tarjeta {
+        Tarjeta(Modifier.entradaEscalonada(1)) {
             Text("DISTANCIA TOTAL", style = GType.labelMd, color = GColors.TextSecondary)
             Row(verticalAlignment = Alignment.Bottom) {
-                Text(Unidades.texto(estado.distanciaKm, m), style = GType.headlineLg, color = GColors.TextPrimary)
+                // Las cifras cuentan desde 0 (900 ms); con animaciones quitadas aparecen ya finales.
+                com.gacelas.ui.movimiento.CifraAnimada(estado.distanciaKm, { Unidades.texto(it, m) }, GType.headlineLg, GColors.TextPrimary)
                 Text("  ${if (m) "Kilómetros" else "Millas"}", style = GType.labelLg, color = GColors.Primary500)
             }
         }
@@ -678,12 +688,16 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
         listOf(
             listOf(Triple("TIEMPO", formatearMs(estado.segundos), "Tiempo en movimiento"), Triple("RITMO MEDIO", formatearRitmo(Unidades.ritmo(estado.ritmoPromedioSegKm, m)), Unidades.etiquetaRitmo(m))),
             listOf(Triple("DESNIVEL (+)", "+${estado.desnivelM.toInt()} m", "Subida acumulada"), Triple("CALORÍAS", "$kcal", "kcal estimadas")),
-        ).forEach { fila ->
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        ).forEachIndexed { i, fila ->
+            Row(Modifier.entradaEscalonada(2 + i), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 fila.forEach { (t, v, d) ->
                     Tarjeta(Modifier.weight(1f), padding = 12.dp) {
                         Text(t, style = GType.labelMd, color = GColors.TextSecondary)
-                        Text(v, style = GType.headlineMd, color = GColors.TextPrimary)
+                        when (t) {
+                            "TIEMPO" -> com.gacelas.ui.movimiento.CifraAnimada(estado.segundos.toDouble(), { formatearMs(it.toInt()) }, GType.headlineMd, GColors.TextPrimary)
+                            "CALORÍAS" -> com.gacelas.ui.movimiento.CifraAnimada(kcal.toDouble(), { "${it.toInt()}" }, GType.headlineMd, GColors.TextPrimary)
+                            else -> Text(v, style = GType.headlineMd, color = GColors.TextPrimary)
+                        }
                         Text(d, style = GType.bodySm, color = GColors.TextSecondary)
                     }
                 }
