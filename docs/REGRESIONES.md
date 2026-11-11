@@ -2,6 +2,30 @@
 
 Registro de fallos que ya se habian corregido y volvieron. Cada entrada dice que paso, la causa, el arreglo y como evitar que se repita.
 
+## 2026-11-11: las copias de APK en Supabase llenaron el Storage y apkUrl de GitHub no era publico
+
+### Que paso
+
+El plan Free de Supabase llego al 130 % del cupo de Storage (1,295 GB de 1 GB) por 26 APKs acumulados en el bucket `app-releases` (unos 49 MB cada uno). Ademas, desde 0.9.2 `latest.json` apuntaba a `https://github.com/jhonatanJJ2006/Gacelas/releases/download/...`. El repo es privado, esa URL responde 404 sin token y la app no lleva tokens, asi que la descarga in-app no era publica.
+
+### Cambio que lo introdujo
+
+`scripts/publicar-android.sh` (v0.9.2) dejo el APK en GitHub Releases y, si cabia en 50 MiB, subia tambien una copia de respaldo a Supabase sin borrar las anteriores. Las builds arm64 posteriores volvieron a pesar menos de 50 MiB, asi que cada publicacion sumaba otro APK al bucket. `apkUrl` apuntaba a GitHub.
+
+### Arreglo
+
+- En Storage solo quedan `android/runcity-0.9.11-arm64.apk` y `android/latest.json`. El historial de APKs (incluida la 0.7.0, que no tenia asset en GitHub) esta en GitHub Releases.
+- `latest.json` apunta otra vez a la URL publica de Supabase del APK actual.
+- `scripts/publicar-android.sh` sube el APK nuevo a Supabase, pone `apkUrl` en esa URL publica, comprueba el sha256 y borra el APK anterior del bucket. GitHub Releases sigue como archivo. Si el APK supera 50 MiB, no se actualiza el manifiesto.
+- Se elimino `scripts/publicar-apk-storage.mjs`, que subia el APK sin borrar el anterior y no creaba el release de GitHub.
+
+### Como evitar que se repita
+
+- Publicar Android solo con `scripts/publicar-android.sh`.
+- No dejar copias historicas en `app-releases`; el bucket solo debe tener el APK actual y `latest.json`.
+- No apuntar `apkUrl` a GitHub mientras el repo sea privado.
+- `scripts/verificar-manifiesto.sh` comprueba que `apkUrl` responde con el tamano de `apkBytes`.
+
 ## 2026-10-27: cierre forzado nativo al abrir Inicio en Android (v0.9.6)
 
 ### Que paso
