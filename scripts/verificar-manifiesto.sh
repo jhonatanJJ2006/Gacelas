@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Comprueba que el manifiesto publico de Android (app-releases/android/latest.json) anuncie la
 # version de build.gradle.kts. Si no coincide, las apps instaladas no ven la nueva version.
-# Tambien comprueba que apkUrl (asset de GitHub Releases) descarga con el tamano de apkBytes.
+# Tambien comprueba que apkUrl (URL publica de Supabase Storage) descarga con el tamano de apkBytes.
 # Uso: scripts/verificar-manifiesto.sh   (VERIFICAR_SHA=1 descarga el APK y compara sha256)
 set -euo pipefail
 RAIZ="$(cd "$(dirname "$0")/.." && pwd)"

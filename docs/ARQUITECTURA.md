@@ -118,7 +118,7 @@ graph TD
 - `ios.yml`: `Tests shared (iosSimulatorArm64)` y `Build simulador` corren en paralelo en `macos-15`. Cachés: Gradle (`setup-gradle`), una sola entrada `~/.konan` compartida, SPM, framework compartido (`shared/build` + `.gradle`) y DerivedData de Xcode. En CI solo se compila el target `iosSimulatorArm64`.
 - Capturas del simulador (matriz de 3 grupos + `Unir capturas`): solo en push a `main`, `workflow_dispatch` o PR con label `capturas`. Otros labels no lanzan ni cancelan runs.
 - Tiempos medidos en PR: iOS 4-6.5 min (antes 13-24 min), Android unos 1.5 min, CI web menos de 1 min.
-- Releases: un tag `v*` o un Release publicado genera `.ipa` sin firmar y `.app` de simulador y los adjunta al Release (job `ipa`). El bucket `app-releases` (migración 013) sirve los binarios y el aviso de actualización en la app (`data/actualizacion`).
+- Releases: un tag `v*` o un Release publicado genera `.ipa` sin firmar y `.app` de simulador y los adjunta al Release (job `ipa`). El bucket `app-releases` (migración 013) sirve el APK actual y `android/latest.json` para el aviso de actualización en la app (`data/actualizacion`); el historial de APKs queda en GitHub Releases.
 - Web: despliegue en Vercel (`apps/web/vercel.json`), con previews por PR.
 
 ### Objetivo y pendientes
