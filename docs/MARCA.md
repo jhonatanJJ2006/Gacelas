@@ -54,13 +54,22 @@ Si se cambia el dibujo, editar los SVG de `assets/marca/` y las constantes del s
 
 Elegida por Jhona en octubre de 2026 (reemplaza a "Ruta y destello v2b", 2,2 s). Una linea de aproximacion morada entra con su estela, el contorno de la gacela se dibuja con una cabeza brillante, se rellena con un barrido de luz y un anillo, y aparece RUNCITY en Anton cursiva letra a letra con el lema; todo sobre `#0C1322`. Dura 3,0 s. Referencia exacta de tiempos, curvas y geometria: `escena_E` en `tools/marca/render_intro_opciones.py`.
 
-| Plataforma | Implementacion                                                                                                  | Peso   |
-| ---------- | --------------------------------------------------------------------------------------------------------------- | ------ |
-| Android    | Compose Canvas en `core/ui` commonMain (`LineaTiempoIntroE`, `IntroMarcaE`), sin dependencias nuevas, sin video | codigo |
-| Web        | `apps/web/public/marca/intro.mp4` (H.264 main, CRF 24, 720 x 1280)                                              | 134 KB |
-| Web        | `apps/web/public/marca/intro.webm` (VP9, CRF 34, 720 x 1280)                                                    | 142 KB |
+| Plataforma | Implementacion                                                                                                   | Peso   |
+| ---------- | ---------------------------------------------------------------------------------------------------------------- | ------ |
+| Android    | Compose Canvas en `core/ui` commonMain (`LineaTiempoIntroE`, `IntroMarcaE`), sin dependencias nuevas, sin video  | codigo |
+| Web        | `apps/web/public/marca/intro.mp4` (H.264 Main 3.2, CRF 17, 720 x 1280, 60 fps, sin B-frames, GOP 1 s, faststart) | 355 KB |
+| Web        | `apps/web/public/marca/intro.webm` (VP9, CRF 30, 720 x 1280, respaldo)                                           | 175 KB |
 
 Capturas (t = 0,2 a 3,0 s) y tira de contacto contra el video de referencia: `docs/capturas/intro-e/`.
+
+### Reproduccion fluida en web (0.9.12)
+
+Como en las apps de streaming, el video se decodifica por hardware y nada compite con el mientras corre:
+
+- El MP4 H.264 va primero en `index.html` (los moviles lo decodifican en la GPU; VP9 queda de respaldo). Se renderiza desde `escena_E` (skia, 1080 x 1920) y se codifica con `-profile:v main -level 3.2 -crf 17 -g 60 -bf 0 -movflags +faststart`: un cuadro clave por segundo, sin B-frames y el indice al principio, asi empieza en cuanto llegan los primeros bytes.
+- `src/app/main.tsx` no monta React hasta el evento `runcity:intro-fin` (`esperarFinIntro` en `src/shared/lib/intro.ts`): durante los 3 s no hay render de React, ni escena 3D, ni peticiones de datos en el hilo principal. El bundle se descarga y evalua en paralelo.
+- La espera del primer cuadro sube de 1 s a 2,5 s (`ESPERA_PRIMER_CUADRO_MS`); antes en redes lentas la intro se cortaba antes de empezar. El tope de seguridad cuenta desde que empieza el video.
+- Si el controlador no llegara a cargar, `esperarFinIntro` monta la app igual a los 7,5 s.
 
 El primer y el ultimo cuadro son el fondo de marca `#0C1322`, igual que el SplashScreen, `windowBackground` y el theme-color de la web.
 
