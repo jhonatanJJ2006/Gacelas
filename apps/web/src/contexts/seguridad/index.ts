@@ -4,3 +4,6 @@ export { HojaReportarIncidente, type Ubicacion } from './ui/HojaReportarIncident
 export { ListaIncidentes, useIncidentesRecientes } from './ui/IncidentesRecientes'
 export * from './domain/incidentes'
 export * from './application/incidentes'
+export { BotonSOS, HojaSOS } from './ui/BotonSOS'
+export { useSos } from './application/sos'
+export * from './domain/sos'

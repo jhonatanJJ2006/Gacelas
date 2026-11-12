@@ -3,9 +3,10 @@ import type { Visibilidad } from '../../../../shared/kernel/tipos'
 import { Interruptor } from '../../../../shared/ui/ui'
 import { useActividad } from '../../../actividad/api'
 import { SeccionConsentimientos } from '../../../legal'
-import { historial } from '../../../legal/api'
+import { historial, registrarConsentimiento } from '../../../legal/api'
 import { useIdentidad } from '../../application/estado'
 import { FilaC2, GrupoC2, PantallaAjustes } from './Comunes'
+import { ContactosEmergencia } from './ContactosEmergencia'
 
 const OPCIONES: { id: Visibilidad; icono: string; titulo: string; descripcion: string }[] = [
   {
@@ -189,10 +190,14 @@ export function PrivacidadUbicacion() {
           titulo="Compartir en vivo al correr"
           descripcion="Tus seguidores ven tu posición mientras corres (la zona de casa se oculta)"
           activo={ajustes.compartirEnVivo === true}
-          onCambiar={(v) => void actualizar({ compartirEnVivo: v })}
+          onCambiar={(v) => {
+            void actualizar({ compartirEnVivo: v })
+            void registrarConsentimiento('ubicacion_visible', v)
+          }}
         />
       </GrupoC2>
 
+      <ContactosEmergencia />
       <SeccionConsentimientos />
       <GrupoC2 titulo="Tus datos">
         <button

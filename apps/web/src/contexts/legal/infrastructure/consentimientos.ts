@@ -54,6 +54,56 @@ export async function terminosRemotos(): Promise<Consentimiento | null | undefin
   }
 }
 
+/**
+ * Une el historial del dispositivo con el de Supabase (tabla consents). Asi lo que se acepto una
+ * vez (en este navegador, en otro o en la app) no se vuelve a preguntar. Devuelve el historial unido.
+ */
+export async function sincronizarConsentimientos(): Promise<Consentimiento[]> {
+  const local = historial()
+  const sb = obtenerSupabase()
+  if (!sb) return local
+  try {
+    const { data: u } = await sb.auth.getUser()
+    if (!u.user) return local
+    const { data, error } = await sb
+      .from('consents')
+      .select('kind, version, granted, created_at')
+      .eq('user_id', u.user.id)
+      .order('created_at', { ascending: true })
+      .limit(200)
+    if (error || !data) return local
+    const remotos: Consentimiento[] = (
+      data as { kind: string; version: string; granted: boolean; created_at: string }[]
+    )
+      .filter((f) => f.kind in VERSIONES_LEGALES)
+      .map((f) => ({
+        tipo: f.kind as TipoConsentimiento,
+        version: f.version,
+        otorgado: f.granted,
+        fechaMs: Date.parse(f.created_at),
+      }))
+    const unido = unirHistoriales(local, remotos)
+    localStorage.setItem(CLAVE, JSON.stringify(unido))
+    return unido
+  } catch {
+    return local
+  }
+}
+
+/** Une dos historiales sin duplicar (mismo tipo, valor y fecha con 5 s de margen), en orden de fecha. */
+export function unirHistoriales(a: Consentimiento[], b: Consentimiento[]): Consentimiento[] {
+  const todos = [...a]
+  for (const c of b)
+    if (
+      !todos.some(
+        (x) =>
+          x.tipo === c.tipo && x.otorgado === c.otorgado && Math.abs(x.fechaMs - c.fechaMs) < 5000
+      )
+    )
+      todos.push(c)
+  return todos.sort((x, y) => x.fechaMs - y.fechaMs)
+}
+
 /** Registra en el historial local y, con sesion, en la tabla consents de Supabase. */
 export async function registrarConsentimiento(
   tipo: TipoConsentimiento,

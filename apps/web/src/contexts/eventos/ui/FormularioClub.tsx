@@ -19,6 +19,7 @@ import {
   type NivelGrupo,
   type TipoClub,
 } from '../api'
+import { Esqueleto } from '../../../shared/ui/Esqueletos'
 
 const campo =
   'w-full h-11 px-3 bg-surface-container border border-border-subtle rounded-lg text-text-primary placeholder-text-secondary'
@@ -134,7 +135,12 @@ export function FormularioClub() {
         <h1 className="flex-1 min-w-0 font-title-md text-title-md text-text-primary">{titulo}</h1>
       </header>
       {!cargado ? (
-        <p className="px-margin text-text-secondary">Cargando…</p>
+        <div className="px-margin space-y-4" aria-busy="true" data-testid="cargando-formulario">
+          <Esqueleto className="h-28 w-full rounded-[14px]" />
+          <Esqueleto className="h-11 w-full rounded-lg" />
+          <Esqueleto className="h-24 w-full rounded-lg" />
+          <Esqueleto className="h-11 w-1/2 rounded-lg" />
+        </div>
       ) : (
         <form
           className="px-margin lg:px-0 space-y-5"

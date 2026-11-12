@@ -3,8 +3,10 @@ import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'rea
 import { useIdentidad } from '../contexts/identidad/api'
 import { AppLayout } from './AppLayout'
 import NoEncontrado from './NoEncontrado'
+import { guardarDestino, tomarDestino } from '../shared/lib/destino'
 import { cargar } from './estado'
 import { ShellEscritorio } from './ShellEscritorio'
+import { EsqueletoPantalla } from '../shared/ui/Esqueletos'
 
 const Bienvenida = lazy(() =>
   import('../contexts/identidad/ui/acceso/Bienvenida').then((m) => ({ default: m.Bienvenida }))
@@ -159,26 +161,30 @@ const Admin = lazy(() => import('../contexts/admin/ui/Admin').then((m) => ({ def
 const MapaVivo = lazy(() =>
   import('../contexts/envivo/ui/MapaVivo').then((m) => ({ default: m.MapaVivo }))
 )
+const PaginaSOS = lazy(() =>
+  import('../contexts/seguridad/ui/PaginaSOS').then((m) => ({ default: m.PaginaSOS }))
+)
 const PublicadorUbicacion = lazy(() =>
   import('../contexts/envivo/ui/MapaVivo').then((m) => ({ default: m.PublicadorUbicacion }))
 )
 
 function LoadingFallback() {
-  return (
-    <div className="min-h-screen bg-surface flex items-center justify-center">
-      <div className="flex flex-col items-center gap-2">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        <span className="text-sm text-text-secondary">Cargando...</span>
-      </div>
-    </div>
-  )
+  return <EsqueletoPantalla />
 }
 
 /** Rutas protegidas: sin sesion se redirige a /bienvenida. */
 export function RutaProtegida() {
   const sesion = useIdentidad((s) => s.sesion)
   const location = useLocation()
-  if (!sesion) return <Navigate to="/bienvenida" replace state={{ desde: location.pathname }} />
+  // Con sesion (p. ej. al volver de Google) el destino pendiente ya se cumplio: se borra.
+  useEffect(() => {
+    if (sesion) tomarDestino()
+  }, [sesion])
+  if (!sesion) {
+    // Al entrar se vuelve a esta pantalla (shared/lib/destino.ts), tambien tras Google.
+    guardarDestino(location.pathname + location.search)
+    return <Navigate to="/bienvenida" replace state={{ desde: location.pathname }} />
+  }
   return (
     <>
       <Outlet />
@@ -224,6 +230,7 @@ export function AppRoutes() {
         <Route path="/nueva-contrasena" element={<NuevaContrasena />} />
         <Route path="/legal/terminos" element={<Terminos />} />
         <Route path="/legal/privacidad" element={<PoliticaPrivacidad />} />
+        <Route path="/sos/:id" element={<PaginaSOS />} />
 
         <Route element={<RutaProtegida />}>
           <Route path="/permisos-ubicacion" element={<PermisosUbicacion />} />

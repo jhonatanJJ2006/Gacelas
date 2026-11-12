@@ -23,6 +23,7 @@ import {
   type MiembroClub,
   type PostClub,
 } from '../api'
+import { EsqueletoPantalla } from '../../../shared/ui/Esqueletos'
 
 export function DetalleClub() {
   const { id = '' } = useParams()
@@ -65,7 +66,7 @@ export function DetalleClub() {
     return clubes.escucharPosts(id, () => void cargar())
   }, [id, sesion, cargar])
 
-  if (club === undefined) return <main className="p-6 text-text-secondary">Cargando…</main>
+  if (club === undefined) return <EsqueletoPantalla testId="cargando-club" />
   if (club === null)
     return (
       <main className="p-6 text-text-secondary">

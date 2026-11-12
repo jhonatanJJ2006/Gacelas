@@ -1,3 +1,4 @@
+import { EsqueletoLista } from '../../../shared/ui/Esqueletos'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { CorredorPublico } from '../../../shared/kernel/comunidad'
@@ -60,9 +61,7 @@ export function Corredores() {
 
       <main className="flex-1 px-margin pb-24 lg:px-0">
         {resultados === null ? (
-          <div className="flex justify-center py-10" role="status" aria-label="Buscando">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-          </div>
+          <EsqueletoLista filas={4} testId="cargando-corredores" />
         ) : resultados.length === 0 ? (
           <p className="text-center text-text-secondary py-10" data-testid="corredores-vacio">
             {consulta.trim()

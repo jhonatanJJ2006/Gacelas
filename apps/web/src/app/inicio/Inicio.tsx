@@ -19,6 +19,7 @@ import {
 import { nivelCorredor } from '../../shared/kernel/nivel'
 import { formatearRitmo, Unidades } from '../../shared/lib/geo'
 import { useEsEscritorio } from '../../shared/lib/useEsEscritorio'
+import { AvisoNavegacion } from '../../shared/ui/AvisoNavegacion'
 import { saludo } from './saludo'
 import {
   AmigosEnRuta,
@@ -27,6 +28,7 @@ import {
   TarjetaEvento,
   TarjetaReto,
 } from './SeccionesInicio'
+import { EsqueletoEscena3D } from '../../shared/ui/Esqueletos'
 
 const Runner3D = lazy(() =>
   import('../../shared/ui/Runner3D').then((m) => ({ default: m.Runner3D }))
@@ -66,6 +68,7 @@ export function Inicio() {
 
   return (
     <div className="flex flex-col w-full px-margin pb-space-3xl space-y-space-xl contenedor-escritorio lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-6 lg:space-y-0 lg:items-start">
+      <AvisoNavegacion />
       {/* Encabezado C2 (Android InicioContenido.kt): saludo, "HOLA, NOMBRE" en Anton y chips .wx. */}
       <section className="flex flex-col gap-1.5 pt-space-md lg:col-span-12 lg:pt-0">
         <span className="font-label-md text-[12px] font-semibold text-c2-muted">
@@ -119,16 +122,7 @@ export function Inicio() {
           </span>
         </div>
         <div className="absolute inset-x-0 top-0 h-[84%]">
-          <Suspense
-            fallback={
-              <div className="w-full h-full flex items-center justify-center text-text-secondary">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-                  <span className="text-sm">Cargando escena 3D...</span>
-                </div>
-              </div>
-            }
-          >
+          <Suspense fallback={<EsqueletoEscena3D texto="Cargando escena 3D" />}>
             <Runner3D
               animation="Idle"
               autoRotate

@@ -241,3 +241,69 @@ En Android los modales (crear evento, terminos, terminar carrera, compartir sobr
 - Arreglo: `scripts/publicar-android.sh` sube el APK como asset del release de GitHub (`runcity-X.Y.Z-arm64.apk`, limite 2 GB), descarga ese asset con `curl -L` y compara sha256, y solo despues sube a Supabase `android/latest.json` con `apkUrl` apuntando a GitHub. Si el APK cabe, deja ademas una copia de respaldo en Supabase que las apps no usan. Aviso blando si pasa de 150 MiB.
 - Compatibilidad: 0.9.1 y anteriores leen el mismo `latest.json` con los mismos campos. `ReglasActualizacion.aviso` acepta cualquier `apkUrl` https, el parser ignora campos desconocidos, DownloadManager sigue la redireccion 302 a release-assets.githubusercontent.com y la app compara el sha256 al terminar. No hizo falta cambiar la app.
 - Pruebas: `ActualizacionTest.manifiestoConApkEnGithubReleases` y `scripts/verificar-manifiesto.sh`, que ahora comprueba que `apkUrl` responde con el tamano de `apkBytes` (`VERIFICAR_SHA=1` compara tambien el sha256).
+
+## 2026-11-12: Al iniciar sesion en la web se iba a otra pagina (v0.9.12)
+
+### Sintoma
+
+Despues de entrar con correo o con Google la web no volvia a Inicio ni a la pantalla que se habia pedido; con Google terminaba en una URL de Vercel con inicio de sesion propio.
+
+### Causa
+
+El `site_url` de Supabase Auth apuntaba a un alias de Vercel protegido por SSO, y la web no recordaba la pantalla pedida antes de mandar al acceso.
+
+### Arreglo
+
+`site_url` pasa a `https://gacelas.vercel.app` (con su lista de redirecciones). `src/shared/lib/destino.ts` guarda la pantalla protegida pedida (sessionStorage) y el acceso vuelve a ella; por defecto a Inicio. Guardar o descartar una carrera vuelve a Inicio con un aviso.
+
+### Test de regresion
+
+`src/shared/lib/__tests__/destino.test.ts`, `e2e/v0912.spec.ts` (vuelve a la pantalla pedida, descartar vuelve a Inicio) y `src/__tests__/correr.test.tsx`.
+
+### Como evitarlo
+
+No usar alias de Vercel con proteccion como `site_url`. Toda navegacion tras acceso pasa por `tomarDestino()`.
+
+## 2026-11-12: Se preguntaba en cada carrera si compartir la ubicacion (v0.9.12)
+
+### Sintoma
+
+Al iniciar cada carrera la app volvia a preguntar si otras personas podian ver la ubicacion.
+
+### Causa
+
+La respuesta vivia solo en Ajustes del dispositivo. Al reinstalar la app, o cuando la web guardaba `prefs` con otro formato (por ejemplo `visibilidad` en minusculas), Android descartaba todas las preferencias remotas y la decision volvia a quedar vacia.
+
+### Arreglo
+
+La respuesta se guarda tambien como consentimiento `ubicacion_visible` en `consents`. Antes de preguntar, web y Android buscan esa decision (Android sincroniza los consentimientos del servidor). Android lee `prefs` clave por clave (`ajustesTolerantes`) y ya no pierde todo por un campo distinto. El consentimiento de GPS tambien se busca en el servidor antes de pedirlo. Solo se cambia desde Ajustes, Privacidad.
+
+### Test de regresion
+
+`e2e/v0912.spec.ts` (segunda carrera sin preguntas) y `Version0912Test.prefsEscritasPorLaWebNoBorranLaDecision` en Android.
+
+### Como evitarlo
+
+Toda decision de privacidad que no deba repetirse se guarda en `consents`, no solo en preferencias locales.
+
+## 2026-11-12: El boton 3D/2D parecia invertido (v0.9.12)
+
+### Sintoma
+
+Al tocar 3D el mapa seguia plano, y al tocar 2D parecia 3D.
+
+### Causa
+
+Web: sin Map ID el mapa raster no se inclina, asi que el modo 3D se veia plano, y el boton mostraba el modo de destino ("2D" estando en 3D). Android: la camara solo se inclinaba si ya habia punto GPS y se seguia al corredor; tras arrastrar el mapa el cambio no hacia nada.
+
+### Arreglo
+
+Selector con las dos opciones (2D y 3D) que resalta la que se ve. Web: sin Map ID la capa del mapa se inclina con perspectiva CSS (en GPU) y gira con el rumbo; el corredor 3D va de pie encima. Android: al cambiar de modo se vuelve a seguir y la inclinacion se aplica en el acto.
+
+### Test de regresion
+
+Selector `vista-3d-on` / `vista-2d-on` en web y Android (Roborazzi de la carrera).
+
+### Como evitarlo
+
+Los botones de modo muestran el estado actual, nunca el de destino.

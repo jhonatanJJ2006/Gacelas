@@ -3,7 +3,12 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { ModalC2 } from '../../../shared/ui/modales'
 import { MensajeError } from '../../../shared/ui/ui'
 import { useIdentidad } from '../../identidad/api'
-import { historial, otorgado, registrarConsentimiento } from '../../legal/api'
+import {
+  historial,
+  otorgado,
+  registrarConsentimiento,
+  sincronizarConsentimientos,
+} from '../../legal/api'
 import {
   empezarSeguimiento,
   geolocalizacionDisponible,
@@ -62,7 +67,13 @@ export function Correr() {
     navigate('/correr/en-curso')
   }
   const iniciar = () => (cuentaSeg > 0 ? setCuenta(cuentaSeg) : arrancar())
-  const handleStart = () => (otorgado(historial(), 'gps_carrera') ? iniciar() : setPedirGps(true))
+  // El consentimiento de GPS se pide una sola vez por cuenta: se mira el historial local y, si no
+  // esta, el de Supabase (otro navegador o la app). Se revoca solo desde Privacidad.
+  const handleStart = async () => {
+    if (otorgado(historial(), 'gps_carrera')) return iniciar()
+    if (otorgado(await sincronizarConsentimientos(), 'gps_carrera')) return iniciar()
+    setPedirGps(true)
+  }
 
   arrancarRef.current = arrancar
   const listo = gps.tipo === 'listo'
@@ -190,7 +201,7 @@ export function Correr() {
           onCerrar={() => setPedirGps(false)}
         />
         <button
-          onClick={handleStart}
+          onClick={() => void handleStart()}
           aria-label="Comenzar carrera"
           className="w-24 h-24 rounded-full bg-primary-600 hover:bg-primary-700 active:scale-95 shadow-[0_12px_28px_-4px_rgba(123,31,162,0.5)] flex items-center justify-center transition-all"
         >

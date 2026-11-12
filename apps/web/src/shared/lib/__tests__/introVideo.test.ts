@@ -49,7 +49,7 @@ describe('logica de la intro', () => {
   })
   it('dura como maximo unos 3 s y espera el primer cuadro 1 s', () => {
     expect(DURACION_INTRO_S).toBeLessThanOrEqual(3)
-    expect(ESPERA_PRIMER_CUADRO_MS).toBe(1000)
+    expect(ESPERA_PRIMER_CUADRO_MS).toBe(2500)
   })
 })
 
@@ -118,7 +118,7 @@ describe('intro en video', () => {
     Object.defineProperty(video, 'readyState', { value: 4 })
     Object.defineProperty(video, 'paused', { value: false })
     soltar = iniciarIntroVideo(document, almacen())
-    vi.advanceTimersByTime(DURACION_INTRO_S * 1000 + 1600)
+    vi.advanceTimersByTime(DURACION_INTRO_S * 1000 + ESPERA_PRIMER_CUADRO_MS + 1600)
     expect(el.hidden).toBe(true)
   })
 

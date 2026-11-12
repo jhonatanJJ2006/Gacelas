@@ -87,6 +87,19 @@ cd apps/web && pnpm smoke:supabase
 
 Es idempotente. Para quitarlo: `scripts/sb-query.sh supabase/rollback/038_contenido_demo_loja.down.sql`. Si los eventos quedan en el pasado, se borran con `delete from eventos.events where id like 'demo-ev-%'` y se vuelve a aplicar la migracion.
 
+## Boton SOS (039)
+
+`supabase/migrations/039_sos.sql` crea `seguridad.sos_alertas` y cuatro funciones:
+
+| Funcion                        | Quien         | Que hace                                                                                  |
+| ------------------------------ | ------------- | ----------------------------------------------------------------------------------------- |
+| `sos_iniciar(lat, lng)`        | authenticated | Cierra alertas abiertas del usuario y crea una nueva; devuelve su id (el enlace privado). |
+| `sos_enviar(alerta, lat, lng)` | authenticated | Guarda la ultima posicion (maximo 720 puntos).                                            |
+| `sos_terminar(alerta)`         | authenticated | Cierra la alerta: el enlace deja de mostrar la ubicacion.                                 |
+| `sos_ver(alerta)`              | anon          | Nombre, estado y ultima posicion para la pagina publica `/sos/:id`.                       |
+
+Durante un SOS la zona de casa no se oculta (es una emergencia). Las alertas sin posiciones en 2 h se cierran solas (`sos_cerrar_inactivas`, cada 15 min con pg_cron). La tabla no tiene politicas de escritura: solo escriben las funciones.
+
 ## Variables de entorno
 
 | Archivo                         | Variable                                                                                        | Uso                                                                                       |

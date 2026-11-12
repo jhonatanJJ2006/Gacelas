@@ -1,14 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { formatearHms, formatearRitmo, Unidades } from '../../../shared/lib/geo'
 import { claveMapas } from '../../../shared/lib/mapas'
 import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
-import { BotonReportarMapa, BotonVolverMapa } from '../../../shared/ui/BotonesMapa'
+import {
+  BotonReportarMapa,
+  BotonVolverMapa,
+  ControlEtiquetado,
+  GrupoControles,
+  SelectorVista,
+} from '../../../shared/ui/BotonesMapa'
 import { ModalC2, ResumenModal } from '../../../shared/ui/modales'
 import { TrazadoRuta } from '../../../shared/ui/TrazadoRuta'
 import { BotonTexto, Dialogo } from '../../../shared/ui/ui'
 import { useIdentidad } from '../../identidad/api'
-import { HojaReportarIncidente } from '../../seguridad'
+import { historial, registrarConsentimiento, vigente } from '../../legal/api'
+import { BotonSOS, HojaReportarIncidente, useSos } from '../../seguridad'
 import {
   dejarDeCompartir,
   empezarACompartir,
@@ -30,6 +37,7 @@ export function CarreraEnCurso() {
   const e = useCarrera()
   const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
   const [descartar, setDescartar] = useState(false)
+  const saliendo = useRef(false)
   const [modalFin, setModalFin] = useState(false)
   const [modalPausa, setModalPausa] = useState(false)
   const [gpsAvisado, setGpsAvisado] = useState(false)
@@ -43,12 +51,23 @@ export function CarreraEnCurso() {
   const decisionVivo = useIdentidad((s) => s.ajustes.compartirEnVivo)
   const actualizarAjustes = useIdentidad((s) => s.actualizarAjustes)
   const puedeVivo = !!sesion && puedeCompartir()
+  // Sin decision en Ajustes (otro dispositivo o datos borrados): se usa la ya dada en consents.
+  useEffect(() => {
+    if (!puedeVivo || decisionVivo != null) return
+    const previa = vigente(historial(), 'ubicacion_visible')
+    if (previa) void actualizarAjustes({ compartirEnVivo: previa.otorgado })
+  }, [puedeVivo, decisionVivo, actualizarAjustes])
+  const responderVivo = (v: boolean) => {
+    void actualizarAjustes({ compartirEnVivo: v })
+    void registrarConsentimiento('ubicacion_visible', v)
+  }
   useEffect(() => {
     if (!puedeVivo) return
     if (decisionVivo === true && !compartiendo) void empezarACompartir()
     if (decisionVivo === false && compartiendo) void dejarDeCompartir()
   }, [puedeVivo, decisionVivo, compartiendo])
   const ultimo = e.puntos.at(-1)
+  const ultimoGps = ultimo ? { lat: ultimo.lat, lng: ultimo.lng } : null
   useEffect(() => {
     if (compartiendo && e.fase === 'corriendo')
       void enviarPosicion(ultimo, e.distanciaKm, e.segundos)
@@ -84,12 +103,15 @@ export function CarreraEnCurso() {
     return () => clearTimeout(t)
   }, [autopausa, e.fase, e.puntos.length])
 
+  // Al descartar se navega a Inicio antes de reiniciar el tracker: no se redirige a Correr.
+  if (saliendo.current) return null
   if (!estaActiva(e))
     return <Navigate to={e.fase === 'terminada' ? '/correr/resumen' : '/correr'} replace />
 
   const pausada = e.fase === 'pausada'
   const terminar = () => {
     void dejarDeCompartir()
+    void useSos.getState().terminar()
     finalizarCarrera()
     navigate('/correr/resumen')
   }
@@ -151,13 +173,18 @@ export function CarreraEnCurso() {
         onCerrar={() => setGpsAvisado(true)}
       />
       <ModalC2
-        abierto={puedeVivo && decisionVivo == null && !modalFin}
+        abierto={
+          puedeVivo &&
+          decisionVivo == null &&
+          !vigente(historial(), 'ubicacion_visible') &&
+          !modalFin
+        }
         icono="sensors"
         titulo="¿Compartir tu carrera en vivo?"
         texto="Tus seguidores podrán ver tu posición mientras corres. La zona de tu casa siempre se oculta. Puedes cambiarlo cuando quieras en Configuración > Privacidad."
         primario="Sí, compartir"
-        onPrimario={() => void actualizarAjustes({ compartirEnVivo: true })}
-        onCerrar={() => void actualizarAjustes({ compartirEnVivo: false })}
+        onPrimario={() => responderVivo(true)}
+        onCerrar={() => responderVivo(false)}
         secundario="No, gracias"
       />
     </>
@@ -174,8 +201,10 @@ export function CarreraEnCurso() {
             peligro
             onClick={() => {
               void dejarDeCompartir()
+              void useSos.getState().terminar()
+              saliendo.current = true
+              navigate('/inicio', { replace: true, state: { aviso: 'Carrera descartada' } })
               descartarCarrera()
-              navigate('/inicio')
             }}
           >
             Descartar
@@ -193,20 +222,30 @@ export function CarreraEnCurso() {
     <div className="absolute top-[max(env(safe-area-inset-top),16px)] inset-x-4 z-20 flex justify-between items-center gap-2">
       {/* Volver no detiene la carrera: sigue grabando y se retoma desde Correr. */}
       <BotonVolverMapa onVolver={() => navigate('/inicio')} />
-      <button
-        onClick={() => setDescartar(true)}
-        aria-label="Salir de la carrera"
-        className="w-10 h-10 rounded-full bg-surface/90 backdrop-blur-md flex items-center justify-center text-text-primary shadow-lg"
-      >
-        <span className="material-symbols-outlined">close</span>
-      </button>
-      <button
-        onClick={() => navigate('/correr/cronometro')}
-        aria-label="Abrir cronómetro"
-        className="w-10 h-10 rounded-full bg-surface/90 backdrop-blur-md flex items-center justify-center text-text-primary shadow-lg"
-      >
-        <span className="material-symbols-outlined">timer</span>
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={() => navigate('/correr/cronometro')}
+          aria-label="Abrir cronómetro"
+          title="Abrir cronómetro"
+          className="h-10 px-3 rounded-full bg-c2-card/95 border border-c2-linea backdrop-blur-md flex items-center gap-1 text-white text-[12px] font-bold uppercase shadow-lg"
+        >
+          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+            timer
+          </span>
+          Crono
+        </button>
+        <button
+          onClick={() => setDescartar(true)}
+          aria-label="Salir de la carrera"
+          title="Salir y descartar la carrera"
+          className="h-10 px-3 rounded-full bg-c2-card/95 border border-c2-linea backdrop-blur-md flex items-center gap-1 text-white text-[12px] font-bold uppercase shadow-lg"
+        >
+          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+            close
+          </span>
+          Salir
+        </button>
+      </div>
     </div>
   )
 
@@ -243,8 +282,6 @@ export function CarreraEnCurso() {
     const ultimo = parciales[parciales.length - 1]
     const maxSeg = Math.max(1, ...ultimos.map((x) => x.segundos))
     const minSeg = Math.min(...ultimos.map((x) => x.segundos), maxSeg)
-    const ctl =
-      'w-[42px] h-[42px] rounded-[6px] bg-c2-card/95 border border-c2-linea text-white flex items-center justify-center shadow-lg backdrop-blur-md'
     const chip =
       'h-8 px-4 flex items-center gap-2 bg-c2-card/95 border border-c2-linea text-white text-[12px] font-black italic uppercase tracking-wide backdrop-blur-md [clip-path:polygon(8px_0,100%_0,calc(100%-8px)_100%,0_100%)]'
     return (
@@ -269,57 +306,54 @@ export function CarreraEnCurso() {
             />
             {pausada ? (autoPausada ? 'Autopausa' : 'En pausa') : 'En curso'} · GPS {gps}
           </span>
-          <span className={chip} data-testid="chip-promedio">
+          <span className={`${chip} max-[380px]:hidden`} data-testid="chip-promedio">
             Promedio {formatearRitmo(Unidades.ritmo(ritmoPromedio(e), m))}
           </span>
-        </div>
-        <div
-          className="absolute right-3 top-[58px] z-20 flex flex-col gap-2"
-          data-testid="controles-carrera"
-        >
-          <BotonReportarMapa onClick={() => setReportando(true)} />
           <button
-            onClick={() => setRecentrar((n) => n + 1)}
-            aria-label="Recentrar"
-            data-testid="recentrar"
-            className={ctl}
-          >
-            <span className="material-symbols-outlined text-[20px]">my_location</span>
-          </button>
-          <button
-            onClick={() => setVista3d(!vista3d)}
-            aria-pressed={vista3d}
-            aria-label={vista3d ? 'Vista 2D' : 'Vista 3D'}
-            data-testid="vista-3d"
-            className={`${ctl} text-[12px] font-black italic`}
-          >
-            {vista3d ? '2D' : '3D'}
-          </button>
-          <button
-            onClick={() => navigate('/correr/cronometro')}
-            aria-label="Abrir cronómetro"
-            className={ctl}
-          >
-            <span className="material-symbols-outlined text-[20px]">timer</span>
-          </button>
-          <button
-            onClick={() => void actualizar({ anunciosVoz: !voz })}
-            aria-pressed={voz}
-            aria-label={voz ? 'Silenciar voz' : 'Activar voz'}
-            data-testid="boton-voz"
-            className={ctl}
-          >
-            <span className="material-symbols-outlined text-[20px]">
-              {voz ? 'volume_up' : 'volume_off'}
-            </span>
-          </button>
-          <button
+            type="button"
             onClick={() => setDescartar(true)}
             aria-label="Salir de la carrera"
-            className={ctl}
+            title="Salir y descartar la carrera"
+            className="ml-auto h-[42px] px-3 flex items-center gap-1 rounded-[6px] bg-c2-card/95 border border-c2-linea text-white text-[12px] font-bold uppercase shadow-lg backdrop-blur-md"
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+              close
+            </span>
+            Salir
           </button>
+        </div>
+        <div
+          className="absolute right-3 top-[60px] z-20 flex flex-col gap-2 items-end"
+          data-testid="controles-carrera"
+        >
+          <GrupoControles titulo="Mapa">
+            <ControlEtiquetado
+              icono="my_location"
+              etiqueta="Centrar"
+              descripcion="Centrar el mapa en tu posición"
+              onClick={() => setRecentrar((n) => n + 1)}
+              testId="recentrar"
+            />
+            <SelectorVista vista3d={vista3d} onCambiar={setVista3d} />
+          </GrupoControles>
+          <GrupoControles titulo="Carrera">
+            <ControlEtiquetado
+              icono={voz ? 'volume_up' : 'volume_off'}
+              etiqueta={voz ? 'Voz sí' : 'Voz no'}
+              descripcion={voz ? 'Silenciar avisos de voz' : 'Activar avisos de voz por kilómetro'}
+              onClick={() => void actualizar({ anunciosVoz: !voz })}
+              presionado={voz}
+              testId="boton-voz"
+            />
+            <ControlEtiquetado
+              icono="timer"
+              etiqueta="Crono"
+              descripcion="Abrir cronómetro"
+              onClick={() => navigate('/correr/cronometro')}
+            />
+          </GrupoControles>
+          <BotonReportarMapa onClick={() => setReportando(true)} />
+          <BotonSOS posicion={ultimoGps} />
         </div>
         <section
           aria-label="Datos de la carrera"
@@ -529,6 +563,7 @@ export function CarreraEnCurso() {
               alternativa={<TrazadoRuta puntos={e.puntos} className="w-full h-full" />}
             />
             {botonReportar}
+            <BotonSOS posicion={ultimoGps} className="absolute right-3 bottom-3 z-10" />
           </div>
 
           <div className="flex justify-between">

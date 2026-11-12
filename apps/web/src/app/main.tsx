@@ -2,15 +2,20 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import '../index.css'
 import { cerrarTecladoAlTocarFuera } from '../shared/lib/teclado'
+import { esperarFinIntro } from '../shared/lib/intro'
 import App from './App.tsx'
 import { activarVistaPreviaSiCorresponde } from './modoVistaPrevia'
 
 activarVistaPreviaSiCorresponde()
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+// Como en las apps de streaming: mientras corre la intro no se monta React ni la escena 3D, asi el
+// hilo principal y la GPU quedan libres para el video. El bundle ya se descargo y evaluo en paralelo.
+void esperarFinIntro().then(() =>
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  )
 )
 
 cerrarTecladoAlTocarFuera()
