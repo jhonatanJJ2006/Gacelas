@@ -1,3 +1,4 @@
+import { EsqueletoLista } from '../../../shared/ui/Esqueletos'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ID_USUARIO } from '../../../mocks/data'
@@ -41,6 +42,7 @@ export function ListaRutas() {
   const [verMapa, setVerMapa] = useState(false)
   const navigate = useNavigate()
   const sociales = useRutas((s) => s.rutasSociales)
+  const cargando = useRutas((s) => s.cargandoRutas)
   const [cerca, setCerca] = useState<Record<string, number> | null>(null)
   const [buscandoCerca, setBuscandoCerca] = useState(false)
   const filtradas = aplicarFiltros(
@@ -247,7 +249,12 @@ export function ListaRutas() {
         </p>
       </div>
       <div className="px-margin space-y-4 pb-space-3xl lg:px-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6 lg:space-y-0">
-        {rutas.length === 0 && (
+        {cargando && (
+          <div className="lg:col-span-full">
+            <EsqueletoLista filas={3} conImagen testId="cargando-rutas" />
+          </div>
+        )}
+        {!cargando && rutas.length === 0 && (
           <p
             className="tarjeta-c2 p-4 text-body-md text-text-secondary lg:col-span-full"
             data-testid="rutas-vacio"
@@ -259,78 +266,83 @@ export function ListaRutas() {
                 : 'No hay rutas que coincidan con la búsqueda.'}
           </p>
         )}
-        {rutas.map((ruta) => {
-          const guardada = guardadas.includes(ruta.id)
-          return (
-            <article key={ruta.id} className="relative tarjeta-c2 overflow-hidden">
-              <Link to={`/rutas/${ruta.id}`} className="block" aria-label={`Abrir ${ruta.nombre}`}>
-                <div className="flex gap-3 p-3 pr-12">
-                  <div className="w-[88px] h-[88px] shrink-0 rounded bg-gradient-to-br from-c2-s2 to-[#0c1322] flex items-center justify-center">
-                    <span className="material-symbols-outlined fill text-[36px] text-c2-violeta">
-                      route
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0 flex flex-col gap-1">
-                    <h2 className="font-title-md text-title-md tracking-[0.03em] text-text-primary line-clamp-2">
-                      {ruta.nombre}
-                    </h2>
-                    {ruta.oficial && (
-                      <span className="self-start">
-                        <InsigniaOficial />
-                      </span>
-                    )}
-                    <p className="text-body-sm text-c2-muted line-clamp-2">{ruta.descripcion}</p>
-                    {extras(ruta).length > 0 && (
-                      <p
-                        className="text-label-md font-semibold text-c2-muted"
-                        data-testid="ruta-extra"
-                      >
-                        {extras(ruta).join('  ·  ')}
-                      </p>
-                    )}
-                    <div
-                      className="flex flex-wrap items-center gap-x-3.5 gap-y-1"
-                      data-testid="metricas-ruta"
-                    >
-                      <span className="text-label-lg font-semibold text-c2-violeta">
-                        {Unidades.texto(ruta.distanciaKm, m, 1)} {Unidades.etiquetaDistancia(m)}
-                      </span>
-                      <span className="text-label-lg font-semibold text-c2-cielo">
-                        +{ruta.elevacionM} m
-                      </span>
-                      <span
-                        className={`text-label-md font-semibold px-2 py-0.5 rounded-full ${
-                          ruta.dificultad === 'Fácil'
-                            ? 'bg-secondary-500/20 text-secondary-500'
-                            : ruta.dificultad === 'Moderado'
-                              ? 'bg-primary-500/20 text-primary-500'
-                              : 'bg-danger/20 text-danger'
-                        }`}
-                      >
-                        {ruta.dificultad}
+        {!cargando &&
+          rutas.map((ruta) => {
+            const guardada = guardadas.includes(ruta.id)
+            return (
+              <article key={ruta.id} className="relative tarjeta-c2 overflow-hidden">
+                <Link
+                  to={`/rutas/${ruta.id}`}
+                  className="block"
+                  aria-label={`Abrir ${ruta.nombre}`}
+                >
+                  <div className="flex gap-3 p-3 pr-12">
+                    <div className="w-[88px] h-[88px] shrink-0 rounded bg-gradient-to-br from-c2-s2 to-[#0c1322] flex items-center justify-center">
+                      <span className="material-symbols-outlined fill text-[36px] text-c2-violeta">
+                        route
                       </span>
                     </div>
+                    <div className="flex-1 min-w-0 flex flex-col gap-1">
+                      <h2 className="font-title-md text-title-md tracking-[0.03em] text-text-primary line-clamp-2">
+                        {ruta.nombre}
+                      </h2>
+                      {ruta.oficial && (
+                        <span className="self-start">
+                          <InsigniaOficial />
+                        </span>
+                      )}
+                      <p className="text-body-sm text-c2-muted line-clamp-2">{ruta.descripcion}</p>
+                      {extras(ruta).length > 0 && (
+                        <p
+                          className="text-label-md font-semibold text-c2-muted"
+                          data-testid="ruta-extra"
+                        >
+                          {extras(ruta).join('  ·  ')}
+                        </p>
+                      )}
+                      <div
+                        className="flex flex-wrap items-center gap-x-3.5 gap-y-1"
+                        data-testid="metricas-ruta"
+                      >
+                        <span className="text-label-lg font-semibold text-c2-violeta">
+                          {Unidades.texto(ruta.distanciaKm, m, 1)} {Unidades.etiquetaDistancia(m)}
+                        </span>
+                        <span className="text-label-lg font-semibold text-c2-cielo">
+                          +{ruta.elevacionM} m
+                        </span>
+                        <span
+                          className={`text-label-md font-semibold px-2 py-0.5 rounded-full ${
+                            ruta.dificultad === 'Fácil'
+                              ? 'bg-secondary-500/20 text-secondary-500'
+                              : ruta.dificultad === 'Moderado'
+                                ? 'bg-primary-500/20 text-primary-500'
+                                : 'bg-danger/20 text-danger'
+                          }`}
+                        >
+                          {ruta.dificultad}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </Link>
-              <button
-                onClick={() => void alternar(ruta.id)}
-                aria-label={
-                  guardada ? `Quitar ${ruta.nombre} de guardadas` : `Guardar ${ruta.nombre}`
-                }
-                aria-pressed={guardada}
-                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-c2-violeta"
-              >
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontVariationSettings: guardada ? "'FILL' 1" : "'FILL' 0" }}
+                </Link>
+                <button
+                  onClick={() => void alternar(ruta.id)}
+                  aria-label={
+                    guardada ? `Quitar ${ruta.nombre} de guardadas` : `Guardar ${ruta.nombre}`
+                  }
+                  aria-pressed={guardada}
+                  className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-c2-violeta"
                 >
-                  bookmark
-                </span>
-              </button>
-            </article>
-          )
-        })}
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontVariationSettings: guardada ? "'FILL' 1" : "'FILL' 0" }}
+                  >
+                    bookmark
+                  </span>
+                </button>
+              </article>
+            )
+          })}
       </div>
     </div>
   )

@@ -397,3 +397,22 @@ button:active:not(:disabled),
 a.c2-boton:active {
   scale: 0.96;
 }
+
+/* Esqueletos de carga: solo opacidad (compuesta en GPU). Sin movimiento si se pide reducirlo. */
+@keyframes esqueleto-brillo {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.esqueleto-c2 {
+  animation: esqueleto-brillo 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto-c2 {
+    animation: none;
+  }
+}

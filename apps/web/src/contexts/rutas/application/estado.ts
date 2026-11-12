@@ -38,6 +38,8 @@ export interface EstadoRutas {
   rutasMeGusta: string[]
   /** true si hay servidor de rutas (se puede publicar, dar me gusta y reseñar). */
   rutasSociales: boolean
+  /** true mientras se piden las rutas al servidor (la lista muestra esqueletos). */
+  cargandoRutas: boolean
   refrescarRutas(): Promise<void>
   alternarMeGustaRuta(id: string): Promise<void>
   publicarRuta(r: NuevaRuta): Promise<Ruta>
@@ -58,11 +60,13 @@ export const useRutas = create<EstadoRutas>((set, get) => ({
   rutas: conOficiales(rutasMock),
   rutasMeGusta: [],
   rutasSociales: false,
+  cargandoRutas: false,
   rutaActivaId: null,
   elegirRutaActiva: (id) => set({ rutaActivaId: id }),
   explorar: () => repos.explorar,
   async refrescarRutas() {
     if (!repos.explorar) return set({ rutas: conOficiales(rutasMock), rutasSociales: false })
+    if (!get().rutasSociales) set({ cargandoRutas: true })
     const [rutas, rutasMeGusta] = await Promise.all([
       repos.explorar.listar().catch(() => null),
       enlaces.sesion() ? repos.explorar.meGusta().catch(() => []) : Promise.resolve([]),
@@ -72,6 +76,7 @@ export const useRutas = create<EstadoRutas>((set, get) => ({
       rutas: conOficiales(rutas?.length ? rutas : rutasMock),
       rutasMeGusta,
       rutasSociales: rutas !== null,
+      cargandoRutas: false,
     })
   },
   async alternarMeGustaRuta(id) {

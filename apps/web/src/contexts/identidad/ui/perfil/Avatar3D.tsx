@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import type { ConfigAvatar } from '../../../../shared/kernel/tipos'
 import { Interruptor } from '../../../../shared/ui/ui'
 import { useIdentidad } from '../../application/estado'
+import { EsqueletoEscena3D } from '../../../../shared/ui/Esqueletos'
 
 const Runner3D = lazy(() =>
   import('../../../../shared/ui/Runner3D').then((m) => ({ default: m.Runner3D }))
@@ -61,16 +62,7 @@ export function Avatar3D() {
 
       <main className="lg:w-full lg:max-w-6xl lg:mx-auto flex-1 flex flex-col pb-24 lg:flex-row lg:gap-8 lg:p-8 lg:items-start">
         <div className="relative h-[480px] short:h-[400px] bg-surface-container-low lg:flex-none lg:w-3/5 lg:h-[640px] lg:rounded-2xl lg:overflow-hidden lg:border lg:border-border-subtle">
-          <Suspense
-            fallback={
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-                  <span className="text-sm text-text-secondary">Cargando avatar 3D...</span>
-                </div>
-              </div>
-            }
-          >
+          <Suspense fallback={<EsqueletoEscena3D texto="Cargando avatar 3D" />}>
             <Runner3D
               animation={animacion}
               autoRotate

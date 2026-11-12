@@ -14,6 +14,7 @@ import {
   type SesionEnVivo,
 } from '../../actividad/api'
 import { useIdentidad } from '../../identidad/api'
+import { Esqueleto } from '../../../shared/ui/Esqueletos'
 
 function Encabezado({ titulo }: { titulo: string }) {
   const navigate = useNavigate()
@@ -122,7 +123,15 @@ export function DetalleEnVivo() {
     return (
       <main className="w-full min-h-screen bg-surface">
         <Encabezado titulo="En vivo" />
-        <p className="px-margin text-text-secondary">Cargando…</p>
+        <div className="px-margin space-y-3" aria-busy="true" data-testid="cargando-en-vivo">
+          <Esqueleto className="h-8 w-28 rounded-full" />
+          <Esqueleto className="h-[360px] w-full rounded-2xl" />
+          <div className="grid grid-cols-3 gap-3">
+            <Esqueleto className="h-16 rounded-xl" />
+            <Esqueleto className="h-16 rounded-xl" />
+            <Esqueleto className="h-16 rounded-xl" />
+          </div>
+        </div>
       </main>
     )
   if (s === null)

@@ -14,6 +14,7 @@ import {
 import { useIdentidad } from '../../identidad/api'
 import { useRutas } from '../application/estado'
 import { indicacion } from '../domain/buscador'
+import { EsqueletoEscena3D } from '../../../shared/ui/Esqueletos'
 
 const Runner3D = lazy(() =>
   import('../../../shared/ui/Runner3D').then((m) => ({ default: m.Runner3D }))
@@ -88,16 +89,7 @@ export function NavegacionRuta() {
       </div>
 
       <div className="absolute inset-0 w-full h-full z-0">
-        <Suspense
-          fallback={
-            <div className="w-full h-full flex items-center justify-center bg-surface-container-lowest">
-              <div className="flex flex-col items-center gap-2">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-                <span className="text-sm text-text-secondary">Cargando navegación 3D...</span>
-              </div>
-            </div>
-          }
-        >
+        <Suspense fallback={<EsqueletoEscena3D texto="Cargando navegación 3D" />}>
           {mapa3d ? (
             <MapaGoogle
               puntos={e.puntos.length ? e.puntos : plan.slice(0, 1)}
