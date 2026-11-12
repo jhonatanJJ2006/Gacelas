@@ -280,7 +280,7 @@ La respuesta se guarda tambien como consentimiento `ubicacion_visible` en `conse
 
 ### Test de regresion
 
-`e2e/v0912.spec.ts` (segunda carrera sin preguntas) y `AjustesToleranteTest` en Android.
+`e2e/v0912.spec.ts` (segunda carrera sin preguntas) y `Version0912Test.prefsEscritasPorLaWebNoBorranLaDecision` en Android.
 
 ### Como evitarlo
 
