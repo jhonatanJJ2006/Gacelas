@@ -75,6 +75,18 @@ Prueba de humo contra el proyecto real (crea un usuario de prueba, prueba RLS y 
 cd apps/web && pnpm smoke:supabase
 ```
 
+## Contenido de demostracion (038)
+
+`supabase/migrations/038_contenido_demo_loja.sql` deja informacion visible en Rutas, Comunidad, Grupos y Eventos de web y Android:
+
+- 8 corredores de demostracion (`*@demo.runcity.app`, `raw_app_meta_data.demo = true`). No pueden iniciar sesion: no tienen contrasena y estan bloqueados hasta 2999.
+- 3 comunidades (Loja Runners, Trail Podocarpus, Corredores UTPL) y 5 grupos con punto de encuentro, dias, hora, nivel y ritmo, sus miembros y 10 publicaciones.
+- 6 eventos futuros enlazados a grupos y rutas oficiales. Las fechas se calculan al aplicar la migracion (proximo sabado, domingo, martes y las semanas siguientes).
+- 16 carreras publicas con el trazado real de las rutas de Loja (feed), me gusta y comentarios.
+- Resenas, me gusta y corridas de rutas para las metricas de uso, y seguimientos entre los corredores de demostracion. No toca cuentas reales.
+
+Es idempotente. Para quitarlo: `scripts/sb-query.sh supabase/rollback/038_contenido_demo_loja.down.sql`. Si los eventos quedan en el pasado, se borran con `delete from eventos.events where id like 'demo-ev-%'` y se vuelve a aplicar la migracion.
+
 ## Boton SOS (039)
 
 `supabase/migrations/039_sos.sql` crea `seguridad.sos_alertas` y cuatro funciones:
