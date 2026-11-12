@@ -100,22 +100,32 @@ object IntroAnimada {
 }
 
 /**
- * Reproductor de la intro: ExoPlayer preparado al crear la vista (primer cuadro listo antes de
- * mostrarse), sin audio, sin bucle. El SurfaceView se agranda para cubrir la pantalla sin deformar.
+ * Reproductor de la intro: MediaPlayer del sistema (MediaCodec, decodificacion por hardware) sobre un
+ * SurfaceView, preparado al crear la vista para que el primer cuadro este listo antes de mostrarse;
+ * sin audio, sin bucle y sin dependencias que agranden el APK. El SurfaceView se agranda para cubrir
+ * la pantalla sin deformar.
  */
 class IntroVideo private constructor(
     val vista: View,
     val tapa: View,
-    private val player: androidx.media3.exoplayer.ExoPlayer,
+    private val player: android.media.MediaPlayer,
 ) {
-    fun reproducir() { player.playWhenReady = true }
-    fun liberar() = runCatching { player.release() }.let { }
+    private var preparado = false
+    private var superficieLista = false
+    private var pedida = false
+    private var liberado = false
+
+    fun reproducir() { pedida = true; arrancarSiPuede() }
+
+    private fun arrancarSiPuede() {
+        if (pedida && preparado && superficieLista && !liberado) runCatching { player.start() }
+    }
+
+    fun liberar() { if (!liberado) { liberado = true; runCatching { player.release() } } }
 
     companion object {
         fun crear(actividad: Activity, alTerminar: () -> Unit): IntroVideo? = runCatching {
-            val player = androidx.media3.exoplayer.ExoPlayer.Builder(actividad)
-                .setRenderersFactory(androidx.media3.exoplayer.DefaultRenderersFactory(actividad).setEnableDecoderFallback(true))
-                .build()
+            val player = android.media.MediaPlayer()
             val superficie = android.view.SurfaceView(actividad)
             val tapa = View(actividad).apply { setBackgroundColor(actividad.getColor(R.color.fondo_marca)) }
             val marco = object : android.widget.FrameLayout(actividad) {
@@ -127,21 +137,37 @@ class IntroVideo private constructor(
                     superficie.layout(x, y, x + vw, y + vh)
                 }
             }.apply { setBackgroundColor(actividad.getColor(R.color.fondo_marca)); addView(superficie) }
-            player.setVideoSurfaceView(superficie)
-            player.volume = 0f
-            player.repeatMode = androidx.media3.common.Player.REPEAT_MODE_OFF
-            player.addListener(object : androidx.media3.common.Player.Listener {
-                override fun onRenderedFirstFrame() { tapa.animate().alpha(0f).setDuration(80).withEndAction { tapa.visibility = View.GONE }.start() }
-                override fun onPlaybackStateChanged(estado: Int) { if (estado == androidx.media3.common.Player.STATE_ENDED) alTerminar() }
-                override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
-                    Log.w("Arranque", "intro en video fallo: ${error.errorCodeName}")
-                    alTerminar()
+            actividad.resources.openRawResourceFd(R.raw.intro).use { fd ->
+                player.setDataSource(fd.fileDescriptor, fd.startOffset, fd.length)
+            }
+            player.setVolume(0f, 0f)
+            player.isLooping = false
+            val intro = IntroVideo(marco, tapa, player)
+            superficie.holder.addCallback(object : android.view.SurfaceHolder.Callback {
+                override fun surfaceCreated(holder: android.view.SurfaceHolder) {
+                    if (intro.liberado) return
+                    player.setDisplay(holder)
+                    intro.superficieLista = true
+                    intro.arrancarSiPuede()
                 }
+                override fun surfaceChanged(holder: android.view.SurfaceHolder, format: Int, width: Int, height: Int) {}
+                override fun surfaceDestroyed(holder: android.view.SurfaceHolder) { intro.superficieLista = false }
             })
-            player.setMediaItem(androidx.media3.common.MediaItem.fromUri(android.net.Uri.parse("android.resource://${actividad.packageName}/${R.raw.intro}")))
-            player.prepare()
-            IntroVideo(marco, tapa, player)
+            player.setOnPreparedListener { intro.preparado = true; intro.arrancarSiPuede() }
+            player.setOnInfoListener { _, que, _ ->
+                if (que == android.media.MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
+                    tapa.animate().alpha(0f).setDuration(80).withEndAction { tapa.visibility = View.GONE }.start()
+                }
+                false
+            }
+            player.setOnCompletionListener { alTerminar() }
+            player.setOnErrorListener { _, que, extra ->
+                Log.w("Arranque", "intro en video fallo: $que/$extra")
+                alTerminar()
+                true
+            }
+            player.prepareAsync()
+            intro
         }.onFailure { Log.w("Arranque", "sin reproductor de video, intro en Canvas", it) }.getOrNull()
     }
 }
-

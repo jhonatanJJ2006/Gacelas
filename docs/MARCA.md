@@ -108,14 +108,15 @@ En la v0.8.9 `GacelasRaiz` se componia en el primer cuadro y leia el contenedor 
 
 iOS todavia no muestra la intro. Para hacerlo, `MainViewController` puede reproducir `public/marca/intro.mp4` con `AVPlayerLayer` y la misma regla de `IntroArranque` (codigo comun en `core/ui`).
 
-#### Reproduccion fluida en Android (0.9.12)
+#### Reproduccion fluida en Android (0.9.12 y 0.9.13)
 
 Desde la 0.9.12 la intro de Android vuelve a ser un video, reproducido como lo hacen las apps de streaming: decodificacion por hardware y nada pesado en el hilo principal mientras corre.
 
-- `app/src/main/res/raw/intro.mp4`: renderizado desde `escena_E` (skia, 1080 x 1920) y codificado en H.264 High 4.2, 60 fps, CRF 18, sin B-frames, un cuadro clave por segundo y `faststart` (unos 735 KB).
-- `IntroVideo` (en `IntroAnimada.kt`) usa ExoPlayer (`androidx.media3:media3-exoplayer` 1.4.1) sobre un `SurfaceView`: el video se compone en una capa propia del sistema, no en el arbol de Compose. El reproductor se prepara al crear la intro y arranca en el primer dibujo; una tapa del color de marca se retira en `onRenderedFirstFrame`, asi no hay cuadro negro.
+- `app/src/main/res/raw/intro.mp4`: renderizado desde `escena_E` (skia, 1080 x 1920) y codificado en H.264 High 4.2, 60 fps, CRF 23, sin B-frames, un cuadro clave por segundo y `faststart` (unos 390 KB).
+- `IntroVideo` (en `IntroAnimada.kt`) usa el `MediaPlayer` del sistema (MediaCodec) sobre un `SurfaceView`: el video se compone en una capa propia del sistema, no en el arbol de Compose. Se prepara al crear la intro y arranca en el primer dibujo, cuando la superficie ya existe; una tapa del color de marca se retira con `MEDIA_INFO_VIDEO_RENDERING_START`, asi no hay cuadro negro.
+- En la 0.9.12 se uso ExoPlayer (media3): el APK paso de 51,8 MB a 55,1 MB y supero el limite de 50 MiB (52.428.800 bytes) del bucket `app-releases`, asi que la 0.9.12 no se pudo publicar en `latest.json`. La 0.9.13 vuelve al reproductor del sistema y a un video mas liviano (APK de 52,28 MB, unos 150 KB por debajo del limite). Antes de agregar dependencias o recursos grandes hay que liberar espacio en el APK.
 - `MainActivity` no monta la app hasta que la intro termina (`snapshotFlow { intro.value }.first { !it }`, despues de `esperarContenedor`): durante los 3 s no hay composicion de la app, mapa ni escena 3D.
-- Si el decodificador falla o el reproductor da error, la intro cae al dibujo Compose Canvas (`IntroMarcaEAnimada`) con las mismas reglas de tope y toque para saltar.
+- Si el reproductor da error o no se puede crear, la intro cae al dibujo Compose Canvas (`IntroMarcaEAnimada`) con las mismas reglas de tope y toque para saltar.
 
 `core/ui/.../ui/intro/Marca.kt` conserva la paleta y la silueta de la gacela que usa el icono dibujado en la app.
 
