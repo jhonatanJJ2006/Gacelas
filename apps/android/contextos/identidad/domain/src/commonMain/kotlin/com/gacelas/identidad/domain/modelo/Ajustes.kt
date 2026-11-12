@@ -56,5 +56,11 @@ data class Ajustes(
     val metaKmSemana: Int = 25,
     /** Compartir la ubicacion en vivo al correr: null = aun no se pregunto (modal la primera vez). */
     val compartirEnVivo: Boolean? = null,
+    /** Contactos que reciben el enlace del SOS (maximo 3). Mismo campo que la web (prefs.contactosEmergencia). */
+    val contactosEmergencia: List<ContactoEmergencia> = emptyList(),
 )
+
+/** Contacto de confianza para el boton SOS. */
+@Serializable
+data class ContactoEmergencia(val nombre: String, val telefono: String)
 

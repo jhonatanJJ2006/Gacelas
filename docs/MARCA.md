@@ -108,6 +108,15 @@ En la v0.8.9 `GacelasRaiz` se componia en el primer cuadro y leia el contenedor 
 
 iOS todavia no muestra la intro. Para hacerlo, `MainViewController` puede reproducir `public/marca/intro.mp4` con `AVPlayerLayer` y la misma regla de `IntroArranque` (codigo comun en `core/ui`).
 
+#### Reproduccion fluida en Android (0.9.12)
+
+Desde la 0.9.12 la intro de Android vuelve a ser un video, reproducido como lo hacen las apps de streaming: decodificacion por hardware y nada pesado en el hilo principal mientras corre.
+
+- `app/src/main/res/raw/intro.mp4`: renderizado desde `escena_E` (skia, 1080 x 1920) y codificado en H.264 High 4.2, 60 fps, CRF 18, sin B-frames, un cuadro clave por segundo y `faststart` (unos 735 KB).
+- `IntroVideo` (en `IntroAnimada.kt`) usa ExoPlayer (`androidx.media3:media3-exoplayer` 1.4.1) sobre un `SurfaceView`: el video se compone en una capa propia del sistema, no en el arbol de Compose. El reproductor se prepara al crear la intro y arranca en el primer dibujo; una tapa del color de marca se retira en `onRenderedFirstFrame`, asi no hay cuadro negro.
+- `MainActivity` no monta la app hasta que la intro termina (`snapshotFlow { intro.value }.first { !it }`, despues de `esperarContenedor`): durante los 3 s no hay composicion de la app, mapa ni escena 3D.
+- Si el decodificador falla o el reproductor da error, la intro cae al dibujo Compose Canvas (`IntroMarcaEAnimada`) con las mismas reglas de tope y toque para saltar.
+
 `core/ui/.../ui/intro/Marca.kt` conserva la paleta y la silueta de la gacela que usa el icono dibujado en la app.
 
 #### Causa del fallo de la v0.8.1 (corregido en la v0.8.2)

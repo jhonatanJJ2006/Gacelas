@@ -55,14 +55,20 @@ object IntroAnimada {
                 alPrimerDibujo?.let { alPrimerDibujo = null; post(it) }
             }
         }
+        var liberar: () -> Unit = {}
         val control = ControlIntro {
+            liberar()
             vista.animate().cancel()
             vista.animate().alpha(0f).setDuration(FUNDIDO_SALIDA_MS).withEndAction {
                 (vista.parent as? ViewGroup)?.removeView(vista)
                 alTerminar()
             }.start()
         }
-        val lienzo = ComposeView(actividad).apply {
+        // Como Netflix: video local (res/raw/intro.mp4, H.264 High 4.2, 1080 x 1920, 60 fps) que decodifica
+        // el hardware (MediaCodec) y se compone directo en un SurfaceView, fuera del hilo de la UI. Si el
+        // reproductor no se puede crear, se usa la intro dibujada en Compose Canvas.
+        val video = IntroVideo.crear(actividad, alTerminar = { control.terminar() })
+        val lienzo: View = video?.vista ?: ComposeView(actividad).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
             setContent { IntroMarcaEAnimada(activa = dibujada.value, alTerminar = { control.terminar() }) }
         }
@@ -72,6 +78,8 @@ object IntroAnimada {
             setBackgroundColor(actividad.getColor(R.color.fondo_marca))
             setWillNotDraw(false)
             addView(lienzo, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+            // Tapa del color de marca hasta que el video pinta su primer cuadro (el SurfaceView vacio es negro).
+            video?.tapa?.let { addView(it, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)) }
             isClickable = true
             setOnClickListener { control.terminar() }
         }
@@ -79,12 +87,61 @@ object IntroAnimada {
             if (!control.terminada) {
                 iniciadaEn = SystemClock.uptimeMillis()
                 dibujada.value = true
+                video?.reproducir()
                 Log.i("Arranque", "intro empieza a ${iniciadaEn - Process.getStartUptimeMillis()} ms del inicio del proceso")
                 // Tope por si el reloj de cuadros nunca llega al final (no corta una intro normal de 3,0 s).
                 vista.postDelayed({ control.terminar() }, IntroArranque.TOPE_MS)
             }
         }
+        liberar = { video?.liberar() }
         actividad.addContentView(vista, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         return vista
     }
 }
+
+/**
+ * Reproductor de la intro: ExoPlayer preparado al crear la vista (primer cuadro listo antes de
+ * mostrarse), sin audio, sin bucle. El SurfaceView se agranda para cubrir la pantalla sin deformar.
+ */
+class IntroVideo private constructor(
+    val vista: View,
+    val tapa: View,
+    private val player: androidx.media3.exoplayer.ExoPlayer,
+) {
+    fun reproducir() { player.playWhenReady = true }
+    fun liberar() = runCatching { player.release() }.let { }
+
+    companion object {
+        fun crear(actividad: Activity, alTerminar: () -> Unit): IntroVideo? = runCatching {
+            val player = androidx.media3.exoplayer.ExoPlayer.Builder(actividad)
+                .setRenderersFactory(androidx.media3.exoplayer.DefaultRenderersFactory(actividad).setEnableDecoderFallback(true))
+                .build()
+            val superficie = android.view.SurfaceView(actividad)
+            val tapa = View(actividad).apply { setBackgroundColor(actividad.getColor(R.color.fondo_marca)) }
+            val marco = object : android.widget.FrameLayout(actividad) {
+                override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+                    // Cubrir: el video es 9:16; en pantallas mas altas se recortan los lados (fondo liso).
+                    val w = r - l; val h = b - t
+                    val (vw, vh) = if (w * 16 > h * 9) w to (w * 16 / 9) else (h * 9 / 16) to h
+                    val x = (w - vw) / 2; val y = (h - vh) / 2
+                    superficie.layout(x, y, x + vw, y + vh)
+                }
+            }.apply { setBackgroundColor(actividad.getColor(R.color.fondo_marca)); addView(superficie) }
+            player.setVideoSurfaceView(superficie)
+            player.volume = 0f
+            player.repeatMode = androidx.media3.common.Player.REPEAT_MODE_OFF
+            player.addListener(object : androidx.media3.common.Player.Listener {
+                override fun onRenderedFirstFrame() { tapa.animate().alpha(0f).setDuration(80).withEndAction { tapa.visibility = View.GONE }.start() }
+                override fun onPlaybackStateChanged(estado: Int) { if (estado == androidx.media3.common.Player.STATE_ENDED) alTerminar() }
+                override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                    Log.w("Arranque", "intro en video fallo: ${error.errorCodeName}")
+                    alTerminar()
+                }
+            })
+            player.setMediaItem(androidx.media3.common.MediaItem.fromUri(android.net.Uri.parse("android.resource://${actividad.packageName}/${R.raw.intro}")))
+            player.prepare()
+            IntroVideo(marco, tapa, player)
+        }.onFailure { Log.w("Arranque", "sin reproductor de video, intro en Canvas", it) }.getOrNull()
+    }
+}
+

@@ -34,14 +34,18 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
     ContenidoCarreraC4(
         VistaCarrera(estado, ajustes.unidadesMetricas),
         onPausa = vm::alternarPausa,
-        onStop = { terminarCarrera(context, tracker); onFinalizar() },
+        onStop = { com.gacelas.seguridad.EstadoSos.terminar(c.sos); terminarCarrera(context, tracker); onFinalizar() },
         onVuelta = vm::vuelta,
         onAtras = { confirmar = true },
         extraCabecera = {
-            androidx.compose.foundation.layout.Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+            androidx.compose.foundation.layout.Column(
+                verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+                horizontalAlignment = androidx.compose.ui.Alignment.End,
+            ) {
                 com.gacelas.seguridad.ui.BotonReportarIncidente(compacto = true) {
                     estado.puntos.lastOrNull()?.let { it.lat to it.lng } ?: com.gacelas.rutas.ultimaUbicacion(context)
                 }
+                com.gacelas.seguridad.BotonSOS(estado.puntos.lastOrNull()?.let { it.lat to it.lng })
             }
         },
         vozActiva = ajustes.anunciosVoz,
@@ -61,6 +65,7 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
     if (confirmar) {
         DialogoDescartarCarrera(onConfirmar = {
             confirmar = false
+            com.gacelas.seguridad.EstadoSos.terminar(c.sos)
             descartarCarrera(context, tracker)
             onCerrar()
         }, onCancelar = { confirmar = false })

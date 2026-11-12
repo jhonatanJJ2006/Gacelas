@@ -80,6 +80,9 @@ class ContenedorApp(
     /** Incidentes (ECU 911 + reportes de corredores); null sin backend: la UI muestra el ejemplo. */
     val incidentes: com.gacelas.seguridad.domain.IncidentesRepositorio?
 
+    /** Alertas SOS (039_sos.sql); null sin servidor: la hoja ofrece igual llamar al 911. */
+    val sos: com.gacelas.seguridad.infrastructure.SosRepositorio?
+
     /** Consentimientos legales (terminos, privacidad, ubicacion). */
     val consentimientos: com.gacelas.legal.ConsentimientosRepository
 
@@ -134,6 +137,7 @@ class ContenedorApp(
             enVivo = null
             mapaVivo = null
             incidentes = null
+            sos = null
             consentimientos = com.gacelas.legal.ConsentimientosRepository(store)
             social = com.gacelas.social.SocialRepository(store)
             notificaciones = null
@@ -148,7 +152,8 @@ class ContenedorApp(
             val r = SupabaseRutasRepository(backend, store, uid, rutasOffline, programarSincronizacion)
             val a = SupabaseAjustesRepository(backend, store, uid)
             val e = ModuloComunidad.eventosRemoto(backend, store, uid)
-            val descargarTodo: suspend () -> Unit = { c.descargar(); r.descargar(); a.descargar(); e.descargar() }
+            val cons = com.gacelas.legal.ConsentimientosRepository(store, backend, uid)
+            val descargarTodo: suspend () -> Unit = { c.descargar(); r.descargar(); a.descargar(); e.descargar(); runCatching { cons.sincronizar() } }
             remotoAuth = if (descargarAlEntrar) SupabaseAuthRepository(backend, store) { descargarTodo() } else SupabaseAuthRepository(backend, store)
             auth = remotoAuth
             carreras = c
@@ -159,7 +164,8 @@ class ContenedorApp(
             enVivo = ModuloComunidad.enVivo(backend, uid)
             mapaVivo = com.gacelas.vivo.MapaVivoRepository(backend, uid)
             incidentes = com.gacelas.seguridad.infrastructure.SupabaseIncidentesRepositorio(backend)
-            consentimientos = com.gacelas.legal.ConsentimientosRepository(store, backend, uid)
+            sos = com.gacelas.seguridad.infrastructure.SosRepositorio(backend)
+            consentimientos = cons
             social = com.gacelas.social.SocialRepository(store, backend, uid)
             notificaciones = ModuloComunidad.notificaciones(backend, uid)
             val ex = ModuloRutas.explorar(backend, rutasOffline, programarSincronizacion, uid)

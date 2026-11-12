@@ -176,7 +176,9 @@ fun RelojCarrera(tracker: SesionCarrera, estado: EstadoCarrera) {
 @Composable
 private fun PantallaCompleta(content: @Composable () -> Unit) {
     Column(
-        Modifier.fillMaxSize().background(GColors.BgPrimary).statusBarsPadding().navigationBarsPadding()
+        // Fondo C2 como Inicio: degradado morado arriba que baja al azul de marca (nunca negro).
+        Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Color(0xFF2A0A3D), Color(0xFF1A0B2E), GColors.BgPrimary)))
+            .statusBarsPadding().navigationBarsPadding()
             .verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) { content() }
@@ -276,9 +278,9 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
     PantallaCompleta {
         BotonCerrar(onCerrar)
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            IconoCirculo(Icons.AutoMirrored.Filled.DirectionsRun, GColors.Primary.copy(alpha = 0.2f), GColors.Primary500, 112.dp)
-            Text("¿Listo para correr?", style = GType.headlineLg, color = GColors.TextPrimary)
-            Text("Activa el GPS y comienza a grabar tu carrera", style = GType.bodyLg, color = GColors.TextSecondary, textAlign = TextAlign.Center)
+            IconoCirculo(Icons.AutoMirrored.Filled.DirectionsRun, GColors.C2Violeta.copy(alpha = 0.18f), GColors.C2Violeta, 112.dp)
+            Text("¿LISTO PARA CORRER?", style = GType.headlineLg, color = GColors.TextPrimary, textAlign = TextAlign.Center)
+            Text("Activa el GPS y comienza a grabar tu carrera", style = GType.bodyLg, color = GColors.C2Muted, textAlign = TextAlign.Center)
         }
         val colorGps = if (permiso) GColors.Secondary500 else GColors.Primary500
         Tarjeta(fondo = colorGps.copy(alpha = 0.12f), borde = colorGps, onClick = if (permiso) null else ({ launcher.launch(permisosCarrera()) })) {
@@ -292,7 +294,7 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
                 if (permiso) Icon(Icons.Filled.CheckCircle, null, tint = colorGps)
             }
         }
-        Tarjeta {
+        Tarjeta(fondo = GColors.C2Card, borde = GColors.C2Linea) {
             FilaDato("Tipo de actividad", "Carrera")
             FilaDato("Ubicación", "Loja, Ecuador")
             FilaDato("Grabación", if (permiso) "GPS en primer plano" else "Requiere permiso")
@@ -302,7 +304,7 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
             activarNotificaciones,
         )
         Column(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            BotonRedondo(Icons.Filled.PlayArrow, "Comenzar", GColors.Primary, 112.dp, {
+            BotonRedondo(Icons.Filled.PlayArrow, "Comenzar carrera", Color(0xFF7B1FA2), 112.dp, {
                 if (!permiso) {
                     launcher.launch(permisosCarrera())
                 } else {
@@ -311,7 +313,9 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
                         if (com.gacelas.core.notificaciones.PermisoNotificaciones.sePuedePedir(context)) activarNotificaciones()
                     }
                     scopeGps.launch {
-                        if (consentimientos.otorgado(com.gacelas.legal.TipoConsentimiento.GpsCarrera)) iniciar() else pedirGps = true
+                        // Se pregunta una sola vez: si no esta en el telefono (p. ej. tras reinstalar) se busca en el servidor.
+                        val gps = com.gacelas.legal.TipoConsentimiento.GpsCarrera
+                        if (consentimientos.otorgado(gps) || (consentimientos.sincronizar() && consentimientos.otorgado(gps))) iniciar() else pedirGps = true
                     }
                 }
             })
@@ -789,11 +793,26 @@ internal fun CompartirEnVivoAutomatico(tracker: com.gacelas.actividad.domain.Ses
     val ajustesVm = com.gacelas.ui.ajustesViewModel()
     val a = cargados ?: return
     val decision = a.compartirEnVivo
+    val scope = rememberCoroutineScope()
+    val visible = com.gacelas.legal.TipoConsentimiento.UbicacionVisible
+    // Sin decision en Ajustes (p. ej. tras reinstalar): antes de preguntar se busca la respuesta ya
+    // dada en este u otro dispositivo (consentimiento ubicacion_visible en el servidor).
+    var buscando by remember { mutableStateOf(true) }
+    LaunchedEffect(decision) {
+        if (decision != null) { buscando = false; return@LaunchedEffect }
+        val previa = c.consentimientos.decision(visible)
+            ?: run { c.consentimientos.sincronizar(); c.consentimientos.decision(visible) }
+        if (previa != null) ajustesVm.actualizar { it.copy(compartirEnVivo = previa) }
+        buscando = false
+    }
     if (decision == null) {
-        ModalCompartirEnVivo(
-            onSi = { ajustesVm.actualizar { it.copy(compartirEnVivo = true) } },
-            onNo = { ajustesVm.actualizar { it.copy(compartirEnVivo = false) } },
-        )
+        if (buscando) return
+        val responder = { v: Boolean ->
+            ajustesVm.actualizar { it.copy(compartirEnVivo = v) }
+            scope.launch { c.consentimientos.registrar(visible, v) }
+            Unit
+        }
+        ModalCompartirEnVivo(onSi = { responder(true) }, onNo = { responder(false) })
         return
     }
     val estado by tracker.estado.collectAsState()
