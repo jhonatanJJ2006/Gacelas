@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.gacelas.intro.IntroAnimada
+import kotlinx.coroutines.flow.first
 import com.gacelas.ui.intro.IntroArranque
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -126,6 +127,9 @@ class MainActivity : ComponentActivity() {
                     androidx.compose.runtime.LaunchedEffect(Unit) {
                         androidx.compose.runtime.withFrameNanos { }
                         (application as GacelasApp).esperarContenedor()
+                        // Nada pesado mientras corre la intro (composicion de Inicio, avatar 3D, mapas):
+                        // el video tiene la GPU y el hilo principal para el solo. Se monta al retirarse.
+                        androidx.compose.runtime.snapshotFlow { intro.value }.first { !it }
                         android.util.Log.i("Arranque", "app lista a ${SystemClock.uptimeMillis() - android.os.Process.getStartUptimeMillis()} ms del inicio del proceso")
                         montarApp = true
                     }

@@ -194,6 +194,8 @@ private fun MapaZonaOculta(activa: Boolean, radio: Int) {
 
 @Composable
 fun PrivacidadUbicacionScreen(onAtras: () -> Unit, onLegal: (Boolean) -> Unit = {}, onCuentaEliminada: () -> Unit = {}) {
+    val scopePriv = rememberCoroutineScope()
+    val contenedorPriv = contenedor()
     val a by ajustesState()
     val guardar = guardarAjuste()
     var radio by remember(a.radioHogarM) { mutableStateOf(a.radioHogarM.toFloat()) }
@@ -241,8 +243,12 @@ fun PrivacidadUbicacionScreen(onAtras: () -> Unit, onLegal: (Boolean) -> Unit = 
             Divisor()
             FilaC2("Ubicación precisa", "GPS de alta precisión durante las carreras", a.ubicacionPrecisa) { v -> guardar { it.copy(ubicacionPrecisa = v) } }
             Divisor()
-            FilaC2("Compartir en vivo al correr", "Tus seguidores ven tu posición mientras corres (la zona de casa se oculta)", a.compartirEnVivo == true) { v -> guardar { it.copy(compartirEnVivo = v) } }
+            FilaC2("Compartir en vivo al correr", "Tus seguidores ven tu posición mientras corres (la zona de casa se oculta)", a.compartirEnVivo == true) { v ->
+                guardar { it.copy(compartirEnVivo = v) }
+                scopePriv.launch { contenedorPriv.consentimientos.registrar(com.gacelas.legal.TipoConsentimiento.UbicacionVisible, v) }
+            }
         }
+        com.gacelas.seguridad.ContactosEmergenciaC2(a.contactosEmergencia) { lista -> guardar { it.copy(contactosEmergencia = lista) } }
         com.gacelas.legal.SeccionConsentimientos(onLegal, onCuentaEliminada)
     }
 }

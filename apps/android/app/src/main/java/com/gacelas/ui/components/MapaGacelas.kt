@@ -114,6 +114,22 @@ fun MapaGacelas(
     val densidadMapa = LocalDensity.current
     val compacto = altoPx > 0 && with(densidadMapa) { altoPx.toDp() } < MapaCompacto.ALTO_MAX
 
+    // Al cambiar 2D/3D la vista cambia en el acto, aunque aun no haya punto GPS o se hubiera arrastrado
+    // el mapa: antes solo se inclinaba si ya se seguia al corredor y parecia que el boton hacia lo contrario.
+    var modoPrevio by remember { mutableStateOf(modo3d) }
+    LaunchedEffect(mapa, modo3d) {
+        val m = mapa ?: return@LaunchedEffect
+        if (modoPrevio == modo3d) return@LaunchedEffect
+        modoPrevio = modo3d
+        siguiendo = true
+        gestos = 0
+        runCatching {
+            val actual = m.cameraPosition
+            val b = CameraPosition.Builder(actual).tilt(if (modo3d) 60.0 else 0.0)
+            if (!modo3d) b.bearing(0.0)
+            if (ultimo == null) m.animateCamera(CameraUpdateFactory.newCameraPosition(b.build()), 600)
+        }
+    }
     LaunchedEffect(mapa, puntos.size, ultimo, modo3d, siguiendo, rumbo, compacto) {
         val m = mapa ?: return@LaunchedEffect
         runCatching {

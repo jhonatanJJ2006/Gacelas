@@ -34,7 +34,7 @@ class SupabaseAjustesRepository(
         val fila = runCatching { backend.select("user_settings", mapOf("user_id" to uid)).firstOrNull() }.getOrNull()
         val likes = runCatching { backend.select("post_likes", mapOf("user_id" to uid)) }.getOrNull() ?: return
         val comentarios = runCatching { backend.select("post_comments", mapOf("user_id" to uid), "created_at") }.getOrNull() ?: return
-        val prefs = fila?.get("prefs")?.let { runCatching { jsonGacelas.decodeFromJsonElement(Ajustes.serializer(), it) }.getOrNull() }
+        val prefs = fila?.get("prefs")?.let { ajustesTolerantes(it) }
         valor.actualizar { actual ->
             val base = prefs ?: actual
             base.copy(
@@ -75,4 +75,22 @@ class SupabaseAjustesRepository(
             }), "user_id")
         }
     }
+}
+
+/**
+ * Lee prefs aunque las haya escrito la web (otros nombres o tipos en algunos campos, p. ej.
+ * visibilidad en minusculas): se aplican clave por clave y se ignora solo la que no encaja. Antes un
+ * solo campo distinto descartaba todo y la app volvia a preguntar cosas ya respondidas.
+ */
+fun ajustesTolerantes(remoto: JsonElement): Ajustes? {
+    val obj = remoto as? kotlinx.serialization.json.JsonObject ?: return null
+    runCatching { return jsonGacelas.decodeFromJsonElement(Ajustes.serializer(), obj) }
+    var base = jsonGacelas.encodeToJsonElement(Ajustes.serializer(), Ajustes()) as kotlinx.serialization.json.JsonObject
+    for ((k, v) in obj) {
+        val valor = if (k == "visibilidad" && v is kotlinx.serialization.json.JsonPrimitive && v.isString)
+            kotlinx.serialization.json.JsonPrimitive(v.content.replaceFirstChar { it.uppercase() }) else v
+        val prueba = kotlinx.serialization.json.JsonObject(base + (k to valor))
+        if (runCatching { jsonGacelas.decodeFromJsonElement(Ajustes.serializer(), prueba) }.isSuccess) base = prueba
+    }
+    return runCatching { jsonGacelas.decodeFromJsonElement(Ajustes.serializer(), base) }.getOrNull()
 }

@@ -63,6 +63,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -152,23 +156,29 @@ fun ContenidoCarreraC4(
     BoxWithConstraints(Modifier.fillMaxSize().background(K1.Fondo).testTag("pantalla-carrera")) {
         val bajo = maxHeight < 640.dp
         val controles: ControlesMapaC4 = { recentrar, norte, rumbo, siguiendo ->
+            // Controles con texto, agrupados: Mapa (centrar, norte, 2D/3D), Carrera (cronometro, voz) y
+            // Seguridad (reportar y SOS, en extraCabecera). Cada uno dice lo que hace.
             Column(
-                Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(end = 14.dp, top = 58.dp),
+                Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(end = 12.dp, top = 58.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End,
             ) {
-                // Sin seguimiento (tras arrastrar) el boton se enciende en violeta.
-                BotonMapa("Recentrar", recentrar, if (siguiendo) "boton-recentrar" else "boton-recentrar-activo", fondo = if (siguiendo) null else K1.Naranja) {
-                    Icon(Icons.Filled.MyLocation, null, tint = Color.White, modifier = Modifier.size(20.dp))
+                GrupoControlesC4("MAPA") {
+                    ControlEtiquetadoC4("Centrar", "Centrar el mapa en tu posición", recentrar, if (siguiendo) "boton-recentrar" else "boton-recentrar-activo", activo = !siguiendo) {
+                        Icon(Icons.Filled.MyLocation, null, tint = Color.White, modifier = Modifier.size(20.dp))
+                    }
+                    // En pantallas bajas se omite Norte para que los controles no tapen el panel.
+                    if (!bajo) ControlEtiquetadoC4("Norte", "Orientar el mapa al norte", norte, "boton-brujula") {
+                        Text("N", style = TextStyle(fontFamily = num, fontSize = 15.sp, fontWeight = FontWeight.Bold), color = Color.White, modifier = Modifier.rotate(-rumbo))
+                    }
+                    SelectorVistaC4(vista3d) { vista3d = it }
                 }
-                BotonMapa("Vista ${if (vista3d) "2D" else "3D"}", { vista3d = !vista3d }, "boton-3d") {
-                    Text(if (vista3d) "3D" else "2D", style = TextStyle(fontFamily = num, fontSize = 13.sp, fontWeight = FontWeight.Bold), color = Color.White)
-                }
-                BotonMapa("Orientar al norte", norte, "boton-brujula") {
-                    Text("N", style = TextStyle(fontFamily = num, fontSize = 14.sp, fontWeight = FontWeight.Bold), color = Color.White, modifier = Modifier.rotate(-rumbo))
-                }
-                BotonMapa("Ver cronómetro", { panel = true }, "boton-cronometro") { Icon(Icons.Filled.Timer, null, tint = Color.White, modifier = Modifier.size(20.dp)) }
-                if (onVoz != null) BotonMapa(if (vozActiva) "Apagar voz" else "Activar voz", onVoz, "boton-voz", fondo = if (vozActiva) null else GColorsC2.S2) {
-                    Icon(if (vozActiva) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff, null, tint = if (vozActiva) GColorsC2.Violeta else K1.Secondary, modifier = Modifier.size(20.dp))
+                GrupoControlesC4("CARRERA") {
+                    ControlEtiquetadoC4("Crono", "Ver cronómetro y parciales", { panel = true }, "boton-cronometro") {
+                        Icon(Icons.Filled.Timer, null, tint = Color.White, modifier = Modifier.size(20.dp))
+                    }
+                    if (onVoz != null) ControlEtiquetadoC4(if (vozActiva) "Voz sí" else "Voz no", if (vozActiva) "Apagar avisos de voz" else "Activar avisos de voz", onVoz, "boton-voz") {
+                        Icon(if (vozActiva) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeOff, null, tint = if (vozActiva) GColorsC2.Violeta else K1.Secondary, modifier = Modifier.size(20.dp))
+                    }
                 }
                 extraCabecera()
             }
@@ -371,6 +381,48 @@ private fun Chip(titulo: String, valor: String, punto: Color? = null, tag: Strin
             append("$titulo ")
             withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.SemiBold)) { append(valor) }
         }, style = TextStyle(fontFamily = Inter, fontSize = 11.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium), color = K1.Secondary, maxLines = 1)
+    }
+}
+
+/** Tarjeta vertical con titulo corto que agrupa controles del mapa. */
+@Composable
+fun GrupoControlesC4(titulo: String, contenido: @Composable () -> Unit) {
+    val forma = RoundedCornerShape(8.dp)
+    Column(Modifier.width(58.dp).vidrio(forma, sombra = 6.dp).semantics { contentDescription = titulo }, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(titulo, style = TextStyle(fontFamily = Inter, fontSize = 8.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.12.em), color = GColorsC2.Violeta, modifier = Modifier.padding(top = 5.dp, bottom = 2.dp))
+        contenido()
+    }
+}
+
+/** Control con icono y texto debajo (la descripcion completa va para TalkBack). */
+@Composable
+fun ControlEtiquetadoC4(etiqueta: String, descripcion: String, onClick: () -> Unit, tag: String, activo: Boolean = false, icono: @Composable () -> Unit) {
+    Column(
+        Modifier.width(58.dp).height(50.dp).then(if (activo) Modifier.background(K1.Naranja) else Modifier)
+            .clickable(onClickLabel = descripcion, role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
+            .semantics(mergeDescendants = true) { contentDescription = descripcion }.testTag(tag),
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
+    ) {
+        icono()
+        Text(etiqueta.uppercase(), style = TextStyle(fontFamily = Inter, fontSize = 9.sp, fontWeight = FontWeight.Bold), color = Color.White, maxLines = 1, modifier = Modifier.padding(top = 2.dp))
+    }
+}
+
+/** Selector 2D / 3D: se ven las dos opciones y se resalta la que muestra el mapa. */
+@Composable
+fun SelectorVistaC4(vista3d: Boolean, onCambiar: (Boolean) -> Unit) {
+    Column(Modifier.width(58.dp).testTag("boton-3d").semantics { stateDescription = if (vista3d) "Vista 3D" else "Vista 2D" }) {
+        listOf(true to "3D", false to "2D").forEach { (tresD, texto) ->
+            val activa = vista3d == tresD
+            Box(
+                Modifier.fillMaxWidth().height(30.dp).background(if (activa) GColorsC2.Violeta else Color.Transparent)
+                    .clickable(onClickLabel = if (tresD) "Ver mapa en 3D" else "Ver mapa en 2D", role = androidx.compose.ui.semantics.Role.Button) { onCambiar(tresD) }
+                    .semantics { selected = activa }.testTag(if (tresD) "vista-3d-on" else "vista-2d-on"),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(texto, style = TextStyle(fontFamily = num, fontSize = 13.sp, fontWeight = FontWeight.Bold), color = if (activa) K1.Fondo else K1.Secondary)
+            }
+        }
     }
 }
 
