@@ -40,5 +40,22 @@ export function marcarIntroVista(almacen: Almacen | null, ahora: number = Date.n
   }
 }
 
-/** Si el video no muestra su primer cuadro en este tiempo, la intro se cierra (fallback). */
-export const ESPERA_PRIMER_CUADRO_MS = 1_000
+/**
+ * Si el video no muestra su primer cuadro en este tiempo, la intro se cierra (fallback). Con 1 s
+ * se cortaba en redes lentas antes de empezar; el archivo pesa unos 360 KB.
+ */
+export const ESPERA_PRIMER_CUADRO_MS = 2_500
+
+/** Evento en window cuando la intro se retira; la app se monta despues (sin competir con el video). */
+export const EVENTO_FIN_INTRO = 'runcity:intro-fin'
+
+/** Resuelve cuando la intro de index.html ya no se ve (o si no hay intro). */
+export function esperarFinIntro(doc: Document = document): Promise<void> {
+  const el = doc.getElementById('intro')
+  if (!el || el.hidden) return Promise.resolve()
+  return new Promise((ok) => {
+    window.addEventListener(EVENTO_FIN_INTRO, () => ok(), { once: true })
+    // Red de seguridad: aunque el controlador de la intro no llegue a cargar, la app se monta.
+    setTimeout(ok, ESPERA_PRIMER_CUADRO_MS + DURACION_INTRO_S * 1000 + 2_000)
+  })
+}

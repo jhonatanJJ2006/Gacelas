@@ -2,6 +2,7 @@ import {
   debeMostrarIntro,
   DURACION_INTRO_S,
   ESPERA_PRIMER_CUADRO_MS,
+  EVENTO_FIN_INTRO,
   marcarIntroVista,
 } from './intro'
 
@@ -41,6 +42,7 @@ export function iniciarIntroVideo(
     if (el.hidden) return
     el.hidden = true
     video.pause()
+    window.dispatchEvent(new Event(EVENTO_FIN_INTRO))
   }
   const vigilar = (desde = 0) => {
     clearTimeout(espera)
@@ -53,7 +55,11 @@ export function iniciarIntroVideo(
       Math.max(0, ESPERA_PRIMER_CUADRO_MS - desde)
     )
     // Tope de seguridad por si "ended" nunca llega.
-    tope = setTimeout(cerrar, Math.max(0, DURACION_INTRO_S * 1000 + 1500 - desde))
+    // Cuenta tambien la espera del primer cuadro: el video puede empezar hasta 2,5 s tarde.
+    tope = setTimeout(
+      cerrar,
+      Math.max(0, DURACION_INTRO_S * 1000 + ESPERA_PRIMER_CUADRO_MS + 1500 - desde)
+    )
   }
   const mostrar = () => {
     el.hidden = false

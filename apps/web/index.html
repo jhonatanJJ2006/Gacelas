@@ -76,8 +76,9 @@
       aria-label="Intro de Runcity, toca para saltar"
     >
       <video autoplay muted playsinline preload="auto" disablepictureinpicture aria-hidden="true">
-        <source src="/marca/intro.webm" type="video/webm" />
+        <!-- H.264 primero: es el que casi todos los moviles decodifican por hardware (GPU). -->
         <source src="/marca/intro.mp4" type="video/mp4" />
+        <source src="/marca/intro.webm" type="video/webm" />
       </video>
     </div>
     <script>
