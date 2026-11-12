@@ -82,6 +82,12 @@ export function MapaGoogle({
       className={className}
       alternativa={alternativa}
       controles={controles}
+      rumboVista={seguir && siguiendo ? rumbo : null}
+      encima={
+        seguir && ultimo && modo3d && !vector && siguiendo ? (
+          <Corredor3DHtml pos={ultimo} rumbo={0} ritmoSegKm={ritmoSegKm} fijo />
+        ) : null
+      }
     >
       {plan && <RutaPlan camino={plan} />}
       <RutaEstilizada tramos={tramos} ajustar={!seguir} />
@@ -91,9 +97,7 @@ export function MapaGoogle({
         ultimo &&
         (con3d && vector ? (
           <Corredor3DMapa pos={ultimo} rumbo={rumbo} ritmoSegKm={ritmoSegKm} onFallo={fallo3d} />
-        ) : modo3d ? (
-          <Corredor3DHtml pos={ultimo} rumbo={rumbo} ritmoSegKm={ritmoSegKm} />
-        ) : (
+        ) : modo3d && siguiendo ? null : (
           <Puck pos={ultimo} rumbo={rumbo} />
         ))}
       {seguir && (

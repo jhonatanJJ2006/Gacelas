@@ -26,10 +26,16 @@ export function MapaBase({
   alternativa = null,
   children,
   testId = 'mapa-google',
+  rumboVista = null,
+  encima,
 }: {
   centro?: Coordenada
   zoom?: number
   modo3d?: boolean
+  /** Rumbo (grados) para girar la vista 3D inclinada por CSS cuando no hay mapa vectorial. */
+  rumboVista?: number | null
+  /** Capa fija sobre el mapa (fuera de la inclinacion), por ejemplo el corredor 3D. */
+  encima?: ReactNode
   className?: string
   controles?: boolean
   alternativa?: ReactNode
@@ -40,29 +46,51 @@ export function MapaBase({
   // El vectorial inclinado solo con un Map ID propio (estilo oscuro de Runcity en la nube). Con el
   // DEMO_MAP_ID salia el estilo por defecto de Google con comercios: se usa el raster oscuro propio.
   const vector = modo3d && tieneMapIdPropio()
+  // Sin Map ID el raster no se inclina: la vista 3D se logra inclinando la capa del mapa con CSS
+  // (perspectiva en GPU, sin trabajo extra en el hilo principal). La capa es el doble de grande
+  // para que al inclinarla y girarla no queden bordes vacios.
+  const inclinadoCss = modo3d && !vector
   if (!clave) return <>{alternativa}</>
+  const mapa = (
+    <Map
+      key={vector ? 'vector' : 'raster'}
+      defaultCenter={centro}
+      defaultZoom={modo3d ? 18 : zoom}
+      defaultTilt={vector ? 65 : 0}
+      disableDefaultUI
+      clickableIcons={false}
+      gestureHandling="greedy"
+      backgroundColor="#0d1422"
+      {...(vector
+        ? { mapId: mapId(), colorScheme: 'DARK' as const, renderingType: 'VECTOR' as const }
+        : { styles: ESTILO_GACELAS })}
+      style={{ width: '100%', height: '100%' }}
+    >
+      {children}
+    </Map>
+  )
   return (
     <div
-      className={/\b(absolute|fixed)\b/.test(className) ? className : `relative ${className}`}
+      className={`${/\b(absolute|fixed)\b/.test(className) ? className : `relative ${className}`} overflow-hidden`}
       data-testid={testId}
+      data-vista={modo3d ? '3d' : '2d'}
     >
       <APIProvider apiKey={clave} language="es" region="EC">
-        <Map
-          key={vector ? 'vector' : 'raster'}
-          defaultCenter={centro}
-          defaultZoom={modo3d ? 18 : zoom}
-          defaultTilt={vector ? 65 : 0}
-          disableDefaultUI
-          clickableIcons={false}
-          gestureHandling="greedy"
-          backgroundColor="#0d1422"
-          {...(vector
-            ? { mapId: mapId(), colorScheme: 'DARK' as const, renderingType: 'VECTOR' as const }
-            : { styles: ESTILO_GACELAS })}
-          style={{ width: '100%', height: '100%' }}
-        >
-          {children}
-        </Map>
+        {inclinadoCss ? (
+          <div
+            className="absolute -inset-1/2 transition-transform duration-700 ease-out will-change-transform"
+            data-testid="capa-3d"
+            style={{
+              transform: `perspective(1100px) rotateX(52deg) rotateZ(${-(rumboVista ?? 0)}deg)`,
+              transformOrigin: '50% 50%',
+            }}
+          >
+            {mapa}
+          </div>
+        ) : (
+          mapa
+        )}
+        {encima}
         {controles && <Controles />}
       </APIProvider>
     </div>
