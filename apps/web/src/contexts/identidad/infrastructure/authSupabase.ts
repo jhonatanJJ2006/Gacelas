@@ -1,6 +1,7 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js'
 import type { Perfil, ResultadoAuth } from '../../../shared/kernel/tipos'
 import { ValidacionAuth } from '../../../shared/lib/validacion'
+import { verDestino } from '../../../shared/lib/destino'
 import { configSupabase } from '../../../shared/supabase/client'
 import type { AuthRepository } from '../domain/puertos'
 
@@ -151,7 +152,7 @@ export class SupabaseAuthRepository implements AuthRepository {
       return 'El inicio con Google todavía no está activado en el servidor'
     const { error } = await this.sb.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${origen()}/inicio` },
+      options: { redirectTo: `${origen()}${verDestino()}` },
     })
     if (error)
       return error.message.toLowerCase().includes('provider is not enabled')

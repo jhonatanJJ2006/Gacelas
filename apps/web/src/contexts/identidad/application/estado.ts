@@ -1,3 +1,4 @@
+import { olvidarDestino } from '../../../shared/lib/destino'
 import { create } from 'zustand'
 import {
   AJUSTES_POR_DEFECTO,
@@ -74,6 +75,7 @@ export const useIdentidad = create<EstadoIdentidad>((set, get) => ({
     set({ sesion: await repos.auth.actualizarPerfil(p) })
   },
   async cerrarSesion() {
+    olvidarDestino()
     await repos.auth.cerrarSesion()
     set({ sesion: null })
   },

@@ -4,6 +4,7 @@ import { configurarComunidad, useComunidad } from '../contexts/comunidad/api'
 import { configurarEventos, useEventos } from '../contexts/eventos/api'
 import { configurarIdentidad, useIdentidad } from '../contexts/identidad/api'
 import { configurarRutas, useRutas } from '../contexts/rutas/api'
+import { sincronizarConsentimientos } from '../contexts/legal/api'
 import { notificacionesMock } from '../mocks/data'
 import { repositoriosPorDefecto, type Repositorios } from './composicion'
 
@@ -79,6 +80,8 @@ export async function cargar(): Promise<void> {
   useAvisos.setState({ notificaciones })
   useIdentidad.setState({ listo: true, sesion: sesionActual, ajustes })
   void useRutas.getState().refrescarRutas()
+  // Consentimientos dados en otro dispositivo: no se vuelven a pedir aqui.
+  if (sesionActual) void sincronizarConsentimientos()
   dejarDeEscuchar?.()
   dejarDeEscuchar =
     repos.auth.alCambiarSesion?.((perfil) => {

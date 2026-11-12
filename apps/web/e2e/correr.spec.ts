@@ -43,7 +43,10 @@ test.describe('Correr con GPS simulado', () => {
     await page.getByLabel('Título de la carrera').fill('Prueba e2e')
     await page.getByRole('button', { name: /guardar carrera/i }).click()
 
-    await expect(page).toHaveURL(/\/perfil/)
+    // Guardar vuelve a Inicio con un aviso; la carrera aparece en Perfil.
+    await expect(page).toHaveURL(/\/inicio$/)
+    await expect(page.getByText('Carrera guardada en tu perfil')).toBeVisible()
+    await page.goto('/perfil')
     await expect.poll(() => supabase.tablas.activities?.length ?? 0).toBe(1)
     expect(supabase.tablas.activity_tracks?.[0].points).not.toEqual([])
     await expect(page.getByText('Prueba e2e')).toBeVisible()

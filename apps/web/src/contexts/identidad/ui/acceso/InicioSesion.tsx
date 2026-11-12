@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { tomarDestino } from '../../../../shared/lib/destino'
 import { MensajeError } from '../../../../shared/ui/ui'
 import { useIdentidad } from '../../application/estado'
 import {
@@ -34,7 +35,7 @@ export function InicioSesion() {
     setCargando(true)
     const r = await iniciarSesion(email, password)
     setCargando(false)
-    if (r.ok) navigate('/inicio', { replace: true })
+    if (r.ok) navigate(tomarDestino(), { replace: true })
     else setError(r.error)
   }
 

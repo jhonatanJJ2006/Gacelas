@@ -86,9 +86,10 @@ describe('grabar una carrera con GPS', () => {
     await userEvent.type(screen.getByLabelText('Título de la carrera'), 'Fondo Jipiro')
     await userEvent.click(screen.getByRole('checkbox'))
     await userEvent.click(screen.getByRole('button', { name: /guardar carrera/i }))
-    expect(await screen.findByText('Fondo Jipiro')).toBeInTheDocument()
-    expect(screen.getByText('Privada')).toBeInTheDocument()
+    // Al guardar se vuelve a Inicio con el aviso; la carrera queda en el perfil.
+    expect(await screen.findByText('Carrera guardada en tu perfil')).toBeInTheDocument()
     expect(useActividad.getState().carreras).toHaveLength(1)
+    expect(useActividad.getState().carreras[0].publica).toBe(false)
     expect(JSON.parse(localStorage.getItem('gacelas:carreras')!)[0].titulo).toBe('Fondo Jipiro')
     expect(tracker.estado.fase).toBe('inactiva')
   })

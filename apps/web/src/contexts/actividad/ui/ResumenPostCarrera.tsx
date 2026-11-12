@@ -72,7 +72,7 @@ export function ResumenPostCarrera() {
   )
   const alturas = e.puntos.map((p) => p.altitudM).filter((a): a is number => a != null)
 
-  // Tras guardar se va a Perfil; no se redirige a Inicio al reiniciar la carrera.
+  // Tras guardar o descartar se vuelve a Inicio; al reiniciar la carrera no se pinta el resumen vacio.
   if (saliendo.current) return null
   if (e.fase !== 'terminada')
     return (
@@ -119,13 +119,14 @@ export function ResumenPostCarrera() {
       }
     }
     saliendo.current = true
-    navigate('/perfil', { replace: true })
+    navigate('/inicio', { replace: true, state: { aviso: 'Carrera guardada en tu perfil' } })
     tracker.reiniciar()
   }
 
   const descartar = () => {
+    saliendo.current = true
+    navigate('/inicio', { replace: true, state: { aviso: 'Carrera descartada' } })
     descartarCarrera()
-    navigate('/inicio', { replace: true })
   }
 
   return (
