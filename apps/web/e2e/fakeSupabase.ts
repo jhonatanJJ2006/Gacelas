@@ -268,6 +268,27 @@ export async function instalarFakeSupabase(context: BrowserContext): Promise<Est
       )
     if (nombre === 'participantes_eventos') return json(route, 200, [])
     if (nombre === 'ruta_sugerida_hoy') return json(route, 200, estado.rutaSugerida)
+    // SOS (039_sos.sql): una alerta con id fijo para poder abrir su pagina publica.
+    if (nombre === 'sos_iniciar') return json(route, 200, '5050aaaa-0000-4000-8000-000000000001')
+    if (nombre === 'sos_enviar') return json(route, 200, true)
+    if (nombre === 'sos_ver')
+      return json(
+        route,
+        200,
+        cuerpo.alerta === '5050aaaa-0000-4000-8000-000000000001'
+          ? [
+              {
+                nombre: 'Jhona Runner',
+                activa: true,
+                started_at: new Date().toISOString(),
+                last_at: new Date().toISOString(),
+                lat: -3.9931,
+                lng: -79.2042,
+                points: [{ lat: -3.9931, lng: -79.2042 }],
+              },
+            ]
+          : []
+      )
     // Otras RPC: mismo comportamiento que antes (sin cuerpo).
     return route.fulfill({ status: 201, headers: { 'access-control-allow-origin': '*' } })
   }

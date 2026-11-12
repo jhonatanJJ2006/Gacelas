@@ -93,6 +93,14 @@ export interface Ajustes {
   metaKmSemana: number
   /** Compartir la ubicacion en vivo al correr; null = aun no se pregunto (modal la primera vez). */
   compartirEnVivo: boolean | null
+  /** Contactos de emergencia para el boton SOS (maximo 3; se sincronizan en user_settings.prefs). */
+  contactosEmergencia: ContactoEmergencia[]
+}
+
+/** Contacto de confianza que recibe el enlace del SOS por SMS o WhatsApp. */
+export interface ContactoEmergencia {
+  nombre: string
+  telefono: string
 }
 
 export const AJUSTES_POR_DEFECTO: Ajustes = {
@@ -129,4 +137,5 @@ export const AJUSTES_POR_DEFECTO: Ajustes = {
   distanciaFavorita: '10K',
   metaKmSemana: 25,
   compartirEnVivo: null,
+  contactosEmergencia: [],
 }

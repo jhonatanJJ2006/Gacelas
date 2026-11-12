@@ -1,3 +1,4 @@
+import { Esqueleto } from '../../../shared/ui/Esqueletos'
 import { useEffect, useState } from 'react'
 import { consultarSeguridadDeRuta } from '../application/incidentes'
 import { AVISO_SEGURIDAD, colorNivel, DIAS_CORTOS, type SeguridadZona } from '../domain/incidentes'
@@ -13,7 +14,17 @@ export function TarjetaSeguridad({ rutaId, inicial }: { rutaId: string; inicial?
       vivo = false
     }
   }, [rutaId, inicial])
-  if (datos === undefined) return null
+  if (datos === undefined)
+    return (
+      <div
+        aria-busy="true"
+        data-testid="cargando-seguridad"
+        className="rounded-[14px] bg-c2-card border border-c2-linea p-4 space-y-3"
+      >
+        <Esqueleto className="h-5 w-1/2 rounded" />
+        <Esqueleto className="h-16 w-full rounded" />
+      </div>
+    )
   const hoy = new Date().getDay()
   return (
     <section
