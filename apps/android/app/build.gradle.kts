@@ -55,7 +55,7 @@ android {
         applicationId = "com.gacelas"
         minSdk = 24
         targetSdk = 35
-        versionName = "0.9.12"
+        versionName = "0.9.13"
         // versionCode sale de versionName (0.6.4 -> 604): siempre sube con cada version y el aviso
         // de actualizacion lo compara con latest.json. Hasta 0.6.1 fue siempre 1.
         versionCode = versionName!!.split('.', '-').take(3).map { it.toIntOrNull() ?: 0 }.plus(listOf(0, 0, 0)).let { it[0] * 10000 + it[1] * 100 + it[2] }
@@ -132,8 +132,6 @@ dependencies {
     implementation(project(":shared"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
-    // Intro en video decodificada por hardware (MediaCodec) sobre un SurfaceView.
-    implementation(libs.androidx.media3.exoplayer)
     // Instala baseline-prof.txt en el dispositivo: arranque y primer cuadro de la intro precompilados.
     implementation(libs.androidx.profileinstaller)
     implementation(libs.androidx.lifecycle.runtime.ktx)
