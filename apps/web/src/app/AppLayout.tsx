@@ -3,6 +3,7 @@ import { useEntradaPagina } from '../shared/lib/movimiento'
 import { notificacionesVisibles, useAvisos } from '../contexts/avisos/api'
 import { FotoPerfil } from '../contexts/identidad'
 import { useIdentidad } from '../contexts/identidad/api'
+import { BarraSuperior } from './BarraSuperior'
 
 export function AppLayout() {
   const location = useLocation()
@@ -15,8 +16,8 @@ export function AppLayout() {
   const listaNotif = useAvisos((s) => s.notificaciones)
   const sinLeer = notificacionesVisibles(ajustes, listaNotif).filter((n) => !n.leida).length
 
-  // Comunidad (Figma C2) trae su propia cabecera: sin barra superior en movil.
-  const sinBarra = location.pathname === '/comunidad'
+  // Comunidad (Figma C2) e Inicio (rediseno web) traen su propia cabecera en movil.
+  const sinBarra = location.pathname === '/comunidad' || location.pathname === '/inicio'
 
   const navItems = [
     { path: '/inicio', label: 'Inicio', icon: 'home' },
@@ -72,8 +73,10 @@ export function AppLayout() {
       </header>
 
       <main
-        className={`flex-1 ${sinBarra ? 'pt-0' : 'pt-16'} pb-24 lg:pt-8 lg:pb-12 overflow-auto`}
+        className={`flex-1 ${sinBarra ? 'pt-0' : 'pt-16'} pb-24 lg:pt-0 lg:pb-12 overflow-auto lg:overflow-visible lg:overflow-x-clip`}
       >
+        <BarraSuperior />
+        <div className="hidden lg:block h-8" aria-hidden="true" />
         <div ref={refPagina}>
           <Outlet />
         </div>

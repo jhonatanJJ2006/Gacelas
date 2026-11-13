@@ -6,6 +6,7 @@ import {
   etiquetaLugar,
   LOJA,
   TIMEOUT_MS,
+  TIMEOUT_RED_MS,
   type ClimaActual,
   type Coordenadas,
   type LecturaClima,
@@ -14,7 +15,11 @@ import {
 export const CLAVE_CACHE_CLIMA = 'gacelas.clima'
 
 export function urlOpenMeteo(c: Coordenadas): string {
-  return `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lng}&current=temperature_2m,weather_code,is_day`
+  return (
+    `https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lng}` +
+    '&current=temperature_2m,weather_code,is_day,apparent_temperature,relative_humidity_2m,wind_speed_10m,uv_index' +
+    '&hourly=temperature_2m,precipitation_probability,weather_code&forecast_hours=16&timeformat=unixtime'
+  )
 }
 
 export function leerRespuesta(json: unknown): LecturaClima {
@@ -23,12 +28,33 @@ export function leerRespuesta(json: unknown): LecturaClima {
   const codigo = actual?.weather_code
   if (typeof t !== 'number' || typeof codigo !== 'number')
     throw new Error('Respuesta de clima invalida')
-  return { temperatura: t, codigoWmo: codigo, esDeDia: actual?.is_day !== 0 }
+  const l: LecturaClima = { temperatura: t, codigoWmo: codigo, esDeDia: actual?.is_day !== 0 }
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined)
+  const extra = {
+    sensacion: num(actual?.apparent_temperature),
+    vientoKmh: num(actual?.wind_speed_10m),
+    humedad: num(actual?.relative_humidity_2m),
+    uv: num(actual?.uv_index),
+  }
+  for (const [k, v] of Object.entries(extra)) if (v != null) Object.assign(l, { [k]: v })
+  const h = (json as { hourly?: Record<string, unknown[]> }).hourly
+  if (h && Array.isArray(h.time)) {
+    const horas = h.time
+      .map((tm, i) => ({
+        ms: Number(tm) * 1000,
+        temperatura: Math.round(Number(h.temperature_2m?.[i])),
+        lluviaPct: Number(h.precipitation_probability?.[i] ?? 0),
+        codigoWmo: Number(h.weather_code?.[i] ?? codigo),
+      }))
+      .filter((x) => Number.isFinite(x.ms) && Number.isFinite(x.temperatura))
+    if (horas.length) l.horas = horas
+  }
+  return l
 }
 
 export async function leerOpenMeteo(
   c: Coordenadas,
-  timeoutMs = TIMEOUT_MS,
+  timeoutMs = TIMEOUT_RED_MS,
   f: typeof fetch = fetch
 ): Promise<LecturaClima> {
   const ctrl = new AbortController()
@@ -82,7 +108,7 @@ export async function ubicacionSiHayPermiso(): Promise<Coordenadas | null> {
 
 let ultimoIntentoMs: number | null = null
 
-/** Solo pruebas. */
+/** Permite reintentar enseguida (boton "Reintentar" del chip de clima y pruebas). */
 export function reiniciarIntentosClima() {
   ultimoIntentoMs = null
 }

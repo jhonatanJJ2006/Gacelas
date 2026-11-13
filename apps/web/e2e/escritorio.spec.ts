@@ -54,7 +54,7 @@ test.describe('Escritorio', () => {
     }
     await page.goto('/inicio')
     await expect(page.getByTestId('panel-ranking')).toBeVisible()
-    await expect(page.getByTestId('panel-meta')).toBeVisible()
+    await expect(page.getByTestId('semana-atletica')).toBeVisible()
     await page.goto('/perfil')
     await expect(page.getByTestId('panel-records')).toBeVisible()
     await page.goto('/comunidad')

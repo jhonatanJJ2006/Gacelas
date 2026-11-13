@@ -68,7 +68,7 @@ body {
 /* Escritorio: los elementos fijos de cada pantalla respetan la barra lateral. */
 @media (min-width: 1024px) {
   .shell-escritorio .fixed.inset-x-0 {
-    left: 260px;
+    left: 248px;
   }
   .shell-escritorio .contenedor-escritorio {
     max-width: 1280px;
@@ -178,6 +178,37 @@ body {
   .pildora-c2 {
     @apply inline-flex items-center gap-1 px-2.5 py-1 bg-c2-s2 text-[12px] font-semibold text-text-primary;
     border-radius: 3px;
+  }
+  /* Rediseno web: paneles, rotulos y cifras (docs/REDISENO-WEB.md). */
+  .panel-c2 {
+    border-radius: 6px;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
+  }
+  .titulo-panel {
+    font-family: 'Anton', 'Archivo', sans-serif;
+    font-style: italic;
+    font-synthesis: style;
+    letter-spacing: 0.035em;
+    @apply text-[19px] leading-tight text-white;
+  }
+  .rotulo-c2 {
+    @apply block text-[10.5px] font-bold uppercase tracking-[0.12em] text-c2-muted;
+  }
+  .cifra-c2 {
+    font-family: 'Anton', 'Archivo', sans-serif;
+    letter-spacing: 0.03em;
+  }
+  .titular-c2 {
+    font-family: 'Anton', 'Archivo', sans-serif;
+    letter-spacing: 0.045em;
+    @apply uppercase;
+  }
+  .mapa-c2 {
+    background-color: #101827;
+    background-image:
+      linear-gradient(#1b2436 1px, transparent 1px),
+      linear-gradient(90deg, #1b2436 1px, transparent 1px);
+    background-size: 22px 22px;
   }
   .etiqueta-c2 {
     @apply block text-[10px] font-extrabold uppercase tracking-[0.12em] text-c2-muted;

@@ -1,291 +1,327 @@
 import { lazy, Suspense, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { useRacha } from '../../contexts/actividad/ui/useRacha'
 import { useActividad } from '../../contexts/actividad/api'
-import { MetaSemanal } from '../../contexts/analitica'
-import { RankingSemanal } from '../../contexts/comunidad'
-import { useClima } from '../../contexts/clima/api'
+import { useRacha } from '../../contexts/actividad/ui/useRacha'
+import { useEstadoClima } from '../../contexts/clima/api'
 import { useComunidad } from '../../contexts/comunidad/api'
-import { filtrarEventos, unirEventos, useEventos } from '../../contexts/eventos/api'
 import { useIdentidad } from '../../contexts/identidad/api'
-import { useRutas } from '../../contexts/rutas/api'
-import { eventosMock } from '../../mocks/data'
-import {
-  inicioSemana,
-  resumenSemana,
-  retoMes,
-  totalesSemana,
-} from '../../shared/kernel/estadisticas'
+import { MESES_CORTOS, resumenMes, totalesSemana } from '../../shared/kernel/estadisticas'
 import { nivelCorredor } from '../../shared/kernel/nivel'
+import { rachaEnRiesgo } from '../../shared/kernel/rachas'
 import { formatearRitmo, Unidades } from '../../shared/lib/geo'
-import { useEsEscritorio } from '../../shared/lib/useEsEscritorio'
 import { AvisoNavegacion } from '../../shared/ui/AvisoNavegacion'
-import { saludo } from './saludo'
-import {
-  AmigosEnRuta,
-  RutaSugerida,
-  SemanaAtletica,
-  TarjetaEvento,
-  TarjetaReto,
-} from './SeccionesInicio'
 import { EsqueletoEscena3D } from '../../shared/ui/Esqueletos'
+import { Cifra, Progreso } from '../../shared/ui/Visual'
+import { BotonNotificaciones, ChipClima, fechaCorta, useAbrirClima } from '../BarraSuperior'
+import { useEventosVisibles, useSondeoEnVivo } from '../datosApp'
+import { useBusqueda, useMetaSemanal } from '../ShellEscritorio'
+import {
+  PanelActividad,
+  PanelClima,
+  PanelEnRuta,
+  PanelEventos,
+  PanelRanking,
+  PanelReto,
+  PanelRutaSegura,
+  PanelSeguridad,
+  PanelSemana,
+  textoVentana,
+} from './PanelesInicio'
 
 const Runner3D = lazy(() =>
   import('../../shared/ui/Runner3D').then((m) => ({ default: m.Runner3D }))
 )
 
+/**
+ * Inicio del rediseno web (docs/REDISENO-WEB.md). Una sola meta semanal en km
+ * (ajustes.metaKmSemana); la meta de carreras se muestra como dato secundario.
+ * Escritorio: rejilla de 12 columnas. Movil: orden de inicio-movil.
+ */
 export function Inicio() {
-  const clima = useClima()
-  const escritorio = useEsEscritorio()
   const sesion = useIdentidad((s) => s.sesion)
-  const carreras = useActividad((s) => s.carreras)
-  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
-  const creados = useEventos((s) => s.eventosCreados)
-  const inscritos = useEventos((s) => s.inscritos)
-  const ahora = Date.now()
-  const semana = useMemo(() => resumenSemana(carreras, ahora), [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
-  const hoy = (new Date(ahora).getDay() + 6) % 7
-  const feedSocial = useComunidad((s) => s.feedSocial)
-  const publicaciones = useComunidad((s) => s.publicaciones)
   const refrescarFeed = useComunidad((s) => s.refrescarFeed)
-  const meta = useIdentidad((s) => s.ajustes.metaSemanal) ?? 3
+  const { proximos } = useEventosVisibles()
+  useSondeoEnVivo()
   useEffect(() => {
     if (sesion) void refrescarFeed()
   }, [sesion, refrescarFeed])
-  const totales = useMemo(() => totalesSemana(carreras, ahora), [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
-  const reto = useMemo(() => retoMes(carreras, ahora), [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
-  const amigos = publicaciones.filter((p) => p.sigo && !p.propia).slice(0, 3)
-  const lunes = new Date(inicioSemana(ahora))
-  const domingo = new Date(lunes.getTime() + 6 * 86_400_000)
-  const rango = `${lunes.getDate()} - ${domingo.getDate()} ${domingo.toLocaleDateString('es-EC', { month: 'short' }).replace('.', '')}`
-  // Con Supabase los eventos vienen de la base; los de ejemplo solo sin backend.
-  const eventos = feedSocial ? creados : unirEventos(creados, eventosMock)
-  const proximo = filtrarEventos(eventos, 'Próximos', inscritos)[0]
-  const nombre = sesion?.nombre.split(' ')[0] ?? 'Corredor'
-  const rutas = useRutas((s) => s.rutas)
-  const racha = useRacha()
-  const nivel = nivelCorredor(carreras.reduce((t, c) => t + c.distanciaKm, 0))
 
   return (
-    <div className="flex flex-col w-full px-margin pb-space-3xl space-y-space-xl contenedor-escritorio lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-6 lg:space-y-0 lg:items-start">
+    <div className="w-full px-4 pb-space-3xl lg:px-8 lg:pb-8 lg:max-w-[1440px] lg:mx-auto">
       <AvisoNavegacion />
-      {/* Encabezado C2 (Android InicioContenido.kt): saludo, "HOLA, NOMBRE" en Anton y chips .wx. */}
-      <section className="flex flex-col gap-1.5 pt-space-md lg:col-span-12 lg:pt-0">
-        <span className="font-label-md text-[12px] font-semibold text-c2-muted">
-          {saludo(new Date(ahora).getHours())}
+      <CabeceraMovil />
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-12 lg:gap-5">
+        <Hero className="order-1 lg:order-none lg:col-span-12 xl:col-span-8" />
+        <PanelClima className="mov-escalon order-4 lg:order-none lg:col-span-6 xl:col-span-4" />
+        <PanelRutaSegura className="mov-escalon order-2 lg:order-none lg:col-span-6 xl:col-span-5" />
+        <PanelSemana className="mov-escalon order-3 lg:order-none lg:col-span-6 xl:col-span-4" />
+        <PanelReto className="mov-escalon order-8 lg:order-none lg:col-span-6 xl:col-span-3" />
+        <PanelActividad className="mov-escalon order-9 lg:order-none lg:col-span-12 xl:col-span-5" />
+        <PanelEnRuta className="mov-escalon order-10 lg:order-none lg:col-span-6 xl:col-span-4" />
+        <PanelRanking className="mov-escalon order-6 lg:order-none lg:col-span-6 xl:col-span-3" />
+        <PanelEventos
+          eventos={proximos}
+          className="mov-escalon order-5 lg:order-none lg:col-span-12 xl:col-span-7"
+        />
+        <PanelSeguridad className="mov-escalon order-7 lg:order-none lg:col-span-12 xl:col-span-5" />
+      </div>
+    </div>
+  )
+}
+
+/** Cabecera movil de Inicio (inicio-movil): fecha, saludo, buscar, clima y campana. */
+function CabeceraMovil() {
+  const sesion = useIdentidad((s) => s.sesion)
+  const abrir = useBusqueda((s) => s.abrir)
+  const abrirClima = useAbrirClima()
+  const nombre = sesion?.nombre.split(' ')[0] ?? 'Corredor'
+  return (
+    <header className="lg:hidden flex items-center gap-2 pt-[max(env(safe-area-inset-top),12px)] pb-3">
+      <Link
+        to="/perfil"
+        aria-label="Ir a mi perfil"
+        className="w-10 h-10 shrink-0 rounded-md bg-[linear-gradient(135deg,#7B1FA2,#A855F7)] grid place-items-center"
+      >
+        <span aria-hidden="true" className="material-symbols-outlined text-white text-[20px]">
+          directions_run
         </span>
-        <h1 className="font-display text-[30px] leading-9 text-text-primary uppercase">
+      </Link>
+      <div className="min-w-0 flex-1">
+        <span className="rotulo-c2 !text-[9.5px] truncate">{fechaCorta()} · Loja</span>
+        <h1 className="titular-c2 text-[22px] leading-none mt-0.5 text-white truncate">
           Hola, {nombre}
         </h1>
-        <div className="flex flex-wrap gap-2 pt-1">
-          {/* Clima real (Open-Meteo); sin dato muestra "--" en vez de un valor falso. */}
-          <ChipC2
-            rotulo={clima?.lugar ?? 'Loja'}
-            valor={clima ? `${clima.temperatura} °C` : '--'}
-            resto={clima ? ` ${clima.descripcion}` : ''}
-            acento="#96CCFF"
-            testId="chip-clima"
-          />
-          <ChipC2
-            rotulo="Racha"
-            valor={`${racha.diaria} ${racha.diaria === 1 ? 'día' : 'días'}`}
-            acento="#34d399"
-            borde="#34d399"
-            testId="insignia-racha"
-          />
-          <ChipC2
-            rotulo="Nivel"
-            valor={nivel}
-            acento="#E9D5FF"
-            borde="#c084fc"
-            fondo="linear-gradient(135deg, #5E1781, #7B1FA2)"
-            testId="insignia-nivel"
-          />
-        </div>
-      </section>
-
-      {/* Escenario C2 (Android EscenarioInicioC2.kt): a todo el ancho, 430px, bordes en diagonal. */}
-      <section
-        className="lg:col-span-7 lg:row-span-3 relative -mx-margin lg:mx-0 h-[430px] lg:h-[560px] overflow-hidden"
-        data-testid="inicio-escenario"
+      </div>
+      <button
+        type="button"
+        onClick={abrir}
+        aria-label="Buscar"
+        className="w-10 h-10 shrink-0 rounded-md bg-c2-card border border-c2-linea grid place-items-center text-white"
       >
-        <div
-          className="absolute inset-0 escenario-c2"
-          style={{ clipPath: 'polygon(0 0, 100% 6%, 100% 100%, 0 92%)' }}
-        >
-          <span
-            aria-hidden
-            className="absolute bottom-6 -left-1.5 whitespace-nowrap font-display text-[120px] leading-[96px] text-transparent"
-            style={{ WebkitTextStroke: '1.5px #C084FC40' }}
-          >
-            CORRE LOJA
-          </span>
-        </div>
-        <div className="absolute inset-x-0 top-0 h-[84%]">
-          <Suspense fallback={<EsqueletoEscena3D texto="Cargando escena 3D" />}>
+        <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
+          search
+        </span>
+      </button>
+      <ChipClima compacto onAbrir={abrirClima} testId="chip-clima-movil" />
+      <BotonNotificaciones />
+    </header>
+  )
+}
+
+/** Hero: lo que falta para la meta semanal, mejor hora, acciones y cifras reales. */
+function Hero({ className = '' }: { className?: string }) {
+  const carreras = useActividad((s) => s.carreras)
+  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
+  const metaCarreras = useIdentidad((s) => s.ajustes.metaSemanal) ?? 3
+  const meta = useMetaSemanal()
+  const racha = useRacha()
+  const clima = useEstadoClima().clima
+  const ventana = textoVentana(clima)
+  const ahora = Date.now()
+  const nivel = nivelCorredor(carreras.reduce((t, c) => t + c.distanciaKm, 0))
+  const mes = useMemo(() => resumenMes(carreras, ahora), [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
+  const mesPrevio = useMemo(() => {
+    const d = new Date(ahora)
+    return resumenMes(carreras, new Date(d.getFullYear(), d.getMonth() - 1, 15).getTime())
+  }, [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
+  const nombreMesPrevio = MESES_CORTOS[(new Date(ahora).getMonth() + 11) % 12]!.toLowerCase()
+  const s = meta.semana
+  const u = Unidades.etiquetaDistancia(m)
+  const riesgo = rachaEnRiesgo(racha, ahora)
+  const diasRestantes = 7 - ((new Date(ahora).getDay() + 6) % 7)
+  const variacion =
+    mesPrevio.km > 0 ? Math.round(((mes.km - mesPrevio.km) / mesPrevio.km) * 100) : null
+  const totales = useMemo(() => totalesSemana(carreras, ahora), [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
+  const tiempoSemana = `${Math.floor(totales.segundos / 3600)}:${String(Math.floor((totales.segundos % 3600) / 60)).padStart(2, '0')}`
+  const desnivelSemana = totales.desnivelM
+
+  const sugerencia =
+    meta.faltan <= 0
+      ? `Cumpliste tu meta de ${Unidades.texto(meta.metaKm, m, 0)} ${u}. Todo lo que sumes ahora es extra.`
+      : `Llevas ${Unidades.texto(meta.km, m, 1)} de ${Unidades.texto(meta.metaKm, m, 0)} ${u} y quedan ${diasRestantes} ${diasRestantes === 1 ? 'día' : 'días'}.`
+  const textoHora = ventana
+    ? ` La mejor hora para salir hoy es entre ${ventana.rango.replace(' - ', ' y ')}.`
+    : ''
+
+  const chips = (movil: boolean) => (
+    <>
+      <span
+        data-testid={movil ? 'insignia-racha' : undefined}
+        className={`text-[11px] font-semibold px-2 py-1 rounded-full ${riesgo ? 'bg-amber-400/15 text-amber-400' : 'bg-c2-menta/15 text-c2-menta'}`}
+      >
+        Racha {racha.diaria} {racha.diaria === 1 ? 'día' : 'días'}
+        {riesgo ? ', en riesgo' : ''}
+      </span>
+      <span
+        data-testid={movil ? 'insignia-nivel' : undefined}
+        className="text-[11px] font-semibold px-2 py-1 rounded-full bg-c2-morado/20 text-c2-violeta"
+      >
+        {nivel}
+      </span>
+      <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-c2-s2 text-c2-muted">
+        {s.carreras} de {metaCarreras} carreras esta semana
+      </span>
+    </>
+  )
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-1.5 lg:hidden order-1">{chips(true)}</div>
+      <section
+        data-testid="inicio-escenario"
+        aria-labelledby="titulo-hero"
+        className={`panel-c2 relative overflow-hidden border border-[#3B1A55] bg-[linear-gradient(160deg,#2A0A3D_0%,#1A0B2E_55%,#191F2F_100%)] ${className}`}
+      >
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(115deg,transparent_0_38px,rgba(192,132,252,0.05)_38px_40px)]"
+        />
+        <div className="absolute right-0 bottom-0 top-6 w-[44%] lg:w-[34%] ancho:w-[30%] pointer-events-auto">
+          <Suspense fallback={<EsqueletoEscena3D texto="Cargando avatar" />}>
             <Runner3D
               animation="Idle"
               autoRotate
               giroArrastre
-              cameraPosition={[0, 1.1, 5.3]}
-              target={[0, 0.8, 0]}
+              cameraPosition={[0, 1.1, 4.6]}
+              target={[0, 0.85, 0]}
             />
           </Suspense>
         </div>
-        <EtiquetaEscenario rotulo="Avatar" valor={nivel} className="left-6 top-10" />
-        <EtiquetaEscenario
-          rotulo="Este mes"
-          valor={`${Unidades.texto(reto.km, m, 1)} ${Unidades.etiquetaDistancia(m)}`}
-          className="right-6 top-24"
-        />
-        <Link to="/correr" className="boton-c2 !absolute bottom-[30px] left-5 right-5 !w-auto">
-          Empezar a correr
-          <span
-            className="material-symbols-outlined text-[24px]"
-            style={{ fontVariationSettings: "'FILL' 1" }}
+        <div className="relative p-5 lg:p-7 max-w-[100%] lg:max-w-[68%] ancho:max-w-[70%]">
+          <div className="hidden lg:flex flex-wrap gap-1.5 mb-4">{chips(false)}</div>
+          <span className="rotulo-c2 !text-c2-violeta lg:hidden">Meta semanal</span>
+          <h2
+            id="titulo-hero"
+            className="titular-c2 text-[30px] leading-[1.02] lg:text-[42px] text-white mt-1 max-w-[60%] lg:max-w-none"
           >
-            play_arrow
-          </span>
-        </Link>
+            {meta.faltan > 0 ? (
+              <>
+                Te faltan {Unidades.texto(meta.faltan, m, meta.faltan < 10 ? 1 : 0)} {u}
+                <span className="hidden lg:block text-c2-violeta">para tu meta semanal</span>
+              </>
+            ) : (
+              <>
+                Meta cumplida
+                <span className="hidden lg:block text-c2-violeta">
+                  {Unidades.texto(meta.km, m, 1)} {u} esta semana
+                </span>
+              </>
+            )}
+          </h2>
+          <p className="mt-3 text-[13px] text-c2-muted max-w-[60%] lg:max-w-[520px]">
+            <span className="hidden lg:inline">{sugerencia}</span>
+            {textoHora ? (
+              <span className="lg:hidden">Mejor hora para salir: {ventana!.rango}</span>
+            ) : null}
+            <span className="hidden lg:inline">{textoHora}</span>
+          </p>
+          <div className="mt-3 max-w-[60%] lg:hidden">
+            <Progreso pct={meta.pct} etiqueta="Progreso de la meta semanal" />
+            <p className="text-[11px] text-c2-muted mt-1">
+              {Unidades.texto(meta.km, m, 1)} de {Unidades.texto(meta.metaKm, m, 0)} {u}
+            </p>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              to="/correr"
+              className="panel-c2 h-12 px-6 flex-1 lg:flex-none inline-flex items-center justify-center gap-2 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-white text-[14px] font-bold hover:brightness-110"
+            >
+              <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
+                play_circle
+              </span>
+              Empezar a correr
+            </Link>
+            <button
+              type="button"
+              onClick={() =>
+                document
+                  .querySelector('[data-testid="ruta-sugerida"]')
+                  ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }
+              className="hidden lg:inline-flex h-12 px-5 items-center gap-2 rounded-md border border-c2-linea bg-c2-bg/40 text-white text-[13.5px] font-semibold hover:border-c2-morado"
+            >
+              <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
+                map
+              </span>
+              Ruta segura del día
+            </button>
+          </div>
+          <div className="hidden lg:grid grid-cols-4 gap-3 mt-6 max-w-[620px]">
+            <CajaCifra
+              rotulo="Mes"
+              valor={Unidades.texto(mes.km, m, 1)}
+              unidad={u}
+              nota={
+                variacion != null
+                  ? `${variacion >= 0 ? '+' : ''}${variacion}% vs ${nombreMesPrevio}`
+                  : `${mes.carreras} carreras`
+              }
+              notaColor={variacion != null && variacion >= 0 ? 'text-c2-menta' : undefined}
+            />
+            <CajaCifra
+              rotulo="Ritmo"
+              valor={formatearRitmo(Unidades.ritmo(s.ritmoSegKm, m))}
+              unidad={Unidades.etiquetaRitmo(m)}
+            />
+            <CajaCifra
+              rotulo="Tiempo"
+              valor={tiempoSemana}
+              unidad="h"
+              nota={`${s.carreras} ${s.carreras === 1 ? 'carrera' : 'carreras'}`}
+            />
+            <CajaCifra
+              rotulo="Desnivel"
+              valor={`+${Math.round(desnivelSemana)}`}
+              unidad="m"
+              nota="esta semana"
+            />
+          </div>
+        </div>
       </section>
-
-      <section
-        className="mov-escalon lg:col-span-5 flex justify-between bg-c2-card p-4 tarjeta-c2"
-        style={{ '--i': 2 } as React.CSSProperties}
-      >
-        <MetricaInicio valor={`${semana.diasCorridos.size}`} etiqueta="Días" />
-        <MetricaInicio
-          valor={Unidades.texto(semana.km, m, 1)}
-          etiqueta={Unidades.etiquetaDistancia(m)}
-          color="text-c2-violeta"
-          testId="km-semana"
-        />
-        <MetricaInicio
-          valor={formatearRitmo(Unidades.ritmo(semana.ritmoSegKm, m))}
-          etiqueta={Unidades.etiquetaRitmo(m)}
+      <div className="grid grid-cols-3 gap-2 lg:hidden order-1">
+        <CajaCifra rotulo="Mes" valor={Unidades.texto(mes.km, m, 1)} unidad={u} />
+        <CajaCifra
+          rotulo="Ritmo"
+          valor={formatearRitmo(Unidades.ritmo(s.ritmoSegKm, m))}
+          unidad={Unidades.etiquetaRitmo(m)}
           color="text-c2-menta"
-          alinear="items-end"
         />
-      </section>
-
-      <SemanaAtletica
-        semana={totales}
-        dias={semana.diasCorridos}
-        hoy={hoy}
-        metaCarreras={meta}
-        rango={rango}
-        m={m}
-      />
-
-      <TarjetaReto reto={reto} m={m} />
-
-      <RutaSugerida rutas={rutas} carreras={carreras} m={m} />
-
-      <AmigosEnRuta lista={amigos} m={m} />
-
-      <section
-        className="mov-escalon space-y-space-md lg:col-span-5"
-        style={{ '--i': 6 } as React.CSSProperties}
-      >
-        <div className="flex items-center justify-between">
-          <h2 className="font-title-md text-title-md text-text-primary">Próximo evento</h2>
-          <Link
-            to="/comunidad/eventos"
-            className="inline-block py-2 font-label-md text-label-md text-primary"
-          >
-            Ver todos
-          </Link>
-        </div>
-        {proximo ? (
-          <TarjetaEvento evento={proximo} inscrito={inscritos.includes(proximo.id)} />
-        ) : (
-          <p className="text-text-secondary">No hay encuentros próximos.</p>
-        )}
-      </section>
-
-      {escritorio && (
-        <div className="lg:col-span-12 grid grid-cols-2 gap-6">
-          <MetaSemanal km={semana.km} />
-          <RankingSemanal />
-        </div>
-      )}
-    </div>
+        <CajaCifra
+          rotulo="Desnivel"
+          valor={`+${Math.round(desnivelSemana)}`}
+          unidad="m"
+          color="text-c2-cielo"
+        />
+      </div>
+    </>
   )
 }
 
-/** Chip .wx del Figma C2 (Android ChipC2): 12px cursiva 800 en mayusculas, inclinado -10deg. */
-function ChipC2({
+function CajaCifra({
   rotulo,
   valor,
-  resto = '',
-  acento,
-  borde = '#2C3446',
-  fondo = '#191f2f',
-  testId,
+  unidad,
+  nota,
+  notaColor,
+  color = 'text-white',
 }: {
   rotulo: string
   valor: string
-  resto?: string
-  acento: string
-  borde?: string
-  fondo?: string
-  testId?: string
-}) {
-  return (
-    <span
-      data-testid={testId}
-      className="inline-block px-2.5 py-1.5 text-[12px] font-extrabold italic uppercase text-white"
-      style={{ transform: 'skewX(-10deg)', background: fondo, border: `1px solid ${borde}` }}
-    >
-      {rotulo} <span style={{ color: acento }}>{valor}</span>
-      {resto}
-    </span>
-  )
-}
-
-/** Etiqueta .tg del escenario (Android EtiquetaEscenarioC2). */
-function EtiquetaEscenario({
-  rotulo,
-  valor,
-  className,
-}: {
-  rotulo: string
-  valor: string
-  className: string
-}) {
-  return (
-    <div
-      className={`pointer-events-none absolute z-20 flex flex-col px-2.5 py-1.5 border border-[#2C3446] bg-[#0C1322CC] ${className}`}
-      style={{ transform: 'skewX(-10deg)' }}
-    >
-      <span className="text-[11px] font-extrabold italic uppercase text-white">{rotulo}</span>
-      <span className="font-display text-[22px] leading-[22px] text-c2-violeta whitespace-nowrap">
-        {valor}
-      </span>
-    </div>
-  )
-}
-
-/** Metrica C2 de la fila bajo el escenario (Android MetricaC2). */
-function MetricaInicio({
-  valor,
-  etiqueta,
-  color = 'text-text-primary',
-  alinear = 'items-start',
-  testId,
-}: {
-  valor: string
-  etiqueta: string
+  unidad?: string
+  nota?: string
+  notaColor?: string
   color?: string
-  alinear?: string
-  testId?: string
 }) {
   return (
-    <div className={`flex flex-col gap-1 ${alinear}`}>
-      <span className="etiqueta-c2">{etiqueta}</span>
-      <span className={`valor-c2 ${color}`} data-testid={testId}>
-        {valor}
-      </span>
+    <div className="panel-c2 bg-c2-bg/60 border border-c2-linea px-3 py-2.5 min-w-0">
+      <Cifra
+        rotulo={rotulo}
+        valor={valor}
+        unidad={unidad}
+        color={color}
+        tamano="text-[22px] lg:text-[24px]"
+        nota={nota ? <span className={notaColor}>{nota}</span> : undefined}
+      />
     </div>
   )
 }

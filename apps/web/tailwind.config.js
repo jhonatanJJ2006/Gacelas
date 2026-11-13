@@ -4,7 +4,7 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
-      screens: { short: { raw: '(max-height: 700px)' } },
+      screens: { short: { raw: '(max-height: 700px)' }, ancho: '1400px' },
       colors: {
         c2: {
           bg: '#0C1322',

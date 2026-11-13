@@ -1,6 +1,6 @@
 import { EsqueletoLista } from '../../../shared/ui/Esqueletos'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { CorredorPublico } from '../../../shared/kernel/comunidad'
 import { yaReportado } from '../../moderacion/api'
 import { useComunidad } from '../application/estado'
@@ -12,7 +12,8 @@ export function Corredores() {
   const buscar = useComunidad((s) => s.buscarCorredores)
   const siguiendo = useComunidad((s) => s.siguiendo)
   const alternarSeguir = useComunidad((s) => s.alternarSeguir)
-  const [consulta, setConsulta] = useState('')
+  const [params] = useSearchParams()
+  const [consulta, setConsulta] = useState(() => params.get('q') ?? '')
   const [resultados, setResultados] = useState<CorredorPublico[] | null>(null)
   const [reportando, setReportando] = useState<string | null>(null)
   const [aviso, setAviso] = useState<string | null>(null)

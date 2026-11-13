@@ -19,11 +19,12 @@ test('arrastrar en horizontal gira el corredor de Inicio', async ({ page }) => {
   await page.mouse.move(x0, y)
   await page.mouse.down()
   const antes = Number(await avatar.getAttribute('data-giro'))
-  for (let i = 1; i <= 10; i++) await page.mouse.move(x0 + i * 20, y)
+  for (let i = 1; i <= 10; i++) await page.mouse.move(x0 + i * 10, y)
   const durante = Number(await avatar.getAttribute('data-giro'))
-  // 200 px * 0.4 grados/px = 80 grados (sin giro automatico mientras se arrastra).
-  expect(((durante - antes + 360) % 360) - 80).toBeLessThan(6)
-  expect((durante - antes + 360) % 360).toBeGreaterThan(70)
+  // 100 px * 0.4 grados/px = 40 grados (sin giro automatico mientras se arrastra). El avatar del
+  // hero redisenado es mas angosto: el arrastre queda dentro del lienzo.
+  expect(((durante - antes + 360) % 360) - 40).toBeLessThan(6)
+  expect((durante - antes + 360) % 360).toBeGreaterThan(34)
   await page.screenshot({ path: `${dir}/web-inicio-arrastrando.png` })
   await page.mouse.up()
   await page.waitForTimeout(1500)

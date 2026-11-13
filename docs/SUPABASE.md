@@ -100,6 +100,21 @@ Es idempotente. Para quitarlo: `scripts/sb-query.sh supabase/rollback/038_conten
 
 Durante un SOS la zona de casa no se oculta (es una emergencia). Las alertas sin posiciones en 2 h se cierran solas (`sos_cerrar_inactivas`, cada 15 min con pg_cron). La tabla no tiene politicas de escritura: solo escriben las funciones.
 
+## Rediseno web (040)
+
+`supabase/migrations/040_rediseno_web.sql` agrega lo que la web redisenada necesita para no mostrar cifras inventadas. Es aditiva e idempotente.
+
+| Objeto                                   | Para que                                                                                                                                 |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `identidad.user_settings.weekly_goal_km` | La unica meta semanal de Inicio, en km (1 a 500, por defecto 25). La vista `public.user_settings` la expone.                             |
+| `eventos.reprogramar_eventos_demo()`     | Mueve semanas hacia adelante los eventos de ejemplo (`demo-ev-*` y los del seed sin autor) que quedaron en el pasado. pg_cron diario.    |
+| `public.seguridad_rutas()`               | Nivel de seguridad de cada ruta publica para la hora actual y reportes de 7 y 30 dias. `puntaje` es null mientras no haya datos ECU 911. |
+| `public.km_grupos(p_semanas)`            | Km por club y semana, solo agregados (sin datos de cada miembro).                                                                        |
+| `eventos.event_results`                  | Resultados de un evento (posicion, tiempo, distancia). Lectura si el evento esta publicado; escribe solo el organizador.                 |
+| `public.resumen_seguridad_zona()`        | Mes y conteos ECU 911 por servicio y reportes de corredores de los ultimos 7 dias, para "Seguridad en tu zona".                          |
+
+Mientras `seguridad.incidentes_agregados` siga vacia, la web muestra el nivel y los reportes reales y nunca un puntaje de 0 a 100.
+
 ## Variables de entorno
 
 | Archivo                         | Variable                                                                                        | Uso                                                                                       |
