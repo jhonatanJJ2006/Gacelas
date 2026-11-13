@@ -32,6 +32,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -75,12 +77,23 @@ class LocationService : Service() {
     private var escuchando = false
     private val alcance = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var observador: Job? = null
+    /** Alertas de zona (86e3uf09b): viven aqui para avisar con la pantalla apagada. */
+    private val alertasZona by lazy {
+        val c = { (application as GacelasApp).contenedor }
+        AlertasZonaServicio(
+            this, alcance,
+            fuente = { c().incidentes?.let { r -> suspend { r.recientes() } } },
+            activadas = { c().ajustes.ajustes.map { it.alertasZona }.distinctUntilChanged() },
+        )
+    }
 
     private val callback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
             result.locations.forEach { l ->
                 tracker.registrarPunto(PuntoGps(l.latitude, l.longitude, l.time, l.accuracy, if (l.hasAltitude()) l.altitude else null))
             }
+            // Solo el ultimo punto del lote, y solo si la precision es razonable (< 50 m).
+            result.lastLocation?.takeIf { !it.hasAccuracy() || it.accuracy < 50f }?.let { alertasZona.punto(it.latitude, it.longitude) }
         }
     }
 
@@ -96,6 +109,7 @@ class LocationService : Service() {
                 ServiceCompat.startForeground(this, NOTIFICATION_ID, createNotification(), tipo)
                 empezarUbicacion()
                 observar()
+                alertasZona.iniciar()
             }
             ACTION_PAUSA -> tracker.alternarPausa()
             ACTION_TERMINAR -> {
@@ -105,6 +119,7 @@ class LocationService : Service() {
                     .putExtra(DestinoPendiente.EXTRA, Destinos.RESUMEN))
             }
             ACTION_STOP -> {
+                alertasZona.detener()
                 detenerUbicacion()
                 ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
                 stopSelf()
@@ -147,6 +162,7 @@ class LocationService : Service() {
             }
             tracker.estado.collect { e ->
                 if (!e.activa) {
+                    alertasZona.detener()
                     detenerUbicacion()
                     ServiceCompat.stopForeground(this@LocationService, ServiceCompat.STOP_FOREGROUND_REMOVE)
                     stopSelf()
@@ -156,6 +172,7 @@ class LocationService : Service() {
     }
 
     override fun onDestroy() {
+        alertasZona.detener()
         alcance.cancel()
         detenerUbicacion()
         super.onDestroy()

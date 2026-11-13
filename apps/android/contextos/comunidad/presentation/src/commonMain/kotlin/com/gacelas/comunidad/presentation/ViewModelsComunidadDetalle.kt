@@ -230,6 +230,8 @@ class DetalleEventoViewModel(
 
 /** Datos del detalle de un club. */
 data class DetalleClub(
+    /** true hasta la primera respuesta del servidor (muestra el esqueleto). */
+    val cargando: Boolean = true,
     val club: Club? = null,
     /** Comunidad a la que pertenece el grupo, si tiene. */
     val comunidad: Club? = null,
@@ -262,6 +264,7 @@ class DetalleClubViewModel(private val id: String, private val fuente: ClubesRep
             val club = runCatching { f.detalle(id) }.getOrNull()
             val todos = runCatching { f.listar().first }.getOrDefault(emptyList())
             _estado.value = DetalleClub(
+                cargando = false,
                 club = club,
                 comunidad = club?.comunidadId?.let { cid -> todos.firstOrNull { it.id == cid } },
                 grupos = if (club?.tipo == TipoClub.comunidad) todos.filter { it.comunidadId == id } else emptyList(),

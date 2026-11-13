@@ -98,7 +98,8 @@ fun DetalleClubContenido(
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
         EncabezadoAtras(club?.nombre ?: "Grupo", onAtras)
         if (!conServidor) return SinServidor()
-        val c = club ?: return Text("Cargando...", color = GColors.TextSecondary, modifier = Modifier.padding(16.dp))
+        val c = club ?: return if (datos.cargando) EsqueletoDetalleClub()
+        else Text("No encontramos este grupo. Puede que lo hayan eliminado.", color = GColors.TextSecondary, modifier = Modifier.padding(16.dp).testTag("club-no-encontrado"))
         val yo = datos.yo
         val gestiono = datos.gestiono
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -266,5 +267,18 @@ fun EventoEnVivoContenido(
                 }
             }
         }
+    }
+}
+
+/** Detalle de grupo o comunidad mientras llega del servidor: cabecera, datos y publicaciones (C2). */
+@Composable
+private fun EsqueletoDetalleClub() {
+    Column(
+        Modifier.fillMaxWidth().padding(16.dp).testTag("cargando-club"),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        com.gacelas.ui.components.EsqueletoTarjetas(1, etiqueta = "Cargando grupo")
+        com.gacelas.ui.components.EsqueletoMetricas(2)
+        com.gacelas.ui.components.EsqueletoTarjetas(2, etiqueta = "Cargando publicaciones")
     }
 }
