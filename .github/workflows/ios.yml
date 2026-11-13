@@ -31,6 +31,9 @@ env:
 jobs:
   cambios:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     if: github.event.action != 'labeled' || github.event.label.name == 'capturas'
     outputs:
       ios: ${{ steps.f.outputs.ios == 'true' || github.event_name != 'pull_request' && github.event_name != 'push' || startsWith(github.ref, 'refs/tags/') }}
