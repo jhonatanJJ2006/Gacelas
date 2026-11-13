@@ -9,5 +9,7 @@ export function traducirError(mensaje: string): string {
     return 'Demasiados intentos. Espera un momento y vuelve a probar'
   if (m.includes('fetch') || m.includes('network')) return 'Sin conexión con el servidor'
   if (m.includes('password')) return 'La contraseña no es válida'
+  if (m.includes('cuenta suspendida'))
+    return 'Tu cuenta está suspendida. No puedes publicar ni modificar datos.'
   return 'No se pudo completar. Intenta de nuevo'
 }
