@@ -33,6 +33,17 @@ Las dos huellas estan en `gacelas.firmasGoogle` (login con Google). Android no l
 
 No hace falta otro APK para quien ya tiene v0.9.12 o posterior: v0.9.17 ya instala encima. Quien tenga v0.9.8 a v0.9.11, o un APK de Android Studio firmado con `23:CF`, tiene que desinstalar Runcity una vez (se pierden los datos locales de esa instalacion) e instalar el APK publicado. A partir de ahi las actualizaciones siguen con `F1:A2`.
 
+### Instalacion en limpio
+
+Si el telefono no tiene Runcity, el certificado de una version anterior no interviene. El mismo archivo de v0.9.17 se probo con `adb install`:
+
+- Android 14 y Android 15 con paginas de 16 KB, en imagenes que pueden ejecutar arm64: se instala y la app abre. `zipalign -c -P 16 4` pasa. No tiene `testOnly`. Que el release de GitHub este marcado como pre-release no cambia el APK.
+- Android 7.0 (API 24) x86_64, sin traduccion ARM: falla con `INSTALL_FAILED_NO_MATCHING_ABIS` por las librerias `arm64-v8a`. El mismo APK sin esas librerias si instala: el dex 037 y la firma solo v2 se aceptan en Android 7.
+- Android 7.0 solo de 32 bits (ABI `x86`): `INSTALL_FAILED_NO_MATCHING_ABIS: Failed to extract native libraries, res=-113`. Un telefono que solo tenga `armeabi-v7a` falla igual.
+- Un archivo cortado a 20 MB, o un HTML guardado como `.apk`, falla con `INSTALL_PARSE_FAILED_UNEXPECTED_EXCEPTION` al leer `AndroidManifest.xml`. En el telefono eso se ve como que el paquete no es valido. El archivo bueno pesa 45.295.692 bytes.
+
+No hay un fallo del APK que impida una instalacion nueva en un telefono arm64 con Android 7 o mas nuevo. Si en un telefono vacio no entra, hacen falta el modelo, la version de Android, el texto exacto del instalador y el tamano del archivo descargado.
+
 ### Como evitar que se repita
 
 - Publicar solo con el `debug.keystore` de `gacelas.firmaPublicacion`.
