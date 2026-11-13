@@ -50,6 +50,8 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.runtime.getValue
 import com.gacelas.navigation.Destinos
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
@@ -65,21 +67,15 @@ val itemsNav = listOf(
 
 @Composable
 fun BarraSuperior(sinLeer: Int, onNotificaciones: () -> Unit, onPerfil: () -> Unit = {}) {
+    // Tablero: cabecera transparente sobre el degradado, marca a la izquierda y botones de vidrio.
     Row(
-        Modifier.fillMaxWidth().background(GColors.BgSecondary).statusBarsPadding().height(64.dp).padding(horizontal = 16.dp),
+        Modifier.fillMaxWidth().statusBarsPadding().height(62.dp).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(32.dp).clip(CircleShape).background(GColors.PrimaryLight).clickable(onClick = onPerfil), contentAlignment = Alignment.Center) {
-            Text("GL", style = GType.labelMd, color = GColors.OnPrimary)
-        }
+        Text("RUNCITY", style = GType.headlineSm.copy(fontWeight = FontWeight.Normal), color = Color.White, modifier = Modifier.weight(1f))
+        BotonVidrio(Icons.Filled.Notifications, "Notificaciones", onNotificaciones, tag = "boton-notificaciones", tamano = 42.dp, punto = sinLeer > 0)
         Spacer(Modifier.width(8.dp))
-        Text("RUNCITY LOJA", style = GType.labelMd, color = GColors.PrimaryLight, modifier = Modifier.weight(1f))
-        Box {
-            IconButton(onClick = onNotificaciones) {
-                Icon(Icons.Filled.Notifications, contentDescription = "Notificaciones", tint = GColors.TextSecondary)
-            }
-            if (sinLeer > 0) Box(Modifier.align(Alignment.TopEnd).offset((-12).dp, 12.dp).size(8.dp).clip(CircleShape).background(GColors.PrimaryContainer))
-        }
+        BotonVidrio(Icons.Filled.Person, "Perfil", onPerfil, tag = "boton-perfil-barra", tamano = 42.dp)
     }
 }
 
@@ -132,18 +128,31 @@ fun BarraInferior(rutaActual: String, onNavegar: (String) -> Unit) {
     }
 }
 
-/** Scaffold con barra superior y barra inferior para las pantallas principales. */
+/** Espacio que el dock ocupa abajo; las pantallas que dibujan bajo el dock (mapa de Rutas) lo usan para no tapar botones. */
+val LocalEspacioDock = androidx.compose.runtime.staticCompositionLocalOf { 0.dp }
+
+/**
+ * Scaffold de las pantallas principales (direccion A "Tablero"): fondo morado con degradado, dock
+ * flotante con CORRER a la derecha y, salvo en Inicio y Rutas (el mapa llega al borde superior), la
+ * barra superior. El contenido reserva el alto del dock para que nunca tape un boton; Rutas dibuja el
+ * mapa por debajo y usa [LocalEspacioDock] para subir sus tarjetas.
+ */
 @Composable
 fun ScaffoldPrincipal(rutaActual: String, sinLeer: Int, onNavegar: (String) -> Unit, content: @Composable () -> Unit) {
-    Scaffold(
-        containerColor = GColors.BgPrimary,
-        topBar = {
-            // Comunidad trae su propia cabecera C2 (avatar, titulo centrado y buscar).
-            if (rutaActual == Destinos.COMUNIDAD) Spacer(Modifier.fillMaxWidth().background(GColors.C2Bg).statusBarsPadding())
-            else BarraSuperior(sinLeer, onNotificaciones = { onNavegar(Destinos.NOTIFICACIONES) }, onPerfil = { onNavegar(Destinos.PERFIL) })
-        },
-        bottomBar = { BarraInferior(rutaActual, onNavegar) },
-    ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) { content() }
+    val nav = androidx.compose.foundation.layout.WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val espacio = AltoDock + nav
+    val bajoDock = rutaActual == Destinos.RUTAS
+    Box(Modifier.fillMaxSize().background(Tablero.Fondo)) {
+        Column(Modifier.fillMaxSize()) {
+            when (rutaActual) {
+                Destinos.INICIO, Destinos.RUTAS -> {}
+                Destinos.COMUNIDAD -> Spacer(Modifier.fillMaxWidth().statusBarsPadding())
+                else -> BarraSuperior(sinLeer, onNotificaciones = { onNavegar(Destinos.NOTIFICACIONES) }, onPerfil = { onNavegar(Destinos.PERFIL) })
+            }
+            Box(Modifier.fillMaxSize().padding(bottom = if (bajoDock) 0.dp else espacio)) {
+                androidx.compose.runtime.CompositionLocalProvider(LocalEspacioDock provides if (bajoDock) espacio else 0.dp) { content() }
+            }
+        }
+        DockTablero(rutaActual, onNavegar, Modifier.align(Alignment.BottomCenter))
     }
 }

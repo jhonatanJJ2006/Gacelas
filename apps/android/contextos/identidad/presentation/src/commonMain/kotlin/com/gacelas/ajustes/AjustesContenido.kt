@@ -95,7 +95,7 @@ private fun Paso(texto: String, tag: String, menos: () -> Unit, mas: () -> Unit)
 
 @Composable
 fun PantallaConEncabezado(titulo: String, onAtras: () -> Unit, content: @Composable () -> Unit) {
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
+    Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         EncabezadoAtras(titulo, onAtras)
         Pantalla(Modifier.weight(1f).navigationBarsPadding()) { content() }
     }

@@ -84,7 +84,7 @@ fun MapaVivoScreen(onAtras: () -> Unit, onPrivacidad: () -> Unit, inicial: List<
             Icon(Icons.Filled.LocationOff, null, tint = GColors.C2Muted)
             Text("  No estás visible. Actívalo en Privacidad si quieres que otros te vean.", style = GType.bodySm, color = GColors.C2Muted, modifier = Modifier.weight(1f))
         }
-        Box(Modifier.fillMaxWidth().height(380.dp).clip(RoundedCornerShape(16.dp)).background(GColors.C2Card).testTag("mapa-vivo")) {
+        Box(Modifier.fillMaxWidth().height(380.dp).clip(RoundedCornerShape(20.dp)).background(GColors.C2Card).border(1.dp, com.gacelas.ui.components.Tablero.WidgetBorde, RoundedCornerShape(20.dp)).testTag("mapa-vivo")) {
             if (Mapas.configurado() && !androidx.compose.ui.platform.LocalInspectionMode.current) {
                 val centro = corredores.firstOrNull()?.let { LatLng(it.lat, it.lng) } ?: Mapas.CENTRO_LOJA
                 MapaLibre(
@@ -143,11 +143,7 @@ private fun FilaCorredor(r: CorredorEnMapa, ahora: Long, onClick: () -> Unit) = 
 @Composable
 private fun EsquemaCorredores(lista: List<CorredorEnMapa>, onTocar: (CorredorEnMapa) -> Unit) {
     Box(Modifier.fillMaxWidth().height(380.dp)) {
-        Canvas(Modifier.fillMaxWidth().height(380.dp)) {
-            val paso = 48.dp.toPx()
-            var x = 0f; while (x < size.width) { drawLine(GColors.C2Linea, Offset(x, 0f), Offset(x, size.height)); x += paso }
-            var y = 0f; while (y < size.height) { drawLine(GColors.C2Linea, Offset(0f, y), Offset(size.width, y)); y += paso }
-        }
+        com.gacelas.ui.components.MapaEsquemaC2(emptyList(), Modifier.fillMaxWidth().height(380.dp))
         if (lista.isEmpty()) Text("Sin corredores visibles", style = GType.bodyMd, color = GColors.C2Muted, textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.Center))
         val minLat = lista.minOfOrNull { it.lat } ?: 0.0; val maxLat = lista.maxOfOrNull { it.lat } ?: 0.0
         val minLng = lista.minOfOrNull { it.lng } ?: 0.0; val maxLng = lista.maxOfOrNull { it.lng } ?: 0.0

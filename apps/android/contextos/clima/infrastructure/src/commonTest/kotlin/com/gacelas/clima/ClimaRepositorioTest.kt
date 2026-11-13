@@ -30,12 +30,25 @@ class ClimaRepositorioTest {
         assertEquals(16.1, l.temperatura); assertEquals(3, l.codigoWmo); assertEquals(false, l.esDeDia)
     }
 
+    @Test fun leeLasHorasDelPronostico() {
+        val json = """{"current":{"temperature_2m":14.2,"weather_code":2,"is_day":1},"hourly":{"time":["2026-11-13T06:00","2026-11-13T07:00","2026-11-13T08:00"],"temperature_2m":[11.6,13.2,15.4],"weather_code":[61,2,3]}}"""
+        val l = OpenMeteoFuenteClima.leerJson(json)
+        assertEquals(listOf(com.gacelas.clima.domain.HoraClima(6, 12, 61), com.gacelas.clima.domain.HoraClima(7, 13, 2), com.gacelas.clima.domain.HoraClima(8, 15, 3)), l.horas)
+        // Mejor hora: sin lluvia (WMO < 51) y lo mas cerca de 13 grados.
+        assertEquals(7, com.gacelas.clima.domain.ReglasClima.mejorHora(l.horas)?.hora)
+        assertEquals("lluvia", com.gacelas.clima.domain.ReglasClima.tipo(61))
+    }
+
+    @Test fun sinHorasEnLaRespuestaNoInventa() {
+        assertEquals(emptyList(), OpenMeteoFuenteClima.leerJson(FIXTURE_OPEN_METEO).horas)
+    }
+
     @Test fun exitoSinPermisoUsaLojaYGuarda() = runTest {
         val cache = CacheMemoria()
         val c = ClimaRepositorioOpenMeteo(fuenteOk(), cache).actual(t0)
         assertEquals(ClimaActual(16, "nublado", "Loja", t0), c)
         assertEquals(c, cache.c)
-        assertEquals("https://api.open-meteo.com/v1/forecast?latitude=-3.99&longitude=-79.2&current=temperature_2m,weather_code,is_day", urls.single())
+        assertEquals("https://api.open-meteo.com/v1/forecast?latitude=-3.99&longitude=-79.2&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code&forecast_hours=8&timezone=auto", urls.single())
     }
 
     @Test fun fueraDeLojaUsaNombreDePlataformaYCoordenadasAproximadas() = runTest {

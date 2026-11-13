@@ -87,7 +87,7 @@ fun FeedContenido(
     val italica = androidx.compose.ui.text.font.FontStyle.Italic
     val negra = androidx.compose.ui.text.font.FontWeight.Black
     // Feed C2 (frame Movil / Comunidad / Feed): cabecera centrada, pestanas, compositor y posts estilo X a todo el ancho.
-    Column(Modifier.fillMaxSize().background(GColors.C2Bg).verticalScroll(rememberScrollState()).testTag("feed-c2")) {
+    Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo).verticalScroll(rememberScrollState()).testTag("feed-c2")) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
             AvatarLetra("Tú", 34.dp)
             Text(
@@ -482,7 +482,7 @@ fun DetalleEventoContenido(
     val estado by vm.estado.collectAsState()
     val participantes = estado?.let { e.participantes + it.inscritos } ?: (e.participantes + if (inscrito && !e.creadoPorUsuario) 1 else 0)
     val enEspera = estado?.miEstado == "waitlist"
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
+    Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
             Box(Modifier.fillMaxWidth().height(220.dp).background(Brush.verticalGradient(listOf(GColors.Primary700, GColors.BgPrimary)))) {
                 Row(Modifier.fillMaxWidth().statusBarsPadding().padding(12.dp)) {
@@ -588,11 +588,12 @@ internal fun handle(nombre: String): String {
 /** Media del post (max 200 dp): ruta a la izquierda y hasta dos fotos apiladas a la derecha, como el frame C2. */
 @Composable
 private fun MediaPost(p: Publicacion, imagen: @Composable (String, Modifier) -> Unit) {
-    val forma = RoundedCornerShape(12.dp)
+    val forma = RoundedCornerShape(18.dp)
     val fotos = p.imagenes.take(2)
     Row(Modifier.fillMaxWidth().height(if (fotos.isEmpty()) 170.dp else 200.dp).clip(forma).border(1.dp, GColors.C2Linea, forma).testTag("media-post"), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-        Box(Modifier.weight(if (fotos.isEmpty()) 1f else 1.15f).fillMaxHeight().background(Brush.linearGradient(listOf(GColors.MapParks, GColors.C2Card)))) {
-            if (p.puntos.size >= 2) TrazadoRuta(p.puntos, Modifier.fillMaxSize()) else Icon(Icons.Filled.Route, null, tint = GColors.C2Violeta, modifier = Modifier.align(Alignment.Center).size(48.dp))
+        Box(Modifier.weight(if (fotos.isEmpty()) 1f else 1.15f).fillMaxHeight()) {
+            if (p.puntos.size >= 2) com.gacelas.ui.components.MapaEsquemaC2(p.puntos.map { it.lat to it.lng }, Modifier.fillMaxSize(), marcadores = listOf(p.puntos.first().let { it.lat to it.lng }), grosor = 3.dp)
+            else Icon(Icons.Filled.Route, null, tint = GColors.C2Violeta, modifier = Modifier.align(Alignment.Center).size(48.dp))
             Text("RUTA", style = GType.labelMd.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary, modifier = Modifier.align(Alignment.BottomStart).padding(10.dp))
         }
         if (fotos.isNotEmpty()) Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(2.dp)) {

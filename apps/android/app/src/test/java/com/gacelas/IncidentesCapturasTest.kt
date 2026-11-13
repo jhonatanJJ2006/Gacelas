@@ -9,6 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import com.gacelas.ui.theme.GColors
@@ -33,12 +35,13 @@ class IncidentesCapturasTest {
         compose.setContent {
             GacelasTheme {
                 Column(Modifier.fillMaxSize().background(GColors.C2Bg).padding(16.dp)) {
-                    com.gacelas.seguridad.ui.TarjetaSeguridad("ruta-ejemplo")
+                    // Datos inyectados por la prueba: la app nunca muestra datos de ejemplo.
+                    com.gacelas.seguridad.ui.TarjetaSeguridad("ruta-ejemplo", inicial = com.gacelas.seguridad.domain.Incidentes.EJEMPLO.copy(ejemplo = false))
                 }
             }
         }
         compose.onNodeWithText("Seguridad de la zona").assertExists()
-        compose.onNodeWithText("EJEMPLO").assertExists()
+        compose.onAllNodesWithText("EJEMPLO").assertCountEquals(0)
         captureScreenRoboImage("$dir/incidentes/android-tarjeta-seguridad.png")
     }
 

@@ -128,15 +128,15 @@ fun TextoAjustableC2(texto: String, style: androidx.compose.ui.text.TextStyle, c
 /** Opcion en tarjeta (Actividad, Objetivo): titulo y detalle, borde violeta si esta elegida. */
 @Composable
 fun OpcionTarjetaC2(titulo: String, detalle: String, elegida: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, tag: String? = null) {
-    val forma = RoundedCornerShape(8.dp)
+    val forma = RoundedCornerShape(16.dp)
     Column(
-        modifier.clip(forma).background(if (elegida) GColors.Primary.copy(alpha = 0.22f) else GColors.C2S2)
-            .border(1.dp, if (elegida) GColors.C2Violeta else GColors.C2Linea, forma)
+        modifier.clip(forma).then(if (elegida) Modifier.background(GradienteC2) else Modifier.background(Color.White.copy(alpha = 0.06f)))
+            .border(1.dp, if (elegida) Color.White.copy(alpha = 0.5f) else Color.White.copy(alpha = 0.1f), forma)
             .clickable(role = Role.RadioButton, onClick = onClick).semantics { selected = elegida }
             .padding(horizontal = 8.dp, vertical = 8.dp).then(if (tag != null) Modifier.testTag(tag) else Modifier),
     ) {
-        TextoAjustableC2(titulo, GType.labelLg.copy(fontWeight = FontWeight.Bold), if (elegida) GColors.C2Violeta else GColors.TextPrimary)
-        Text(detalle, style = GType.bodySm, color = GColors.C2Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        TextoAjustableC2(titulo, GType.labelLg.copy(fontWeight = FontWeight.Bold), Color.White)
+        Text(detalle, style = GType.bodySm, color = if (elegida) Color.White.copy(alpha = 0.85f) else GColors.C2Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -173,10 +173,10 @@ fun spAcotado(valor: Float, maximo: Float = 1.15f): androidx.compose.ui.unit.Tex
 
 @Composable
 fun CeldaCifraC2(d: DatoCifra, modifier: Modifier = Modifier, tamano: Int = 20) {
-    val forma = RoundedCornerShape(8.dp)
-    Column(modifier.clip(forma).background(GColors.C2Card).border(1.dp, GColors.C2Linea, forma).padding(horizontal = 9.dp, vertical = 7.dp)
+    val forma = RoundedCornerShape(16.dp)
+    Column(modifier.clip(forma).background(Color.White.copy(alpha = 0.06f)).border(1.dp, Color.White.copy(alpha = 0.09f), forma).padding(horizontal = 10.dp, vertical = 8.dp)
         .semantics(mergeDescendants = true) {}) {
-        Text(d.etiqueta.uppercase(), style = GType.labelMd.copy(fontSize = spAcotado(9.5f), fontWeight = FontWeight.ExtraBold, letterSpacing = 0.02.em), color = GColors.C2Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        TextoAjustableC2(d.etiqueta.uppercase(), GType.labelMd.copy(fontSize = spAcotado(9.5f), fontWeight = FontWeight.ExtraBold, letterSpacing = 0.02.em), GColors.C2Muted, minimo = 0.6f)
         CifraC2(d.valor, d.unidad, color = d.color, tamano = tamano)
     }
 }
@@ -188,7 +188,7 @@ fun TarjetaSeccionC2(
     padding: Dp = 14.dp, content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
-        modifier.fillMaxWidth().clip(FormaC2).background(GColors.C2Card).border(1.dp, GColors.C2Linea, FormaC2).padding(padding)
+        modifier.fillMaxWidth().clip(Tablero.FormaWidget).background(Tablero.FondoWidget).border(1.dp, Tablero.WidgetBorde, Tablero.FormaWidget).padding(padding)
             .then(if (tag != null) Modifier.testTag(tag) else Modifier),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -215,9 +215,9 @@ fun BarraProgresoC2(progreso: Float, modifier: Modifier = Modifier, alto: Dp = 6
  */
 @Composable
 fun HojaInferiorC2(modifier: Modifier = Modifier, borde: Color = GColors.C2Linea, tag: String = "hoja-inferior", content: @Composable ColumnScope.() -> Unit) {
-    val forma = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
+    val forma = Tablero.FormaHoja
     Column(
-        modifier.fillMaxWidth().clip(forma).background(GColors.C2Bg).border(1.dp, borde, forma)
+        modifier.fillMaxWidth().clip(forma).background(Tablero.FondoHoja).border(1.dp, if (borde == GColors.C2Linea) Color(0x40C084FC) else borde, forma)
             .navigationBarsPadding().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp).testTag(tag),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {

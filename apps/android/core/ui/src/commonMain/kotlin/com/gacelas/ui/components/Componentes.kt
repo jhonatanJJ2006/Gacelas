@@ -83,7 +83,8 @@ fun Pantalla(
     padding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val base = modifier.fillMaxSize().background(GColors.BgPrimary)
+    // Tablero: fondo morado nocturno con degradado en todas las pantallas.
+    val base = modifier.fillMaxSize().background(Tablero.Fondo)
     Column(
         modifier = (if (scroll) base.verticalScroll(rememberScrollState()) else base).padding(padding),
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -160,10 +161,12 @@ fun Tarjeta(
     padding: Dp = 16.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val shape = FormaC2
+    val shape = Tablero.FormaWidget
     val interaccion = remember { MutableInteractionSource() }
-    var m = (if (onClick != null) modifier.pulsacionC2(interaccion) else modifier).fillMaxWidth().clip(shape).background(fondo)
-    if (borde != null && borde != GColors.BorderSubtle) m = m.border(BorderStroke(1.dp, borde), shape)
+    var m = (if (onClick != null) modifier.pulsacionC2(interaccion) else modifier).fillMaxWidth().clip(shape)
+    // Tablero: la tarjeta por defecto es un widget de vidrio morado; un fondo explicito se respeta.
+    m = if (fondo == GColors.SurfaceContainer) m.background(Tablero.FondoWidget) else m.background(fondo)
+    m = if (borde != null && borde != GColors.BorderSubtle) m.border(BorderStroke(1.dp, borde), shape) else m.border(BorderStroke(1.dp, Tablero.WidgetBorde), shape)
     if (onClick != null) m = m.clickable(interaccion, androidx.compose.material3.ripple(), onClick = onClick)
     Column(m.padding(padding), verticalArrangement = Arrangement.spacedBy(8.dp), content = content)
 }
@@ -342,11 +345,11 @@ fun IconoCirculo(icono: ImageVector, fondo: Color, tint: Color, tamano: Dp = 48.
     }
 }
 
-/** Forma C2 de tarjeta: esquinas de 4 dp y corte diagonal abajo a la derecha. */
-val FormaC2: androidx.compose.ui.graphics.Shape = androidx.compose.foundation.shape.CutCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomEnd = 18.dp, bottomStart = 0.dp)
+/** Forma de tarjeta (direccion A "Tablero"): widget con esquinas de 20 dp. */
+val FormaC2: androidx.compose.ui.graphics.Shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp)
 
-/** Forma C2 de boton principal: paralelogramo con cortes diagonales. */
-val FormaBotonC2: androidx.compose.ui.graphics.Shape = androidx.compose.foundation.shape.CutCornerShape(topStart = 10.dp, bottomEnd = 10.dp)
+/** Forma de boton (direccion A "Tablero"): esquinas de 14 dp. */
+val FormaBotonC2: androidx.compose.ui.graphics.Shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
 
 /** Etiqueta C2: mayusculas, violeta, espaciado amplio. */
 @Composable

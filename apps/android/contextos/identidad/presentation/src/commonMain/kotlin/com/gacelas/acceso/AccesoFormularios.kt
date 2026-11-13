@@ -73,7 +73,7 @@ import com.gacelas.ui.theme.GType
 @Composable
 private fun PantallaAcceso(onAtras: (() -> Unit)?, content: @Composable ColumnScope.() -> Unit) {
     Column(
-        Modifier.fillMaxSize().background(GColors.BgPrimary).cerrarTecladoAlTocarFuera().statusBarsPadding().navigationBarsPadding()
+        Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo).cerrarTecladoAlTocarFuera().statusBarsPadding().navigationBarsPadding()
             .verticalScroll(rememberScrollState()),
     ) {
         if (onAtras != null) {

@@ -12,14 +12,14 @@ fun iconoNotificacion(tipo: com.gacelas.comunidad.domain.modelo.TipoNotificacion
 @Composable
 fun NotificacionesScreen(onAtras: () -> Unit, onAbrir: (Notificacion) -> Unit = {}) {
     val c = contenedor()
-    val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.notificacionesViewModel(MockData.notificaciones) }
+    val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.notificacionesViewModel(emptyList()) }
     NotificacionesContenido(vm, onAtras, onAbrir, extra = { com.gacelas.ajustes.ExtraNotificaciones() })
 }
 
-/** Notificaciones de la cuenta si hay servidor; si no, las de ejemplo. Se refrescan al mostrarse. */
+/** Notificaciones de la cuenta si hay servidor; sin servidor, ninguna (no se inventan). Se refrescan al mostrarse. */
 @Composable
 fun notificacionesBase(): androidx.compose.runtime.State<List<Notificacion>> {
-    val repo = contenedor().notificaciones ?: return androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(MockData.notificaciones) }
+    val repo = contenedor().notificaciones ?: return androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(emptyList<Notificacion>()) }
     androidx.compose.runtime.LaunchedEffect(repo) { repo.refrescar() }
     return repo.lista.collectAsState()
 }

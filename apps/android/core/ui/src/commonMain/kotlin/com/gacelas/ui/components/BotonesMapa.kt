@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,19 +26,25 @@ import com.gacelas.ui.theme.GColors
 @Composable
 fun BotonVolverMapa(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Box(
-        modifier.size(42.dp).clip(CircleShape).background(GColors.C2Card.copy(alpha = 0.95f)).border(1.dp, GColors.C2Linea, CircleShape)
+        modifier.size(48.dp).vidrioC2(RoundedCornerShape(16.dp))
             .clickable(onClickLabel = "Volver", role = Role.Button, onClick = onClick).testTag("boton-volver-mapa"),
         contentAlignment = Alignment.Center,
     ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = Color.White, modifier = Modifier.size(22.dp)) }
 }
 
-/** Boton lateral de reportar incidente: color de alerta C2 e icono de advertencia, para el borde derecho del mapa. */
+/** Boton lateral de reportar incidente (tablero): cuadro ambar con icono y la etiqueta REPORTAR debajo. */
 @Composable
 fun BotonReportarMapa(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val forma = RoundedCornerShape(6.dp)
-    Box(
-        modifier.size(42.dp).clip(forma).background(GColors.C2Peligro).border(1.dp, Color(0xFFF472B6).copy(alpha = 0.6f), forma)
-            .clickable(onClickLabel = "Reportar incidente", role = Role.Button, onClick = onClick).testTag("boton-reportar-incidente"),
-        contentAlignment = Alignment.Center,
-    ) { Icon(Icons.Filled.Warning, "Reportar incidente", tint = Color.White, modifier = Modifier.size(22.dp)) }
+    val forma = RoundedCornerShape(18.dp)
+    androidx.compose.foundation.layout.Column(
+        modifier.clickable(onClickLabel = "Reportar incidente", role = Role.Button, onClick = onClick).testTag("boton-reportar-incidente"),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            Modifier.size(58.dp).clip(forma).background(Tablero.AmbarFondo).border(2.dp, Color(0xFFFBBF24).copy(alpha = 0.7f), forma),
+            contentAlignment = Alignment.Center,
+        ) { Icon(Icons.Filled.Warning, "Reportar incidente", tint = Color.White, modifier = Modifier.size(26.dp)) }
+        androidx.compose.material3.Text("REPORTAR", style = com.gacelas.ui.theme.GType.labelMd.copy(fontSize = spAcotado(9.5f, 1.05f), fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold),
+            color = Color(0xFFFBBF24), maxLines = 1, softWrap = false, modifier = Modifier.padding(top = 3.dp))
+    }
 }

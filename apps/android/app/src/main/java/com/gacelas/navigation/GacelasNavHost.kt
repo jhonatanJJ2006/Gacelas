@@ -163,10 +163,18 @@ private fun NavGraphBuilder.conBarra(nav: NavHostController, ruta: String, conte
 
 private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
     conBarra(nav, Destinos.INICIO) {
-        InicioScreen(onCorrer = { nav.ir(Destinos.CORRER) }, onEventos = { nav.ir(Destinos.EVENTOS) }, onEvento = { nav.ir(Destinos.detalleEvento(it)) }, onComunidad = { nav.irAPestana(Destinos.COMUNIDAD) }, onRutas = { nav.irAPestana(Destinos.RUTAS) }, onRuta = { nav.ir(Destinos.detalleRuta(it)) })
+        InicioScreen(
+            onCorrer = { nav.ir(Destinos.CORRER) }, onEventos = { nav.ir(Destinos.EVENTOS) }, onEvento = { nav.ir(Destinos.detalleEvento(it)) },
+            onComunidad = { nav.irAPestana(Destinos.COMUNIDAD) }, onRutas = { nav.irAPestana(Destinos.RUTAS) }, onRuta = { nav.ir(Destinos.detalleRuta(it)) },
+            onBuscar = { nav.ir(Destinos.BUSCADOR_RUTAS) }, onNotificaciones = { nav.ir(Destinos.NOTIFICACIONES) },
+            onProgreso = { nav.irAPestana(Destinos.PERFIL) }, onMapaVivo = { nav.ir(Destinos.MAPA_VIVO) },
+        )
     }
     conBarra(nav, Destinos.RUTAS) {
-        ListaRutasScreen(onBuscar = { nav.ir(Destinos.BUSCADOR_RUTAS) }, onRuta = { nav.ir(Destinos.detalleRuta(it)) }, onDibujar = { nav.ir(Destinos.CREAR_RUTA) })
+        ListaRutasScreen(
+            onBuscar = { nav.ir(Destinos.BUSCADOR_RUTAS) }, onRuta = { nav.ir(Destinos.detalleRuta(it)) }, onDibujar = { nav.ir(Destinos.CREAR_RUTA) },
+            onAtras = { nav.irAPestana(Destinos.INICIO) }, onCorrerRuta = { nav.ir(Destinos.BUSCADOR_RUTAS) },
+        )
     }
     conBarra(nav, Destinos.COMUNIDAD) { FeedScreen(onEventos = { nav.ir(Destinos.EVENTOS) }, onEnVivo = { nav.ir(Destinos.EN_VIVO) }, onClubes = { nav.ir(Destinos.CLUBES) }, onEvento = { nav.ir(Destinos.detalleEvento(it)) }) }
     conBarra(nav, Destinos.EVENTOS) { EventosScreen(onEvento = { nav.ir(Destinos.detalleEvento(it)) }, onClubes = { nav.ir(Destinos.CLUBES) }) }

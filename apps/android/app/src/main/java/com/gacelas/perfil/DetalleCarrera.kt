@@ -36,7 +36,6 @@ import com.gacelas.ui.components.EncabezadoAtras
 import com.gacelas.ui.components.MapaGacelas
 import com.gacelas.ui.components.Metrica
 import com.gacelas.ui.components.Tarjeta
-import com.gacelas.correr.TrazadoRuta
 import com.gacelas.ui.components.aLatLng
 import com.gacelas.ui.contenedor
 import com.gacelas.ui.theme.GColors
@@ -60,8 +59,9 @@ fun DetalleCarreraScreen(id: String, onAtras: () -> Unit) {
         c = c, fecha = c?.let { SimpleDateFormat("EEEE d 'de' MMMM, HH:mm", Locale("es", "EC")).format(Date(it.inicioMs)) }.orEmpty(), m = m,
         onAtras = onAtras, onEliminar = { vm.eliminar(); onAtras() },
         mapa = { carrera ->
-            MapaGacelas(carrera.puntos.aLatLng(), Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(16.dp))) {
-                TrazadoRuta(carrera.puntos, Modifier.fillMaxWidth().height(240.dp))
+            MapaGacelas(carrera.puntos.aLatLng(), Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(20.dp))) {
+                com.gacelas.ui.components.MapaEsquemaC2(carrera.puntos.map { it.lat to it.lng }, Modifier.fillMaxWidth().height(240.dp),
+                    marcadores = listOfNotNull(carrera.puntos.firstOrNull()?.let { it.lat to it.lng }))
             }
         },
     )

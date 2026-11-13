@@ -7,18 +7,18 @@ import com.gacelas.seguridad.domain.SeguridadZona
 import com.gacelas.seguridad.domain.TipoIncidente
 
 /**
- * Seguridad de una ruta por dia de la semana. Sin servidor se muestran los datos de ejemplo;
- * con servidor, null significa "sin datos" (nunca se presenta como seguro).
+ * Seguridad de una ruta por dia de la semana. Sin servidor no hay datos (la tarjeta se oculta);
+ * con servidor, null significa "sin datos" (nunca se presenta como seguro). Nunca datos de ejemplo.
  */
 class ConsultarSeguridadDeRuta(private val repo: IncidentesRepositorio?) {
     suspend operator fun invoke(rutaId: String): SeguridadZona? =
-        if (repo == null) Incidentes.EJEMPLO else repo.seguridadZona(rutaId)
+        repo?.seguridadZona(rutaId)
 }
 
-/** Incidentes recientes reportados por corredores (o los de ejemplo sin servidor). */
+/** Incidentes recientes reportados por corredores (lista vacia sin servidor). */
 class VerIncidentesRecientes(private val repo: IncidentesRepositorio?) {
     suspend operator fun invoke(ahoraMs: Long): List<IncidentePublico> =
-        repo?.recientes() ?: Incidentes.ejemplos(ahoraMs)
+        repo?.recientes() ?: emptyList()
 }
 
 /** Datos de un reporte de incidente; las fotos llegan ya sin EXIF. */

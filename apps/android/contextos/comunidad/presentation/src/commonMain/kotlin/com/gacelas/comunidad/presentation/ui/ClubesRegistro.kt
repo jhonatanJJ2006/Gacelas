@@ -70,11 +70,13 @@ import com.gacelas.ui.theme.GType
 typealias SelectorPunto = @Composable (lat: Double?, lng: Double?, onElegir: (Double, Double) -> Unit) -> Unit
 
 @Composable
-internal fun SinServidorClubes() = Text("Los grupos y comunidades necesitan conexión con el servidor.", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.padding(16.dp))
+internal fun SinServidorClubes() = com.gacelas.ui.components.WidgetC2("Clubes de Loja", Modifier.padding(16.dp).fillMaxWidth(), tag = "clubes-sin-servidor") {
+    Text("Los grupos y comunidades necesitan conexión con el servidor.", style = GType.bodyMd, color = GColors.TextSecondary)
+}
 
 @Composable
 private fun Chip(texto: String, activo: Boolean, modifier: Modifier = Modifier, compacto: Boolean = false, onClick: () -> Unit) {
-    val forma = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp)
+    val forma = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
     Box(
         modifier.clip(forma).background(if (activo) GColors.Primary.copy(alpha = 0.35f) else GColors.SurfaceContainer)
             .border(1.dp, if (activo) GColors.Primary400 else GColors.BorderSubtle, forma).clickable(onClick = onClick).padding(horizontal = if (compacto) 2.dp else 12.dp, vertical = 8.dp),
@@ -121,7 +123,7 @@ fun ClubesContenido(
         return
     }
     val esGrupo = tipo == TipoClub.grupo
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
+    Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         // El + vive dentro de la barra (respeta la barra de estado) en lugar de flotar sobre ella.
         EncabezadoAtras("Grupos y comunidades", onAtras, accion = if (!conServidor) null else {
             {
@@ -307,7 +309,7 @@ fun FormularioClubContenido(
     textoGuardar: String = "Registrar",
 ) {
     var b by remember { mutableStateOf(inicial) }
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
+    Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         EncabezadoAtras(titulo, onCancelar)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().imePadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             if (permitirTipo) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

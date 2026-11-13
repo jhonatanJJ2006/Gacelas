@@ -17,13 +17,18 @@ data class ClimaActual(
     val lugar: String,
     /** Momento de la consulta (epoch ms). */
     val consultadoMs: Long,
+    /** Pronostico por hora de las proximas horas (widget "Clima para correr"); vacio lo oculta. */
+    val horas: List<HoraClima> = emptyList(),
 )
+
+/** Una hora del pronostico: hora local (0-23), grados redondeados y codigo WMO. */
+data class HoraClima(val hora: Int, val temperatura: Int, val codigoWmo: Int)
 
 /** Coordenadas (grados decimales). */
 data class Coordenadas(val lat: Double, val lng: Double)
 
 /** Respuesta cruda de la fuente: temperatura, codigo WMO y si es de dia. */
-data class LecturaClima(val temperatura: Double, val codigoWmo: Int, val esDeDia: Boolean)
+data class LecturaClima(val temperatura: Double, val codigoWmo: Int, val esDeDia: Boolean, val horas: List<HoraClima> = emptyList())
 
 /** Puerto de la fuente de datos (Open-Meteo en infraestructura). */
 fun interface FuenteClima {
@@ -46,6 +51,21 @@ interface ClimaRepositorio {
 }
 
 object ReglasClima {
+    /**
+     * Mejor hora para correr entre las del pronostico: sin lluvia ni tormenta (WMO < 51) y con la
+     * temperatura mas cercana a 13 grados; null si ninguna sirve.
+     */
+    fun mejorHora(horas: List<HoraClima>): HoraClima? =
+        horas.filter { it.codigoWmo < 51 }.minByOrNull { kotlin.math.abs(it.temperatura - 13) }
+
+    /** Icono corto por codigo WMO para el widget: sol, nube, lluvia o tormenta. */
+    fun tipo(codigo: Int): String = when {
+        codigo <= 1 -> "sol"
+        codigo <= 48 -> "nube"
+        codigo < 95 -> "lluvia"
+        else -> "tormenta"
+    }
+
     /** Respaldo cuando no hay permiso o ubicacion. */
     val LOJA = Coordenadas(-3.9931, -79.2042)
     const val NOMBRE_LOJA = "Loja"
@@ -95,5 +115,5 @@ object ReglasClima {
     }
 
     fun aClima(l: LecturaClima, lugar: String, ahoraMs: Long) =
-        ClimaActual(l.temperatura.roundToInt(), descripcion(l.codigoWmo, l.esDeDia), lugar, ahoraMs)
+        ClimaActual(l.temperatura.roundToInt(), descripcion(l.codigoWmo, l.esDeDia), lugar, ahoraMs, l.horas)
 }

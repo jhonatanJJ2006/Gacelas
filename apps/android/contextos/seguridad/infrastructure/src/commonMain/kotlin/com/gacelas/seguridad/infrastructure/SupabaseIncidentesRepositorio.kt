@@ -23,6 +23,22 @@ class SupabaseIncidentesRepositorio(private val backend: Backend) : IncidentesRe
         Incidentes.leerZona(backend.rpc("seguridad_zona_ruta", JsonObject(mapOf("p_ruta_id" to JsonPrimitive(rutaId)))))
     }.getOrNull()
 
+    override suspend fun resumenZona(): com.gacelas.seguridad.domain.ResumenZona? = runCatching {
+        (backend.rpc("resumen_seguridad_zona", JsonObject(emptyMap())) as? JsonObject)?.let(com.gacelas.seguridad.domain.ResumenZona::desdeJson)
+    }.getOrNull()
+
+    override suspend fun seguridadRutas(): Map<String, com.gacelas.seguridad.domain.SeguridadRuta> = runCatching {
+        (backend.rpc("seguridad_rutas", JsonObject(emptyMap())) as? JsonArray).orEmpty().mapNotNull { e ->
+            val f = e as? JsonObject ?: return@mapNotNull null
+            val id = (f["route_id"] as? JsonPrimitive)?.content ?: return@mapNotNull null
+            id to com.gacelas.seguridad.domain.SeguridadRuta(
+                com.gacelas.seguridad.domain.NivelSeguridad.deTexto((f["nivel"] as? JsonPrimitive)?.content),
+                (f["reportes_7d"] as? JsonPrimitive)?.content?.toIntOrNull() ?: 0,
+                (f["puntaje"] as? JsonPrimitive)?.takeIf { it !is kotlinx.serialization.json.JsonNull }?.content?.toIntOrNull(),
+            )
+        }.toMap()
+    }.getOrDefault(emptyMap())
+
     override suspend fun recientes(): List<IncidentePublico> = runCatching {
         backend.select("incidentes_publicos", emptyMap(), "ocurrido_hora", descendente = true).mapNotNull { f ->
             IncidentePublico(

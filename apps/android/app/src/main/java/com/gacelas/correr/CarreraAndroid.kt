@@ -39,12 +39,8 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
         onAtras = { confirmar = true },
         extraCabecera = {
             // Reportar va al costado del mapa, debajo de los grupos; el SOS queda aparte (abajo a la izquierda).
-            androidx.compose.foundation.layout.Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
-                com.gacelas.seguridad.ui.BotonReportarIncidente(compacto = true) {
-                    estado.puntos.lastOrNull()?.let { it.lat to it.lng } ?: com.gacelas.rutas.ultimaUbicacion(context)
-                }
-                androidx.compose.material3.Text("REPORTAR", fontSize = androidx.compose.ui.unit.TextUnit(9f, androidx.compose.ui.unit.TextUnitType.Sp),
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = androidx.compose.ui.graphics.Color(0xFFF59E0B), maxLines = 1, softWrap = false)
+            com.gacelas.seguridad.ui.BotonReportarIncidente(compacto = true) {
+                estado.puntos.lastOrNull()?.let { it.lat to it.lng } ?: com.gacelas.rutas.ultimaUbicacion(context)
             }
         },
         sos = { com.gacelas.seguridad.BotonSOS(estado.puntos.lastOrNull()?.let { it.lat to it.lng }) },
@@ -64,7 +60,8 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
             ) { }
             // Sin mapa configurado se ve el trazo, pero con los mismos controles al costado.
             else androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
-                TrazadoRuta(estado.puntos, Modifier.fillMaxSize())
+                com.gacelas.ui.components.MapaEsquemaC2(estado.puntos.map { it.lat to it.lng }, Modifier.fillMaxSize(), yo = estado.puntos.lastOrNull()?.let { it.lat to it.lng }, grosor = 5.dp,
+                    margenArriba = 70.dp, margenAbajo = 400.dp)
                 controles({}, {}, 0f, true)
             }
         },

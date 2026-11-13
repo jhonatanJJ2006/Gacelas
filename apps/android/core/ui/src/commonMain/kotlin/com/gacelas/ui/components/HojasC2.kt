@@ -157,12 +157,12 @@ fun HojaC2(
             val altoMax = maxHeight - 24.dp
             Column(
                 modifier.fillMaxWidth().heightIn(max = altoMax)
-                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)).background(fondo)
-                    .then(if (borde != null) Modifier.border(2.dp, borde, RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)) else Modifier)
+                    .clip(Tablero.FormaHoja).then(if (fondo == GColors.C2Bg) Modifier.background(Tablero.FondoHoja) else Modifier.background(fondo))
+                    .border(if (borde != null) 2.dp else 1.dp, borde ?: Color(0x40C084FC), Tablero.FormaHoja)
                     .clickable(remember { MutableInteractionSource() }, null) {}.testTag("hoja-c2"),
             ) {
                 Box(Modifier.fillMaxWidth().padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
-                    Box(Modifier.width(40.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(GColors.C2Linea))
+                    Box(Modifier.width(40.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(alpha = 0.25f)))
                 }
                 contenido()
             }

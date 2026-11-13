@@ -52,7 +52,7 @@ fun PermisosUbicacionScreen(onPermitir: () -> Unit, onMasTarde: () -> Unit) {
         onPermitir()
     }
     Column(
-        Modifier.fillMaxSize().background(GColors.BgPrimary).statusBarsPadding().navigationBarsPadding()
+        Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo).statusBarsPadding().navigationBarsPadding()
             .verticalScroll(rememberScrollState()).padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp),
