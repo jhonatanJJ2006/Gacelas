@@ -95,6 +95,8 @@ export interface Ajustes {
   compartirEnVivo: boolean | null
   /** Contactos de emergencia para el boton SOS (maximo 3; se sincronizan en user_settings.prefs). */
   contactosEmergencia: ContactoEmergencia[]
+  /** Alertas al acercarse a reportes de inseguridad durante la carrera (prefs.alertasZona, igual en Android). */
+  alertasZona: boolean
 }
 
 /** Contacto de confianza que recibe el enlace del SOS por SMS o WhatsApp. */
@@ -138,4 +140,5 @@ export const AJUSTES_POR_DEFECTO: Ajustes = {
   metaKmSemana: 25,
   compartirEnVivo: null,
   contactosEmergencia: [],
+  alertasZona: true,
 }

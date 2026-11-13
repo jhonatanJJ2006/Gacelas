@@ -25,6 +25,14 @@ class Avisos(context: Context) {
         if (vibracion) vibrar(400)
     }
 
+    /** Dos pulsos largos: alerta de zona durante la carrera. */
+    fun alertaZona() {
+        val v = vibrador ?: return
+        if (Build.VERSION.SDK_INT >= 26) v.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 350, 180, 350), -1))
+        else @Suppress("DEPRECATION") v.vibrate(longArrayOf(0, 350, 180, 350), -1)
+        tono?.startTone(ToneGenerator.TONE_PROP_ACK, 250)
+    }
+
     private fun vibrar(ms: Long) {
         val v = vibrador ?: return
         if (Build.VERSION.SDK_INT >= 26) v.vibrate(VibrationEffect.createOneShot(ms, VibrationEffect.DEFAULT_AMPLITUDE))

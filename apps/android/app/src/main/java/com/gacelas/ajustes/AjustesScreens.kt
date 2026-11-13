@@ -247,6 +247,10 @@ fun PrivacidadUbicacionScreen(onAtras: () -> Unit, onLegal: (Boolean) -> Unit = 
                 guardar { it.copy(compartirEnVivo = v) }
                 scopePriv.launch { contenedorPriv.consentimientos.registrar(com.gacelas.legal.TipoConsentimiento.UbicacionVisible, v) }
             }
+            Divisor()
+            FilaC2("Alertas de zona", "Vibra y avisa al acercarte a menos de 200 m de un reporte de inseguridad reciente", a.alertasZona) { v ->
+                guardar { it.copy(alertasZona = v) }
+            }
         }
         com.gacelas.seguridad.ContactosEmergenciaC2(a.contactosEmergencia) { lista -> guardar { it.copy(contactosEmergencia = lista) } }
         com.gacelas.legal.SeccionConsentimientos(onLegal, onCuentaEliminada)

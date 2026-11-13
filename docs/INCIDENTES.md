@@ -52,3 +52,12 @@ La sección "Reportes de incidentes" de la Política de privacidad explica qué 
 ## Estado en producción
 
 Desde el 25 de octubre de 2026 están aplicadas las migraciones 030 y 031, existe el bucket público `incidentes` con sus políticas de subida y borrado, y la Edge Function `importar-ecu911` está desplegada. La función lee XLSX con `npm:xlsx` porque el empaquetador de Supabase no acepta imports desde cdn.sheetjs.com.
+
+## Alertas de zona durante la carrera (0.9.14)
+
+Ticket 86e3uf09b (N-11 y VI-08). Mientras se corre, la app lee los reportes de `incidentes_publicos` al empezar y cada 5 minutos. Con cada punto GPS compara la posicion con los reportes de los ultimos 7 dias y, si hay uno a 200 m o menos, avisa una sola vez por reporte: vibracion en dos pulsos y un aviso arriba ("Atención: reporte de robo o asalto a 150 m", con "(verificado)" si lo esta).
+
+- Android: `AlertasZona` (dominio de seguridad, comun) y `AlertasZonaCarrera` en la pantalla de la carrera. Aviso con `AvisosC2` y tono corto.
+- Web: `alertasNuevas` (`src/contexts/seguridad/domain/alertasZona.ts`) y `AlertaZona` en `CarreraEnCurso`: banner `role="alert"` durante 8 s y `navigator.vibrate` donde exista.
+- Se apagan en Ajustes, Privacidad y ubicacion, fila "Alertas de zona" (`prefs.alertasZona`, por defecto activadas, compartido entre web y Android).
+- Limite conocido: el aviso sale con la app abierta en la carrera. Con la pantalla apagada no se notifica (haria falta moverlo al servicio de ubicacion en segundo plano).

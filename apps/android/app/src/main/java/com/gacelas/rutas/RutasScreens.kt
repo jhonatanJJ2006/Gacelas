@@ -108,7 +108,11 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
     val q by vm.consulta.collectAsState()
     val lista by vm.lista.collectAsState()
     val perfilSesion by com.gacelas.ui.sesionState()
+    val remotas by (repo?.rutas ?: remember { kotlinx.coroutines.flow.MutableStateFlow(emptyList()) }).collectAsState()
+    var leidas by remember { mutableStateOf(false) }
+    LaunchedEffect(repo) { if (repo != null && remotas == null) runCatching { repo.refrescar() }; leidas = true }
     ListaRutasContenido(
+        cargando = repo != null && remotas == null && !leidas && q.pestana == com.gacelas.rutas.domain.modelo.PestanaRutas.Explorar,
         lista = lista, pestana = q.pestana, onPestana = vm::pestana, guardadas = guardadas,
         consulta = q.texto, onConsulta = vm::buscar, filtros = q.filtros, onFiltros = vm::filtrar,
         cerca = q.cerca,
@@ -132,6 +136,7 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
 
 @Composable
 fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
+    val context = LocalContext.current
     var consulta by rememberSaveable { mutableStateOf("") }
     val c = contenedor()
     val remotas by (c.explorar?.rutas ?: remember { kotlinx.coroutines.flow.MutableStateFlow(null) }).collectAsState()
@@ -216,7 +221,12 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
                 }
                 val guardada = actual?.id in guardadas
                 IconButton(
-                    onClick = { actual?.let { r -> scope.launch { c.rutas.alternarGuardada(r.id) } } },
+                    onClick = {
+                        actual?.let { r ->
+                            scope.launch { c.rutas.alternarGuardada(r.id) }
+                            context.aviso(if (guardada) "Ruta quitada de guardadas" else "Ruta guardada")
+                        }
+                    },
                     modifier = Modifier.clip(CircleShape).background(GColors.BgSecondary).testTag("guardar-ruta"),
                 ) { Icon(if (guardada) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, if (guardada) "Quitar de guardadas" else "Guardar ruta", tint = GColors.Primary500) }
             }

@@ -103,7 +103,13 @@ fun EventosScreen(onEvento: (String) -> Unit, onClubes: () -> Unit = {}) {
     val eventos = if (c.feed != null) creados else unidos
     val vm = viewModel { c.eventosViewModel() }
     val clubId = remember { EventoDeClub.id.also { EventoDeClub.id = null } }
-    EventosContenido(vm, eventos, inscritos, conClubes = c.clubes != null, clubId = clubId, onEvento = onEvento, onClubes = onClubes, onAviso = { context.aviso(it) })
+    // Esqueleto mientras se leen los eventos de la base al abrir (solo con servidor y lista vacia).
+    var leyendo by remember { mutableStateOf(c.feed != null) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        runCatching { (c.eventos as? com.gacelas.comunidad.infrastructure.SupabaseEventosRepository)?.descargar() }
+        leyendo = false
+    }
+    EventosContenido(vm, eventos, inscritos, conClubes = c.clubes != null, clubId = clubId, onEvento = onEvento, onClubes = onClubes, onAviso = { context.aviso(it) }, cargando = leyendo)
 }
 
 @Composable

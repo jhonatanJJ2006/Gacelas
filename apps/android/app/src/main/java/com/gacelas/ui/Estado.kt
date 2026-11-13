@@ -7,6 +7,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalContext
 import com.gacelas.Contenedor
 import com.gacelas.GacelasApp
@@ -82,3 +84,33 @@ fun socialState(): State<Social> {
         value = Social(pubs.filter { !it.propia && it.autorId != null && it.autorId in sig }.take(3), f.seguidores(), sig.size)
     }
 }
+
+/**
+ * Aviso de carreras sin subir (Inicio y Perfil): cuenta la cola de SupabaseCarrerasRepository y
+ * desaparece cuando se sincroniza. "Subir ahora" reintenta y avisa el resultado.
+ */
+@Composable
+fun AvisoCarrerasPendientes(modifier: androidx.compose.ui.Modifier = androidx.compose.ui.Modifier) {
+    val c = contenedor()
+    val pendientes by c.carrerasPendientes.collectAsState(initial = emptySet())
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    var subiendo by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    com.gacelas.ui.components.AvisoSincronizacionC2(pendientes.size, subiendo, modifier = modifier, onSubir = {
+        subiendo = true
+        scope.launch {
+            val quedan = runCatching { c.subirPendientes() }.getOrDefault(-1)
+            subiendo = false
+            com.gacelas.ui.components.AvisosC2.mostrar(
+                when {
+                    quedan == 0 -> "Carreras subidas"
+                    else -> "Sin conexión. Se subirán solas cuando vuelva la red"
+                },
+                error = quedan != 0,
+            )
+        }
+    })
+}
+
+/** Ids de carreras que aun no se subieron (etiqueta "Sin subir" en la lista del perfil). */
+@Composable
+fun carrerasPendientesState(): State<Set<String>> = contenedor().carrerasPendientes.collectAsState(initial = emptySet())

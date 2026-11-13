@@ -81,6 +81,9 @@ class FeedViewModel(
     val siguiendo: StateFlow<Set<String>> = _siguiendo.asStateFlow()
     private val _cargando = MutableStateFlow(false)
     val cargando: StateFlow<Boolean> = _cargando.asStateFlow()
+    private val _primeraCarga = MutableStateFlow(feed != null)
+    /** true hasta que termina la primera lectura del feed remoto (muestra el esqueleto). */
+    val primeraCarga: StateFlow<Boolean> = _primeraCarga.asStateFlow()
     /** true si el feed viene de la base (sin ejemplos). */
     val social: Boolean get() = remotas.value != null
 
@@ -108,6 +111,7 @@ class FeedViewModel(
             f.publicaciones()?.let { remotas.value = it }
             _siguiendo.value = f.siguiendo()
             _cargando.value = false
+            _primeraCarga.value = false
         }
     }
 

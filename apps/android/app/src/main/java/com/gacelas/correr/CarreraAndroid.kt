@@ -62,6 +62,7 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
         },
     )
     CompartirEnVivoAutomatico(tracker)
+    AlertasZonaCarrera(tracker)
     if (confirmar) {
         DialogoDescartarCarrera(onConfirmar = {
             confirmar = false

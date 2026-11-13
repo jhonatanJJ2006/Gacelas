@@ -17,6 +17,7 @@ import com.gacelas.data.remoto.texto
 import com.gacelas.shared.redondear
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.JsonObject
@@ -66,6 +67,9 @@ class SupabaseCarrerasRepository(
     private val cola = ValorJson(store, "carreras_pendientes", ListSerializer(OperacionPendiente.serializer()), emptyList())
     override val carreras: Flow<List<Carrera>> = cache.flujo
     val pendientes: Flow<List<OperacionPendiente>> = cola.flujo
+
+    /** Ids de carreras guardadas en el celular que aun no estan en el servidor. */
+    val pendientesDeSubir: Flow<Set<String>> = cola.flujo.map { ops -> ops.mapNotNull { o -> o.carrera?.id.takeIf { o.tipo == "guardar" } }.toSet() }
 
     private suspend fun subir(op: OperacionPendiente, uid: String) {
         if (op.tipo == "eliminar") {

@@ -78,8 +78,8 @@ fun MisReportesContenido(
             }
         }
         if (r == null) {
-            Box(Modifier.weight(1f).fillMaxWidth().testTag("reporte-cargando"), contentAlignment = Alignment.Center) {
-                Text("Calculando tu reporte...", style = GType.bodyMd, color = GColors.C2Muted)
+            Box(Modifier.weight(1f).fillMaxWidth().testTag("reporte-cargando")) {
+                com.gacelas.ui.components.EsqueletoPantalla(etiqueta = "Calculando tu reporte")
             }
             return@Column
         }

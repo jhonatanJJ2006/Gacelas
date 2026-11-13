@@ -58,6 +58,8 @@ data class Ajustes(
     val compartirEnVivo: Boolean? = null,
     /** Contactos que reciben el enlace del SOS (maximo 3). Mismo campo que la web (prefs.contactosEmergencia). */
     val contactosEmergencia: List<ContactoEmergencia> = emptyList(),
+    /** Alertas al acercarse a reportes de inseguridad durante la carrera (prefs.alertasZona, igual en la web). */
+    val alertasZona: Boolean = true,
 )
 
 /** Contacto de confianza para el boton SOS. */

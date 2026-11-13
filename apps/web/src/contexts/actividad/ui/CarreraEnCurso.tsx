@@ -15,7 +15,7 @@ import { TrazadoRuta } from '../../../shared/ui/TrazadoRuta'
 import { BotonTexto, Dialogo } from '../../../shared/ui/ui'
 import { useIdentidad } from '../../identidad/api'
 import { historial, registrarConsentimiento, vigente } from '../../legal/api'
-import { BotonSOS, HojaReportarIncidente, useSos } from '../../seguridad'
+import { AlertaZona, BotonSOS, HojaReportarIncidente, useSos } from '../../seguridad'
 import {
   dejarDeCompartir,
   empezarACompartir,
@@ -74,6 +74,7 @@ export function CarreraEnCurso() {
   }, [compartiendo, e.fase, ultimo, e.distanciaKm, e.segundos])
 
   const voz = useIdentidad((s) => s.ajustes.anunciosVoz)
+  const alertasZona = useIdentidad((s) => s.ajustes.alertasZona !== false)
   const actualizar = useIdentidad((s) => s.actualizarAjustes)
   const [bloqueo, setBloqueo] = useState(false)
   const altitud = (() => {
@@ -129,6 +130,7 @@ export function CarreraEnCurso() {
   )
   const modales = (
     <>
+      <AlertaZona posicion={ultimoGps} activa={alertasZona && e.fase === 'corriendo'} />
       <ModalC2
         abierto={modalFin}
         icono="flag"
