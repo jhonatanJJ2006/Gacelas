@@ -97,7 +97,37 @@ async function nombres(ids: string[]) {
   return new Map(filas.map((f) => [String(f.id), String(f.full_name || f.username || 'Corredor')]))
 }
 
+export interface KmGrupoSemana {
+  semana: string
+  km: number
+  corredores: number
+}
+
 export const clubes = {
+  /** Km por grupo y semana (RPC km_grupos, migracion 040). Vacio si falla o no hay servidor. */
+  async kmGrupos(semanas = 7): Promise<Map<string, KmGrupoSemana[]>> {
+    const c = obtenerSupabase()
+    const res = new Map<string, KmGrupoSemana[]>()
+    if (!c) return res
+    try {
+      const r = await c.rpc('km_grupos', { p_semanas: semanas })
+      if (r.error || !Array.isArray(r.data)) return res
+      for (const f of r.data as Fila[]) {
+        const id = String(f.club_id)
+        res.set(id, [
+          ...(res.get(id) ?? []),
+          {
+            semana: String(f.semana),
+            km: Number(f.km) || 0,
+            corredores: Number(f.corredores) || 0,
+          },
+        ])
+      }
+    } catch {
+      return res
+    }
+    return res
+  },
   disponible: () => obtenerSupabase() !== null,
   uid,
   async listar(tipo?: TipoClub): Promise<{ todos: Club[]; mios: Set<string> }> {

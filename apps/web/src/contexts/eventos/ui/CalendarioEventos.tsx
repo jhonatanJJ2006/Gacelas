@@ -27,7 +27,7 @@ export function CalendarioEventos({
   return (
     <section
       aria-label="Calendario de eventos"
-      className="bg-surface-container rounded-2xl p-4"
+      className="panel-c2 bg-c2-card border border-c2-linea p-4"
       data-testid="calendario"
     >
       <div className="flex items-center justify-between mb-3">

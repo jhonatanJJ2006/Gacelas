@@ -250,3 +250,32 @@ export function mensajeErrorClub(mensaje: string, tipo: TipoClub = 'grupo') {
   if (/limite|intenta mañana|lleno|no existe|no está disponible/i.test(mensaje)) return mensaje
   return mensaje || 'Algo salió mal'
 }
+
+/**
+ * Proxima salida del grupo segun sus dias (1 = lunes) y hora (HH:MM), en hora local. Null si el
+ * grupo no tiene dias. Si hoy toca y la hora aun no paso, es hoy.
+ */
+export function proximaSalida(dias: number[], hora: string | null, ahora = Date.now()) {
+  if (!dias.length) return null
+  const [h, m] = (hora ?? '00:00').split(':').map(Number)
+  for (let i = 0; i < 8; i++) {
+    const d = new Date(ahora)
+    d.setDate(d.getDate() + i)
+    d.setHours(h || 0, m || 0, 0, 0)
+    const dia = ((d.getDay() + 6) % 7) + 1
+    if (dias.includes(dia) && d.getTime() > ahora) return d.getTime()
+  }
+  return null
+}
+
+/** "Hoy 06:00", "Mañana 06:00" o "Sáb 15, 06:00". */
+export function textoSalida(ms: number, ahora = Date.now()) {
+  const d = new Date(ms)
+  const hoy = new Date(ahora)
+  hoy.setHours(0, 0, 0, 0)
+  const dif = Math.round((new Date(d).setHours(0, 0, 0, 0) - hoy.getTime()) / 86_400_000)
+  const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  if (dif === 0) return `Hoy ${hora}`
+  if (dif === 1) return `Mañana ${hora}`
+  return `${DIAS_CORTOS[(d.getDay() + 6) % 7]} ${d.getDate()}, ${hora}`
+}
