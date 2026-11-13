@@ -91,10 +91,16 @@ fun InicioContenido(
     onRutas: () -> Unit = {},
     /** Linea bajo la ruta (por que es segura) o, sin ruta, el motivo del estado vacio. */
     rutaSugeridaNota: String? = null,
-    /** Clima del chip; null (sin cache ni red, o cargando sin cache) muestra "LOJA --". */
+    /** Clima del chip; null (sin cache ni red, o cargando sin cache) oculta el chip. */
     clima: com.gacelas.clima.domain.ClimaActual? = null,
     /** Aviso de carreras sin subir (Android); vacio si no hay pendientes. */
     avisoPendientes: @Composable () -> Unit = {},
+    /** Meta semanal en km (ajustes); null oculta el aviso con anillo. */
+    metaKm: Int? = null,
+    /** Km de cada dia de esta semana (L a D) para las barras; vacio deja los dias marcados. */
+    kmPorDia: List<Double> = emptyList(),
+    /** Abre la ruta sugerida; null abre Rutas. */
+    onRuta: ((String) -> Unit)? = null,
 ) {
     Pantalla {
         // Encabezado C2: saludo en Anton, pildoras de clima, racha y nivel.
@@ -104,11 +110,9 @@ fun InicioContenido(
                 Text("Hola, $nombre".uppercase(), style = GType.headlineLg, color = GColors.TextPrimary)
                 // Chips .wx del Figma: clima, racha (borde menta) y nivel (degradado morado).
                 androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
-                    // Clima real (Open-Meteo); sin dato todavia muestra "--" en vez de un valor falso.
-                    ChipC2(
-                        clima?.lugar ?: com.gacelas.clima.domain.ReglasClima.NOMBRE_LOJA,
-                        clima?.let { "${it.temperatura} °C" } ?: "--",
-                        clima?.let { " ${it.descripcion}" } ?: "",
+                    // Clima real (Open-Meteo); sin dato el chip no se muestra (nunca "LOJA --" ni un valor falso).
+                    if (clima != null) ChipC2(
+                        clima.lugar, "${clima.temperatura} °C", " ${clima.descripcion}",
                         acento = Color(0xFF96CCFF), modifier = Modifier.entradaEscalonada(1).testTag("chip-clima"),
                     )
                     ChipC2("Racha", "${racha.diaria} " + if (racha.diaria == 1) "día" else "días", acento = GColors.C2Menta, borde = GColors.C2Menta, modifier = Modifier.entradaEscalonada(2).testTag("insignia-racha"))
@@ -128,15 +132,20 @@ fun InicioContenido(
             valorDer = "${Unidades.texto(reto?.km ?: semana.km, m, 1)} ${Unidades.etiquetaDistancia(m)}",
             onCorrer = onCorrer, margenLateral = 16.dp, corredor3D = corredor3D,
         )
-        Row(Modifier.entradaEscalonada(2).fillMaxWidth().clip(com.gacelas.ui.components.FormaC2).background(GColors.C2Card).padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-            MetricaC2("${semana.diasCorridos.size}", "Días")
-            MetricaC2(Unidades.texto(semana.km, m, 1), Unidades.etiquetaDistancia(m), color = GColors.C2Violeta)
-            MetricaC2(formatearRitmo(Unidades.ritmo(semana.ritmoSegKm, m)), Unidades.etiquetaRitmo(m), color = GColors.C2Menta)
+        // Debajo del hero (rediseno movil): tira de 4 cifras reales de la semana y la meta en km con anillo.
+        Box(Modifier.entradaEscalonada(2)) {
+            com.gacelas.ui.components.TiraCifrasC2(listOf(
+                com.gacelas.ui.components.DatoCifra("${semana.diasCorridos.size}", "", "Días"),
+                com.gacelas.ui.components.DatoCifra(Unidades.texto(semana.km, m, 1), Unidades.etiquetaDistancia(m), "Distancia", GColors.C2Violeta),
+                com.gacelas.ui.components.DatoCifra(formatearRitmo(Unidades.ritmo(semana.ritmoSegKm, m)), "", "Ritmo", GColors.C2Menta),
+                com.gacelas.ui.components.DatoCifra("+${totales.desnivelM}", "m", "Desnivel", GColors.C2Cielo),
+            ), tag = "inicio-cifras", tamano = 18)
         }
+        if (metaKm != null && metaKm > 0) Box(Modifier.entradaEscalonada(2)) { MetaKmC2(metaKm, semana.km, m) }
         // Secciones escalonadas (45 ms entre cada una, tope 6): suben 16 dp y aparecen.
-        Box(Modifier.entradaEscalonada(3)) { SemanaAtletica(totales, semana.diasCorridos, hoy, meta, rango, m) }
+        Box(Modifier.entradaEscalonada(3)) { SemanaAtletica(totales, semana.diasCorridos, hoy, meta, rango, m, kmPorDia) }
         reto?.let { Box(Modifier.entradaEscalonada(4)) { TarjetaReto(it, m) } }
-        Box(Modifier.entradaEscalonada(5)) { RutaSugeridaC2(rutaSugerida, m, onRutas, rutaSugeridaNota) }
+        Box(Modifier.entradaEscalonada(5)) { RutaSugeridaC2(rutaSugerida, m, onRutas, rutaSugeridaNota, onRuta) }
         Box(Modifier.entradaEscalonada(6)) { AmigosEnRuta(amigos, m, onComunidad) }
         Column(Modifier.entradaEscalonada(6), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             TituloSeccion("Próximo evento", accion = "Ver todos", onAccion = onEventos)
@@ -157,16 +166,40 @@ fun PildoraC2(texto: String, fondo: androidx.compose.ui.graphics.Color, color: a
     )
 }
 
-/** Ruta sugerida para hoy; si no hay rutas muestra un estado vacio con acceso a Rutas. */
+/** Aviso de meta semanal en km con anillo ("Te faltan 17 km"). */
 @Composable
-fun RutaSugeridaC2(ruta: com.gacelas.rutas.domain.modelo.Ruta?, m: Boolean, onRutas: () -> Unit, nota: String? = null) {
+fun MetaKmC2(metaKm: Int, km: Double, m: Boolean) {
+    val p = (km / metaKm).toFloat()
+    Row(
+        Modifier.fillMaxWidth().clip(com.gacelas.ui.components.FormaC2).background(GColors.C2Card).border(1.dp, GColors.C2Linea, com.gacelas.ui.components.FormaC2)
+            .padding(14.dp).testTag("meta-km"),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        com.gacelas.ui.components.AnilloC2(p, tamano = 58.dp, color = if (p >= 1f) GColors.C2Menta else GColors.C2Violeta) {
+            Text("${(p * 100).toInt().coerceAtMost(999)}%", style = GType.labelMd, color = GColors.TextPrimary)
+        }
+        Column(Modifier.weight(1f)) {
+            EtiquetaC2("Meta de la semana", color = GColors.C2Muted)
+            Text(
+                if (km >= metaKm) "Meta cumplida" else "Te faltan ${Unidades.texto(metaKm - km, m, 1)} ${Unidades.etiquetaDistancia(m)}",
+                style = GType.headlineSm, color = GColors.TextPrimary,
+            )
+            Text("${Unidades.texto(km, m, 1)} de ${Unidades.texto(metaKm.toDouble(), m, 0)} ${Unidades.etiquetaDistancia(m)} esta semana", style = GType.bodySm, color = GColors.C2Muted)
+        }
+    }
+}
+
+/** Ruta sugerida para hoy, con su trazo; si no hay rutas muestra un estado vacio con acceso a Rutas. */
+@Composable
+fun RutaSugeridaC2(ruta: com.gacelas.rutas.domain.modelo.Ruta?, m: Boolean, onRutas: () -> Unit, nota: String? = null, onRuta: ((String) -> Unit)? = null) {
     Column(
-        Modifier.fillMaxWidth().clip(com.gacelas.ui.components.FormaC2).background(GColors.C2Card).clickable(onClick = onRutas).padding(16.dp).testTag("ruta-sugerida"),
+        Modifier.fillMaxWidth().clip(com.gacelas.ui.components.FormaC2).background(GColors.C2Card).border(1.dp, GColors.C2Linea, com.gacelas.ui.components.FormaC2)
+            .clickable(onClick = { if (ruta != null && onRuta != null) onRuta(ruta.id) else onRutas() }).padding(14.dp).testTag("ruta-sugerida"),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            EtiquetaC2("Ruta sugerida para hoy")
-            EtiquetaC2("Ver rutas")
+            EtiquetaC2("Ruta segura del día")
+            Text("Ver rutas", style = GType.labelMd, color = GColors.C2Violeta, modifier = Modifier.clickable(onClick = onRutas))
         }
         if (ruta == null) {
             Text(
@@ -174,12 +207,15 @@ fun RutaSugeridaC2(ruta: com.gacelas.rutas.domain.modelo.Ruta?, m: Boolean, onRu
                 style = GType.bodyMd, color = GColors.C2Muted, modifier = Modifier.testTag("ruta-sugerida-vacia"),
             )
         } else {
+            if (ruta.puntos.size >= 2) com.gacelas.ui.components.MiniTrazoC2(ruta.puntos, Modifier.fillMaxWidth().height(120.dp).clip(RoundedCornerShape(8.dp)))
             Text(ruta.nombre.uppercase(), style = GType.headlineSm, color = GColors.TextPrimary)
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 MetricaC2("${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}", "Distancia", color = GColors.C2Violeta)
                 MetricaC2("+${ruta.elevacionM} m", "Desnivel", color = GColors.C2Cielo)
+                MetricaC2(ruta.dificultad.etiqueta, "Dificultad")
             }
             nota?.let { Text(it, style = GType.bodySm, color = GColors.C2Menta, modifier = Modifier.testTag("ruta-sugerida-segura")) }
+            if (onRuta != null) com.gacelas.ui.components.BotonChipC2("Correr esta ruta", { onRuta(ruta.id) })
         }
     }
 }

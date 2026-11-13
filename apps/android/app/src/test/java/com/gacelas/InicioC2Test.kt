@@ -56,7 +56,7 @@ class InicioC2Test {
     @Config(qualifiers = "w393dp-h873dp-xxhdpi") @Test fun fuenteGrande() { RuntimeEnvironment.setFontScale(1.3f); inicio("393x873-fuente130") }
     @Config(qualifiers = "w393dp-h873dp-xxhdpi") @Test fun climaSinDatos() {
         inicio("393x873-clima-sin-datos", clima = null)
-        compose.onNodeWithTag("chip-clima").assertTextEquals("LOJA --")
+        compose.onNodeWithTag("chip-clima").assertDoesNotExist()
     }
     @Config(qualifiers = "w393dp-h873dp-xxhdpi") @Test fun climaFueraDeLoja() {
         inicio("393x873-clima-quito", clima = ClimaActual(9, "llovizna", "Quito", 0L))

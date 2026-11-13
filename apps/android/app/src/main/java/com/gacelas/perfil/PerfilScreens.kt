@@ -154,7 +154,7 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
                         style = GType.bodySm, color = GColors.C2Muted, maxLines = 1,
                     )
                     perfil?.bio?.takeIf { it.isNotBlank() }?.let { Text(it, style = GType.bodySm, color = GColors.C2Muted, maxLines = 2) }
-                    com.gacelas.ui.components.EtiquetaC2("Club Gacelas Loja", Modifier.padding(top = 4.dp))
+                    com.gacelas.ui.components.EtiquetaC2("Runcity Loja", Modifier.padding(top = 4.dp))
                 }
                 IconButton(onClick = onEditar, modifier = Modifier.align(Alignment.Top).clip(RoundedCornerShape(4.dp)).background(GColors.C2S2)) {
                     Icon(Icons.Filled.Edit, "Editar perfil", tint = GColors.C2Violeta)
@@ -187,6 +187,7 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
             Text(" Mis reportes", style = GType.labelLg, color = GColors.TextPrimary)
         }
         com.gacelas.ui.AvisoCarrerasPendientes()
+        if (historialListo) ResumenPeriodoPerfil(carreras, m)
         if (!historialListo) {
             com.gacelas.ui.components.EsqueletoMetricas()
             com.gacelas.ui.components.EsqueletoTarjetas(2, etiqueta = "Cargando estadísticas")
@@ -215,6 +216,10 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
         carreras.take(20).forEach { c ->
             Tarjeta(Modifier.clickable { onCarrera(c.id) }.testTag("carrera-${c.id}")) {
                 Row(verticalAlignment = Alignment.Top) {
+                    // Mini mapa con el trazo real de la carrera.
+                    if (c.puntos.size >= 2) com.gacelas.ui.components.MiniTrazoC2(c.puntos.map { it.lat to it.lng },
+                        Modifier.size(56.dp).clip(RoundedCornerShape(6.dp)), cuadricula = false, grosor = 2.dp)
+                    if (c.puntos.size >= 2) androidx.compose.foundation.layout.Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
                         Text(c.titulo, style = GType.labelLg, color = GColors.TextPrimary)
                         Text(fecha.format(Date(c.inicioMs)), style = GType.bodySm, color = GColors.TextSecondary)

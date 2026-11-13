@@ -38,16 +38,20 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
         onVuelta = vm::vuelta,
         onAtras = { confirmar = true },
         extraCabecera = {
-            androidx.compose.foundation.layout.Column(
-                verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
-                horizontalAlignment = androidx.compose.ui.Alignment.End,
-            ) {
+            // Reportar va al costado del mapa, debajo de los grupos; el SOS queda aparte (abajo a la izquierda).
+            androidx.compose.foundation.layout.Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
                 com.gacelas.seguridad.ui.BotonReportarIncidente(compacto = true) {
                     estado.puntos.lastOrNull()?.let { it.lat to it.lng } ?: com.gacelas.rutas.ultimaUbicacion(context)
                 }
-                com.gacelas.seguridad.BotonSOS(estado.puntos.lastOrNull()?.let { it.lat to it.lng })
+                androidx.compose.material3.Text("REPORTAR", fontSize = androidx.compose.ui.unit.TextUnit(9f, androidx.compose.ui.unit.TextUnitType.Sp),
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = androidx.compose.ui.graphics.Color(0xFFF59E0B), maxLines = 1, softWrap = false)
             }
         },
+        sos = { com.gacelas.seguridad.BotonSOS(estado.puntos.lastOrNull()?.let { it.lat to it.lng }) },
+        objetivo = ObjetivoCarrera.de(ajustes.objetivoTipo, ajustes.objetivoValor),
+        enVivo = ajustes.compartirEnVivo == true && c.enVivo != null,
+        vista3dInicial = ajustes.vistaMapa3d,
+        onVista3d = { v -> ajustesVm.actualizar { it.copy(vistaMapa3d = v) } },
         vozActiva = ajustes.anunciosVoz,
         onVoz = { guardarVoz { it.copy(anunciosVoz = !it.anunciosVoz) } },
         autopausa = ajustes.autopausa,
@@ -58,7 +62,11 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
                 ritmoSegKm = estado.ritmoActualSegKm, adelanteM = 60.0, rutaMagenta = true, avisoArriba = 210.dp,
                 controlesPropios = controles, corredorVisible = !panelAbierto,
             ) { }
-            else TrazadoRuta(estado.puntos, Modifier.fillMaxSize())
+            // Sin mapa configurado se ve el trazo, pero con los mismos controles al costado.
+            else androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
+                TrazadoRuta(estado.puntos, Modifier.fillMaxSize())
+                controles({}, {}, 0f, true)
+            }
         },
     )
     CompartirEnVivoAutomatico(tracker)

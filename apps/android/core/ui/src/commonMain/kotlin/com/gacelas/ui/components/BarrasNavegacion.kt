@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Groups
@@ -43,6 +44,10 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.runtime.getValue
 import com.gacelas.navigation.Destinos
 import com.gacelas.ui.theme.GColors
@@ -80,36 +85,47 @@ fun BarraSuperior(sinLeer: Int, onNotificaciones: () -> Unit, onPerfil: () -> Un
 
 @Composable
 fun BarraInferior(rutaActual: String, onNavegar: (String) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().background(GColors.BgSecondary).navigationBarsPadding().height(72.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        itemsNav.forEach { item ->
-            val interaccion = remember { MutableInteractionSource() }
-            if (item.principal) {
-                Box(
-                    Modifier.offset(y = (-14).dp).pulsacionC2(interaccion).size(56.dp).shadow(8.dp, CircleShape).clip(CircleShape)
-                        .background(GColors.PrimaryLight).clickable(interaccion, androidx.compose.material3.ripple()) { onNavegar(item.ruta) }.testTag("nav-correr"),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(item.icono, contentDescription = item.etiqueta, tint = GColors.OnPrimary, modifier = Modifier.size(32.dp))
-                }
-            } else {
-                val activo = rutaActual == item.ruta || (item.ruta == Destinos.COMUNIDAD && rutaActual == Destinos.EVENTOS)
-                // Pestana activa: color e icono animados (CORTO); el icono sube 2 dp y crece un poco.
-                val color by animateColorAsState(if (activo) GColors.PrimaryLight else GColors.TextSecondary, Mov.corto(), label = "pestana")
-                val realce by animateFloatAsState(if (activo) 1f else 0f, Mov.medio(), label = "pestana-realce")
-                Column(
-                    Modifier.pulsacionC2(interaccion).clip(CircleShape).clickable(interaccion, androidx.compose.material3.ripple()) { onNavegar(item.ruta) }
-                        .padding(horizontal = 10.dp, vertical = 6.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Icon(item.icono, contentDescription = null, tint = color, modifier = Modifier.graphicsLayer {
-                        val e = 1f + 0.1f * realce
-                        scaleX = e; scaleY = e; translationY = -2.dp.toPx() * realce
-                    })
-                    Text(item.etiqueta, style = GType.labelMd, color = color)
+    // Rediseno movil: barra C2 con borde superior, capsula en la pestana activa y el boton de correr al
+    // centro, mas grande, con halo morado y etiqueta. Respeta la barra de gestos (navigationBarsPadding).
+    Column(Modifier.fillMaxWidth().background(GColors.C2Bg).navigationBarsPadding()) {
+        Box(Modifier.fillMaxWidth().height(1.dp).background(GColors.C2Linea))
+        Row(
+            Modifier.fillMaxWidth().height(72.dp).padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            itemsNav.forEach { item ->
+                val interaccion = remember { MutableInteractionSource() }
+                if (item.principal) {
+                    Column(
+                        Modifier.weight(1f).wrapContentHeight(Alignment.Bottom, unbounded = true).offset(y = (-4).dp).pulsacionC2(interaccion).clickable(interaccion, null, role = androidx.compose.ui.semantics.Role.Button) { onNavegar(item.ruta) }
+                            .testTag("nav-correr"),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Box(Modifier.size(66.dp).clip(CircleShape).background(GColors.C2Morado.copy(alpha = 0.24f)), contentAlignment = Alignment.Center) {
+                            Box(
+                                Modifier.size(56.dp).shadow(10.dp, CircleShape, ambientColor = GColors.C2Morado, spotColor = GColors.C2Morado).clip(CircleShape)
+                                    .background(GradienteC2),
+                                contentAlignment = Alignment.Center,
+                            ) { Icon(item.icono, contentDescription = item.etiqueta, tint = Color.White, modifier = Modifier.size(32.dp)) }
+                        }
+                        Text(item.etiqueta, style = GType.labelMd.copy(fontWeight = FontWeight.ExtraBold), color = GColors.C2Violeta, maxLines = 1)
+                    }
+                } else {
+                    val activo = rutaActual == item.ruta || (item.ruta == Destinos.COMUNIDAD && rutaActual == Destinos.EVENTOS)
+                    val color by animateColorAsState(if (activo) GColors.C2Violeta else GColors.C2Muted, Mov.corto(), label = "pestana")
+                    val capsula by animateColorAsState(if (activo) GColors.C2Morado.copy(alpha = 0.22f) else Color.Transparent, Mov.corto(), label = "capsula")
+                    Column(
+                        Modifier.weight(1f).pulsacionC2(interaccion).clickable(interaccion, null, role = androidx.compose.ui.semantics.Role.Tab) { onNavegar(item.ruta) }
+                            .semantics { selected = activo }.padding(vertical = 6.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Box(Modifier.width(54.dp).height(30.dp).clip(CircleShape).background(capsula), contentAlignment = Alignment.Center) {
+                            Icon(item.icono, contentDescription = null, tint = color, modifier = Modifier.size(24.dp))
+                        }
+                        TextoAjustableC2(item.etiqueta, GType.labelMd.copy(fontWeight = if (activo) FontWeight.ExtraBold else FontWeight.SemiBold), color,
+                            Modifier.padding(top = 2.dp), minimo = 0.7f)
+                    }
                 }
             }
         }

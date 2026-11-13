@@ -64,7 +64,7 @@ class CarreraC4Test {
 
     @Test fun cerradoMuestraMetricasYControles() {
         mostrar()
-        compose.onNodeWithText("00:14:52").assertIsDisplayed()
+        compose.onNodeWithText("14:52").assertIsDisplayed()
         compose.onNodeWithTag("distancia").assertIsDisplayed()
         compose.onNodeWithTag("chip-gps").assertIsDisplayed()
         listOf("boton-pausa", "boton-stop", "boton-cronometro", "boton-3d", "boton-recentrar", "boton-brujula").forEach { compose.onNodeWithTag(it).assertIsDisplayed() }

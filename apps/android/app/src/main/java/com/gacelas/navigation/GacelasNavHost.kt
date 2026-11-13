@@ -163,7 +163,7 @@ private fun NavGraphBuilder.conBarra(nav: NavHostController, ruta: String, conte
 
 private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
     conBarra(nav, Destinos.INICIO) {
-        InicioScreen(onCorrer = { nav.ir(Destinos.CORRER) }, onEventos = { nav.ir(Destinos.EVENTOS) }, onEvento = { nav.ir(Destinos.detalleEvento(it)) }, onComunidad = { nav.irAPestana(Destinos.COMUNIDAD) }, onRutas = { nav.irAPestana(Destinos.RUTAS) })
+        InicioScreen(onCorrer = { nav.ir(Destinos.CORRER) }, onEventos = { nav.ir(Destinos.EVENTOS) }, onEvento = { nav.ir(Destinos.detalleEvento(it)) }, onComunidad = { nav.irAPestana(Destinos.COMUNIDAD) }, onRutas = { nav.irAPestana(Destinos.RUTAS) }, onRuta = { nav.ir(Destinos.detalleRuta(it)) })
     }
     conBarra(nav, Destinos.RUTAS) {
         ListaRutasScreen(onBuscar = { nav.ir(Destinos.BUSCADOR_RUTAS) }, onRuta = { nav.ir(Destinos.detalleRuta(it)) }, onDibujar = { nav.ir(Destinos.CREAR_RUTA) })
@@ -182,7 +182,9 @@ private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
 }
 
 private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
-    composable(Destinos.CORRER) { CorrerScreen(onCerrar = { nav.atras() }, onEmpezar = { nav.ir(Destinos.CARRERA_EN_CURSO) }) }
+    composable(Destinos.CORRER) {
+        CorrerScreen(onCerrar = { nav.atras() }, onEmpezar = { nav.ir(Destinos.CARRERA_EN_CURSO) }, onRuta = { nav.ir(Destinos.detalleRuta(it)) }, onPrivacidad = { nav.ir(Destinos.PRIVACIDAD) })
+    }
     composable(Destinos.CARRERA_EN_CURSO) {
         CarreraEnCursoScreen(
             onCerrar = { nav.irAPestana(Destinos.INICIO) },

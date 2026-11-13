@@ -13,6 +13,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.platform.testTag
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -89,6 +92,7 @@ fun Estrellas(valor: Double, tamano: Int = 18) {
     }
 }
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
     val c = contenedor()
@@ -130,11 +134,25 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
         }
     }
 
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
-        EncabezadoAtras(ruta?.nombre ?: "Ruta", onAtras)
+    // Tus carreras en esta ruta: salida a menos de 250 m del inicio y distancia parecida (+-20 %). Datos reales del historial.
+    val tusCarreras = remember(carrerasRacha, ruta?.id) {
+        val r = ruta ?: return@remember emptyList()
+        val ini = r.puntos.firstOrNull() ?: return@remember emptyList()
+        carrerasRacha.filter { cr ->
+            val p = cr.puntos.firstOrNull() ?: return@filter false
+            val dy = (p.lat - ini.first) * 111_320.0
+            val dx = (p.lng - ini.second) * 111_320.0 * kotlin.math.cos(Math.toRadians(ini.first))
+            kotlin.math.sqrt(dx * dx + dy * dy) < 250 && kotlin.math.abs(cr.distanciaKm - r.distanciaKm) <= r.distanciaKm * 0.2
+        }
+    }
+    val ritmoMedio = remember(carrerasRacha) {
+        val u = carrerasRacha.sortedByDescending { it.inicioMs }.take(10).filter { it.distanciaKm > 0.2 }
+        if (u.isEmpty()) null else (u.sumOf { it.segundos } / u.sumOf { it.distanciaKm }).toInt()
+    }
+    Box(Modifier.fillMaxSize().background(GColors.C2Bg)) {
         if (ruta == null) {
-            Text("Ruta no encontrada", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.padding(16.dp))
-            return
+            Column { EncabezadoAtras("Ruta", onAtras); Text("Ruta no encontrada", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.padding(16.dp)) }
+            return@Box
         }
         if (compartiendo) com.gacelas.compartir.CompartirDialogo(
             com.gacelas.compartir.DatosCompartir(
@@ -143,39 +161,45 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
             ),
         ) { compartiendo = false }
         Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(16.dp),
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 92.dp).navigationBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             val puntos = ruta.puntos.map { PuntoGps(it.first, it.second, 0) }
-            Box(Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(16.dp)).background(GColors.SurfaceContainer)) {
-                MapaGacelas(puntos.map { LatLng(it.lat, it.lng) }, Modifier.fillMaxSize(), zoom = 14f) { TrazadoRuta(puntos, Modifier.fillMaxSize()) }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                listOf(
-                    "${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}" to "Distancia",
-                    "${ruta.elevacionM} m" to "Desnivel",
-                    ruta.dificultad.etiqueta to "Dificultad",
-                ).forEach { (v, e) ->
-                    Tarjeta(Modifier.weight(1f), padding = 10.dp) {
-                        Text(v, style = GType.labelLg, color = GColors.TextPrimary, maxLines = 1)
-                        Text(e, style = GType.bodySm, color = GColors.TextSecondary)
+            // Mapa arriba a todo el ancho, con volver, guardar y compartir encima.
+            Box(Modifier.fillMaxWidth().height(300.dp).background(GColors.SurfaceContainer).testTag("mapa-detalle-ruta")) {
+                MapaGacelas(puntos.map { LatLng(it.lat, it.lng) }, Modifier.fillMaxSize(), zoom = 14f) {
+                    com.gacelas.ui.components.MiniTrazoC2(ruta.puntos, Modifier.fillMaxSize(), grosor = 4.dp)
+                }
+                Box(Modifier.fillMaxWidth().height(60.dp).align(Alignment.BottomCenter).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(androidx.compose.ui.graphics.Color.Transparent, GColors.C2Bg))))
+                Row(Modifier.fillMaxWidth().statusBarsPadding().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    com.gacelas.ui.components.BotonVolverMapa(onAtras)
+                    Spacer(Modifier.weight(1f))
+                    IconButton(onClick = { compartiendo = true }, modifier = Modifier.clip(CircleShape).background(GColors.C2Card.copy(alpha = 0.95f))) {
+                        Icon(Icons.Filled.Share, "Compartir ruta", tint = GColors.TextPrimary)
                     }
                 }
             }
-            if (ruta.perfilElevacion.size > 1) PerfilElevacion(ruta.perfilElevacion, ruta.distanciaKm)
-            if (ruta.oficial) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                com.gacelas.rutas.InsigniaOficial()
-                val extra = listOfNotNull(ruta.categoria?.etiqueta, ruta.superficie?.let { "superficie $it" }).joinToString(" · ")
-                if (extra.isNotEmpty()) Text(extra, style = GType.bodySm, color = GColors.C2Muted)
-            }
-            if (ruta.descripcion.isNotBlank()) Text(ruta.descripcion, style = GType.bodyMd, color = GColors.TextSecondary)
-            com.gacelas.seguridad.ui.TarjetaSeguridad(id)
-            if (ruta.etiquetas.isNotEmpty()) Text(ruta.etiquetas.joinToString("  ") { "#" + (ETIQUETAS_RUTA[it] ?: it) }, style = GType.labelLg, color = GColors.TextPrimary)
-            ruta.fuente?.let { Text("Trazado: $it. Datos (c) colaboradores de OpenStreetMap.", style = GType.labelMd, color = GColors.C2Muted) }
-            ruta.autorNombre?.let { Text("Creada por $it", style = GType.bodySm, color = GColors.TextSecondary) }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                BotonPrimario("Correr esta ruta", { com.gacelas.rutas.infrastructure.RutaActiva.id = id; onCorrer() }, Modifier.weight(1f), icono = Icons.AutoMirrored.Filled.DirectionsRun)
-                IconButton(onClick = { compartiendo = true }, modifier = Modifier.clip(CircleShape).background(GColors.SurfaceContainer)) { Icon(Icons.Filled.Share, "Compartir ruta", tint = GColors.TextPrimary) }
+            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    if (ruta.oficial) com.gacelas.ui.components.ChipParalelogramo("Oficial Runcity", tag = "insignia-oficial")
+                    com.gacelas.ui.components.ChipParalelogramo(ruta.dificultad.etiqueta, color = GColors.C2Menta)
+                    ruta.categoria?.let { com.gacelas.ui.components.ChipParalelogramo(it.etiqueta, color = GColors.C2Cielo) }
+                    ruta.superficie?.let { com.gacelas.ui.components.ChipParalelogramo(it, color = GColors.C2Muted) }
+                }
+                Text(ruta.nombre.uppercase(), style = GType.headlineLg, color = GColors.TextPrimary)
+                if (ruta.descripcion.isNotBlank()) Text(ruta.descripcion, style = GType.bodyMd, color = GColors.TextSecondary)
+                val mejor = tusCarreras.minByOrNull { it.segundos }
+                com.gacelas.ui.components.TiraCifrasC2(listOf(
+                    com.gacelas.ui.components.DatoCifra(Unidades.texto(ruta.distanciaKm, m, 1), Unidades.etiquetaDistancia(m), "Distancia", GColors.C2Violeta),
+                    com.gacelas.ui.components.DatoCifra("+${ruta.elevacionM}", "m", "Desnivel", GColors.C2Cielo),
+                    com.gacelas.ui.components.DatoCifra(mejor?.let { com.gacelas.tracking.formatearMs(it.segundos) } ?: "--", "", "Tu mejor", GColors.C2Menta),
+                    com.gacelas.ui.components.DatoCifra("${if (sociales) maxOf(corredores.second, tusCarreras.size) else tusCarreras.size}", "", if (sociales) "Corredores" else "Carreras"),
+                ), tag = "cifras-ruta", tamano = 18)
+                com.gacelas.seguridad.ui.TarjetaSeguridad(id)
+                if (ruta.perfilElevacion.size > 1) PerfilElevacion(ruta.perfilElevacion, ruta.distanciaKm)
+                if (ruta.etiquetas.isNotEmpty()) Text(ruta.etiquetas.joinToString("  ") { "#" + (ETIQUETAS_RUTA[it] ?: it) }, style = GType.labelLg, color = GColors.TextPrimary)
+                ruta.fuente?.let { Text("Trazado: $it. Datos (c) colaboradores de OpenStreetMap.", style = GType.labelMd, color = GColors.C2Muted) }
+                ruta.autorNombre?.let { Text("Creada por $it", style = GType.bodySm, color = GColors.TextSecondary) }
                 if (sociales) {
                     val activo = id in meGusta
                     Row(
@@ -189,7 +213,6 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
                         Text(" ${ruta.meGusta}", style = GType.labelLg, color = GColors.TextPrimary)
                     }
                 }
-            }
             if (sociales) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Fotos", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
@@ -242,6 +265,23 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
                     }
                 }
             }
+            }
+        }
+        // Barra inferior fija: tiempo estimado a tu ritmo real y "Correr esta ruta".
+        Row(
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().background(GColors.C2Bg).navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 10.dp).testTag("barra-correr-ruta"),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column {
+                com.gacelas.ui.components.EtiquetaC2(if (ritmoMedio != null) "A tu ritmo" else "Distancia", color = GColors.C2Muted)
+                Text(
+                    ritmoMedio?.let { "~${(it * ruta.distanciaKm / 60).toInt()} min" } ?: "${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}",
+                    style = GType.headlineSm, color = GColors.TextPrimary,
+                )
+            }
+            com.gacelas.ui.components.BotonGrandeC2("Correr esta ruta", { com.gacelas.rutas.infrastructure.RutaActiva.id = id; onCorrer() }, Modifier.weight(1f),
+                icono = { Icon(Icons.AutoMirrored.Filled.DirectionsRun, null, tint = androidx.compose.ui.graphics.Color.White) }, tag = "boton-correr-ruta")
         }
     }
 }

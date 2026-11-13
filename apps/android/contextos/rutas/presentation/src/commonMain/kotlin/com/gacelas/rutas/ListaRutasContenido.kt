@@ -15,6 +15,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -74,6 +75,7 @@ import com.gacelas.ui.theme.GType
 expect fun decimalLocal(x: Double): String
 
 /** Lista de rutas (compartida Android/iOS). El mapa de rutas agrupadas llega como slot. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun ListaRutasContenido(
     lista: List<Ruta>,
@@ -108,24 +110,51 @@ fun ListaRutasContenido(
         if (verMapa) {
             mapaRutas(Modifier.fillMaxWidth().height(420.dp).clip(RoundedCornerShape(16.dp)))
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PestanaRutas.entries.forEach { p -> Pastilla(if (p == PestanaRutas.Guardadas) "${p.etiqueta} (${guardadas.size})" else p.etiqueta, p == pestana, { onPestana(p) }) }
+        // Pestanas segmentadas, buscador con "Filtros" (hoja inferior) y una sola fila de chips rapidos.
+        val pestanas = PestanaRutas.entries
+        com.gacelas.ui.components.SelectorSegmentadoC2(
+            pestanas.map { p -> if (p == PestanaRutas.Guardadas) "${p.etiqueta} (${guardadas.size})" else p.etiqueta },
+            pestanas.indexOf(pestana), { onPestana(pestanas[it]) }, tag = "pestanas-rutas",
+        )
+        var hojaFiltros by rememberSaveable { mutableStateOf(false) }
+        val activos = listOfNotNull(filtros.dificultad, filtros.etiqueta, filtros.distancia.takeIf { it != com.gacelas.rutas.domain.modelo.FiltroDistancia.Todas }).size
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(Modifier.weight(1f)) {
+                CampoTexto("Buscar", consulta, onConsulta, "Buscar rutas...", trailing = {
+                    IconButton(onClick = onBuscar) { Icon(Icons.Filled.Search, "Abrir buscador en el mapa", tint = GColors.TextSecondary) }
+                })
+            }
+            com.gacelas.ui.components.BotonChipC2(if (activos > 0) "Filtros ($activos)" else "Filtros", { hojaFiltros = true }, Modifier.testTag("boton-filtros"), activo = activos > 0)
         }
-        CampoTexto("Buscar", consulta, onConsulta, "Buscar rutas...", trailing = {
-            IconButton(onClick = onBuscar) { Icon(Icons.Filled.Search, "Abrir buscador en el mapa", tint = GColors.TextSecondary) }
-        })
         Row(Modifier.horizontalScroll(rememberScrollState()).testTag("filtro-categoria"), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Pastilla("Cerca de mí", cerca != null, onCerca)
             Pastilla("Todas", filtros.categoria == null, { onFiltros(filtros.copy(categoria = null)) })
             CategoriaRuta.entries.forEach { c -> Pastilla(c.etiqueta, filtros.categoria == c, { onFiltros(filtros.copy(categoria = if (filtros.categoria == c) null else c)) }) }
         }
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Pastilla("Cerca de mí", cerca != null, onCerca)
-            Pastilla("Toda dificultad", filtros.dificultad == null, { onFiltros(filtros.copy(dificultad = null)) })
-            com.gacelas.rutas.domain.modelo.Dificultad.entries.forEach { d -> Pastilla(d.etiqueta, filtros.dificultad == d, { onFiltros(filtros.copy(dificultad = d)) }) }
-        }
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            com.gacelas.rutas.domain.modelo.FiltroDistancia.entries.forEach { d -> Pastilla(d.etiqueta, filtros.distancia == d, { onFiltros(filtros.copy(distancia = d)) }) }
-            com.gacelas.rutas.domain.modelo.ETIQUETAS_RUTA.forEach { (k, v) -> Pastilla("#$v", filtros.etiqueta == k, { onFiltros(filtros.copy(etiqueta = if (filtros.etiqueta == k) null else k)) }) }
+        if (hojaFiltros) com.gacelas.ui.components.HojaC2({ hojaFiltros = false }) {
+            Column(
+                Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 16.dp).navigationBarsPadding().testTag("hoja-filtros"),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Text("Filtros", style = GType.headlineSm, color = GColors.TextPrimary)
+                com.gacelas.ui.components.EtiquetaC2("Dificultad", color = GColors.C2Muted)
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Pastilla("Toda dificultad", filtros.dificultad == null, { onFiltros(filtros.copy(dificultad = null)) })
+                    com.gacelas.rutas.domain.modelo.Dificultad.entries.forEach { d -> Pastilla(d.etiqueta, filtros.dificultad == d, { onFiltros(filtros.copy(dificultad = d)) }) }
+                }
+                com.gacelas.ui.components.EtiquetaC2("Distancia", color = GColors.C2Muted)
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    com.gacelas.rutas.domain.modelo.FiltroDistancia.entries.forEach { d -> Pastilla(d.etiqueta, filtros.distancia == d, { onFiltros(filtros.copy(distancia = d)) }) }
+                }
+                com.gacelas.ui.components.EtiquetaC2("Etiquetas", color = GColors.C2Muted)
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    com.gacelas.rutas.domain.modelo.ETIQUETAS_RUTA.forEach { (k, v) -> Pastilla("#$v", filtros.etiqueta == k, { onFiltros(filtros.copy(etiqueta = if (filtros.etiqueta == k) null else k)) }) }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    com.gacelas.ui.components.BotonSecundario("Limpiar", { onFiltros(FiltrosRuta(categoria = filtros.categoria)) }, Modifier.weight(1f))
+                    com.gacelas.ui.components.BotonPrimario("Ver ${lista.size} rutas", { hojaFiltros = false }, Modifier.weight(1f))
+                }
+            }
         }
         if (cargando) com.gacelas.ui.components.EsqueletoTarjetas(4, etiqueta = "Cargando rutas")
         else if (lista.isEmpty()) {
@@ -149,8 +178,10 @@ fun ListaRutasContenido(
             // Tarjeta C2 compacta: miniatura de 88 dp, datos en linea y numeros pequenos.
             Tarjeta(padding = 12.dp, onClick = { onRuta(ruta.id) }) {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Box(
-                        Modifier.size(88.dp).clip(RoundedCornerShape(4.dp)).background(Brush.linearGradient(listOf(GColors.C2S2, GColors.C2Bg))),
+                    // Mini mapa con el trazo real de la ruta (Canvas, sin cargar el mapa en cada tarjeta).
+                    if (ruta.puntos.size >= 2) com.gacelas.ui.components.MiniTrazoC2(ruta.puntos, Modifier.size(92.dp).clip(RoundedCornerShape(6.dp)), grosor = 2.5.dp)
+                    else Box(
+                        Modifier.size(92.dp).clip(RoundedCornerShape(6.dp)).background(Brush.linearGradient(listOf(GColors.C2S2, GColors.C2Bg))),
                         contentAlignment = Alignment.Center,
                     ) { Icon(Icons.Filled.Route, null, tint = GColors.C2Violeta, modifier = Modifier.size(36.dp)) }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -175,6 +206,7 @@ fun ListaRutasContenido(
                             EtiquetaDificultad(ruta.dificultad)
                             ruta.categoria?.let { Text(it.etiqueta, style = GType.labelMd, color = GColors.C2Muted) }
                         }
+                        if (ruta.perfilElevacion.size > 2) com.gacelas.ui.components.LineaC2(ruta.perfilElevacion.map { it.toFloat() }, Modifier.height(24.dp).testTag("perfil-ruta"))
                     }
                 }
             }
