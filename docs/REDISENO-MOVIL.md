@@ -96,3 +96,12 @@ No hizo falta una migración nueva:
 - **Carrera en curso y Resumen:**
   - Carrera en curso: el número de espectadores en vivo.
   - Resumen: los pasos.
+
+## Android 0.9.17: dirección A "Tablero"
+
+- Dock flotante (Hoy, Rutas, Club, Tú) con CORRER a la derecha; la barra nunca tapa botones.
+- Inicio: mapa de Loja como protagonista y rejilla de widgets (semana, racha, clima por hora, ritmo, club y seguridad de la zona).
+- Correr: hoja de modos (Ruta del día, Objetivo, Libre). Carrera y Resumen en mosaicos. Rutas: mapa con carrusel de tarjetas.
+- Datos reales: clima por hora de Open-Meteo y seguridad de las RPC de la migración 040. Sin servidor no hay notificaciones,
+  eventos ni incidentes de ejemplo; los bloques sin fuente se ocultan.
+- QA: `TableroQaTest` (capturas de todas las pantallas y modales) y `TableroInteraccionesTest` (toques y navegación).
