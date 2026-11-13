@@ -11,8 +11,11 @@ describe('inicio', () => {
     expect(await screen.findByTestId('km-semana')).toHaveTextContent('7.5')
     expect(screen.getByTestId('insignia-racha')).toHaveTextContent('1 día')
     await userEvent.click(screen.getByRole('link', { name: /empezar a correr/i }))
-    expect(await screen.findByText('¿Listo para correr?')).toBeInTheDocument()
-  })
+    // Inicio y Correr se cargan en diferido; con cobertura en CI la carga tarda mas.
+    expect(
+      await screen.findByText('¿Listo para correr?', undefined, { timeout: 10_000 })
+    ).toBeInTheDocument()
+  }, 20_000)
 
   it('sin carreras invita a la primera', async () => {
     prepararApp()
