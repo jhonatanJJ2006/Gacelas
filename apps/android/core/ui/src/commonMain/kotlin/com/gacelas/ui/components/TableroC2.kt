@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -275,7 +276,7 @@ fun MapaEsquemaC2(
     margenArriba: Dp = 0.dp,
     margenAbajo: Dp = 0.dp,
 ) {
-    Canvas(modifier.background(Brush.verticalGradient(listOf(Color(0xFF17122B), Color(0xFF0F1424)))).semantics { contentDescription = "Mapa" }) {
+    Canvas(modifier.clipToBounds().background(Brush.verticalGradient(listOf(Color(0xFF17122B), Color(0xFF0F1424)))).semantics { contentDescription = "Mapa" }) {
         val w = size.width; val h = size.height
         if (calles) {
             // Parques
