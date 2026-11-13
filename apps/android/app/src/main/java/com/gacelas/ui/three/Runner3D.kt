@@ -206,6 +206,9 @@ fun Runner3DWeb(
     }
     androidx.compose.foundation.layout.Box(modifier.fillMaxSize()) {
     if (!visto || fallo) Runner3DFallback(Modifier.testTag("corredor-3d-respaldo"))
+    var esperando by remember { androidx.compose.runtime.mutableStateOf(true) }
+    androidx.compose.runtime.LaunchedEffect(Unit) { kotlinx.coroutines.delay(8_000); esperando = false }
+    if (!visto && !fallo && esperando) com.gacelas.ui.components.EsqueletoEscena3D()
     if (!fallo) androidx.compose.ui.viewinterop.AndroidView(
         modifier = Modifier.fillMaxSize().then(Modifier.testTag("corredor-3d-webgl")),
         factory = { ctx ->
@@ -295,6 +298,10 @@ fun Runner3DFilamentTransparente(
     val giro = remember { GiroArrastre(gradosAuto = if (autoRotar) 18f else 0f) }
     Box(modifier.fillMaxSize()) {
         if (!visto || fallo) Runner3DFallback(Modifier.testTag("corredor-3d-respaldo"))
+        // Mientras Filament prepara el primer cuadro, halo C2 que late sobre la silueta (hasta 8 s).
+        var esperando by remember { androidx.compose.runtime.mutableStateOf(true) }
+        androidx.compose.runtime.LaunchedEffect(Unit) { kotlinx.coroutines.delay(8_000); esperando = false }
+        if (!visto && !fallo && esperando) com.gacelas.ui.components.EsqueletoEscena3D()
         if (!fallo) {
             androidx.compose.ui.viewinterop.AndroidView(
                 modifier = Modifier.fillMaxSize().testTag("corredor-3d-filament"),

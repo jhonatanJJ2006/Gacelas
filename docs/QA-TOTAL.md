@@ -43,6 +43,21 @@ Nota técnica: con el modo gráfico "legacy" de Robolectric los recortes con for
 botones de los modales no respondían. Es un falso positivo del entorno de prueba, no del código: los tests de modales usan ahora
 `@GraphicsMode(NATIVE)`, que reproduce el comportamiento real.
 
+## Auditoría de botones Android (0.9.14)
+
+`AuditoriaBotonesTest` abre cada pantalla de `Destinos.todas` (más reportes, detalle de carrera y admin), guarda su captura y toca cada elemento clicable habilitado (hasta 40 por pantalla). Un toque cuenta como "sin efecto" si no cambia el árbol de semántica, la ruta, no abre modal ni aviso y no lanza otra app. Solo corre con `-Pgacelas.shots=dir` (fuera de CI):
+
+```
+./gradlew :app:testDebugUnitTest --tests "com.gacelas.AuditoriaBotonesTest" -Pgacelas.shots=/ruta -Proborazzi.test.record=true
+```
+
+Resultado: 352 toques en 34 pantallas, 29 sin efecto, todos legítimos: la pestaña o el filtro que ya está elegido, el avatar de la barra estando en Perfil, Pausar sin carrera activa y los pasos de ritmo o de meta cuyo único cambio es el número. Arreglos de esta ronda:
+
+- Pastillas, chips de tipo de evento y opciones del avatar (equipación, tono de piel, shorts, estilo) exponen `selected`, y las muestras de color tienen nombre para lectores de pantalla.
+- "Guardar ruta" en el buscador avisa "Ruta guardada" o "Ruta quitada de guardadas".
+- "Marcar todas leídas" avisa aunque no haya notificaciones sin leer.
+- Guardar el avatar vuelve en el hilo principal.
+
 ## Revisión estática
 
 - `onClick` vacíos: todos los callbacks con valor por defecto `{}` están conectados en GacelasNavHost. OK

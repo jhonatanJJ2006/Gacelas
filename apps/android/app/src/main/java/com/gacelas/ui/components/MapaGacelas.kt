@@ -193,6 +193,10 @@ fun MapaGacelas(
             },
             alListo = { mapa = it },
         )
+        // Esqueleto hasta que el estilo del mapa termina de cargar (tope de 10 s: sin red queda el aviso).
+        var esperandoMapa by remember { mutableStateOf(true) }
+        LaunchedEffect(Unit) { kotlinx.coroutines.delay(10_000); esperandoMapa = false }
+        if (mapa == null && esperandoMapa) com.gacelas.ui.components.EsqueletoMapa(Modifier.matchParentSize())
         if (con3d && ultimo != null && corredorVisible) {
             // Corredor 3D anclado al punto proyectado del usuario (la camara gira con el rumbo).
             val px = pantalla

@@ -35,6 +35,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.layout.Arrangement
+import kotlinx.coroutines.flow.first
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -78,6 +79,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -125,7 +129,21 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
     val meses = remember(carreras) { EstadisticasPerfil.kmMensual(carreras, System.currentTimeMillis()) }
     val recs = remember(carreras) { EstadisticasPerfil.records(carreras) }
     val meds = remember(carreras) { EstadisticasPerfil.medallas(carreras) }
+    val pendientes by com.gacelas.ui.carrerasPendientesState()
+    // Primer valor de la sesion y del historial (DataStore o Supabase): esqueleto mientras tanto.
+    val cont = com.gacelas.ui.contenedor()
+    val sesionLista by androidx.compose.runtime.produceState(false) { runCatching { kotlinx.coroutines.withTimeoutOrNull(5_000) { cont.auth.sesion.first() } }; value = true }
+    val historialListo by androidx.compose.runtime.produceState(false) { runCatching { kotlinx.coroutines.withTimeoutOrNull(5_000) { cont.carreras.carreras.first() } }; value = true }
     Pantalla {
+        if (!sesionLista) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                com.gacelas.ui.components.BloqueEsqueleto(Modifier.size(80.dp), alto = 80.dp, ancho = 0.22f, forma = CircleShape)
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    com.gacelas.ui.components.BloqueEsqueleto(alto = 22.dp, ancho = 0.7f)
+                    com.gacelas.ui.components.BloqueEsqueleto(alto = 12.dp, ancho = 0.5f)
+                }
+            }
+        } else
         // C2: cabecera en fila con foto, nombre en Anton cursiva y datos en una linea.
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             FotoPerfil(perfil?.fotoPath, 80.dp)
@@ -167,6 +185,11 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
             Icon(Icons.Filled.BarChart, null, tint = GColors.C2Violeta, modifier = Modifier.size(18.dp))
             Text(" Mis reportes", style = GType.labelLg, color = GColors.TextPrimary)
         }
+        com.gacelas.ui.AvisoCarrerasPendientes()
+        if (!historialListo) {
+            com.gacelas.ui.components.EsqueletoMetricas()
+            com.gacelas.ui.components.EsqueletoTarjetas(2, etiqueta = "Cargando estadísticas")
+        }
         TarjetaRacha(com.gacelas.ui.rachaState(), carreras)
         com.gacelas.social.ListaLogros(carreras)
         EstadisticasHistoricas(hist, m)
@@ -195,6 +218,7 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
                         Text(c.titulo, style = GType.labelLg, color = GColors.TextPrimary)
                         Text(fecha.format(Date(c.inicioMs)), style = GType.bodySm, color = GColors.TextSecondary)
                     }
+                    if (c.id in pendientes) Text("Sin subir", style = GType.bodySm, color = androidx.compose.ui.graphics.Color(0xFFF6AD55), modifier = Modifier.padding(end = 8.dp).testTag("sin-subir-${c.id}"))
                     if (!c.publica) Text("Privada", style = GType.bodySm, color = GColors.TextSecondary)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -355,8 +379,11 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
     val guardar: () -> Unit = {
         scope.launch {
             c.ajustes.actualizar { it.copy(avatar = ConfigAvatar(equipacion, estilo, lentes, reloj, audifonos, complexion, tonoPiel, peinado, colorShorts)) }
-            context.aviso("Avatar guardado")
-            onGuardar()
+            // Volver siempre en el hilo principal: la navegacion no admite otro hilo.
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main.immediate) {
+                context.aviso("Avatar guardado")
+                onGuardar()
+            }
         }
     }
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
@@ -377,7 +404,7 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
                         equipaciones.forEachIndexed { i, c ->
                             Box(Modifier.size(44.dp).clip(CircleShape).background(c)
                                 .border(3.dp, if (i == equipacion) GColors.TextPrimary else Color.Transparent, CircleShape)
-                                .clickable { equipacion = i })
+                                .clickable { equipacion = i }.semantics { contentDescription = "Equipación ${i + 1}"; selected = i == equipacion })
                         }
                     }
                 }
@@ -389,7 +416,8 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
                 EtiquetaGrupo("Tono de piel")
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     TONOS_PIEL.forEachIndexed { i, t ->
-                        Box(Modifier.size(40.dp).clip(CircleShape).background(t).border(3.dp, if (i == tonoPiel) GColors.Primary else Color.Transparent, CircleShape).clickable { tonoPiel = i })
+                        Box(Modifier.size(40.dp).clip(CircleShape).background(t).border(3.dp, if (i == tonoPiel) GColors.Primary else Color.Transparent, CircleShape).clickable { tonoPiel = i }
+                            .semantics { contentDescription = "Tono de piel ${i + 1}"; selected = i == tonoPiel })
                     }
                 }
                 EtiquetaGrupo("Cabello y peinado")
@@ -400,7 +428,8 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     COLORES_SHORTS.forEachIndexed { i, (col, n) ->
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Box(Modifier.size(40.dp).clip(CircleShape).background(col).border(3.dp, if (i == colorShorts) GColors.Primary else Color.Transparent, CircleShape).clickable { colorShorts = i })
+                            Box(Modifier.size(40.dp).clip(CircleShape).background(col).border(3.dp, if (i == colorShorts) GColors.Primary else Color.Transparent, CircleShape).clickable { colorShorts = i }
+                                .semantics { contentDescription = "Shorts $n"; selected = i == colorShorts })
                             Text(n, style = GType.labelMd, color = GColors.TextSecondary)
                         }
                     }
@@ -415,7 +444,7 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
                         val activo = n == estilo
                         Column(
                             Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(if (activo) GColors.Primary.copy(alpha = 0.2f) else GColors.SurfaceContainer)
-                                .border(2.dp, if (activo) GColors.Primary else GColors.BorderSubtle, RoundedCornerShape(16.dp)).clickable { estilo = n }.padding(12.dp),
+                                .border(2.dp, if (activo) GColors.Primary else GColors.BorderSubtle, RoundedCornerShape(16.dp)).clickable { estilo = n }.semantics { selected = activo }.padding(12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Icon(ic, null, tint = if (activo) GColors.Primary500 else GColors.TextSecondary)

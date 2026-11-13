@@ -55,7 +55,7 @@ android {
         applicationId = "com.gacelas"
         minSdk = 24
         targetSdk = 35
-        versionName = "0.9.13"
+        versionName = "0.9.14"
         // versionCode sale de versionName (0.6.4 -> 604): siempre sube con cada version y el aviso
         // de actualizacion lo compara con latest.json. Hasta 0.6.1 fue siempre 1.
         versionCode = versionName!!.split('.', '-').take(3).map { it.toIntOrNull() ?: 0 }.plus(listOf(0, 0, 0)).let { it[0] * 10000 + it[1] * 100 + it[2] }
@@ -78,6 +78,12 @@ android {
     buildTypes {
         // Con -Pgacelas.minify=true el debug tambien pasa por R8 (quita iconos y clases sin uso).
         debug {
+            if (project.findProperty("gacelas.release") == "true" && project.findProperty("gacelas.minify") != "true") {
+                // APK publicado: solo se quitan los iconos sin uso (app/proguard-iconos.pro). Sin esto el
+                // APK no cabe en el bucket app-releases (limite de 50 MiB).
+                isMinifyEnabled = true
+                proguardFiles("proguard-iconos.pro")
+            }
             if (project.findProperty("gacelas.minify") == "true") {
                 isMinifyEnabled = true
                 isShrinkResources = true

@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SpaceDashboard
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -154,8 +153,8 @@ internal fun mensajeExito(m: String) = m in exitos
 
 @Composable
 internal fun Cargando() {
-    Box(Modifier.fillMaxWidth().padding(vertical = 48.dp).testTag("admin-cargando"), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(color = GColors.C2Violeta)
+    Box(Modifier.fillMaxWidth().padding(vertical = 16.dp).testTag("admin-cargando")) {
+        com.gacelas.ui.components.EsqueletoTarjetas(3, etiqueta = "Cargando datos del panel")
     }
 }
 

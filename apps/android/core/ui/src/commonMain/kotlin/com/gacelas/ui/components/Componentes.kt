@@ -48,6 +48,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -302,6 +304,8 @@ fun Pastilla(texto: String, activo: Boolean, onClick: () -> Unit = {}, icono: Im
         Modifier.pulsacionC2(interaccion).clip(RoundedCornerShape(2.dp))
             .background(fondo)
             .clickable(interaccion, androidx.compose.material3.ripple(), onClick = onClick)
+            // Lectores de pantalla (y la auditoria de botones) saben cual esta elegida.
+            .semantics { selected = activo }
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),

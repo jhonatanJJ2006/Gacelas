@@ -107,6 +107,7 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
             null -> "Buscando una ruta segura para hoy..."
         },
         onRutas = onRutas,
+        avisoPendientes = { com.gacelas.ui.AvisoCarrerasPendientes() },
         nivel = com.gacelas.comunidad.domain.modelo.nivelCorredor(carreras.sumOf { it.distanciaKm }),
         clima = clima,
     )

@@ -184,9 +184,20 @@ private fun PantallaCompleta(content: @Composable () -> Unit) {
     ) { content() }
 }
 
+/** Tarjeta con los colores C2 de Inicio (fondo #191F2F, borde #2C3446, esquina cortada). */
+@Composable
+private fun TarjetaC2(
+    modifier: Modifier = Modifier,
+    fondo: Color = GColors.C2Card,
+    borde: Color? = GColors.C2Linea,
+    onClick: (() -> Unit)? = null,
+    padding: Dp = 16.dp,
+    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit,
+) = com.gacelas.ui.components.Tarjeta(modifier, fondo = fondo, borde = borde, onClick = onClick, padding = padding, content = content)
+
 @Composable
 private fun BotonCerrar(onClick: () -> Unit) {
-    IconButton(onClick = onClick, modifier = Modifier.clip(CircleShape).background(GColors.SurfaceContainer)) {
+    IconButton(onClick = onClick, modifier = Modifier.clip(CircleShape).background(GColors.C2S2)) {
         Icon(Icons.Filled.Close, contentDescription = "Cerrar", tint = GColors.TextPrimary)
     }
 }
@@ -283,7 +294,7 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
             Text("Activa el GPS y comienza a grabar tu carrera", style = GType.bodyLg, color = GColors.C2Muted, textAlign = TextAlign.Center)
         }
         val colorGps = if (permiso) GColors.Secondary500 else GColors.Primary500
-        Tarjeta(fondo = colorGps.copy(alpha = 0.12f), borde = colorGps, onClick = if (permiso) null else ({ launcher.launch(permisosCarrera()) })) {
+        TarjetaC2(fondo = colorGps.copy(alpha = 0.12f), borde = colorGps, onClick = if (permiso) null else ({ launcher.launch(permisosCarrera()) })) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconoCirculo(if (permiso) Icons.Filled.GpsFixed else Icons.Filled.GpsOff, colorGps.copy(alpha = 0.25f), colorGps, 44.dp)
                 Spacer(Modifier.width(12.dp))
@@ -294,7 +305,7 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
                 if (permiso) Icon(Icons.Filled.CheckCircle, null, tint = colorGps)
             }
         }
-        Tarjeta(fondo = GColors.C2Card, borde = GColors.C2Linea) {
+        TarjetaC2(fondo = GColors.C2Card, borde = GColors.C2Linea) {
             FilaDato("Tipo de actividad", "Carrera")
             FilaDato("Ubicación", "Loja, Ecuador")
             FilaDato("Grabación", if (permiso) "GPS en primer plano" else "Requiere permiso")
@@ -385,7 +396,7 @@ fun CronometroScreen(onAtras: () -> Unit, onFin: () -> Unit) {
     PantallaCompleta {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onAtras) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Atrás", tint = GColors.TextPrimary) }
-            Text("Cronómetro Profesional", style = GType.titleMd, color = GColors.TextPrimary)
+            Text("CRONÓMETRO", style = GType.headlineLg, color = GColors.TextPrimary)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ModoCrono.entries.forEach { mo ->
@@ -397,7 +408,7 @@ fun CronometroScreen(onAtras: () -> Unit, onFin: () -> Unit) {
         }
         if (modo == ModoCrono.Pacer) {
             val dif = ritmo?.let { it - objetivoSeg }
-            Tarjeta(fondo = GColors.Secondary.copy(alpha = 0.1f), borde = GColors.Secondary.copy(alpha = 0.5f), padding = 12.dp) {
+            TarjetaC2(padding = 12.dp) {
                 Text("Objetivo Pacer: ${formatearRitmo(Unidades.ritmo(objetivoSeg, m))} ${Unidades.etiquetaRitmo(m)}", style = GType.labelLg, color = GColors.TextPrimary)
                 Text(
                     when {
@@ -411,8 +422,11 @@ fun CronometroScreen(onAtras: () -> Unit, onFin: () -> Unit) {
         }
         Box(Modifier.fillMaxWidth().height(260.dp), contentAlignment = Alignment.Center) {
             Canvas(Modifier.size(240.dp)) {
-                drawCircle(GColors.SurfaceHigh, style = Stroke(6.dp.toPx()))
-                drawArc(GColors.Primary500, -90f, 360f * progreso, false, style = Stroke(7.dp.toPx(), cap = StrokeCap.Round))
+                drawCircle(GColors.C2S2, style = Stroke(6.dp.toPx()))
+                drawArc(
+                    androidx.compose.ui.graphics.Brush.sweepGradient(listOf(Color(0xFF7B1FA2), GColors.C2Violeta, Color(0xFF7B1FA2))),
+                    -90f, 360f * progreso, false, style = Stroke(8.dp.toPx(), cap = StrokeCap.Round),
+                )
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
@@ -421,13 +435,13 @@ fun CronometroScreen(onAtras: () -> Unit, onFin: () -> Unit) {
                         FaseCarrera.Pausada -> "En Pausa"
                         else -> "Sin carrera activa"
                     },
-                    style = GType.labelMd, color = GColors.Secondary500,
+                    style = GType.labelMd, color = GColors.C2Menta,
                 )
                 Text(formatearMs(estado.segundos), style = GType.metricHuge, color = GColors.TextPrimary)
                 val kmActual = estado.distanciaKm.toInt() + 1
                 val segKm = estado.segundos - estado.parciales.filter { !it.manual }.sumOf { it.segundos }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.Flag, null, tint = GColors.Primary500, modifier = Modifier.size(14.dp))
+                    Icon(Icons.Filled.Flag, null, tint = GColors.C2Violeta, modifier = Modifier.size(14.dp))
                     Text(" Km $kmActual en curso: ${formatearMs(segKm)}", style = GType.labelMd, color = GColors.TextSecondary)
                 }
             }
@@ -441,11 +455,11 @@ fun CronometroScreen(onAtras: () -> Unit, onFin: () -> Unit) {
             CeldaMetrica(Icons.Filled.Favorite, "Desnivel", "${estado.desnivelM.toInt()} m", Modifier.weight(1f), GColors.Danger)
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-            BotonRedondo(Icons.Filled.Flag, "Vuelta", GColors.SurfaceHigh, 64.dp, {
+            BotonRedondo(Icons.Filled.Flag, "Vuelta", GColors.C2S2, 64.dp, {
                 if (estado.activa) tracker.vuelta() else context.aviso("Inicia una carrera para marcar vueltas")
             })
             BotonRedondo(
-                if (estado.fase == FaseCarrera.Corriendo) Icons.Filled.Pause else Icons.Filled.PlayArrow, "Pausa", GColors.Primary, 88.dp,
+                if (estado.fase == FaseCarrera.Corriendo) Icons.Filled.Pause else Icons.Filled.PlayArrow, if (estado.fase == FaseCarrera.Corriendo) "Pausar" else "Reanudar", Color(0xFF7B1FA2), 88.dp,
                 {
                     if (estado.activa) tracker.alternarPausa() else if (LocationService.tienePermiso(context)) empezarCarrera(context, tracker) else context.aviso("Da permiso de ubicación desde Correr")
                 },
@@ -466,15 +480,15 @@ fun CronometroScreen(onAtras: () -> Unit, onFin: () -> Unit) {
             ) { Icon(Icons.Filled.Stop, "Fin", tint = GColors.TextPrimary, modifier = Modifier.size(32.dp)) }
         }
         Text("Mantén presionado Fin por 2 seg para guardar tu sesión.", style = GType.bodySm, color = GColors.TextSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-        Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceLow).padding(4.dp)) {
+        Row(Modifier.fillMaxWidth().clip(com.gacelas.ui.components.FormaC2).background(GColors.C2Card).border(1.dp, GColors.C2Linea, com.gacelas.ui.components.FormaC2).padding(4.dp)) {
             PestanaCrono.entries.forEach { p ->
                 Row(
-                    Modifier.weight(1f).clip(RoundedCornerShape(8.dp)).background(if (p == pestana) GColors.SurfaceContainer else Color.Transparent)
+                    Modifier.weight(1f).clip(RoundedCornerShape(4.dp)).background(if (p == pestana) GColors.C2S2 else Color.Transparent)
                         .clickable { pestana = p }.padding(vertical = 8.dp),
                     horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(p.icono, null, tint = if (p == pestana) GColors.OnSurface else GColors.TextSecondary, modifier = Modifier.size(16.dp))
-                    Text(" ${p.etiqueta}", style = GType.labelMd, color = if (p == pestana) GColors.OnSurface else GColors.TextSecondary)
+                    Icon(p.icono, null, tint = if (p == pestana) GColors.C2Violeta else GColors.C2Muted, modifier = Modifier.size(16.dp))
+                    Text(" ${p.etiqueta}", style = GType.labelMd, color = if (p == pestana) GColors.TextPrimary else GColors.C2Muted)
                 }
             }
         }
@@ -494,7 +508,7 @@ private fun TablaParciales(estado: EstadoCarrera, metricas: Boolean) {
             Text("RITMO    TIEMPO", style = GType.labelMd, color = GColors.TextSecondary)
         }
         if (estado.parciales.isEmpty()) {
-            Tarjeta { Text("Aún no hay parciales. Se agregan solos cada kilómetro o con el botón Vuelta.", style = GType.bodyMd, color = GColors.TextSecondary) }
+            TarjetaC2 { Text("Aún no hay parciales. Se agregan solos cada kilómetro o con el botón Vuelta.", style = GType.bodyMd, color = GColors.TextSecondary) }
         }
         estado.parciales.reversed().forEach { s ->
             val ritmo = if (s.distanciaKm > 0.01) (s.segundos / s.distanciaKm).toInt() else null
@@ -544,7 +558,7 @@ private fun PanelIntervalos(config: ConfigIntervalos, avisos: Avisos, onCambio: 
             if (nueva == FaseIntervalo.Terminado) activo = false
         }
     }
-    Tarjeta {
+    TarjetaC2 {
         val color = when (estado.fase) {
             FaseIntervalo.Trabajo -> GColors.Primary500
             FaseIntervalo.Descanso -> GColors.Secondary500
@@ -592,7 +606,7 @@ private fun PanelMetronomo(bpm: Int, avisos: Avisos, onBpm: (Int) -> Unit) {
             delay(intervaloMetronomoMs(bpm))
         }
     }
-    Tarjeta {
+    TarjetaC2 {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(16.dp).clip(CircleShape).background(if (sonando && pulso) GColors.Primary500 else GColors.SurfaceHigh))
             Text("  $bpm pasos por minuto", style = GType.titleMd, color = GColors.TextPrimary)
@@ -610,20 +624,21 @@ private fun PanelMetronomo(bpm: Int, avisos: Avisos, onBpm: (Int) -> Unit) {
 @Composable
 private fun ChipModo(icono: ImageVector, texto: String, activo: Boolean, modifier: Modifier, onClick: () -> Unit) {
     Row(
-        modifier.clip(CircleShape).background(if (activo) GColors.Primary else GColors.SurfaceContainer).clickable(onClick = onClick).padding(vertical = 8.dp, horizontal = 8.dp),
+        modifier.clip(com.gacelas.ui.components.FormaBotonC2).background(if (activo) Color(0xFF7B1FA2) else GColors.C2Card)
+            .border(1.dp, if (activo) GColors.C2Violeta else GColors.C2Linea, com.gacelas.ui.components.FormaBotonC2).clickable(onClick = onClick).padding(vertical = 8.dp, horizontal = 8.dp),
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icono, null, tint = if (activo) GColors.TextPrimary else GColors.TextSecondary, modifier = Modifier.size(16.dp))
-        Text(" $texto", style = GType.labelMd, color = if (activo) GColors.TextPrimary else GColors.TextSecondary, maxLines = 1)
+        Icon(icono, null, tint = if (activo) GColors.TextPrimary else GColors.C2Violeta, modifier = Modifier.size(16.dp))
+        Text(" $texto", style = GType.labelMd, color = if (activo) GColors.TextPrimary else GColors.C2Muted, maxLines = 1)
     }
 }
 
 @Composable
-private fun CeldaMetrica(icono: ImageVector, etiqueta: String, valor: String, modifier: Modifier, color: Color = GColors.Primary500) {
-    Column(modifier.clip(RoundedCornerShape(16.dp)).background(GColors.SurfaceContainer).border(1.dp, GColors.BorderSubtle, RoundedCornerShape(16.dp)).padding(12.dp)) {
+private fun CeldaMetrica(icono: ImageVector, etiqueta: String, valor: String, modifier: Modifier, color: Color = GColors.C2Violeta) {
+    Column(modifier.clip(com.gacelas.ui.components.FormaC2).background(GColors.C2Card).border(1.dp, GColors.C2Linea, com.gacelas.ui.components.FormaC2).padding(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(icono, null, tint = color, modifier = Modifier.size(16.dp))
-            Text(" $etiqueta", style = GType.labelMd, color = GColors.TextSecondary)
+            Text(" ${etiqueta.uppercase()}", style = GType.labelMd, color = GColors.C2Muted)
         }
         Text(valor, style = GType.headlineSm, color = GColors.TextPrimary)
     }
@@ -663,29 +678,29 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
                 com.gacelas.actividad.domain.modelo.Carrera(id = "nueva", titulo = "", inicioMs = estado.inicioMs, segundos = estado.segundos, distanciaKm = estado.distanciaKm, parciales = estado.parciales)) else null
         }
         // Destello C2 (confeti morado/menta, 1,2 s, sin bloquear toques) al terminar una carrera con datos.
-        Box { Tarjeta(fondo = GColors.Primary.copy(alpha = 0.12f)) {
+        Box { TarjetaC2(fondo = Color(0xFF3A1257), borde = GColors.C2Violeta) {
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                IconoCirculo(if (record != null) Icons.Filled.MilitaryTech else Icons.Filled.CheckCircle, GColors.Primary.copy(alpha = 0.2f), GColors.Primary500, 88.dp)
-                Text(if (estado.segundos > 0) "¡Excelente zancada, gacela!" else "Carrera completada", style = GType.headlineMd, color = GColors.TextPrimary, textAlign = TextAlign.Center)
-                Text(if (estado.segundos > 0) "Carrera completada" else "No hay datos de carrera para guardar", style = GType.bodyLg, color = GColors.TextSecondary)
-                record?.let { Text("Nuevo récord personal en ${it.etiqueta}", style = GType.labelLg, color = GColors.Primary500, modifier = Modifier.testTag("nuevo-record")) }
-                Text("Loja, Ecuador", style = GType.bodySm, color = GColors.TextSecondary)
+                IconoCirculo(if (record != null) Icons.Filled.MilitaryTech else Icons.Filled.CheckCircle, Color(0xFF7B1FA2).copy(alpha = 0.45f), GColors.C2Violeta, 88.dp)
+                Text(if (estado.segundos > 0) "¡EXCELENTE ZANCADA, GACELA!" else "CARRERA COMPLETADA", style = GType.headlineLg, color = GColors.TextPrimary, textAlign = TextAlign.Center)
+                Text(if (estado.segundos > 0) "Carrera completada" else "No hay datos de carrera para guardar", style = GType.bodyLg, color = GColors.C2Muted)
+                record?.let { Text("Nuevo récord personal en ${it.etiqueta}", style = GType.labelLg, color = GColors.C2Menta, modifier = Modifier.testTag("nuevo-record")) }
+                Text("Loja, Ecuador", style = GType.bodySm, color = GColors.C2Muted)
             }
         }
             com.gacelas.ui.movimiento.DestelloC2(Modifier.matchParentSize(), activo = estado.segundos > 0)
         }
         if (estado.segundos > 0) com.gacelas.ui.components.CelebracionRacha(rachaAntes, rachaDespues)
-        if (estado.puntos.size >= 2) Tarjeta(padding = 8.dp) {
+        if (estado.puntos.size >= 2) TarjetaC2(padding = 8.dp) {
             MapaGacelas(estado.puntos.aLatLng(), Modifier.fillMaxWidth().height(180.dp)) { TrazadoRuta(estado.puntos, Modifier.fillMaxWidth().height(180.dp)) }
             val alturas = estado.puntos.mapNotNull { it.altitudM }
             if (alturas.size > 1) Text("${alturas.min().toInt()} m - ${alturas.max().toInt()} m", style = GType.labelMd, color = GColors.TextSecondary)
         }
-        Tarjeta(Modifier.entradaEscalonada(1)) {
-            Text("DISTANCIA TOTAL", style = GType.labelMd, color = GColors.TextSecondary)
+        TarjetaC2(Modifier.entradaEscalonada(1)) {
+            Text("DISTANCIA TOTAL", style = GType.labelMd, color = GColors.C2Muted)
             Row(verticalAlignment = Alignment.Bottom) {
                 // Las cifras cuentan desde 0 (900 ms); con animaciones quitadas aparecen ya finales.
-                com.gacelas.ui.movimiento.CifraAnimada(estado.distanciaKm, { Unidades.texto(it, m) }, GType.headlineLg, GColors.TextPrimary)
-                Text("  ${if (m) "Kilómetros" else "Millas"}", style = GType.labelLg, color = GColors.Primary500)
+                com.gacelas.ui.movimiento.CifraAnimada(estado.distanciaKm, { Unidades.texto(it, m) }, GType.headlineLg, GColors.C2Violeta)
+                Text("  ${if (m) "Kilómetros" else "Millas"}", style = GType.labelLg, color = GColors.TextPrimary)
             }
         }
         val kcal = (estado.distanciaKm * 62).toInt()
@@ -695,8 +710,8 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
         ).forEachIndexed { i, fila ->
             Row(Modifier.entradaEscalonada(2 + i), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 fila.forEach { (t, v, d) ->
-                    Tarjeta(Modifier.weight(1f), padding = 12.dp) {
-                        Text(t, style = GType.labelMd, color = GColors.TextSecondary)
+                    TarjetaC2(Modifier.weight(1f), padding = 12.dp) {
+                        Text(t, style = GType.labelMd, color = GColors.C2Muted)
                         when (t) {
                             "TIEMPO" -> com.gacelas.ui.movimiento.CifraAnimada(estado.segundos.toDouble(), { formatearMs(it.toInt()) }, GType.headlineMd, GColors.TextPrimary)
                             "CALORÍAS" -> com.gacelas.ui.movimiento.CifraAnimada(kcal.toDouble(), { "${it.toInt()}" }, GType.headlineMd, GColors.TextPrimary)

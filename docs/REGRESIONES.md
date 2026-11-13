@@ -307,3 +307,25 @@ Selector `vista-3d-on` / `vista-2d-on` en web y Android (Roborazzi de la carrera
 ### Como evitarlo
 
 Los botones de modo muestran el estado actual, nunca el de destino.
+
+## 2026-11-12: La version 0.9.12 no cabia en el bucket de actualizaciones (APK de 55,1 MB)
+
+### Sintoma
+
+`scripts/publicar-android.sh` creo el release v0.9.12 en GitHub pero no actualizo `android/latest.json`: el APK pesaba 55.089.826 bytes y el bucket `app-releases` admite 52.428.800 (50 MiB). Las apps instaladas no vieron la 0.9.12.
+
+### Causa
+
+La intro paso a ExoPlayer (media3) y a un video de 752 KB. El APK de 0.9.11 ya estaba a 600 KB del limite.
+
+### Arreglo
+
+0.9.13: intro con el `MediaPlayer` del sistema y video de 396 KB (52.281.903 bytes). 0.9.14: el APK publicado pasa por R8 solo para quitar los iconos de `material-icons-extended` que no se usan (`app/proguard-iconos.pro`, activo con `-Pgacelas.release=true`): sin ofuscar, sin optimizar y conservando todas las demas clases, asi que la reflexion de Supabase, Ktor, serializacion, Filament y MapLibre no cambia. Se quitan 11.279 de 11.400 clases de iconos (de 39.645 a 29.456 clases en total) y el dex comprimido baja de 25,06 MB a 17,64 MB. APK publicado: 44,9 MB, con unos 7,5 MB de margen.
+
+### Test de regresion
+
+El script ya corta la publicacion si el APK supera el limite. Comparar las clases del dex con y sin R8 (`dexdump -h`): solo deben faltar clases `androidx/compose/material/icons/**` y lambdas sinteticas.
+
+### Como evitarlo
+
+Antes de agregar una dependencia o un recurso grande, medir el APK con `./gradlew clean assembleDebug -Pgacelas.abi=arm64-v8a -Pgacelas.release=true`. Los builds incrementales reusan el archivo y dejan huecos: medir siempre tras `clean`.

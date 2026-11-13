@@ -93,6 +93,8 @@ fun InicioContenido(
     rutaSugeridaNota: String? = null,
     /** Clima del chip; null (sin cache ni red, o cargando sin cache) muestra "LOJA --". */
     clima: com.gacelas.clima.domain.ClimaActual? = null,
+    /** Aviso de carreras sin subir (Android); vacio si no hay pendientes. */
+    avisoPendientes: @Composable () -> Unit = {},
 ) {
     Pantalla {
         // Encabezado C2: saludo en Anton, pildoras de clima, racha y nivel.
@@ -117,6 +119,7 @@ fun InicioContenido(
                 }
             }
         }
+        avisoPendientes()
         // Escenario C2 (Figma Movil / Inicio, "stage"): degradado morado a todo el ancho con el corredor 3D,
         // etiquetas y el boton de empezar dentro. Ver EscenarioInicioC2.kt.
         EscenarioInicioC2(

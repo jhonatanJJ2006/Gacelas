@@ -69,7 +69,9 @@ fun NotificacionesContenido(vm: NotificacionesViewModel, onAtras: () -> Unit, on
     Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
         EncabezadoAtras("Notificaciones", onAtras) {
             Text("Marcar todas leídas", style = GType.labelMd, color = GColors.Primary500, modifier = Modifier.clickable {
+                val habia = lista.any { !it.leida }
                 vm.marcarTodas()
+                com.gacelas.ui.components.AvisosC2.mostrar(if (habia) "Notificaciones marcadas como leídas" else "No tienes notificaciones sin leer", error = false)
             }.padding(12.dp))
         }
         Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

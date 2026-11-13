@@ -195,6 +195,12 @@ export function PrivacidadUbicacion() {
             void registrarConsentimiento('ubicacion_visible', v)
           }}
         />
+        <FilaC2
+          titulo="Alertas de zona"
+          descripcion="Vibra y avisa al acercarte a menos de 200 m de un reporte de inseguridad reciente"
+          activo={ajustes.alertasZona !== false}
+          onCambiar={(v) => void actualizar({ alertasZona: v })}
+        />
       </GrupoC2>
 
       <ContactosEmergencia />

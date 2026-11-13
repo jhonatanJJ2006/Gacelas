@@ -95,6 +95,8 @@ fun ListaRutasContenido(
     mapaRutas: @Composable (Modifier) -> Unit,
     /** Abrir ya en la vista de mapa (capturas de paridad). */
     verMapaInicial: Boolean = false,
+    /** Rutas del servidor aun sin llegar: esqueleto en lugar de la lista. */
+    cargando: Boolean = false,
 ) {
     Pantalla {
         var verMapa by rememberSaveable { mutableStateOf(verMapaInicial) }
@@ -125,7 +127,8 @@ fun ListaRutasContenido(
             com.gacelas.rutas.domain.modelo.FiltroDistancia.entries.forEach { d -> Pastilla(d.etiqueta, filtros.distancia == d, { onFiltros(filtros.copy(distancia = d)) }) }
             com.gacelas.rutas.domain.modelo.ETIQUETAS_RUTA.forEach { (k, v) -> Pastilla("#$v", filtros.etiqueta == k, { onFiltros(filtros.copy(etiqueta = if (filtros.etiqueta == k) null else k)) }) }
         }
-        if (lista.isEmpty()) {
+        if (cargando) com.gacelas.ui.components.EsqueletoTarjetas(4, etiqueta = "Cargando rutas")
+        else if (lista.isEmpty()) {
             Tarjeta {
                 Text(
                     when (pestana) {
@@ -137,11 +140,11 @@ fun ListaRutasContenido(
                 )
             }
         }
-        Column(Modifier.testTag("encabezado-lista-rutas")) {
+        if (!cargando) Column(Modifier.testTag("encabezado-lista-rutas")) {
             Text("Rutas locales de Loja", style = GType.titleMd, color = GColors.TextPrimary)
             Text("${lista.size} ${if (lista.size == 1) "sendero" else "senderos"}", style = GType.bodySm, color = GColors.TextSecondary)
         }
-        lista.forEach { ruta ->
+        (if (cargando) emptyList() else lista).forEach { ruta ->
             val guardada = ruta.id in guardadas
             // Tarjeta C2 compacta: miniatura de 88 dp, datos en linea y numeros pequenos.
             Tarjeta(padding = 12.dp, onClick = { onRuta(ruta.id) }) {

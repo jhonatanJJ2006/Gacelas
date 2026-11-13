@@ -125,6 +125,9 @@ class ContenedorApp(
     /** Sube carreras y rutas pendientes; devuelve cuantas operaciones quedan (lo usa SincronizacionWorker). */
     val subirPendientes: suspend () -> Int
 
+    /** Ids de carreras grabadas que aun no se subieron a Supabase (aviso en Inicio y Perfil). */
+    val carrerasPendientes: kotlinx.coroutines.flow.Flow<Set<String>>
+
     init {
         if (backend == null) {
             auth = LocalAuthRepository(store)
@@ -134,6 +137,7 @@ class ContenedorApp(
             eventos = ModuloComunidad.eventosLocal(store)
             sincronizar = {}
             subirPendientes = { 0 }
+            carrerasPendientes = kotlinx.coroutines.flow.flowOf(emptySet())
             enVivo = null
             mapaVivo = null
             incidentes = null
@@ -171,6 +175,7 @@ class ContenedorApp(
             val ex = ModuloRutas.explorar(backend, rutasOffline, programarSincronizacion, uid)
             explorar = ex
             subirPendientes = { c.sincronizar() + ex.subirPendientes() }
+            carrerasPendientes = c.pendientesDeSubir
             clubes = ModuloComunidad.clubes(backend, uid)
             feed = com.gacelas.comunidad.infrastructure.SupabaseFeedRepository(backend, uid)
             admin = com.gacelas.administracion.infrastructure.SupabaseAdminRepositorio(backend)

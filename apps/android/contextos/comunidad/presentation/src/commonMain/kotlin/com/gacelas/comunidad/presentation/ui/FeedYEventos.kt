@@ -24,6 +24,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.input.KeyboardType
@@ -81,6 +83,7 @@ fun FeedContenido(
     var menuFiltro by remember { mutableStateOf(false) }
     var comentando by remember { mutableStateOf<Publicacion?>(null) }
     val lista by vm.publicaciones.collectAsState()
+    val primeraCarga by vm.primeraCarga.collectAsState()
     val italica = androidx.compose.ui.text.font.FontStyle.Italic
     val negra = androidx.compose.ui.text.font.FontWeight.Black
     // Feed C2 (frame Movil / Comunidad / Feed): cabecera centrada, pestanas, compositor y posts estilo X a todo el ancho.
@@ -146,7 +149,8 @@ fun FeedContenido(
         if (filtro == FiltroFeed.Comunidad || filtro == FiltroFeed.Mias) {
             Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) { Pastilla(filtro.etiqueta, true, { vm.filtro(FiltroFeed.Todos) }) }
         }
-        if (lista.isEmpty()) Text(
+        if (primeraCarga) Box(Modifier.padding(16.dp)) { com.gacelas.ui.components.EsqueletoTarjetas(3, etiqueta = "Cargando publicaciones", conImagen = true) }
+        else if (lista.isEmpty()) Text(
             when (filtro) {
                 FiltroFeed.Siguiendo -> "Las carreras de quienes sigues aparecerán aquí."
                 FiltroFeed.Mias -> "Aún no tienes carreras públicas."
@@ -155,7 +159,7 @@ fun FeedContenido(
             style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.padding(16.dp),
         )
         val kms = remember(lista) { lista.groupBy { if (it.propia) "yo" else it.autorId ?: it.autor }.mapValues { (_, l) -> l.sumOf { it.distanciaKm } } }
-        lista.forEachIndexed { indice, p ->
+        (if (primeraCarga) emptyList() else lista).forEachIndexed { indice, p ->
             if (indice == 1 && eventoClub != null) Box(Modifier.padding(16.dp)) { TarjetaClub(eventoClub, inscritoClub, onAsistir, onEventoClub) }
             val gusta = if (p.remota) p.meGusta else p.id in ajustes.likes
             val likes = if (p.remota) p.likesBase else p.likesBase + if (gusta) 1 else 0
@@ -291,6 +295,8 @@ fun EventosContenido(
     onEvento: (String) -> Unit,
     onClubes: () -> Unit,
     onAviso: (String) -> Unit,
+    /** Primera lectura de eventos aun en curso: esqueleto en lugar de "No hay eventos". */
+    cargando: Boolean = false,
 ) {
     val pestana by vm.pestana.collectAsState()
     var creando by remember { mutableStateOf(clubId != null) }
@@ -315,11 +321,12 @@ fun EventosContenido(
                 val activo = tipo == k
                 Text(v, style = GType.labelMd, color = if (activo) GColors.Primary500 else GColors.TextSecondary,
                     modifier = Modifier.clip(RoundedCornerShape(8.dp)).border(1.dp, if (activo) GColors.Primary else GColors.SurfaceHigh, RoundedCornerShape(8.dp))
-                        .clickable { tipo = if (activo) null else k }.padding(horizontal = 12.dp, vertical = 6.dp).testTag("tipo-$k"))
+                        .clickable { tipo = if (activo) null else k }.semantics { selected = activo }.padding(horizontal = 12.dp, vertical = 6.dp).testTag("tipo-$k"))
             }
         }
         if (calendario) CalendarioEventos(eventos, inscritos, onEvento)
-        if (lista.isEmpty()) Tarjeta { Text(if (pestana == PestanaEventos.MisEventos) "Aún no te inscribes a ningún evento." else "No hay eventos.", style = GType.bodyMd, color = GColors.TextSecondary) }
+        if (cargando && lista.isEmpty()) com.gacelas.ui.components.EsqueletoTarjetas(3, etiqueta = "Cargando eventos")
+        else if (lista.isEmpty()) Tarjeta { Text(if (pestana == PestanaEventos.MisEventos) "Aún no te inscribes a ningún evento." else "No hay eventos.", style = GType.bodyMd, color = GColors.TextSecondary) }
         lista.forEachIndexed { i, e ->
             if (i == 1) Text("Más eventos locales", style = GType.titleMd, color = GColors.TextPrimary)
             val inscribir = {
