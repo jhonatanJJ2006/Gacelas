@@ -74,7 +74,7 @@ private fun Mosaico(icono: ImageVector, valor: String, etiqueta: String, modifie
 
 /** "Tu semana atletica": meta semanal, tres metricas y dias corridos (Stitch, igual que la web). */
 @Composable
-fun SemanaAtletica(totales: ResumenPeriodo, dias: Set<Int>, hoy: Int, meta: Int, rango: String, m: Boolean) {
+fun SemanaAtletica(totales: ResumenPeriodo, dias: Set<Int>, hoy: Int, meta: Int, rango: String, m: Boolean, kmPorDia: List<Double> = emptyList()) {
     val pct = (totales.carreras.toFloat() / meta.coerceAtLeast(1)).coerceAtMost(1f)
     Column(Modifier.testTag("semana-atletica"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -99,7 +99,12 @@ fun SemanaAtletica(totales: ResumenPeriodo, dias: Set<Int>, hoy: Int, meta: Int,
             Mosaico(Icons.Filled.Speed, formatearRitmo(Unidades.ritmo(ritmo, m)), "Ritmo (${Unidades.etiquetaRitmo(m)})", Modifier.weight(1f))
             Mosaico(Icons.Filled.Terrain, "+${totales.desnivelM} m", "Desnivel", Modifier.weight(1f))
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        if (kmPorDia.size == 7 && kmPorDia.any { it > 0 }) {
+            // Barras por dia con los km reales; hoy resaltado.
+            Column(Modifier.fillMaxWidth().clip(com.gacelas.ui.components.FormaC2).background(GColors.C2Card).padding(12.dp).testTag("barras-semana")) {
+                com.gacelas.ui.components.BarrasC2(kmPorDia.map { it.toFloat() }, etiquetas = DIAS, resaltada = hoy, alto = 70.dp)
+            }
+        } else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             DIAS.forEachIndexed { i, dia ->
                 val hecho = i in dias
                 Column(

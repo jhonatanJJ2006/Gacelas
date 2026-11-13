@@ -44,6 +44,9 @@ import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Sos
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material3.AlertDialog
@@ -123,8 +126,17 @@ fun AjustesContenido(
 ) {
     var dialogo by remember { mutableStateOf<String?>(null) }
     PantallaConEncabezado("Ajustes", onAtras) {
-        Text("Club Gacelas Loja • 2,100 msnm", style = GType.bodySm, color = GColors.TextSecondary)
-        Tarjeta { cabecera() }
+        // Tarjeta de cuenta con gradiente y tres cifras rapidas reales (meta, version y vista del mapa).
+        Column(
+            Modifier.fillMaxWidth().clip(com.gacelas.ui.components.FormaC2)
+                .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(GColors.Primary.copy(alpha = 0.55f), GColors.C2Card)))
+                .padding(16.dp).testTag("ajustes-cuenta"),
+        ) { cabecera() }
+        com.gacelas.ui.components.TiraCifrasC2(listOf(
+            com.gacelas.ui.components.DatoCifra("${a.metaKmSemana}", if (a.unidadesMetricas) "km" else "mi", "Meta semanal", GColors.C2Violeta),
+            com.gacelas.ui.components.DatoCifra(version.removePrefix("Versión ").substringBefore(' '), "", "Versión"),
+            com.gacelas.ui.components.DatoCifra(if (a.vistaMapa3d) "3D" else "2D", "", "Vista mapa", GColors.C2Menta),
+        ), tag = "ajustes-cifras", tamano = 18)
         EtiquetaSeccion("Preferencias de carrera", "Entrenamiento")
         Tarjeta(padding = 0.dp) {
             FilaAjuste(Icons.Filled.Straighten, "Unidades de distancia", "Sistema métrico para rutas andinas", trailing = {
@@ -144,6 +156,16 @@ fun AjustesContenido(
             })
             FilaInterruptor(Icons.Filled.PauseCircle, "Autopausa", "Detener al parar en semáforos o cruces", checked = a.autopausa, onChange = { v -> guardar { it.copy(autopausa = v) } })
             FilaInterruptor(Icons.Filled.RecordVoiceOver, "Anuncios de voz", "Métricas audibles cada 1 ${if (a.unidadesMetricas) "km" else "mi"}", checked = a.anunciosVoz, onChange = { v -> guardar { it.copy(anunciosVoz = v) } })
+            FilaAjuste(Icons.Filled.Map, "Vista del mapa al correr", "Se recuerda la última que elegiste", onClick = { guardar { it.copy(vistaMapa3d = !it.vistaMapa3d) } }, trailing = {
+                Row(Modifier.clip(RoundedCornerShape(8.dp)).background(GColors.SurfaceHigh).padding(2.dp).testTag("ajuste-vista-mapa")) {
+                    listOf("3D" to true, "2D" to false).forEach { (t, v) ->
+                        val activo = a.vistaMapa3d == v
+                        Text(t, style = GType.labelMd, color = if (activo) GColors.OnPrimary else GColors.TextSecondary,
+                            modifier = Modifier.clip(RoundedCornerShape(6.dp)).background(if (activo) GColors.Primary else GColors.SurfaceHigh)
+                                .clickable { guardar { it.copy(vistaMapa3d = v) } }.padding(horizontal = 12.dp, vertical = 4.dp))
+                    }
+                }
+            })
             FilaAjuste(Icons.Filled.Timer, "Cuenta regresiva de inicio", "Tiempo antes de arrancar el GPS", trailing = {
                 val opciones = listOf(0, 3, 5, 10)
                 Text(if (a.cuentaRegresivaSeg == 0) "Sin cuenta" else "${a.cuentaRegresivaSeg} seg", style = GType.labelMd, color = GColors.Secondary500,
@@ -151,6 +173,18 @@ fun AjustesContenido(
                         .clickable { guardar { it.copy(cuentaRegresivaSeg = opciones[(opciones.indexOf(it.cuentaRegresivaSeg) + 1) % opciones.size]) } }
                         .padding(horizontal = 10.dp, vertical = 4.dp).testTag("cuenta-regresiva"))
             })
+        }
+        // Seguridad y privacidad (nuevo): lo decidido una vez se muestra aqui y se cambia en Privacidad.
+        EtiquetaSeccion("Seguridad y privacidad", "Nuevo")
+        Tarjeta(padding = 0.dp, modifier = Modifier.testTag("ajustes-seguridad")) {
+            FilaAjuste(Icons.Filled.Sensors, "Compartir en vivo", when (a.compartirEnVivo) {
+                true -> "Sí, con tus seguidores. Se eligió una vez"
+                false -> "No compartes. Se eligió una vez"
+                null -> "Se pregunta al empezar tu primera carrera"
+            }, onClick = onPrivacidad)
+            FilaInterruptor(Icons.Filled.Home, "Ocultar zona de casa", "Radio de ${a.radioHogarM} m sin mostrar en mapas", checked = a.ocultarHogar, onChange = { v -> guardar { it.copy(ocultarHogar = v) } })
+            FilaInterruptor(Icons.Filled.Warning, "Alertas de zona", "Aviso al acercarte a reportes de inseguridad", checked = a.alertasZona, onChange = { v -> guardar { it.copy(alertasZona = v) } })
+            FilaAjuste(Icons.Filled.Sos, "Contactos de emergencia", if (a.contactosEmergencia.isEmpty()) "Sin contactos: el SOS solo llama al 911" else "${a.contactosEmergencia.size} de 3 contactos", onClick = onPrivacidad)
         }
         EtiquetaSeccion("Apariencia", "Interfaz")
         Tarjeta(padding = 0.dp) {

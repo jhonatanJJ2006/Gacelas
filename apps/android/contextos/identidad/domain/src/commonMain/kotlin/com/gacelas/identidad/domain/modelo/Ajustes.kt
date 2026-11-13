@@ -60,6 +60,11 @@ data class Ajustes(
     val contactosEmergencia: List<ContactoEmergencia> = emptyList(),
     /** Alertas al acercarse a reportes de inseguridad durante la carrera (prefs.alertasZona, igual en la web). */
     val alertasZona: Boolean = true,
+    /** Ultima vista del mapa elegida al correr (3D o 2D); se recuerda entre carreras. */
+    val vistaMapa3d: Boolean = true,
+    /** Objetivo elegido en Correr: libre, distancia (metros), tiempo (segundos) o ritmo (seg/km). */
+    val objetivoTipo: String = "libre",
+    val objetivoValor: Int = 0,
 )
 
 /** Contacto de confianza para el boton SOS. */

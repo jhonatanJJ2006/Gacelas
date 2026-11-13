@@ -207,19 +207,13 @@ fun FeedContenido(
                         }
                     }
                     Text(p.titulo, style = GType.bodyMd, color = GColors.TextPrimary)
-                    if (p.distanciaKm > 0) Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Bottom) {
-                        @Composable
-                        fun Dato(valor: String, unidad: String, color: androidx.compose.ui.graphics.Color) {
-                            Row(verticalAlignment = Alignment.Bottom) {
-                                Text(valor, style = GType.titleMd.copy(fontStyle = italica, fontWeight = negra), color = color)
-                                Text(unidad, style = GType.bodySm, color = GColors.C2Muted)
-                            }
-                        }
-                        Dato(Unidades.texto(p.distanciaKm, m, 1), Unidades.etiquetaDistancia(m), GColors.C2Violeta)
-                        Dato(formatearRitmo(Unidades.ritmo(p.ritmoSegKm, m)), "/${Unidades.etiquetaDistancia(m)}", GColors.TextPrimary)
-                        Dato(formatearMs(p.segundos), "", GColors.TextPrimary)
-                        Dato("${p.desnivelM}", "m+", GColors.C2Cielo)
-                    }
+                    // 4 metricas en celdas (rediseno movil).
+                    if (p.distanciaKm > 0) com.gacelas.ui.components.TiraCifrasC2(listOf(
+                        com.gacelas.ui.components.DatoCifra(Unidades.texto(p.distanciaKm, m, 1), Unidades.etiquetaDistancia(m), "Dist.", GColors.C2Violeta),
+                        com.gacelas.ui.components.DatoCifra(formatearRitmo(Unidades.ritmo(p.ritmoSegKm, m)), "", "Ritmo", GColors.C2Menta),
+                        com.gacelas.ui.components.DatoCifra(formatearMs(p.segundos), "", "Tiempo"),
+                        com.gacelas.ui.components.DatoCifra("+${p.desnivelM}", "m", "Subida", GColors.C2Cielo),
+                    ), tag = "metricas-post", tamano = 16)
                     if (p.distanciaKm > 0 || p.imagenes.isNotEmpty()) MediaPost(p, imagen)
                     locales.takeLast(2).forEach { Text("Tú: $it", style = GType.bodySm, color = GColors.TextSecondary) }
                     Row(Modifier.fillMaxWidth().padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -313,9 +307,10 @@ fun EventosContenido(
                 Icon(Icons.Filled.Add, "Crear evento", tint = GColors.TextPrimary)
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PestanaEventos.entries.forEach { p -> Pastilla(p.etiqueta, p == pestana, { vm.pestana(p) }) }
-        }
+        com.gacelas.ui.components.SelectorSegmentadoC2(
+            PestanaEventos.entries.map { it.etiqueta }, PestanaEventos.entries.indexOf(pestana),
+            { vm.pestana(PestanaEventos.entries[it]) }, tag = "pestanas-eventos",
+        )
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             TIPOS_EVENTO.forEach { (k, v) ->
                 val activo = tipo == k
@@ -410,7 +405,15 @@ private fun EventoPrincipal(e: Evento, inscrito: Boolean, onClick: () -> Unit, o
                 Text("Evento principal", style = GType.labelMd, color = GColors.Primary500, modifier = Modifier.weight(1f))
                 Text(if (e.yaPaso()) "Finalizado" else if (lleno) "Lista de espera" else "Inscripción abierta", style = GType.labelMd, color = GColors.Secondary500)
             }
-            Text(e.titulo, style = GType.headlineMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary)
+            Text(e.titulo.uppercase(), style = GType.headlineMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary)
+            // Cuenta regresiva real desde la fecha del evento.
+            e.inicioMs?.let { ini ->
+                val dias = ((ini - com.gacelas.shared.ahoraMs()) / 86_400_000L).toInt()
+                if (!e.yaPaso()) com.gacelas.ui.components.ChipParalelogramo(
+                    when { dias <= 0 -> "Es hoy"; dias == 1 -> "Falta 1 día"; else -> "Faltan $dias días" },
+                    color = GColors.C2Menta, punto = GColors.C2Menta, tag = "cuenta-evento",
+                )
+            }
             if (e.creadoPorUsuario) Text("Organizas tú", style = GType.labelMd, color = GColors.Primary500)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.CalendarToday, null, tint = GColors.Primary500, modifier = Modifier.size(14.dp))
@@ -428,6 +431,7 @@ private fun EventoPrincipal(e: Evento, inscrito: Boolean, onClick: () -> Unit, o
                     }
                 }
             }
+            e.cupo?.let { cupo -> com.gacelas.ui.components.BarraProgresoC2(total.toFloat() / cupo.coerceAtLeast(1)) }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("$total participantes", style = GType.labelMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
                 if (!e.yaPaso()) com.gacelas.ui.components.BotonChipC2(if (inscrito) "Inscrito" else "Inscribirse", onInscribir, activo = inscrito)
@@ -603,11 +607,11 @@ private fun TarjetaClub(e: Evento, inscrito: Boolean, onAsistir: () -> Unit, onA
     Tarjeta {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(44.dp).clip(CircleShape).background(GColors.Primary), contentAlignment = Alignment.Center) {
-                Text("GL", style = GType.labelLg, color = GColors.OnPrimary)
+                Text("RC", style = GType.labelLg, color = GColors.OnPrimary)
             }
             Spacer(Modifier.width(12.dp))
             Column {
-                Text("Club Gacelas Loja", style = GType.labelLg, color = GColors.TextPrimary)
+                Text("Runcity Loja", style = GType.labelLg, color = GColors.TextPrimary)
                 Text("Comunicado oficial", style = GType.bodySm, color = GColors.TextSecondary)
             }
         }

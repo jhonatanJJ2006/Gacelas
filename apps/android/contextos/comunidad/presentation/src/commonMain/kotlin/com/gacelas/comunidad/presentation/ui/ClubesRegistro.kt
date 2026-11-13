@@ -255,6 +255,9 @@ internal fun TarjetaClub(
     onClick: () -> Unit,
 ) = Tarjeta(Modifier.testTag("tarjeta-club"), onClick = onClick) {
     val esGrupo = c.tipo == TipoClub.grupo
+    // Franja de marca arriba (rediseno movil): violeta para grupos, menta para comunidades.
+    Box(Modifier.fillMaxWidth().height(3.dp).background(androidx.compose.ui.graphics.Brush.horizontalGradient(
+        if (esGrupo) listOf(GColors.Primary, GColors.C2Morado) else listOf(GColors.C2Menta, GColors.C2Cielo))))
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         LogoClub(c, 48)
         Column(Modifier.weight(1f)) {
@@ -275,6 +278,7 @@ internal fun TarjetaClub(
         if (esGrupo) textoRitmo(c.ritmoSegKm)?.let { DatoTarjeta(Icons.Filled.Speed, it) }
         else grupos?.let { DatoTarjeta(Icons.AutoMirrored.Filled.DirectionsRun, "$it ${if (it == 1) "grupo" else "grupos"}") }
     }
+    c.cupo?.takeIf { it > 0 }?.let { cupo -> com.gacelas.ui.components.BarraProgresoC2(c.miembros.toFloat() / cupo, alto = 4.dp) }
     if (esGrupo && (c.dias.isNotEmpty() || c.hora != null)) DatoTarjeta(Icons.Filled.Schedule, textoHorario(c.dias, c.hora))
     val lugar = if (esGrupo) c.lugarEncuentro.ifBlank { c.ciudad } else c.ciudad
     Row(verticalAlignment = Alignment.CenterVertically) {

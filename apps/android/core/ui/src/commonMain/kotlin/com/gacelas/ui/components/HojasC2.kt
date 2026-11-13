@@ -1,6 +1,7 @@
 package com.gacelas.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -143,6 +144,8 @@ fun HojaC2(
     onCerrar: () -> Unit,
     modifier: Modifier = Modifier,
     fondo: Color = GColors.C2Bg,
+    /** Borde de la hoja (rojo en la hoja SOS); null sin borde. */
+    borde: Color? = null,
     contenido: @Composable () -> Unit,
 ) {
     CapaHojaC2(onCerrar) {
@@ -155,6 +158,7 @@ fun HojaC2(
             Column(
                 modifier.fillMaxWidth().heightIn(max = altoMax)
                     .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)).background(fondo)
+                    .then(if (borde != null) Modifier.border(2.dp, borde, RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)) else Modifier)
                     .clickable(remember { MutableInteractionSource() }, null) {}.testTag("hoja-c2"),
             ) {
                 Box(Modifier.fillMaxWidth().padding(vertical = 10.dp), contentAlignment = Alignment.Center) {

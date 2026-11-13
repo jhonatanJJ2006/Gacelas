@@ -114,6 +114,7 @@ import com.gacelas.tracking.intervaloMetronomoMs
 import com.gacelas.ui.ajustesState
 import com.gacelas.ui.aviso
 import com.gacelas.ui.components.BotonPrimario
+import com.gacelas.ui.components.EstadoC2
 import com.gacelas.ui.components.BotonSecundario
 import com.gacelas.ui.components.CampoTexto
 import com.gacelas.ui.components.IconoCirculo
@@ -211,7 +212,7 @@ private fun BotonRedondo(icono: ImageVector, descripcion: String, color: Color, 
 
 @SuppressLint("MissingPermission")
 @Composable
-fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
+fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit, onRuta: (String) -> Unit = {}, onPrivacidad: () -> Unit = {}) {
     val context = LocalContext.current
     val tracker = contenedor().tracker
     var permiso by remember { mutableStateOf(LocationService.tienePermiso(context)) }
@@ -226,6 +227,7 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
         },
     )
     var precision by remember { mutableStateOf<Float?>(null) }
+    var posicion by remember { mutableStateOf<Pair<Double, Double>?>(null) }
     val notificaciones by com.gacelas.core.notificaciones.notificacionesPermitidasState()
     val activarNotificaciones = com.gacelas.core.notificaciones.rememberActivarNotificaciones()
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -236,7 +238,7 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
         if (permiso) {
             runCatching {
                 LocationServices.getFusedLocationProviderClient(context).getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
-                    .addOnSuccessListener { l -> precision = l?.accuracy }
+                    .addOnSuccessListener { l -> precision = l?.accuracy; posicion = l?.let { it.latitude to it.longitude } }
             }
         }
     }
@@ -286,52 +288,167 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit) {
         }
         return
     }
-    PantallaCompleta {
-        BotonCerrar(onCerrar)
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            IconoCirculo(Icons.AutoMirrored.Filled.DirectionsRun, GColors.C2Violeta.copy(alpha = 0.18f), GColors.C2Violeta, 112.dp)
-            Text("¿LISTO PARA CORRER?", style = GType.headlineLg, color = GColors.TextPrimary, textAlign = TextAlign.Center)
-            Text("Activa el GPS y comienza a grabar tu carrera", style = GType.bodyLg, color = GColors.C2Muted, textAlign = TextAlign.Center)
-        }
-        val colorGps = if (permiso) GColors.Secondary500 else GColors.Primary500
-        TarjetaC2(fondo = colorGps.copy(alpha = 0.12f), borde = colorGps, onClick = if (permiso) null else ({ launcher.launch(permisosCarrera()) })) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconoCirculo(if (permiso) Icons.Filled.GpsFixed else Icons.Filled.GpsOff, colorGps.copy(alpha = 0.25f), colorGps, 44.dp)
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(if (permiso) "GPS Activado" else "Activar GPS", style = GType.titleMd, color = GColors.TextPrimary)
-                    Text(senal, style = GType.bodySm, color = colorGps)
-                }
-                if (permiso) Icon(Icons.Filled.CheckCircle, null, tint = colorGps)
+    val pedirPermisoOEmpezar = {
+        if (!permiso) {
+            launcher.launch(permisosCarrera())
+        } else {
+            if (!com.gacelas.core.notificaciones.PermisoNotificaciones.permitidas(context)) {
+                context.aviso("Notificaciones bloqueadas: no verás la carrera en la barra de Android")
+                if (com.gacelas.core.notificaciones.PermisoNotificaciones.sePuedePedir(context)) activarNotificaciones()
+            }
+            scopeGps.launch {
+                // Se pregunta una sola vez: si no esta en el telefono (p. ej. tras reinstalar) se busca en el servidor.
+                val gps = com.gacelas.legal.TipoConsentimiento.GpsCarrera
+                if (consentimientos.otorgado(gps) || (consentimientos.sincronizar() && consentimientos.otorgado(gps))) iniciar() else pedirGps = true
             }
         }
-        TarjetaC2(fondo = GColors.C2Card, borde = GColors.C2Linea) {
-            FilaDato("Tipo de actividad", "Carrera")
-            FilaDato("Ubicación", "Loja, Ecuador")
-            FilaDato("Grabación", if (permiso) "GPS en primer plano" else "Requiere permiso")
+        Unit
+    }
+    PreCarrera(
+        permiso = permiso, precision = precision, posicion = posicion, notificaciones = notificaciones,
+        onActivarNotificaciones = activarNotificaciones, onCerrar = onCerrar, onEmpezar = pedirPermisoOEmpezar,
+        onPermiso = { launcher.launch(permisosCarrera()) }, onRuta = onRuta, onPrivacidad = onPrivacidad,
+    )
+}
+
+/**
+ * Correr, pre-carrera (rediseno movil): mapa a pantalla completa con la posicion y la ruta segura del
+ * dia, y una hoja inferior pegada al borde con la ruta, el objetivo, el estado de Voz, En vivo y SOS, y
+ * el boton EMPEZAR. Todo sale de datos reales: ajustes, historial y la ruta sugerida.
+ */
+@Composable
+private fun PreCarrera(
+    permiso: Boolean, precision: Float?, posicion: Pair<Double, Double>?, notificaciones: Boolean,
+    onActivarNotificaciones: () -> Unit, onCerrar: () -> Unit, onEmpezar: () -> Unit, onPermiso: () -> Unit,
+    onRuta: (String) -> Unit, onPrivacidad: () -> Unit,
+) {
+    val c = contenedor()
+    val ajustes by ajustesState()
+    val ajustesVm = com.gacelas.ui.ajustesViewModel()
+    val m = ajustes.unidadesMetricas
+    val carreras by com.gacelas.ui.carrerasState()
+    val ahora = remember { System.currentTimeMillis() }
+    val semana = remember(carreras) { com.gacelas.actividad.domain.reglas.EstadisticasPerfil.totalesSemana(carreras, ahora) }
+    val racha = com.gacelas.ui.rachaState()
+    val ritmoMedio = remember(carreras) {
+        val ultimas = carreras.sortedByDescending { it.inicioMs }.take(10).filter { it.distanciaKm > 0.2 }
+        if (ultimas.isEmpty()) null else (ultimas.sumOf { it.segundos } / ultimas.sumOf { it.distanciaKm }).toInt()
+    }
+    val delDia by androidx.compose.runtime.produceState<com.gacelas.rutas.infrastructure.RutaDelDia?>(null, carreras.size) {
+        value = runCatching {
+            c.rutaSugerida.hoy(
+                com.gacelas.data.mock.MockData.rutas,
+                carreras.map { r -> com.gacelas.rutas.domain.reglas.CarreraSugerida(r.inicioMs, r.distanciaKm, r.puntos.firstOrNull()?.let { it.lat to it.lng }) },
+                System.currentTimeMillis(), posicion,
+            )
+        }.getOrNull()
+    }
+    val ruta = (delDia as? com.gacelas.rutas.infrastructure.RutaDelDia.Ok)?.ruta
+    val objetivo = ObjetivoCarrera.de(ajustes.objetivoTipo, ajustes.objetivoValor)
+    val elegir = { o: ObjetivoCarrera -> ajustesVm.actualizar { it.copy(objetivoTipo = o.tipo.clave, objetivoValor = o.valor) } }
+    Box(Modifier.fillMaxSize().background(GColors.C2Bg).testTag("pantalla-correr")) {
+        val plan = ruta?.puntos?.map { org.maplibre.android.geometry.LatLng(it.first, it.second) }.orEmpty()
+        MapaGacelas(
+            posicion?.let { listOf(org.maplibre.android.geometry.LatLng(it.first, it.second)) }.orEmpty(), Modifier.fillMaxSize(),
+            seguir = posicion != null, zoom = 15f, plan = plan, controles = false, avisoArriba = 110.dp,
+        ) {
+            com.gacelas.ui.components.MiniTrazoC2(ruta?.puntos.orEmpty(), Modifier.fillMaxSize(), cuadricula = true, grosor = 5.dp)
         }
-        if (!notificaciones) com.gacelas.core.notificaciones.AvisoNotificacionesBloqueadas(
-            "Puedes correr igual, pero no verás la notificación con tiempo, distancia y los botones Pausar/Terminar.",
-            activarNotificaciones,
-        )
-        Column(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            BotonRedondo(Icons.Filled.PlayArrow, "Comenzar carrera", Color(0xFF7B1FA2), 112.dp, {
-                if (!permiso) {
-                    launcher.launch(permisosCarrera())
-                } else {
-                    if (!com.gacelas.core.notificaciones.PermisoNotificaciones.permitidas(context)) {
-                        context.aviso("Notificaciones bloqueadas: no verás la carrera en la barra de Android")
-                        if (com.gacelas.core.notificaciones.PermisoNotificaciones.sePuedePedir(context)) activarNotificaciones()
-                    }
-                    scopeGps.launch {
-                        // Se pregunta una sola vez: si no esta en el telefono (p. ej. tras reinstalar) se busca en el servidor.
-                        val gps = com.gacelas.legal.TipoConsentimiento.GpsCarrera
-                        if (consentimientos.otorgado(gps) || (consentimientos.sincronizar() && consentimientos.otorgado(gps))) iniciar() else pedirGps = true
-                    }
+        // Encima del mapa: volver, estado del GPS y la zona.
+        Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 14.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                com.gacelas.ui.components.BotonVolverMapa(onCerrar)
+                val (texto, color) = when {
+                    !permiso -> "Ubicación sin permiso" to GColors.C2Peligro
+                    precision == null -> "Buscando señal GPS" to GColors.C2Muted
+                    precision <= 10f -> "GPS listo · ± ${precision.toInt()} m · señal fuerte" to GColors.C2Menta
+                    precision <= 30f -> "GPS listo · ± ${precision.toInt()} m · señal media" to GColors.C2Cielo
+                    else -> "GPS débil · ± ${precision.toInt()} m" to Color(0xFFF59E0B)
                 }
-            })
-            Text(if (permiso) "Toca para comenzar" else "Toca para dar permiso de ubicación", style = GType.labelLg, color = GColors.TextSecondary)
+                com.gacelas.ui.components.ChipEstadoC2(texto, Modifier.weight(1f), punto = color, tag = "chip-gps-correr")
+            }
+            if (!notificaciones) com.gacelas.core.notificaciones.AvisoNotificacionesBloqueadas(
+                "Puedes correr igual, pero no verás la notificación con tiempo, distancia y los botones Pausar/Terminar.",
+                onActivarNotificaciones,
+            )
         }
+        com.gacelas.ui.components.HojaInferiorC2(Modifier.align(Alignment.BottomCenter).verticalScroll(rememberScrollState()), tag = "hoja-correr") {
+            // Ruta: la segura del dia (si la hay) o carrera libre.
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    com.gacelas.ui.components.EtiquetaC2(if (ruta != null) "Ruta segura del día" else "Carrera libre", color = GColors.C2Muted)
+                    Text(ruta?.nombre ?: "Sin ruta: corre por donde quieras", style = GType.headlineSm, color = GColors.TextPrimary, maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                    Text(
+                        if (ruta != null) "${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)} · +${ruta.elevacionM} m · ${ruta.dificultad.etiqueta}"
+                        else "Grabamos tu recorrido con GPS y ritmo",
+                        style = GType.bodySm, color = GColors.C2Muted, maxLines = 1,
+                    )
+                }
+                if (ruta != null) TextButton(onClick = { onRuta(ruta.id) }, modifier = Modifier.testTag("correr-ver-ruta")) {
+                    Text("Ver ruta", style = GType.labelLg, color = GColors.C2Violeta)
+                }
+            }
+            com.gacelas.ui.components.EtiquetaC2("Objetivo", color = GColors.C2Muted)
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                ObjetivoCarrera.Tipo.entries.forEach { t ->
+                    val elegido = objetivo.tipo == t
+                    val o = if (elegido) objetivo else ObjetivoCarrera.predeterminado(t, ritmoMedio)
+                    com.gacelas.ui.components.OpcionTarjetaC2(t.titulo, o.valorTexto(m), elegido, { elegir(o) }, Modifier.weight(1f), tag = "objetivo-${t.clave}")
+                }
+            }
+            if (objetivo.activo) AjusteObjetivo(objetivo, m) { elegir(it) }
+            // Efecto real sobre la meta semanal y la racha.
+            val meta = ajustes.metaKmSemana.toDouble()
+            val corrioHoy = racha.ultimoDiaMs?.let { com.gacelas.actividad.domain.reglas.Rachas.inicioDia(it) == com.gacelas.actividad.domain.reglas.Rachas.inicioDia(ahora) } == true
+            val sumaKm = if (objetivo.tipo == ObjetivoCarrera.Tipo.Distancia) objetivo.valor / 1000.0 else null
+            Text(
+                buildString {
+                    if (sumaKm != null) append("Con ${Unidades.texto(sumaKm, m, 1)} ${Unidades.etiquetaDistancia(m)} llegas a ${Unidades.texto(semana.km + sumaKm, m, 1)} de ${Unidades.texto(meta, m, 0)} ${Unidades.etiquetaDistancia(m)} de tu meta semanal")
+                    else append("Llevas ${Unidades.texto(semana.km, m, 1)} de ${Unidades.texto(meta, m, 0)} ${Unidades.etiquetaDistancia(m)} de tu meta semanal")
+                    append(if (corrioHoy) ". Hoy ya sumaste a tu racha." else if (racha.diaria > 0) " y mantienes tu racha de ${racha.diaria} días." else " y empiezas una racha nueva.")
+                },
+                style = GType.bodySm, color = GColors.TextPrimary,
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(GColors.Primary.copy(alpha = 0.18f))
+                    .border(1.dp, GColors.C2Morado.copy(alpha = 0.4f), RoundedCornerShape(8.dp)).padding(10.dp).testTag("efecto-meta"),
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    EstadoC2("Voz", if (ajustes.anunciosVoz) "Cada km" else "Apagada", ajustes.anunciosVoz,
+                        { ajustesVm.actualizar { it.copy(anunciosVoz = !it.anunciosVoz) } }, tag = "estado-voz")
+                    EstadoC2("En vivo", when (ajustes.compartirEnVivo) { true -> "Seguidores"; false -> "No compartes"; null -> "Se pregunta 1 vez" },
+                        ajustes.compartirEnVivo == true, onPrivacidad, tag = "estado-en-vivo")
+                    EstadoC2("SOS", if (ajustes.contactosEmergencia.isEmpty()) "Solo 911" else "${ajustes.contactosEmergencia.size} contacto${if (ajustes.contactosEmergencia.size == 1) "" else "s"}",
+                        true, onPrivacidad, tag = "estado-sos")
+            }
+            if (ajustes.compartirEnVivo != null) Text(
+                "Compartir en vivo se eligió una sola vez. Se cambia en Ajustes, no se vuelve a preguntar.",
+                style = GType.bodySm, color = GColors.C2Muted,
+            )
+            com.gacelas.ui.components.BotonGrandeC2(
+                when {
+                    !permiso -> "Dar permiso de ubicación"
+                    objetivo.activo && objetivo.tipo != ObjetivoCarrera.Tipo.Ritmo -> "Empezar · ${objetivo.valorTexto(m)}"
+                    else -> "Empezar"
+                },
+                onEmpezar, icono = { Icon(Icons.Filled.PlayArrow, null, tint = Color.White) }, tag = "boton-empezar",
+            )
+        }
+    }
+}
+
+/** Ajuste fino del objetivo elegido: menos y mas. */
+@Composable
+private fun AjusteObjetivo(o: ObjetivoCarrera, m: Boolean, onCambiar: (ObjetivoCarrera) -> Unit) {
+    val (paso, min, max) = when (o.tipo) {
+        ObjetivoCarrera.Tipo.Distancia -> Triple(1000, 1000, 42_000)
+        ObjetivoCarrera.Tipo.Tiempo -> Triple(5 * 60, 10 * 60, 300 * 60)
+        ObjetivoCarrera.Tipo.Ritmo -> Triple(5, 150, 900)
+        ObjetivoCarrera.Tipo.Libre -> Triple(0, 0, 0)
+    }
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("${o.tipo.titulo}: ${o.valorTexto(m)}", style = GType.labelLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f).testTag("objetivo-valor"))
+        com.gacelas.ui.components.BotonChipC2("Menos", { onCambiar(o.copy(valor = (o.valor - paso).coerceIn(minOf(min, max), maxOf(min, max)))) }, activo = true)
+        com.gacelas.ui.components.BotonChipC2("Más", { onCambiar(o.copy(valor = (o.valor + paso).coerceIn(minOf(min, max), maxOf(min, max)))) })
     }
 }
 
@@ -668,129 +785,203 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
         descartarCarrera(context, tracker)
         onDescartar()
     }
-    PantallaCompleta {
-        BotonCerrar {
-            descartarCarrera(context, tracker)
-            onCerrar()
-        }
-        val record = remember(carrerasPrevias, estado.segundos) {
-            if (estado.segundos > 0) com.gacelas.actividad.domain.reglas.EstadisticasPerfil.nuevoRecord(carrerasPrevias,
-                com.gacelas.actividad.domain.modelo.Carrera(id = "nueva", titulo = "", inicioMs = estado.inicioMs, segundos = estado.segundos, distanciaKm = estado.distanciaKm, parciales = estado.parciales)) else null
-        }
-        // Destello C2 (confeti morado/menta, 1,2 s, sin bloquear toques) al terminar una carrera con datos.
-        Box { TarjetaC2(fondo = Color(0xFF3A1257), borde = GColors.C2Violeta) {
-            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                IconoCirculo(if (record != null) Icons.Filled.MilitaryTech else Icons.Filled.CheckCircle, Color(0xFF7B1FA2).copy(alpha = 0.45f), GColors.C2Violeta, 88.dp)
-                Text(if (estado.segundos > 0) "¡EXCELENTE ZANCADA, GACELA!" else "CARRERA COMPLETADA", style = GType.headlineLg, color = GColors.TextPrimary, textAlign = TextAlign.Center)
-                Text(if (estado.segundos > 0) "Carrera completada" else "No hay datos de carrera para guardar", style = GType.bodyLg, color = GColors.C2Muted)
-                record?.let { Text("Nuevo récord personal en ${it.etiqueta}", style = GType.labelLg, color = GColors.C2Menta, modifier = Modifier.testTag("nuevo-record")) }
-                Text("Loja, Ecuador", style = GType.bodySm, color = GColors.C2Muted)
-            }
-        }
-            com.gacelas.ui.movimiento.DestelloC2(Modifier.matchParentSize(), activo = estado.segundos > 0)
-        }
-        if (estado.segundos > 0) com.gacelas.ui.components.CelebracionRacha(rachaAntes, rachaDespues)
-        if (estado.puntos.size >= 2) TarjetaC2(padding = 8.dp) {
-            MapaGacelas(estado.puntos.aLatLng(), Modifier.fillMaxWidth().height(180.dp)) { TrazadoRuta(estado.puntos, Modifier.fillMaxWidth().height(180.dp)) }
-            val alturas = estado.puntos.mapNotNull { it.altitudM }
-            if (alturas.size > 1) Text("${alturas.min().toInt()} m - ${alturas.max().toInt()} m", style = GType.labelMd, color = GColors.TextSecondary)
-        }
-        TarjetaC2(Modifier.entradaEscalonada(1)) {
-            Text("DISTANCIA TOTAL", style = GType.labelMd, color = GColors.C2Muted)
-            Row(verticalAlignment = Alignment.Bottom) {
-                // Las cifras cuentan desde 0 (900 ms); con animaciones quitadas aparecen ya finales.
-                com.gacelas.ui.movimiento.CifraAnimada(estado.distanciaKm, { Unidades.texto(it, m) }, GType.headlineLg, GColors.C2Violeta)
-                Text("  ${if (m) "Kilómetros" else "Millas"}", style = GType.labelLg, color = GColors.TextPrimary)
-            }
-        }
-        val kcal = (estado.distanciaKm * 62).toInt()
-        listOf(
-            listOf(Triple("TIEMPO", formatearMs(estado.segundos), "Tiempo en movimiento"), Triple("RITMO MEDIO", formatearRitmo(Unidades.ritmo(estado.ritmoPromedioSegKm, m)), Unidades.etiquetaRitmo(m))),
-            listOf(Triple("DESNIVEL (+)", "+${estado.desnivelM.toInt()} m", "Subida acumulada"), Triple("CALORÍAS", "$kcal", "kcal estimadas")),
-        ).forEachIndexed { i, fila ->
-            Row(Modifier.entradaEscalonada(2 + i), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                fila.forEach { (t, v, d) ->
-                    TarjetaC2(Modifier.weight(1f), padding = 12.dp) {
-                        Text(t, style = GType.labelMd, color = GColors.C2Muted)
-                        when (t) {
-                            "TIEMPO" -> com.gacelas.ui.movimiento.CifraAnimada(estado.segundos.toDouble(), { formatearMs(it.toInt()) }, GType.headlineMd, GColors.TextPrimary)
-                            "CALORÍAS" -> com.gacelas.ui.movimiento.CifraAnimada(kcal.toDouble(), { "${it.toInt()}" }, GType.headlineMd, GColors.TextPrimary)
-                            else -> Text(v, style = GType.headlineMd, color = GColors.TextPrimary)
-                        }
-                        Text(d, style = GType.bodySm, color = GColors.TextSecondary)
-                    }
-                }
-            }
-        }
-        CampoTexto("Título", titulo, { titulo = it }, "Título de la carrera (opcional)")
-        CampoTexto("Notas", nota, { nota = it }, "¿Cómo te fue? Comparte tus pensamientos...", lineas = 3)
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("Hacer pública", style = GType.bodyLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-            Interruptor(publica) { publica = it }
-        }
-        val explorar = c.explorar
-        val perfilActual by com.gacelas.ui.sesionState()
-        var comoRuta by rememberSaveable { mutableStateOf(false) }
-        var dificultadRuta by rememberSaveable { mutableStateOf(com.gacelas.rutas.domain.modelo.Dificultad.Moderado) }
-        var etiquetasRuta by rememberSaveable { mutableStateOf(listOf<String>()) }
-        val puedeSerRuta = explorar != null && perfilActual != null && estado.puntos.size >= 2 && estado.distanciaKm >= 0.3
-        if (puedeSerRuta) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text("Publicar también como ruta", style = GType.bodyLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-                Interruptor(comoRuta) { comoRuta = it }
-            }
-            if (comoRuta) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                com.gacelas.rutas.domain.modelo.Dificultad.entries.forEach { d -> com.gacelas.ui.components.Pastilla(d.etiqueta, d == dificultadRuta, { dificultadRuta = d }) }
-            }
-            if (comoRuta) androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                com.gacelas.rutas.domain.modelo.ETIQUETAS_RUTA.forEach { (k, v) ->
-                    com.gacelas.ui.components.Pastilla("#$v", k in etiquetasRuta, { etiquetasRuta = if (k in etiquetasRuta) etiquetasRuta - k else etiquetasRuta + k })
-                }
-            }
-        }
-        BotonPrimario(if (guardando) "Guardando..." else "Guardar carrera", {
-            if (estado.segundos == 0) {
-                context.aviso("No hay una carrera para guardar")
-                salirSinGuardar()
-            } else {
-                guardando = true
-                scope.launch {
-                    val carrera = tracker.aCarrera(titulo, nota, publica)
-                    c.carreras.guardar(carrera)
-                    com.gacelas.rutas.infrastructure.RutaActiva.id?.let { r ->
-                        com.gacelas.rutas.infrastructure.RutaActiva.id = null
-                        explorar?.registrarCorrida(r, carrera.id)
-                    }
-                    if (comoRuta && puedeSerRuta) {
-                        runCatching {
-                            val trazo = com.gacelas.rutas.domain.reglas.trazoParaRuta(estado.puntos.map { it.lat to it.lng })
-                            val perfil = com.gacelas.rutas.infrastructure.Elevacion.perfil(trazo)
-                            explorar!!.crear(
-                                titulo.ifBlank { carrera.titulo }, nota, dificultadRuta, etiquetasRuta,
-                                estado.puntos.map { it.lat to it.lng },
-                                if (perfil.size > 1) com.gacelas.rutas.infrastructure.Elevacion.desnivelPositivo(perfil) else estado.desnivelM.toInt(), carrera.id, perfil,
-                            )
-                        }.onSuccess { context.aviso("Ruta publicada") }.onFailure { context.aviso("No se pudo publicar la ruta: ${it.message}") }
-                    }
-                    tracker.reiniciar()
-                    context.aviso("Carrera guardada")
-                    onGuardar()
-                }
-            }
-        }, icono = Icons.Filled.Save, enabled = !guardando)
-        var compartiendo by remember { mutableStateOf(false) }
-        if (estado.segundos > 0) BotonSecundario("Compartir en redes", { compartiendo = true })
-        if (compartiendo) com.gacelas.compartir.CompartirDialogo(
-            com.gacelas.compartir.DatosCompartir(
-                com.gacelas.compartir.DatosCompartir.Tipo.Carrera,
-                titulo.ifBlank { "Mi carrera" },
-                // Privacidad: sin los primeros/ultimos 250 m (no revela la casa).
-                com.gacelas.compartir.Compartir.recortarExtremos(estado.puntos.map { it.lat to it.lng }),
-                estado.distanciaKm, estado.segundos, estado.ritmoPromedioSegKm, estado.desnivelM.toInt(), rachaDespues.diaria,
-            ),
-        ) { compartiendo = false }
-        BotonSecundario("Descartar", salirSinGuardar, color = GColors.TextSecondary)
+    val record = remember(carrerasPrevias, estado.segundos) {
+        if (estado.segundos > 0) com.gacelas.actividad.domain.reglas.EstadisticasPerfil.nuevoRecord(carrerasPrevias,
+            com.gacelas.actividad.domain.modelo.Carrera(id = "nueva", titulo = "", inicioMs = estado.inicioMs, segundos = estado.segundos, distanciaKm = estado.distanciaKm, parciales = estado.parciales)) else null
     }
+    val explorar = c.explorar
+    val perfilActual by com.gacelas.ui.sesionState()
+    var comoRuta by rememberSaveable { mutableStateOf(false) }
+    var dificultadRuta by rememberSaveable { mutableStateOf(com.gacelas.rutas.domain.modelo.Dificultad.Moderado) }
+    var etiquetasRuta by rememberSaveable { mutableStateOf(listOf<String>()) }
+    val puedeSerRuta = explorar != null && perfilActual != null && estado.puntos.size >= 2 && estado.distanciaKm >= 0.3
+    var compartiendo by remember { mutableStateOf(false) }
+    val guardar = {
+        if (estado.segundos == 0) {
+            context.aviso("No hay una carrera para guardar")
+            salirSinGuardar()
+        } else {
+            guardando = true
+            scope.launch {
+                val carrera = tracker.aCarrera(titulo, nota, publica)
+                c.carreras.guardar(carrera)
+                com.gacelas.rutas.infrastructure.RutaActiva.id?.let { r ->
+                    com.gacelas.rutas.infrastructure.RutaActiva.id = null
+                    explorar?.registrarCorrida(r, carrera.id)
+                }
+                if (comoRuta && puedeSerRuta) {
+                    runCatching {
+                        val trazo = com.gacelas.rutas.domain.reglas.trazoParaRuta(estado.puntos.map { it.lat to it.lng })
+                        val perfil = com.gacelas.rutas.infrastructure.Elevacion.perfil(trazo)
+                        explorar!!.crear(
+                            titulo.ifBlank { carrera.titulo }, nota, dificultadRuta, etiquetasRuta,
+                            estado.puntos.map { it.lat to it.lng },
+                            if (perfil.size > 1) com.gacelas.rutas.infrastructure.Elevacion.desnivelPositivo(perfil) else estado.desnivelM.toInt(), carrera.id, perfil,
+                        )
+                    }.onSuccess { context.aviso("Ruta publicada") }.onFailure { context.aviso("No se pudo publicar la ruta: ${it.message}") }
+                }
+                tracker.reiniciar()
+                context.aviso("Carrera guardada")
+                onGuardar()
+            }
+        }
+        Unit
+    }
+    val objetivo = ObjetivoCarrera.de(ajustes.objetivoTipo, ajustes.objetivoValor)
+    val ahora = remember { System.currentTimeMillis() }
+    // Media real de tus ultimas 10 carreras (para comparar el ritmo de hoy).
+    val ritmoMedio = remember(carrerasPrevias) {
+        val ultimas = carrerasPrevias.sortedByDescending { it.inicioMs }.take(10).filter { it.distanciaKm > 0.2 }
+        if (ultimas.isEmpty()) null else (ultimas.sumOf { it.segundos } / ultimas.sumOf { it.distanciaKm }).toInt()
+    }
+    val semana = remember(carrerasPrevias) { com.gacelas.actividad.domain.reglas.EstadisticasPerfil.totalesSemana(carrerasPrevias, ahora) }
+    val horaTexto = remember(estado.inicioMs) {
+        val ms = if (estado.inicioMs > 0) estado.inicioMs else ahora
+        java.text.SimpleDateFormat("EEEE d MMM · HH:mm", java.util.Locale("es", "EC")).format(java.util.Date(ms))
+    }
+    Box(Modifier.fillMaxSize().background(GColors.C2Bg).testTag("pantalla-resumen")) {
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 96.dp).navigationBarsPadding(),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            // Mapa del recorrido arriba, con la flecha de volver encima.
+            Box(Modifier.fillMaxWidth().height(250.dp)) {
+                if (estado.puntos.size >= 2) MapaGacelas(estado.puntos.aLatLng(), Modifier.fillMaxSize(), controles = false) {
+                    com.gacelas.ui.components.MiniTrazoC2(estado.puntos.map { it.lat to it.lng }, Modifier.fillMaxSize(), grosor = 4.dp)
+                } else com.gacelas.ui.components.MiniTrazoC2(emptyList(), Modifier.fillMaxSize())
+                Box(Modifier.fillMaxWidth().height(70.dp).align(Alignment.BottomCenter).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Color.Transparent, GColors.C2Bg))))
+                com.gacelas.ui.components.BotonVolverMapa({ descartarCarrera(context, tracker); onCerrar() }, Modifier.statusBarsPadding().padding(14.dp))
+                if (estado.puntos.size < 2) Text("Sin recorrido GPS", style = GType.labelLg, color = GColors.C2Muted, modifier = Modifier.align(Alignment.Center))
+            }
+            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    com.gacelas.ui.components.ChipParalelogramo(if (estado.segundos > 0) "Carrera completada" else "Sin datos", color = GColors.C2Menta, punto = GColors.C2Menta)
+                    if (objetivo.activo && objetivo.cumplido(estado)) com.gacelas.ui.components.ChipParalelogramo("Objetivo cumplido", tag = "chip-objetivo-cumplido")
+                    record?.let { com.gacelas.ui.components.ChipParalelogramo("Récord en ${it.etiqueta}", color = Color(0xFFFBBF24), tag = "nuevo-record") }
+                }
+                Box {
+                    Column {
+                        Text(if (estado.segundos > 0) "¡EXCELENTE ZANCADA, GACELA!" else "CARRERA COMPLETADA", style = GType.headlineLg, color = GColors.TextPrimary)
+                        Text(if (estado.segundos > 0) horaTexto.replaceFirstChar { it.uppercase() } else "No hay datos de carrera para guardar", style = GType.bodyMd, color = GColors.C2Muted)
+                    }
+                    com.gacelas.ui.movimiento.DestelloC2(Modifier.matchParentSize(), activo = estado.segundos > 0)
+                }
+                // Tarjeta principal: distancia, ritmo frente a tu media y cifras.
+                com.gacelas.ui.components.TarjetaSeccionC2(null, Modifier.entradaEscalonada(1), tag = "resumen-principal") {
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Column(Modifier.weight(1f)) {
+                            com.gacelas.ui.components.EtiquetaC2("Distancia", color = GColors.C2Muted)
+                            Row(verticalAlignment = Alignment.Bottom) {
+                                com.gacelas.ui.movimiento.CifraAnimada(estado.distanciaKm, { Unidades.texto(it, m) }, GType.metricHuge.copy(fontSize = androidx.compose.ui.unit.TextUnit(48f, androidx.compose.ui.unit.TextUnitType.Sp), lineHeight = androidx.compose.ui.unit.TextUnit(50f, androidx.compose.ui.unit.TextUnitType.Sp)), GColors.C2Violeta)
+                                Text(" ${Unidades.etiquetaDistancia(m)}", style = GType.labelLg, color = GColors.C2Muted, modifier = Modifier.padding(bottom = 8.dp))
+                            }
+                        }
+                        Column(horizontalAlignment = Alignment.End) {
+                            com.gacelas.ui.components.EtiquetaC2("Ritmo medio", color = GColors.C2Muted)
+                            Text(formatearRitmo(Unidades.ritmo(estado.ritmoPromedioSegKm, m)) + Unidades.etiquetaRitmo(m), style = GType.headlineMd, color = GColors.C2Menta)
+                            val hoyRitmo = estado.ritmoPromedioSegKm
+                            if (hoyRitmo != null && ritmoMedio != null) {
+                                val d = ritmoMedio - hoyRitmo
+                                Text(
+                                    when { d > 0 -> "${formatearMs(d)} más rápido que tu media"; d < 0 -> "${formatearMs(-d)} más lento que tu media"; else -> "Igual que tu media" },
+                                    style = GType.bodySm, color = if (d >= 0) GColors.C2Menta else GColors.C2Muted, modifier = Modifier.testTag("ritmo-vs-media"),
+                                )
+                            }
+                        }
+                    }
+                    val kcal = ajustes.pesoKg?.let { (it * estado.distanciaKm * 1.036).toInt() } ?: (estado.distanciaKm * 62).toInt()
+                    com.gacelas.ui.components.TiraCifrasC2(listOf(
+                        com.gacelas.ui.components.DatoCifra(formatearMs(estado.segundos), "", "Tiempo"),
+                        com.gacelas.ui.components.DatoCifra("+${estado.desnivelM.toInt()}", "m", "Desnivel", GColors.C2Cielo),
+                        com.gacelas.ui.components.DatoCifra("$kcal", "kcal", if (ajustes.pesoKg != null) "Calorías" else "Kcal est."),
+                    ), tag = "resumen-cifras", tamano = 18)
+                }
+                // Logros de la carrera: racha, meta semanal y record.
+                if (estado.segundos > 0) com.gacelas.ui.components.CelebracionRacha(rachaAntes, rachaDespues)
+                if (estado.segundos > 0) {
+                    val meta = ajustes.metaKmSemana.toDouble().coerceAtLeast(1.0)
+                    val total = semana.km + estado.distanciaKm
+                    com.gacelas.ui.components.TarjetaSeccionC2("Meta semanal", tag = "resumen-meta") {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            com.gacelas.ui.components.AnilloC2((total / meta).toFloat(), tamano = 56.dp) {
+                                Text("${((total / meta) * 100).toInt().coerceAtMost(999)}%", style = GType.labelMd, color = GColors.TextPrimary)
+                            }
+                            Column(Modifier.weight(1f)) {
+                                Text("${Unidades.texto(total, m, 1)} de ${Unidades.texto(meta, m, 0)} ${Unidades.etiquetaDistancia(m)}", style = GType.titleMd, color = GColors.TextPrimary)
+                                Text(if (total >= meta) "Meta de la semana cumplida" else "Te faltan ${Unidades.texto(meta - total, m, 1)} ${Unidades.etiquetaDistancia(m)}", style = GType.bodySm, color = GColors.C2Muted)
+                            }
+                        }
+                    }
+                }
+                // Parciales por km en barras (mas alta = mas rapida) y graficas de elevacion y ritmo.
+                val km = estado.parciales.filter { !it.manual && it.distanciaKm > 0 }
+                if (km.isNotEmpty()) com.gacelas.ui.components.TarjetaSeccionC2("Parciales por km", tag = "resumen-parciales") {
+                    val ritmos = km.map { it.segundos / it.distanciaKm }
+                    val peor = ritmos.max(); val mejor = ritmos.indexOf(ritmos.min())
+                    com.gacelas.ui.components.BarrasC2(ritmos.map { (peor * 1.15 - it).toFloat() }, etiquetas = km.map { "${it.numero}" }, resaltada = mejor, alto = 64.dp)
+                    Text("Mejor km ${km[mejor].numero}: ${formatearMs(km[mejor].segundos)}", style = GType.bodySm, color = GColors.C2Menta)
+                }
+                val alturas = estado.puntos.mapNotNull { it.altitudM }
+                if (alturas.size > 2) com.gacelas.ui.components.TarjetaSeccionC2("Elevación", tag = "resumen-elevacion") {
+                    com.gacelas.ui.components.LineaC2(alturas.map { it.toFloat() }, Modifier.height(64.dp))
+                    Text("${alturas.min().toInt()} m a ${alturas.max().toInt()} m", style = GType.bodySm, color = GColors.C2Muted)
+                }
+                if (km.size >= 2) com.gacelas.ui.components.TarjetaSeccionC2("Ritmo", tag = "resumen-ritmo") {
+                    com.gacelas.ui.components.LineaC2(km.map { (it.segundos / it.distanciaKm).toFloat() }, Modifier.height(56.dp), color = GColors.C2Menta, invertida = true)
+                }
+                // Cuentalo: titulo, nota, visibilidad y ruta.
+                com.gacelas.ui.components.TarjetaSeccionC2("Cuéntalo", tag = "resumen-cuentalo") {
+                    CampoTexto("Título", titulo, { titulo = it }, "Título de la carrera (opcional)")
+                    CampoTexto("Notas", nota, { nota = it }, "¿Cómo te fue? Comparte tus pensamientos...", lineas = 3)
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text("Hacer pública", style = GType.bodyLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+                        Interruptor(publica) { publica = it }
+                    }
+                    if (puedeSerRuta) {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Text("Publicar también como ruta", style = GType.bodyLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+                            Interruptor(comoRuta) { comoRuta = it }
+                        }
+                        if (comoRuta) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            com.gacelas.rutas.domain.modelo.Dificultad.entries.forEach { d -> com.gacelas.ui.components.Pastilla(d.etiqueta, d == dificultadRuta, { dificultadRuta = d }) }
+                        }
+                        if (comoRuta) androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            com.gacelas.rutas.domain.modelo.ETIQUETAS_RUTA.forEach { (k, v) ->
+                                com.gacelas.ui.components.Pastilla("#$v", k in etiquetasRuta, { etiquetasRuta = if (k in etiquetasRuta) etiquetasRuta - k else etiquetasRuta + k })
+                            }
+                        }
+                    }
+                }
+                if (estado.segundos > 0) BotonSecundario("Historia para Instagram", { compartiendo = true })
+                BotonSecundario("Descartar carrera", salirSinGuardar, color = GColors.TextSecondary)
+            }
+        }
+        // Barra inferior fija: Compartir y GUARDAR Y PUBLICAR.
+        Row(
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().background(GColors.C2Bg).navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 10.dp).testTag("barra-guardar"),
+            horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (estado.segundos > 0) Box(
+                Modifier.height(54.dp).clip(RoundedCornerShape(10.dp)).background(GColors.C2S2).border(1.dp, GColors.C2Linea, RoundedCornerShape(10.dp))
+                    .clickable { compartiendo = true }.padding(horizontal = 16.dp).testTag("boton-compartir"),
+                contentAlignment = Alignment.Center,
+            ) { Text("Compartir", style = GType.labelLg, color = GColors.TextPrimary) }
+            com.gacelas.ui.components.BotonGrandeC2(
+                if (guardando) "Guardando..." else if (publica) "Guardar y publicar" else "Guardar carrera", guardar,
+                Modifier.weight(1f), icono = { Icon(Icons.Filled.Save, null, tint = Color.White) }, enabled = !guardando, tag = "boton-guardar",
+            )
+        }
+    }
+    if (compartiendo) com.gacelas.compartir.CompartirDialogo(
+        com.gacelas.compartir.DatosCompartir(
+            com.gacelas.compartir.DatosCompartir.Tipo.Carrera,
+            titulo.ifBlank { "Mi carrera" },
+            // Privacidad: sin los primeros/ultimos 250 m (no revela la casa).
+            com.gacelas.compartir.Compartir.recortarExtremos(estado.puntos.map { it.lat to it.lng }),
+            estado.distanciaKm, estado.segundos, estado.ritmoPromedioSegKm, estado.desnivelM.toInt(), rachaDespues.diaria,
+        ),
+    ) { compartiendo = false }
 }
 
 /**

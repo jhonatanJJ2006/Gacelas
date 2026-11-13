@@ -79,6 +79,8 @@ object EstadoSos {
     val activando = MutableStateFlow(false)
     val error = MutableStateFlow<String?>(null)
     var ultimaPos: Pair<Double, Double>? = null
+    /** Aviso enviado a cada contacto en este SOS (telefono a canal y hora); solo lo que el corredor envio desde la hoja. */
+    val avisados = androidx.compose.runtime.mutableStateMapOf<String, Pair<String, Long>>()
 
     suspend fun activar(repo: SosRepositorio?, pos: Pair<Double, Double>?) {
         if (alertaId.value != null) return
@@ -96,6 +98,7 @@ object EstadoSos {
     fun terminar(repo: SosRepositorio?) {
         if (alertaId.value == null) return
         alertaId.value = null
+        avisados.clear()
         GlobalScope.launch { runCatching { repo?.terminar() } }
     }
 }
@@ -126,8 +129,10 @@ fun BotonSOS(posicion: Pair<Double, Double>?) {
         Unit
     }
     Box(
-        Modifier.size(58.dp).clip(CircleShape).background(if (activo) Color(0xFFDC2626) else Color(0xFFB91C1C))
-            .border(2.dp, Color.White.copy(alpha = 0.7f), CircleShape)
+        // Rediseno: boton grande separado de los controles, con halo y la indicacion "MANTEN 3 S".
+        Modifier.size(80.dp).clip(CircleShape).background(Color(0xFFBE185D).copy(alpha = 0.28f)).padding(6.dp)
+            .clip(CircleShape).background(if (activo) Color(0xFFDC2626) else Color(0xFFBE185D))
+            .border(3.dp, Color.White.copy(alpha = 0.85f), CircleShape)
             .pointerInput(activo) {
                 awaitEachGesture {
                     awaitFirstDown()
@@ -149,12 +154,12 @@ fun BotonSOS(posicion: Pair<Double, Double>?) {
         contentAlignment = Alignment.Center,
     ) {
         LaunchedEffect(progreso.value >= 0.999f) { if (progreso.value >= 0.999f) { progreso.snapTo(0f); activar() } }
-        Canvas(Modifier.size(52.dp)) {
+        Canvas(Modifier.size(62.dp)) {
             if (progreso.value > 0f) drawArc(Color.White, -90f, 360f * progreso.value, false, style = Stroke(4.dp.toPx(), cap = StrokeCap.Round))
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("SOS", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Black)
-            Text(if (activo) "ACTIVO" else "MANTÉN", color = Color.White.copy(alpha = 0.9f), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+            Text("SOS", color = Color.White, fontSize = com.gacelas.ui.components.spAcotado(20f, 1f), fontWeight = FontWeight.Black, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
+            Text(if (activo) "ACTIVO" else "MANTÉN 3 S", color = Color.White.copy(alpha = 0.95f), fontSize = com.gacelas.ui.components.spAcotado(7.5f, 1f), fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
         }
     }
     if (hoja) HojaSOS(onCerrar = { hoja = false }, context = context)
@@ -173,7 +178,7 @@ fun HojaSOS(onCerrar: () -> Unit, context: Context = LocalContext.current) {
     val contactos = ajustes.contactosEmergencia
     val pos = EstadoSos.ultimaPos
     val mensaje = id?.let { Sos.mensaje(perfil?.nombre ?: "Un corredor", it, pos?.first, pos?.second) }
-    HojaC2(onCerrar, fondo = GColors.C2Card) {
+    HojaC2(onCerrar, fondo = GColors.C2Card, borde = Color(0xFFBE185D)) {
         Column(
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(bottom = 16.dp).navigationBarsPadding().testTag("hoja-sos"),
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -195,18 +200,38 @@ fun HojaSOS(onCerrar: () -> Unit, context: Context = LocalContext.current) {
                 BotonSosAccion("Enviar SMS a mis contactos (${contactos.size})", Icons.Filled.Sms, Color(0xFF7B1FA2), "sos-sms") {
                     val numeros = contactos.joinToString(";") { Sos.normalizarTelefono(it.telefono) }
                     val i = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$numeros")).putExtra("sms_body", mensaje)
-                    runCatching { context.startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                    runCatching { context.startActivity(i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.onSuccess {
+                        val t = com.gacelas.shared.ahoraMs()
+                        contactos.forEach { EstadoSos.avisados[Sos.normalizarTelefono(it.telefono)] = "SMS" to t }
+                    }
                 }
+                // Estado del aviso por contacto (lo que se envio desde esta hoja) y opcion de llamarlo.
+                val ahoraSos = remember(EstadoSos.avisados.size) { com.gacelas.shared.ahoraMs() }
                 contactos.forEach { ct ->
+                    val tel = Sos.normalizarTelefono(ct.telefono)
+                    val aviso = EstadoSos.avisados[tel]
                     Row(
-                        Modifier.fillMaxWidth().background(GColors.C2S2).border(1.dp, GColors.C2Linea).clickable {
-                            val url = "https://wa.me/${Sos.normalizarTelefono(ct.telefono).removePrefix("+")}?text=${Uri.encode(mensaje)}"
-                            runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
-                        }.padding(12.dp),
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(GColors.C2S2).border(1.dp, GColors.C2Linea, RoundedCornerShape(8.dp))
+                            .padding(start = 12.dp, end = 6.dp, top = 8.dp, bottom = 8.dp).testTag("sos-contacto"),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("WhatsApp a ${ct.nombre}", color = Color.White, fontSize = 14.sp, modifier = Modifier.weight(1f))
-                        Text(ct.telefono, color = GColors.C2Muted, fontSize = 12.sp)
+                        Box(Modifier.size(10.dp).clip(CircleShape).background(if (aviso != null) GColors.C2Menta else GColors.C2Muted.copy(alpha = 0.5f)))
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(ct.nombre, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                            Text(
+                                aviso?.let { (canal, t) -> "Avisado por $canal ${haceSos(ahoraSos - t)}" } ?: "Sin avisar · ${ct.telefono}",
+                                color = if (aviso != null) GColors.C2Menta else GColors.C2Muted, fontSize = 12.sp, maxLines = 1,
+                            )
+                        }
+                        Text("WhatsApp", color = GColors.C2Violeta, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clip(RoundedCornerShape(6.dp)).clickable {
+                            val url = "https://wa.me/${tel.removePrefix("+")}?text=${Uri.encode(mensaje)}"
+                            runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                                .onSuccess { EstadoSos.avisados[tel] = "WhatsApp" to com.gacelas.shared.ahoraMs() }
+                        }.padding(horizontal = 8.dp, vertical = 10.dp).testTag("sos-whatsapp"))
+                        Icon(Icons.Filled.Call, "Llamar a ${ct.nombre}", tint = Color.White, modifier = Modifier.size(40.dp).clip(CircleShape).clickable {
+                            runCatching { context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$tel")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                        }.padding(10.dp).testTag("sos-llamar"))
                     }
                 }
             }
@@ -226,6 +251,11 @@ fun HojaSOS(onCerrar: () -> Unit, context: Context = LocalContext.current) {
     }
 }
 
+
+private fun haceSos(ms: Long): String {
+    val s = (ms / 1000).coerceAtLeast(0)
+    return when { s < 60 -> "hace ${s} s"; s < 3600 -> "hace ${s / 60} min"; else -> "hace ${s / 3600} h" }
+}
 
 @Composable
 private fun BotonSosAccion(texto: String, icono: androidx.compose.ui.graphics.vector.ImageVector, fondo: Color, tag: String, onClick: () -> Unit) {

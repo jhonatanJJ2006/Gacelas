@@ -58,7 +58,7 @@ import com.gacelas.ui.three.Runner3D
 import io.github.sceneview.math.Position
 
 @Composable
-fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String) -> Unit = { onEventos() }, onComunidad: () -> Unit = {}, onRutas: () -> Unit = {}) {
+fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String) -> Unit = { onEventos() }, onComunidad: () -> Unit = {}, onRutas: () -> Unit = {}, onRuta: ((String) -> Unit)? = null) {
     val (unidos, inscritos) = com.gacelas.comunidad.eventosState()
     val cont = com.gacelas.ui.contenedor()
     val creados by cont.eventos.creados.collectAsState(initial = emptyList())
@@ -108,6 +108,14 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
         },
         onRutas = onRutas,
         avisoPendientes = { com.gacelas.ui.AvisoCarrerasPendientes() },
+        metaKm = ajustes.metaKmSemana,
+        kmPorDia = remember(carreras) {
+            val desde = Estadisticas.inicioSemana(ahora)
+            val km = DoubleArray(7)
+            carreras.filter { it.inicioMs >= desde && it.inicioMs <= ahora + 86_400_000L }.forEach { km[Estadisticas.diaSemana(it.inicioMs)] += it.distanciaKm }
+            km.toList()
+        },
+        onRuta = onRuta,
         nivel = com.gacelas.comunidad.domain.modelo.nivelCorredor(carreras.sumOf { it.distanciaKm }),
         clima = clima,
     )
