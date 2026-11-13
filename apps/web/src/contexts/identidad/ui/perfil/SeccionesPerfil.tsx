@@ -150,29 +150,26 @@ export function Records({ lista }: { lista: RecordPersonal[] }) {
 }
 
 export function Medallero({ lista }: { lista: Medalla[] }) {
-  const logradas = lista.filter((x) => x.lograda).length
   return (
-    <section className="mb-6" data-testid="medallero">
-      <Titulo icono="military_tech" texto="Medallero" extra={`${logradas} de ${lista.length}`} />
-      <div className="grid grid-cols-3 gap-3">
-        {lista.map((x) => (
-          <div
-            key={x.id}
-            data-lograda={x.lograda}
-            className={`${tarjeta} p-3 flex flex-col items-center text-center ${x.lograda ? '' : 'opacity-40'}`}
+    <div className="grid grid-cols-3 gap-2" data-testid="medallero">
+      {lista.map((x) => (
+        <div
+          key={x.id}
+          data-lograda={x.lograda}
+          title={x.descripcion}
+          className={`rounded-md bg-c2-s2/60 p-2.5 flex flex-col items-center text-center min-w-0 ${x.lograda ? '' : 'opacity-45'}`}
+        >
+          <span
+            className={`w-10 h-10 rounded-full grid place-items-center border-2 ${x.lograda ? 'border-c2-violeta bg-c2-morado/25 text-c2-violeta' : 'border-c2-linea text-c2-muted'}`}
           >
-            <span
-              className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${x.lograda ? 'border-primary bg-primary-600/30 text-primary' : 'border-border-subtle text-text-secondary'}`}
-            >
-              <span className="material-symbols-outlined">
-                {x.lograda ? 'workspace_premium' : 'lock'}
-              </span>
+            <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
+              {x.lograda ? 'workspace_premium' : 'lock'}
             </span>
-            <span className="font-label-md text-label-md text-text-primary mt-2">{x.titulo}</span>
-            <span className="text-[11px] text-text-secondary">{x.descripcion}</span>
-          </div>
-        ))}
-      </div>
-    </section>
+          </span>
+          <span className="text-[11.5px] font-semibold text-white mt-1.5 leading-tight">{x.titulo}</span>
+          <span className="text-[10px] text-c2-muted leading-tight line-clamp-2">{x.descripcion}</span>
+        </div>
+      ))}
+    </div>
   )
 }

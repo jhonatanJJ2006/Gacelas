@@ -506,3 +506,41 @@ export function AvatarIniciales({
     </span>
   )
 }
+
+/** Perfil de elevacion como area SVG (alturas en metros a lo largo del trazo). */
+export function PerfilElevacion({
+  alturas,
+  alto = 28,
+  className = '',
+  testId,
+}: {
+  alturas: number[] | undefined
+  alto?: number
+  className?: string
+  testId?: string
+}) {
+  const v = alturas ?? []
+  if (v.length < 2) return null
+  const n = Math.min(60, v.length)
+  const paso = (v.length - 1) / (n - 1)
+  const pts = Array.from({ length: n }, (_, i) => v[Math.round(i * paso)]!)
+  const min = Math.min(...pts)
+  const max = Math.max(...pts)
+  const rango = Math.max(1, max - min)
+  const xy = pts.map((h, i) => [(i / (n - 1)) * 100, alto - 2 - ((h - min) / rango) * (alto - 4)] as const)
+  const linea = xy.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(2)},${y.toFixed(2)}`).join(' ')
+  return (
+    <svg
+      viewBox={`0 0 100 ${alto}`}
+      preserveAspectRatio="none"
+      className={`block w-full ${className}`}
+      style={{ height: alto }}
+      role="img"
+      aria-label={`Perfil de elevación: de ${Math.round(min)} a ${Math.round(max)} m`}
+      data-testid={testId}
+    >
+      <path d={`${linea} L100,${alto} L0,${alto} Z`} fill="#96CCFF" fillOpacity="0.14" />
+      <path d={linea} fill="none" stroke="#96CCFF" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
+    </svg>
+  )
+}

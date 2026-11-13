@@ -15,3 +15,19 @@ export function useEsEscritorio() {
   }, [soporta])
   return es
 }
+
+/** true cuando la ventana mide al menos `px` de ancho (por ejemplo 1280 para el panel lateral). */
+export function useAnchoMinimo(px: number) {
+  const consulta = `(min-width: ${px}px)`
+  const soporta = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+  const [es, setEs] = useState(() => soporta && window.matchMedia(consulta).matches)
+  useEffect(() => {
+    if (!soporta) return
+    const mq = window.matchMedia(consulta)
+    const alCambiar = () => setEs(mq.matches)
+    alCambiar()
+    mq.addEventListener?.('change', alCambiar)
+    return () => mq.removeEventListener?.('change', alCambiar)
+  }, [soporta, consulta])
+  return es
+}

@@ -179,6 +179,18 @@ body {
     @apply inline-flex items-center gap-1 px-2.5 py-1 bg-c2-s2 text-[12px] font-semibold text-text-primary;
     border-radius: 3px;
   }
+  /* Filtros de Rutas: pastillas en movil, lista vertical en el panel lateral de escritorio. */
+  @media (min-width: 1024px) {
+    .opcion-filtro {
+      @apply flex w-full justify-between rounded-md h-8 px-2.5 py-0 text-[13px] font-medium normal-case not-italic tracking-normal bg-transparent text-c2-muted;
+    }
+    .opcion-filtro:hover {
+      @apply text-white bg-c2-s2;
+    }
+    .opcion-filtro[aria-pressed='true'] {
+      @apply bg-c2-morado/20 text-white;
+    }
+  }
   /* Rediseno web: paneles, rotulos y cifras (docs/REDISENO-WEB.md). */
   .panel-c2 {
     border-radius: 6px;
