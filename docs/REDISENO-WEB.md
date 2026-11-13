@@ -41,6 +41,19 @@ La mejor ventana para correr es el tramo mas largo de horas de 5:00 a 20:00 con 
   - Actividades: tabla paginada de 10 en 10. Desnivel y visibilidad solo desde 1400 px; en movil cada fila es una tarjeta.
   - La pagina pasa de unos 4000 px a unos 1750 px en escritorio.
 
+## Fase 3: Comunidad, Clubes, Eventos y Correr
+
+- Comunidad: desde 1400 px, tres columnas: tu tarjeta (carreras, seguidores, siguiendo) con filtros del feed y accesos; el feed al centro con el compositor en tarjeta; ranking semanal y proximos eventos a la derecha. De 1024 a 1399 px, dos columnas con las pestanas de siempre.
+- Clubes y grupos: tarjetas en dos columnas con horario, ritmo, miembros, punto de encuentro, km del grupo en las ultimas 7 semanas (`km_grupos`, migracion 040) y proxima salida calculada con sus dias y hora. A la derecha, tu agenda de grupos y el ranking de grupos por km de sus miembros en 4 semanas.
+- Eventos: evento principal con cuenta regresiva, distancia, desnivel de la ruta e inscritos sobre el cupo; lista agrupada por semana (esta semana, proxima semana, luego por fecha) con barra de cupos; calendario del mes y tu proximo evento a la derecha.
+- Correr (escritorio): ruta segura del dia, clima para correr y seguridad de la zona junto al panel de GPS y el boton de empezar. En movil sigue la pantalla de siempre.
+
+## Pendiente
+
+- Puntaje de seguridad de 0 a 100: necesita cargar datos ECU 911.
+- Resultados de eventos: `event_results` queda vacia hasta que los organizadores carguen resultados.
+- De la maqueta no se construyo: XP, pestana Historial, objetivo de la carrera (libre, distancia, tiempo, ritmo) y corredores sugeridos para seguir.
+
 ## QA
 
 Capturas a 1440, 1280 y 390 px de cada pantalla y de los modales (busqueda, crear evento, publicar), antes y despues, sin desborde horizontal ni contenido cortado.

@@ -38,7 +38,7 @@ const PermisosUbicacion = lazy(() =>
 
 const Inicio = lazy(() => import('./inicio/Inicio').then((m) => ({ default: m.Inicio })))
 const Correr = lazy(() =>
-  import('../contexts/actividad/ui/Correr').then((m) => ({ default: m.Correr }))
+  import('./correr/PrepararCarrera').then((m) => ({ default: m.PrepararCarrera }))
 )
 const CarreraEnCurso = lazy(() =>
   import('../contexts/actividad/ui/CarreraEnCurso').then((m) => ({ default: m.CarreraEnCurso }))

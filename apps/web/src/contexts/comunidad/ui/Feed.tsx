@@ -37,7 +37,7 @@ export function Feed() {
     }
   }, [])
   const escritorio = useEsEscritorio()
-  const tresColumnas = useAnchoMinimo(1280) && escritorio
+  const tresColumnas = useAnchoMinimo(1400) && escritorio
   const seguidores = useComunidad((s) => s.seguidores)
   const navigate = useNavigate()
   const sesion = useIdentidad((s) => s.sesion)
@@ -161,7 +161,7 @@ export function Feed() {
   ]
 
   return (
-    <div className="w-full lg:px-8 lg:max-w-[1440px] lg:mx-auto lg:grid lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[240px_minmax(0,1fr)_320px] lg:gap-6 lg:items-start">
+    <div className="w-full lg:px-8 lg:max-w-[1440px] lg:mx-auto lg:grid lg:grid-cols-[minmax(0,1fr)_320px] ancho:grid-cols-[240px_minmax(0,1fr)_320px] lg:gap-6 lg:items-start">
       {tresColumnas && (
         <aside className="space-y-5 lg:sticky lg:top-[88px] lg:pt-6" aria-label="Tu comunidad">
           <section
