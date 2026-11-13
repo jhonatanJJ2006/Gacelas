@@ -248,7 +248,7 @@ export function Clubes() {
             </span>
           )}
         </Link>
-        <dl className="grid grid-cols-3 gap-3 text-[12.5px]">
+        <dl className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,0.8fr)] gap-3 text-[12.5px]">
           {c.tipo === 'grupo' ? (
             <>
               <DatoC2 t="Horario" v={horario || 'Sin horario'} />
@@ -338,7 +338,7 @@ export function Clubes() {
     .slice(0, 5)
 
   return (
-    <main className="w-full min-h-screen px-4 lg:px-8 lg:max-w-[1440px] lg:mx-auto pt-space-md lg:pt-0 pb-28 lg:pb-10">
+    <main className="w-full min-h-screen px-4 lg:px-8 lg:max-w-[1440px] lg:mx-auto pt-space-md lg:pt-8 pb-28 lg:pb-10">
       <header className="flex items-center gap-2 mb-5">
         <button
           onClick={() => navigate('/comunidad')}

@@ -4,7 +4,7 @@ import { compartir, useAviso } from '../../../hooks'
 import type { ComentarioPublicacion } from '../../../shared/kernel/comunidad'
 import { nivelCorredor } from '../../../shared/kernel/nivel'
 import { formatearMs, formatearRitmo, Unidades } from '../../../shared/lib/geo'
-import { useEsEscritorio } from '../../../shared/lib/useEsEscritorio'
+import { useAnchoMinimo, useEsEscritorio } from '../../../shared/lib/useEsEscritorio'
 import { ModalC2 } from '../../../shared/ui/modales'
 import { Aviso, BotonTexto, Dialogo } from '../../../shared/ui/ui'
 import { listarEnVivo, suscribirLista, useActividad, type SesionEnVivo } from '../../actividad/api'
@@ -37,6 +37,8 @@ export function Feed() {
     }
   }, [])
   const escritorio = useEsEscritorio()
+  const tresColumnas = useAnchoMinimo(1280) && escritorio
+  const seguidores = useComunidad((s) => s.seguidores)
   const navigate = useNavigate()
   const sesion = useIdentidad((s) => s.sesion)
   const carreras = useActividad((s) => s.carreras)
@@ -159,12 +161,87 @@ export function Feed() {
   ]
 
   return (
-    <div className="contenedor-escritorio lg:grid lg:grid-cols-[minmax(0,600px)_340px] lg:justify-center lg:gap-8 lg:items-start">
-      <div className="flex flex-col w-full min-w-0">
+    <div className="w-full lg:px-8 lg:max-w-[1440px] lg:mx-auto lg:grid lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[240px_minmax(0,1fr)_320px] lg:gap-6 lg:items-start">
+      {tresColumnas && (
+        <aside className="space-y-5 lg:sticky lg:top-[88px] lg:pt-6" aria-label="Tu comunidad">
+          <section
+            className="panel-c2 bg-c2-card border border-c2-linea p-4"
+            data-testid="tarjeta-yo-comunidad"
+          >
+            <Link to="/perfil" className="flex items-center gap-3 group">
+              <AvatarLetra nombre={sesion?.nombre ?? 'Tú'} />
+              <span className="min-w-0">
+                <span className="block text-[14px] font-semibold text-white truncate group-hover:text-c2-violeta">
+                  {sesion?.nombre ?? 'Tú'}
+                </span>
+                {sesion?.username && (
+                  <span className="block text-[11.5px] text-c2-muted truncate">
+                    @{sesion.username}
+                  </span>
+                )}
+              </span>
+            </Link>
+            <div className="mt-4 pt-3 border-t border-c2-linea grid grid-cols-3 text-center">
+              {[
+                [carreras.length, 'carreras'],
+                [seguidores, 'seguidores'],
+                [siguiendo.length, 'siguiendo'],
+              ].map(([v, t]) => (
+                <div key={t}>
+                  <div className="cifra-c2 text-[20px] text-white leading-none">{v}</div>
+                  <div className="text-[10.5px] text-c2-muted mt-1">{t}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+          <nav
+            className="panel-c2 bg-c2-card border border-c2-linea p-2"
+            aria-label="Filtrar el feed"
+          >
+            {(
+              [
+                ['Todos', 'Para ti'],
+                ['Siguiendo', 'Siguiendo'],
+                ['Comunidad', 'Comunidad'],
+                ['Mías', 'Mis publicaciones'],
+              ] as [FiltroFeed, string][]
+            ).map(([f, t]) => (
+              <button
+                key={f}
+                onClick={() => setFiltro(f)}
+                aria-pressed={filtro === f}
+                className={`w-full h-9 px-3 rounded text-left text-[13px] font-semibold ${filtro === f ? 'bg-c2-s2 text-white' : 'text-c2-muted hover:text-white'}`}
+              >
+                {t}
+              </button>
+            ))}
+            <div className="my-2 border-t border-c2-linea" />
+            {(
+              [
+                ['/comunidad/clubes', 'Clubes y grupos'],
+                ['/comunidad/en-vivo', enVivo.length ? `En vivo (${enVivo.length})` : 'En vivo'],
+                ['/comunidad/corredores', 'Buscar corredores'],
+                ['/comunidad/eventos', 'Eventos'],
+              ] as [string, string][]
+            ).map(([to, t]) => (
+              <Link
+                key={to}
+                to={to}
+                className="flex items-center h-9 px-3 rounded text-[13px] text-c2-muted hover:text-white hover:bg-c2-s2/50"
+              >
+                {t}
+              </Link>
+            ))}
+          </nav>
+        </aside>
+      )}
+      <div className="flex flex-col w-full min-w-0 lg:max-w-[680px] lg:mx-auto">
         <div className="pt-[max(env(safe-area-inset-top),8px)] lg:pt-4">
           <div className="relative h-14 px-4 flex items-center justify-between lg:px-0">
-            <AvatarLetra nombre={sesion?.nombre ?? 'Tú'} />
-            <h1 className="absolute left-1/2 -translate-x-1/2 font-display italic font-black uppercase text-[22px] text-white tracking-wide">
+            <span className="lg:hidden">
+              <AvatarLetra nombre={sesion?.nombre ?? 'Tú'} />
+            </span>
+            <h1 className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 lg:flex-1 font-display italic font-black uppercase text-[22px] text-white tracking-wide">
               Comunidad
             </h1>
             <button
@@ -221,7 +298,10 @@ export function Feed() {
             )}
           </div>
 
-          <nav aria-label="Secciones de comunidad" className="flex border-b border-c2-linea">
+          <nav
+            aria-label="Secciones de comunidad"
+            className={`flex border-b border-c2-linea ${tresColumnas ? 'hidden' : ''}`}
+          >
             {pestanas.map((t) => (
               <button
                 key={t.id}
@@ -261,7 +341,7 @@ export function Feed() {
           )}
 
           <div
-            className="px-4 pt-3 pb-3 border-b border-c2-linea lg:px-0"
+            className="px-4 pt-3 pb-3 border-b border-c2-linea lg:mt-3 lg:p-4 lg:border lg:panel-c2 lg:bg-c2-card"
             data-testid="compositor-feed"
           >
             <div className="flex items-center gap-3">
@@ -580,7 +660,7 @@ export function Feed() {
       </div>
       {escritorio && (
         <aside
-          className="space-y-6 lg:sticky lg:top-8 lg:pt-8"
+          className="space-y-5 lg:sticky lg:top-[88px] lg:pt-6"
           aria-label="Resumen de la comunidad"
         >
           <RankingSemanal />

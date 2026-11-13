@@ -527,7 +527,9 @@ export function PerfilElevacion({
   const min = Math.min(...pts)
   const max = Math.max(...pts)
   const rango = Math.max(1, max - min)
-  const xy = pts.map((h, i) => [(i / (n - 1)) * 100, alto - 2 - ((h - min) / rango) * (alto - 4)] as const)
+  const xy = pts.map(
+    (h, i) => [(i / (n - 1)) * 100, alto - 2 - ((h - min) / rango) * (alto - 4)] as const
+  )
   const linea = xy.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(2)},${y.toFixed(2)}`).join(' ')
   return (
     <svg
@@ -540,7 +542,13 @@ export function PerfilElevacion({
       data-testid={testId}
     >
       <path d={`${linea} L100,${alto} L0,${alto} Z`} fill="#96CCFF" fillOpacity="0.14" />
-      <path d={linea} fill="none" stroke="#96CCFF" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
+      <path
+        d={linea}
+        fill="none"
+        stroke="#96CCFF"
+        strokeWidth="1.2"
+        vectorEffect="non-scaling-stroke"
+      />
     </svg>
   )
 }
