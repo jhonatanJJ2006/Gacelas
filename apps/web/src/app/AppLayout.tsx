@@ -4,6 +4,7 @@ import { notificacionesVisibles, useAvisos } from '../contexts/avisos/api'
 import { FotoPerfil } from '../contexts/identidad'
 import { useIdentidad } from '../contexts/identidad/api'
 import { BarraSuperior } from './BarraSuperior'
+import { iniciales } from '../shared/ui/Visual'
 
 export function AppLayout() {
   const location = useLocation()
@@ -39,13 +40,18 @@ export function AppLayout() {
                 <FotoPerfil foto={sesion.foto} nombre={sesion.nombre} className="h-8 w-8" />
               ) : (
                 <div className="h-8 w-8 bg-[#E9D5FF] rounded-full flex items-center justify-center">
-                  <span className="text-on-primary font-bold text-sm">GL</span>
+                  <span className="text-on-primary font-bold text-sm">
+                    {iniciales(sesion?.nombre ?? 'Runcity')}
+                  </span>
                 </div>
               )}
             </Link>
             <div className="flex flex-col min-w-0">
-              <span className="font-label-md text-label-md text-[#E9D5FF] truncate uppercase">
-                Runcity Loja
+              <span className="font-display italic text-[18px] leading-none text-white truncate">
+                Runcity
+              </span>
+              <span className="text-[9px] font-bold tracking-[0.14em] uppercase text-c2-violeta mt-0.5">
+                Loja, Ecuador
               </span>
             </div>
           </div>

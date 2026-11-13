@@ -158,4 +158,28 @@ describe('piezas del rediseno', () => {
     await userEvent.keyboard('{Escape}')
     expect(screen.queryByRole('combobox', { name: 'Buscar' })).not.toBeInTheDocument()
   })
+
+  it('Perfil: el periodo filtra las cifras y Actividades pagina de 10 en 10', async () => {
+    const dia = 86_400_000
+    const carreras = Array.from({ length: 12 }, (_, i) =>
+      carreraPrueba({
+        id: `c${i}`,
+        titulo: `Carrera ${i}`,
+        distanciaKm: 2,
+        inicioMs: Date.now() - (i < 2 ? i : 120 + i) * dia,
+      })
+    )
+    prepararApp({ carreras })
+    renderRuta('/perfil')
+    const cifras = await screen.findByTestId('estadisticas-historicas')
+    expect(cifras).toHaveTextContent('2 carreras, últimas 12 semanas')
+    await userEvent.click(screen.getByRole('button', { name: 'Todo' }))
+    expect(cifras).toHaveTextContent('12 carreras, desde el inicio')
+    expect(screen.getAllByTestId('carrera-guardada')).toHaveLength(5)
+    await userEvent.click(screen.getByRole('tab', { name: /Actividades/ }))
+    expect(screen.getAllByTestId('carrera-guardada')).toHaveLength(10)
+    expect(screen.getByText('Página 1 de 2')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Siguiente' }))
+    expect(screen.getAllByTestId('carrera-guardada')).toHaveLength(2)
+  })
 })
