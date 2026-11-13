@@ -187,7 +187,7 @@ function Hero({ className = '' }: { className?: string }) {
             />
           </Suspense>
         </div>
-        <div className="relative p-5 lg:p-7 max-w-[100%] lg:max-w-[68%] ancho:max-w-[70%]">
+        <div className="relative pointer-events-none [&_a]:pointer-events-auto [&_button]:pointer-events-auto p-5 lg:p-7 max-w-[100%] lg:max-w-[68%] ancho:max-w-[70%]">
           <div className="hidden lg:flex flex-wrap gap-1.5 mb-4">{chips(false)}</div>
           <span className="rotulo-c2 !text-c2-violeta lg:hidden">Meta semanal</span>
           <h2
