@@ -19,9 +19,9 @@ Instalacion real con `adb install`:
 
 Huella SHA-1 del certificado de los APK publicados:
 
-| Versiones | SHA-1 |
-| --- | --- |
-| v0.9.8, v0.9.9, v0.9.10, v0.9.11 | 23:CF:7D:D7:5A:19:B1:54:13:99:38:AD:62:61:DE:AA:BE:DC:23:F9 |
+| Versiones                                            | SHA-1                                                       |
+| ---------------------------------------------------- | ----------------------------------------------------------- |
+| v0.9.8, v0.9.9, v0.9.10, v0.9.11                     | 23:CF:7D:D7:5A:19:B1:54:13:99:38:AD:62:61:DE:AA:BE:DC:23:F9 |
 | v0.9.12, v0.9.13, v0.9.14, v0.9.15, v0.9.16, v0.9.17 | F1:A2:7B:EE:15:19:B9:5D:DB:88:AD:77:4F:5E:0E:08:5F:9F:45:D1 |
 
 Las dos huellas estan en `gacelas.firmasGoogle` (login con Google). Android no las trata como la misma app: no hay rotacion de clave (el APK no usa el esquema v3). `scripts/publicar-android.sh` y `apps/android/README.md` pedian el keystore `23:CF` para publicar, y Gradle aceptaba cualquiera de las dos. Por eso la firma volvio a cambiar en v0.9.12.
