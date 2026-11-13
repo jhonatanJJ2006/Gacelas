@@ -18,12 +18,18 @@ test('arrastrar en horizontal gira el corredor de Inicio', async ({ page }) => {
   const x0 = caja.x + caja.width * 0.25
   await page.mouse.move(x0, y)
   await page.mouse.down()
+  // El arrastre empieza con el primer movimiento horizontal (umbral de 4 px); data-giro se escribe en
+  // cada cuadro, asi que se espera un cuadro antes de leerlo (en CI el WebGL por software va lento).
+  await page.mouse.move(x0 + 10, y)
+  await page.waitForTimeout(400)
   const antes = Number(await avatar.getAttribute('data-giro'))
-  for (let i = 1; i <= 10; i++) await page.mouse.move(x0 + i * 20, y)
+  for (let i = 2; i <= 11; i++) await page.mouse.move(x0 + i * 10, y)
+  await page.waitForTimeout(400)
   const durante = Number(await avatar.getAttribute('data-giro'))
-  // 200 px * 0.4 grados/px = 80 grados (sin giro automatico mientras se arrastra).
-  expect(((durante - antes + 360) % 360) - 80).toBeLessThan(6)
-  expect((durante - antes + 360) % 360).toBeGreaterThan(70)
+  // 100 px * 0.4 grados/px = 40 grados (sin giro automatico mientras se arrastra). El avatar del
+  // hero redisenado es mas angosto: el arrastre queda dentro del lienzo.
+  expect(((durante - antes + 360) % 360) - 40).toBeLessThan(6)
+  expect((durante - antes + 360) % 360).toBeGreaterThan(34)
   await page.screenshot({ path: `${dir}/web-inicio-arrastrando.png` })
   await page.mouse.up()
   await page.waitForTimeout(1500)

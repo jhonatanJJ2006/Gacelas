@@ -10,13 +10,11 @@ test.describe('v0.9.1', () => {
     await registrarse(page)
   })
 
-  test('Inicio usa el escenario morado del Figma C2', async ({ page }) => {
+  test('Inicio usa el hero morado del rediseno web', async ({ page }) => {
     const esc = page.getByTestId('inicio-escenario')
     await expect(esc).toBeVisible()
-    const fondo = await esc
-      .locator('.escenario-c2')
-      .evaluate((el) => getComputedStyle(el).backgroundImage)
-    expect(fondo).toContain('radial-gradient')
+    const fondo = await esc.evaluate((el) => getComputedStyle(el).backgroundImage)
+    expect(fondo).toContain('linear-gradient')
     await page.screenshot({ path: `${dir}/web-inicio-393x873.png` })
   })
 

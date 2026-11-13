@@ -55,6 +55,8 @@ export class SupabaseAjustesRepository implements AjustesRepository {
       ...(fila.hide_home != null ? { ocultarHogar: Boolean(fila.hide_home) } : {}),
       ...(fila.home_radius_m != null ? { radioHogarM: Number(fila.home_radius_m) } : {}),
       ...(fila.weekly_goal_runs != null ? { metaSemanal: Number(fila.weekly_goal_runs) } : {}),
+      // Meta en km (migracion 040): una sola meta semanal en toda la web.
+      ...(fila.weekly_goal_km != null ? { metaKmSemana: Number(fila.weekly_goal_km) } : {}),
       ...(fila.precise_location != null
         ? { ubicacionPrecisa: Boolean(fila.precise_location) }
         : {}),
@@ -97,6 +99,7 @@ export class SupabaseAjustesRepository implements AjustesRepository {
         home_radius_m: nuevos.radioHogarM,
         precise_location: nuevos.ubicacionPrecisa,
         weekly_goal_runs: nuevos.metaSemanal,
+        weekly_goal_km: Math.min(500, Math.max(1, Math.round(nuevos.metaKmSemana || 25))),
         prefs,
       },
       { onConflict: 'user_id' }

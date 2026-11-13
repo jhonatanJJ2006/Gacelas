@@ -172,58 +172,111 @@ export const rutasMock: Ruta[] = [
   },
 ]
 
+/**
+ * Fecha de un evento de ejemplo relativa a hoy (zona de Loja): el proximo `dia` (0 = domingo) a la
+ * hora dada, `semanas` despues. Asi los eventos de ejemplo nunca quedan en el pasado.
+ */
+export function fechaEventoEjemplo(
+  dia: number,
+  hora: number,
+  minuto: number,
+  semanas = 0,
+  ahora = Date.now()
+) {
+  // Loja es UTC-5 todo el año.
+  const local = new Date(ahora - 5 * 3_600_000)
+  const base = Date.UTC(
+    local.getUTCFullYear(),
+    local.getUTCMonth(),
+    local.getUTCDate(),
+    hora + 5,
+    minuto
+  )
+  let dias = (dia - local.getUTCDay() + 7) % 7
+  if (dias === 0 && base <= ahora) dias = 7
+  const ms = base + (dias + semanas * 7) * 86_400_000
+  const l = new Date(ms - 5 * 3_600_000)
+  const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+  const MESES = [
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
+  ]
+  return {
+    inicioMs: ms,
+    fecha: `${DIAS[l.getUTCDay()]} ${l.getUTCDate()} de ${MESES[l.getUTCMonth()]}`,
+  }
+}
+
 export const eventosMock: Evento[] = [
   {
     id: '1',
-    inicioMs: Date.parse('2026-10-11T11:00:00Z'),
+    ...fechaEventoEjemplo(6, 6, 0),
     titulo: 'Carrera Parque Jipiro',
     descripcion: 'Carrera grupal de 10km por el Parque Jipiro. Todos los niveles bienvenidos.',
-    fecha: 'Sábado 11 de Octubre',
     hora: '6:00 AM',
     ubicacion: 'Parque Jipiro, Loja',
     participantes: 15,
     distanciaKm: 10,
     pasado: false,
     creadoPorUsuario: false,
+    cupo: 40,
+    tipo: 'grupal',
+    rutaId: 'loja-jipiro',
   },
   {
     id: '2',
-    inicioMs: Date.parse('2026-10-19T12:00:00Z'),
+    ...fechaEventoEjemplo(0, 7, 0, 1),
     titulo: 'Trail Running Podocarpus',
     descripcion: 'Aventura de trail running en el Parque Nacional Podocarpus.',
-    fecha: 'Domingo 19 de Octubre',
     hora: '7:00 AM',
     ubicacion: 'Entrada Cajanuma',
     participantes: 8,
     distanciaKm: 15,
     pasado: false,
     creadoPorUsuario: false,
+    cupo: 20,
+    tipo: 'carrera',
   },
   {
     id: '3',
-    inicioMs: Date.parse('2026-10-15T11:30:00Z'),
+    ...fechaEventoEjemplo(3, 6, 30),
     titulo: 'Entrenamiento Intervalos Villonaco',
     descripcion: 'Series en la base del Cerro Villonaco.',
-    fecha: 'Miércoles 15 de Octubre',
     hora: '6:30 AM',
     ubicacion: 'Base Cerro Villonaco',
     participantes: 12,
     distanciaKm: 8,
     pasado: false,
     creadoPorUsuario: false,
+    cupo: 25,
+    tipo: 'entrenamiento',
   },
   {
     id: '4',
-    inicioMs: Date.parse('2026-09-28T11:30:00Z'),
+    // El unico de ejemplo ya realizado: el domingo pasado.
+    ...(() => {
+      const f = fechaEventoEjemplo(0, 6, 30, -1)
+      return f.inicioMs > Date.now() ? fechaEventoEjemplo(0, 6, 30, -2) : f
+    })(),
     titulo: 'Fondo dominical Zamora',
     descripcion: 'Fondo suave de 12 km junto al río Zamora.',
-    fecha: 'Domingo 28 de Septiembre',
     hora: '6:30 AM',
     ubicacion: 'Parque Lineal La Tebaida',
     participantes: 21,
     distanciaKm: 12,
     pasado: true,
     creadoPorUsuario: false,
+    tipo: 'entrenamiento',
   },
 ]
 
