@@ -166,8 +166,12 @@ export function Medallero({ lista }: { lista: Medalla[] }) {
               {x.lograda ? 'workspace_premium' : 'lock'}
             </span>
           </span>
-          <span className="text-[11.5px] font-semibold text-white mt-1.5 leading-tight">{x.titulo}</span>
-          <span className="text-[10px] text-c2-muted leading-tight line-clamp-2">{x.descripcion}</span>
+          <span className="text-[11.5px] font-semibold text-white mt-1.5 leading-tight">
+            {x.titulo}
+          </span>
+          <span className="text-[10px] text-c2-muted leading-tight line-clamp-2">
+            {x.descripcion}
+          </span>
         </div>
       ))}
     </div>
