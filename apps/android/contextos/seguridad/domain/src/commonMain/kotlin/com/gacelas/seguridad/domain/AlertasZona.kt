@@ -39,3 +39,39 @@ object AlertasZona {
     fun mensaje(i: IncidentePublico, metros: Int): String =
         "Atención: reporte de ${i.tipo.nombre.lowercase()} a $metros m" + if (i.verificado) " (verificado)" else ""
 }
+
+/**
+ * Estado de las alertas de una carrera, usado por el servicio de ubicacion en primer plano (0.9.15):
+ * avisa una sola vez por reporte y solo vuelve a calcular cuando el corredor se movio [minMovimientoM]
+ * o paso [minIntervaloMs], para no gastar CPU con cada punto GPS de 1 s.
+ */
+class MonitorAlertasZona(
+    private val minMovimientoM: Double = 25.0,
+    private val minIntervaloMs: Long = 15_000L,
+) {
+    private val avisados = mutableSetOf<String>()
+    private var ultimoLat: Double? = null
+    private var ultimoLng = 0.0
+    private var ultimoMs = 0L
+
+    /** Reportes vigentes; al cambiar se vuelve a evaluar con el siguiente punto. */
+    var reportes: List<IncidentePublico> = emptyList()
+        set(v) { field = v; ultimoLat = null }
+
+    val yaAvisados: Set<String> get() = avisados
+
+    /** Devuelve el reporte mas cercano que hay que avisar ahora, o null. */
+    fun evaluar(lat: Double, lng: Double, ahoraMs: Long): Pair<IncidentePublico, Int>? {
+        if (reportes.isEmpty()) return null
+        val prev = ultimoLat
+        if (prev != null && ahoraMs - ultimoMs < minIntervaloMs && AlertasZona.distanciaM(prev, ultimoLng, lat, lng) < minMovimientoM) return null
+        ultimoLat = lat; ultimoLng = lng; ultimoMs = ahoraMs
+        val nuevas = AlertasZona.nuevas(lat, lng, reportes, avisados, ahoraMs)
+        if (nuevas.isEmpty()) return null
+        nuevas.forEach { avisados += it.first.id }
+        return nuevas.first()
+    }
+
+    /** Nueva carrera: se olvidan los avisos y la ultima posicion. */
+    fun reiniciar() { avisados.clear(); ultimoLat = null; reportes = emptyList() }
+}

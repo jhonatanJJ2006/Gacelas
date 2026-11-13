@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.gacelas.comunidad.domain.reglas.estaLleno
+import com.gacelas.ui.components.EsqueletoTarjetas
 import com.gacelas.ui.components.BotonChipC2
 import com.gacelas.ui.components.BotonSecundario
 import com.gacelas.ui.components.EtiquetaC2
@@ -229,22 +230,8 @@ private fun ErrorClubes(mensaje: String, onReintentar: () -> Unit) = Tarjeta(Mod
 /** Esqueleto de carga con la forma de las tarjetas. */
 @Composable
 private fun EsqueletoClubes() {
-    val pulso by rememberInfiniteTransition(label = "esqueleto").animateFloat(0.35f, 0.7f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "alfa")
-    val tono = GColors.SurfaceHigh.copy(alpha = pulso)
-    Column(Modifier.testTag("cargando-clubes"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        repeat(3) {
-            Tarjeta {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Box(Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(tono))
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Box(Modifier.fillMaxWidth(0.6f).height(18.dp).clip(RoundedCornerShape(4.dp)).background(tono))
-                        Box(Modifier.fillMaxWidth(0.4f).height(12.dp).clip(RoundedCornerShape(4.dp)).background(tono))
-                    }
-                }
-                Box(Modifier.fillMaxWidth(0.8f).height(12.dp).clip(RoundedCornerShape(4.dp)).background(tono))
-            }
-        }
-    }
+    // Esqueleto C2 compartido (core/ui Esqueletos.kt), igual que rutas, feed y eventos.
+    Box(Modifier.testTag("cargando-clubes")) { EsqueletoTarjetas(4, etiqueta = "Cargando grupos y comunidades") }
 }
 
 @Composable

@@ -143,21 +143,22 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
                     com.gacelas.ui.components.BloqueEsqueleto(alto = 12.dp, ancho = 0.5f)
                 }
             }
-        } else
-        // C2: cabecera en fila con foto, nombre en Anton cursiva y datos en una linea.
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            FotoPerfil(perfil?.fotoPath, 80.dp)
-            Column(Modifier.weight(1f).padding(start = 14.dp)) {
-                Text(perfil?.nombre ?: "Tu perfil", style = GType.headlineMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary, maxLines = 1)
-                Text(
-                    listOfNotNull(perfil?.username?.let { "@$it" }, perfil?.ubicacion?.takeIf { it.isNotBlank() }).joinToString(" · "),
-                    style = GType.bodySm, color = GColors.C2Muted, maxLines = 1,
-                )
-                perfil?.bio?.takeIf { it.isNotBlank() }?.let { Text(it, style = GType.bodySm, color = GColors.C2Muted, maxLines = 2) }
-                com.gacelas.ui.components.EtiquetaC2("Club Gacelas Loja", Modifier.padding(top = 4.dp))
-            }
-            IconButton(onClick = onEditar, modifier = Modifier.align(Alignment.Top).clip(RoundedCornerShape(4.dp)).background(GColors.C2S2)) {
-                Icon(Icons.Filled.Edit, "Editar perfil", tint = GColors.C2Violeta)
+        } else {
+            // C2: cabecera en fila con foto, nombre en Anton cursiva y datos en una linea.
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                FotoPerfil(perfil?.fotoPath, 80.dp)
+                Column(Modifier.weight(1f).padding(start = 14.dp)) {
+                    Text(perfil?.nombre ?: "Tu perfil", style = GType.headlineMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary, maxLines = 1)
+                    Text(
+                        listOfNotNull(perfil?.username?.let { "@$it" }, perfil?.ubicacion?.takeIf { it.isNotBlank() }).joinToString(" · "),
+                        style = GType.bodySm, color = GColors.C2Muted, maxLines = 1,
+                    )
+                    perfil?.bio?.takeIf { it.isNotBlank() }?.let { Text(it, style = GType.bodySm, color = GColors.C2Muted, maxLines = 2) }
+                    com.gacelas.ui.components.EtiquetaC2("Club Gacelas Loja", Modifier.padding(top = 4.dp))
+                }
+                IconButton(onClick = onEditar, modifier = Modifier.align(Alignment.Top).clip(RoundedCornerShape(4.dp)).background(GColors.C2S2)) {
+                    Icon(Icons.Filled.Edit, "Editar perfil", tint = GColors.C2Violeta)
+                }
             }
         }
         Contadores(carreras.size, social.seguidores, social.siguiendo)
