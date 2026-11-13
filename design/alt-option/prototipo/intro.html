@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Runcity · El sello</title>
+<style>
+  html, body { margin: 0; background: #F3EBDF; height: 100%; }
+  #anim { width: 720px; height: 1280px; margin: 0 auto; background: #F3EBDF; }
+</style>
+</head>
+<body>
+<div id="anim" role="img" aria-label="Intro de Runcity"></div>
+<script src="vendor/lottie.min.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const anim = lottie.loadAnimation({
+    container: document.getElementById('anim'),
+    renderer: 'svg',
+    loop: false,
+    autoplay: false,
+    path: '../motion/intro-sello.json',
+    rendererSettings: { preserveAspectRatio: 'xMidYMid meet' },
+  });
+  anim.addEventListener('DOMLoaded', () => {
+    window.irA = (f) => anim.goToAndStop(f, true);
+    if (params.has('f')) window.irA(Number(params.get('f')));
+    else anim.play();
+    document.body.dataset.ready = '1';
+  });
+</script>
+</body>
+</html>

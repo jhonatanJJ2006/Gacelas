@@ -1,0 +1,21 @@
+/* Piedra Clara. Tokens de la opcion alternativa. No los usa la app. */
+
+:root {
+  --papel: #F3EBDF;
+  --papel-alto: #FBF7F0;
+  --tinta: #241C16;
+  --tinta-suave: #6E6258;
+  --linea: #E4D8C6;
+  --arcilla: #A33C22;
+  --cobre: #C4623A;
+  --rio: #1E6460;
+  --rio-claro: #D5E6E1;
+  --sol: #F6D2A8;
+  --sol-fuerte: #E3A23A;
+  --parque: #D5E6D2;
+  --plano: #EFE4D2;
+  --manzana: #E4D3B8;
+  --peligro: #8E2E2E;
+  --sombra: 0 10px 24px rgba(36, 28, 22, 0.08);
+  --radio: 18px;
+}

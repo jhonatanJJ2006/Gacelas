@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390">
+<title>Runcity · Piedra Clara</title>
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  @font-face { font-family: Fraunces; src: url("fuentes/fraunces.ttf") format("truetype"); font-weight: 100 900; font-display: block; }
+  @font-face { font-family: Outfit; src: url("fuentes/outfit.ttf") format("truetype"); font-weight: 100 900; font-display: block; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; background: var(--papel); }
+  button, input { font: inherit; color: inherit; }
+  button { background: none; border: 0; padding: 0; cursor: pointer; }
+  #telefono {
+    width: 390px; height: 844px; margin: 0 auto; background: var(--papel); color: var(--tinta);
+    display: flex; flex-direction: column; overflow: hidden; position: relative;
+  }
+  .estado {
+    height: 48px; flex: none; display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 22px 8px; font-family: Outfit, sans-serif; font-weight: 560; font-size: 14px;
+  }
+  .estado svg { display: block; }
+  .estado-icos { display: flex; gap: 6px; align-items: center; }
+  .lienzo { flex: 1; min-height: 0; position: relative; }
+  .pantalla { display: none; height: 100%; overflow: auto; scrollbar-width: none; }
+  .pantalla::-webkit-scrollbar { display: none; }
+  .pantalla.activa { display: block; }
+  .pantalla.columna.activa { display: flex; flex-direction: column; overflow: hidden; }
+  .serif { font-family: Fraunces, serif; font-weight: 560; font-variation-settings: "opsz" 72, "SOFT" 30, "WONK" 0; letter-spacing: -0.02em; }
+  .cifra { font-family: Fraunces, serif; font-weight: 560; font-variation-settings: "opsz" 144, "SOFT" 15, "WONK" 0; font-variant-numeric: lining-nums tabular-nums; letter-spacing: -0.03em; line-height: 0.9; }
+  .sans { font-family: Outfit, sans-serif; }
+  .ojo { font-family: Outfit, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--tinta-suave); }
+  .suave { color: var(--tinta-suave); }
+  .pad { padding: 0 20px; }
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 54px;
+    background: var(--arcilla); color: var(--papel-alto); border-radius: 14px;
+    font-family: Outfit, sans-serif; font-weight: 600; font-size: 16.5px; line-height: 1;
+  }
+  .btn.sec { background: transparent; color: var(--tinta); box-shadow: inset 0 0 0 1px var(--linea); }
+  .btn.chico { height: 42px; width: auto; padding: 0 16px; border-radius: 12px; font-size: 14.5px; }
+  .btn:active { transform: translateY(1px); }
+
+  /* Inicio */
+  .marca-fila { display: flex; align-items: center; gap: 12px; padding: 2px 20px 0; }
+  .marca-fila img { width: 46px; height: 30px; object-fit: contain; object-position: left center; }
+  .marca-fila .nombre { font-size: 22px; line-height: 1; }
+  .clima { margin-left: auto; text-align: right; }
+  .clima b { font-family: Fraunces, serif; font-weight: 560; font-size: 26px; letter-spacing: -0.03em; }
+  .clima span { display: block; }
+  .saludo { padding: 18px 20px 0; }
+  .saludo h1 { margin: 0; font-size: 36px; line-height: 1.02; font-weight: 560; }
+  .fecha { margin: 8px 0 0; }
+
+  .postal { margin: 18px 20px 0; background: var(--papel-alto); border-radius: var(--radio); overflow: hidden; box-shadow: inset 0 0 0 1px var(--linea); }
+  .postal .plano { display: block; width: 100%; height: 158px; }
+  .postal .cuerpo { padding: 14px 16px 16px; }
+  .postal h2 { margin: 4px 0 0; font-size: 24px; line-height: 1.1; font-weight: 560; }
+  .meta { margin: 6px 0 14px; font-family: Outfit, sans-serif; font-size: 14px; color: var(--tinta-suave); }
+  .meta b { color: var(--rio); font-weight: 600; }
+
+  .semana { padding: 22px 20px 0; }
+  .fila { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .semana h3, .bloque h3 { margin: 0; font-size: 20px; font-weight: 560; }
+  .barra { margin: 12px 0 10px; height: 4px; background: var(--linea); border-radius: 4px; }
+  .barra i { display: block; height: 100%; width: 62%; background: var(--arcilla); border-radius: 4px; }
+  .dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; font-family: Outfit, sans-serif; font-size: 11px; font-weight: 600; color: var(--tinta-suave); }
+  .dias .col { height: 46px; display: flex; align-items: flex-end; justify-content: center; }
+  .dias .col span { display: block; width: 100%; background: var(--sol); border-radius: 3px 3px 0 0; }
+  .dias .hoy span { background: var(--arcilla); }
+  .dias .hoy { color: var(--arcilla); }
+
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 18px 20px 0; }
+  .ficha { background: var(--papel-alto); border-radius: 16px; padding: 14px; box-shadow: inset 0 0 0 1px var(--linea); }
+  .ficha .ojo { display: block; margin-bottom: 8px; }
+  .ficha .cifra { font-size: 34px; }
+  .ficha p { margin: 6px 0 0; font-family: Outfit, sans-serif; font-size: 13px; line-height: 1.35; color: var(--tinta-suave); }
+
+  .club { margin: 14px 20px 0; padding: 14px 0 14px 14px; border-top: 1px solid var(--linea); border-bottom: 1px solid var(--linea); display: flex; gap: 12px; align-items: center; }
+  .club .raya { width: 3px; align-self: stretch; background: var(--arcilla); border-radius: 3px; }
+  .club h3 { margin: 0; font-size: 17px; font-weight: 560; }
+  .club p { margin: 3px 0 0; font-family: Outfit, sans-serif; font-size: 13px; color: var(--tinta-suave); }
+  .avatares { display: flex; margin-top: 8px; }
+  .avatares i { width: 22px; height: 22px; margin-right: -6px; border-radius: 50%; background: var(--sol); border: 1.5px solid var(--papel); display: grid; place-items: center; font-family: Outfit, sans-serif; font-size: 10px; font-style: normal; font-weight: 650; }
+  .zona { margin: 14px 20px 22px; display: flex; gap: 10px; align-items: flex-start; font-family: Outfit, sans-serif; font-size: 13.5px; line-height: 1.4; }
+  .zona .punto { width: 8px; height: 8px; margin-top: 6px; border-radius: 50%; background: var(--rio); flex: none; }
+
+  /* Nav */
+  nav {
+    flex: none; height: 78px; display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 8px 10px 0; background: var(--papel-alto); box-shadow: inset 0 1px 0 var(--linea);
+  }
+  nav.oculta { display: none; }
+  nav button { width: 64px; height: 52px; color: var(--tinta-suave); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-family: Outfit, sans-serif; font-size: 11px; font-weight: 560; }
+  nav button.on { color: var(--arcilla); }
+  nav button svg { display: block; }
+  nav .correr {
+    width: 92px; height: 44px; margin-top: 2px; background: var(--arcilla); color: var(--papel-alto);
+    border-radius: 14px; font-size: 14.5px; font-weight: 620; box-shadow: 0 8px 16px rgba(163, 60, 34, 0.22);
+  }
+  .homebar { position: absolute; left: 50%; bottom: 6px; width: 128px; height: 4px; margin-left: -64px; border-radius: 4px; background: rgba(36, 28, 22, 0.22); }
+
+  /* Correr */
+  .tope { display: flex; align-items: center; gap: 8px; padding: 4px 12px 0; min-height: 44px; }
+  .tope h1 { margin: 0; font-size: 26px; font-weight: 560; }
+  .icono-btn { width: 40px; height: 40px; display: grid; place-items: center; }
+  .gps { margin: 4px 20px 0; font-family: Outfit, sans-serif; font-size: 13.5px; color: var(--tinta-suave); }
+  .gps b { color: var(--rio); font-weight: 620; }
+  .lista { margin: 16px 20px 0; }
+  .opcion { width: 100%; text-align: left; padding: 14px 12px 14px 14px; border-top: 1px solid var(--linea); display: block; cursor: pointer; }
+  .opcion:last-child { border-bottom: 1px solid var(--linea); }
+  .opcion.on { box-shadow: inset 3px 0 0 var(--arcilla); background: rgba(163, 60, 34, 0.04); }
+  .opcion strong { display: block; font-family: Fraunces, serif; font-weight: 560; font-size: 18px; letter-spacing: -0.02em; }
+  .opcion span { display: block; margin-top: 2px; font-family: Outfit, sans-serif; font-size: 13.5px; color: var(--tinta-suave); }
+  .ajuste { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .ajuste button { height: 32px; padding: 0 10px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--linea); font-family: Outfit, sans-serif; font-size: 13px; font-weight: 560; }
+  .ajuste button.on { background: var(--tinta); color: var(--papel-alto); box-shadow: none; }
+  .efecto { margin: 16px 20px; font-family: Outfit, sans-serif; font-size: 14.5px; line-height: 1.45; }
+  .efecto b { font-weight: 620; }
+  .interruptor { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 20px; text-align: left; }
+  .interruptor .txt { flex: 1; }
+  .interruptor strong { display: block; font-family: Outfit, sans-serif; font-weight: 580; font-size: 15px; }
+  .interruptor em { display: block; margin-top: 1px; font-style: normal; font-family: Outfit, sans-serif; font-size: 12.5px; color: var(--tinta-suave); }
+  .sw { width: 42px; height: 26px; border-radius: 99px; background: var(--linea); position: relative; flex: none; }
+  .sw i { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--papel-alto); transition: left .15s; }
+  .sw.on { background: var(--arcilla); }
+  .sw.on i { left: 19px; }
+  .pie { padding: 8px 20px 18px; }
+
+  /* Carrera */
+  .mapa-vivo { position: relative; height: 292px; flex: none; background: var(--plano); overflow: hidden; }
+  .mapa-vivo svg { width: 100%; height: 100%; display: block; }
+  .mapa-vivo.d3 { perspective: 700px; }
+  .mapa-vivo.d3 svg { transform: rotateX(32deg) scale(1.18); transform-origin: 50% 80%; }
+  .chips { position: absolute; top: 10px; left: 12px; right: 12px; display: flex; justify-content: space-between; gap: 8px; pointer-events: none; }
+  .chip { pointer-events: auto; background: var(--papel-alto); border-radius: 999px; padding: 6px 10px; font-family: Outfit, sans-serif; font-size: 12px; font-weight: 600; box-shadow: 0 1px 0 rgba(36,28,22,.06); }
+  .chip .vivo { color: var(--rio); }
+  .vistas { display: flex; gap: 2px; }
+  .vistas button { pointer-events: auto; background: transparent; font-family: Outfit, sans-serif; font-size: 12px; font-weight: 650; color: var(--tinta-suave); padding: 6px 8px; border-radius: 999px; }
+  .vistas button.on { color: var(--arcilla); background: var(--papel-alto); }
+  .sos {
+    position: absolute; left: 12px; bottom: 12px; width: 64px; height: 64px; border-radius: 50%;
+    background: var(--papel-alto); color: var(--peligro); box-shadow: inset 0 0 0 1.5px var(--peligro);
+    font-family: Outfit, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.06em;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.05;
+  }
+  .sos small { font-size: 9px; letter-spacing: 0; font-weight: 600; color: var(--tinta-suave); margin-top: 2px; }
+  .hoja { flex: 1; min-height: 0; overflow: auto; padding: 16px 20px 12px; scrollbar-width: none; }
+  .hoja .cifra { font-size: 64px; }
+  .unidad { margin: 2px 0 0; font-family: Outfit, sans-serif; font-size: 14px; color: var(--tinta-suave); }
+  .progreso { margin: 14px 0; }
+  .progreso .pista { height: 6px; background: var(--linea); border-radius: 6px; }
+  .progreso .pista i { display: block; height: 100%; width: 60%; background: var(--arcilla); border-radius: 6px; }
+  .progreso p { margin: 6px 0 0; font-family: Outfit, sans-serif; font-size: 13px; color: var(--tinta-suave); }
+  .metricas { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--linea); border-bottom: 1px solid var(--linea); }
+  .metricas div { padding: 10px 0; }
+  .metricas div + div { box-shadow: inset 1px 0 0 var(--linea); padding-left: 8px; }
+  .metricas b { display: block; font-family: Fraunces, serif; font-weight: 560; font-size: 16px; letter-spacing: -0.02em; }
+  .metricas span { font-family: Outfit, sans-serif; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tinta-suave); }
+  .parcial { display: flex; justify-content: space-between; padding: 7px 0; font-family: Outfit, sans-serif; font-size: 14px; border-bottom: 1px solid var(--linea); }
+  .parcial .mejor { color: var(--arcilla); font-weight: 620; }
+  .acciones { display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 8px; margin-top: 14px; }
+  .acciones button { height: 48px; border-radius: 12px; font-family: Outfit, sans-serif; font-weight: 600; font-size: 14px; box-shadow: inset 0 0 0 1px var(--linea); }
+  .acciones .pausa { background: var(--tinta); color: var(--papel-alto); box-shadow: none; }
+
+  /* Resumen */
+  .resumen-mapa { margin: 0 20px; height: 150px; border-radius: 16px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--linea); }
+  .resumen-mapa svg { width: 100%; height: 100%; display: block; }
+  .hero-num { padding: 16px 20px 0; }
+  .hero-num .cifra { font-size: 72px; }
+  .tres { display: grid; grid-template-columns: repeat(3, 1fr); margin: 16px 20px; border-top: 1px solid var(--linea); }
+  .tres div { padding: 12px 8px 12px 0; }
+  .tres div + div { padding-left: 10px; box-shadow: inset 1px 0 0 var(--linea); }
+  .tres b { display: block; font-family: Fraunces, serif; font-size: 20px; font-weight: 560; }
+  .tres span { font-family: Outfit, sans-serif; font-size: 12px; color: var(--tinta-suave); }
+  .anillo-fila { display: flex; gap: 14px; align-items: center; margin: 6px 20px 0; padding-top: 8px; }
+  .anillo { width: 78px; height: 78px; border-radius: 50%; background: conic-gradient(var(--arcilla) 77%, var(--linea) 0); display: grid; place-items: center; position: relative; flex: none; }
+  .anillo::before { content: ""; position: absolute; inset: 7px; background: var(--papel); border-radius: 50%; }
+  .anillo span { position: relative; text-align: center; font-family: Fraunces, serif; font-size: 16px; font-weight: 560; line-height: 1; }
+  .anillo small { position: relative; display: block; font-family: Outfit, sans-serif; font-size: 9px; color: var(--tinta-suave); letter-spacing: 0.04em; }
+  .barras-km { margin: 8px 20px 0; }
+  .bkm { display: grid; grid-template-columns: 36px 1fr 52px; gap: 8px; align-items: center; font-family: Outfit, sans-serif; font-size: 13px; margin: 6px 0; }
+  .bkm i { display: block; height: 8px; background: var(--sol); border-radius: 4px; }
+  .bkm.mejor i { background: var(--arcilla); }
+  .dos-btn { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; padding: 16px 20px 24px; }
+
+  /* Rutas */
+  .buscar { margin: 12px 20px 0; height: 46px; border-radius: 14px; background: var(--papel-alto); box-shadow: inset 0 0 0 1px var(--linea); display: flex; align-items: center; gap: 8px; padding: 0 14px; }
+  .buscar input { border: 0; outline: 0; background: transparent; flex: 1; font-family: Outfit, sans-serif; font-size: 15px; }
+  .filtros { display: flex; gap: 14px; padding: 12px 20px 0; font-family: Outfit, sans-serif; font-size: 14px; font-weight: 580; color: var(--tinta-suave); }
+  .filtros button.on { color: var(--arcilla); box-shadow: inset 0 -2px 0 var(--arcilla); }
+  .carrusel { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 14px 20px 8px; scrollbar-width: none; }
+  .carrusel::-webkit-scrollbar { display: none; }
+  .ruta { flex: none; width: 246px; scroll-snap-align: start; background: var(--papel-alto); border-radius: 16px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--linea); text-align: left; }
+  .ruta svg { width: 100%; height: 120px; display: block; }
+  .ruta .cuerpo { padding: 12px 12px 14px; }
+  .ruta h3 { margin: 2px 0 0; font-size: 18px; font-weight: 560; }
+  .ruta p { margin: 4px 0 0; font-family: Outfit, sans-serif; font-size: 13px; color: var(--tinta-suave); }
+  .nota { margin: 4px 20px 20px; font-family: Outfit, sans-serif; font-size: 13px; color: var(--tinta-suave); }
+
+  /* Perfil */
+  .quien { display: flex; gap: 14px; align-items: center; padding: 8px 20px 0; }
+  .quien .sello { width: 72px; height: 72px; border-radius: 50%; background: var(--sol); display: grid; place-items: center; flex: none; }
+  .quien .sello img { width: 64px; height: 40px; object-fit: contain; }
+  .quien h1 { margin: 0; font-size: 30px; font-weight: 560; }
+  .periodos { display: flex; gap: 16px; padding: 16px 20px 0; font-family: Outfit, sans-serif; font-size: 14px; font-weight: 580; color: var(--tinta-suave); }
+  .periodos button.on { color: var(--tinta); }
+  .cuatro { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 12px 20px 0; border-top: 1px solid var(--linea); }
+  .cuatro div { padding: 12px 8px 12px 0; border-bottom: 1px solid var(--linea); }
+  .cuatro div:nth-child(2n) { padding-left: 12px; box-shadow: inset 1px 0 0 var(--linea); }
+  .cuatro b { display: block; font-family: Fraunces, serif; font-size: 26px; font-weight: 560; letter-spacing: -0.03em; }
+  .cuatro span { font-family: Outfit, sans-serif; font-size: 12.5px; color: var(--tinta-suave); }
+  .cuatro em { font-style: normal; color: var(--rio); font-weight: 620; }
+  .gacela-card { margin: 16px 20px 0; background: var(--papel); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--linea); padding: 8px 14px 14px; display: grid; grid-template-columns: 1fr auto; align-items: center; }
+  .gacela-card img { width: 120px; height: 74px; object-fit: contain; }
+  .reciente { display: flex; justify-content: space-between; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--linea); font-family: Outfit, sans-serif; }
+  .reciente b { display: block; font-weight: 600; font-size: 15px; }
+  .reciente span { color: var(--tinta-suave); font-size: 13px; }
+
+  /* Hojas */
+  .velo { position: absolute; inset: 0; background: rgba(36, 28, 22, 0.35); display: none; }
+  .velo.on { display: block; }
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; background: var(--papel-alto); border-radius: 20px 20px 0 0;
+    padding: 14px 20px 28px; transform: translateY(110%); transition: transform .25s; box-shadow: 0 -8px 24px rgba(36,28,22,.08);
+  }
+  .velo.on .sheet { transform: none; }
+  .sheet h2 { margin: 8px 0; font-size: 26px; font-weight: 560; }
+  .sheet p { font-family: Outfit, sans-serif; font-size: 14.5px; line-height: 1.45; color: var(--tinta-suave); }
+  .toast {
+    position: absolute; left: 20px; right: 20px; bottom: 96px; background: var(--tinta); color: var(--papel-alto);
+    border-radius: 12px; padding: 12px 14px; font-family: Outfit, sans-serif; font-size: 14px; display: none;
+  }
+  .toast.on { display: block; }
+</style>
+</head>
+<body>
+<div id="telefono">
+  <div class="estado">
+    <span>6:42</span>
+    <span class="estado-icos">
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#241C16" stroke-width="1.4"><path d="M1 9.5 V7 M5 9.5 V5 M9 9.5 V3 M13 9.5 V1"/></svg>
+      <svg width="15" height="12" viewBox="0 0 15 12"><rect x="0.6" y="1" width="11" height="10" rx="1.4" fill="none" stroke="#241C16" stroke-width="1.2"/><rect x="2" y="2.6" width="7" height="6.8" fill="#241C16"/><rect x="12.2" y="4" width="1.4" height="4" rx="0.4" fill="#241C16"/></svg>
+    </span>
+  </div>
+  <div class="lienzo">
+
+    <section class="pantalla activa" id="inicio">
+      <div class="marca-fila">
+        <img src="../marca/gacela.svg" alt="">
+        <div class="nombre serif">Runcity</div>
+        <div class="clima"><b>18°</b><span class="ojo">Despejado</span></div>
+      </div>
+      <div class="saludo">
+        <p class="ojo fecha">Viernes 13 de noviembre · Loja</p>
+        <h1 class="serif">Buenos días,<br>Jhonatan</h1>
+      </div>
+      <article class="postal">
+        <svg class="plano" viewBox="0 0 340 158" role="img" aria-label="Plano de La Tebaida">
+          <rect width="340" height="158" fill="#EFE4D2"/>
+          <g fill="#E4D3B8">
+            <rect x="14" y="14" width="78" height="34" rx="2"/><rect x="102" y="16" width="58" height="30"/>
+            <rect x="170" y="12" width="86" height="38"/><rect x="266" y="16" width="60" height="28"/>
+            <rect x="16" y="112" width="96" height="32"/><rect x="124" y="116" width="72" height="28"/>
+            <rect x="208" y="110" width="116" height="36"/>
+          </g>
+          <rect x="10" y="62" width="320" height="36" fill="#D5E6D2"/>
+          <path d="M0 80 C70 70 120 96 190 78 S290 88 340 72" fill="none" stroke="#8FB8B0" stroke-width="12" stroke-linecap="round"/>
+          <path d="M0 80 C70 70 120 96 190 78 S290 88 340 72" fill="none" stroke="#1E6460" stroke-width="1.2"/>
+          <path d="M26 102 C78 96 130 112 188 98 S270 90 314 108" fill="none" stroke="#A33C22" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="26" cy="102" r="4" fill="none" stroke="#241C16" stroke-width="1.5"/>
+          <circle cx="314" cy="108" r="4.5" fill="#A33C22"/>
+          <text x="16" y="58" fill="#1E6460" font-family="Outfit, sans-serif" font-size="10">Malacatos</text>
+        </svg>
+        <div class="cuerpo">
+          <div class="ojo">Ruta del día</div>
+          <h2 class="serif">Parque Lineal La Tebaida</h2>
+          <p class="meta">3,0 km · Fácil · <b>zona tranquila</b></p>
+          <button class="btn" data-ir="correr">Correr esta ruta</button>
+        </div>
+      </article>
+      <section class="semana">
+        <div class="fila"><h3 class="serif">Esta semana</h3><span class="ojo">12,4 de 20 km</span></div>
+        <div class="barra" aria-hidden="true"><i></i></div>
+        <div class="dias" aria-label="Kilómetros por día">
+          <div>L<div class="col"><span style="height:18px"></span></div></div>
+          <div>M<div class="col"><span style="height:28px"></span></div></div>
+          <div>X<div class="col"><span style="height:10px"></span></div></div>
+          <div>J<div class="col"><span style="height:34px"></span></div></div>
+          <div class="hoy">V<div class="col"><span style="height:16px"></span></div></div>
+          <div>S<div class="col"><span style="height:4px"></span></div></div>
+          <div>D<div class="col"><span style="height:4px"></span></div></div>
+        </div>
+      </section>
+      <div class="duo">
+        <article class="ficha">
+          <span class="ojo">Racha</span>
+          <div class="cifra">6</div>
+          <p>días seguidos. Tu mejor marca es 11.</p>
+        </article>
+        <article class="ficha">
+          <span class="ojo">Para salir</span>
+          <div class="cifra">6:30</div>
+          <p>16° y sin lluvia. Buen momento.</p>
+        </article>
+      </div>
+      <div class="club">
+        <div class="raya"></div>
+        <div style="flex:1">
+          <div class="ojo">Tu grupo</div>
+          <h3 class="serif">Gacelas del Jipiro</h3>
+          <p>Sábado · Parque Jipiro · 06:30</p>
+          <div class="avatares"><i>L</i><i>D</i><i>V</i><i>+20</i></div>
+        </div>
+        <button class="btn sec chico" data-ir="rutas">Voy</button>
+      </div>
+      <div class="zona">
+        <i class="punto"></i>
+        <div><b>Zona tranquila · ECU 911.</b> Sin reportes a 500 m en los últimos 7 días.</div>
+      </div>
+    </section>
+
+    <section class="pantalla" id="correr">
+      <div class="tope">
+        <button class="icono-btn" data-ir="inicio" aria-label="Volver">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#241C16" stroke-width="1.6" stroke-linecap="round"><path d="M14 4 L7 11 L14 18"/></svg>
+        </button>
+        <h1 class="serif">Antes de salir</h1>
+      </div>
+      <p class="gps"><b>GPS listo · ± 8 m</b> · Centro de Loja</p>
+      <p class="ojo" style="padding:16px 20px 0">Cómo quieres correr</p>
+      <div class="lista" id="modos">
+        <div class="opcion on" data-modo="ruta" role="button" tabindex="0">
+          <strong>Ruta del día</strong>
+          <span>Parque Lineal La Tebaida · 3,0 km · unos 18 min a tu ritmo</span>
+        </div>
+        <div class="opcion" data-modo="objetivo" role="button" tabindex="0">
+          <strong>Objetivo</strong>
+          <span>Distancia, tiempo o ritmo. Tú marcas la meta.</span>
+          <div class="ajuste" data-ajuste hidden>
+            <button type="button" data-meta="3 km">3 km</button>
+            <button type="button" class="on" data-meta="5 km">5 km</button>
+            <button type="button" data-meta="10 km">10 km</button>
+            <button type="button" data-meta="30 min">30 min</button>
+            <button type="button" data-meta="6:00">ritmo 6:00</button>
+          </div>
+        </div>
+        <div class="opcion" data-modo="libre" role="button" tabindex="0">
+          <strong>Libre</strong>
+          <span>Sin meta. El mapa te sigue por donde salgas.</span>
+        </div>
+      </div>
+      <p class="efecto" id="efecto">Al terminar sumas <b>3,0 km</b> a la semana, de 12,4 a 15,4, y la racha sigue en 6 días.</p>
+      <button class="interruptor" data-sw><span class="txt"><strong>Voz</strong><em>Te dice el kilómetro y el ritmo</em></span><span class="sw on"><i></i></span></button>
+      <button class="interruptor" data-sw><span class="txt"><strong>En vivo</strong><em>Tu club ve el recorrido. Se decide una vez.</em></span><span class="sw on"><i></i></span></button>
+      <button class="interruptor" data-sw><span class="txt"><strong>SOS</strong><em>Aviso a tus contactos y llamada al ECU 911</em></span><span class="sw on"><i></i></span></button>
+      <div class="pie"><button class="btn" data-ir="carrera">Empezar</button></div>
+    </section>
+
+    <section class="pantalla columna" id="carrera">
+      <div class="mapa-vivo" id="mapa">
+        <svg viewBox="0 0 390 292" role="img" aria-label="Recorrido en curso">
+          <rect width="390" height="292" fill="#EFE4D2"/>
+          <g fill="#E4D3B8">
+            <rect x="16" y="24" width="90" height="48"/><rect x="118" y="28" width="70" height="40"/>
+            <rect x="200" y="20" width="100" height="52"/><rect x="312" y="30" width="62" height="40"/>
+            <rect x="18" y="200" width="110" height="52"/><rect x="140" y="208" width="84" height="44"/>
+            <rect x="236" y="198" width="136" height="58"/>
+          </g>
+          <rect x="12" y="112" width="366" height="52" fill="#D5E6D2"/>
+          <path d="M0 138 C80 124 150 160 230 136 S330 150 390 128" fill="none" stroke="#8FB8B0" stroke-width="16" stroke-linecap="round"/>
+          <path d="M0 138 C80 124 150 160 230 136 S330 150 390 128" fill="none" stroke="#1E6460" stroke-width="1.3"/>
+          <path d="M36 168 C90 160 140 184 200 168 S300 156 352 176" fill="none" stroke="#C4623A" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 7" opacity=".7"/>
+          <path d="M36 168 C90 160 140 184 200 168" fill="none" stroke="#A33C22" stroke-width="4.5" stroke-linecap="round"/>
+          <circle cx="36" cy="168" r="5" fill="none" stroke="#241C16" stroke-width="1.6"/>
+          <circle cx="200" cy="168" r="7" fill="#241C16"/>
+          <circle cx="200" cy="168" r="3" fill="#F3EBDF"/>
+          <text x="18" y="104" fill="#1E6460" font-family="Outfit, sans-serif" font-size="11">Malacatos · vas por el km 2</text>
+        </svg>
+        <div class="chips">
+          <span class="chip"><span class="vivo">Grabando</span> · GPS ± 6 m</span>
+          <span class="vistas" id="vistas">
+            <button type="button" data-vista="2d" class="on">2D</button>
+            <button type="button" data-vista="3d">3D</button>
+          </span>
+        </div>
+        <button class="sos" id="abrir-sos">SOS<small>Mantén 3 s</small></button>
+      </div>
+      <div class="hoja">
+        <div class="ojo">La Tebaida</div>
+        <div class="cifra">1,80</div>
+        <p class="unidad">kilómetros</p>
+        <div class="progreso">
+          <div class="pista"><i></i></div>
+          <p>Faltan 1,2 km para cerrar la vuelta de 3,0</p>
+        </div>
+        <div class="metricas">
+          <div><b>11:02</b><span>Tiempo</span></div>
+          <div><b>6:07</b><span>Ritmo</span></div>
+          <div><b>6:10</b><span>Media</span></div>
+          <div><b>+32</b><span>Desnivel</span></div>
+        </div>
+        <p class="ojo" style="margin:12px 0 0">Parciales</p>
+        <div class="parcial"><span>km 1</span><span class="mejor">6:02 · mejor</span></div>
+        <div class="parcial"><span>km 2</span><span>en curso · 5:00</span></div>
+        <div class="acciones">
+          <button type="button">Bloquear</button>
+          <button type="button" class="pausa">Pausar</button>
+          <button type="button" data-ir="resumen">Terminar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="pantalla" id="resumen">
+      <div class="tope">
+        <button class="icono-btn" data-ir="inicio" aria-label="Cerrar">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#241C16" stroke-width="1.6" stroke-linecap="round"><path d="M5 5 L15 15 M15 5 L5 15"/></svg>
+        </button>
+        <div>
+          <div class="ojo">Completada</div>
+          <h1 class="serif" style="font-size:22px">La Tebaida</h1>
+        </div>
+      </div>
+      <div class="resumen-mapa">
+        <svg viewBox="0 0 340 150" role="img" aria-label="Recorrido completo">
+          <rect width="340" height="150" fill="#EFE4D2"/>
+          <g fill="#E4D3B8">
+            <rect x="14" y="12" width="78" height="32"/><rect x="104" y="14" width="56" height="28"/>
+            <rect x="172" y="10" width="84" height="36"/><rect x="266" y="14" width="60" height="26"/>
+            <rect x="16" y="108" width="96" height="30"/><rect x="208" y="104" width="116" height="34"/>
+          </g>
+          <path d="M0 74 C70 64 120 90 190 72 S290 82 340 66" fill="none" stroke="#8FB8B0" stroke-width="11" stroke-linecap="round"/>
+          <path d="M24 96 C80 90 130 106 188 92 S270 84 316 100" fill="none" stroke="#A33C22" stroke-width="3.2" stroke-linecap="round"/>
+          <circle cx="24" cy="96" r="4" fill="none" stroke="#241C16" stroke-width="1.4"/>
+          <circle cx="316" cy="100" r="4.5" fill="#A33C22"/>
+        </svg>
+      </div>
+      <div class="hero-num">
+        <div class="cifra">3,0</div>
+        <p class="unidad">kilómetros · 6:04 el km, 6 s mejor que tu media</p>
+      </div>
+      <div class="tres">
+        <div><b>18:12</b><span>Tiempo</span></div>
+        <div><b>+48 m</b><span>Desnivel</span></div>
+        <div><b>186</b><span>kcal estimadas</span></div>
+      </div>
+      <div class="anillo-fila">
+        <div class="anillo" role="img" aria-label="15,4 de 20 kilómetros en la semana"><span>15,4<small>de 20</small></span></div>
+        <div>
+          <div class="ojo">Semana</div>
+          <p class="sans" style="margin:4px 0 0;font-size:15px;line-height:1.35">La racha queda en 7 días. Hoy ya cuenta.</p>
+        </div>
+      </div>
+      <div class="barras-km">
+        <p class="ojo">Parciales</p>
+        <div class="bkm mejor"><span>km 1</span><i style="width:92%"></i><span>6:02</span></div>
+        <div class="bkm"><span>km 2</span><i style="width:86%"></i><span>6:04</span></div>
+        <div class="bkm"><span>km 3</span><i style="width:80%"></i><span>6:06</span></div>
+      </div>
+      <p class="ojo" style="padding:16px 20px 0">Cuéntalo</p>
+      <div class="dos-btn">
+        <button class="btn sec" type="button">Compartir</button>
+        <button class="btn" id="guardar" type="button">Guardar y publicar</button>
+      </div>
+    </section>
+
+    <section class="pantalla" id="rutas">
+      <div class="pad" style="padding-top:6px">
+        <div class="ojo">Loja</div>
+        <h1 class="serif" style="margin:2px 0 0;font-size:32px">Rutas</h1>
+      </div>
+      <label class="buscar"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#6E6258" stroke-width="1.6"><circle cx="8" cy="8" r="5.2"/><path d="M12 12 L16 16" stroke-linecap="round"/></svg><input placeholder="Calle, parque o barrio" aria-label="Buscar rutas"></label>
+      <div class="filtros" id="filtros">
+        <button type="button" class="on" data-f="todas">Todas</button>
+        <button type="button" data-f="parque">Parque</button>
+        <button type="button" data-f="rio">Río</button>
+        <button type="button" data-f="cerro">Cerro</button>
+      </div>
+      <div class="carrusel" id="carrusel">
+        <div class="ruta" role="button" tabindex="0" data-tipo="parque" data-ir="correr">
+          <svg viewBox="0 0 246 120"><rect width="246" height="120" fill="#EFE4D2"/><rect x="8" y="48" width="230" height="26" fill="#D5E6D2"/><path d="M0 61 C60 54 100 74 160 58 S220 64 246 54" fill="none" stroke="#8FB8B0" stroke-width="8"/><path d="M16 78 C60 72 100 90 150 76 S210 70 230 84" fill="none" stroke="#A33C22" stroke-width="2.6" stroke-linecap="round"/></svg>
+          <div class="cuerpo"><div class="ojo">Fácil · 3,0 km</div><h3 class="serif">La Tebaida</h3><p>Ida y vuelta junto al Malacatos</p></div>
+        </div>
+        <div class="ruta" role="button" tabindex="0" data-tipo="rio" data-ir="correr">
+          <svg viewBox="0 0 246 120"><rect width="246" height="120" fill="#EFE4D2"/><path d="M-4 30 C40 50 70 20 120 48 S190 90 250 60" fill="none" stroke="#8FB8B0" stroke-width="18" stroke-linecap="round"/><path d="M-4 30 C40 50 70 20 120 48 S190 90 250 60" fill="none" stroke="#1E6460" stroke-width="1.2"/><path d="M20 78 C70 60 110 40 150 55 S200 86 228 70" fill="none" stroke="#A33C22" stroke-width="2.6" stroke-linecap="round"/></svg>
+          <div class="cuerpo"><div class="ojo">Moderada · 5,4 km</div><h3 class="serif">Río Zamora</h3><p>Orilla norte, zona tranquila</p></div>
+        </div>
+        <div class="ruta" role="button" tabindex="0" data-tipo="parque" data-ir="correr">
+          <svg viewBox="0 0 246 120"><rect width="246" height="120" fill="#EFE4D2"/><ellipse cx="120" cy="58" rx="46" ry="28" fill="#B7D4CF"/><ellipse cx="120" cy="58" rx="28" ry="16" fill="#EFE4D2"/><path d="M70 86 C90 40 150 30 176 70 C150 96 96 100 70 86 Z" fill="none" stroke="#A33C22" stroke-width="2.6"/></svg>
+          <div class="cuerpo"><div class="ojo">Fácil · 3,2 km</div><h3 class="serif">Parque Jipiro</h3><p>Vuelta a la laguna</p></div>
+        </div>
+        <div class="ruta" role="button" tabindex="0" data-tipo="cerro" data-ir="correr">
+          <svg viewBox="0 0 246 120"><rect width="246" height="120" fill="#EFE4D2"/><path d="M0 96 C40 90 60 70 90 74 C120 40 150 28 180 60 C200 78 220 70 246 80 V120 H0 Z" fill="#E7D3B4"/><path d="M20 100 C70 92 100 70 140 64 S200 48 230 40" fill="none" stroke="#A33C22" stroke-width="2.6" stroke-linecap="round"/></svg>
+          <div class="cuerpo"><div class="ojo">Exigente · 7,8 km</div><h3 class="serif">Cerro Villonaco</h3><p>Subida con viento y vista</p></div>
+        </div>
+        <div class="ruta" role="button" tabindex="0" data-tipo="parque" data-ir="correr">
+          <svg viewBox="0 0 246 120"><rect width="246" height="120" fill="#EFE4D2"/><g fill="#E4D3B8"><rect x="20" y="20" width="50" height="30"/><rect x="80" y="18" width="46" height="34"/><rect x="136" y="22" width="80" height="28"/><rect x="24" y="70" width="70" height="28"/><rect x="110" y="68" width="100" height="32"/></g><path d="M16 58 H230" stroke="#E7D7C0" stroke-width="6"/><path d="M30 96 C80 80 120 100 160 78 S210 70 230 86" fill="none" stroke="#A33C22" stroke-width="2.6" stroke-linecap="round"/></svg>
+          <div class="cuerpo"><div class="ojo">Fácil · 4,1 km</div><h3 class="serif">Campus UTPL</h3><p>San Cayetano, a la sombra</p></div>
+        </div>
+      </div>
+      <p class="nota">Cinco recorridos de la ciudad, del Malacatos al Villonaco.</p>
+    </section>
+
+    <section class="pantalla" id="perfil">
+      <div class="quien">
+        <div class="sello"><img src="../marca/gacela.svg" alt=""></div>
+        <div>
+          <div class="ojo">Loja</div>
+          <h1 class="serif">Jhonatan</h1>
+          <p class="sans suave" style="margin:2px 0 0;font-size:13.5px">Corres con Runcity desde 2024</p>
+        </div>
+      </div>
+      <div class="periodos" id="periodos">
+        <button type="button" class="on">4 semanas</button>
+        <button type="button">12 semanas</button>
+        <button type="button">Año</button>
+        <button type="button">Todo</button>
+      </div>
+      <div class="cuatro">
+        <div><b>18</b><span>salidas · <em>+3</em></span></div>
+        <div><b>62,4</b><span>km · <em>+8,2</em></span></div>
+        <div><b>6:12</b><span>ritmo · <em>4 s menos</em></span></div>
+        <div><b>1.240</b><span>m+ · <em>+180</em></span></div>
+      </div>
+      <div class="gacela-card">
+        <div>
+          <div class="ojo">Tu gacela</div>
+          <p class="sans" style="margin:4px 0 10px;font-size:14px">El avatar de perfil, quieto sobre el papel.</p>
+          <button class="btn sec chico" type="button" id="ver3d">Ver en 3D</button>
+        </div>
+        <img src="../marca/gacela.svg" alt="Gacela de perfil">
+      </div>
+      <div class="pad" style="padding-top:18px;padding-bottom:24px">
+        <div class="ojo">Actividad reciente</div>
+        <div class="reciente"><div><b>Ayer · La Tebaida</b><span>mañana, zona tranquila</span></div><div><b>3,0 km</b><span>6:08</span></div></div>
+        <div class="reciente"><div><b>Martes · Río Zamora</b><span>orilla norte</span></div><div><b>5,4 km</b><span>6:21</span></div></div>
+        <div class="reciente"><div><b>Domingo · Jipiro</b><span>con el grupo</span></div><div><b>3,2 km</b><span>6:02</span></div></div>
+      </div>
+    </section>
+
+    <div class="velo" id="velo">
+      <div class="sheet" role="dialog" aria-labelledby="sos-titulo">
+        <div class="ojo" style="color:var(--peligro)">SOS · ECU 911</div>
+        <h2 class="serif" id="sos-titulo">Avisar y llamar</h2>
+        <p>Se avisa a tus contactos con tu posición y se abre la llamada al ECU 911. Nada sale hasta que confirmes.</p>
+        <div style="display:grid;gap:8px;margin-top:12px">
+          <button class="btn" style="background:var(--peligro)" type="button" id="llamar">Llamar al 911</button>
+          <button class="btn sec" type="button" id="cerrar-sos">Cancelar</button>
+        </div>
+      </div>
+    </div>
+    <div class="toast" id="toast">Guardada en tu cuaderno. Ya está en el perfil.</div>
+  </div>
+  <nav id="nav">
+    <button type="button" data-ir="inicio" class="on" aria-label="Inicio">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10 L11 4 L18 10 V18 H4 Z"/></svg>Inicio
+    </button>
+    <button type="button" data-ir="rutas">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 16 C8 8 14 14 18 6"/><circle cx="18" cy="6" r="1.4" fill="currentColor"/></svg>Rutas
+    </button>
+    <button type="button" class="correr" data-ir="correr">Correr</button>
+    <button type="button" data-ir="inicio" data-tab="club">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="2.2"/><circle cx="14" cy="9" r="2"/><path d="M3.5 17c.6-2.4 2.4-3.6 4.6-3.6S12 14.6 12.6 17"/><path d="M12 17c.3-1.8 1.4-2.8 3-2.8 1.4 0 2.4.8 2.8 2.4"/></svg>Club
+    </button>
+    <button type="button" data-ir="perfil" data-tab="perfil">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="8" r="3"/><path d="M5 18c.8-3 2.8-4.4 6-4.4s5.2 1.4 6 4.4"/></svg>Tú
+    </button>
+  </nav>
+  <div class="homebar"></div>
+</div>
+<script>
+  const nav = document.getElementById('nav');
+  const sinNav = new Set(['correr', 'carrera', 'resumen']);
+  function ir(id) {
+    document.querySelectorAll('.pantalla').forEach((p) => p.classList.toggle('activa', p.id === id));
+    nav.classList.toggle('oculta', sinNav.has(id));
+    nav.querySelectorAll('button').forEach((b) => {
+      const tab = b.dataset.tab || b.dataset.ir;
+      const activo = tab === id || (id === 'inicio' && tab === 'inicio');
+      b.classList.toggle('on', !b.classList.contains('correr') && tab === id);
+    });
+    const lienzo = document.querySelector('.lienzo');
+    const destino = document.getElementById(id);
+    if (destino) destino.scrollTop = 0;
+    if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
+  }
+  document.body.addEventListener('click', (ev) => {
+    const irBtn = ev.target.closest('[data-ir]');
+    if (irBtn && !ev.target.closest('.ajuste')) {
+      ir(irBtn.dataset.ir);
+      if (irBtn.dataset.tab === 'club') document.querySelector('.club').scrollIntoView({ block: 'center' });
+    }
+    const sw = ev.target.closest('[data-sw]');
+    if (sw) sw.querySelector('.sw').classList.toggle('on');
+  });
+  document.getElementById('modos').addEventListener('click', (ev) => {
+    const op = ev.target.closest('.opcion');
+    if (!op) return;
+    document.querySelectorAll('#modos .opcion').forEach((o) => o.classList.toggle('on', o === op));
+    document.querySelector('[data-ajuste]').hidden = op.dataset.modo !== 'objetivo';
+    const textos = {
+      ruta: 'Al terminar sumas <b>3,0 km</b> a la semana, de 12,4 a 15,4, y la racha sigue en 6 días.',
+      objetivo: 'Con 5 km la semana pasa de 12,4 a 17,4. Te quedan 2,6 para la meta de 20.',
+      libre: 'Sin meta no hay barra. Igual suma los kilómetros y sostiene la racha si sales hoy.',
+    };
+    document.getElementById('efecto').innerHTML = textos[op.dataset.modo];
+  });
+  document.querySelector('.ajuste').addEventListener('click', (ev) => {
+    const b = ev.target.closest('button');
+    if (!b) return;
+    ev.stopPropagation();
+    document.querySelectorAll('.ajuste button').forEach((x) => x.classList.toggle('on', x === b));
+    document.getElementById('efecto').innerHTML = 'Objetivo de <b>' + b.dataset.meta + '</b>. La semana y la racha se actualizan al guardar.';
+  });
+  document.getElementById('vistas').addEventListener('click', (ev) => {
+    const b = ev.target.closest('button');
+    if (!b) return;
+    document.querySelectorAll('#vistas button').forEach((x) => x.classList.toggle('on', x === b));
+    document.getElementById('mapa').classList.toggle('d3', b.dataset.vista === '3d');
+  });
+  document.getElementById('abrir-sos').addEventListener('click', () => document.getElementById('velo').classList.add('on'));
+  document.getElementById('cerrar-sos').addEventListener('click', () => document.getElementById('velo').classList.remove('on'));
+  document.getElementById('llamar').addEventListener('click', () => {
+    document.getElementById('velo').classList.remove('on');
+    const t = document.getElementById('toast');
+    t.textContent = 'Llamada lista al ECU 911. Tus contactos quedan avisados.';
+    t.classList.add('on');
+    setTimeout(() => t.classList.remove('on'), 2200);
+  });
+  document.getElementById('guardar').addEventListener('click', () => {
+    const t = document.getElementById('toast');
+    t.textContent = 'Guardada en tu cuaderno. Ya está en el perfil.';
+    t.classList.add('on');
+    setTimeout(() => { t.classList.remove('on'); ir('perfil'); }, 700);
+  });
+  document.getElementById('filtros').addEventListener('click', (ev) => {
+    const b = ev.target.closest('button');
+    if (!b) return;
+    document.querySelectorAll('#filtros button').forEach((x) => x.classList.toggle('on', x === b));
+    const f = b.dataset.f;
+    document.querySelectorAll('#carrusel .ruta').forEach((r) => {
+      r.hidden = f !== 'todas' && r.dataset.tipo !== f;
+    });
+  });
+  document.getElementById('periodos').addEventListener('click', (ev) => {
+    const b = ev.target.closest('button');
+    if (!b) return;
+    document.querySelectorAll('#periodos button').forEach((x) => x.classList.toggle('on', x === b));
+  });
+  document.getElementById('ver3d').addEventListener('click', (ev) => {
+    const img = ev.target.closest('.gacela-card').querySelector('img');
+    img.style.transition = 'transform .5s';
+    img.style.transform = img.style.transform ? '' : 'rotateY(180deg) scaleX(-1)';
+  });
+  const inicial = (location.hash || '#inicio').slice(1);
+  if (document.getElementById(inicial)) ir(inicial);
+  document.fonts.ready.then(() => { document.body.dataset.ready = '1'; });
+</script>
+</body>
+</html>

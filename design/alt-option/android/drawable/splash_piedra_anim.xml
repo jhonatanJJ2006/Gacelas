@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Intro "El sello", 2,4 s de movimiento y reposo. No vive en src/main. -->
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android" android:drawable="@drawable/splash_piedra">
+    <target android:name="sello" android:animation="@animator/sello"/>
+    <target android:name="cuerno" android:animation="@animator/cuerno"/>
+    <target android:name="rotulo" android:animation="@animator/rotulo"/>
+</animated-vector>
