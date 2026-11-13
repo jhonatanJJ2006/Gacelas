@@ -16,7 +16,9 @@
 #   - apps/android/local.properties con SUPABASE_URL, SUPABASE_ANON_KEY y GOOGLE_WEB_CLIENT_ID.
 #   - SUPABASE_SERVICE_ROLE_KEY en el entorno o en backend/.env (nunca va dentro del APK).
 #   - versionName ya subido en apps/android/app/build.gradle.kts (versionCode se calcula solo).
-#   - gh autenticado, jq, sha256sum y el mismo keystore de depuracion (SHA-1 23:CF:...:F9).
+#   - gh autenticado, jq, sha256sum y el debug.keystore de publicacion
+#     (SHA-1 F1:A2:7B:EE:15:19:B9:5D:DB:88:AD:77:4F:5E:0E:08:5F:9F:45:D1, gacelas.firmaPublicacion).
+#     No uses el de 23:CF: Android no instala ese APK encima de v0.9.12 en adelante.
 set -euo pipefail
 RAIZ="$(cd "$(dirname "$0")/.." && pwd)"
 NOTAS="${1:?Falta el texto de las notas}"
@@ -26,6 +28,14 @@ URL="$(grep -E '^SUPABASE_URL=' "$AND/local.properties" | cut -d= -f2-)"
 KEY="${SUPABASE_SERVICE_ROLE_KEY:-$(grep -sE '^SUPABASE_SERVICE_ROLE_KEY=' "$RAIZ/backend/.env" | cut -d= -f2- || true)}"
 [ -n "$URL" ] || { echo "local.properties no tiene SUPABASE_URL"; exit 1; }
 [ -n "$KEY" ] || { echo "Falta SUPABASE_SERVICE_ROLE_KEY (entorno o backend/.env)"; exit 1; }
+
+# Falla antes de compilar si el keystore no es el de las actualizaciones ya instaladas.
+KEYSTORE="${HOME}/.android/debug.keystore"
+ESPERADA="$(grep -E '^gacelas.firmaPublicacion=' "$AND/gradle.properties" | cut -d= -f2- | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')"
+ACTUAL="$(keytool -list -v -keystore "$KEYSTORE" -alias androiddebugkey -storepass android -keypass android 2>/dev/null | awk -F': ' 'tolower($1) ~ /sha1$/ { gsub(/[[:space:]]/, "", $2); print toupper($2); exit }' || true)"
+[ -n "$ESPERADA" ] || { echo "gradle.properties no tiene gacelas.firmaPublicacion"; exit 1; }
+[ -n "$ACTUAL" ] || { echo "No se pudo leer ~/.android/debug.keystore (alias androiddebugkey)."; exit 1; }
+[ "$ACTUAL" = "$ESPERADA" ] || { echo "El debug.keystore ($ACTUAL) no es la firma de publicacion ($ESPERADA)."; echo "No se publica: Android no instalaria ese APK encima de v0.9.12 en adelante."; exit 1; }
 
 NOMBRE="$(grep -oE 'versionName = "[^"]+"' "$AND/app/build.gradle.kts" | cut -d'"' -f2)"
 IFS='.' read -r MA MI PA <<< "$NOMBRE"

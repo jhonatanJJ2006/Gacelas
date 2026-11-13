@@ -170,23 +170,23 @@ La huella del keystore de depuracion se obtiene asi:
 keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
 ```
 
-El APK de depuracion compilado en la maquina de Grok Bot esta firmado con la huella:
-
-```
-SHA-1: F1:A2:7B:EE:15:19:B9:5D:DB:88:AD:77:4F:5E:0E:08:5F:9F:45:D1
-```
-
-SHA-1 del keystore de depuracion de la maquina de Grok Bot actual (firma de v0.6.0 en adelante, el keystore anterior F1:A2... ya no existe):
+Hay dos huellas registradas en Google Cloud. Las dos pueden iniciar sesion. Solo una puede publicar una actualizacion:
 
 ```text
+Publicacion (v0.9.12 en adelante, incluida v0.9.17):
+SHA-1: F1:A2:7B:EE:15:19:B9:5D:DB:88:AD:77:4F:5E:0E:08:5F:9F:45:D1
+
+Otra huella registrada (v0.9.8 a v0.9.11 y builds locales de esa maquina):
 SHA-1: 23:CF:7D:D7:5A:19:B1:54:13:99:38:AD:62:61:DE:AA:BE:DC:23:F9
 ```
 
+Android no instala un APK encima de otro si el certificado cambia. Publicar con `23:CF` encima de una app firmada con `F1:A2` (o al reves) falla con `INSTALL_FAILED_UPDATE_INCOMPATIBLE`. En el telefono el mensaje suele ser solo que la app no se instalo. El detalle esta en `docs/REGRESIONES.md` (2026-11-13).
+
 Antes de publicar un APK, `local.properties` debe tener `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `GOOGLE_WEB_CLIENT_ID`; Gradle avisa si faltan y `-Pgacelas.release=true` hace fallar la compilacion.
 
-Las SHA-1 registradas se listan en `apps/android/gradle.properties` (`gacelas.firmasGoogle`) y la compilacion de release falla si la firma no esta ahi. La regresion de v0.8.0 por este motivo esta en `docs/REGRESIONES.md`.
+Las SHA-1 de Google se listan en `apps/android/gradle.properties` (`gacelas.firmasGoogle`). La de publicacion va aparte (`gacelas.firmaPublicacion`) y `-Pgacelas.release=true` falla si el `debug.keystore` no es exactamente esa. La regresion de v0.8.0 por una firma no registrada en Google esta en `docs/REGRESIONES.md`.
 
-Cada computadora tiene su propio keystore de depuracion. Si compilas en tu PC, agrega tambien la SHA-1 de tu `debug.keystore`, y la de la firma de release (o la de Play App Signing) antes de publicar.
+Cada computadora tiene su propio keystore de depuracion. Publica solo desde la maquina cuyo `debug.keystore` es `F1:A2:...:D1`. Si compilas en otra PC, no subas ese APK como actualizacion: o no se instala, o deja a los demas telefonos sin poder actualizar.
 
 El cliente Android no lleva secreto ni se configura en Supabase: la app pide el ID token con `GOOGLE_WEB_CLIENT_ID` (el cliente web) y Google lo emite solo si el paquete y la SHA-1 coinciden con un cliente Android del mismo proyecto.
 

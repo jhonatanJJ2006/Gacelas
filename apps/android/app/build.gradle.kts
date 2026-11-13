@@ -30,6 +30,7 @@ listOf("SUPABASE_URL", "SUPABASE_ANON_KEY", "GOOGLE_WEB_CLIENT_ID").filter { loc
 // cliente OAuth Android (paquete com.gacelas) del proyecto de Google Cloud. Si no, el selector de
 // cuentas se queda cargando o falla tras elegir la cuenta. Paso en v0.8.0 (firmado con F1:A2...
 // cuando el cliente tenia 23:CF...). La lista vive en gradle.properties (gacelas.firmasGoogle).
+// Ademas, desde v0.9.12 la actualizacion solo instala si el certificado es gacelas.firmaPublicacion.
 // Ver docs/REGRESIONES.md.
 fun sha1Keystore(archivo: File): String? = runCatching {
     // keystore.type.compat (activo por defecto) permite leer JKS y PKCS12 con el tipo por defecto.
@@ -39,11 +40,21 @@ fun sha1Keystore(archivo: File): String? = runCatching {
 
 if (project.findProperty("gacelas.release") == "true") {
     val registradas = (project.findProperty("gacelas.firmasGoogle") as String?).orEmpty().split(',').map { it.trim().uppercase() }.filter { it.isNotEmpty() }
+    val publicacion = (project.findProperty("gacelas.firmaPublicacion") as String?).orEmpty().trim().uppercase()
     val keystore = File(System.getProperty("user.home"), ".android/debug.keystore")
     val sha1 = sha1Keystore(keystore)
     if (sha1 == null || sha1 !in registradas) throw GradleException(
         "La firma del APK (SHA-1 ${sha1 ?: "desconocida"}) no esta en gacelas.firmasGoogle. Registrala en Google Cloud " +
             "(cliente OAuth Android com.gacelas) y agregala a gradle.properties, o Google se quedara cargando al iniciar sesion."
+    )
+    // Las dos huellas de firmasGoogle sirven para el login, pero una actualizacion solo instala
+    // si el certificado es el mismo que el de la app ya instalada. Desde v0.9.12 el APK publicado
+    // usa F1:A2. Publicar con 23:CF (u otra) falla en el telefono con INSTALL_FAILED_UPDATE_INCOMPATIBLE.
+    if (publicacion.isEmpty() || sha1 != publicacion) throw GradleException(
+        "La firma del APK (SHA-1 $sha1) no es gacelas.firmaPublicacion ($publicacion). " +
+            "Android no instala esa actualizacion encima de v0.9.12-v0.9.17. " +
+            "Usa el debug.keystore de esa huella. Si el telefono aun tiene una version firmada con 23:CF " +
+            "(v0.9.8 a v0.9.11, o un APK de Android Studio de esa maquina), hay que desinstalar la app una vez."
     )
 }
 
