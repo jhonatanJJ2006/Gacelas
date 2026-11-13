@@ -186,7 +186,7 @@ fun GacelasRaiz() {
     val flujo = remember(c) { c.auth.sesion.map { EstadoSesion.Lista(it) } }
     val estado by flujo.collectAsState(initial = EstadoSesion.Cargando)
     when (val e = estado) {
-        EstadoSesion.Cargando -> Box(Modifier.fillMaxSize().background(GColors.BgPrimary), contentAlignment = Alignment.Center) {
+        EstadoSesion.Cargando -> Box(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = GColors.Primary)
         }
         is EstadoSesion.Lista -> {
@@ -196,7 +196,7 @@ fun GacelasRaiz() {
                 if (e.perfil != null) {
                     var doc by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf<Boolean?>(null) }
                     com.gacelas.vivo.PublicadorUbicacionVivo()
-                    doc?.let { t -> Box(Modifier.fillMaxSize().background(GColors.BgPrimary)) { com.gacelas.legal.DocumentoLegalScreen(t) { doc = null } } }
+                    doc?.let { t -> Box(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) { com.gacelas.legal.DocumentoLegalScreen(t) { doc = null } } }
                     if (doc == null) com.gacelas.legal.ReaceptarTerminos { doc = it }
                 }
                 com.gacelas.ui.components.AnfitrionAvisosC2()

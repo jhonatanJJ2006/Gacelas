@@ -99,12 +99,14 @@ fun ListaRutasContenido(
     verMapaInicial: Boolean = false,
     /** Rutas del servidor aun sin llegar: esqueleto en lugar de la lista. */
     cargando: Boolean = false,
+    /** Tablero: vuelve al mapa a pantalla completa en lugar del mapa embebido. */
+    onVerMapa: (() -> Unit)? = null,
 ) {
     Pantalla {
         var verMapa by rememberSaveable { mutableStateOf(verMapaInicial) }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Rutas de Loja", style = GType.headlineLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-            IconButton(onClick = { verMapa = !verMapa }) { Icon(if (verMapa) Icons.AutoMirrored.Filled.List else Icons.Filled.Map, if (verMapa) "Ver lista" else "Ver mapa", tint = GColors.TextPrimary) }
+            IconButton(onClick = { if (onVerMapa != null) onVerMapa() else verMapa = !verMapa }, modifier = Modifier.testTag("rutas-ver-mapa")) { Icon(if (verMapa) Icons.AutoMirrored.Filled.List else Icons.Filled.Map, if (verMapa) "Ver lista" else "Ver mapa", tint = GColors.TextPrimary) }
             if (puedeDibujar) IconButton(onClick = onDibujar) { Icon(Icons.Filled.Draw, "Dibujar ruta", tint = GColors.TextPrimary) }
         }
         if (verMapa) {
@@ -131,31 +133,7 @@ fun ListaRutasContenido(
             Pastilla("Todas", filtros.categoria == null, { onFiltros(filtros.copy(categoria = null)) })
             CategoriaRuta.entries.forEach { c -> Pastilla(c.etiqueta, filtros.categoria == c, { onFiltros(filtros.copy(categoria = if (filtros.categoria == c) null else c)) }) }
         }
-        if (hojaFiltros) com.gacelas.ui.components.HojaC2({ hojaFiltros = false }) {
-            Column(
-                Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 16.dp).navigationBarsPadding().testTag("hoja-filtros"),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Text("Filtros", style = GType.headlineSm, color = GColors.TextPrimary)
-                com.gacelas.ui.components.EtiquetaC2("Dificultad", color = GColors.C2Muted)
-                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Pastilla("Toda dificultad", filtros.dificultad == null, { onFiltros(filtros.copy(dificultad = null)) })
-                    com.gacelas.rutas.domain.modelo.Dificultad.entries.forEach { d -> Pastilla(d.etiqueta, filtros.dificultad == d, { onFiltros(filtros.copy(dificultad = d)) }) }
-                }
-                com.gacelas.ui.components.EtiquetaC2("Distancia", color = GColors.C2Muted)
-                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    com.gacelas.rutas.domain.modelo.FiltroDistancia.entries.forEach { d -> Pastilla(d.etiqueta, filtros.distancia == d, { onFiltros(filtros.copy(distancia = d)) }) }
-                }
-                com.gacelas.ui.components.EtiquetaC2("Etiquetas", color = GColors.C2Muted)
-                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    com.gacelas.rutas.domain.modelo.ETIQUETAS_RUTA.forEach { (k, v) -> Pastilla("#$v", filtros.etiqueta == k, { onFiltros(filtros.copy(etiqueta = if (filtros.etiqueta == k) null else k)) }) }
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    com.gacelas.ui.components.BotonSecundario("Limpiar", { onFiltros(FiltrosRuta(categoria = filtros.categoria)) }, Modifier.weight(1f))
-                    com.gacelas.ui.components.BotonPrimario("Ver ${lista.size} rutas", { hojaFiltros = false }, Modifier.weight(1f))
-                }
-            }
-        }
+        if (hojaFiltros) HojaFiltrosRutas(lista.size, filtros, onFiltros) { hojaFiltros = false }
         if (cargando) com.gacelas.ui.components.EsqueletoTarjetas(4, etiqueta = "Cargando rutas")
         else if (lista.isEmpty()) {
             Tarjeta {
@@ -235,5 +213,37 @@ fun InsigniaOficial(modifier: Modifier = Modifier) {
     ) {
         Icon(Icons.Filled.Verified, null, tint = GColors.C2Violeta, modifier = Modifier.size(14.dp))
         Text("RUTA OFICIAL", style = GType.labelMd, color = GColors.C2Violeta)
+    }
+}
+
+
+/** Hoja de filtros de rutas (dificultad, distancia y etiquetas), pegada al borde inferior. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+fun HojaFiltrosRutas(total: Int, filtros: FiltrosRuta, onFiltros: (FiltrosRuta) -> Unit, onCerrar: () -> Unit) {
+    com.gacelas.ui.components.HojaC2(onCerrar) {
+        Column(
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 16.dp).navigationBarsPadding().testTag("hoja-filtros"),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text("Filtros", style = GType.headlineSm, color = GColors.TextPrimary)
+            com.gacelas.ui.components.EtiquetaC2("Dificultad", color = GColors.C2Muted)
+            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Pastilla("Toda dificultad", filtros.dificultad == null, { onFiltros(filtros.copy(dificultad = null)) })
+                com.gacelas.rutas.domain.modelo.Dificultad.entries.forEach { d -> Pastilla(d.etiqueta, filtros.dificultad == d, { onFiltros(filtros.copy(dificultad = d)) }) }
+            }
+            com.gacelas.ui.components.EtiquetaC2("Distancia", color = GColors.C2Muted)
+            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                com.gacelas.rutas.domain.modelo.FiltroDistancia.entries.forEach { d -> Pastilla(d.etiqueta, filtros.distancia == d, { onFiltros(filtros.copy(distancia = d)) }) }
+            }
+            com.gacelas.ui.components.EtiquetaC2("Etiquetas", color = GColors.C2Muted)
+            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                com.gacelas.rutas.domain.modelo.ETIQUETAS_RUTA.forEach { (k, v) -> Pastilla("#$v", filtros.etiqueta == k, { onFiltros(filtros.copy(etiqueta = if (filtros.etiqueta == k) null else k)) }) }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                com.gacelas.ui.components.BotonSecundario("Limpiar", { onFiltros(FiltrosRuta(categoria = filtros.categoria)) }, Modifier.weight(1f))
+                com.gacelas.ui.components.BotonPrimario("Ver $total rutas", onCerrar, Modifier.weight(1f))
+            }
+        }
     }
 }

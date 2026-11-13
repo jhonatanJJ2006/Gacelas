@@ -178,7 +178,7 @@ fun HojaSOS(onCerrar: () -> Unit, context: Context = LocalContext.current) {
     val contactos = ajustes.contactosEmergencia
     val pos = EstadoSos.ultimaPos
     val mensaje = id?.let { Sos.mensaje(perfil?.nombre ?: "Un corredor", it, pos?.first, pos?.second) }
-    HojaC2(onCerrar, fondo = GColors.C2Card, borde = Color(0xFFBE185D)) {
+    HojaC2(onCerrar, borde = Color(0xFFBE185D)) {
         Column(
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(bottom = 16.dp).navigationBarsPadding().testTag("hoja-sos"),
             verticalArrangement = Arrangement.spacedBy(10.dp),

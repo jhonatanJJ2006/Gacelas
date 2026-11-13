@@ -148,7 +148,7 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 FotoPerfil(perfil?.fotoPath, 80.dp)
                 Column(Modifier.weight(1f).padding(start = 14.dp)) {
-                    Text(perfil?.nombre ?: "Tu perfil", style = GType.headlineMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary, maxLines = 1)
+                    Text(perfil?.nombre ?: "Tu perfil", style = GType.headlineMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary, maxLines = 1, modifier = Modifier.testTag("perfil-nombre"))
                     Text(
                         listOfNotNull(perfil?.username?.let { "@$it" }, perfil?.ubicacion?.takeIf { it.isNotBlank() }).joinToString(" · "),
                         style = GType.bodySm, color = GColors.C2Muted, maxLines = 1,
@@ -254,7 +254,7 @@ fun EditarPerfilScreen(onAtras: () -> Unit, onGuardar: () -> Unit, onAvatar: () 
     val perfil by sesionState()
     val p = perfil
     if (p == null) {
-        Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
+        Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
             EncabezadoAtras("Editar perfil", onAtras)
             Text("Inicia sesión para editar tu perfil.", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.padding(16.dp))
         }
@@ -303,7 +303,7 @@ fun EditarPerfilScreen(onAtras: () -> Unit, onGuardar: () -> Unit, onAvatar: () 
             }
         }
     }
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
+    Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         EncabezadoAtras("Editar perfil", onAtras) {
             Text("Guardar", style = GType.labelLg, color = GColors.Primary500, modifier = Modifier.clickable(onClick = guardar).padding(12.dp))
         }
@@ -392,7 +392,7 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
             }
         }
     }
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
+    Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         EncabezadoAtras("Personalizar Avatar", onAtras) {
             Text("Guardar", style = GType.labelLg, color = GColors.Primary500, modifier = Modifier.clickable(onClick = guardar).padding(12.dp))
         }

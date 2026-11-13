@@ -1,5 +1,6 @@
 package com.gacelas.rutas
 
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.MyLocation
@@ -85,6 +86,7 @@ import com.gacelas.ui.components.MapaMat
 import com.gacelas.ui.components.MapaPlaceholder
 import com.gacelas.ui.components.Mapas
 import com.gacelas.ui.components.aLatLng
+import org.maplibre.android.geometry.LatLng
 import com.gacelas.ui.components.Metrica
 import com.gacelas.ui.components.Pantalla
 import com.gacelas.ui.components.Pastilla
@@ -96,9 +98,8 @@ import com.gacelas.ui.three.Runner3D
 import io.github.sceneview.math.Position
 
 @Composable
-fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: () -> Unit = {}) {
+fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: () -> Unit = {}, onAtras: () -> Unit = {}, onCorrerRuta: () -> Unit = {}) {
     val c = contenedor()
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val repo = c.explorar
     val vm = androidx.lifecycle.viewmodel.compose.viewModel { c.listaRutasViewModel(MockData.ID_USUARIO, MockData.rutas) }
@@ -106,32 +107,117 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
     val ajustes by ajustesState()
     val m = ajustes.unidadesMetricas
     val q by vm.consulta.collectAsState()
-    val lista by vm.lista.collectAsState()
+    val listaVm by vm.lista.collectAsState()
+    // Rutas del catalogo local sin geometria: se completa con el trazo real empaquetado (TrazosRutas).
+    val lista = remember(listaVm) { listaVm.map { r -> if (r.puntos.isNotEmpty()) r else r.copy(puntos = com.gacelas.rutas.infrastructure.TrazosRutas.puntos[r.id.removePrefix("ruta-")].orEmpty()) } }
     val perfilSesion by com.gacelas.ui.sesionState()
     val remotas by (repo?.rutas ?: remember { kotlinx.coroutines.flow.MutableStateFlow(emptyList()) }).collectAsState()
     var leidas by remember { mutableStateOf(false) }
     LaunchedEffect(repo) { if (repo != null && remotas == null) runCatching { repo.refrescar() }; leidas = true }
-    ListaRutasContenido(
-        cargando = repo != null && remotas == null && !leidas && q.pestana == com.gacelas.rutas.domain.modelo.PestanaRutas.Explorar,
-        lista = lista, pestana = q.pestana, onPestana = vm::pestana, guardadas = guardadas,
-        consulta = q.texto, onConsulta = vm::buscar, filtros = q.filtros, onFiltros = vm::filtrar,
-        cerca = q.cerca,
-        onCerca = {
-            if (q.cerca != null) vm.quitarCercania()
-            else {
-                val u = ultimaUbicacion(context)
-                if (u == null || repo == null) context.aviso("Activa la ubicación para ver rutas cercanas")
-                else vm.ordenarCerca(u.first, u.second)
-            }
-        },
-        m = m, puedeDibujar = repo != null && perfilSesion != null,
-        onBuscar = onBuscar, onRuta = onRuta, onDibujar = onDibujar,
-        onAlternarGuardada = { id, guardada ->
-            vm.alternarGuardada(id)
-            context.aviso(if (guardada) "Ruta quitada de guardadas" else "Ruta guardada")
-        },
-        mapaRutas = { MapaRutasAgrupadas(lista, onRuta, it) },
+    // Seguridad real por ruta (seguridad_rutas, migracion 040); sin servidor no se muestra.
+    val seguridad by androidx.compose.runtime.produceState(emptyMap<String, String>(), c.incidentes) {
+        value = c.incidentes?.seguridadRutas().orEmpty().mapValues { it.value.texto }
+    }
+    var comoLista by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    val cargando = repo != null && remotas == null && !leidas && q.pestana == com.gacelas.rutas.domain.modelo.PestanaRutas.Explorar
+    val onCerca = {
+        if (q.cerca != null) vm.quitarCercania()
+        else {
+            val u = ultimaUbicacion(context)
+            if (u == null || repo == null) context.aviso("Activa la ubicación para ver rutas cercanas")
+            else vm.ordenarCerca(u.first, u.second)
+        }
+    }
+    val alternarGuardada = { id: String, guardada: Boolean ->
+        vm.alternarGuardada(id)
+        context.aviso(if (guardada) "Ruta quitada de guardadas" else "Ruta guardada")
+    }
+    if (comoLista) {
+        androidx.activity.compose.BackHandler { comoLista = false }
+        ListaRutasContenido(
+            cargando = cargando,
+            lista = lista, pestana = q.pestana, onPestana = vm::pestana, guardadas = guardadas,
+            consulta = q.texto, onConsulta = vm::buscar, filtros = q.filtros, onFiltros = vm::filtrar,
+            cerca = q.cerca, onCerca = onCerca,
+            m = m, puedeDibujar = repo != null && perfilSesion != null,
+            onBuscar = onBuscar, onRuta = onRuta, onDibujar = onDibujar,
+            onAlternarGuardada = alternarGuardada,
+            mapaRutas = { MapaRutasAgrupadas(lista, onRuta, it) },
+            onVerMapa = { comoLista = false },
+        )
+        return
+    }
+    val espacio = com.gacelas.ui.components.LocalEspacioDock.current
+    RutasTablero(
+        lista = lista, guardadas = guardadas, consulta = q.texto, onConsulta = vm::buscar, filtros = q.filtros, onFiltros = vm::filtrar,
+        cerca = q.cerca, onCerca = onCerca, m = m, puedeDibujar = repo != null && perfilSesion != null,
+        onAtras = onAtras, onRuta = onRuta,
+        onCorrerRuta = { id -> com.gacelas.rutas.infrastructure.RutaActiva.id = id; onCorrerRuta() },
+        onDibujar = onDibujar, onAlternarGuardada = alternarGuardada, onVerLista = { comoLista = true },
+        seguridad = seguridad, espacioInferior = espacio, cargando = cargando,
+        mapa = { elegida, otras, alElegir -> MapaRutasTablero(elegida, otras, alElegir) },
     )
+}
+
+/** Mapa del tablero de Rutas: todas las rutas tenues, la elegida resaltada y controles MAPA y REPORTAR reales. */
+@Composable
+private fun androidx.compose.foundation.layout.BoxScope.MapaRutasTablero(elegida: com.gacelas.rutas.domain.modelo.Ruta?, otras: List<com.gacelas.rutas.domain.modelo.Ruta>, alElegir: (String) -> Unit) {
+    val context = LocalContext.current
+    val dens = androidx.compose.ui.platform.LocalDensity.current.density
+    var mapa by remember { mutableStateOf<org.maplibre.android.maps.MapLibreMap?>(null) }
+    var vista3d by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    var rumbo by remember { mutableStateOf(0f) }
+    var reportar by remember { mutableStateOf(false) }
+    val trazo = { r: com.gacelas.rutas.domain.modelo.Ruta -> r.puntos.map { LatLng(it.first, it.second) }.ifEmpty { com.gacelas.ui.components.Mapas.trazo(r.id) } }
+    val principal = remember(elegida?.id) { elegida?.let(trazo).orEmpty() }
+    val resto = remember(otras) { otras.take(12).map(trazo).filter { it.size >= 2 } }
+    val salidas = remember(otras, elegida) { (listOfNotNull(elegida) + otras).filter { it.puntos.isNotEmpty() }.map { com.gacelas.ui.components.CirculoMapa(LatLng(it.puntos.first().first, it.puntos.first().second), 8f, GColors.C2Morado, id = it.id) } }
+    if (com.gacelas.ui.components.Mapas.configurado()) {
+        com.gacelas.ui.components.MapaLibre(
+            Modifier.fillMaxSize(),
+            trazos = resto.map { com.gacelas.ui.components.TrazoMapa(it, Color(0xFF8B8FB8), 3f, 0.7f) } +
+                (if (principal.size >= 2) listOf(com.gacelas.ui.components.TrazoMapa(principal, GColors.C2Violeta, 14f, 0.3f), com.gacelas.ui.components.TrazoMapa(principal, GColors.C2Violeta, 5f)) else emptyList()),
+            circulos = salidas, zoom = 13.6,
+            centro = principal.takeIf { it.isNotEmpty() }?.let { p -> LatLng(p.sumOf { it.latitude } / p.size, p.sumOf { it.longitude } / p.size) } ?: com.gacelas.ui.components.Mapas.CENTRO_LOJA,
+            alTocarCirculo = alElegir,
+            alMoverCamara = { rumbo = it.cameraPosition.bearing.toFloat() },
+            alListo = { mapa = it },
+        )
+        LaunchedEffect(elegida?.id, mapa) {
+            val mp = mapa ?: return@LaunchedEffect
+            // Encuadre en la franja libre entre la cabecera y el carrusel.
+            if (principal.size >= 2) mp.animateCamera(org.maplibre.android.camera.CameraUpdateFactory.newLatLngBounds(com.gacelas.ui.components.MapaMat.limites(principal),
+                (40 * dens).toInt(), (140 * dens).toInt(), (90 * dens).toInt(), (340 * dens).toInt()))
+        }
+    } else com.gacelas.ui.components.MapaEsquemaC2(
+        elegida?.puntos.orEmpty(), Modifier.fillMaxSize().graphicsLayer { if (vista3d) { rotationX = 30f; cameraDistance = 12f * density } },
+        otros = otras.take(8).map { it.puntos }.filter { it.size >= 2 },
+        marcadores = (listOfNotNull(elegida) + otras.take(4)).mapNotNull { it.puntos.firstOrNull() },
+        margenArriba = 130.dp, margenAbajo = 330.dp,
+    )
+    androidx.compose.foundation.layout.Column(
+        Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(end = 12.dp, top = 118.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        com.gacelas.correr.GrupoControlesC4("MAPA") {
+            com.gacelas.correr.ControlEtiquetadoC4("Centrar", "Centrar el mapa en tu posición", {
+                val u = ultimaUbicacion(context)
+                val mp = mapa
+                if (u == null) context.aviso("Activa la ubicación para centrar el mapa")
+                else mp?.animateCamera(org.maplibre.android.camera.CameraUpdateFactory.newLatLngZoom(LatLng(u.first, u.second), 15.0))
+            }, "boton-recentrar") { Icon(Icons.Filled.MyLocation, null, tint = Color.White, modifier = Modifier.size(20.dp)) }
+            com.gacelas.correr.ControlEtiquetadoC4("Norte", "Orientar el mapa al norte", {
+                mapa?.let { mp -> mp.animateCamera(org.maplibre.android.camera.CameraUpdateFactory.newCameraPosition(org.maplibre.android.camera.CameraPosition.Builder(mp.cameraPosition).bearing(0.0).build())) }
+                rumbo = 0f
+            }, "boton-brujula") { Icon(Icons.Filled.Navigation, null, tint = Color.White, modifier = Modifier.size(20.dp).graphicsLayer { rotationZ = -rumbo }) }
+            com.gacelas.correr.SelectorVistaC4(vista3d) { v ->
+                vista3d = v
+                mapa?.let { mp -> mp.animateCamera(org.maplibre.android.camera.CameraUpdateFactory.newCameraPosition(org.maplibre.android.camera.CameraPosition.Builder(mp.cameraPosition).tilt(if (v) 55.0 else 0.0).build())) }
+            }
+        }
+        com.gacelas.ui.components.BotonReportarMapa({ reportar = true })
+    }
+    if (reportar) com.gacelas.seguridad.ui.HojaReportarIncidente(ultimaUbicacion(context), onCerrar = { reportar = false })
 }
 
 @Composable
@@ -150,7 +236,7 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
     val trazoSeleccion = todas.firstOrNull { it.id == seleccion }?.trazo.orEmpty().map { org.maplibre.android.geometry.LatLng(it.first, it.second) }
     val scope = rememberCoroutineScope()
     val actual = todas.firstOrNull { it.id == seleccion }
-    Box(Modifier.fillMaxSize().background(Color(0xFF090F1A))) {
+    Box(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         MapaGacelas(trazoSeleccion, Modifier.fillMaxSize(), zoom = 14f) { MapaPlaceholder(rutaPrincipal = seleccion == "primary") }
         Column(Modifier.statusBarsPadding().padding(12.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(
@@ -269,7 +355,7 @@ fun NavegacionRutaScreen(onCronometro: () -> Unit, onCerrar: (conCarrera: Boolea
     val ultimo = estado.puntos.lastOrNull()
     val guia = remember(trazo, ultimo) { com.gacelas.rutas.domain.reglas.Guia.calcular(trazo, ultimo?.let { it.lat to it.lng }) }
     val fueraDeRuta = guia != null && ultimo != null && guia.desvioM > com.gacelas.rutas.domain.reglas.Guia.DESVIO_M
-    Box(Modifier.fillMaxSize().background(Color(0xFF090F1A))) {
+    Box(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         val clip = MapaMat.clipPorRitmo(estado.ritmoActualSegKm)
         if (Mapas.configurado()) {
             // Estilo navegacion: mapa inclinado con el rumbo arriba, ruta brillante por delante y el corredor 3D en el mapa.

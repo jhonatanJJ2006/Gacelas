@@ -27,9 +27,18 @@ private class RepoFalso(var zona: SeguridadZona? = null) : IncidentesRepositorio
 }
 
 class CasosSeguridadTest {
-    @Test fun sinServidorUsaElEjemplo() = runTest {
-        assertSame(Incidentes.EJEMPLO, ConsultarSeguridadDeRuta(null)("r1"))
-        assertEquals(3, VerIncidentesRecientes(null)(1_000_000L).size)
+    @Test fun sinServidorNoInventaDatos() = runTest {
+        assertNull(ConsultarSeguridadDeRuta(null)("r1"))
+        assertEquals(0, VerIncidentesRecientes(null)(1_000_000L).size)
+    }
+
+    @Test fun resumenZonaLeeElJsonDelServidor() {
+        val o = kotlinx.serialization.json.Json.parseToJsonElement(
+            "{\"mes_ecu\":\"2026-09\",\"ecu\":[{\"servicio\":\"Tránsito y Movilidad\",\"conteo\":41},{\"servicio\":\"Seguridad Ciudadana\",\"conteo\":12}],\"reportes_7d\":3}"
+        ) as kotlinx.serialization.json.JsonObject
+        val r = com.gacelas.seguridad.domain.ResumenZona.desdeJson(o)
+        assertEquals("2026-09", r.mesEcu); assertEquals(53, r.totalEcu); assertEquals(3, r.reportes7d)
+        assertEquals("Tránsito y Movilidad" to 41, r.ecu.first())
     }
 
     @Test fun conServidorSinDatosDevuelveNull() = runTest {

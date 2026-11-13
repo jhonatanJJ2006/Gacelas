@@ -34,6 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
@@ -58,24 +60,30 @@ import com.gacelas.ui.three.Runner3D
 import io.github.sceneview.math.Position
 
 @Composable
-fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String) -> Unit = { onEventos() }, onComunidad: () -> Unit = {}, onRutas: () -> Unit = {}, onRuta: ((String) -> Unit)? = null) {
+fun InicioScreen(
+    onCorrer: () -> Unit,
+    onEventos: () -> Unit,
+    onEvento: (String) -> Unit = { onEventos() },
+    onComunidad: () -> Unit = {},
+    onRutas: () -> Unit = {},
+    onRuta: ((String) -> Unit)? = null,
+    onBuscar: () -> Unit = onRutas,
+    onNotificaciones: () -> Unit = {},
+    onProgreso: () -> Unit = {},
+    onMapaVivo: () -> Unit = {},
+) {
     val (unidos, inscritos) = com.gacelas.comunidad.eventosState()
     val cont = com.gacelas.ui.contenedor()
     val creados by cont.eventos.creados.collectAsState(initial = emptyList())
-    // Con Supabase los eventos vienen de la base; los de ejemplo solo sin backend.
-    val todos = if (cont.feed != null && creados.isNotEmpty()) creados else unidos
-    val social by com.gacelas.ui.socialState()
-    val evento = todos.filter { !it.yaPaso() }.minByOrNull { it.inicioMs ?: Long.MAX_VALUE } ?: todos.maxBy { it.inicioMs ?: 0L }
-    val perfil by sesionState()
+    // Eventos reales: los de la base con servidor o los creados por el usuario; nunca de ejemplo.
+    val todos = if (cont.feed != null) creados else unidos
+    val evento = todos.filter { !it.yaPaso() }.minByOrNull { it.inicioMs ?: Long.MAX_VALUE }
     val carreras by carrerasState()
     val ajustes by ajustesState()
     val m = ajustes.unidadesMetricas
     val ahora = remember { System.currentTimeMillis() }
     val semana = remember(carreras) { Estadisticas.semana(carreras, ahora) }
     val hoy = remember { Estadisticas.diaSemana(ahora) }
-    val hora = remember { java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY) }
-    val saludo = saludoPorHora(hora)
-    val nombre = perfil?.nombre?.substringBefore(' ')?.ifBlank { null } ?: "Corredor"
     // Ruta sugerida para hoy: la decide Supabase (ruta_sugerida_hoy); ver docs/RUTA-SUGERIDA.md.
     val delDia by androidx.compose.runtime.produceState<com.gacelas.rutas.infrastructure.RutaDelDia?>(null, carreras.size) {
         value = cont.rutaSugerida.hoy(
@@ -84,30 +92,33 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
             System.currentTimeMillis(),
         )
     }
+    val ruta = (delDia as? com.gacelas.rutas.infrastructure.RutaDelDia.Ok)?.ruta
     // Clima real: cache al instante y refresco al abrir Inicio (el repositorio respeta 15 min).
     val climaVm = androidx.lifecycle.viewmodel.compose.viewModel { cont.climaInicioViewModel { System.currentTimeMillis() } }
     val clima by climaVm.clima.collectAsState()
     androidx.compose.runtime.LaunchedEffect(Unit) { climaVm.refrescar() }
-    InicioContenido(
-        saludo = saludo, nombre = nombre, semana = semana, hoy = hoy, m = m, racha = com.gacelas.ui.rachaState(), evento = evento,
-        onCorrer = onCorrer, onEventos = onEventos, onEvento = onEvento,
-        corredor3D = { Runner3D(ClipCorredor.Idle, autoRotar = true, camara = Position(0f, 0.3f, 4.4f), sobreFondo = true) },
-        totales = remember(carreras) { com.gacelas.actividad.domain.reglas.EstadisticasPerfil.totalesSemana(carreras, ahora) },
-        meta = ajustes.metaSemanal,
-        rango = remember { rangoSemana(ahora) },
-        reto = remember(carreras) { com.gacelas.actividad.domain.reglas.EstadisticasPerfil.retoMes(carreras, ahora) },
-        amigos = social.amigos,
-        inscrito = evento.id in inscritos,
-        onComunidad = onComunidad,
-        rutaSugerida = (delDia as? com.gacelas.rutas.infrastructure.RutaDelDia.Ok)?.ruta,
-        rutaSugeridaNota = when (val d = delDia) {
-            is com.gacelas.rutas.infrastructure.RutaDelDia.Ok ->
-                if (d.sinConexion) "Segura según la última consulta. No la corriste en 3 días" else "Zona segura a esta hora. No la corriste en 3 días"
-            is com.gacelas.rutas.infrastructure.RutaDelDia.SinRuta -> d.motivo
-            null -> "Buscando una ruta segura para hoy..."
+    // Seguridad real (migracion 040) y corredores en vivo (runner_positions); sin servidor se ocultan.
+    val zona by androidx.compose.runtime.produceState<com.gacelas.seguridad.domain.ResumenZona?>(null, cont.incidentes) { value = cont.incidentes?.resumenZona() }
+    val seguridadRutas by androidx.compose.runtime.produceState(emptyMap<String, com.gacelas.seguridad.domain.SeguridadRuta>(), cont.incidentes) { value = cont.incidentes?.seguridadRutas().orEmpty() }
+    val vivos by androidx.compose.runtime.produceState(emptyList<com.gacelas.vivo.CorredorEnMapa>(), cont.mapaVivo) { value = cont.mapaVivo?.listar().orEmpty() }
+    val incidentes = com.gacelas.seguridad.ui.incidentesRecientes()
+    val ajustesNotif = ajustes
+    val base by com.gacelas.notificaciones.notificacionesBase()
+    val sinLeer = com.gacelas.comunidad.domain.reglas.notificacionesVisibles(ajustesNotif, base).count { !it.leida }
+    val trazo = remember(ruta?.id) { ruta?.let { r -> r.puntos.map { org.maplibre.android.geometry.LatLng(it.first, it.second) }.ifEmpty { com.gacelas.ui.components.Mapas.trazo(r.id) } }.orEmpty() }
+    InicioTablero(
+        semana = semana, hoy = hoy, m = m, racha = com.gacelas.ui.rachaState(),
+        mapa = {
+            com.gacelas.ui.components.MapaTablero(
+                trazo, Modifier.fillMaxSize(),
+                circulos = vivos.map { com.gacelas.ui.components.CirculoMapa(org.maplibre.android.geometry.LatLng(it.lat, it.lng), 7f, GColors.C2Menta) } +
+                    incidentes.take(20).map { com.gacelas.ui.components.CirculoMapa(org.maplibre.android.geometry.LatLng(it.lat, it.lng), 6f, Color(0xFFF59E0B)) },
+                margenArriba = 110.dp, margenAbajo = 110.dp,
+            )
         },
-        onRutas = onRutas,
-        avisoPendientes = { com.gacelas.ui.AvisoCarrerasPendientes() },
+        onCorrer = onCorrer, onBuscar = onBuscar, onNotificaciones = onNotificaciones, onProgreso = onProgreso, onMapaVivo = onMapaVivo,
+        onComunidad = onComunidad, onEvento = onEvento, onRutas = onRutas, onRuta = { id -> onRuta?.invoke(id) ?: onRutas() },
+        sinLeer = sinLeer,
         metaKm = ajustes.metaKmSemana,
         kmPorDia = remember(carreras) {
             val desde = Estadisticas.inicioSemana(ahora)
@@ -115,10 +126,33 @@ fun InicioScreen(onCorrer: () -> Unit, onEventos: () -> Unit, onEvento: (String)
             carreras.filter { it.inicioMs >= desde && it.inicioMs <= ahora + 86_400_000L }.forEach { km[Estadisticas.diaSemana(it.inicioMs)] += it.distanciaKm }
             km.toList()
         },
-        onRuta = onRuta,
-        nivel = com.gacelas.comunidad.domain.modelo.nivelCorredor(carreras.sumOf { it.distanciaKm }),
         clima = clima,
+        ritmoSemanas = remember(carreras) { ritmoPorSemana(carreras, ahora) },
+        evento = evento,
+        inscrito = evento?.id in inscritos,
+        rutaDelDia = ruta,
+        rutaDelDiaNota = when (val d = delDia) {
+            is com.gacelas.rutas.infrastructure.RutaDelDia.Ok -> null
+            is com.gacelas.rutas.infrastructure.RutaDelDia.SinRuta -> d.motivo
+            null -> "Buscando una ruta segura para hoy..."
+        },
+        seguridadRuta = ruta?.let { r -> seguridadRutas[r.id.removePrefix("ruta-")]?.texto ?: seguridadRutas[r.id]?.texto },
+        zona = zona,
+        corriendo = vivos.size,
+        avisoPendientes = { com.gacelas.ui.AvisoCarrerasPendientes() },
     )
+}
+
+/** Ritmo medio (seg/km) de cada una de las ultimas 8 semanas, de la mas antigua a la actual. */
+fun ritmoPorSemana(carreras: List<com.gacelas.actividad.domain.modelo.Carrera>, ahoraMs: Long): List<Int?> {
+    val lunes = Estadisticas.inicioSemana(ahoraMs)
+    return (7 downTo 0).map { w ->
+        val desde = com.gacelas.shared.Fechas.sumarDias(lunes, -7 * w)
+        val hasta = com.gacelas.shared.Fechas.sumarDias(desde, 7)
+        val sem = carreras.filter { it.inicioMs in desde until hasta && it.distanciaKm > 0.2 }
+        val km = sem.sumOf { it.distanciaKm }
+        if (km <= 0.0) null else (sem.sumOf { it.segundos } / km).toInt()
+    }
 }
 
 /** "19 - 25 oct" de la semana en curso (lunes a domingo). */

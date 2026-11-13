@@ -66,7 +66,7 @@ fun MisReportesContenido(
 ) {
     val periodo = estado.periodo
     val r = estado.reporte
-    Column(Modifier.fillMaxSize().background(GColors.C2Bg)) {
+    Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         EncabezadoAtras("Mis reportes", onAtras) {
             if (r != null) {
                 IconButton(onClick = { onCompartir(ExportarReporte(r, FormatoExportacion.Texto)) }, modifier = Modifier.testTag("reporte-compartir")) {

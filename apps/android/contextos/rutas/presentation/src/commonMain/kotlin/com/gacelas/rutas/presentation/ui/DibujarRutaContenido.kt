@@ -53,7 +53,7 @@ fun DibujarRutaContenido(
 ) {
     val e by vm.estado.collectAsState()
     val puntos = e.puntos.map { Coord(it.first, it.second) }
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
+    Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         EncabezadoAtras("Dibujar ruta", onAtras)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(Modifier.fillMaxWidth().height(340.dp).clip(RoundedCornerShape(16.dp)).background(GColors.SurfaceContainer)) {

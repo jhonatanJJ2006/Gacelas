@@ -2,6 +2,20 @@ package com.gacelas.correr
 
 import com.gacelas.ui.movimiento.entradaEscalonada
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.sp
 import com.gacelas.ui.components.Pastilla
 
 import com.gacelas.ui.components.Mapas
@@ -344,95 +358,184 @@ private fun PreCarrera(
         }.getOrNull()
     }
     val ruta = (delDia as? com.gacelas.rutas.infrastructure.RutaDelDia.Ok)?.ruta
+    val trazoRuta = remember(ruta) { ruta?.puntos?.ifEmpty { null } ?: ruta?.let { com.gacelas.rutas.infrastructure.TrazosRutas.puntos[it.id] }.orEmpty() }
     val objetivo = ObjetivoCarrera.de(ajustes.objetivoTipo, ajustes.objetivoValor)
     val elegir = { o: ObjetivoCarrera -> ajustesVm.actualizar { it.copy(objetivoTipo = o.tipo.clave, objetivoValor = o.valor) } }
-    Box(Modifier.fillMaxSize().background(GColors.C2Bg).testTag("pantalla-correr")) {
-        val plan = ruta?.puntos?.map { org.maplibre.android.geometry.LatLng(it.first, it.second) }.orEmpty()
+    // Modo elegido en la hoja: Ruta del dia (sigue la ruta segura), Objetivo (distancia, tiempo o ritmo) o Libre.
+    // Sin eleccion explicita: la ruta del dia si existe; si no, el objetivo guardado o Libre.
+    var modoElegido by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf<String?>(null) }
+    val modo = modoElegido ?: when { ruta != null -> "ruta"; objetivo.tipo != ObjetivoCarrera.Tipo.Libre -> "objetivo"; else -> "libre" }
+    var editarObjetivo by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    var vista3d by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(ajustes.vistaMapa3d) }
+    var reportar by remember { mutableStateOf(false) }
+    val conRuta = modo == "ruta" && ruta != null
+    Box(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo).testTag("pantalla-correr")) {
+        val plan = trazoRuta.map { org.maplibre.android.geometry.LatLng(it.first, it.second) }
+        val controles: @Composable BoxScope.(() -> Unit, () -> Unit, Float, Boolean) -> Unit = { recentrar, norte, rumbo, siguiendo ->
+            ControlesMapaCorrer(vista3d, { vista3d = it; ajustesVm.actualizar { a -> a.copy(vistaMapa3d = it) } }, recentrar, norte, rumbo, siguiendo, onReportar = { reportar = true })
+        }
         MapaGacelas(
             posicion?.let { listOf(org.maplibre.android.geometry.LatLng(it.first, it.second)) }.orEmpty(), Modifier.fillMaxSize(),
-            seguir = posicion != null, zoom = 15f, plan = plan, controles = false, avisoArriba = 110.dp,
+            seguir = posicion != null, zoom = 15f, modo3d = vista3d, plan = if (modo == "libre") emptyList() else plan, controles = false, avisoArriba = 110.dp,
+            controlesPropios = controles,
         ) {
-            com.gacelas.ui.components.MiniTrazoC2(ruta?.puntos.orEmpty(), Modifier.fillMaxSize(), cuadricula = true, grosor = 5.dp)
+            com.gacelas.ui.components.MapaEsquemaC2(if (modo == "libre") emptyList() else trazoRuta, Modifier.fillMaxSize(), yo = posicion ?: trazoRuta.getOrNull((trazoRuta.size * 0.3).toInt()),
+                margenArriba = 70.dp, margenAbajo = 400.dp)
+            Box(Modifier.fillMaxSize()) { controles({}, {}, 0f, true) }
         }
-        // Encima del mapa: volver, estado del GPS y la zona.
+        if (reportar) com.gacelas.seguridad.ui.HojaReportarIncidente(posicion, onCerrar = { reportar = false })
+        // Encima del mapa: volver y estado del GPS.
         Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 14.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 com.gacelas.ui.components.BotonVolverMapa(onCerrar)
                 val (texto, color) = when {
                     !permiso -> "Ubicación sin permiso" to GColors.C2Peligro
                     precision == null -> "Buscando señal GPS" to GColors.C2Muted
-                    precision <= 10f -> "GPS listo · ± ${precision.toInt()} m · señal fuerte" to GColors.C2Menta
-                    precision <= 30f -> "GPS listo · ± ${precision.toInt()} m · señal media" to GColors.C2Cielo
+                    precision <= 30f -> "GPS listo · ± ${precision.toInt()} m" to GColors.C2Menta
                     else -> "GPS débil · ± ${precision.toInt()} m" to Color(0xFFF59E0B)
                 }
-                com.gacelas.ui.components.ChipEstadoC2(texto, Modifier.weight(1f), punto = color, tag = "chip-gps-correr")
+                com.gacelas.ui.components.ChipVidrio(texto, onClick = { if (!permiso) onPermiso() }, punto = color, tag = "chip-gps-correr")
             }
             if (!notificaciones) com.gacelas.core.notificaciones.AvisoNotificacionesBloqueadas(
                 "Puedes correr igual, pero no verás la notificación con tiempo, distancia y los botones Pausar/Terminar.",
                 onActivarNotificaciones,
             )
         }
-        com.gacelas.ui.components.HojaInferiorC2(Modifier.align(Alignment.BottomCenter).verticalScroll(rememberScrollState()), tag = "hoja-correr") {
-            // Ruta: la segura del dia (si la hay) o carrera libre.
+        com.gacelas.ui.components.HojaTablero(Modifier.align(Alignment.BottomCenter).verticalScroll(rememberScrollState()), tag = "hoja-correr") {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    com.gacelas.ui.components.EtiquetaC2(if (ruta != null) "Ruta segura del día" else "Carrera libre", color = GColors.C2Muted)
-                    Text(ruta?.nombre ?: "Sin ruta: corre por donde quieras", style = GType.headlineSm, color = GColors.TextPrimary, maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                    Text(
-                        if (ruta != null) "${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)} · +${ruta.elevacionM} m · ${ruta.dificultad.etiqueta}"
-                        else "Grabamos tu recorrido con GPS y ritmo",
-                        style = GType.bodySm, color = GColors.C2Muted, maxLines = 1,
-                    )
+                com.gacelas.ui.components.RotuloWidget("Elige cómo corres", Modifier.weight(1f))
+                Text("Editar", style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = GColors.C2Violeta,
+                    modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { editarObjetivo = true }.padding(horizontal = 6.dp, vertical = 4.dp).testTag("correr-editar"))
+            }
+            Row(Modifier.fillMaxWidth().height(androidx.compose.foundation.layout.IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                val objetivoVisible = if (objetivo.tipo == ObjetivoCarrera.Tipo.Libre) ObjetivoCarrera.predeterminado(ObjetivoCarrera.Tipo.Distancia, ritmoMedio) else objetivo
+                if (ruta != null) ModoCorrer("Ruta del día", "${ruta.nombre.substringBefore(' ').take(10)} · ${Unidades.texto(ruta.distanciaKm, m, 1).replace('.', ',')} ${Unidades.etiquetaDistancia(m)}", Icons.Filled.Map, modo == "ruta", Modifier.weight(1f), "modo-ruta") {
+                    modoElegido = "ruta"; elegir(ObjetivoCarrera(ObjetivoCarrera.Tipo.Distancia, (ruta.distanciaKm * 1000).toInt().coerceAtLeast(1000)))
                 }
-                if (ruta != null) TextButton(onClick = { onRuta(ruta.id) }, modifier = Modifier.testTag("correr-ver-ruta")) {
-                    Text("Ver ruta", style = GType.labelLg, color = GColors.C2Violeta)
+                ModoCorrer("Objetivo", "${objetivoVisible.tipo.titulo} ${objetivoVisible.valorTexto(m)}", Icons.Filled.Flag, modo == "objetivo", Modifier.weight(1f), "modo-objetivo") {
+                    if (modo == "objetivo") editarObjetivo = true else { modoElegido = "objetivo"; elegir(objetivoVisible) }
+                }
+                ModoCorrer("Libre", "Sin meta", Icons.Filled.PlayArrow, modo == "libre", Modifier.weight(1f), "modo-libre") {
+                    modoElegido = "libre"; elegir(ObjetivoCarrera(ObjetivoCarrera.Tipo.Libre, 0))
                 }
             }
-            com.gacelas.ui.components.EtiquetaC2("Objetivo", color = GColors.C2Muted)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                EstadoTablero("Voz", if (ajustes.anunciosVoz) "Cada km" else "Apagada", Icons.AutoMirrored.Filled.VolumeUp, ajustes.anunciosVoz, Modifier.weight(1f), "estado-voz") {
+                    ajustesVm.actualizar { it.copy(anunciosVoz = !it.anunciosVoz) }
+                }
+                EstadoTablero("En vivo", when (ajustes.compartirEnVivo) { true -> "Seguidores"; false -> "No compartes"; null -> "Se pregunta" }, Icons.Filled.Sensors,
+                    ajustes.compartirEnVivo == true, Modifier.weight(1f), "estado-en-vivo", onPrivacidad)
+                EstadoTablero("SOS", if (ajustes.contactosEmergencia.isEmpty()) "Solo 911" else "${ajustes.contactosEmergencia.size} contacto${if (ajustes.contactosEmergencia.size == 1) "" else "s"}",
+                    Icons.Filled.Shield, true, Modifier.weight(1f), "estado-sos", onPrivacidad)
+            }
+            // Efecto real sobre la meta semanal y la racha.
+            val meta = ajustes.metaKmSemana.toDouble()
+            val corrioHoy = racha.ultimoDiaMs?.let { com.gacelas.actividad.domain.reglas.Rachas.inicioDia(it) == com.gacelas.actividad.domain.reglas.Rachas.inicioDia(ahora) } == true
+            val sumaKm = if (modo != "libre" && objetivo.tipo == ObjetivoCarrera.Tipo.Distancia) objetivo.valor / 1000.0 else null
+            Row(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.06f)).border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(14.dp))
+                    .padding(horizontal = 12.dp, vertical = 9.dp).testTag("efecto-meta"),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Icon(Icons.Filled.EmojiEvents, null, tint = Color(0xFFFBBF24), modifier = Modifier.size(16.dp))
+                Text(
+                    buildString {
+                        if (sumaKm != null) append("Con ${Unidades.texto(sumaKm, m, 1)} ${Unidades.etiquetaDistancia(m)} llegas a ${Unidades.texto(semana.km + sumaKm, m, 1)} de ${Unidades.texto(meta, m, 0)} ${Unidades.etiquetaDistancia(m)} esta semana".replace('.', ','))
+                        else append("Llevas ${Unidades.texto(semana.km, m, 1)} de ${Unidades.texto(meta, m, 0)} ${Unidades.etiquetaDistancia(m)} esta semana".replace('.', ','))
+                        append(if (corrioHoy) ". Hoy ya sumaste a tu racha." else if (racha.diaria > 0) " y mantienes tu racha de ${racha.diaria} días." else ".")
+                    },
+                    style = GType.bodySm.copy(fontSize = 11.5.sp), color = Color.White.copy(alpha = 0.85f),
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                // Cuenta regresiva real (ajustes): tocar cambia entre 0, 3, 5 y 10 s.
+                val seg = ajustes.cuentaRegresivaSeg
+                Column(
+                    Modifier.size(64.dp).clip(RoundedCornerShape(18.dp)).background(Color.White.copy(alpha = 0.07f)).border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(18.dp))
+                        .clickable(onClickLabel = "Cambiar cuenta regresiva") {
+                            val siguiente = listOf(0, 3, 5, 10).let { l -> l[(l.indexOf(seg).coerceAtLeast(0) + 1) % l.size] }
+                            ajustesVm.actualizar { it.copy(cuentaRegresivaSeg = siguiente) }
+                        }.testTag("correr-cuenta"),
+                    horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
+                ) {
+                    Text(if (seg == 0) "YA" else "$seg", style = androidx.compose.ui.text.TextStyle(fontFamily = com.gacelas.ui.theme.SpaceGrotesk, fontSize = 22.sp), color = Color.White)
+                    Text(if (seg == 0) "SIN CUENTA" else "SEG", style = GType.labelMd.copy(fontSize = 8.5.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold), color = Color.White.copy(alpha = 0.6f), maxLines = 1)
+                }
+                com.gacelas.ui.components.BotonTablero(
+                    when {
+                        !permiso -> "Dar permiso"
+                        conRuta -> "Empezar ruta"
+                        else -> "Empezar"
+                    },
+                    onEmpezar, Modifier.weight(1f), alto = 64.dp, tag = "boton-empezar",
+                )
+            }
+        }
+        if (editarObjetivo) com.gacelas.ui.components.HojaC2(onCerrar = { editarObjetivo = false }) { Column(Modifier.navigationBarsPadding().padding(start = 16.dp, end = 16.dp, bottom = 16.dp).testTag("hoja-objetivo"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("Tu objetivo", style = GType.headlineSm, color = Color.White)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 ObjetivoCarrera.Tipo.entries.forEach { t ->
                     val elegido = objetivo.tipo == t
                     val o = if (elegido) objetivo else ObjetivoCarrera.predeterminado(t, ritmoMedio)
-                    com.gacelas.ui.components.OpcionTarjetaC2(t.titulo, o.valorTexto(m), elegido, { elegir(o) }, Modifier.weight(1f), tag = "objetivo-${t.clave}")
+                    com.gacelas.ui.components.OpcionTarjetaC2(t.titulo, o.valorTexto(m), elegido, { elegir(o); modoElegido = if (t == ObjetivoCarrera.Tipo.Libre) "libre" else "objetivo" }, Modifier.weight(1f), tag = "objetivo-${t.clave}")
                 }
             }
             if (objetivo.activo) AjusteObjetivo(objetivo, m) { elegir(it) }
-            // Efecto real sobre la meta semanal y la racha.
-            val meta = ajustes.metaKmSemana.toDouble()
-            val corrioHoy = racha.ultimoDiaMs?.let { com.gacelas.actividad.domain.reglas.Rachas.inicioDia(it) == com.gacelas.actividad.domain.reglas.Rachas.inicioDia(ahora) } == true
-            val sumaKm = if (objetivo.tipo == ObjetivoCarrera.Tipo.Distancia) objetivo.valor / 1000.0 else null
-            Text(
-                buildString {
-                    if (sumaKm != null) append("Con ${Unidades.texto(sumaKm, m, 1)} ${Unidades.etiquetaDistancia(m)} llegas a ${Unidades.texto(semana.km + sumaKm, m, 1)} de ${Unidades.texto(meta, m, 0)} ${Unidades.etiquetaDistancia(m)} de tu meta semanal")
-                    else append("Llevas ${Unidades.texto(semana.km, m, 1)} de ${Unidades.texto(meta, m, 0)} ${Unidades.etiquetaDistancia(m)} de tu meta semanal")
-                    append(if (corrioHoy) ". Hoy ya sumaste a tu racha." else if (racha.diaria > 0) " y mantienes tu racha de ${racha.diaria} días." else " y empiezas una racha nueva.")
-                },
-                style = GType.bodySm, color = GColors.TextPrimary,
-                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(GColors.Primary.copy(alpha = 0.18f))
-                    .border(1.dp, GColors.C2Morado.copy(alpha = 0.4f), RoundedCornerShape(8.dp)).padding(10.dp).testTag("efecto-meta"),
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    EstadoC2("Voz", if (ajustes.anunciosVoz) "Cada km" else "Apagada", ajustes.anunciosVoz,
-                        { ajustesVm.actualizar { it.copy(anunciosVoz = !it.anunciosVoz) } }, tag = "estado-voz")
-                    EstadoC2("En vivo", when (ajustes.compartirEnVivo) { true -> "Seguidores"; false -> "No compartes"; null -> "Se pregunta 1 vez" },
-                        ajustes.compartirEnVivo == true, onPrivacidad, tag = "estado-en-vivo")
-                    EstadoC2("SOS", if (ajustes.contactosEmergencia.isEmpty()) "Solo 911" else "${ajustes.contactosEmergencia.size} contacto${if (ajustes.contactosEmergencia.size == 1) "" else "s"}",
-                        true, onPrivacidad, tag = "estado-sos")
-            }
-            if (ajustes.compartirEnVivo != null) Text(
-                "Compartir en vivo se eligió una sola vez. Se cambia en Ajustes, no se vuelve a preguntar.",
-                style = GType.bodySm, color = GColors.C2Muted,
-            )
-            com.gacelas.ui.components.BotonGrandeC2(
-                when {
-                    !permiso -> "Dar permiso de ubicación"
-                    objetivo.activo && objetivo.tipo != ObjetivoCarrera.Tipo.Ritmo -> "Empezar · ${objetivo.valorTexto(m)}"
-                    else -> "Empezar"
-                },
-                onEmpezar, icono = { Icon(Icons.Filled.PlayArrow, null, tint = Color.White) }, tag = "boton-empezar",
-            )
+            com.gacelas.ui.components.BotonTablero("Listo", { editarObjetivo = false }, icono = null, tag = "objetivo-listo")
+        } }
+    }
+}
+
+/** Tarjeta de modo de la hoja de Correr (activa en degradado). */
+@Composable
+private fun ModoCorrer(titulo: String, detalle: String, icono: ImageVector, activo: Boolean, modifier: Modifier, tag: String, onClick: () -> Unit) {
+    val forma = RoundedCornerShape(20.dp)
+    Column(
+        modifier.fillMaxHeight().clip(forma)
+            .then(if (activo) Modifier.background(com.gacelas.ui.components.GradienteC2).border(2.dp, Color.White.copy(alpha = 0.6f), forma) else Modifier.background(Color.White.copy(alpha = 0.06f)).border(1.dp, Color.White.copy(alpha = 0.1f), forma))
+            .clickable(role = androidx.compose.ui.semantics.Role.RadioButton, onClick = onClick).semantics { selected = activo }.testTag(tag).padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Icon(icono, null, tint = if (activo) Color.White else GColors.C2Violeta, modifier = Modifier.size(20.dp))
+        com.gacelas.ui.components.TextoAjustableC2(titulo, GType.labelLg.copy(fontSize = 15.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold), Color.White, minimo = 0.7f)
+        Text(detalle, style = GType.bodySm.copy(fontSize = 11.sp), color = Color.White.copy(alpha = if (activo) 0.9f else 0.6f), maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+    }
+}
+
+/** Estado tocable (Voz, En vivo, SOS) de la hoja de Correr. */
+@Composable
+private fun EstadoTablero(titulo: String, detalle: String, icono: ImageVector, activo: Boolean, modifier: Modifier, tag: String, onClick: () -> Unit) {
+    val forma = RoundedCornerShape(16.dp)
+    Row(
+        modifier.clip(forma).background(Color.White.copy(alpha = 0.06f)).border(1.dp, Color.White.copy(alpha = 0.1f), forma)
+            .clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onClick).testTag(tag).padding(horizontal = 10.dp, vertical = 9.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(icono, null, tint = if (activo) GColors.C2Menta else Color.White.copy(alpha = 0.5f), modifier = Modifier.size(18.dp))
+        Column {
+            com.gacelas.ui.components.TextoAjustableC2(titulo, GType.labelLg.copy(fontSize = 13.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), Color.White, minimo = 0.6f)
+            com.gacelas.ui.components.TextoAjustableC2(detalle, GType.bodySm.copy(fontSize = 10.5.sp), Color.White.copy(alpha = 0.6f), minimo = 0.6f)
         }
+    }
+}
+
+/** Columna de controles del mapa de Correr: MAPA (centrar, norte, 3D/2D) y REPORTAR debajo. */
+@Composable
+private fun BoxScope.ControlesMapaCorrer(vista3d: Boolean, onVista: (Boolean) -> Unit, recentrar: () -> Unit, norte: () -> Unit, rumbo: Float, siguiendo: Boolean, onReportar: () -> Unit) {
+    Column(
+        Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(end = 12.dp, top = 64.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        com.gacelas.correr.GrupoControlesC4("MAPA") {
+            com.gacelas.correr.ControlEtiquetadoC4("Centrar", "Centrar el mapa en tu posición", recentrar, "boton-recentrar", activo = !siguiendo) {
+                Icon(Icons.Filled.MyLocation, null, tint = Color.White, modifier = Modifier.size(20.dp))
+            }
+            com.gacelas.correr.ControlEtiquetadoC4("Norte", "Orientar el mapa al norte", norte, "boton-brujula") {
+                Icon(Icons.Filled.Navigation, null, tint = Color.White, modifier = Modifier.size(20.dp).graphicsLayer { rotationZ = -rumbo })
+            }
+            com.gacelas.correr.SelectorVistaC4(vista3d, onVista)
+        }
+        com.gacelas.ui.components.BotonReportarMapa(onReportar)
     }
 }
 
@@ -839,107 +942,136 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
         val ms = if (estado.inicioMs > 0) estado.inicioMs else ahora
         java.text.SimpleDateFormat("EEEE d MMM · HH:mm", java.util.Locale("es", "EC")).format(java.util.Date(ms))
     }
-    Box(Modifier.fillMaxSize().background(GColors.C2Bg).testTag("pantalla-resumen")) {
+    var vista3d by rememberSaveable { mutableStateOf(false) }
+    val kmParciales = estado.parciales.filter { !it.manual && it.distanciaKm > 0 }
+    Box(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo).testTag("pantalla-resumen")) {
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 96.dp).navigationBarsPadding(),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            // Mapa del recorrido arriba, con la flecha de volver encima.
-            Box(Modifier.fillMaxWidth().height(250.dp)) {
-                if (estado.puntos.size >= 2) MapaGacelas(estado.puntos.aLatLng(), Modifier.fillMaxSize(), controles = false) {
-                    com.gacelas.ui.components.MiniTrazoC2(estado.puntos.map { it.lat to it.lng }, Modifier.fillMaxSize(), grosor = 4.dp)
-                } else com.gacelas.ui.components.MiniTrazoC2(emptyList(), Modifier.fillMaxSize())
-                Box(Modifier.fillMaxWidth().height(70.dp).align(Alignment.BottomCenter).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Color.Transparent, GColors.C2Bg))))
-                com.gacelas.ui.components.BotonVolverMapa({ descartarCarrera(context, tracker); onCerrar() }, Modifier.statusBarsPadding().padding(14.dp))
+            // Mapa del recorrido arriba con volver y Ver en 3D; chips, titulo y fecha sobre el degradado.
+            Box(Modifier.fillMaxWidth().height(300.dp)) {
+                val puntosMapa = estado.puntos.map { it.lat to it.lng }
+                if (estado.puntos.size >= 2) MapaGacelas(estado.puntos.aLatLng(), Modifier.fillMaxSize(), controles = false, seguir = vista3d, modo3d = vista3d) {
+                    com.gacelas.ui.components.MapaEsquemaC2(puntosMapa, Modifier.fillMaxSize().graphicsLayer { if (vista3d) { rotationX = 38f; cameraDistance = 12f * density } }, grosor = 4.dp,
+                        margenArriba = 50.dp, margenAbajo = 110.dp)
+                } else com.gacelas.ui.components.MapaEsquemaC2(emptyList(), Modifier.fillMaxSize())
+                Box(Modifier.fillMaxWidth().height(150.dp).align(Alignment.BottomCenter).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Color.Transparent, com.gacelas.ui.components.Tablero.Noche))))
+                Row(Modifier.fillMaxWidth().statusBarsPadding().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    com.gacelas.ui.components.BotonVolverMapa({ descartarCarrera(context, tracker); onCerrar() })
+                    Spacer(Modifier.weight(1f))
+                    if (estado.puntos.size >= 2) Row(
+                        Modifier.height(44.dp).vidrioResumen().clickable(onClickLabel = if (vista3d) "Ver en 2D" else "Ver en 3D") { vista3d = !vista3d }.testTag("resumen-3d").padding(horizontal = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Filled.Layers, null, tint = Color.White, modifier = Modifier.size(18.dp))
+                        Text(if (vista3d) "  Ver en 2D" else "  Ver en 3D", style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = Color.White)
+                    }
+                }
                 if (estado.puntos.size < 2) Text("Sin recorrido GPS", style = GType.labelLg, color = GColors.C2Muted, modifier = Modifier.align(Alignment.Center))
+                Column(Modifier.align(Alignment.BottomStart).padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        if (estado.segundos == 0) ChipLogro("Sin datos", GColors.C2Muted, "chip-sin-datos")
+                        if (objetivo.activo && objetivo.cumplido(estado)) ChipLogro("Objetivo cumplido", GColors.C2Menta, "chip-objetivo-cumplido")
+                        record?.let { ChipLogro("Récord ${it.etiqueta}", Color(0xFFF59E0B), "nuevo-record") }
+                    }
+                    Text(titulo.ifBlank { if (estado.segundos > 0) tituloSugerido(estado.inicioMs.takeIf { it > 0 } ?: ahora) else "Carrera completada" }, style = GType.headlineLg.copy(fontSize = 30.sp, lineHeight = 34.sp), color = Color.White, maxLines = 2)
+                    Text(if (estado.segundos > 0) horaTexto.replaceFirstChar { it.uppercase() } else "No hay datos de carrera para guardar", style = GType.bodySm, color = Color.White.copy(alpha = 0.65f))
+                }
             }
-            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    com.gacelas.ui.components.ChipParalelogramo(if (estado.segundos > 0) "Carrera completada" else "Sin datos", color = GColors.C2Menta, punto = GColors.C2Menta)
-                    if (objetivo.activo && objetivo.cumplido(estado)) com.gacelas.ui.components.ChipParalelogramo("Objetivo cumplido", tag = "chip-objetivo-cumplido")
-                    record?.let { com.gacelas.ui.components.ChipParalelogramo("Récord en ${it.etiqueta}", color = Color(0xFFFBBF24), tag = "nuevo-record") }
-                }
-                Box {
-                    Column {
-                        Text(if (estado.segundos > 0) "¡EXCELENTE ZANCADA, GACELA!" else "CARRERA COMPLETADA", style = GType.headlineLg, color = GColors.TextPrimary)
-                        Text(if (estado.segundos > 0) horaTexto.replaceFirstChar { it.uppercase() } else "No hay datos de carrera para guardar", style = GType.bodyMd, color = GColors.C2Muted)
-                    }
-                    com.gacelas.ui.movimiento.DestelloC2(Modifier.matchParentSize(), activo = estado.segundos > 0)
-                }
-                // Tarjeta principal: distancia, ritmo frente a tu media y cifras.
-                com.gacelas.ui.components.TarjetaSeccionC2(null, Modifier.entradaEscalonada(1), tag = "resumen-principal") {
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Column(Modifier.weight(1f)) {
-                            com.gacelas.ui.components.EtiquetaC2("Distancia", color = GColors.C2Muted)
-                            Row(verticalAlignment = Alignment.Bottom) {
-                                com.gacelas.ui.movimiento.CifraAnimada(estado.distanciaKm, { Unidades.texto(it, m) }, GType.metricHuge.copy(fontSize = androidx.compose.ui.unit.TextUnit(48f, androidx.compose.ui.unit.TextUnitType.Sp), lineHeight = androidx.compose.ui.unit.TextUnit(50f, androidx.compose.ui.unit.TextUnitType.Sp)), GColors.C2Violeta)
-                                Text(" ${Unidades.etiquetaDistancia(m)}", style = GType.labelLg, color = GColors.C2Muted, modifier = Modifier.padding(bottom = 8.dp))
-                            }
-                        }
-                        Column(horizontalAlignment = Alignment.End) {
-                            com.gacelas.ui.components.EtiquetaC2("Ritmo medio", color = GColors.C2Muted)
-                            Text(formatearRitmo(Unidades.ritmo(estado.ritmoPromedioSegKm, m)) + Unidades.etiquetaRitmo(m), style = GType.headlineMd, color = GColors.C2Menta)
-                            val hoyRitmo = estado.ritmoPromedioSegKm
-                            if (hoyRitmo != null && ritmoMedio != null) {
-                                val d = ritmoMedio - hoyRitmo
-                                Text(
-                                    when { d > 0 -> "${formatearMs(d)} más rápido que tu media"; d < 0 -> "${formatearMs(-d)} más lento que tu media"; else -> "Igual que tu media" },
-                                    style = GType.bodySm, color = if (d >= 0) GColors.C2Menta else GColors.C2Muted, modifier = Modifier.testTag("ritmo-vs-media"),
-                                )
-                            }
+            Column(Modifier.padding(horizontal = 14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                // Distancia y tiempo en el mosaico grande en degradado.
+                Row(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(com.gacelas.ui.components.GradienteC2).padding(16.dp).testTag("resumen-principal"),
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        com.gacelas.ui.components.RotuloWidget("Distancia", color = Color.White.copy(alpha = 0.85f))
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            com.gacelas.ui.movimiento.CifraAnimada(estado.distanciaKm, { Unidades.texto(it, m).replace('.', ',') }, androidx.compose.ui.text.TextStyle(fontFamily = com.gacelas.ui.theme.SpaceGrotesk, fontSize = 62.sp, lineHeight = 64.sp), Color.White)
+                            Text(" ${Unidades.etiquetaDistancia(m)}", style = GType.labelLg, color = Color.White.copy(alpha = 0.85f), modifier = Modifier.padding(bottom = 8.dp))
                         }
                     }
-                    val kcal = ajustes.pesoKg?.let { (it * estado.distanciaKm * 1.036).toInt() } ?: (estado.distanciaKm * 62).toInt()
-                    com.gacelas.ui.components.TiraCifrasC2(listOf(
-                        com.gacelas.ui.components.DatoCifra(formatearMs(estado.segundos), "", "Tiempo"),
-                        com.gacelas.ui.components.DatoCifra("+${estado.desnivelM.toInt()}", "m", "Desnivel", GColors.C2Cielo),
-                        com.gacelas.ui.components.DatoCifra("$kcal", "kcal", if (ajustes.pesoKg != null) "Calorías" else "Kcal est."),
-                    ), tag = "resumen-cifras", tamano = 18)
+                    Column(horizontalAlignment = Alignment.End) {
+                        com.gacelas.ui.components.RotuloWidget("Tiempo", color = Color.White.copy(alpha = 0.85f))
+                        Text(if (estado.segundos < 3600) formatearMs(estado.segundos) else com.gacelas.tracking.formatearHms(estado.segundos), style = androidx.compose.ui.text.TextStyle(fontFamily = com.gacelas.ui.theme.SpaceGrotesk, fontSize = 32.sp), color = Color.White, modifier = Modifier.testTag("resumen-tiempo"))
+                    }
                 }
-                // Logros de la carrera: racha, meta semanal y record.
-                if (estado.segundos > 0) com.gacelas.ui.components.CelebracionRacha(rachaAntes, rachaDespues)
-                if (estado.segundos > 0) {
+                Row(Modifier.fillMaxWidth().height(androidx.compose.foundation.layout.IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    com.gacelas.ui.components.WidgetC2("Ritmo medio", Modifier.weight(1f).fillMaxHeight(), tag = "resumen-ritmo-medio") {
+                        com.gacelas.ui.components.CifraTablero(formatearRitmo(Unidades.ritmo(estado.ritmoPromedioSegKm, m)), Unidades.etiquetaRitmo(m), tamano = 32, color = GColors.C2Menta)
+                        val hoyRitmo = estado.ritmoPromedioSegKm
+                        if (hoyRitmo != null && ritmoMedio != null) {
+                            val d = ritmoMedio - hoyRitmo
+                            Text(
+                                when { d > 0 -> "${formatearMs(d)} más rápido que tu media"; d < 0 -> "${formatearMs(-d)} más lento que tu media"; else -> "Igual que tu media" },
+                                style = GType.bodySm.copy(fontSize = 11.5.sp), color = if (d >= 0) GColors.C2Menta else Color.White.copy(alpha = 0.6f), modifier = Modifier.testTag("ritmo-vs-media"),
+                            )
+                        }
+                    }
                     val meta = ajustes.metaKmSemana.toDouble().coerceAtLeast(1.0)
                     val total = semana.km + estado.distanciaKm
-                    com.gacelas.ui.components.TarjetaSeccionC2("Meta semanal", tag = "resumen-meta") {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            com.gacelas.ui.components.AnilloC2((total / meta).toFloat(), tamano = 56.dp) {
-                                Text("${((total / meta) * 100).toInt().coerceAtMost(999)}%", style = GType.labelMd, color = GColors.TextPrimary)
+                    com.gacelas.ui.components.WidgetC2("Meta semanal", Modifier.weight(1f).fillMaxHeight(), tag = "resumen-meta") {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            com.gacelas.ui.components.AnilloC2((total / meta).toFloat().coerceIn(0f, 1f), tamano = 62.dp, grosor = 8.dp) {
+                                Text("${((total / meta) * 100).toInt().coerceAtMost(999)}%", style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = Color.White)
                             }
-                            Column(Modifier.weight(1f)) {
-                                Text("${Unidades.texto(total, m, 1)} de ${Unidades.texto(meta, m, 0)} ${Unidades.etiquetaDistancia(m)}", style = GType.titleMd, color = GColors.TextPrimary)
-                                Text(if (total >= meta) "Meta de la semana cumplida" else "Te faltan ${Unidades.texto(meta - total, m, 1)} ${Unidades.etiquetaDistancia(m)}", style = GType.bodySm, color = GColors.C2Muted)
+                            Column {
+                                com.gacelas.ui.components.TextoAjustableC2("${Unidades.texto(total, m, 1)} de ${Unidades.texto(meta, m, 0)} ${Unidades.etiquetaDistancia(m)}".replace('.', ','), GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), Color.White, Modifier, minimo = 0.6f)
+                                Text(if (total >= meta) "Meta cumplida" else "faltan ${Unidades.texto(meta - total, m, 1).replace('.', ',')}", style = GType.bodySm.copy(fontSize = 11.sp), color = Color.White.copy(alpha = 0.6f))
                             }
                         }
                     }
                 }
-                // Parciales por km en barras (mas alta = mas rapida) y graficas de elevacion y ritmo.
-                val km = estado.parciales.filter { !it.manual && it.distanciaKm > 0 }
-                if (km.isNotEmpty()) com.gacelas.ui.components.TarjetaSeccionC2("Parciales por km", tag = "resumen-parciales") {
-                    val ritmos = km.map { it.segundos / it.distanciaKm }
-                    val peor = ritmos.max(); val mejor = ritmos.indexOf(ritmos.min())
-                    com.gacelas.ui.components.BarrasC2(ritmos.map { (peor * 1.15 - it).toFloat() }, etiquetas = km.map { "${it.numero}" }, resaltada = mejor, alto = 64.dp)
-                    Text("Mejor km ${km[mejor].numero}: ${formatearMs(km[mejor].segundos)}", style = GType.bodySm, color = GColors.C2Menta)
+                // Parciales por km en mosaicos (verde el mejor).
+                if (kmParciales.isNotEmpty()) com.gacelas.ui.components.WidgetC2("Parciales por km", Modifier.fillMaxWidth(), tag = "resumen-parciales", accion = {
+                    val ritmos = kmParciales.map { it.segundos / it.distanciaKm }
+                    Text("Mejor km ${kmParciales[ritmos.indexOf(ritmos.min())].numero}", style = GType.labelMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = GColors.C2Menta)
+                }) {
+                    val ritmos = kmParciales.map { it.segundos / it.distanciaKm }
+                    val mejor = ritmos.indexOf(ritmos.min()); val peor = ritmos.max(); val rapido = ritmos.min()
+                    Row(Modifier.fillMaxWidth().height(96.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Bottom) {
+                        kmParciales.takeLast(8).forEachIndexed { i, p ->
+                            val idx = kmParciales.size - minOf(8, kmParciales.size) + i
+                            val r = ritmos[idx]
+                            val f = if (peor - rapido < 1.0) 0.7f else (0.55f + 0.45f * ((peor - r) / (peor - rapido)).toFloat())
+                            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(formatearMs(p.segundos), style = GType.labelMd.copy(fontSize = 10.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = if (idx == mejor) GColors.C2Menta else Color.White.copy(alpha = 0.85f), maxLines = 1)
+                                Box(Modifier.fillMaxWidth().height((52 * f).dp).clip(RoundedCornerShape(10.dp))
+                                    .background(if (idx == mejor) androidx.compose.ui.graphics.SolidColor(GColors.C2Menta) else com.gacelas.ui.components.GradienteC2))
+                                Text("${p.numero}", style = GType.labelMd.copy(fontSize = 10.sp), color = Color.White.copy(alpha = 0.5f))
+                            }
+                        }
+                    }
                 }
                 val alturas = estado.puntos.mapNotNull { it.altitudM }
-                if (alturas.size > 2) com.gacelas.ui.components.TarjetaSeccionC2("Elevación", tag = "resumen-elevacion") {
-                    com.gacelas.ui.components.LineaC2(alturas.map { it.toFloat() }, Modifier.height(64.dp))
-                    Text("${alturas.min().toInt()} m a ${alturas.max().toInt()} m", style = GType.bodySm, color = GColors.C2Muted)
+                Row(Modifier.fillMaxWidth().height(androidx.compose.foundation.layout.IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    if (alturas.size > 2) com.gacelas.ui.components.WidgetC2("Elevación", Modifier.weight(1f).fillMaxHeight(), tag = "resumen-elevacion") {
+                        com.gacelas.ui.components.CifraTablero("+${estado.desnivelM.toInt()}", "m", tamano = 26, color = GColors.C2Cielo)
+                        com.gacelas.ui.components.LineaC2(alturas.map { it.toFloat() }, Modifier.height(48.dp))
+                    }
+                    val peso = ajustes.pesoKg
+                    com.gacelas.ui.components.WidgetC2(if (peso != null) "Energía" else "Racha", Modifier.weight(1f).fillMaxHeight(), tag = "resumen-energia") {
+                        if (peso != null) {
+                            com.gacelas.ui.components.CifraTablero("${(peso * estado.distanciaKm * 1.036).toInt()}", "kcal", tamano = 26)
+                            Text("Según tu peso (${peso.toInt()} kg)", style = GType.bodySm.copy(fontSize = 11.sp), color = Color.White.copy(alpha = 0.6f))
+                        } else com.gacelas.ui.components.CifraTablero("${rachaDespues.diaria}", if (rachaDespues.diaria == 1) "día" else "días", tamano = 26)
+                        if (estado.segundos > 0 && rachaDespues.diaria > 0) Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Filled.LocalFireDepartment, null, tint = Color(0xFFF59E0B), modifier = Modifier.size(14.dp))
+                            Text(" Racha de ${rachaDespues.diaria} día${if (rachaDespues.diaria == 1) "" else "s"}", style = GType.labelMd.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = Color(0xFFF59E0B))
+                        }
+                    }
                 }
-                if (km.size >= 2) com.gacelas.ui.components.TarjetaSeccionC2("Ritmo", tag = "resumen-ritmo") {
-                    com.gacelas.ui.components.LineaC2(km.map { (it.segundos / it.distanciaKm).toFloat() }, Modifier.height(56.dp), color = GColors.C2Menta, invertida = true)
-                }
-                // Cuentalo: titulo, nota, visibilidad y ruta.
-                com.gacelas.ui.components.TarjetaSeccionC2("Cuéntalo", tag = "resumen-cuentalo") {
+                com.gacelas.ui.components.WidgetC2("Cuéntalo", Modifier.fillMaxWidth(), tag = "resumen-cuentalo") {
                     CampoTexto("Título", titulo, { titulo = it }, "Título de la carrera (opcional)")
                     CampoTexto("Notas", nota, { nota = it }, "¿Cómo te fue? Comparte tus pensamientos...", lineas = 3)
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Text("Hacer pública", style = GType.bodyLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+                        Text("Pública en Comunidad", style = GType.bodyMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
                         Interruptor(publica) { publica = it }
                     }
                     if (puedeSerRuta) {
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Text("Publicar también como ruta", style = GType.bodyLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+                            Text("Publicar como ruta", style = GType.bodyMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
                             Interruptor(comoRuta) { comoRuta = it }
                         }
                         if (comoRuta) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -952,24 +1084,35 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
                         }
                     }
                 }
-                if (estado.segundos > 0) BotonSecundario("Historia para Instagram", { compartiendo = true })
-                BotonSecundario("Descartar carrera", salirSinGuardar, color = GColors.TextSecondary)
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    if (estado.segundos > 0) Box(
+                        Modifier.weight(1f).height(48.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.07f)).clickable { compartiendo = true }.testTag("resumen-instagram"),
+                        contentAlignment = Alignment.Center,
+                    ) { Text("Historia para Instagram", style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = Color.White, maxLines = 1) }
+                    Box(
+                        Modifier.weight(1f).height(48.dp).clip(RoundedCornerShape(14.dp)).background(Color(0x33BE185D)).clickable(onClick = salirSinGuardar).testTag("resumen-descartar"),
+                        contentAlignment = Alignment.Center,
+                    ) { Text("Descartar carrera", style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = Color(0xFFF9A8D4), maxLines = 1) }
+                }
             }
         }
         // Barra inferior fija: Compartir y GUARDAR Y PUBLICAR.
         Row(
-            Modifier.align(Alignment.BottomCenter).fillMaxWidth().background(GColors.C2Bg).navigationBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 10.dp).testTag("barra-guardar"),
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Color.Transparent, com.gacelas.ui.components.Tablero.Noche3)))
+                .navigationBarsPadding().padding(horizontal = 14.dp, vertical = 10.dp).testTag("barra-guardar"),
             horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (estado.segundos > 0) Box(
-                Modifier.height(54.dp).clip(RoundedCornerShape(10.dp)).background(GColors.C2S2).border(1.dp, GColors.C2Linea, RoundedCornerShape(10.dp))
+            if (estado.segundos > 0) Row(
+                Modifier.height(58.dp).clip(RoundedCornerShape(18.dp)).background(Color(0xFF1C1433)).border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(18.dp))
                     .clickable { compartiendo = true }.padding(horizontal = 16.dp).testTag("boton-compartir"),
-                contentAlignment = Alignment.Center,
-            ) { Text("Compartir", style = GType.labelLg, color = GColors.TextPrimary) }
-            com.gacelas.ui.components.BotonGrandeC2(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Filled.Share, null, tint = Color.White, modifier = Modifier.size(18.dp))
+                Text("  Compartir", style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = Color.White)
+            }
+            com.gacelas.ui.components.BotonTablero(
                 if (guardando) "Guardando..." else if (publica) "Guardar y publicar" else "Guardar carrera", guardar,
-                Modifier.weight(1f), icono = { Icon(Icons.Filled.Save, null, tint = Color.White) }, enabled = !guardando, tag = "boton-guardar",
+                Modifier.weight(1f), icono = Icons.Filled.Save, enabled = !guardando, tag = "boton-guardar",
             )
         }
     }
@@ -1041,4 +1184,20 @@ internal fun ModalCompartirEnVivo(onSi: () -> Unit, onNo: () -> Unit) {
         primario = "Sí, compartir", onPrimario = onSi, onCerrar = onNo,
         secundario = "No, gracias", tag = "modal-compartir-en-vivo",
     )
+}
+
+
+/** Chip de logro del resumen (objetivo cumplido, record). */
+@Composable
+private fun ChipLogro(texto: String, color: Color, tag: String) {
+    Text(texto.uppercase(), style = GType.labelMd.copy(fontSize = 10.5.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = Color(0xFF0C1322),
+        modifier = Modifier.clip(androidx.compose.foundation.shape.CircleShape).background(color).padding(horizontal = 10.dp, vertical = 5.dp).testTag(tag))
+}
+
+private fun Modifier.vidrioResumen(): Modifier = with(com.gacelas.ui.components.Tablero) { this@vidrioResumen.clip(RoundedCornerShape(16.dp)).background(Vidrio).border(1.dp, VidrioBorde, RoundedCornerShape(16.dp)) }
+
+/** "Mañana en Loja", "Tarde en Loja" o "Noche en Loja" segun la hora de inicio. */
+internal fun tituloSugerido(inicioMs: Long): String {
+    val h = java.util.Calendar.getInstance().apply { timeInMillis = inicioMs }.get(java.util.Calendar.HOUR_OF_DAY)
+    return when (h) { in 5..11 -> "Mañana en Loja"; in 12..18 -> "Tarde en Loja"; else -> "Noche en Loja" }
 }

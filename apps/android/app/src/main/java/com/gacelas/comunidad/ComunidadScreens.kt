@@ -84,12 +84,12 @@ private fun FotoFeed(url: String, modifier: Modifier) {
     }
 }
 
-/** Eventos de ejemplo mas los creados por el usuario. */
+/** Eventos creados (de la base con servidor, o los del usuario sin el). No se muestran eventos de ejemplo. */
 @Composable
 fun eventosState(): Pair<List<Evento>, Set<String>> {
     val c = contenedor()
-    val flujo = remember(c) { combine(c.eventos.creados, c.eventos.inscritos) { cr, ins -> com.gacelas.comunidad.domain.reglas.unirEventos(cr, MockData.eventos) to ins } }
-    val estado by flujo.collectAsState(initial = MockData.eventos to emptySet())
+    val flujo = remember(c) { combine(c.eventos.creados, c.eventos.inscritos) { cr, ins -> com.gacelas.comunidad.domain.reglas.unirEventos(cr, emptyList()) to ins } }
+    val estado by flujo.collectAsState(initial = emptyList<Evento>() to emptySet())
     return estado
 }
 

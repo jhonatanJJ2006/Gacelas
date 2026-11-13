@@ -41,7 +41,7 @@ import com.gacelas.ui.theme.GType
 @Composable
 fun DetalleCarreraContenido(c: Carrera?, fecha: String, m: Boolean, onAtras: () -> Unit, onEliminar: () -> Unit, mapa: @Composable (Carrera) -> Unit) {
     var confirmar by remember { mutableStateOf(false) }
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary).testTag("detalle-carrera")) {
+    Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo).testTag("detalle-carrera")) {
         EncabezadoAtras(c?.titulo ?: "Carrera", onAtras)
         if (c == null) {
             Text("Esta carrera ya no está.", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.padding(16.dp))

@@ -2,6 +2,7 @@ package com.gacelas.ui.components
 
 import com.gacelas.ui.movimiento.pulsacionC2
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -92,13 +93,13 @@ fun DialogoC2(
             val altoMax = maxHeight - 24.dp
             Column(
                 modifier.fillMaxWidth().widthIn(max = 560.dp).heightIn(max = altoMax)
-                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-                    .background(GColors.C2Card).testTag("dialogo-c2-hoja")
+                    .clip(Tablero.FormaHoja)
+                    .background(Tablero.FondoHoja).border(1.dp, Color(0x40C084FC), Tablero.FormaHoja).testTag("dialogo-c2-hoja")
                     .clickable(remember { MutableInteractionSource() }, null) {},
             ) {
                 Box(Modifier.fillMaxWidth().height(3.dp).background(Brush.horizontalGradient(listOf(Color.Transparent, GColors.C2Violeta))))
                 Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
-                    Box(Modifier.width(40.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(GColors.C2Linea))
+                    Box(Modifier.width(40.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(alpha = 0.25f)))
                 }
                 MaterialTheme(colorScheme = darkColorScheme(primary = GColors.C2Violeta, onPrimary = GColors.C2Bg, surface = GColors.C2Card)) {
                     // Cuerpo scrolleable: titulo y texto ceden espacio; las acciones quedan siempre visibles.
@@ -139,27 +140,27 @@ fun DialogoC2(
     }
 }
 
-/** Boton de los modales C2: principal (violeta o rojo con sombra) o secundario (gris). */
+/** Boton de los modales (direccion A "Tablero"): principal en degradado o rojo, secundario de vidrio. */
 @Composable
 fun BotonModalC2(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier, peligro: Boolean = false, secundario: Boolean = false, enabled: Boolean = true) {
-    val forma = CutCornerShape(topStart = 10.dp, bottomEnd = 10.dp)
+    val forma = androidx.compose.foundation.shape.RoundedCornerShape(18.dp)
     val fondo = when {
-        secundario -> Brush.linearGradient(listOf(GColors.C2S2, GColors.C2S2))
+        !enabled -> Brush.linearGradient(listOf(Color.White.copy(alpha = 0.06f), Color.White.copy(alpha = 0.06f)))
+        secundario -> Brush.linearGradient(listOf(Color.White.copy(alpha = 0.08f), Color.White.copy(alpha = 0.08f)))
         peligro -> Brush.linearGradient(listOf(Color(0xFF9D174D), PeligroC2))
-        else -> Brush.linearGradient(listOf(Color(0xFF7B1FA2), GColors.C2Morado))
+        else -> GradienteC2
     }
     val interaccion = remember { MutableInteractionSource() }
-    Box(modifier.fillMaxWidth().height(52.dp).pulsacionC2(interaccion)) {
-        if (!secundario && enabled) Box(Modifier.matchParentSize().offset(4.dp, 4.dp).clip(forma).background(if (peligro) Color(0xFFF472B6) else GColors.C2Violeta))
-        Box(
-            Modifier.matchParentSize().clip(forma).background(fondo).clickable(interaccion, androidx.compose.material3.ripple(), enabled = enabled, onClick = onClick),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                texto,
-                style = TextStyle(fontFamily = Inter, fontStyle = FontStyle.Italic, fontWeight = FontWeight.Black, fontSize = 15.sp),
-                color = if (enabled) Color.White else GColors.C2Muted,
-            )
-        }
+    Box(
+        modifier.fillMaxWidth().height(54.dp).pulsacionC2(interaccion).clip(forma).background(fondo)
+            .then(if (secundario || !enabled) Modifier.border(1.dp, Color.White.copy(alpha = 0.12f), forma) else Modifier)
+            .clickable(interaccion, androidx.compose.material3.ripple(), enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            texto,
+            style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp),
+            color = if (enabled) Color.White else GColors.C2Muted,
+        )
     }
 }

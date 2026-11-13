@@ -95,7 +95,7 @@ fun DetalleClubContenido(
     val posts = datos.posts
     val eventos = datos.eventos
     val aviso = onAviso
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
+    Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         EncabezadoAtras(club?.nombre ?: "Grupo", onAtras)
         if (!conServidor) return SinServidor()
         val c = club ?: return if (datos.cargando) EsqueletoDetalleClub()
@@ -234,7 +234,7 @@ fun EventoEnVivoContenido(
 ) {
     val tabla by vm.tabla.collectAsState()
     val repeticion by vm.repeticion.collectAsState()
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
+    Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         EncabezadoAtras("Evento en vivo", onAtras)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(Modifier.fillMaxWidth().height(320.dp).clip(RoundedCornerShape(16.dp)).background(GColors.SurfaceContainer)) {

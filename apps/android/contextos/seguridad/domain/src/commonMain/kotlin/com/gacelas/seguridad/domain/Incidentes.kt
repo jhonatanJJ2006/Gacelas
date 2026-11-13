@@ -115,4 +115,39 @@ interface IncidentesRepositorio {
         descripcion: String?, fotosJpeg: List<ByteArray>, carpeta: String,
     )
     suspend fun confirmar(id: String): Boolean
+
+    /** Resumen del canton para el widget de Inicio (resumen_seguridad_zona, migracion 040); null si falla. */
+    suspend fun resumenZona(): ResumenZona? = null
+
+    /** Seguridad de cada ruta publica en la franja actual (seguridad_rutas, migracion 040); vacio si falla. */
+    suspend fun seguridadRutas(): Map<String, SeguridadRuta> = emptyMap()
+}
+
+/** Fila de public.seguridad_rutas(): puntaje 0-100 solo con datos oficiales del ECU 911. */
+data class SeguridadRuta(val nivel: NivelSeguridad, val reportes7d: Int, val puntaje: Int?) {
+    /** "seguridad 92" con puntaje oficial; si no, el nivel de riesgo. */
+    val texto: String get() = puntaje?.let { "seguridad $it" } ?: when (nivel) {
+        NivelSeguridad.Bajo -> "riesgo bajo"
+        NivelSeguridad.Medio -> "riesgo medio"
+        NivelSeguridad.Alto -> "riesgo alto"
+    }
+}
+
+/** Totales reales del ECU 911 del ultimo mes importado y reportes de corredores de 7 dias. */
+data class ResumenZona(val mesEcu: String?, val ecu: List<Pair<String, Int>>, val reportes7d: Int) {
+    val totalEcu: Int get() = ecu.sumOf { it.second }
+
+    companion object {
+        /** Lee el JSON de public.resumen_seguridad_zona(). */
+        fun desdeJson(o: kotlinx.serialization.json.JsonObject): ResumenZona {
+            fun p(k: String) = (o[k] as? kotlinx.serialization.json.JsonPrimitive)
+            val ecu = (o["ecu"] as? kotlinx.serialization.json.JsonArray).orEmpty().mapNotNull { e ->
+                val f = e as? kotlinx.serialization.json.JsonObject ?: return@mapNotNull null
+                val servicio = (f["servicio"] as? kotlinx.serialization.json.JsonPrimitive)?.content ?: return@mapNotNull null
+                val conteo = (f["conteo"] as? kotlinx.serialization.json.JsonPrimitive)?.content?.toIntOrNull() ?: return@mapNotNull null
+                servicio to conteo
+            }
+            return ResumenZona(p("mes_ecu")?.takeIf { it.isString }?.content, ecu, p("reportes_7d")?.content?.toIntOrNull() ?: 0)
+        }
+    }
 }

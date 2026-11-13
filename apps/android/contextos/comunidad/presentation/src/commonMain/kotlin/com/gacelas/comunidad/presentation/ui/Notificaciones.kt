@@ -66,7 +66,7 @@ fun iconoNotificacion(tipo: TipoNotificacion): Pair<ImageVector, Color> = when (
 fun NotificacionesContenido(vm: NotificacionesViewModel, onAtras: () -> Unit, onAbrir: (Notificacion) -> Unit, extra: @Composable () -> Unit = {}) {
     val filtro by vm.filtro.collectAsState()
     val lista by vm.lista.collectAsState()
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary)) {
+    Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         EncabezadoAtras("Notificaciones", onAtras) {
             Text("Marcar todas leídas", style = GType.labelMd, color = GColors.Primary500, modifier = Modifier.clickable {
                 val habia = lista.any { !it.leida }

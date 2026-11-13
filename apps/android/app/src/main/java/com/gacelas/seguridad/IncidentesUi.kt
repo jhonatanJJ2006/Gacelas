@@ -98,11 +98,12 @@ private fun TarjetaC2(modifier: Modifier = Modifier, contenido: @Composable () -
     verticalArrangement = Arrangement.spacedBy(10.dp),
 ) { contenido() }
 
-/** Tarjeta "Seguridad de la zona" del detalle de ruta. Sin backend muestra datos de ejemplo. */
+/** Tarjeta "Seguridad de la zona" del detalle de ruta. Sin backend no hay fuente y la tarjeta se oculta. */
 @Composable
 fun TarjetaSeguridad(rutaId: String, inicial: SeguridadZona? = null) {
     val repo = contenedor().incidentes
-    var zona by remember(rutaId) { mutableStateOf(inicial ?: if (repo == null) Incidentes.EJEMPLO else null) }
+    if (inicial == null && repo == null) return
+    var zona by remember(rutaId) { mutableStateOf(inicial) }
     var cargando by remember(rutaId) { mutableStateOf(zona == null) }
     LaunchedEffect(rutaId, repo) {
         if (inicial == null && repo != null) { zona = repo.seguridadZona(rutaId); cargando = false }
@@ -110,7 +111,6 @@ fun TarjetaSeguridad(rutaId: String, inicial: SeguridadZona? = null) {
     TarjetaC2(Modifier.testTag("tarjeta-seguridad")) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Seguridad de la zona", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-            if (zona?.ejemplo == true) Text("EJEMPLO", style = GType.labelMd, color = GColors.C2Violeta)
         }
         val z = zona
         when {
@@ -251,11 +251,11 @@ fun HojaReportarIncidente(posicion: Pair<Double, Double>?, onCerrar: () -> Unit,
     }
 }
 
-/** Incidentes recientes (vista anonima). Sin backend o en vista previa devuelve los de ejemplo. */
+/** Incidentes recientes (vista anonima). Sin backend no hay ninguno; los de ejemplo solo si se piden (vistas previas). */
 @Composable
 fun incidentesRecientes(ejemplo: Boolean = false): List<IncidentePublico> {
     val repo = contenedor().incidentes
-    var lista by remember { mutableStateOf(if (ejemplo || repo == null) Incidentes.ejemplos(com.gacelas.shared.ahoraMs()) else emptyList()) }
+    var lista by remember { mutableStateOf(if (ejemplo) Incidentes.ejemplos(com.gacelas.shared.ahoraMs()) else emptyList()) }
     LaunchedEffect(repo, ejemplo) { if (!ejemplo && repo != null) lista = repo.recientes() }
     return lista
 }

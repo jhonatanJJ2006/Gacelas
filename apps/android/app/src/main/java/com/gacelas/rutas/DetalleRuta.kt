@@ -102,6 +102,8 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
     val remotas by (repo?.rutas ?: remember { kotlinx.coroutines.flow.MutableStateFlow(null) }).collectAsState()
     val meGusta by (repo?.meGusta ?: remember { kotlinx.coroutines.flow.MutableStateFlow(emptySet<String>()) }).collectAsState()
     val ruta = RutasLoja.conOficiales(remotas ?: MockData.rutas).firstOrNull { it.id == id }
+        ?.let { r -> if (r.puntos.isNotEmpty()) r else r.copy(puntos = com.gacelas.rutas.infrastructure.TrazosRutas.puntos[r.id.removePrefix("ruta-")].orEmpty()) }
+    var reportando by remember { mutableStateOf(false) }
     val perfil by sesionState()
     val ajustes by ajustesState()
     val m = ajustes.unidadesMetricas
@@ -149,11 +151,12 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
         val u = carrerasRacha.sortedByDescending { it.inicioMs }.take(10).filter { it.distanciaKm > 0.2 }
         if (u.isEmpty()) null else (u.sumOf { it.segundos } / u.sumOf { it.distanciaKm }).toInt()
     }
-    Box(Modifier.fillMaxSize().background(GColors.C2Bg)) {
+    Box(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         if (ruta == null) {
             Column { EncabezadoAtras("Ruta", onAtras); Text("Ruta no encontrada", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.padding(16.dp)) }
             return@Box
         }
+        if (reportando) com.gacelas.seguridad.ui.HojaReportarIncidente(ultimaUbicacion(context), onCerrar = { reportando = false })
         if (compartiendo) com.gacelas.compartir.CompartirDialogo(
             com.gacelas.compartir.DatosCompartir(
                 com.gacelas.compartir.DatosCompartir.Tipo.Ruta, ruta.nombre, ruta.puntos, ruta.distanciaKm,
@@ -166,17 +169,19 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
         ) {
             val puntos = ruta.puntos.map { PuntoGps(it.first, it.second, 0) }
             // Mapa arriba a todo el ancho, con volver, guardar y compartir encima.
-            Box(Modifier.fillMaxWidth().height(300.dp).background(GColors.SurfaceContainer).testTag("mapa-detalle-ruta")) {
+            Box(Modifier.fillMaxWidth().height(340.dp).testTag("mapa-detalle-ruta")) {
                 MapaGacelas(puntos.map { LatLng(it.lat, it.lng) }, Modifier.fillMaxSize(), zoom = 14f) {
-                    com.gacelas.ui.components.MiniTrazoC2(ruta.puntos, Modifier.fillMaxSize(), grosor = 4.dp)
+                    com.gacelas.ui.components.MapaEsquemaC2(ruta.puntos, Modifier.fillMaxSize(), yo = null,
+                        marcadores = listOfNotNull(ruta.puntos.firstOrNull()), margenArriba = 70.dp, margenAbajo = 40.dp)
                 }
-                Box(Modifier.fillMaxWidth().height(60.dp).align(Alignment.BottomCenter).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(androidx.compose.ui.graphics.Color.Transparent, GColors.C2Bg))))
+                Box(Modifier.fillMaxWidth().height(90.dp).align(Alignment.BottomCenter).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(androidx.compose.ui.graphics.Color.Transparent, com.gacelas.ui.components.Tablero.Noche))))
                 Row(Modifier.fillMaxWidth().statusBarsPadding().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                     com.gacelas.ui.components.BotonVolverMapa(onAtras)
                     Spacer(Modifier.weight(1f))
-                    IconButton(onClick = { compartiendo = true }, modifier = Modifier.clip(CircleShape).background(GColors.C2Card.copy(alpha = 0.95f))) {
-                        Icon(Icons.Filled.Share, "Compartir ruta", tint = GColors.TextPrimary)
-                    }
+                    com.gacelas.ui.components.BotonVidrio(Icons.Filled.Share, "Compartir ruta", { compartiendo = true }, tag = "detalle-compartir")
+                }
+                Box(Modifier.align(Alignment.BottomEnd).padding(end = 14.dp, bottom = 22.dp)) {
+                    com.gacelas.ui.components.BotonReportarMapa(onClick = { reportando = true })
                 }
             }
             Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -189,12 +194,16 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
                 Text(ruta.nombre.uppercase(), style = GType.headlineLg, color = GColors.TextPrimary)
                 if (ruta.descripcion.isNotBlank()) Text(ruta.descripcion, style = GType.bodyMd, color = GColors.TextSecondary)
                 val mejor = tusCarreras.minByOrNull { it.segundos }
-                com.gacelas.ui.components.TiraCifrasC2(listOf(
-                    com.gacelas.ui.components.DatoCifra(Unidades.texto(ruta.distanciaKm, m, 1), Unidades.etiquetaDistancia(m), "Distancia", GColors.C2Violeta),
-                    com.gacelas.ui.components.DatoCifra("+${ruta.elevacionM}", "m", "Desnivel", GColors.C2Cielo),
-                    com.gacelas.ui.components.DatoCifra(mejor?.let { com.gacelas.tracking.formatearMs(it.segundos) } ?: "--", "", "Tu mejor", GColors.C2Menta),
-                    com.gacelas.ui.components.DatoCifra("${if (sociales) maxOf(corredores.second, tusCarreras.size) else tusCarreras.size}", "", if (sociales) "Corredores" else "Carreras"),
-                ), tag = "cifras-ruta", tamano = 18)
+                Column(Modifier.fillMaxWidth().testTag("cifras-ruta"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        com.gacelas.ui.components.CeldaTablero("Distancia", Unidades.texto(ruta.distanciaKm, m, 1).replace('.', ','), Modifier.weight(1f), unidad = Unidades.etiquetaDistancia(m), color = GColors.C2Violeta, tamano = 26)
+                        com.gacelas.ui.components.CeldaTablero("Desnivel", "+${ruta.elevacionM}", Modifier.weight(1f), unidad = "m", color = GColors.C2Cielo, tamano = 26)
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        com.gacelas.ui.components.CeldaTablero("Tu mejor", mejor?.let { com.gacelas.tracking.formatearMs(it.segundos) } ?: "--", Modifier.weight(1f), color = GColors.C2Menta, tamano = 26)
+                        com.gacelas.ui.components.CeldaTablero(if (sociales) "Corredores" else "Tus carreras", "${if (sociales) maxOf(corredores.second, tusCarreras.size) else tusCarreras.size}", Modifier.weight(1f), tamano = 26)
+                    }
+                }
                 com.gacelas.seguridad.ui.TarjetaSeguridad(id)
                 if (ruta.perfilElevacion.size > 1) PerfilElevacion(ruta.perfilElevacion, ruta.distanciaKm)
                 if (ruta.etiquetas.isNotEmpty()) Text(ruta.etiquetas.joinToString("  ") { "#" + (ETIQUETAS_RUTA[it] ?: it) }, style = GType.labelLg, color = GColors.TextPrimary)

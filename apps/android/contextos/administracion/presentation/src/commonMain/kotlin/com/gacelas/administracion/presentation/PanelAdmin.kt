@@ -131,7 +131,7 @@ internal fun MarcoAdmin(
     scroll: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(Modifier.fillMaxSize().background(GColors.BgPrimary).testTag("panel-admin")) {
+    Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo).testTag("panel-admin")) {
         EncabezadoAtras(titulo, onAtras)
         Box(Modifier.weight(1f).navigationBarsPadding()) {
             Pantalla(scroll = scroll) { content() }
