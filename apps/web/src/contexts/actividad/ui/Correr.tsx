@@ -21,7 +21,8 @@ import { estaActiva } from '../domain/runTracker'
 type EstadoGps =
   { tipo: 'buscando' } | { tipo: 'listo'; precisionM: number } | { tipo: 'error'; mensaje: string }
 
-export function Correr() {
+/** `incrustado`: dentro del panel de preparar carrera en escritorio (sin pantalla completa ni cerrar). */
+export function Correr({ incrustado = false }: { incrustado?: boolean } = {}) {
   const navigate = useNavigate()
   const precisa = useIdentidad((s) => s.ajustes.ubicacionPrecisa)
   const [gps, setGps] = useState<EstadoGps>({ tipo: 'buscando' })
@@ -101,8 +102,12 @@ export function Correr() {
     )
 
   return (
-    <div className="w-full min-h-screen bg-surface flex flex-col">
-      <header className="px-margin py-4">
+    <div
+      className={
+        incrustado ? 'w-full flex flex-col' : 'w-full min-h-screen bg-surface flex flex-col'
+      }
+    >
+      <header className={incrustado ? 'hidden' : 'px-margin py-4'}>
         <button
           onClick={() => navigate('/inicio')}
           aria-label="Cerrar"
@@ -112,8 +117,14 @@ export function Correr() {
         </button>
       </header>
 
-      <main className="lg:w-full lg:max-w-5xl lg:mx-auto flex-1 flex flex-col items-center justify-center px-6 pb-24">
-        <div className="text-center mb-12">
+      <main
+        className={
+          incrustado
+            ? 'flex-1 flex flex-col items-center px-2 py-4'
+            : 'lg:w-full lg:max-w-5xl lg:mx-auto flex-1 flex flex-col items-center justify-center px-6 pb-24'
+        }
+      >
+        <div className={incrustado ? 'text-center mb-6' : 'text-center mb-12'}>
           <div className="w-24 h-24 rounded-full bg-primary-600/20 flex items-center justify-center mx-auto mb-6">
             <span className="material-symbols-outlined text-[64px] text-primary-500">
               directions_run
