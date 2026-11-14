@@ -9,7 +9,9 @@
 -- filas con updated_at (o created_at, en consentimientos) posterior, por paginas.
 -- La primera vez, tras cerrar sesion y en la recuperacion manual sigue siendo
 -- completa. Los DELETE no tienen fila que subir: el trigger los anota en
--- public.sync_borrados para que el otro dispositivo los quite.
+-- actividad.sync_borrados (vista public.sync_borrados) para que el otro
+-- dispositivo los quite. Vive en actividad, no en public: la prueba de 032
+-- exige contexto a cada tabla de public, y PostgREST sigue leyendo la vista.
 --
 -- activities, user_settings y profiles ya tenian updated_at. Aqui se agrega a
 -- las tablas que el arranque baja y que no lo tenian, con trigger e indice
@@ -35,29 +37,38 @@ GRANT EXECUTE ON FUNCTION public.sync_reloj() TO authenticated;
 -- Borrados que la sync incremental tiene que aplicar. user_id NULL es el
 -- catalogo compartido (events): lo ve cualquier sesion. El resto, solo el dueno.
 -- No hay politica de escritura: inserta el trigger (security definer).
-CREATE TABLE IF NOT EXISTS public.sync_borrados (
+CREATE TABLE IF NOT EXISTS actividad.sync_borrados (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   tabla TEXT NOT NULL,
   clave TEXT NOT NULL,
   deleted_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS sync_borrados_usuario_idx ON public.sync_borrados (user_id, deleted_at, id);
-CREATE INDEX IF NOT EXISTS sync_borrados_catalogo_idx ON public.sync_borrados (tabla, deleted_at, id) WHERE user_id IS NULL;
-ALTER TABLE public.sync_borrados ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON public.sync_borrados FROM PUBLIC, anon, authenticated;
-GRANT SELECT ON public.sync_borrados TO authenticated;
-DROP POLICY IF EXISTS "Ver mis borrados y los del catalogo" ON public.sync_borrados;
-CREATE POLICY "Ver mis borrados y los del catalogo" ON public.sync_borrados
+CREATE INDEX IF NOT EXISTS sync_borrados_usuario_idx ON actividad.sync_borrados (user_id, deleted_at, id);
+CREATE INDEX IF NOT EXISTS sync_borrados_catalogo_idx ON actividad.sync_borrados (tabla, deleted_at, id) WHERE user_id IS NULL;
+ALTER TABLE actividad.sync_borrados ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON actividad.sync_borrados FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON actividad.sync_borrados TO authenticated;
+DROP POLICY IF EXISTS "Ver mis borrados y los del catalogo" ON actividad.sync_borrados;
+CREATE POLICY "Ver mis borrados y los del catalogo" ON actividad.sync_borrados
   FOR SELECT TO authenticated
   USING (user_id = auth.uid() OR (user_id IS NULL AND tabla = 'events'));
 
 -- 043 recorre las tablas con RLS que ya existian. Esta se crea despues: sin el
 -- mismo trigger, la prueba de 043 falla (ON_ERROR_STOP) porque falta el bloqueo.
-DROP TRIGGER IF EXISTS aa_bloquear_suspendido ON public.sync_borrados;
+DROP TRIGGER IF EXISTS aa_bloquear_suspendido ON actividad.sync_borrados;
 CREATE TRIGGER aa_bloquear_suspendido
-  BEFORE INSERT OR UPDATE OR DELETE ON public.sync_borrados
+  BEFORE INSERT OR UPDATE OR DELETE ON actividad.sync_borrados
   FOR EACH ROW EXECUTE FUNCTION identidad.trg_bloquear_suspendido();
+
+CREATE OR REPLACE VIEW public.sync_borrados WITH (security_invoker = true) AS
+  SELECT * FROM actividad.sync_borrados;
+REVOKE ALL ON public.sync_borrados FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON public.sync_borrados TO authenticated;
+
+INSERT INTO kernel.propiedad_tablas (tabla, contexto, esquema_actual)
+  VALUES ('sync_borrados', 'actividad', 'actividad')
+  ON CONFLICT (tabla) DO UPDATE SET contexto = EXCLUDED.contexto, esquema_actual = EXCLUDED.esquema_actual;
 
 CREATE OR REPLACE FUNCTION public.sync_anotar_borrado() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
@@ -91,7 +102,7 @@ BEGIN
     ELSE
       RETURN OLD;
   END CASE;
-  INSERT INTO public.sync_borrados (user_id, tabla, clave) VALUES (dueno, TG_TABLE_NAME, clave);
+  INSERT INTO actividad.sync_borrados (user_id, tabla, clave) VALUES (dueno, TG_TABLE_NAME, clave);
   RETURN OLD;
 END $$;
 REVOKE ALL ON FUNCTION public.sync_anotar_borrado() FROM PUBLIC;

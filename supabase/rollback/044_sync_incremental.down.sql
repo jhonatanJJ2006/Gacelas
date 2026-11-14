@@ -52,8 +52,10 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.event_rsvps TO anon, authenticate
 
 DROP INDEX IF EXISTS legal.consents_sync_idx;
 
-DROP TRIGGER IF EXISTS aa_bloquear_suspendido ON public.sync_borrados;
-DROP TABLE IF EXISTS public.sync_borrados;
+DROP VIEW IF EXISTS public.sync_borrados;
+DROP TRIGGER IF EXISTS aa_bloquear_suspendido ON actividad.sync_borrados;
+DROP TABLE IF EXISTS actividad.sync_borrados;
+DELETE FROM kernel.propiedad_tablas WHERE tabla = 'sync_borrados';
 DROP FUNCTION IF EXISTS public.sync_anotar_borrado();
 DROP FUNCTION IF EXISTS public.sync_reloj();
 
