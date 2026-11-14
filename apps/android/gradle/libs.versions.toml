@@ -1,6 +1,6 @@
 [versions]
 lifecycleMultiplatform = "2.8.4"
-agp = "8.7.3"
+agp = "9.5.1"
 kotlin = "2.1.0"
 composeBom = "2024.12.01"
 navigation = "2.8.5"
