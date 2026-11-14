@@ -115,6 +115,30 @@ Durante un SOS la zona de casa no se oculta (es una emergencia). Las alertas sin
 
 Mientras `seguridad.incidentes_agregados` siga vacia, la web muestra el nivel y los reportes reales y nunca un puntaje de 0 a 100.
 
+## Metricas de carrera (046)
+
+`supabase/migrations/046_metricas_carrera.sql` deja de fiarse de la distancia, la duracion, el ritmo y el desnivel que manda el cliente. No cambia el orden de la subida (primero `activities`, despues `activity_tracks`) y no rechaza el INSERT.
+
+| Que                       | Regla                                                                                                                                                                                                                                     |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Distancia y duracion      | Se recalculan con PostGIS a partir de `activity_tracks.points` (`lat`/`lng` y `tiempoMs` o `t` en milisegundos). Un tramo a mas de 12 m/s no suma.                                                                                        |
+| Verificada                | Al menos 100 m filtrados, media de hasta 8 m/s si hay 200 m o mas (12 m/s por debajo) y duracion entre 1 s y 36 h. El tope es el mismo para bici y para el resto: el tipo lo elige el cliente.                                            |
+| Si no hay track           | La fila se guarda con las cifras del cliente y `verificada` en false. `reporte_personal` las sigue viendo. Las apps, al bajar la fila, las leen como 0 km para que no sumen en retos ni rankings. Lo enviado queda en `metricas_cliente`. |
+| Si el track no es creible | Distancia, duracion y desnivel quedan en 0 y `verificada` en false.                                                                                                                                                                       |
+| Quien filtra              | El feed (cifras y `autor_km`), `km_grupos`, las rachas y los logros (`user_achievements`). Las apps, al leer la fila, no suman una carrera con `verificada` en false.                                                                     |
+| Historicas                | Las que ya tienen track se recalculan. Las de demostracion (`demo-%` / `da000000-%`) reconstruyen el track desde `public_points`. El resto queda no verificado y no entra en rankings ni en logros; la cifra original se conserva.        |
+| Logros                    | `primera_carrera`, `km_5` y `km_10` exigen una carrera verificada de esa distancia. `racha_7` exige la racha calculada solo con carreras verificadas.                                                                                     |
+
+Las calorias no estan en la tabla: la app las estima con los km ya corregidos. Los parciales (`splits`) se guardan como los mando el cliente.
+
+Aplicar una sola vez, con el token de `backend/.env`:
+
+```bash
+scripts/sb-query.sh supabase/migrations/046_metricas_carrera.sql
+```
+
+Para revertir: `scripts/sb-query.sh supabase/rollback/046_metricas_carrera.down.sql`.
+
 ## Variables de entorno
 
 | Archivo                         | Variable                                                                                        | Uso                                                                                       |
