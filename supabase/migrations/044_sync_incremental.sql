@@ -52,6 +52,13 @@ CREATE POLICY "Ver mis borrados y los del catalogo" ON public.sync_borrados
   FOR SELECT TO authenticated
   USING (user_id = auth.uid() OR (user_id IS NULL AND tabla = 'events'));
 
+-- 043 recorre las tablas con RLS que ya existian. Esta se crea despues: sin el
+-- mismo trigger, la prueba de 043 falla (ON_ERROR_STOP) porque falta el bloqueo.
+DROP TRIGGER IF EXISTS aa_bloquear_suspendido ON public.sync_borrados;
+CREATE TRIGGER aa_bloquear_suspendido
+  BEFORE INSERT OR UPDATE OR DELETE ON public.sync_borrados
+  FOR EACH ROW EXECUTE FUNCTION identidad.trg_bloquear_suspendido();
+
 CREATE OR REPLACE FUNCTION public.sync_anotar_borrado() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE

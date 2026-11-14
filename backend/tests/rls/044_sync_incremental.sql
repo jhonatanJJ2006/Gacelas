@@ -12,6 +12,10 @@ ON CONFLICT DO NOTHING;
 DO $$
 BEGIN
   IF to_regclass('public.sync_borrados') IS NULL THEN RAISE EXCEPTION 'falta sync_borrados'; END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_trigger t
+    WHERE t.tgrelid = 'public.sync_borrados'::regclass AND t.tgname = 'aa_bloquear_suspendido' AND NOT t.tgisinternal
+  ) THEN RAISE EXCEPTION 'sync_borrados sin el trigger de suspension de 043'; END IF;
   IF public.sync_reloj() IS NULL THEN RAISE EXCEPTION 'sync_reloj no responde'; END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'activities_sync_idx') THEN
     RAISE EXCEPTION 'falta activities_sync_idx';
