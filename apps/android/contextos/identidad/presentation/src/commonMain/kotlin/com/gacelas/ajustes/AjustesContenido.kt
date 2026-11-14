@@ -123,6 +123,8 @@ fun AjustesContenido(
     onLegal: ((terminos: Boolean) -> Unit)? = null,
     // Solo llega con valor si el servidor confirmo rol admin o moderador (docs/ADMIN.md).
     onAdmin: (() -> Unit)? = null,
+    /** Vuelve a bajar todo el historial. Null lo oculta (pantallas que no tienen servidor). */
+    onRecuperarDatos: (() -> Unit)? = null,
 ) {
     var dialogo by remember { mutableStateOf<String?>(null) }
     PantallaConEncabezado("Ajustes", onAtras) {
@@ -226,6 +228,14 @@ fun AjustesContenido(
             FilaAjuste(Icons.Filled.Person, "Editar perfil", onClick = onEditarPerfil)
             FilaAjuste(Icons.Filled.Lock, "Privacidad y ubicación", onClick = onPrivacidad)
             FilaAjuste(Icons.Filled.Notifications, "Notificaciones", onClick = onNotificaciones)
+            if (onRecuperarDatos != null) {
+                Box(Modifier.testTag("recuperar-datos")) {
+                    FilaAjuste(
+                        Icons.Filled.Download, "Volver a descargar mis datos",
+                        "Trae de nuevo el historial si falta algo", onClick = onRecuperarDatos,
+                    )
+                }
+            }
             FilaAjuste(Icons.Filled.Info, "Acerca de", version, onClick = { dialogo = "acerca" })
             FilaAjuste(Icons.AutoMirrored.Filled.Help, "Ayuda y soporte", onClick = { dialogo = "ayuda" })
             if (onLegal != null) {

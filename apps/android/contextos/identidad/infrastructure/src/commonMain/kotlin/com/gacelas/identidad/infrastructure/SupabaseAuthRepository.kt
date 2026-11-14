@@ -41,6 +41,8 @@ class SupabaseAuthRepository(
     private val backend: Backend,
     store: DataStore<Preferences>,
     private val alEntrar: suspend (String) -> Unit = {},
+    /** Cierre real de sesion (el servidor dijo que no hay sesion, o la persona salio). */
+    private val alSalir: suspend () -> Unit = {},
 ) : AuthRepository {
     private val valor = ValorJson(store, "sesion_remota", SesionRemota.serializer().nullable, null)
     override val sesion: Flow<Perfil?> = kotlinx.coroutines.flow.flow { valor.flujo.collect { emit(it?.perfil) } }
@@ -60,7 +62,10 @@ class SupabaseAuthRepository(
         val u = runCatching { backend.usuarioActual() }.getOrNull()
         if (u == null) {
             // Sin red se mantiene la sesion en cache; si el servidor dice que no hay sesion, se cierra.
-            if (runCatching { backend.usuarioActual() }.isSuccess) valor.actualizar { null }
+            if (runCatching { backend.usuarioActual() }.isSuccess) {
+                valor.actualizar { null }
+                alSalir()
+            }
         } else abrir(u)
     }
 
@@ -132,5 +137,6 @@ class SupabaseAuthRepository(
     override suspend fun cerrarSesion() {
         runCatching { backend.salir() }
         valor.actualizar { null }
+        alSalir()
     }
 }

@@ -325,6 +325,7 @@ private fun AjustesIos(onAtras: () -> Unit, onCerrarSesion: () -> Unit, onAdmin:
             }
         },
         onCerrarSesion = { scope.launch { com.gacelas.acceso.SesionIos.auth.cerrarSesion(); onCerrarSesion() } },
+        onRecuperarDatos = { scope.launch { com.gacelas.acceso.SesionIos.contenedor.recuperarDatos() } },
         // Igual que MapaOfflineAjuste en Android: estado real de la descarga de Loja.
         mapaOffline = {
             val estado by com.gacelas.mapa.MapaOfflineIos.estado.collectAsState()

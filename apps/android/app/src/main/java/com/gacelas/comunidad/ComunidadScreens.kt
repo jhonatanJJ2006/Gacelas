@@ -106,7 +106,7 @@ fun EventosScreen(onEvento: (String) -> Unit, onClubes: () -> Unit = {}) {
     // Esqueleto mientras se leen los eventos de la base al abrir (solo con servidor y lista vacia).
     var leyendo by remember { mutableStateOf(c.feed != null) }
     androidx.compose.runtime.LaunchedEffect(Unit) {
-        runCatching { (c.eventos as? com.gacelas.comunidad.infrastructure.SupabaseEventosRepository)?.descargar() }
+        runCatching { c.sincronizarDatos() }
         leyendo = false
     }
     EventosContenido(vm, eventos, inscritos, conClubes = c.clubes != null, clubId = clubId, onEvento = onEvento, onClubes = onClubes, onAviso = { context.aviso(it) }, cargando = leyendo)
