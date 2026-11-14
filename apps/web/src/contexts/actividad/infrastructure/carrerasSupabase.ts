@@ -14,8 +14,7 @@ type Fila = Record<string, unknown>
 import { usuario } from '../../../shared/supabase/sesion'
 
 export type OperacionPendiente =
-  | { tipo: 'guardar'; carrera: CarreraGuardada }
-  | { tipo: 'eliminar'; id: string }
+  { tipo: 'guardar'; carrera: CarreraGuardada } | { tipo: 'eliminar'; id: string }
 
 const CLAVE_COLA = 'carreras-pendientes'
 

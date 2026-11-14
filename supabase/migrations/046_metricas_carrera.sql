@@ -332,6 +332,8 @@ AS $$
 DECLARE
   carrera uuid := COALESCE(NEW.activity_id, OLD.activity_id);
 BEGIN
+  -- updated_at es la marca de la sync incremental (044). Hay que tocarla para que
+  -- el otro dispositivo baje la distancia ya verificada y no se quede con la inflada.
   PERFORM set_config('actividad.forzar_verificacion', '1', true);
   UPDATE public.activities SET updated_at = now() WHERE id = carrera;
   PERFORM set_config('actividad.forzar_verificacion', '0', true);

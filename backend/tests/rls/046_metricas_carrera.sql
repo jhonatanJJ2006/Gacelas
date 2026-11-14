@@ -13,6 +13,17 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'falta el trigger de verificacion en activities';
   END IF;
+  -- 044 deja update_activities_updated_at. El orden alfabetico hace que la suspension
+  -- corte antes y que la marca de la sync se escriba junto con las cifras verificadas.
+  IF (
+    SELECT string_agg(t.tgname, '>' ORDER BY t.tgname)
+    FROM pg_trigger t
+    JOIN pg_class c ON c.oid = t.tgrelid
+    WHERE c.relname = 'activities' AND NOT t.tgisinternal
+      AND t.tgname IN ('aa_bloquear_suspendido', 'update_activities_updated_at', 'zz_verificar_carrera')
+  ) IS DISTINCT FROM 'aa_bloquear_suspendido>update_activities_updated_at>zz_verificar_carrera' THEN
+    RAISE EXCEPTION 'orden de triggers de activities inesperado';
+  END IF;
   IF NOT EXISTS (
     SELECT 1 FROM pg_trigger t
     JOIN pg_class c ON c.oid = t.tgrelid
@@ -245,7 +256,41 @@ BEGIN
   END IF;
 END $$;
 
+-- La sync incremental (044) baja activities con updated_at posterior a la marca.
+-- Si el recalculo no mueve esa marca, el otro dispositivo se queda con el km inflado.
+RESET ROLE;
+ALTER TABLE public.activities DISABLE TRIGGER update_activities_updated_at;
+UPDATE public.activities SET updated_at = now() - interval '1 day' WHERE client_id = 'cli-046';
+ALTER TABLE public.activities ENABLE TRIGGER update_activities_updated_at;
+UPDATE public.activity_tracks SET points = points
+WHERE activity_id = (SELECT id FROM public.activities WHERE client_id = 'cli-046');
+
+DO $$
+DECLARE marca timestamptz; m integer; v boolean;
+BEGIN
+  SELECT updated_at, distance_meters, verificada INTO marca, m, v
+  FROM public.activities WHERE client_id = 'cli-046';
+  IF NOT v OR m < 5000 OR m > 6200 THEN
+    RAISE EXCEPTION 'el recalculo perdio la distancia verificada: % %', v, m;
+  END IF;
+  IF marca <= now() - interval '12 hours' THEN
+    RAISE EXCEPTION 'el recalculo no movio updated_at (%): la sync no bajaria las cifras', marca;
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM public.activities
+    WHERE client_id = 'cli-046'
+      AND updated_at > now() - interval '12 hours'
+      AND verificada
+      AND distance_meters > 5000
+  ) THEN
+    RAISE EXCEPTION 'una sync posterior a la marca no veria la carrera verificada';
+  END IF;
+END $$;
+
 -- Un like no debe borrar la verificacion.
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000046a1', true);
+SELECT set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000046a1","role":"authenticated"}', true);
 UPDATE public.activities SET likes_count = likes_count + 1 WHERE client_id = 'cli-046' AND user_id = auth.uid();
 
 DO $$

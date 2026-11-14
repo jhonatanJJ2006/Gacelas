@@ -84,6 +84,19 @@ class SyncIncrementalTest {
         assertEquals(listOf("b" to 2, "c" to 1), fusionarFilas(local, { it.first }, cambios, emptyList(), completa = true))
     }
 
+    @Test fun laSyncReemplazaElKmLocalPorElVerificado() {
+        val local = listOf(carrera("a").copy(distanciaKm = 100.0, segundos = 3600))
+        val verificada = carrera("a").copy(distanciaKm = 5.5, segundos = 1650)
+        val r = fusionarCarreras(
+            local,
+            listOf(CambioCarrera(verificada, marcaMs = 100, traePuntos = false)),
+            emptyMap(), emptyList(), completa = false, emptyList(), emptySet(),
+        )
+        assertEquals(5.5, r.first().distanciaKm)
+        assertEquals(1650, r.first().segundos)
+        assertEquals(listOf<PuntoGps>(), r.first().puntos)
+    }
+
     @Test fun carrerasQuietasConservanPuntosYLosPendientesGanan() {
         val local = listOf(carrera("vieja", listOf(punto(1))), carrera("cambia", listOf(punto(2))))
         val cambios = listOf(CambioCarrera(carrera("cambia", emptyList(), inicio = 2_000), marcaMs = 50, traePuntos = false))
