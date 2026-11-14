@@ -15,6 +15,7 @@ import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
+import com.gacelas.data.sync.ConsultaPagina
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.JsonObject
 
@@ -41,6 +42,12 @@ interface Backend {
     suspend fun salir()
 
     suspend fun select(tabla: String, filtros: Map<String, String>, ordenarPor: String? = null, descendente: Boolean = false): List<JsonObject>
+
+    /**
+     * Una pagina ordenada por (marca, clave). Sin marca trae desde el principio;
+     * con marca y clave, las filas estrictamente posteriores (no se salta empates).
+     */
+    suspend fun selectPagina(consulta: ConsultaPagina): List<JsonObject>
     suspend fun insert(tabla: String, filas: List<JsonObject>)
     suspend fun upsert(tabla: String, filas: List<JsonObject>, onConflict: String): List<JsonObject>
     suspend fun update(tabla: String, valores: JsonObject, filtros: Map<String, String>)
@@ -140,6 +147,31 @@ class SupabaseBackend(url: String, clave: String) : Backend {
         cliente.from(tabla).select {
             filter { filtros.forEach { (k, v) -> eq(k, v) } }
             if (ordenarPor != null) order(ordenarPor, if (descendente) Order.DESCENDING else Order.ASCENDING)
+        }.decodeList<JsonObject>()
+    }
+
+    override suspend fun selectPagina(consulta: ConsultaPagina) = remoto {
+        cliente.from(consulta.tabla).select {
+            filter {
+                consulta.igual.forEach { (k, v) -> eq(k, v) }
+                consulta.nulos.forEach { exact(it, null) }
+                val marca = consulta.marcaExclusiva
+                val clave = consulta.claveExclusiva
+                if (marca != null && clave != null) {
+                    or {
+                        gt(consulta.columnaMarca, marca)
+                        and {
+                            eq(consulta.columnaMarca, marca)
+                            gt(consulta.columnaClave, clave)
+                        }
+                    }
+                } else if (marca != null) {
+                    gt(consulta.columnaMarca, marca)
+                }
+            }
+            order(consulta.columnaMarca, Order.ASCENDING)
+            order(consulta.columnaClave, Order.ASCENDING)
+            limit(consulta.limite.toLong())
         }.decodeList<JsonObject>()
     }
 

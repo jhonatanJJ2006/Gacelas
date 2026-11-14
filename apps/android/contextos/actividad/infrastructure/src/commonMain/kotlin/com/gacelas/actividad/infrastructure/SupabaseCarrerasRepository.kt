@@ -10,6 +10,14 @@ import com.gacelas.data.ValorJson
 import com.gacelas.data.jsonGacelas
 import com.gacelas.data.remoto.Backend
 import com.gacelas.data.remoto.FechaIso
+import com.gacelas.data.sync.BorradoSync
+import com.gacelas.data.sync.CambioCarrera
+import com.gacelas.data.sync.ConsultaPagina
+import com.gacelas.data.sync.PAGINA_RECORRIDOS
+import com.gacelas.data.sync.bajarTodo
+import com.gacelas.data.sync.borradosDe
+import com.gacelas.data.sync.fusionarCarreras
+import com.gacelas.data.sync.marcaMs
 import com.gacelas.data.remoto.entero
 import com.gacelas.data.remoto.logico
 import com.gacelas.data.remoto.numero
@@ -98,22 +106,56 @@ class SupabaseCarrerasRepository(
         return ops.size - hechas
     }
 
-    /** Descarga las carreras del servidor y las une con las pendientes. */
-    suspend fun descargar() {
-        val uid = userId() ?: return
+    /**
+     * Baja las carreras. Sin [desde] es completa (paginada). Con marca, solo lo posterior,
+     * y [borrados] quita lo que ya no esta en el servidor. False si la red fallo: no se toca la cache.
+     */
+    suspend fun descargar(desde: String? = null, borrados: List<BorradoSync> = emptyList()): Boolean {
+        val uid = userId() ?: return false
         sincronizar()
-        val filas = runCatching { backend.select("activities", mapOf("user_id" to uid), "start_time", descendente = true) }.getOrNull() ?: return
-        val tracks = runCatching { backend.select("activity_tracks", mapOf("user_id" to uid)) }.getOrDefault(emptyList())
-        val puntos = tracks.associate { t ->
-            t.texto("activity_id").orEmpty() to (t["points"]?.let { runCatching { jsonGacelas.decodeFromJsonElement(ListSerializer(PuntoGps.serializer()), it) }.getOrNull() } ?: emptyList())
+        val completa = desde == null
+        val actividades = runCatching {
+            bajarTodo(backend::selectPagina, ConsultaPagina("activities", mapOf("user_id" to uid), marcaExclusiva = desde, columnaClave = "id"))
+        }.getOrElse { return false }
+        val tracks = runCatching {
+            bajarTodo(backend::selectPagina, ConsultaPagina(
+                "activity_tracks", mapOf("user_id" to uid), marcaExclusiva = desde,
+                columnaClave = "activity_id", limite = PAGINA_RECORRIDOS,
+            ))
+        }.getOrElse { return false }
+        val idACliente = actividades.associate { (it.texto("id") ?: "") to idCliente(it) }.toMutableMap()
+        val puntos = mutableMapOf<String, List<PuntoGps>>()
+        for (t in tracks) {
+            val aid = t.texto("activity_id") ?: continue
+            val cid = idACliente[aid] ?: clientIdDe(aid)?.also { idACliente[aid] = it } ?: continue
+            puntos[cid] = puntosDe(t)
         }
-        val remotas = filas.map { carreraDesdeFila(it, puntos[it.texto("id")] ?: emptyList()) }
+        val cambios = actividades.map { f ->
+            val id = idCliente(f)
+            val trae = id in puntos
+            CambioCarrera(carreraDesdeFila(f, if (trae) puntos.getValue(id) else emptyList()), marcaMs(f), trae)
+        }
+        val sueltos = puntos.filterKeys { id -> cambios.none { it.carrera.id == id } }
+        val bajasTrack = if (completa) emptyList() else borradosDe(borrados, "activity_tracks")
         val ops = cola.flujo.first()
-        val nuevas = ops.mapNotNull { it.carrera }
-        val borradas = ops.filter { it.tipo == "eliminar" }.mapNotNull { it.id }.toSet()
-        cache.actualizar {
-            (nuevas + remotas.filter { r -> nuevas.none { it.id == r.id } }).filterNot { it.id in borradas }.sortedByDescending { it.inicioMs }
+        cache.actualizar { local ->
+            fusionarCarreras(
+                local, cambios, sueltos + bajasTrack.associate { it.clave to emptyList() },
+                if (completa) emptyList() else borradosDe(borrados, "activities"),
+                completa, ops.mapNotNull { it.carrera }, ops.filter { it.tipo == "eliminar" }.mapNotNull { it.id }.toSet(),
+            )
         }
+        return true
+    }
+
+    private fun idCliente(f: JsonObject) = f.texto("client_id") ?: f.texto("id").orEmpty()
+
+    private fun puntosDe(t: JsonObject) =
+        t["points"]?.let { runCatching { jsonGacelas.decodeFromJsonElement(ListSerializer(PuntoGps.serializer()), it) }.getOrNull() } ?: emptyList()
+
+    private suspend fun clientIdDe(activityId: String): String? {
+        val f = runCatching { backend.select("activities", mapOf("id" to activityId)).firstOrNull() }.getOrNull() ?: return null
+        return idCliente(f).ifEmpty { null }
     }
 
     override suspend fun guardar(carrera: Carrera) {

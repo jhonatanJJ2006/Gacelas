@@ -31,6 +31,13 @@ import com.gacelas.identidad.presentation.RecuperarViewModel
 import com.gacelas.identidad.presentation.RegistroViewModel
 import com.gacelas.data.actualizacion.ActualizacionRepository
 import com.gacelas.data.remoto.Backend
+import com.gacelas.data.sync.MarcaSync
+import com.gacelas.data.sync.MarcasSync
+import com.gacelas.data.sync.ModoDescarga
+import com.gacelas.data.sync.leerBorrados
+import com.gacelas.data.sync.leerReloj
+import com.gacelas.data.sync.marcaSiguiente
+import com.gacelas.data.sync.modoDescarga
 import com.gacelas.rutas.domain.repositorio.ExplorarRepository
 import com.gacelas.rutas.infrastructure.LocalRutasRepository
 import com.gacelas.rutas.infrastructure.RutasOffline
@@ -50,7 +57,8 @@ import com.gacelas.rutas.presentation.ListaRutasViewModel
  * pantallas no construyen dependencias por su cuenta.
  *
  * @param descargarAlEntrar si es true, al iniciar sesion en Supabase se descargan carreras,
- * rutas, ajustes y eventos (Android). iOS todavia no lo hace.
+ * rutas, ajustes y eventos. La primera vez es completa; los arranques siguientes solo piden
+ * lo que cambio desde la ultima sync. iOS todavia no lo hace al arrancar.
  */
 class ContenedorApp(
     val store: DataStore<Preferences>,
@@ -105,8 +113,17 @@ class ContenedorApp(
     /** Panel de administracion (mismas RPC que la web); null sin servidor. El servidor valida el rol. */
     val admin: com.gacelas.administracion.domain.AdminRepositorio?
 
-    /** Descarga los datos de la cuenta y sube lo pendiente. No hace nada sin servidor. */
+    /** Confirma la sesion y baja lo que cambio desde la ultima sync. No hace nada sin servidor. */
     val sincronizar: suspend () -> Unit
+
+    /** Igual que el arranque, sin volver a preguntar la sesion. Lo usa la pantalla de eventos. */
+    val sincronizarDatos: suspend () -> Boolean
+
+    /**
+     * Vuelve a bajar todo el historial. Es la recuperacion manual: tambien corre la primera
+     * vez y despues de cerrar sesion, porque ahi no hay marca.
+     */
+    val recuperarDatos: suspend () -> Boolean
 
     /** Ruta sugerida para hoy (migracion 035); sin servidor solo usa la cache local. */
     val rutaSugerida = com.gacelas.rutas.infrastructure.RutaSugeridaRepository(backend, store)
@@ -136,6 +153,8 @@ class ContenedorApp(
             ajustes = LocalAjustesRepository(store)
             eventos = ModuloComunidad.eventosLocal(store)
             sincronizar = {}
+            sincronizarDatos = { false }
+            recuperarDatos = { false }
             subirPendientes = { 0 }
             carrerasPendientes = kotlinx.coroutines.flow.flowOf(emptySet())
             enVivo = null
@@ -157,14 +176,33 @@ class ContenedorApp(
             val a = SupabaseAjustesRepository(backend, store, uid)
             val e = ModuloComunidad.eventosRemoto(backend, store, uid)
             val cons = com.gacelas.legal.ConsentimientosRepository(store, backend, uid)
-            val descargarTodo: suspend () -> Unit = { c.descargar(); r.descargar(); a.descargar(); e.descargar(); runCatching { cons.sincronizar() } }
-            remotoAuth = if (descargarAlEntrar) SupabaseAuthRepository(backend, store) { descargarTodo() } else SupabaseAuthRepository(backend, store)
+            val marcas = MarcasSync(store)
+            val descargarTodo: suspend (Boolean) -> Boolean = descargarTodo@{ forzar ->
+                val id = remotoAuth.userId() ?: return@descargarTodo false
+                val previa = marcas.leer()
+                val completa = modoDescarga(previa, id, forzar) == ModoDescarga.COMPLETA
+                val desde = if (completa) null else previa?.marca
+                val borrados = if (desde == null) emptyList() else leerBorrados(backend, id, desde) ?: return@descargarTodo false
+                val ok = c.descargar(desde, borrados) && r.descargar(desde, borrados) && a.descargar(desde, borrados) &&
+                    e.descargar(desde, borrados) && cons.sincronizar(desde)
+                if (!ok) return@descargarTodo false
+                val marca = marcaSiguiente(leerReloj(backend))
+                if (marca != null) marcas.guardar(MarcaSync(id, marca))
+                true
+            }
+            remotoAuth = if (descargarAlEntrar) {
+                SupabaseAuthRepository(backend, store, alEntrar = { descargarTodo(false) }, alSalir = { marcas.borrar() })
+            } else {
+                SupabaseAuthRepository(backend, store, alSalir = { marcas.borrar() })
+            }
             auth = remotoAuth
             carreras = c
             rutas = r
             ajustes = a
             eventos = e
             sincronizar = { remotoAuth.restaurar() }
+            sincronizarDatos = { descargarTodo(false) }
+            recuperarDatos = { marcas.borrar(); descargarTodo(true) }
             enVivo = ModuloComunidad.enVivo(backend, uid)
             mapaVivo = com.gacelas.vivo.MapaVivoRepository(backend, uid)
             incidentes = com.gacelas.seguridad.infrastructure.SupabaseIncidentesRepositorio(backend)

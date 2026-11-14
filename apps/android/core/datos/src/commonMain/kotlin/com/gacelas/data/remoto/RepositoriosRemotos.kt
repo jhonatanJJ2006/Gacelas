@@ -41,8 +41,9 @@ import kotlinx.serialization.json.put
 
 /*
  * Repositorios con Supabase. La interfaz usa siempre la copia local (DataStore) como cache:
- * se escribe primero en el telefono y luego en el servidor; al abrir sesion se descarga todo.
- * Las carreras sin conexion quedan en una cola y se suben al volver la red.
+ * se escribe primero en el telefono y luego en el servidor. Al arrancar solo se baja lo
+ * posterior a la ultima sync (ver com.gacelas.data.sync); la primera vez, al cerrar sesion
+ * o en la recuperacion manual se baja completo. Las carreras sin conexion quedan en una cola.
  */
 
 fun JsonObject.texto(k: String): String? = (this[k] as? JsonPrimitive)?.takeUnless { it is JsonNull }?.contentOrNull
