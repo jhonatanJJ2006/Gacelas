@@ -83,7 +83,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
         }
         iosMain.dependencies {
-            implementation("com.squareup.okio:okio:3.9.1")
+            implementation("com.squareup.okio:okio:3.18.2")
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
