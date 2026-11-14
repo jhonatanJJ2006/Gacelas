@@ -662,7 +662,7 @@ Descripción clara de la feature.
 
 - **GitHub Issues**: Para bugs y features
 - **GitHub Discussions**: Para preguntas y discusiones generales
-- **Email**: jhonatan.jara@ejemplo.com (para privacidad/seguridad)
+- **Vulnerabilidades**: [SECURITY.md](../SECURITY.md). No abras un issue público.
 
 ## Licencia
 

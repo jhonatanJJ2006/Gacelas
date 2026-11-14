@@ -1,0 +1,56 @@
+# Actualizaciones de dependencias. Los pull requests empiezan cuando este
+# archivo está en main. Dependabot alerts y las security updates se activan
+# en Settings, Code security: no las enciende este archivo.
+version: 2
+updates:
+  # Android y Kotlin Multiplatform. El catálogo gradle/libs.versions.toml
+  # también alimenta el included build apps/android/build-logic.
+  - package-ecosystem: gradle
+    directory: /apps/android
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: America/Guayaquil
+    open-pull-requests-limit: 5
+    groups:
+      menores-y-parches:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+
+  # Workspace de pnpm (pnpm-lock.yaml en la raíz): apps/*, packages/* y backend.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: America/Guayaquil
+    open-pull-requests-limit: 5
+    groups:
+      menores-y-parches:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+
+  # Actions usadas en .github/workflows.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: America/Guayaquil
+    open-pull-requests-limit: 5
+    groups:
+      menores-y-parches:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
