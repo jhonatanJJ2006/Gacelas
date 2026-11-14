@@ -22,5 +22,9 @@ class DatosRemotoTest {
         assertIs<Aviso.Nueva>(ReglasActualizacion.aviso(609, info, null))
         assertTrue(ReglasActualizacion.sinCache("https://a/b.json", 5).contains("t=5"))
         assertEquals("Sin conexión con el servidor", traducirError("timeout"))
+        assertEquals(
+            "Tu cuenta está suspendida. No puedes publicar ni modificar datos.",
+            traducirError("cuenta suspendida"),
+        )
     }
 }
