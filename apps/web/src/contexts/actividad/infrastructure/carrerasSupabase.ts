@@ -40,9 +40,11 @@ export function carreraDesdeFila(fila: Fila, puntos: CarreraGuardada['puntos']):
     nota: (fila.description as string) ?? '',
     publica: Boolean(fila.is_public),
     inicioMs: Date.parse(fila.start_time as string),
-    segundos: Number(fila.duration_seconds ?? 0),
-    distanciaKm: Number(fila.distance_meters ?? 0) / 1000,
-    desnivelM: Number(fila.elevation_gain_meters ?? 0),
+    // Sin el campo (servidor anterior) la carrera cuenta. Si el servidor la marco
+    // como no verificada, no suma en retos ni rankings: la cifra no esta comprobada.
+    segundos: fila.verificada === false ? 0 : Number(fila.duration_seconds ?? 0),
+    distanciaKm: fila.verificada === false ? 0 : Number(fila.distance_meters ?? 0) / 1000,
+    desnivelM: fila.verificada === false ? 0 : Number(fila.elevation_gain_meters ?? 0),
     parciales: (fila.splits as CarreraGuardada['parciales']) ?? [],
     puntos,
   }

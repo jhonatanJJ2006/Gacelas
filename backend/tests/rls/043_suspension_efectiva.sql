@@ -206,6 +206,14 @@ SELECT set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000043b1
 SELECT set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000043b1","role":"authenticated"}', true);
 INSERT INTO public.activities (id, user_id, title, start_time, is_public)
   VALUES ('00000000-0000-0000-0000-0000000043bb', auth.uid(), 'Carrera de B', now(), true);
+-- 046 solo deja desbloquear un logro si hay una carrera verificada.
+INSERT INTO public.activity_tracks (activity_id, user_id, points)
+SELECT '00000000-0000-0000-0000-0000000043bb', auth.uid(), (
+  SELECT jsonb_agg(jsonb_build_object(
+    'lat', -4.0 - i * 0.0009, 'lng', -79.2,
+    'tiempoMs', (extract(epoch FROM now()) * 1000 + i * 30000)
+  ) ORDER BY i) FROM generate_series(0, 8) AS i
+);
 INSERT INTO public.post_comments (user_id, post_id, body)
   VALUES (auth.uid(), '00000000-0000-0000-0000-0000000043bb', 'va bien');
 INSERT INTO public.post_likes (user_id, post_id)
@@ -226,7 +234,8 @@ INSERT INTO public.events (id, title, date_label, time_label, location, created_
 INSERT INTO public.event_rsvps (event_id, user_id) VALUES ('evt-043-b', auth.uid());
 INSERT INTO public.content_reports (target_type, target_id, reporter_id, reason)
   VALUES ('usuario', '00000000-0000-0000-0000-0000000043a1', auth.uid(), 'spam');
-INSERT INTO public.user_achievements (user_id, code) VALUES (auth.uid(), 'primera_carrera');
+INSERT INTO public.user_achievements (user_id, code) VALUES (auth.uid(), 'primera_carrera')
+ON CONFLICT DO NOTHING;
 INSERT INTO public.consents (user_id, kind, version, granted)
   VALUES (auth.uid(), 'ubicacion_visible', '2026-10-25', true);
 UPDATE public.user_settings SET hide_home = false WHERE user_id = auth.uid();

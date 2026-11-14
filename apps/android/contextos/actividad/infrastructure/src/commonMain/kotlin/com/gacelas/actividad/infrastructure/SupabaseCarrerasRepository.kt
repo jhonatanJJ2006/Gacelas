@@ -57,9 +57,11 @@ fun carreraDesdeFila(f: JsonObject, puntos: List<PuntoGps>): Carrera = Carrera(
     nota = f.texto("description").orEmpty(),
     publica = f.logico("is_public") ?: false,
     inicioMs = f.texto("start_time")?.let(FechaIso::leer) ?: 0L,
-    segundos = f.entero("duration_seconds") ?: 0,
-    distanciaKm = (f.numero("distance_meters") ?: 0.0) / 1000.0,
-    desnivelM = f.entero("elevation_gain_meters") ?: 0,
+    // Sin el campo (servidor anterior) la carrera cuenta. Si el servidor la marco
+    // como no verificada, no suma en retos ni rankings.
+    segundos = if (f.logico("verificada") == false) 0 else f.entero("duration_seconds") ?: 0,
+    distanciaKm = if (f.logico("verificada") == false) 0.0 else (f.numero("distance_meters") ?: 0.0) / 1000.0,
+    desnivelM = if (f.logico("verificada") == false) 0 else f.entero("elevation_gain_meters") ?: 0,
     parciales = f["splits"]?.let { runCatching { jsonGacelas.decodeFromJsonElement(ListSerializer(Parcial.serializer()), it) }.getOrNull() } ?: emptyList(),
     puntos = puntos,
 )
