@@ -3,6 +3,11 @@ package com.gacelas
 import com.gacelas.data.remoto.Backend
 import com.gacelas.data.remoto.ErrorRemoto
 import com.gacelas.data.remoto.UsuarioRemoto
+import com.gacelas.data.sync.ConsultaPagina
+import com.gacelas.data.sync.comparaClave
+import com.gacelas.data.sync.comparaMarca
+import com.gacelas.data.sync.esPosterior
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
@@ -34,7 +39,9 @@ class FakeBackend : Backend {
         val id = "u-${++n}"
         usuarios += Triple(id, email, password)
         tabla("profiles") += JsonObject(mapOf("id" to JsonPrimitive(id), "email" to JsonPrimitive(email), "full_name" to JsonPrimitive(nombre ?: email)))
-        tabla("user_settings") += JsonObject(mapOf("user_id" to JsonPrimitive(id), "visibility" to JsonPrimitive("followers")))
+        tabla("user_settings") += JsonObject(mapOf(
+            "user_id" to JsonPrimitive(id), "visibility" to JsonPrimitive("followers"), "updated_at" to JsonPrimitive(ahoraIso),
+        ))
         return UsuarioRemoto(id, email)
     }
 
@@ -72,9 +79,31 @@ class FakeBackend : Backend {
         return if (ordenarPor == null) filas else filas.sortedBy { it.valor(ordenarPor) }.let { if (descendente) it.reversed() else it }
     }
 
+    /** Paginas pedidas por la sync y cuantas filas devolvio cada tabla (se reinicia en las pruebas). */
+    val consultas = mutableListOf<ConsultaPagina>()
+    val filasLeidas = mutableMapOf<String, Int>()
+    fun reiniciarLecturas() { consultas.clear(); filasLeidas.clear() }
+
+    override suspend fun selectPagina(consulta: ConsultaPagina): List<JsonObject> {
+        red()
+        consultas += consulta
+        val filas = tabla(consulta.tabla).filter { f ->
+            consulta.igual.all { (k, v) -> f.valor(k) == v } &&
+                consulta.nulos.all { f.valor(it) == null } &&
+                esPosterior(f.valor(consulta.columnaMarca), f.valor(consulta.columnaClave), consulta.marcaExclusiva, consulta.claveExclusiva)
+        }.sortedWith { a, b ->
+            val c = comparaMarca(a.valor(consulta.columnaMarca).orEmpty(), b.valor(consulta.columnaMarca).orEmpty())
+            if (c != 0) c else comparaClave(a.valor(consulta.columnaClave).orEmpty(), b.valor(consulta.columnaClave).orEmpty())
+        }.take(consulta.limite)
+        filasLeidas[consulta.tabla] = (filasLeidas[consulta.tabla] ?: 0) + filas.size
+        return filas
+    }
+
+    private fun conMarca(f: JsonObject) = JsonObject(f + ("updated_at" to JsonPrimitive(ahoraIso)))
+
     override suspend fun insert(tabla: String, filas: List<JsonObject>) {
         red()
-        filas.forEach { tabla(tabla) += JsonObject(mapOf("id" to JsonPrimitive("f-${++n}"), "created_at" to JsonPrimitive("%06d".format(n))) + it) }
+        filas.forEach { tabla(tabla) += conMarca(JsonObject(mapOf("id" to JsonPrimitive("f-${++n}"), "created_at" to JsonPrimitive("%06d".format(n))) + it)) }
     }
 
     override suspend fun upsert(tabla: String, filas: List<JsonObject>, onConflict: String): List<JsonObject> {
@@ -82,20 +111,47 @@ class FakeBackend : Backend {
         val k = onConflict.split(",")
         return filas.map { f ->
             val i = tabla(tabla).indexOfFirst { r -> k.all { r.valor(it) == f.valor(it) } }
-            if (i >= 0) JsonObject(tabla(tabla)[i] + f).also { tabla(tabla)[i] = it }
-            else JsonObject(mapOf("id" to JsonPrimitive("f-${++n}")) + f).also { tabla(tabla) += it }
+            if (i >= 0) conMarca(JsonObject(tabla(tabla)[i] + f)).also { tabla(tabla)[i] = it }
+            else conMarca(JsonObject(mapOf("id" to JsonPrimitive("f-${++n}")) + f)).also { tabla(tabla) += it }
         }
     }
 
     override suspend fun update(tabla: String, valores: JsonObject, filtros: Map<String, String>) {
         red()
         val t = tabla(tabla)
-        t.indices.filter { coincide(t[it], filtros) }.forEach { t[it] = JsonObject(t[it] + valores) }
+        t.indices.filter { coincide(t[it], filtros) }.forEach { t[it] = conMarca(JsonObject(t[it] + valores)) }
     }
+
+    private val conTumba = setOf("activities", "activity_tracks", "saved_routes", "post_likes", "post_comments", "events", "event_rsvps")
 
     override suspend fun delete(tabla: String, filtros: Map<String, String>) {
         red()
+        val victimas = tabla(tabla).filter { coincide(it, filtros) }
         tabla(tabla).removeAll { coincide(it, filtros) }
+        if (tabla !in conTumba) return
+        victimas.forEach { f ->
+            val clave = when (tabla) {
+                "activities" -> f.valor("client_id") ?: f.valor("id")
+                "activity_tracks" -> {
+                    val aid = f.valor("activity_id")
+                    tabla("activities").firstOrNull { it.valor("id") == aid }?.let { it.valor("client_id") ?: it.valor("id") } ?: aid
+                }
+                "saved_routes" -> f.valor("route_id")
+                "post_likes" -> f.valor("post_id")
+                "post_comments" -> f.valor("id")
+                "events" -> f.valor("id")
+                "event_rsvps" -> f.valor("event_id")
+                else -> null
+            } ?: return@forEach
+            val dueno = if (tabla == "events") null else f.valor("user_id")
+            tabla("sync_borrados") += JsonObject(mapOf(
+                "id" to JsonPrimitive((++n).toString()),
+                "user_id" to (if (dueno == null) JsonNull else JsonPrimitive(dueno)),
+                "tabla" to JsonPrimitive(tabla),
+                "clave" to JsonPrimitive(clave),
+                "deleted_at" to JsonPrimitive(ahoraIso),
+            ))
+        }
     }
 
     /** Funciones live_* en memoria (sin difuminado: eso se prueba contra Supabase real). */
@@ -131,6 +187,7 @@ class FakeBackend : Backend {
                     "running" to args.getValue("corriendo"), "updated_at" to JsonPrimitive(ahoraIso)))
                 JsonPrimitive(visible)
             }
+            "sync_reloj" -> JsonPrimitive(ahoraIso)
             "eliminar_mi_cuenta" -> {
                 usuarios.removeAll { it.first == yo }; tablas.values.forEach { l -> l.removeAll { it.valor("user_id") == yo || it.valor("id") == yo } }
                 actual = null

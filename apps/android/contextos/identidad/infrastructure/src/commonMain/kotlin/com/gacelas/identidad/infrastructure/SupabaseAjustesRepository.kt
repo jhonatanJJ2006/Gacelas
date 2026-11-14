@@ -11,6 +11,13 @@ import com.gacelas.data.remoto.Backend
 import com.gacelas.data.remoto.entero
 import com.gacelas.data.remoto.logico
 import com.gacelas.data.remoto.texto
+import com.gacelas.data.sync.BorradoSync
+import com.gacelas.data.sync.CambioClave
+import com.gacelas.data.sync.ConsultaPagina
+import com.gacelas.data.sync.bajarTodo
+import com.gacelas.data.sync.borradosDe
+import com.gacelas.data.sync.fusionarClaves
+import com.gacelas.data.sync.marcaMs
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.JsonElement
@@ -29,24 +36,49 @@ class SupabaseAjustesRepository(
     private val valor = ValorJson(store, "ajustes", Ajustes.serializer(), Ajustes())
     override val ajustes: Flow<Ajustes> = valor.flujo
 
-    suspend fun descargar() {
-        val uid = userId() ?: return
-        val fila = runCatching { backend.select("user_settings", mapOf("user_id" to uid)).firstOrNull() }.getOrNull()
-        val likes = runCatching { backend.select("post_likes", mapOf("user_id" to uid)) }.getOrNull() ?: return
-        val comentarios = runCatching { backend.select("post_comments", mapOf("user_id" to uid), "created_at") }.getOrNull() ?: return
-        val prefs = fila?.get("prefs")?.let { ajustesTolerantes(it) }
+    /**
+     * Sin [desde] trae ajustes, me gusta y comentarios enteros. Con marca, solo lo que cambio.
+     * Un comentario borrado no trae id en la cache local: si hubo bajas, se releen los textos.
+     */
+    suspend fun descargar(desde: String? = null, borrados: List<BorradoSync> = emptyList()): Boolean {
+        val uid = userId() ?: return false
+        val completa = desde == null
+        val ajustesFilas = runCatching {
+            bajarTodo(backend::selectPagina, ConsultaPagina("user_settings", mapOf("user_id" to uid), marcaExclusiva = desde, columnaClave = "user_id", limite = 5))
+        }.getOrElse { return false }
+        val likesFilas = runCatching {
+            bajarTodo(backend::selectPagina, ConsultaPagina("post_likes", mapOf("user_id" to uid), marcaExclusiva = desde, columnaClave = "post_id"))
+        }.getOrElse { return false }
+        val comentariosNuevos = runCatching {
+            bajarTodo(backend::selectPagina, ConsultaPagina("post_comments", mapOf("user_id" to uid), marcaExclusiva = desde, columnaClave = "id"))
+        }.getOrElse { return false }
+        val bajasComentarios = if (completa) emptyList() else borradosDe(borrados, "post_comments")
+        val filasComentarios = when {
+            !completa && comentariosNuevos.isEmpty() && bajasComentarios.isEmpty() -> null
+            completa -> comentariosNuevos
+            else -> runCatching {
+                bajarTodo(backend::selectPagina, ConsultaPagina("post_comments", mapOf("user_id" to uid), columnaMarca = "created_at", columnaClave = "id"))
+            }.getOrElse { return false }
+        }
+        val fila = ajustesFilas.firstOrNull()
+        val altasLikes = likesFilas.mapNotNull { f -> f.texto("post_id")?.let { CambioClave(it, marcaMs(f)) } }
         valor.actualizar { actual ->
-            val base = prefs ?: actual
+            val base = if (fila == null) actual else {
+                val prefs = fila["prefs"]?.let { ajustesTolerantes(it) } ?: actual
+                prefs.copy(
+                    visibilidad = VIS_A_DB.entries.firstOrNull { it.value == fila.texto("visibility") }?.key ?: prefs.visibilidad,
+                    ocultarHogar = fila.logico("hide_home") ?: prefs.ocultarHogar,
+                    radioHogarM = fila.entero("home_radius_m") ?: prefs.radioHogarM,
+                    ubicacionPrecisa = fila.logico("precise_location") ?: prefs.ubicacionPrecisa,
+                    metaSemanal = fila.entero("weekly_goal_runs") ?: prefs.metaSemanal,
+                )
+            }
             base.copy(
-                visibilidad = VIS_A_DB.entries.firstOrNull { it.value == fila?.texto("visibility") }?.key ?: base.visibilidad,
-                ocultarHogar = fila?.logico("hide_home") ?: base.ocultarHogar,
-                radioHogarM = fila?.entero("home_radius_m") ?: base.radioHogarM,
-                ubicacionPrecisa = fila?.logico("precise_location") ?: base.ubicacionPrecisa,
-                metaSemanal = fila?.entero("weekly_goal_runs") ?: base.metaSemanal,
-                likes = likes.mapNotNull { it.texto("post_id") }.toSet(),
-                comentarios = comentarios.groupBy({ it.texto("post_id").orEmpty() }, { it.texto("body").orEmpty() }),
+                likes = fusionarClaves(actual.likes, altasLikes, if (completa) emptyList() else borradosDe(borrados, "post_likes"), completa),
+                comentarios = filasComentarios?.groupBy({ it.texto("post_id").orEmpty() }, { it.texto("body").orEmpty() }) ?: actual.comentarios,
             )
         }
+        return true
     }
 
     override suspend fun actualizar(transformar: (Ajustes) -> Ajustes) {

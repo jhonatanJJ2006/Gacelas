@@ -5,6 +5,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.gacelas.data.remoto.Backend
+import com.gacelas.data.sync.ConsultaPagina
+import com.gacelas.data.sync.bajarTodo
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -48,10 +50,13 @@ class ConsentimientosRepository(
      * Trae los consentimientos del servidor y los une al historial local. Asi lo que ya se acepto en
      * otro dispositivo, en la web o antes de reinstalar la app no se vuelve a preguntar.
      */
-    suspend fun sincronizar(): Boolean {
+    /** Sin [desde] trae el historial. Con marca, solo consentimientos posteriores (la tabla no se edita ni se borra). */
+    suspend fun sincronizar(desde: String? = null): Boolean {
         val id = uid() ?: return false
         val b = backend ?: return false
-        val filas = runCatching { b.select("consents", mapOf("user_id" to id), "created_at") }.getOrNull() ?: return false
+        val filas = runCatching {
+            bajarTodo(b::selectPagina, ConsultaPagina("consents", mapOf("user_id" to id), columnaMarca = "created_at", marcaExclusiva = desde, columnaClave = "id"))
+        }.getOrNull() ?: return false
         val remotos = filas.mapNotNull { f ->
             val tipo = (f["kind"] as? JsonPrimitive)?.contentOrNullSeguro() ?: return@mapNotNull null
             val version = (f["version"] as? JsonPrimitive)?.contentOrNullSeguro() ?: ""

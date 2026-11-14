@@ -110,6 +110,12 @@ fun AjustesPreferenciasScreen(
             runCatching { context.startActivity(intent) }.onFailure { context.aviso("No hay app de correo instalada") }
         },
         onCerrarSesion = { scope.launch { c.auth.cerrarSesion(); onCerrarSesion() } },
+        onRecuperarDatos = {
+            scope.launch {
+                val ok = c.recuperarDatos()
+                context.aviso(if (ok) "Historial descargado de nuevo" else "No se pudo descargar. Revisa la conexión.")
+            }
+        },
         mapaOffline = { MapaOfflineAjuste() },
         cabecera = { CabeceraAjustes(onEditarPerfil) },
         onMapasOffline = onMapasOffline,
