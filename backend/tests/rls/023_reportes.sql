@@ -10,7 +10,9 @@ INSERT INTO auth.users (id, email) VALUES
   ('00000000-0000-0000-0000-0000000000b1', 'ana@prueba.ec'),
   ('00000000-0000-0000-0000-0000000000c1', 'luis@prueba.ec')
 ON CONFLICT DO NOTHING;
-INSERT INTO public.profiles (id, username, full_name) VALUES
+-- La vista public.profiles enmascara columnas y no admite ON CONFLICT (042).
+-- El alta ya creo la fila; esto solo cubre el caso de que el trigger no haya corrido.
+INSERT INTO identidad.profiles (id, username, full_name) VALUES
   ('00000000-0000-0000-0000-0000000000a1', 'admin', 'Admin'),
   ('00000000-0000-0000-0000-0000000000b1', 'ana', 'Ana'),
   ('00000000-0000-0000-0000-0000000000c1', 'luis', 'Luis')
