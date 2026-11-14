@@ -11,6 +11,7 @@ describe('identidad: traducirError', () => {
     ['For security purposes, wait', 'Demasiados intentos. Espera un momento y vuelve a probar'],
     ['Failed to fetch', 'Sin conexión con el servidor'],
     ['Password should be longer', 'La contraseña no es válida'],
+    ['cuenta suspendida', 'Tu cuenta está suspendida. No puedes publicar ni modificar datos.'],
     ['otra cosa', 'No se pudo completar. Intenta de nuevo'],
   ])('%s', (m, esperado) => expect(traducirError(m)).toBe(esperado))
 })

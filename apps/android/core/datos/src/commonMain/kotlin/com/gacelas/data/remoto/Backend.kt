@@ -65,6 +65,7 @@ fun traducirError(mensaje: String?): String {
         "bad id token" in m || "id_token" in m || "id token" in m -> "El servidor rechazó el token de Google (Bad ID token). Revisa el Client ID de Google en Supabase"
         "signups not allowed" in m || "signup is disabled" in m -> "El registro de cuentas nuevas está desactivado en el servidor"
         "rate limit" in m || "security purposes" in m -> "Demasiados intentos. Espera un momento y vuelve a probar"
+        "cuenta suspendida" in m -> "Tu cuenta está suspendida. No puedes publicar ni modificar datos."
         "unable to resolve host" in m || "failed to connect" in m || "timeout" in m || "network" in m -> "Sin conexión con el servidor"
         else -> "No se pudo completar. Intenta de nuevo"
     }
