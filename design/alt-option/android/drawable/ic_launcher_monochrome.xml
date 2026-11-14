@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Opcion Piedra Clara, una sola tinta. No vive en src/main. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+<group android:translateX="12.43" android:translateY="31.57" android:scaleX="0.34" android:scaleY="0.34">
+<path android:fillColor="#FF000000" android:pathData="M46 76 C34 70 26 62 30 56 C36 60 40 70 48 76 Z"/>
+<path android:fillColor="#FF000000" android:fillType="evenOdd" android:pathData="M214 46 C220 40 208 32 186 33 C174 32 164 38 160 46 C154 56 146 64 126 66 C98 70 70 68 52 74 C44 76 40 82 46 86 C72 94 112 96 150 88 C160 84 168 76 174 68 C182 58 190 52 200 48 C206 46 210 46 214 46 Z M193.2 42 A2.8 2.8 0 1 0 198.8 42 A2.8 2.8 0 1 0 193.2 42 Z"/>
+<path android:fillColor="#FF000000" android:pathData="M172 36 L162 18 L180 32 Z"/>
+<path android:fillColor="#FF000000" android:pathData="M52 84 C50 104 48 120 50 136 L62 136 C62 118 64 102 66 86 Z"/>
+<path android:fillColor="#FF000000" android:pathData="M76 88 C78 106 80 122 82 136 L70 136 C70 120 72 104 74 90 Z"/>
+<path android:fillColor="#FF000000" android:pathData="M124 86 C122 106 118 122 116 136 L128 136 C130 120 132 104 134 88 Z"/>
+<path android:fillColor="#FF000000" android:pathData="M148 82 C154 102 164 120 172 134 L184 130 C174 114 164 96 156 82 Z"/>
+<path android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="5.5" android:strokeLineCap="round" android:pathData="M168 30 C156 10 138 2 120 12"/>
+</group>
+</vector>
