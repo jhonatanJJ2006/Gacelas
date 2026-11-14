@@ -138,7 +138,7 @@ La app revisa al abrir (como máximo una vez al día) `android/latest.json` en e
 Para publicar:
 
 1. Sube `versionName` en `app/build.gradle.kts`, haz commit y push a `main`.
-2. Comprueba que `local.properties` tenga `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `GOOGLE_WEB_CLIENT_ID`, y que el keystore de depuración sea el de SHA-1 23:CF:...:F9.
+2. Comprueba que `local.properties` tenga `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `GOOGLE_WEB_CLIENT_ID`, y que `~/.android/debug.keystore` sea el de publicacion, SHA-1 `F1:A2:7B:EE:15:19:B9:5D:DB:88:AD:77:4F:5E:0E:08:5F:9F:45:D1` (`gacelas.firmaPublicacion`). Esa es la firma de v0.9.12 a v0.9.17. El keystore `23:CF:...:F9` inicia sesion con Google, pero un APK firmado con el no se instala encima de esas versiones: Android responde que las firmas no coinciden y el telefono solo dice que la app no se instalo. Si el telefono todavia tiene v0.9.8 a v0.9.11, o un APK de Android Studio firmado con `23:CF`, desinstala la app una vez y luego instala el APK publicado.
 3. `SUPABASE_SERVICE_ROLE_KEY=... scripts/publicar-android.sh "Notas cortas"` (agrega `--obligatoria` para forzarla). Compila y prueba, crea el tag y el pre-release de GitHub con el APK como archivo `runcity-X.Y.Z-arm64.apk`, sube ese APK y `latest.json` a Supabase (con `apkUrl` en la URL publica del bucket) y borra el APK anterior para que en el bucket solo quede uno. Si el APK supera los 50 MiB de Supabase, el script no actualiza el manifiesto (las apps no podrian descargarlo). El script avisa si pasa de 150 MiB. Es la unica forma de publicar. No uses `scripts/publicar-apk-storage.mjs`: ese script se elimino porque no creaba el release de GitHub y acumulaba APKs en el bucket.
 
 El bucket se crea con `backend/migrations/013_app_releases.sql`.

@@ -2,6 +2,54 @@
 
 Registro de fallos que ya se habian corregido y volvieron. Cada entrada dice que paso, la causa, el arreglo y como evitar que se repita.
 
+## 2026-11-13: v0.9.17 no se instala encima de una app firmada con otra huella
+
+### Que paso
+
+v0.9.17 (APK `runcity-0.9.17-arm64.apk`, 45.295.692 bytes, sha256 `fb35b6dbff99053ca94636b7d981aaf88627790c381a49a4bc8e5fc08218354f`) no se instala en un telefono que ya tiene Runcity firmado con otro certificado. El instalador del sistema solo dice que la app no se instalo.
+
+### Diagnostico
+
+El APK de v0.9.17 esta completo (el zip cierra bien), firmado con el esquema v2, sin `testOnly`, paquete `com.gacelas`, `minSdk` 24, `targetSdk` 35, solo `arm64-v8a`, `versionName` 0.9.17 y `versionCode` 917. `zipalign -c -P 16 4` pasa. Comparado con v0.9.16, el certificado, el esquema, el paquete, los SDK, la ABI y las librerias nativas son los mismos. Solo cambian el `versionCode` (916 a 917) y el dex del rediseno Tablero.
+
+Instalacion real con `adb install`:
+
+- Android 14 (pagina de 4 KB) y Android 15 (pagina de 16 KB): v0.9.16 se instala, y v0.9.17 se instala encima. La app abre.
+- La misma prueba partiendo de v0.9.11 falla: `INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package com.gacelas signatures do not match newer version`.
+
+Huella SHA-1 del certificado de los APK publicados:
+
+| Versiones                                            | SHA-1                                                       |
+| ---------------------------------------------------- | ----------------------------------------------------------- |
+| v0.9.8, v0.9.9, v0.9.10, v0.9.11                     | 23:CF:7D:D7:5A:19:B1:54:13:99:38:AD:62:61:DE:AA:BE:DC:23:F9 |
+| v0.9.12, v0.9.13, v0.9.14, v0.9.15, v0.9.16, v0.9.17 | F1:A2:7B:EE:15:19:B9:5D:DB:88:AD:77:4F:5E:0E:08:5F:9F:45:D1 |
+
+Las dos huellas estan en `gacelas.firmasGoogle` (login con Google). Android no las trata como la misma app: no hay rotacion de clave (el APK no usa el esquema v3). `scripts/publicar-android.sh` y `apps/android/README.md` pedian el keystore `23:CF` para publicar, y Gradle aceptaba cualquiera de las dos. Por eso la firma volvio a cambiar en v0.9.12.
+
+### Arreglo
+
+- `-Pgacelas.release=true` exige que el `debug.keystore` sea exactamente `gacelas.firmaPublicacion` (`F1:A2:...:D1`), ademas de estar en `gacelas.firmasGoogle`.
+- La documentacion de publicacion deja de pedir `23:CF` como keystore de las actualizaciones.
+
+No hace falta otro APK para quien ya tiene v0.9.12 o posterior: v0.9.17 ya instala encima. Quien tenga v0.9.8 a v0.9.11, o un APK de Android Studio firmado con `23:CF`, tiene que desinstalar Runcity una vez (se pierden los datos locales de esa instalacion) e instalar el APK publicado. A partir de ahi las actualizaciones siguen con `F1:A2`.
+
+### Instalacion en limpio
+
+Si el telefono no tiene Runcity, el certificado de una version anterior no interviene. El mismo archivo de v0.9.17 se probo con `adb install`:
+
+- Android 14 y Android 15 con paginas de 16 KB, en imagenes que pueden ejecutar arm64: se instala y la app abre. `zipalign -c -P 16 4` pasa. No tiene `testOnly`. Que el release de GitHub este marcado como pre-release no cambia el APK.
+- Android 7.0 (API 24) x86_64, sin traduccion ARM: falla con `INSTALL_FAILED_NO_MATCHING_ABIS` por las librerias `arm64-v8a`. El mismo APK sin esas librerias si instala: el dex 037 y la firma solo v2 se aceptan en Android 7.
+- Android 7.0 solo de 32 bits (ABI `x86`): `INSTALL_FAILED_NO_MATCHING_ABIS: Failed to extract native libraries, res=-113`. Un telefono que solo tenga `armeabi-v7a` falla igual.
+- Un archivo cortado a 20 MB, o un HTML guardado como `.apk`, falla con `INSTALL_PARSE_FAILED_UNEXPECTED_EXCEPTION` al leer `AndroidManifest.xml`. En el telefono eso se ve como que el paquete no es valido. El archivo bueno pesa 45.295.692 bytes.
+
+No hay un fallo del APK que impida una instalacion nueva en un telefono arm64 con Android 7 o mas nuevo. Si en un telefono vacio no entra, hacen falta el modelo, la version de Android, el texto exacto del instalador y el tamano del archivo descargado.
+
+### Como evitar que se repita
+
+- Publicar solo con el `debug.keystore` de `gacelas.firmaPublicacion`.
+- No agregar otra huella a esa propiedad para "que compile": cada huella nueva deja sin actualizacion a quien tenga la anterior.
+- A futuro, una firma de release guardada fuera del repositorio, la misma en todas las maquinas. Cambiarla exige el esquema v3 con linaje firmado por la clave anterior, no un keystore nuevo.
+
 ## 2026-11-11: las copias de APK en Supabase llenaron el Storage y apkUrl de GitHub no era publico
 
 ### Que paso
