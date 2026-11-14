@@ -643,7 +643,7 @@ export async function deleteUserAccount(userId: string) {
 
 ## Contacto de Seguridad
 
-**Reportar vulnerabilidades**: security@gacelas.app (cuando esté disponible)
+**Reportar vulnerabilidades**: en privado, como describe [SECURITY.md](../SECURITY.md). No abras un issue público.
 
 **Bug bounty program**: Considerar en futuro si el proyecto crece.
 

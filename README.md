@@ -107,6 +107,7 @@ La documentación completa está en la carpeta `docs/`:
 - **[COMPONENTS.md](docs/COMPONENTS.md)**: Componentes web y móvil
 - **[DATA_MODEL.md](docs/DATA_MODEL.md)**: Modelo de datos, entidades, relaciones
 - **[BUSINESS_RULES.md](docs/BUSINESS_RULES.md)**: Reglas de negocio
+- **[SECURITY.md](SECURITY.md)**: Cómo reportar una vulnerabilidad
 - **[SECURITY_PRIVACY.md](docs/SECURITY_PRIVACY.md)**: Seguridad y privacidad
 - **[FREE_TIER_BUDGET.md](docs/FREE_TIER_BUDGET.md)**: Presupuesto tier gratuito
 - **[ROADMAP.md](docs/ROADMAP.md)**: Hoja de ruta del producto

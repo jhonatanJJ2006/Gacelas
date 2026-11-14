@@ -1,0 +1,43 @@
+# Configuración de gitleaks para Runcity (repositorio Gacelas).
+# Extiende las reglas por defecto y solo afloja lo que es público por diseño.
+title = "Gacelas"
+minVersion = "v8.30.1"
+
+[extend]
+useDefault = true
+
+# Clave publishable (sb_publishable_...) y anon key legado (JWT con role anon).
+# Supabase las diseña para el cliente: van en el navegador, en Android y en iOS.
+# Ocultarlas no protege los datos. Quien tenga la clave solo puede hacer lo que
+# permiten las políticas de Row Level Security con el rol anon.
+# No se ignoran la clave de servicio (service_role o sb_secret_), ni un token
+# personal sbp_, ni DATABASE_URL, ni el secreto OAuth.
+
+[[allowlists]]
+description = "Clave publishable de Supabase. Pública por diseño."
+regexTarget = "secret"
+regexes = ['''sb_publishable_[A-Za-z0-9_-]+''']
+
+# El fragmento cm9sZSI6ImFub24 es la codificación base64url de role":"anon en el
+# JWT estándar de Supabase (iss, ref de 20 caracteres, role, iat, exp). Un JWT
+# service_role lleva role":"service_role y no contiene ese fragmento, así que
+# la regla jwt por defecto sigue marcándolo.
+[[allowlists]]
+description = "Anon key legado de Supabase (JWT HS256, role anon). Pública por diseño."
+regexTarget = "secret"
+regexes = ['''eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*cm9sZSI6ImFub24[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+''']
+
+# gitleaks 8.30 no trae reglas para el formato nuevo de Supabase. sb_secret_
+# sustituye a service_role (salta RLS). sbp_ es un token personal de la Management API.
+[[rules]]
+id = "supabase-secret-key"
+description = "Clave secreta de Supabase (sb_secret_). Equivale a service_role y no debe versionarse."
+regex = '''\b(sb_secret_[A-Za-z0-9_-]{20,})(?:[\x60'"\s;]|\\[nr]|$)'''
+entropy = 3
+keywords = ["sb_secret_"]
+
+[[rules]]
+id = "supabase-access-token"
+description = "Token personal de Supabase (sbp_). Da acceso a la Management API de la cuenta."
+regex = '''\b(sbp_(?:v[0-9]_)?[a-f0-9]{40})\b'''
+keywords = ["sbp_"]
