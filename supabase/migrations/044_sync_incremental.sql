@@ -102,6 +102,12 @@ BEGIN
     ELSE
       RETURN OLD;
   END CASE;
+  -- eliminar_mi_cuenta borra auth.users y la cascada dispara este trigger cuando
+  -- el usuario ya no esta. Esa cuenta no vuelve a sincronizar: no hace falta la tumba.
+  -- Los eventos (dueno NULL) si se anotan, para que el resto deje de verlos.
+  IF dueno IS NOT NULL AND NOT EXISTS (SELECT 1 FROM auth.users WHERE id = dueno) THEN
+    RETURN OLD;
+  END IF;
   INSERT INTO actividad.sync_borrados (user_id, tabla, clave) VALUES (dueno, TG_TABLE_NAME, clave);
   RETURN OLD;
 END $$;
