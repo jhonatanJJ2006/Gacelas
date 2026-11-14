@@ -76,6 +76,8 @@ INSERT INTO public.consents (user_id, kind, version, granted) VALUES
   (auth.uid(), 'ubicacion_visible', '2026-10-25', true),
   (auth.uid(), 'gps_carrera', '2026-10-25', true);
 INSERT INTO public.clubs (name, owner_id) VALUES ('Club 043 A', auth.uid());
+-- hide_home es el defecto y 041 no publica el punto si cae dentro del radio de casa.
+UPDATE public.user_settings SET hide_home = false WHERE user_id = auth.uid();
 SELECT public.live_iniciar('public');
 SELECT public.mapa_publicar(-3.993, -79.204, true);
 
@@ -227,6 +229,7 @@ INSERT INTO public.content_reports (target_type, target_id, reporter_id, reason)
 INSERT INTO public.user_achievements (user_id, code) VALUES (auth.uid(), 'primera_carrera');
 INSERT INTO public.consents (user_id, kind, version, granted)
   VALUES (auth.uid(), 'ubicacion_visible', '2026-10-25', true);
+UPDATE public.user_settings SET hide_home = false WHERE user_id = auth.uid();
 SELECT public.mapa_publicar(-3.99, -79.20, true);
 SELECT public.live_iniciar('followers');
 SELECT public.append_track_batch(

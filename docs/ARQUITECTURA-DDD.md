@@ -406,7 +406,7 @@ Nombres: los módulos actuales `carreras` y `cuenta` pasan a `actividad` e `iden
 ### 6.3 Base de datos
 
 - Prueba SQL en `backend/tests/rls` que verifica que cada tabla está en el esquema de su contexto y tiene RLS activada.
-- `ON_ERROR_STOP=1` en `db.yml` (pendiente, requiere permiso `workflow` o que lo aplique Jhona).
+- `ON_ERROR_STOP=1` en `db.yml`: un error de migracion o de prueba RLS rompe el job. Tambien corre en push a main.
 
 ## 7. Plan de migración incremental
 

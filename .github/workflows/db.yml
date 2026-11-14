@@ -1,6 +1,13 @@
 name: Base de datos
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+      - 'backend/seeds/**'
+      - 'backend/tests/**'
+      - '.github/workflows/db.yml'
   pull_request:
     paths:
       - 'supabase/**'
@@ -26,20 +33,25 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v4
+      - name: Alinear la imagen de Postgres
+        env:
+          PGPASSWORD: postgres
+        run: psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f supabase/ci/preparar_imagen.sql
       - name: Aplicar migraciones
         env:
           PGPASSWORD: postgres
         run: |
           for f in supabase/migrations/*.sql; do
             echo "Aplicando $f"
-            psql -h localhost -U postgres -d postgres -f "$f" || exit 1
+            psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f "$f"
           done
-      - name: pgTAP (placeholder)
+      - name: Pruebas RLS
         env:
           PGPASSWORD: postgres
         run: |
           for f in backend/tests/rls/*.sql; do
-            psql -h localhost -U postgres -d postgres -f "$f" || true
+            echo "Probando $f"
+            psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f "$f"
           done
       - uses: supabase/setup-cli@v1
       - name: Generar tipos TypeScript

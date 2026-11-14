@@ -1,6 +1,7 @@
 -- Prueba de 042: anon y otro usuario leen la ficha publica y no la edad, el genero,
--- la bio ni suspended_at. El dueno edita esos datos (menos la suspension). Un admin
--- la ve y puede suspender. La tabla identidad.profiles no entrega esas columnas.
+-- la bio ni suspended_at. Una cuenta suspendida no edita (043). Al levantarla, el
+-- dueno edita esos datos menos la suspension. Un admin la ve y puede suspender.
+-- La tabla identidad.profiles no entrega esas columnas.
 BEGIN;
 GRANT USAGE ON SCHEMA public, auth, identidad TO anon, authenticated;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA auth TO anon, authenticated;
@@ -133,7 +134,83 @@ BEGIN
   END IF;
 END $$;
 
+-- Ana sigue suspendida: 043 rechaza la escritura y no toca la ficha ni la suspension.
 SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000042a1', true);
+SELECT set_config('request.jwt.claim.role', 'authenticated', true);
+SELECT set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-0000000042a1","role":"authenticated"}', true);
+DO $$
+BEGIN
+  UPDATE public.profiles SET
+    full_name = 'Ana Editada',
+    username = 'ana_editada',
+    bio = 'bio-nueva',
+    location = 'Vilcabamba',
+    age = '30',
+    gender = 'Mujer',
+    avatar_url = 'https://ejemplo.test/ana2.png',
+    suspended_at = NULL
+  WHERE id = '00000000-0000-0000-0000-0000000042a1';
+  RAISE EXCEPTION 'la cuenta suspendida edito su perfil';
+EXCEPTION WHEN insufficient_privilege THEN
+  IF SQLERRM NOT LIKE '%cuenta suspendida%' THEN RAISE; END IF;
+END $$;
+
+RESET ROLE;
+DO $$
+BEGIN
+  IF (SELECT bio FROM identidad.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
+       IS DISTINCT FROM 'secreto-bio-ana'
+     OR (SELECT full_name FROM identidad.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
+       IS DISTINCT FROM 'Ana Prueba'
+     OR (SELECT suspended_at FROM identidad.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
+       IS DISTINCT FROM '2026-11-01T12:00:00Z' THEN
+    RAISE EXCEPTION 'el update bloqueado igual cambio el perfil';
+  END IF;
+END $$;
+
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000042b1', true);
+SELECT set_config('request.jwt.claim.role', 'authenticated', true);
+SELECT set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-0000000042b1","role":"authenticated"}', true);
+DO $$
+BEGIN
+  IF (SELECT full_name FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
+       IS DISTINCT FROM 'Ana Prueba'
+     OR (SELECT username FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
+       IS DISTINCT FROM 'ana_prueba' THEN
+    RAISE EXCEPTION 'Bruno dejo de ver la ficha publica';
+  END IF;
+  IF (SELECT bio FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1') IS NOT NULL
+     OR (SELECT age FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1') IS NOT NULL
+     OR (SELECT suspended_at FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1') IS NOT NULL THEN
+    RAISE EXCEPTION 'Bruno ve datos sensibles de Ana';
+  END IF;
+END $$;
+
+SELECT set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000042c1', true);
+SELECT set_config('request.jwt.claim.role', 'authenticated', true);
+SELECT set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-0000000042c1","role":"authenticated"}', true);
+DO $$
+DECLARE susp timestamptz;
+BEGIN
+  IF (SELECT bio FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
+       IS DISTINCT FROM 'secreto-bio-ana' THEN
+    RAISE EXCEPTION 'el admin no ve la bio';
+  END IF;
+  IF (SELECT suspended_at FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1') IS NULL THEN
+    RAISE EXCEPTION 'el admin no ve la suspension';
+  END IF;
+  PERFORM public.admin_suspender('00000000-0000-0000-0000-0000000042b1', true);
+  SELECT u.suspended_at INTO susp FROM public.admin_usuarios() u
+  WHERE u.id = '00000000-0000-0000-0000-0000000042b1';
+  IF susp IS NULL THEN RAISE EXCEPTION 'admin_usuarios no ve la suspension'; END IF;
+  PERFORM public.admin_suspender('00000000-0000-0000-0000-0000000042a1', false);
+END $$;
+
 SELECT set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000042a1', true);
 SELECT set_config('request.jwt.claim.role', 'authenticated', true);
 SELECT set_config('request.jwt.claims',
@@ -146,33 +223,32 @@ UPDATE public.profiles SET
   age = '30',
   gender = 'Mujer',
   avatar_url = 'https://ejemplo.test/ana2.png',
-  suspended_at = NULL
+  suspended_at = '2020-01-01T00:00:00Z'
 WHERE id = '00000000-0000-0000-0000-0000000042a1';
-
-RESET ROLE;
 DO $$
 BEGIN
-  IF (SELECT bio FROM identidad.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
-       IS DISTINCT FROM 'bio-nueva'
-     OR (SELECT age FROM identidad.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
-       IS DISTINCT FROM '30'
-     OR (SELECT gender FROM identidad.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
-       IS DISTINCT FROM 'Mujer'
-     OR (SELECT full_name FROM identidad.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
-       IS DISTINCT FROM 'Ana Editada'
-     OR (SELECT username FROM identidad.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
-       IS DISTINCT FROM 'ana_editada'
-     OR (SELECT avatar_url FROM identidad.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
+  IF (SELECT suspended_at FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042b1') IS NOT NULL THEN
+    RAISE EXCEPTION 'Ana ve la suspension de Bruno';
+  END IF;
+  IF (SELECT bio FROM public.profiles WHERE id = auth.uid()) IS DISTINCT FROM 'bio-nueva'
+     OR (SELECT age FROM public.profiles WHERE id = auth.uid()) IS DISTINCT FROM '30'
+     OR (SELECT full_name FROM public.profiles WHERE id = auth.uid()) IS DISTINCT FROM 'Ana Editada'
+     OR (SELECT username FROM public.profiles WHERE id = auth.uid()) IS DISTINCT FROM 'ana_editada'
+     OR (SELECT location FROM public.profiles WHERE id = auth.uid()) IS DISTINCT FROM 'Vilcabamba'
+     OR (SELECT avatar_url FROM public.profiles WHERE id = auth.uid())
        IS DISTINCT FROM 'https://ejemplo.test/ana2.png'
-     OR (SELECT location FROM identidad.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
-       IS DISTINCT FROM 'Vilcabamba'
-     OR (SELECT suspended_at FROM identidad.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
-       IS DISTINCT FROM '2026-11-01T12:00:00Z' THEN
-    RAISE EXCEPTION 'el update del dueno no guardo lo esperado';
+     OR (SELECT suspended_at FROM public.profiles WHERE id = auth.uid()) IS NOT NULL THEN
+    RAISE EXCEPTION 'el dueno no guardo la ficha, o pudo fijar la suspension';
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_class
+    WHERE oid = 'public.profiles'::regclass AND relkind = 'v'
+      AND reloptions @> ARRAY['security_invoker=true']
+  ) THEN
+    RAISE EXCEPTION 'la vista dejo de ser security_invoker';
   END IF;
 END $$;
 
-SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000042b1', true);
 SELECT set_config('request.jwt.claim.role', 'authenticated', true);
 SELECT set_config('request.jwt.claims',
@@ -181,54 +257,13 @@ DO $$
 BEGIN
   IF (SELECT full_name FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
        IS DISTINCT FROM 'Ana Editada'
-     OR (SELECT username FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
-       IS DISTINCT FROM 'ana_editada'
      OR (SELECT location FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
-       IS DISTINCT FROM 'Vilcabamba'
-     OR (SELECT avatar_url FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
-       IS DISTINCT FROM 'https://ejemplo.test/ana2.png' THEN
+       IS DISTINCT FROM 'Vilcabamba' THEN
     RAISE EXCEPTION 'Bruno no ve la ficha actualizada';
   END IF;
   IF (SELECT bio FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1') IS NOT NULL
      OR (SELECT age FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1') IS NOT NULL THEN
     RAISE EXCEPTION 'Bruno ve la bio o la edad nueva de Ana';
-  END IF;
-END $$;
-
-SELECT set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000042c1', true);
-SELECT set_config('request.jwt.claim.role', 'authenticated', true);
-SELECT set_config('request.jwt.claims',
-  '{"sub":"00000000-0000-0000-0000-0000000042c1","role":"authenticated"}', true);
-DO $$
-DECLARE susp timestamptz;
-BEGIN
-  IF (SELECT bio FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1')
-       IS DISTINCT FROM 'bio-nueva' THEN
-    RAISE EXCEPTION 'el admin no ve la bio';
-  END IF;
-  IF (SELECT suspended_at FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042a1') IS NULL THEN
-    RAISE EXCEPTION 'el admin no ve la suspension';
-  END IF;
-  PERFORM public.admin_suspender('00000000-0000-0000-0000-0000000042b1', true);
-  SELECT u.suspended_at INTO susp FROM public.admin_usuarios() u
-  WHERE u.id = '00000000-0000-0000-0000-0000000042b1';
-  IF susp IS NULL THEN RAISE EXCEPTION 'admin_usuarios no ve la suspension'; END IF;
-END $$;
-
-SELECT set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000042a1', true);
-SELECT set_config('request.jwt.claims',
-  '{"sub":"00000000-0000-0000-0000-0000000042a1","role":"authenticated"}', true);
-DO $$
-BEGIN
-  IF (SELECT suspended_at FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000042b1') IS NOT NULL THEN
-    RAISE EXCEPTION 'Ana ve la suspension de Bruno';
-  END IF;
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_class
-    WHERE oid = 'public.profiles'::regclass AND relkind = 'v'
-      AND reloptions @> ARRAY['security_invoker=true']
-  ) THEN
-    RAISE EXCEPTION 'la vista dejo de ser security_invoker';
   END IF;
 END $$;
 
