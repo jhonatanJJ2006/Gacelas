@@ -196,7 +196,8 @@ private fun androidx.compose.foundation.layout.BoxScope.MapaRutasTablero(elegida
         margenArriba = 130.dp, margenAbajo = 330.dp,
     )
     androidx.compose.foundation.layout.Column(
-        Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(end = 12.dp, top = 118.dp),
+        // Debajo de la cabecera de RutasTablero: selector Lista | Mapa, buscador y chips.
+        Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(end = 12.dp, top = 172.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         com.gacelas.correr.GrupoControlesC4("MAPA") {

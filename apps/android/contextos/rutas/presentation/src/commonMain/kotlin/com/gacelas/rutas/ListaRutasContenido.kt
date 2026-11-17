@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Verified
@@ -123,16 +124,17 @@ fun ListaRutasContenido(
         val activos = listOfNotNull(filtros.dificultad, filtros.etiqueta, filtros.distancia.takeIf { it != com.gacelas.rutas.domain.modelo.FiltroDistancia.Todas }).size
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(Modifier.weight(1f)) {
-                CampoTexto("Buscar", consulta, onConsulta, "Buscar rutas...", trailing = {
+                CampoTexto("Buscar rutas", consulta, onConsulta, "Buscar rutas", mostrarEtiqueta = false, trailing = {
                     IconButton(onClick = onBuscar) { Icon(Icons.Filled.Search, "Abrir buscador en el mapa", tint = GColors.TextSecondary) }
                 })
             }
-            com.gacelas.ui.components.BotonChipC2(if (activos > 0) "Filtros ($activos)" else "Filtros", { hojaFiltros = true }, Modifier.testTag("boton-filtros"), activo = activos > 0)
+            // Mismos chips que el modo Mapa (RutasTablero) para que los dos modos se lean igual.
+            com.gacelas.ui.components.ChipVidrio(if (activos > 0) "Filtros ($activos)" else "Filtros", { hojaFiltros = true }, icono = Icons.Filled.Tune, activo = activos > 0, tag = "boton-filtros")
         }
-        Row(Modifier.horizontalScroll(rememberScrollState()).testTag("filtro-categoria"), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Pastilla("Cerca de mí", cerca != null, onCerca)
-            Pastilla("Todas", filtros.categoria == null, { onFiltros(filtros.copy(categoria = null)) })
-            CategoriaRuta.entries.forEach { c -> Pastilla(c.etiqueta, filtros.categoria == c, { onFiltros(filtros.copy(categoria = if (filtros.categoria == c) null else c)) }) }
+        Row(Modifier.horizontalScroll(rememberScrollState()).testTag("filtro-categoria"), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            com.gacelas.ui.components.ChipVidrio("Cerca de mí", onCerca, activo = cerca != null)
+            com.gacelas.ui.components.ChipVidrio("Todas", { onFiltros(filtros.copy(categoria = null)) }, activo = filtros.categoria == null)
+            CategoriaRuta.entries.forEach { c -> com.gacelas.ui.components.ChipVidrio(c.etiqueta, { onFiltros(filtros.copy(categoria = if (filtros.categoria == c) null else c)) }, activo = filtros.categoria == c) }
         }
         if (hojaFiltros) HojaFiltrosRutas(lista.size, filtros, onFiltros) { hojaFiltros = false }
         if (cargando) com.gacelas.ui.components.EsqueletoTarjetas(4, etiqueta = "Cargando rutas")
@@ -148,10 +150,11 @@ fun ListaRutasContenido(
                 )
             }
         }
-        if (!cargando) Column(Modifier.testTag("encabezado-lista-rutas")) {
-            Text("Rutas locales de Loja", style = GType.titleMd, color = GColors.TextPrimary)
-            Text("${lista.size} ${if (lista.size == 1) "sendero" else "senderos"}", style = GType.bodySm, color = GColors.TextSecondary)
-        }
+        // El titulo de la pantalla ya dice "Rutas de Loja": aqui solo el recuento.
+        if (!cargando && lista.isNotEmpty()) Text(
+            "${lista.size} ${if (lista.size == 1) "ruta" else "rutas"}", style = GType.bodySm, color = GColors.TextSecondary,
+            modifier = Modifier.testTag("encabezado-lista-rutas"),
+        )
         (if (cargando) emptyList() else lista).forEach { ruta ->
             val guardada = ruta.id in guardadas
             // Tarjeta C2 compacta: miniatura de 88 dp, datos en linea y numeros pequenos.
@@ -175,12 +178,12 @@ fun ListaRutasContenido(
                         val extra = listOfNotNull(
                             ruta.valoracion?.let { "★ ${decimalLocal(it)} (${ruta.resenas})" },
                             ruta.meGusta.takeIf { it > 0 }?.let { "♥ $it" },
-                            cerca?.get(ruta.id)?.let { "a ${Unidades.texto(it, m, 1)} ${Unidades.etiquetaDistancia(m)}" },
+                            cerca?.get(ruta.id)?.let { "a ${Unidades.texto(it, m, 1).replace('.', ',')} ${Unidades.etiquetaDistancia(m)}" },
                             ruta.autorNombre?.let { "por $it" },
                         )
                         if (extra.isNotEmpty()) Text(extra.joinToString("  ·  "), style = GType.labelMd, color = GColors.C2Muted)
                         Row(Modifier.fillMaxWidth().testTag("metricas-ruta"), horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text("${Unidades.texto(ruta.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}", style = GType.labelLg, color = GColors.C2Violeta)
+                            Text("${Unidades.texto(ruta.distanciaKm, m, 1).replace('.', ',')} ${Unidades.etiquetaDistancia(m)}", style = GType.labelLg, color = GColors.C2Violeta)
                             Text("+${ruta.elevacionM} m", style = GType.labelLg, color = GColors.C2Cielo)
                             EtiquetaDificultad(ruta.dificultad)
                             ruta.categoria?.let { Text(it.etiqueta, style = GType.labelMd, color = GColors.C2Muted) }

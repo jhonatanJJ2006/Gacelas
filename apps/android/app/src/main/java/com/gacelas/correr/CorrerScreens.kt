@@ -1096,10 +1096,12 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
                 }
             }
         }
-        // Barra inferior fija: Compartir y GUARDAR Y PUBLICAR.
+        // Barra inferior fija: Compartir y GUARDAR Y PUBLICAR. El fundido acaba antes de los botones para
+        // que las tarjetas que pasan por debajo no asomen entre ellos.
         Row(
-            Modifier.align(Alignment.BottomCenter).fillMaxWidth().background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Color.Transparent, com.gacelas.ui.components.Tablero.Noche3)))
-                .navigationBarsPadding().padding(horizontal = 14.dp, vertical = 10.dp).testTag("barra-guardar"),
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                .background(androidx.compose.ui.graphics.Brush.verticalGradient(0f to Color.Transparent, 0.3f to com.gacelas.ui.components.Tablero.Noche3))
+                .navigationBarsPadding().padding(start = 14.dp, end = 14.dp, top = 28.dp, bottom = 10.dp).testTag("barra-guardar"),
             horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically,
         ) {
             if (estado.segundos > 0) Row(
