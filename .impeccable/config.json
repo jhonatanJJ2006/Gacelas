@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "apps/web/src/contexts/seguridad/ui/HojaReportarIncidente.tsx"
+        ],
+        "createdAt": "2026-11-17T19:38:11.110Z",
+        "reason": "Claude: borde superior de la hoja inferior del sistema C2 (igual que HojaC2 en Android), no un borde de acento en tarjeta"
+      },
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "apps/web/src/app/BusquedaGlobal.tsx"
+        ],
+        "createdAt": "2026-11-17T19:40:07.774Z",
+        "reason": "Claude: borde superior de modal del sistema C2 (mismo patron que hojas y modales), no un borde de acento en tarjeta"
+      },
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "apps/web/src/shared/ui/ui.tsx"
+        ],
+        "createdAt": "2026-11-17T22:47:37.225Z",
+        "reason": "Claude: borde superior de la hoja inferior del sistema C2 (Modal base, mismo patron que HojaReportarIncidente y BusquedaGlobal), no un borde de acento en tarjeta"
+      }
+    ]
+  }
+}

@@ -59,3 +59,8 @@ apps/android/.kotlin/
 
 # Claves de build iOS (nunca commitear)
 apps/ios/iosApp/Secrets.xcconfig
+
+# Estado local del hook de impeccable
+.impeccable/hook.cache.json
+.impeccable/hook.pending.json
+.impeccable/config.local.json

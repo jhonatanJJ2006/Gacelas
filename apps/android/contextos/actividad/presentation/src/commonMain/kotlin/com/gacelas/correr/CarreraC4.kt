@@ -168,13 +168,13 @@ fun ContenidoCarreraC4(
     BoxWithConstraints(Modifier.fillMaxSize().background(K1.Fondo).testTag("pantalla-carrera")) {
         val bajo = maxHeight < 640.dp
         val controles: ControlesMapaC4 = { recentrar, norte, rumbo, siguiendo ->
-            // Tablero: columna MAPA (centrar, norte, 3D/2D) y REPORTAR debajo (extraCabecera). Crono y Voz
+            // Tablero: columna Mapa (centrar, norte, 3D/2D) y Reportar debajo (extraCabecera). Crono y Voz
             // van en la cabecera de la hoja; el SOS a la izquierda, sobre la hoja.
             Column(
                 Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(end = 12.dp, top = 58.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                GrupoControlesC4("MAPA") {
+                GrupoControlesC4("Mapa") {
                     ControlEtiquetadoC4("Centrar", "Centrar el mapa en tu posición", recentrar, if (siguiendo) "boton-recentrar" else "boton-recentrar-activo", activo = !siguiendo) {
                         Icon(Icons.Filled.MyLocation, null, tint = Color.White, modifier = Modifier.size(20.dp))
                     }
@@ -452,7 +452,7 @@ private fun Chip(titulo: String, valor: String, punto: Color? = null, tag: Strin
 fun GrupoControlesC4(titulo: String, contenido: @Composable () -> Unit) {
     // Tablero: columna de vidrio morado con el rotulo del grupo en violeta.
     Column(Modifier.width(66.dp).vidrioC2(RoundedCornerShape(18.dp)).semantics { contentDescription = titulo }.padding(vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(titulo, style = TextStyle(fontFamily = Inter, fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.14.em), color = GColorsC2.Violeta, maxLines = 1, softWrap = false, modifier = Modifier.padding(top = 2.dp, bottom = 2.dp))
+        Text(titulo, style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.SemiBold), color = GColorsC2.Violeta, maxLines = 1, softWrap = false, modifier = Modifier.padding(top = 2.dp, bottom = 2.dp))
         contenido()
     }
 }
@@ -467,7 +467,7 @@ fun ControlEtiquetadoC4(etiqueta: String, descripcion: String, onClick: () -> Un
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
         icono()
-        Text(etiqueta.uppercase(), style = TextStyle(fontFamily = Inter, fontSize = com.gacelas.ui.components.spAcotado(9.5f, 1.05f), fontWeight = FontWeight.ExtraBold), color = Color.White, maxLines = 1, softWrap = false, modifier = Modifier.padding(top = 3.dp))
+        Text(etiqueta, style = TextStyle(fontFamily = Inter, fontSize = com.gacelas.ui.components.spAcotado(11f, 1.05f), fontWeight = FontWeight.SemiBold), color = Color.White, maxLines = 1, softWrap = false, modifier = Modifier.padding(top = 3.dp))
     }
 }
 
@@ -489,7 +489,7 @@ fun SelectorVistaC4(vista3d: Boolean, onCambiar: (Boolean) -> Unit) {
                 }
             }
         }
-        Text("VISTA ${if (vista3d) "3D" else "2D"}", style = TextStyle(fontFamily = Inter, fontSize = 8.5.sp, fontWeight = FontWeight.ExtraBold), color = GColorsC2.Violeta, modifier = Modifier.padding(top = 4.dp))
+        Text("Vista ${if (vista3d) "3D" else "2D"}", style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.SemiBold), color = GColorsC2.Violeta, modifier = Modifier.padding(top = 4.dp))
     }
 }
 

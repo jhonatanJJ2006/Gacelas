@@ -526,7 +526,7 @@ private fun BoxScope.ControlesMapaCorrer(vista3d: Boolean, onVista: (Boolean) ->
         Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(end = 12.dp, top = 64.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        com.gacelas.correr.GrupoControlesC4("MAPA") {
+        com.gacelas.correr.GrupoControlesC4("Mapa") {
             com.gacelas.correr.ControlEtiquetadoC4("Centrar", "Centrar el mapa en tu posición", recentrar, "boton-recentrar", activo = !siguiendo) {
                 Icon(Icons.Filled.MyLocation, null, tint = Color.White, modifier = Modifier.size(20.dp))
             }
