@@ -7,6 +7,7 @@ import { FilaInterruptor } from '../../identidad'
 import { useIdentidad } from '../../identidad/api'
 import { useAvisos } from '../application/estado'
 import { destinoNotificacion } from '../domain/destino'
+import { decimal } from '../../../shared/lib/geo'
 import {
   filtrarNotificaciones,
   notificacionesVisibles,
@@ -160,7 +161,7 @@ export function Notificaciones() {
             </div>
             <div className="flex justify-between text-label-md">
               <span className="text-text-primary">
-                {reto.km.toFixed(1)} de {reto.metaKm} km acumulados
+                {decimal(reto.km)} de {reto.metaKm} km acumulados
               </span>
               <span className="text-primary">{pctReto}%</span>
             </div>
@@ -168,7 +169,7 @@ export function Notificaciones() {
               <div className="h-full bg-primary-600" style={{ width: `${pctReto}%` }} />
             </div>
             <div className="flex justify-between text-body-sm text-text-secondary">
-              <span>Faltan {Math.max(0, reto.metaKm - reto.km).toFixed(1)} km</span>
+              <span>Faltan {decimal(Math.max(0, reto.metaKm - reto.km))} km</span>
               <span>Cierra en {reto.diasRestantes} días</span>
             </div>
           </div>

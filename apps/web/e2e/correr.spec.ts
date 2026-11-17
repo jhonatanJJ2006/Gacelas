@@ -27,7 +27,7 @@ test.describe('Correr con GPS simulado', () => {
       .click({ trial: true, timeout: 5000 })
 
     await caminar(context, 6, 8)
-    await expect(page.getByTestId('distancia')).not.toHaveText('0.00')
+    await expect(page.getByTestId('distancia')).not.toHaveText('0,00')
 
     await page.getByRole('button', { name: 'Pausar' }).click()
     await expect(page.getByText('En pausa', { exact: true })).toBeVisible()

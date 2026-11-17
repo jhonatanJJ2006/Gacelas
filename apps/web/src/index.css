@@ -203,8 +203,9 @@ body {
     letter-spacing: 0.035em;
     @apply text-[19px] leading-tight text-white;
   }
+  /* Rotulos en mayuscula inicial a 12px: las mayusculas espaciadas de 10px no se leian (igual que en Android). */
   .rotulo-c2 {
-    @apply block text-[10.5px] font-bold uppercase tracking-[0.12em] text-c2-muted;
+    @apply block text-[12px] font-semibold text-c2-muted;
   }
   .cifra-c2 {
     font-family: 'Anton', 'Archivo', sans-serif;
@@ -223,7 +224,7 @@ body {
     background-size: 22px 22px;
   }
   .etiqueta-c2 {
-    @apply block text-[10px] font-extrabold uppercase tracking-[0.12em] text-c2-muted;
+    @apply block text-[12px] font-semibold text-c2-muted;
   }
   .metrica-c2 {
     @apply flex flex-col gap-0.5 bg-c2-s2 px-3 py-2;

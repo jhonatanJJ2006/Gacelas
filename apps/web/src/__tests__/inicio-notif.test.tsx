@@ -8,7 +8,7 @@ describe('inicio', () => {
   it('resumen semanal con carreras reales', async () => {
     prepararApp({ carreras: [carreraPrueba({ distanciaKm: 7.5, inicioMs: Date.now() })] })
     renderRuta('/inicio')
-    expect(await screen.findByTestId('km-semana')).toHaveTextContent('7.5')
+    expect(await screen.findByTestId('km-semana')).toHaveTextContent('7,5')
     expect(screen.getByTestId('insignia-racha')).toHaveTextContent('1 día')
     await userEvent.click(screen.getByRole('link', { name: /empezar a correr/i }))
     // Inicio y Correr se cargan en diferido; con cobertura en CI la carga tarda mas.
@@ -20,7 +20,7 @@ describe('inicio', () => {
   it('sin carreras invita a la primera', async () => {
     prepararApp()
     renderRuta('/inicio')
-    expect(await screen.findByTestId('km-semana')).toHaveTextContent('0.0')
+    expect(await screen.findByTestId('km-semana')).toHaveTextContent('0,0')
   })
 })
 

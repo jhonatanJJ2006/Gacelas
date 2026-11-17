@@ -41,7 +41,7 @@ export function Bienvenida() {
           <TarjetaC4>
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-[#C084FC]" />
-              <span className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#C084FC]">
+              <span className="rotulo-c2 !inline !text-[#C084FC]">
                 Running en Loja, Ecuador
               </span>
             </div>

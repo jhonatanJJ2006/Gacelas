@@ -365,7 +365,7 @@ export function CarreraEnCurso() {
           <div className="mx-auto mb-2 h-1 w-9 rounded-full bg-white/20" />
           <div className="flex items-end gap-4">
             <div className="shrink-0">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-white/80">
+              <div className="rotulo-c2 !text-white/80">
                 Distancia
               </div>
               <div className="flex items-baseline gap-1">

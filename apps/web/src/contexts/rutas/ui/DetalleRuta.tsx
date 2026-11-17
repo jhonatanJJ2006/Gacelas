@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { enlaceRuta, type DatosCompartir } from '../../../shared/lib/compartir'
-import { Unidades } from '../../../shared/lib/geo'
+import { Unidades, decimal } from '../../../shared/lib/geo'
 import { CompartirDialogo } from '../../../shared/ui/CompartirDialogo'
 import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
 import { TrazadoRuta } from '../../../shared/ui/TrazadoRuta'
@@ -321,7 +321,7 @@ export function DetalleRuta() {
                     data-testid="valoracion-ruta"
                   >
                     <Estrellas valor={ruta.valoracion} />
-                    {ruta.valoracion.toFixed(1)} · {ruta.resenas}
+                    {decimal(ruta.valoracion)} · {ruta.resenas}
                   </span>
                 )}
               </div>

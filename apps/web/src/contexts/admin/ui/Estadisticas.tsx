@@ -76,7 +76,7 @@ export function pdfEstadisticas(d: Datos): Uint8Array {
 function Kpi({ t, v, s }: { t: string; v: string | number; s?: string }) {
   return (
     <div className={`${tarjeta} p-3`}>
-      <p className="text-[10px] font-extrabold uppercase tracking-widest text-[#C084FC]">{t}</p>
+      <p className="rotulo-c2 !text-[#C084FC]">{t}</p>
       <p className="text-[20px] font-bold tabular-nums text-white leading-tight">
         {typeof v === 'number' ? v.toLocaleString('es-EC') : v}
       </p>

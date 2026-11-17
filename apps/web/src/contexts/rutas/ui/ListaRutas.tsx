@@ -2,7 +2,7 @@ import { EsqueletoLista } from '../../../shared/ui/Esqueletos'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ID_USUARIO, type Ruta } from '../../../mocks/data'
-import { Unidades } from '../../../shared/lib/geo'
+import { Unidades, decimal } from '../../../shared/lib/geo'
 import { useAnchoMinimo, useEsEscritorio } from '../../../shared/lib/useEsEscritorio'
 import { MapaRutas } from '../../../shared/ui/MapaEditable'
 import { MiniMapa, Panel, PerfilElevacion, Rotulo } from '../../../shared/ui/Visual'
@@ -142,7 +142,7 @@ export function ListaRutas() {
   // Linea de datos extra, igual que Android: valoracion, me gusta, distancia a ti y autor.
   const extras = (r: Ruta) =>
     [
-      r.valoracion != null ? `${r.valoracion.toFixed(1)} de 5 (${r.resenas ?? 0})` : null,
+      r.valoracion != null ? `${decimal(r.valoracion)} de 5 (${r.resenas ?? 0})` : null,
       (r.meGusta ?? 0) > 0 ? `${r.meGusta} me gusta` : null,
       cerca?.[r.id] != null
         ? `a ${Unidades.texto(cerca[r.id], m, 1)} ${Unidades.etiquetaDistancia(m)}`
@@ -623,7 +623,7 @@ function Destacadas({ rutas, m }: { rutas: Ruta[]; m: boolean }) {
         rotulo: 'Mejor valorada',
         icono: 'star',
         ruta: valorada,
-        nota: `${valorada.valoracion!.toFixed(1)} de 5 en ${valorada.resenas} reseñas`,
+        nota: `${decimal(valorada.valoracion!)} de 5 en ${valorada.resenas} reseñas`,
       })
     const objetivo = 30 * 60
     const paso = ritmo ?? 390

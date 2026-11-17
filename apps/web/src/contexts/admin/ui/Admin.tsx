@@ -159,7 +159,7 @@ function Dashboard({ f }: { f: FuenteAdmin }) {
             key={t}
             className={`p-4 ${i === 0 ? 'bg-gradient-to-br from-[#7B1FA2] to-[#3b1a5c]' : tarjeta}`}
           >
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-[#C084FC]">
+            <p className="rotulo-c2 !text-[#C084FC]">
               {t}
             </p>
             <p className="font-display italic text-[30px] text-white leading-tight">{v}</p>
@@ -188,7 +188,7 @@ function TablaUsuarios({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-[11px] uppercase tracking-widest text-c2-muted border-b border-c2-linea">
+          <tr className="text-left text-[12px] font-semibold text-c2-muted border-b border-c2-linea">
             <th className="py-2">Usuario</th>
             <th>Km totales</th>
             <th>Rol</th>
@@ -268,7 +268,7 @@ function Usuarios({ f }: { f: FuenteAdmin }) {
           secundario="Cerrar"
           onCerrar={() => setAbierto(null)}
         >
-          <label className="mt-4 block text-[11px] uppercase tracking-widest text-c2-muted">
+          <label className="mt-4 rotulo-c2">
             Rol
             <select
               aria-label="Rol del usuario"
@@ -475,7 +475,7 @@ function Eventos({ f }: { f: FuenteAdmin }) {
   const { datos, error, recargar } = useCarga<EventoAdmin[]>(() => f.eventos(), [f])
   const [editando, setEditando] = useState<Partial<EventoAdmin> | null>(null)
   const campo = (k: keyof EventoAdmin, etiqueta: string, tipo = 'text') => (
-    <label className="block mt-3 text-[11px] uppercase tracking-widest text-c2-muted">
+    <label className="mt-3 rotulo-c2">
       {etiqueta}
       <input
         aria-label={etiqueta}

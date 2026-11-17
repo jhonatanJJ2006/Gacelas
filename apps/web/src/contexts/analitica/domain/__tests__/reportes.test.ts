@@ -44,7 +44,7 @@ describe('reporte personal', () => {
     expect(r.mejores).toMatchObject({ masLargaKm: 10, mejorRitmoSegKm: 300 })
     expect(r.racha.actual).toBe(3)
     expect(r.rutasFavoritas[0]).toMatchObject({ id: RUTAS_LOJA[0].id, veces: 2 })
-    expect(textoCompartir(r)).toContain('18.0 km (+200% vs. periodo anterior)')
+    expect(textoCompartir(r)).toContain('18,0 km (+200% vs. periodo anterior)')
   })
 
   it('mes y año calendario', () => {

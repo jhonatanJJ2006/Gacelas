@@ -1,4 +1,4 @@
-import { haversineM } from './geo'
+import { haversineM, decimal } from './geo'
 
 export type FormatoCompartir = 'historia' | 'post' | 'sticker'
 export interface Punto {
@@ -80,7 +80,7 @@ export const formatoRitmo = (s?: number | null) =>
 
 /** Metricas a mostrar (etiqueta, valor) segun lo que haya. */
 export function metricas(d: DatosCompartir): [string, string][] {
-  const r: [string, string][] = [['Distancia', `${d.distanciaKm.toFixed(2)} km`]]
+  const r: [string, string][] = [['Distancia', `${decimal(d.distanciaKm, 2)} km`]]
   if (d.segundos) r.push(['Tiempo', formatoTiempo(d.segundos)])
   if (d.segundos) r.push(['Ritmo /km', formatoRitmo(d.ritmoSegKm)])
   if (d.desnivelM !== undefined) r.push(['Desnivel', `${Math.round(d.desnivelM)} m`])
@@ -90,8 +90,8 @@ export function metricas(d: DatosCompartir): [string, string][] {
 export function textoCompartir(d: DatosCompartir) {
   const base =
     d.tipo === 'carrera'
-      ? `Corrí ${d.distanciaKm.toFixed(2)} km${d.segundos ? ` en ${formatoTiempo(d.segundos)}` : ''} con Runcity`
-      : `Mira esta ruta en Runcity: ${d.titulo} (${d.distanciaKm.toFixed(1)} km)`
+      ? `Corrí ${decimal(d.distanciaKm, 2)} km${d.segundos ? ` en ${formatoTiempo(d.segundos)}` : ''} con Runcity`
+      : `Mira esta ruta en Runcity: ${d.titulo} (${decimal(d.distanciaKm)} km)`
   const racha = d.rachaDias && d.rachaDias > 1 ? ` · racha de ${d.rachaDias} días` : ''
   return `${base}${racha} 🦌🔥`
 }

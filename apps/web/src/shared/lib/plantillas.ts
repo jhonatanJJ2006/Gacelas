@@ -1,3 +1,4 @@
+import { decimal } from './geo'
 import { formatoRitmo, formatoTiempo, proyectar, type DatosCompartir } from './compartir'
 
 /** Plantillas transparentes (estilo Strava) para poner encima de una foto propia. */
@@ -37,7 +38,7 @@ export function normalizarHandle(h: string) {
 
 /** Datos compactos (etiqueta, valor) para las plantillas. */
 export function datosPlantilla(d: DatosCompartir): [string, string][] {
-  const r: [string, string][] = [['Distancia', `${d.distanciaKm.toFixed(2)} km`]]
+  const r: [string, string][] = [['Distancia', `${decimal(d.distanciaKm, 2)} km`]]
   if (d.segundos)
     r.push(['Ritmo', `${formatoRitmo(d.ritmoSegKm)} /km`], ['Tiempo', formatoTiempo(d.segundos)])
   else if (d.desnivelM !== undefined) r.push(['Desnivel', `${Math.round(d.desnivelM)} m`])

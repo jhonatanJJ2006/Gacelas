@@ -132,7 +132,7 @@ export function DetalleClub() {
             <div className="flex items-center gap-3">
               <LogoClub club={club} grande />
               <div className="min-w-0">
-                <span className="text-[11px] uppercase tracking-wide text-primary-400">
+                <span className="rotulo-c2 !inline !text-primary-400">
                   {ETIQUETA_TIPO[club.tipo]}
                   {club.oculto && ' · Oculto por moderación'}
                 </span>

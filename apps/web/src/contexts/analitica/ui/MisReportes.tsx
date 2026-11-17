@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { BarrasHorizontales, GraficoBarras } from '../../../shared/ui/Graficos'
 import { useActividad } from '../../actividad/api'
 import { useRutas } from '../../rutas/api'
+import { decimal } from '../../../shared/lib/geo'
 import {
   aCsv,
   aPdf,
@@ -62,7 +63,7 @@ export function exportarPdf(rep: ReportePersonal) {
     {
       lineas: [
         etiquetaRango(rep),
-        `Distancia: ${rep.actual.km.toFixed(1)} km (anterior ${rep.previo.km.toFixed(1)} km)`,
+        `Distancia: ${decimal(rep.actual.km)} km (anterior ${decimal(rep.previo.km)} km)`,
         `Carreras: ${rep.actual.carreras}   Tiempo: ${duracionTexto(rep.actual.segundos)}`,
         `Ritmo medio: ${ritmoTexto(rep.actual.ritmoSegKm)} /km   Desnivel: ${rep.actual.desnivelM} m`,
         `Racha actual: ${rep.racha.actual} dias (mejor ${rep.racha.mejor})`,
@@ -138,7 +139,7 @@ export function MisReportes() {
           <span className="etiqueta-c2">Distancia</span>
           <p className="flex items-baseline gap-2">
             <span className="valor-c2 text-white" data-testid="km-reporte">
-              {rep.actual.km.toFixed(1)}
+              {decimal(rep.actual.km)}
             </span>
             <span className="text-c2-muted text-[13px]">km</span>
             <span
@@ -176,7 +177,7 @@ export function MisReportes() {
         <section className="tarjeta-c2 p-4">
           <h2 className="etiqueta-c2 mb-2">Mejores marcas del periodo</h2>
           <div className="grid grid-cols-3 gap-2">
-            <Metrica etiqueta="Más larga" valor={`${rep.mejores.masLargaKm.toFixed(1)} km`} />
+            <Metrica etiqueta="Más larga" valor={`${decimal(rep.mejores.masLargaKm)} km`} />
             <Metrica etiqueta="Mejor ritmo" valor={ritmoTexto(rep.mejores.mejorRitmoSegKm)} />
             <Metrica etiqueta="Más desnivel" valor={`${Math.round(rep.mejores.masDesnivelM)} m`} />
           </div>

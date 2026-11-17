@@ -24,7 +24,7 @@ import {
   totalesSemana,
 } from '../../shared/kernel/estadisticas'
 import type { CarreraGuardada } from '../../shared/kernel/tipos'
-import { formatearRitmo, Unidades } from '../../shared/lib/geo'
+import { formatearRitmo, Unidades, decimal } from '../../shared/lib/geo'
 import { Esqueleto } from '../../shared/ui/Esqueletos'
 import {
   Anillo,
@@ -432,7 +432,7 @@ export function proximosLogros(carreras: CarreraGuardada[]) {
     .filter((md) => !md.lograda && avance[md.id])
     .map((md) => {
       const a = avance[md.id]!
-      const fmt = (n: number) => (a.u === 'km' ? n.toFixed(1) : String(Math.floor(n)))
+      const fmt = (n: number) => (a.u === 'km' ? decimal(n) : String(Math.floor(n)))
       return {
         id: md.id,
         titulo: md.titulo,
