@@ -140,6 +140,7 @@ fun InicioScreen(
         zona = zona,
         corriendo = vivos.size,
         avisoPendientes = { com.gacelas.ui.AvisoCarrerasPendientes() },
+        corredor3D = { Runner3D(ClipCorredor.Idle, autoRotar = true, camara = Position(0f, 0.3f, 4.4f), sobreFondo = true) },
     )
 }
 

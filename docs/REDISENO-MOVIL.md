@@ -105,3 +105,8 @@ No hizo falta una migración nueva:
 - Datos reales: clima por hora de Open-Meteo y seguridad de las RPC de la migración 040. Sin servidor no hay notificaciones,
   eventos ni incidentes de ejemplo; los bloques sin fuente se ocultan.
 - QA: `TableroQaTest` (capturas de todas las pantallas y modales) y `TableroInteraccionesTest` (toques y navegación).
+
+## Android 0.9.18: corredor 3D en Inicio
+
+- Inicio: el corredor 3D vuelve a pararse sobre el mapa de Loja, entre los controles de arriba y la tarjeta de la ruta del día.
+- Usa el mismo Filament translúcido (sobreFondo) que se usaba en Inicio desde 0.9.5.
