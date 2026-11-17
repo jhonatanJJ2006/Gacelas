@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.gacelas.ui.theme.GColors
 
 /** Flecha de retroceso de las pantallas de mapa (arriba a la izquierda, el que llama pone los insets). */
@@ -32,7 +33,7 @@ fun BotonVolverMapa(onClick: () -> Unit, modifier: Modifier = Modifier) {
     ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = Color.White, modifier = Modifier.size(22.dp)) }
 }
 
-/** Boton lateral de reportar incidente (tablero): cuadro ambar con icono y la etiqueta REPORTAR debajo. */
+/** Boton lateral de reportar incidente (tablero): cuadro ambar con icono y la etiqueta Reportar debajo. */
 @Composable
 fun BotonReportarMapa(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val forma = RoundedCornerShape(18.dp)
@@ -44,7 +45,7 @@ fun BotonReportarMapa(onClick: () -> Unit, modifier: Modifier = Modifier) {
             Modifier.size(58.dp).clip(forma).background(Tablero.AmbarFondo).border(2.dp, Color(0xFFFBBF24).copy(alpha = 0.7f), forma),
             contentAlignment = Alignment.Center,
         ) { Icon(Icons.Filled.Warning, "Reportar incidente", tint = Color.White, modifier = Modifier.size(26.dp)) }
-        androidx.compose.material3.Text("REPORTAR", style = com.gacelas.ui.theme.GType.labelMd.copy(fontSize = spAcotado(9.5f, 1.05f), fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold),
+        androidx.compose.material3.Text("Reportar", style = com.gacelas.ui.theme.GType.labelMd.copy(fontSize = spAcotado(11f, 1.05f), fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold, letterSpacing = 0.sp),
             color = Color(0xFFFBBF24), maxLines = 1, softWrap = false, modifier = Modifier.padding(top = 3.dp))
     }
 }
