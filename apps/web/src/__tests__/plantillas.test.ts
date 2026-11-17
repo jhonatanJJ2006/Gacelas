@@ -27,12 +27,12 @@ describe('plantillas', () => {
   })
   it('datos compactos de una carrera', () => {
     expect(datosPlantilla(d)).toEqual([
-      ['Distancia', '5.02 km'],
+      ['Distancia', '5,02 km'],
       ['Ritmo', `5'12" /km`],
       ['Tiempo', '26:10'],
     ])
     expect(datosPlantilla({ ...d, segundos: undefined, desnivelM: 41.6 })).toEqual([
-      ['Distancia', '5.02 km'],
+      ['Distancia', '5,02 km'],
       ['Desnivel', '42 m'],
     ])
   })

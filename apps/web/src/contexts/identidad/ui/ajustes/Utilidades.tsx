@@ -68,9 +68,7 @@ export function Brujula() {
           [r == null ? '--' : 'Buena', 'Calibración', 'text-white'],
         ].map(([v, e, c]) => (
           <div key={e}>
-            <span className="block text-[10px] uppercase tracking-wider font-bold text-c2-muted">
-              {e}
-            </span>
+            <span className="rotulo-c2">{e}</span>
             <span className={`font-display italic text-[20px] ${c}`}>{v}</span>
           </div>
         ))}

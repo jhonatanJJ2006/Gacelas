@@ -6,6 +6,7 @@ import { clubes as repoClubes, type Club } from '../contexts/eventos/api'
 import { useRutas } from '../contexts/rutas/api'
 import type { CorredorPublico } from '../shared/kernel/comunidad'
 import { useEventosVisibles } from './datosApp'
+import { decimal } from '../shared/lib/geo'
 
 /** Pantallas que se pueden abrir desde la busqueda. */
 const PANTALLAS = [
@@ -116,7 +117,7 @@ export function BusquedaGlobal({ abierto, onCerrar }: { abierto: boolean; onCerr
           lista.push({
             grupo: 'Rutas',
             titulo: r.nombre,
-            detalle: `${r.distanciaKm.toFixed(1)} km · ${r.dificultad}`,
+            detalle: `${decimal(r.distanciaKm)} km · ${r.dificultad}`,
             ruta: `/rutas/${r.id}`,
             icono: 'route',
           })

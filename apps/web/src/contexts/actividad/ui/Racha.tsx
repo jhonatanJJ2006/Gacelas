@@ -1,6 +1,7 @@
 import { mapaCalor, rachaEnRiesgo, type Racha } from '../../../shared/kernel/rachas'
 import { useActividad } from '../application/estado'
 import { useRacha } from './useRacha'
+import { decimal } from '../../../shared/lib/geo'
 
 const plural = (n: number, uno: string, varios: string) => `${n} ${n === 1 ? uno : varios}`
 
@@ -121,7 +122,7 @@ export function TarjetaRacha() {
             {s.map((c) => (
               <span
                 key={c.dia}
-                title={c.km ? `${c.km.toFixed(1)} km` : undefined}
+                title={c.km ? `${decimal(c.km)} km` : undefined}
                 className={`h-3 w-full max-w-4 rounded-[3px] ${c.futuro ? 'bg-transparent' : nivel(c.km)}`}
               />
             ))}

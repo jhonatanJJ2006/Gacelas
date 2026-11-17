@@ -90,13 +90,13 @@ export function HojaReportarIncidente({
         </h2>
         <div className="flex gap-3 text-sm">
           <div className="flex-1 rounded-lg bg-c2-bg p-3 min-w-0">
-            <div className="text-[11px] uppercase tracking-wider text-text-secondary">Dónde</div>
+            <div className="rotulo-c2 !text-text-secondary">Dónde</div>
             <div data-testid="reporte-direccion" className="text-text-primary truncate">
               {direccion}
             </div>
           </div>
           <div className="rounded-lg bg-c2-bg p-3">
-            <div className="text-[11px] uppercase tracking-wider text-text-secondary">Hora</div>
+            <div className="rotulo-c2 !text-text-secondary">Hora</div>
             <div className="text-text-primary tabular-nums">{hora}</div>
           </div>
         </div>

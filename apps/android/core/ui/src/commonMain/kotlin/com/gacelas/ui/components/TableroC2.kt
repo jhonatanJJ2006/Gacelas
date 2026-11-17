@@ -91,10 +91,10 @@ object Tablero {
 fun Modifier.vidrioC2(forma: Shape = RoundedCornerShape(16.dp)): Modifier =
     this.clip(forma).background(Tablero.Vidrio).border(1.dp, Tablero.VidrioBorde, forma)
 
-/** Rotulo pequeno en mayusculas de los widgets. */
+/** Rotulo de los widgets: mayuscula inicial y 12 sp (las mayusculas espaciadas de 9,5 sp no se leian). */
 @Composable
 fun RotuloWidget(texto: String, modifier: Modifier = Modifier, color: Color = Color.White.copy(alpha = 0.6f)) {
-    TextoAjustableC2(texto.uppercase(), GType.labelMd.copy(fontSize = spAcotado(9.5f), fontWeight = FontWeight.ExtraBold, letterSpacing = 0.14.em), color, modifier, minimo = 0.65f)
+    TextoAjustableC2(texto,GType.labelMd.copy(fontSize = spAcotado(12f), fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp), color, modifier, minimo = 0.75f)
 }
 
 /** Cifra del tablero en Anton (sin cursiva) con unidad pequena. */

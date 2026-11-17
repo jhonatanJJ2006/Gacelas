@@ -200,7 +200,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
                         com.gacelas.ui.components.CeldaTablero("Desnivel", "+${ruta.elevacionM}", Modifier.weight(1f), unidad = "m", color = GColors.C2Cielo, tamano = 26)
                     }
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        com.gacelas.ui.components.CeldaTablero("Tu mejor", mejor?.let { com.gacelas.tracking.formatearMs(it.segundos) } ?: "--", Modifier.weight(1f), color = GColors.C2Menta, tamano = 26)
+                        com.gacelas.ui.components.CeldaTablero("Tu mejor", mejor?.let { com.gacelas.tracking.formatearMs(it.segundos) } ?: "Sin tiempo", Modifier.weight(1f), color = if (mejor != null) GColors.C2Menta else GColors.C2Muted, tamano = if (mejor != null) 26 else 18)
                         com.gacelas.ui.components.CeldaTablero(if (sociales) "Corredores" else "Tus carreras", "${if (sociales) maxOf(corredores.second, tusCarreras.size) else tusCarreras.size}", Modifier.weight(1f), tamano = 26)
                     }
                 }

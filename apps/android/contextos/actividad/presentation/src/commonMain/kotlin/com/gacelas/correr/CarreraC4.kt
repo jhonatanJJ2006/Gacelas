@@ -291,7 +291,7 @@ private fun HojaMetricasC4(
                     .padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text(if (e.pausada) "EN PAUSA" else "DISTANCIA", style = etiqueta.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = 0.14.em), color = Color.White.copy(alpha = 0.85f))
+                com.gacelas.ui.components.RotuloWidget(if (e.pausada) "En pausa" else "Distancia", color = Color.White.copy(alpha = 0.85f))
                 Row(verticalAlignment = Alignment.Bottom) {
                     com.gacelas.ui.components.TextoAjustableC2(Unidades.texto(e.distanciaKm, m).replace('.', ','), TextStyle(fontFamily = num, fontSize = if (bajo) 52.sp else 70.sp, lineHeight = if (bajo) 54.sp else 72.sp), Color.White,
                         Modifier.weight(1f, fill = false).testTag("distancia"), minimo = 0.6f)
@@ -323,7 +323,7 @@ private fun HojaMetricasC4(
                 .clickable(onClickLabel = "Ver parciales", onClick = onCrono).padding(horizontal = 12.dp, vertical = 9.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text("PARCIALES", style = etiqueta.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = 0.14.em), color = Color.White.copy(alpha = 0.55f))
+            com.gacelas.ui.components.RotuloWidget("Parciales", color = Color.White.copy(alpha = 0.55f))
             Box(Modifier.weight(1f)) { BarrasParciales(e) }
             val mejor = km.minByOrNull { it.segundos / it.distanciaKm.coerceAtLeast(0.001) }
             Text(if (mejor != null) "Mejor ${formatearMs(mejor.segundos)}" else "Km 1", style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.Bold), color = GColorsC2.Menta, maxLines = 1)

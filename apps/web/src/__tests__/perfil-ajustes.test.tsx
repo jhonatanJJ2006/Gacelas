@@ -19,7 +19,7 @@ describe('perfil', () => {
     renderRuta('/perfil')
     expect(await screen.findByText('Jhona Runner')).toBeInTheDocument()
     expect(screen.getByTestId('total-carreras')).toHaveTextContent('2')
-    expect(screen.getByText('13.0')).toBeInTheDocument()
+    expect(screen.getByText('13,0')).toBeInTheDocument()
     expect(screen.getAllByTestId('carrera-guardada')).toHaveLength(2)
     await userEvent.click(screen.getByRole('button', { name: 'Eliminar Suave' }))
     await userEvent.click(

@@ -43,7 +43,7 @@ describe('compartir', () => {
   })
   it('arma metricas, texto y enlace de WhatsApp', () => {
     expect(metricas(carrera)).toEqual([
-      ['Distancia', '5.23 km'],
+      ['Distancia', '5,23 km'],
       ['Tiempo', '28:32'],
       ['Ritmo /km', `5'27"`],
       ['Desnivel', '48 m'],

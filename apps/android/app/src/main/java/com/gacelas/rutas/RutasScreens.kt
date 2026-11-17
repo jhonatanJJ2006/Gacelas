@@ -118,7 +118,8 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
     val seguridad by androidx.compose.runtime.produceState(emptyMap<String, String>(), c.incidentes) {
         value = c.incidentes?.seguridadRutas().orEmpty().mapValues { it.value.texto }
     }
-    var comoLista by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    // Rutas abre en Lista; el Mapa es la vista secundaria y "atras" desde el Mapa vuelve a la Lista.
+    var comoLista by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(true) }
     val cargando = repo != null && remotas == null && !leidas && q.pestana == com.gacelas.rutas.domain.modelo.PestanaRutas.Explorar
     val onCerca = {
         if (q.cerca != null) vm.quitarCercania()
@@ -133,7 +134,6 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
         context.aviso(if (guardada) "Ruta quitada de guardadas" else "Ruta guardada")
     }
     if (comoLista) {
-        androidx.activity.compose.BackHandler { comoLista = false }
         ListaRutasContenido(
             cargando = cargando,
             lista = lista, pestana = q.pestana, onPestana = vm::pestana, guardadas = guardadas,
@@ -148,10 +148,11 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
         return
     }
     val espacio = com.gacelas.ui.components.LocalEspacioDock.current
+    androidx.activity.compose.BackHandler { comoLista = true }
     RutasTablero(
         lista = lista, guardadas = guardadas, consulta = q.texto, onConsulta = vm::buscar, filtros = q.filtros, onFiltros = vm::filtrar,
         cerca = q.cerca, onCerca = onCerca, m = m, puedeDibujar = repo != null && perfilSesion != null,
-        onAtras = onAtras, onRuta = onRuta,
+        onAtras = { comoLista = true }, onRuta = onRuta,
         onCorrerRuta = { id -> com.gacelas.rutas.infrastructure.RutaActiva.id = id; onCorrerRuta() },
         onDibujar = onDibujar, onAlternarGuardada = alternarGuardada, onVerLista = { comoLista = true },
         seguridad = seguridad, espacioInferior = espacio, cargando = cargando,
@@ -172,12 +173,15 @@ private fun androidx.compose.foundation.layout.BoxScope.MapaRutasTablero(elegida
     val principal = remember(elegida?.id) { elegida?.let(trazo).orEmpty() }
     val resto = remember(otras) { otras.take(12).map(trazo).filter { it.size >= 2 } }
     val salidas = remember(otras, elegida) { (listOfNotNull(elegida) + otras).filter { it.puntos.isNotEmpty() }.map { com.gacelas.ui.components.CirculoMapa(LatLng(it.puntos.first().first, it.puntos.first().second), 8f, GColors.C2Morado, id = it.id) } }
+    // Tu posicion (punto azul con halo) para saber donde estas respecto a las rutas.
+    val yo = remember { ultimaUbicacion(context)?.let { LatLng(it.first, it.second) } }
+    val tuPunto = yo?.let { listOf(com.gacelas.ui.components.CirculoMapa(it, 18f, GColors.Info.copy(alpha = 0.25f), Color.Transparent, 0f), com.gacelas.ui.components.CirculoMapa(it, 8f, GColors.Info, Color.White, 3f)) }.orEmpty()
     if (com.gacelas.ui.components.Mapas.configurado()) {
         com.gacelas.ui.components.MapaLibre(
             Modifier.fillMaxSize(),
             trazos = resto.map { com.gacelas.ui.components.TrazoMapa(it, Color(0xFF8B8FB8), 3f, 0.7f) } +
                 (if (principal.size >= 2) listOf(com.gacelas.ui.components.TrazoMapa(principal, GColors.C2Violeta, 14f, 0.3f), com.gacelas.ui.components.TrazoMapa(principal, GColors.C2Violeta, 5f)) else emptyList()),
-            circulos = salidas, zoom = 13.6,
+            circulos = salidas + tuPunto, zoom = 13.6,
             centro = principal.takeIf { it.isNotEmpty() }?.let { p -> LatLng(p.sumOf { it.latitude } / p.size, p.sumOf { it.longitude } / p.size) } ?: com.gacelas.ui.components.Mapas.CENTRO_LOJA,
             alTocarCirculo = alElegir,
             alMoverCamara = { rumbo = it.cameraPosition.bearing.toFloat() },
@@ -185,8 +189,10 @@ private fun androidx.compose.foundation.layout.BoxScope.MapaRutasTablero(elegida
         )
         LaunchedEffect(elegida?.id, mapa) {
             val mp = mapa ?: return@LaunchedEffect
-            // Encuadre en la franja libre entre la cabecera y el carrusel.
-            if (principal.size >= 2) mp.animateCamera(org.maplibre.android.camera.CameraUpdateFactory.newLatLngBounds(com.gacelas.ui.components.MapaMat.limites(principal),
+            // Encuadre en la franja libre entre la cabecera y el carrusel. Incluye tu posicion si estas cerca
+            // (unos 15 km); si estas lejos de Loja, solo la ruta para no alejar el mapa.
+            val cerca = yo?.takeIf { y -> principal.any { kotlin.math.abs(it.latitude - y.latitude) < 0.15 && kotlin.math.abs(it.longitude - y.longitude) < 0.15 } }
+            if (principal.size >= 2) mp.animateCamera(org.maplibre.android.camera.CameraUpdateFactory.newLatLngBounds(com.gacelas.ui.components.MapaMat.limites(principal + listOfNotNull(cerca)),
                 (40 * dens).toInt(), (140 * dens).toInt(), (90 * dens).toInt(), (340 * dens).toInt()))
         }
     } else com.gacelas.ui.components.MapaEsquemaC2(
@@ -196,7 +202,8 @@ private fun androidx.compose.foundation.layout.BoxScope.MapaRutasTablero(elegida
         margenArriba = 130.dp, margenAbajo = 330.dp,
     )
     androidx.compose.foundation.layout.Column(
-        Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(end = 12.dp, top = 118.dp),
+        // Debajo de la cabecera de RutasTablero: selector Lista | Mapa, buscador y chips.
+        Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(end = 12.dp, top = 180.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         com.gacelas.correr.GrupoControlesC4("MAPA") {

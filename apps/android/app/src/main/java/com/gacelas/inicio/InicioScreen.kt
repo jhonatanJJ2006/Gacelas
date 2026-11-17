@@ -101,21 +101,14 @@ fun InicioScreen(
     val zona by androidx.compose.runtime.produceState<com.gacelas.seguridad.domain.ResumenZona?>(null, cont.incidentes) { value = cont.incidentes?.resumenZona() }
     val seguridadRutas by androidx.compose.runtime.produceState(emptyMap<String, com.gacelas.seguridad.domain.SeguridadRuta>(), cont.incidentes) { value = cont.incidentes?.seguridadRutas().orEmpty() }
     val vivos by androidx.compose.runtime.produceState(emptyList<com.gacelas.vivo.CorredorEnMapa>(), cont.mapaVivo) { value = cont.mapaVivo?.listar().orEmpty() }
-    val incidentes = com.gacelas.seguridad.ui.incidentesRecientes()
     val ajustesNotif = ajustes
     val base by com.gacelas.notificaciones.notificacionesBase()
     val sinLeer = com.gacelas.comunidad.domain.reglas.notificacionesVisibles(ajustesNotif, base).count { !it.leida }
-    val trazo = remember(ruta?.id) { ruta?.let { r -> r.puntos.map { org.maplibre.android.geometry.LatLng(it.first, it.second) }.ifEmpty { com.gacelas.ui.components.Mapas.trazo(r.id) } }.orEmpty() }
     InicioTablero(
         semana = semana, hoy = hoy, m = m, racha = com.gacelas.ui.rachaState(),
-        mapa = {
-            com.gacelas.ui.components.MapaTablero(
-                trazo, Modifier.fillMaxSize(),
-                circulos = vivos.map { com.gacelas.ui.components.CirculoMapa(org.maplibre.android.geometry.LatLng(it.lat, it.lng), 7f, GColors.C2Menta) } +
-                    incidentes.take(20).map { com.gacelas.ui.components.CirculoMapa(org.maplibre.android.geometry.LatLng(it.lat, it.lng), 6f, Color(0xFFF59E0B)) },
-                margenArriba = 110.dp, margenAbajo = 110.dp,
-            )
-        },
+        // Detras del corredor, el escenario de la version anterior (0.9.16), no el mapa: lo pidio el usuario.
+        // La palabra "CORRE LOJA" queda sobre la tarjeta de la ruta del dia, detras del corredor.
+        mapa = { com.gacelas.inicio.CapaEscenarioC2(Modifier.fillMaxSize(), margenPalabra = 150.dp) },
         onCorrer = onCorrer, onBuscar = onBuscar, onNotificaciones = onNotificaciones, onProgreso = onProgreso, onMapaVivo = onMapaVivo,
         onComunidad = onComunidad, onEvento = onEvento, onRutas = onRutas, onRuta = { id -> onRuta?.invoke(id) ?: onRutas() },
         sinLeer = sinLeer,

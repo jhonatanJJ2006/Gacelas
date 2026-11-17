@@ -100,7 +100,7 @@ describe('nivel y logros reales', () => {
   it('proximos logros salen de las carreras', () => {
     const logros = proximosLogros([carreraPrueba({ distanciaKm: 8 })])
     expect(logros.map((l) => l.id)).toEqual(['10k', '21k', 'racha7'])
-    expect(logros[0]).toMatchObject({ pct: 80, texto: '8.0/10 km' })
+    expect(logros[0]).toMatchObject({ pct: 80, texto: '8,0/10 km' })
   })
 
   it('km por dia y ritmo historico', () => {
@@ -142,7 +142,7 @@ describe('piezas del rediseno', () => {
     prepararApp({ ajustes: { metaKmSemana: 30 }, carreras: [carreraPrueba({ distanciaKm: 13 })] })
     renderRuta('/inicio')
     expect(await screen.findByRole('heading', { name: /te faltan 17 km/i })).toBeInTheDocument()
-    expect(screen.getByTestId('semana-atletica')).toHaveTextContent('13.0 / 30 km')
+    expect(screen.getByTestId('semana-atletica')).toHaveTextContent('13,0 / 30 km')
   })
 
   it('Ctrl+K abre la busqueda global y Enter abre la ruta', async () => {

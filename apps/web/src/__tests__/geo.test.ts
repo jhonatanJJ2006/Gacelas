@@ -16,8 +16,8 @@ describe('geo', () => {
     expect(formatearMs(125)).toBe('2:05')
   })
   it('unidades metricas e imperiales', () => {
-    expect(Unidades.texto(1.609344, false)).toBe('1.00')
-    expect(Unidades.texto(5, true, 1)).toBe('5.0')
+    expect(Unidades.texto(1.609344, false)).toBe('1,00')
+    expect(Unidades.texto(5, true, 1)).toBe('5,0')
     expect(Unidades.etiquetaDistancia(false)).toBe('mi')
     expect(Unidades.ritmo(300, true)).toBe(300)
     expect(Unidades.ritmo(300, false)).toBe(482)

@@ -119,7 +119,7 @@ fun RutasTablero(
         mapa(elegida, visibles.filter { it.id != elegida?.id }) { id -> elegidaId = id }
         Box(Modifier.fillMaxWidth().height(170.dp).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Tablero.Noche.copy(alpha = 0.9f), Color.Transparent))))
         // Cabecera: volver, buscador, Filtros y chips rapidos.
-        Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 14.dp).padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 14.dp).padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             // Lista y Mapa son dos modos separados y el cambio siempre esta a la vista (propuesta A).
             com.gacelas.ui.components.SelectorSegmentadoC2(listOf("Lista", "Mapa"), 1, { if (it == 0) onVerLista() }, tag = "rutas-vista")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {

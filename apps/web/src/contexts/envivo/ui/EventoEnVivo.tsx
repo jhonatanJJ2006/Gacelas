@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { eventoPorId } from '../../../mocks/data'
-import { formatearHms } from '../../../shared/lib/geo'
+import { formatearHms, decimal } from '../../../shared/lib/geo'
 import { MapaCorredores } from '../../../shared/ui/MapaEditable'
 import { elegirEventoEnVivo } from '../../actividad/api'
 import {
@@ -163,7 +163,7 @@ export function EventoEnVivo() {
                     {c.terminado && <span className="text-xs text-text-secondary"> · terminó</span>}
                   </span>
                   <span className="text-sm text-text-primary whitespace-nowrap">
-                    {(c.distanciaM / 1000).toFixed(2)} km
+                    {decimal(c.distanciaM / 1000, 2)} km
                   </span>
                   <span className="text-xs text-text-secondary whitespace-nowrap">
                     {formatearHms(c.segundos)}

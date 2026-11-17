@@ -231,7 +231,7 @@ function BarraLateral({ pathname }: { pathname: string }) {
           <span className="block font-display italic text-[19px] leading-none text-white tracking-[0.035em]">
             Runcity
           </span>
-          <span className="block rotulo-c2 !text-[9.5px] !text-c2-violeta mt-1">Loja, Ecuador</span>
+          <span className="block rotulo-c2 !text-c2-violeta mt-1">Loja, Ecuador</span>
         </span>
       </Link>
       <BloqueRacha />

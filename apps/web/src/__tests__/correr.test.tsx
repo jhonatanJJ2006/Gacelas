@@ -67,7 +67,7 @@ describe('grabar una carrera con GPS', () => {
     act(() => {
       for (let i = 0; i <= 20; i++) gps.emitir(-4 + i * 0.0001, -79.2, 1000 + i * 4000)
     })
-    expect(screen.getByTestId('distancia')).toHaveTextContent('0.22')
+    expect(screen.getByTestId('distancia')).toHaveTextContent('0,22')
     expect(screen.getByTestId('ritmo')).not.toHaveTextContent('--:--')
     expect(screen.getByTestId('trazado-ruta')).toBeInTheDocument()
 
@@ -80,7 +80,7 @@ describe('grabar una carrera con GPS', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Terminar carrera' }))
     await userEvent.click(screen.getByRole('button', { name: 'Terminar y guardar' }))
     expect(await screen.findByText('Carrera completada')).toBeInTheDocument()
-    expect(screen.getByTestId('resumen-distancia')).toHaveTextContent('0.22')
+    expect(screen.getByTestId('resumen-distancia')).toHaveTextContent('0,22')
     expect(gps.activos()).toBe(0)
 
     await userEvent.type(screen.getByLabelText('Título de la carrera'), 'Fondo Jipiro')

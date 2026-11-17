@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Esqueleto } from './Esqueletos'
+import { decimal } from '../lib/geo'
 
 /*
  * Piezas del rediseno de la web (docs/REDISENO-WEB.md): paneles C2, rotulos, metricas grandes y
@@ -313,7 +314,7 @@ export function Barras({
   etiquetas,
   alto = 96,
   resaltar,
-  formato = (v: number) => v.toFixed(1),
+  formato = (v: number) => decimal(v),
   testId,
   className = '',
 }: {
@@ -431,7 +432,7 @@ export function MapaCalor({
           {col.map((c) => (
             <span
               key={c.clave}
-              title={c.futuro ? '' : `${c.clave}: ${c.km.toFixed(1)} km`}
+              title={c.futuro ? '' : `${c.clave}: ${decimal(c.km)} km`}
               className="block w-[11px] h-[11px] rounded-[2px]"
               style={{ background: c.futuro ? 'transparent' : tono(c.km) } as CSSProperties}
             />

@@ -1,4 +1,5 @@
 /** Grafica del perfil de elevacion (SVG, sin dependencias). */
+import { decimal } from '../../../shared/lib/geo'
 export function PerfilElevacion({
   alturas,
   distanciaKm,
@@ -22,7 +23,7 @@ export function PerfilElevacion({
       <figcaption className="flex justify-between text-sm text-text-secondary mb-2">
         <span className="font-semibold text-text-primary">Perfil de elevación</span>
         <span>
-          {min}–{max} m · {distanciaKm.toFixed(1)} km
+          {min}–{max} m · {decimal(distanciaKm)} km
         </span>
       </figcaption>
       <svg

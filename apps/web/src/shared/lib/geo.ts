@@ -38,6 +38,9 @@ export const formatearHms = (seg: number) =>
 
 export const formatearMs = (seg: number) => `${Math.floor(seg / 60)}:${dos(seg % 60)}`
 
+/** Numero con coma decimal, como lo muestra la app Android ("1,8"). Solo para texto visible. */
+export const decimal = (n: number, decimales = 1) => n.toFixed(decimales).replace('.', ',')
+
 export const Unidades = {
   distancia: (km: number, metricas: boolean) => (metricas ? km : km / KM_POR_MILLA),
   etiquetaDistancia: (metricas: boolean) => (metricas ? 'km' : 'mi'),
@@ -45,5 +48,5 @@ export const Unidades = {
     segKm == null ? null : metricas ? segKm : Math.floor(segKm * KM_POR_MILLA),
   etiquetaRitmo: (metricas: boolean) => (metricas ? '/km' : '/mi'),
   texto: (km: number, metricas: boolean, decimales = 2) =>
-    Unidades.distancia(km, metricas).toFixed(decimales),
+    decimal(Unidades.distancia(km, metricas), decimales),
 }

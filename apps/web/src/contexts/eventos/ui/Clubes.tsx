@@ -4,6 +4,7 @@ import { useAviso } from '../../../hooks'
 import { useEsEscritorio } from '../../../shared/lib/useEsEscritorio'
 import { Aviso } from '../../../shared/ui/ui'
 import { Barras, Panel, Rotulo } from '../../../shared/ui/Visual'
+import { decimal } from '../../../shared/lib/geo'
 import { useIdentidad } from '../../identidad/api'
 import {
   clubes,
@@ -581,7 +582,7 @@ export function Clubes() {
                       <div className="flex items-center gap-2 text-[13px]">
                         <span className="cifra-c2 w-4 text-c2-muted">{i + 1}</span>
                         <span className="flex-1 truncate text-white">{c.nombre}</span>
-                        <span className="cifra-c2 text-white">{k.toFixed(1)} km</span>
+                        <span className="cifra-c2 text-white">{decimal(k)} km</span>
                       </div>
                       <div className="ml-6 mt-1 h-1 rounded-full bg-c2-s2 overflow-hidden">
                         <div
@@ -605,7 +606,7 @@ export function Clubes() {
 function DatoC2({ t, v }: { t: string; v: string }) {
   return (
     <div className="min-w-0">
-      <dt className="text-[10px] font-bold uppercase tracking-[0.1em] text-c2-muted">{t}</dt>
+      <dt className="rotulo-c2">{t}</dt>
       <dd className="text-white font-semibold truncate">{v}</dd>
     </div>
   )

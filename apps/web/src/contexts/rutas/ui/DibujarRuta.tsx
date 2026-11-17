@@ -5,6 +5,7 @@ import { useIdentidad } from '../../identidad/api'
 import { useRutas } from '../application/estado'
 import { desnivelPositivo, perfilElevacion } from '../domain/elevacion'
 import { ETIQUETAS_RUTA, longitudKm, type Coordenada } from '../domain/rutas'
+import { decimal } from '../../../shared/lib/geo'
 
 export function DibujarRuta() {
   const navigate = useNavigate()
@@ -72,7 +73,7 @@ export function DibujarRuta() {
             />
             <div className="flex items-center gap-2">
               <span className="flex-1 text-text-primary" data-testid="km-dibujados">
-                {km.toFixed(2)} km · {puntos.length} puntos
+                {decimal(km, 2)} km · {puntos.length} puntos
               </span>
               <button
                 onClick={() => setPuntos((x) => x.slice(0, -1))}

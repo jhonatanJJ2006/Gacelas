@@ -1,11 +1,12 @@
 /** Graficos SVG livianos con el estilo C2 (sin dependencias). */
+import { decimal } from '../lib/geo'
 
 export interface PuntoGrafico {
   etiqueta: string
   valor: number
 }
 
-const fmt = (v: number) => (Number.isInteger(v) ? String(v) : v.toFixed(1))
+const fmt = (v: number) => (Number.isInteger(v) ? String(v) : decimal(v))
 
 /** Barras verticales; marca en violeta la barra resaltada (por defecto la ultima). */
 export function GraficoBarras({

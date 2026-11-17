@@ -49,7 +49,7 @@ describe('comunidad', () => {
     await userEvent.click(screen.getByRole('menuitemradio', { name: 'Mías' }))
     expect(screen.getAllByTestId('publicacion')).toHaveLength(1)
     await userEvent.click(screen.getByRole('button', { name: 'Compartir' }))
-    expect(writeText).toHaveBeenCalledWith(expect.stringContaining('Jhona Runner corrió 5.00 km'))
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining('Jhona Runner corrió 5,00 km'))
     expect(await screen.findByText('Enlace copiado')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Filtrar publicaciones' }))
     await userEvent.click(screen.getByRole('menuitemradio', { name: 'Comunidad' }))
