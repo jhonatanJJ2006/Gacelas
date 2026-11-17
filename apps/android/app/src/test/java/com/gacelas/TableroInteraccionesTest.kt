@@ -139,8 +139,8 @@ class TableroInteraccionesTest {
         abrir(Destinos.RUTAS)
         val primera = compose.onAllNodesWithTag("rutas-carrusel").fetchSemanticsNodes().size
         assertEquals(1, primera)
-        compose.tocar("rutas-ver-lista"); assertTrue(existe("rutas-ver-mapa"))
-        compose.tocar("rutas-ver-mapa"); assertTrue(existe("rutas-carrusel"))
+        compose.tocar("rutas-vista-0"); assertTrue(existe("pestanas-rutas"))
+        compose.tocar("rutas-vista-1"); assertTrue(existe("rutas-carrusel"))
     }
 
     @Test fun rutasTarjetaPrimerToqueEligeSegundoAbre() {

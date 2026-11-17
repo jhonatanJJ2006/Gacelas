@@ -110,3 +110,6 @@ No hizo falta una migración nueva:
 
 - Inicio: el corredor 3D vuelve a pararse sobre el mapa de Loja, entre los controles de arriba y la tarjeta de la ruta del día.
 - Usa el mismo Filament translúcido (sobreFondo) que se usaba en Inicio desde 0.9.5.
+- Barra inferior: vuelve la barra clásica (Inicio, Rutas, Correr al centro, Comunidad y Perfil) en lugar del dock flotante.
+- Rutas: selector Lista | Mapa siempre visible arriba en los dos modos; sustituye al botón "Ver como lista".
+- Comunidad y Perfil no cambian.
