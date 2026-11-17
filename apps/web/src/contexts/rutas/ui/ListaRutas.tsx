@@ -343,7 +343,7 @@ export function ListaRutas() {
                 aria-label="Buscar rutas"
                 value={consulta}
                 onChange={(e) => setConsulta(e.target.value)}
-                placeholder="Buscar por nombre, parque o barrio"
+                placeholder="Ruta, parque o barrio"
                 className="w-full h-11 pl-10 pr-3 text-[14px] bg-c2-card border border-c2-linea rounded-md text-white placeholder:text-c2-muted focus:outline-none focus:border-c2-morado"
               />
               <span

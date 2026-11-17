@@ -192,7 +192,7 @@ export function BuscadorRutas() {
                   key={route.id}
                   onClick={() => setSelectedRoute(route.id)}
                   aria-pressed={activa}
-                  className={`min-w-[150px] p-3 rounded-2xl border-2 text-left transition-all ${
+                  className={`min-w-[150px] p-3 rounded-2xl border-2 text-left transition ${
                     activa ? 'bg-primary-600/10 border-primary' : 'bg-[#141c2e] border-[#1f2b45]'
                   }`}
                 >

@@ -338,7 +338,7 @@ export function Cronometro() {
                   if (mo.id === 'fartlek') setPestana('intervals')
                 }}
                 aria-pressed={modo === mo.id}
-                className={`flex-1 min-w-[110px] py-2 px-space-sm rounded-lg text-label-md font-label-md flex items-center justify-center gap-1.5 transition-all ${
+                className={`flex-1 min-w-[110px] py-2 px-space-sm rounded-lg text-label-md font-label-md flex items-center justify-center gap-1.5 transition ${
                   modo === mo.id
                     ? 'bg-primary-container/20 text-primary-400 shadow-sm'
                     : 'text-text-secondary hover:text-on-surface'
@@ -404,7 +404,7 @@ export function Cronometro() {
                 strokeWidth="6"
               />
               <circle
-                className="text-primary-500 transition-all duration-300"
+                className="text-primary-500 transition-[stroke-dashoffset] duration-300"
                 cx="120"
                 cy="120"
                 fill="none"

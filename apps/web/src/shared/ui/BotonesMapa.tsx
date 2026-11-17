@@ -87,7 +87,7 @@ export function ControlEtiquetado({
       <span className="material-symbols-outlined text-[20px] leading-none" aria-hidden="true">
         {icono}
       </span>
-      <span className="text-[9px] font-bold uppercase tracking-wide leading-none">{etiqueta}</span>
+      <span className="text-[11px] font-semibold leading-none">{etiqueta}</span>
     </button>
   )
 }
@@ -100,7 +100,7 @@ export function GrupoControles({ titulo, children }: { titulo: string; children:
       aria-label={titulo}
       className="flex flex-col items-center bg-c2-card/95 border border-c2-linea rounded-[8px] shadow-lg backdrop-blur-md overflow-hidden divide-y divide-c2-linea"
     >
-      <span className="w-full text-center text-[8px] font-extrabold uppercase tracking-[0.14em] text-c2-violeta py-1">
+      <span className="w-full text-center text-[11px] font-semibold text-c2-violeta py-1">
         {titulo}
       </span>
       {children}

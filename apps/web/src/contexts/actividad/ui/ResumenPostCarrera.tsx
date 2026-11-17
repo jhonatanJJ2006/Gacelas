@@ -263,7 +263,7 @@ export function ResumenPostCarrera() {
             aria-label="Notas"
             value={nota}
             onChange={(ev) => setNota(ev.target.value)}
-            placeholder="¿Cómo te fue? Comparte tus pensamientos..."
+            placeholder="¿Cómo te fue?"
             rows={3}
             className="w-full px-4 py-3 bg-surface-container border border-border-subtle rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 resize-none"
           />
@@ -350,7 +350,7 @@ export function ResumenPostCarrera() {
           <button
             onClick={guardar}
             disabled={guardando}
-            className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-on-primary font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition-all disabled:opacity-60"
+            className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-on-primary font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(123,31,162,0.35)] transition disabled:opacity-60"
           >
             <span className="material-symbols-outlined text-[20px]">save</span>
             <span>Guardar carrera</span>
@@ -367,7 +367,7 @@ export function ResumenPostCarrera() {
           )}
           <button
             onClick={descartar}
-            className="w-full h-12 bg-transparent hover:bg-surface-container border border-border-subtle text-text-secondary font-medium text-sm rounded-xl flex items-center justify-center transition-all"
+            className="w-full h-12 bg-transparent hover:bg-surface-container border border-border-subtle text-text-secondary font-medium text-sm rounded-xl flex items-center justify-center transition"
           >
             Descartar
           </button>

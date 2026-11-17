@@ -112,7 +112,7 @@ export function BotonSOS({
             />
           </svg>
           <span className="text-[15px] font-black leading-none tracking-wide">SOS</span>
-          <span className="text-[8px] font-bold uppercase leading-none mt-0.5 opacity-90">
+          <span className="text-[10px] font-bold uppercase leading-none mt-0.5 opacity-90">
             {activa ? 'Activo' : 'Mantén'}
           </span>
         </button>
