@@ -17,8 +17,8 @@
 #   - SUPABASE_SERVICE_ROLE_KEY en el entorno o en backend/.env (nunca va dentro del APK).
 #   - versionName ya subido en apps/android/app/build.gradle.kts (versionCode se calcula solo).
 #   - gh autenticado, jq, sha256sum y el debug.keystore de publicacion
-#     (SHA-1 F1:A2:7B:EE:15:19:B9:5D:DB:88:AD:77:4F:5E:0E:08:5F:9F:45:D1, gacelas.firmaPublicacion).
-#     No uses el de 23:CF: Android no instala ese APK encima de v0.9.12 en adelante.
+#     (SHA-1 19:85:26:6B:79:BB:75:61:1C:AB:96:19:F7:E4:65:08:1C:CC:C2:7F desde v0.9.18, gacelas.firmaPublicacion).
+#     Donde esta ese keystore: docs/SUPABASE.md. keytool debe estar en el PATH.
 set -euo pipefail
 RAIZ="$(cd "$(dirname "$0")/.." && pwd)"
 NOTAS="${1:?Falta el texto de las notas}"

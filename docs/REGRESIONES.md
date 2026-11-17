@@ -23,6 +23,9 @@ Huella SHA-1 del certificado de los APK publicados:
 | ---------------------------------------------------- | ----------------------------------------------------------- |
 | v0.9.8, v0.9.9, v0.9.10, v0.9.11                     | 23:CF:7D:D7:5A:19:B1:54:13:99:38:AD:62:61:DE:AA:BE:DC:23:F9 |
 | v0.9.12, v0.9.13, v0.9.14, v0.9.15, v0.9.16, v0.9.17 | F1:A2:7B:EE:15:19:B9:5D:DB:88:AD:77:4F:5E:0E:08:5F:9F:45:D1 |
+| v0.9.18 en adelante                                  | 19:85:26:6B:79:BB:75:61:1C:AB:96:19:F7:E4:65:08:1C:CC:C2:7F |
+
+2026-11-17: el keystore `F1:A2` no estaba en la computadora de publicacion. Se creo una firma nueva (`19:85:...:7F`), guardada fuera del repo y documentada en `docs/SUPABASE.md`. Quien tenga v0.9.12 a v0.9.17 tiene que desinstalar Runcity una vez e instalar v0.9.18.
 
 Las dos huellas estan en `gacelas.firmasGoogle` (login con Google). Android no las trata como la misma app: no hay rotacion de clave (el APK no usa el esquema v3). `scripts/publicar-android.sh` y `apps/android/README.md` pedian el keystore `23:CF` para publicar, y Gradle aceptaba cualquiera de las dos. Por eso la firma volvio a cambiar en v0.9.12.
 
