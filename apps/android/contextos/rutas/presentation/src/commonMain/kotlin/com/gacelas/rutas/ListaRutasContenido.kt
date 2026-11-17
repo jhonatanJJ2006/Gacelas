@@ -106,9 +106,10 @@ fun ListaRutasContenido(
         var verMapa by rememberSaveable { mutableStateOf(verMapaInicial) }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Rutas de Loja", style = GType.headlineLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-            IconButton(onClick = { if (onVerMapa != null) onVerMapa() else verMapa = !verMapa }, modifier = Modifier.testTag("rutas-ver-mapa")) { Icon(if (verMapa) Icons.AutoMirrored.Filled.List else Icons.Filled.Map, if (verMapa) "Ver lista" else "Ver mapa", tint = GColors.TextPrimary) }
+            if (onVerMapa == null) IconButton(onClick = { verMapa = !verMapa }, modifier = Modifier.testTag("rutas-ver-mapa")) { Icon(if (verMapa) Icons.AutoMirrored.Filled.List else Icons.Filled.Map, if (verMapa) "Ver lista" else "Ver mapa", tint = GColors.TextPrimary) }
             if (puedeDibujar) IconButton(onClick = onDibujar) { Icon(Icons.Filled.Draw, "Dibujar ruta", tint = GColors.TextPrimary) }
         }
+        if (onVerMapa != null) com.gacelas.ui.components.SelectorSegmentadoC2(listOf("Lista", "Mapa"), 0, { if (it == 1) onVerMapa() }, tag = "rutas-vista")
         if (verMapa) {
             mapaRutas(Modifier.fillMaxWidth().height(420.dp).clip(RoundedCornerShape(16.dp)))
         }

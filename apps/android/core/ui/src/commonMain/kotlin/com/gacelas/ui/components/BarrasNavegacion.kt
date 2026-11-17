@@ -113,7 +113,7 @@ fun BarraInferior(rutaActual: String, onNavegar: (String) -> Unit) {
                     val capsula by animateColorAsState(if (activo) GColors.C2Morado.copy(alpha = 0.22f) else Color.Transparent, Mov.corto(), label = "capsula")
                     Column(
                         Modifier.weight(1f).pulsacionC2(interaccion).clickable(interaccion, null, role = androidx.compose.ui.semantics.Role.Tab) { onNavegar(item.ruta) }
-                            .semantics { selected = activo }.padding(vertical = 6.dp),
+                            .semantics { selected = activo }.testTag("nav-${item.ruta}").padding(vertical = 6.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Box(Modifier.width(54.dp).height(30.dp).clip(CircleShape).background(capsula), contentAlignment = Alignment.Center) {
@@ -153,6 +153,7 @@ fun ScaffoldPrincipal(rutaActual: String, sinLeer: Int, onNavegar: (String) -> U
                 androidx.compose.runtime.CompositionLocalProvider(LocalEspacioDock provides if (bajoDock) espacio else 0.dp) { content() }
             }
         }
-        DockTablero(rutaActual, onNavegar, Modifier.align(Alignment.BottomCenter))
+        // Barra clasica con Correr al centro: el usuario la prefiere al dock flotante de 0.9.17.
+        Box(Modifier.align(Alignment.BottomCenter)) { BarraInferior(rutaActual, onNavegar) }
     }
 }

@@ -131,6 +131,8 @@ fun InicioTablero(
     /** Corredores compartiendo posicion ahora (runner_positions); 0 oculta el chip. */
     corriendo: Int = 0,
     avisoPendientes: @Composable () -> Unit = {},
+    /** Corredor 3D parado sobre el mapa (propuesta A); null lo oculta (pruebas). */
+    corredor3D: (@Composable BoxScope.() -> Unit)? = null,
 ) {
     val scroll = rememberScrollState()
     val alcance = rememberCoroutineScope()
@@ -143,6 +145,8 @@ fun InicioTablero(
             mapa()
             Box(Modifier.fillMaxWidth().height(150.dp).background(Brush.verticalGradient(listOf(Tablero.Noche.copy(alpha = 0.92f), Color.Transparent))))
             Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(170.dp).background(Brush.verticalGradient(listOf(Color.Transparent, Tablero.Noche))))
+            // Entre los controles de arriba y la tarjeta de la ruta del dia, para no taparlos.
+            if (corredor3D != null) Box(Modifier.matchParentSize().padding(top = 96.dp, bottom = 140.dp).testTag("inicio-corredor")) { corredor3D() }
             Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 14.dp).padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Row(

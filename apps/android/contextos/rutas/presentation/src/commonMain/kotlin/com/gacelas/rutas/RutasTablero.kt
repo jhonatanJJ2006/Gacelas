@@ -120,6 +120,8 @@ fun RutasTablero(
         Box(Modifier.fillMaxWidth().height(170.dp).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Tablero.Noche.copy(alpha = 0.9f), Color.Transparent))))
         // Cabecera: volver, buscador, Filtros y chips rapidos.
         Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 14.dp).padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            // Lista y Mapa son dos modos separados y el cambio siempre esta a la vista (propuesta A).
+            com.gacelas.ui.components.SelectorSegmentadoC2(listOf("Lista", "Mapa"), 1, { if (it == 0) onVerLista() }, tag = "rutas-vista")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 BotonVidrio(Icons.AutoMirrored.Filled.ArrowBack, "Volver", onAtras, tag = "rutas-volver")
                 Row(
@@ -152,15 +154,8 @@ fun RutasTablero(
                 if (puedeDibujar) ChipVidrio("Dibujar ruta", onDibujar, icono = Icons.Filled.Draw, tag = "chip-dibujar")
             }
         }
-        // Abajo: Ver como lista, encabezado y carrusel de tarjetas.
+        // Abajo: encabezado y carrusel de tarjetas.
         Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(bottom = espacioInferior + 4.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(
-                Modifier.padding(start = 14.dp).heightIn(min = 40.dp).vidrioC2(CircleShape).clickable(role = Role.Button, onClick = onVerLista).testTag("rutas-ver-lista").padding(horizontal = 14.dp),
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Icon(Icons.AutoMirrored.Filled.List, null, tint = Color.White, modifier = Modifier.size(18.dp))
-                Text("Ver como lista · ${visibles.size}", style = GType.labelLg.copy(fontWeight = FontWeight.Bold), color = Color.White, maxLines = 1)
-            }
             Row(Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 RotuloWidget(if (cargando) "Cargando rutas" else "${visibles.size} ${if (visibles.size == 1) "ruta" else "rutas"} en el mapa", Modifier.weight(1f))
                 Text(if (cerca != null) "Orden: más cerca" else "Orden: recomendadas", style = GType.labelMd, color = Color.White.copy(alpha = 0.6f), maxLines = 1)

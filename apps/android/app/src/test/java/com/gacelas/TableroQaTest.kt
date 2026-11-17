@@ -162,7 +162,7 @@ class TableroQaTest(private val nombre: String, private val tamano: String) {
             Caso("20-resumen-compartir", Destinos.RESUMEN) { it.tocar("boton-compartir") },
             Caso("21-rutas", Destinos.RUTAS, principal = true),
             Caso("22-rutas-filtros", Destinos.RUTAS) { it.tocar("boton-filtros") },
-            Caso("23-rutas-lista", Destinos.RUTAS) { it.tocar("rutas-ver-lista") },
+            Caso("23-rutas-lista", Destinos.RUTAS) { it.tocar("rutas-vista-0") },
             Caso("24-rutas-reportar", Destinos.RUTAS) { it.tocar("boton-reportar-incidente") },
             Caso("25-detalle-ruta", Destinos.detalleRuta("1"), principal = true),
             Caso("26-detalle-ruta-compartir", Destinos.detalleRuta("1")) { it.tocar("detalle-compartir") },
