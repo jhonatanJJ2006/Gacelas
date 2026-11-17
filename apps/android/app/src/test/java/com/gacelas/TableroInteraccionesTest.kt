@@ -73,7 +73,7 @@ class TableroInteraccionesTest {
 
     @Test fun dockLlevaACadaPestanaYACorrer() {
         abrir(Destinos.INICIO)
-        compose.tocar("nav-rutas"); assertTrue(existe("rutas-tablero"))
+        compose.tocar("nav-rutas"); assertTrue(existe("pestanas-rutas"))
         compose.tocar("nav-comunidad"); assertTrue(hayTexto("Comunidad") || hayTexto("COMUNIDAD"))
         compose.tocar("nav-perfil"); assertTrue(existe("perfil-nombre"))
         compose.tocar("nav-inicio"); assertTrue(existe("inicio-tablero"))
@@ -137,6 +137,8 @@ class TableroInteraccionesTest {
 
     @Test fun rutasCarruselListaYFiltros() {
         abrir(Destinos.RUTAS)
+        assertTrue("Rutas abre en Lista", existe("pestanas-rutas"))
+        compose.tocar("rutas-vista-1")
         val primera = compose.onAllNodesWithTag("rutas-carrusel").fetchSemanticsNodes().size
         assertEquals(1, primera)
         compose.tocar("rutas-vista-0"); assertTrue(existe("pestanas-rutas"))
@@ -145,6 +147,7 @@ class TableroInteraccionesTest {
 
     @Test fun rutasTarjetaPrimerToqueEligeSegundoAbre() {
         abrir(Destinos.RUTAS)
+        compose.tocar("rutas-vista-1")
         // La primera tarjeta ya esta elegida; en otra, el primer toque la elige y el segundo la abre.
         val otra = compose.onAllNodes(androidx.compose.ui.test.SemanticsMatcher("otra tarjeta") { n ->
             n.config.getOrElseNullable(androidx.compose.ui.semantics.SemanticsProperties.TestTag) { null }?.let { it.startsWith("tarjeta-ruta-") && it != "tarjeta-ruta-1" } == true
@@ -155,12 +158,14 @@ class TableroInteraccionesTest {
 
     @Test fun rutasFiltrosYChips() {
         abrir(Destinos.RUTAS)
+        compose.tocar("rutas-vista-1")
         compose.tocar("chip-cerca")
         compose.tocar("boton-filtros"); assertTrue(hayTexto("Filtros"))
     }
 
     @Test fun rutasCorrerDesdeTarjeta() {
         abrir(Destinos.RUTAS)
+        compose.tocar("rutas-vista-1")
         compose.tocar("correr-ruta-1")
         assertEquals("1", com.gacelas.rutas.infrastructure.RutaActiva.id?.removePrefix("ruta-"))
         com.gacelas.rutas.infrastructure.RutaActiva.id = null

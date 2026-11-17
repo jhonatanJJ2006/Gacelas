@@ -160,10 +160,10 @@ class TableroQaTest(private val nombre: String, private val tamano: String) {
             Caso("18-resumen-bento", Destinos.RESUMEN) { it.deslizar("pantalla-resumen", 2) },
             Caso("19-resumen-3d", Destinos.RESUMEN) { it.tocar("resumen-3d") },
             Caso("20-resumen-compartir", Destinos.RESUMEN) { it.tocar("boton-compartir") },
-            Caso("21-rutas", Destinos.RUTAS, principal = true),
-            Caso("22-rutas-filtros", Destinos.RUTAS) { it.tocar("boton-filtros") },
-            Caso("23-rutas-lista", Destinos.RUTAS) { it.tocar("rutas-vista-0") },
-            Caso("24-rutas-reportar", Destinos.RUTAS) { it.tocar("boton-reportar-incidente") },
+            Caso("21-rutas", Destinos.RUTAS, principal = true) { it.tocar("rutas-vista-1") },
+            Caso("22-rutas-filtros", Destinos.RUTAS) { it.tocar("rutas-vista-1"); it.tocar("boton-filtros") },
+            Caso("23-rutas-lista", Destinos.RUTAS),
+            Caso("24-rutas-reportar", Destinos.RUTAS) { it.tocar("rutas-vista-1"); it.tocar("boton-reportar-incidente") },
             Caso("25-detalle-ruta", Destinos.detalleRuta("1"), principal = true),
             Caso("26-detalle-ruta-compartir", Destinos.detalleRuta("1")) { it.tocar("detalle-compartir") },
             Caso("27-buscador-rutas", Destinos.BUSCADOR_RUTAS),
@@ -204,11 +204,9 @@ private fun InicioConServidor(carreras: List<Carrera>) {
         com.gacelas.inicio.InicioTablero(
             semana = Estadisticas.semana(carreras, ahora), hoy = Estadisticas.diaSemana(ahora), m = true,
             racha = com.gacelas.actividad.domain.reglas.Rachas.calcular(carreras, ahora, 3),
-            mapa = {
-                com.gacelas.ui.components.MapaEsquemaC2(ruta.puntos, Modifier.fillMaxSize(),
-                    otros = rutas.filter { it.id != ruta.id && it.puntos.size > 4 }.take(2).map { it.puntos },
-                    yo = ruta.puntos[ruta.puntos.size / 3], marcadores = listOf(ruta.puntos[ruta.puntos.size * 2 / 3]), margenArriba = 110.dp, margenAbajo = 110.dp)
-            },
+            // Igual que InicioScreen desde 0.9.18: escenario detras del corredor, no el mapa.
+            mapa = { com.gacelas.inicio.CapaEscenarioC2(Modifier.fillMaxSize(), margenPalabra = 150.dp) },
+            corredor3D = { com.gacelas.ui.three.Runner3DFallback(Modifier.fillMaxSize()) },
             onCorrer = {}, onBuscar = {}, onNotificaciones = {}, onProgreso = {}, onMapaVivo = {}, onComunidad = {}, onEvento = {}, onRutas = {}, onRuta = {},
             sinLeer = 2, metaKm = 25,
             kmPorDia = DoubleArray(7).also { km -> carreras.filter { it.inicioMs >= Estadisticas.inicioSemana(ahora) }.forEach { km[Estadisticas.diaSemana(it.inicioMs)] += it.distanciaKm } }.toList(),

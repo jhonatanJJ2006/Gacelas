@@ -103,7 +103,11 @@ fun ListaRutasContenido(
     /** Tablero: vuelve al mapa a pantalla completa en lugar del mapa embebido. */
     onVerMapa: (() -> Unit)? = null,
 ) {
-    Pantalla {
+    // Rutas no tiene barra superior: el titulo reserva la barra de estado y deja aire para no mezclarse con ella.
+    Pantalla(
+        modifier = Modifier.statusBarsPadding(),
+        padding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 16.dp),
+    ) {
         var verMapa by rememberSaveable { mutableStateOf(verMapaInicial) }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Rutas de Loja", style = GType.headlineLg, color = GColors.TextPrimary, modifier = Modifier.weight(1f))

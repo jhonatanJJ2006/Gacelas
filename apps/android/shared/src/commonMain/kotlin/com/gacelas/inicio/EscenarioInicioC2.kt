@@ -138,6 +138,27 @@ internal fun FondoEscenarioC2(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Capa del escenario C2 (fondo morado con rayas y piso, y "CORRE LOJA" en contorno). La usa el
+ * escenario de Inicio y, desde 0.9.18, el Inicio Tablero detras del corredor 3D en lugar del mapa.
+ */
+@Composable
+fun CapaEscenarioC2(modifier: Modifier = Modifier, margenPalabra: Dp = 24.dp) {
+    Box(modifier) {
+        FondoEscenarioC2()
+        val trazo = with(LocalDensity.current) { 1.5.dp.toPx() }
+        Text(
+            "CORRE LOJA",
+            style = TextStyle(
+                fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontWeight = FontWeight.Bold, fontSize = 120.sp, lineHeight = 96.sp,
+                drawStyle = Stroke(width = trazo),
+            ),
+            color = EscenarioC2.Palabra, maxLines = 1, softWrap = false,
+            modifier = Modifier.align(Alignment.BottomStart).wrapContentWidth(Alignment.Start, unbounded = true).offset(x = (-6).dp).padding(bottom = margenPalabra),
+        )
+    }
+}
+
 /** Etiqueta .tg del escenario: rotulo pequeno en mayusculas y valor grande violeta, inclinada -10deg. */
 @Composable
 internal fun EtiquetaEscenarioC2(rotulo: String, valor: String, modifier: Modifier = Modifier) {
@@ -191,19 +212,7 @@ fun EscenarioInicioC2(
         // Solo el fondo lleva la forma inclinada. El corredor 3D en Android es un WebView: dentro de un
         // recorte con forma no rectangular (clipPath) no se dibuja en muchos equipos y el avatar
         // desaparecia (regresion 0.9.1). Por eso el 3D queda fuera de ese recorte, con recorte rectangular.
-        Box(Modifier.matchParentSize().clip(FormaEscenarioC2)) {
-            FondoEscenarioC2()
-            val trazo = with(LocalDensity.current) { 1.5.dp.toPx() }
-            Text(
-                "CORRE LOJA",
-                style = TextStyle(
-                    fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontWeight = FontWeight.Bold, fontSize = 120.sp, lineHeight = 96.sp,
-                    drawStyle = Stroke(width = trazo),
-                ),
-                color = EscenarioC2.Palabra, maxLines = 1, softWrap = false,
-                modifier = Modifier.align(Alignment.BottomStart).wrapContentWidth(Alignment.Start, unbounded = true).offset(x = (-6).dp).padding(bottom = 24.dp),
-            )
-        }
+        CapaEscenarioC2(Modifier.matchParentSize().clip(FormaEscenarioC2))
         Box(Modifier.fillMaxWidth().fillMaxHeight(0.84f)) { corredor3D() }
         EtiquetaEscenarioC2(etiquetaIzq, valorIzq, Modifier.align(Alignment.TopStart).padding(start = 24.dp, top = 40.dp).testTag("escenario-etiqueta-izq"))
         EtiquetaEscenarioC2(etiquetaDer, valorDer, Modifier.align(Alignment.TopEnd).padding(end = 24.dp, top = 96.dp).testTag("escenario-etiqueta-der"))
