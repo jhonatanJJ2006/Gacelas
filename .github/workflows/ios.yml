@@ -140,6 +140,17 @@ jobs:
       - name: Generar proyecto Xcode
         working-directory: ${{ env.IOS_DIR }}
         run: command -v xcodegen || brew install xcodegen; xcodegen generate
+      # El framework KMP se compila aqui, fuera de Xcode, con la cache de Gradle y un perfil por tarea:
+      # dentro de la fase de script de Xcode tardaba ~11 min aunque el PR no tocara Kotlin. Despues,
+      # la fase "Compilar Shared (KMP)" de Xcode lo encuentra al dia.
+      - name: Framework KMP (Gradle)
+        working-directory: ${{ env.ANDROID_DIR }}
+        run: ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64 --build-cache --profile
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-gradle-perfil
+          path: ${{ env.ANDROID_DIR }}/build/reports/profile
       - name: Build simulador
         working-directory: ${{ env.IOS_DIR }}
         run: |
