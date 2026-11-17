@@ -113,3 +113,10 @@ No hizo falta una migración nueva:
 - Barra inferior: vuelve la barra clásica (Inicio, Rutas, Correr al centro, Comunidad y Perfil) en lugar del dock flotante.
 - Rutas: selector Lista | Mapa siempre visible arriba en los dos modos; sustituye al botón "Ver como lista".
 - Comunidad y Perfil no cambian.
+
+## Android 0.9.19: escenario en Inicio, Rutas en Lista y pulido
+
+- Inicio: detrás del corredor 3D vuelve el escenario de 0.9.16 (fondo morado con rayas y "CORRE LOJA"), en lugar del mapa.
+- Rutas abre en Lista. El Mapa muestra tu posición (punto azul) y la incluye en el encuadre si estás cerca de la ruta; "atrás" desde el Mapa vuelve a la Lista.
+- Rutas en Lista reserva la barra de estado y deja aire arriba; la columna de controles del Mapa ya no choca con los chips.
+- Rótulos de tarjetas con mayúscula inicial a 12 sp, coma decimal en Rutas, barra del Resumen sin solaparse y "Sin tiempo" en Detalle de ruta.
