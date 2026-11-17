@@ -150,7 +150,7 @@ export function EventoEnVivo() {
               {tabla.map((c, i) => (
                 <li key={c.sesionId} className="flex items-center gap-3">
                   <span
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-bg-primary"
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold text-bg-primary"
                     style={{ background: colorCorredor(i) }}
                   >
                     {i + 1}

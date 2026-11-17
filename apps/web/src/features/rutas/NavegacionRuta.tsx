@@ -113,10 +113,10 @@ export function NavegacionRuta() {
               <span className="material-symbols-outlined text-white text-[28px]">navigation</span>
             </div>
             <div className="flex-1">
-              <div className="text-primary-400 text-xs font-semibold uppercase tracking-wide">
+              <div className="text-primary-400 text-xs font-semibold">
                 Siguiente giro en
               </div>
-              <div className="text-white text-2xl font-bold" data-testid="giro-metros">
+              <div className="text-white text-2xl font-semibold" data-testid="giro-metros">
                 {paso.metros} metros
               </div>
             </div>
@@ -146,17 +146,17 @@ export function NavegacionRuta() {
         <div className="bg-gradient-to-t from-[#0c1322] via-[#0c1322]/95 to-transparent p-6 pb-8 lg:px-8 [&>*]:lg:max-w-4xl [&>*]:lg:mx-auto">
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-black/60 backdrop-blur-md rounded-xl p-3 text-center">
-              <div className="text-primary-400 text-2xl font-bold">
+              <div className="text-primary-400 text-2xl font-semibold">
                 {Unidades.texto(e.distanciaKm, m)}
               </div>
               <div className="text-slate-400 text-xs">{Unidades.etiquetaDistancia(m)}</div>
             </div>
             <div className="bg-black/60 backdrop-blur-md rounded-xl p-3 text-center">
-              <div className="text-secondary-500 text-2xl font-bold">{formatearMs(e.segundos)}</div>
+              <div className="text-secondary-500 text-2xl font-semibold">{formatearMs(e.segundos)}</div>
               <div className="text-slate-400 text-xs">tiempo</div>
             </div>
             <div className="bg-black/60 backdrop-blur-md rounded-xl p-3 text-center">
-              <div className="text-white text-2xl font-bold">
+              <div className="text-white text-2xl font-semibold">
                 {formatearRitmo(Unidades.ritmo(e.ritmoActualSegKm, m))}
               </div>
               <div className="text-slate-400 text-xs">{Unidades.etiquetaRitmo(m)}</div>
@@ -183,7 +183,7 @@ export function NavegacionRuta() {
       </div>
 
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
-        <div className="w-2 h-2 rounded-full bg-primary-600 shadow-lg shadow-primary-600/50"></div>
+        <div className="w-2 h-2 rounded-full bg-primary-600"></div>
       </div>
     </main>
   )

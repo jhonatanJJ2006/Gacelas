@@ -103,7 +103,7 @@ export function DetalleRuta() {
       await resenarRuta(id, estrellas, comentario)
       setResenas(await resenasRuta(id))
       setComentario('')
-      setAviso('¡Gracias por tu reseña!')
+      setAviso('Gracias por tu reseña')
     } catch (e) {
       setAviso(e instanceof Error ? e.message : 'No se pudo enviar la reseña')
     } finally {
@@ -276,7 +276,7 @@ export function DetalleRuta() {
               </h2>
               <p className="text-sm text-text-secondary" data-testid="total-corredores">
                 {corredores.total === 0
-                  ? 'Nadie la ha corrido todavía. ¡Sé el primero!'
+                  ? 'Nadie la ha corrido todavía. Sé el primero.'
                   : `${corredores.total} ${corredores.total === 1 ? 'persona' : 'personas'}`}
               </p>
               <ul className="space-y-1" data-testid="lista-corredores">

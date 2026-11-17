@@ -135,7 +135,7 @@ export function BuscadorRutas() {
                 key={route.id}
                 onClick={() => setSelectedRoute(route.id)}
                 aria-pressed={selectedRoute === route.id}
-                className={`w-full p-4 rounded-2xl border-2 transition-all ${
+                className={`w-full p-4 rounded-2xl border-2 transition ${
                   selectedRoute === route.id
                     ? route.color === 'primary'
                       ? 'bg-[#D97706]/10 border-[#D97706]'
@@ -183,7 +183,7 @@ export function BuscadorRutas() {
               })
             }
             disabled={!seleccionada}
-            className="w-full mt-6 h-14 bg-gradient-to-r from-[#D97706] to-[#F59E0B] hover:from-[#B45309] hover:to-[#D97706] text-white font-bold rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+            className="w-full mt-6 h-14 bg-primary-600 hover:bg-primary-700 text-bg-primary font-semibold rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition active:scale-95"
           >
             Comenzar navegación
           </button>

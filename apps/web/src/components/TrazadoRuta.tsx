@@ -5,7 +5,7 @@ export function TrazadoRuta({
   puntos,
   className = '',
 }: {
-  puntos: PuntoGps[]
+  puntos: Pick<PuntoGps, 'lat' | 'lng'>[]
   className?: string
 }) {
   if (puntos.length < 2) {

@@ -100,7 +100,7 @@ export function Clubes() {
       <div className="px-margin lg:px-0 space-y-5">
         <input
           aria-label="Buscar clubes"
-          placeholder="Buscar clubes…"
+          placeholder="Buscar clubes"
           className={campo}
           value={consulta}
           onChange={(e) => setConsulta(e.target.value)}
@@ -124,7 +124,7 @@ export function Clubes() {
                 Descubrir
               </h2>
               {otros.length === 0 ? (
-                <p className="text-text-secondary text-sm">No hay más clubes. ¡Crea el primero!</p>
+                <p className="text-text-secondary text-sm">No hay más clubes. Puedes crear uno con el botón +.</p>
               ) : (
                 <ul className="space-y-2" data-testid="lista-clubes">
                   {otros.map(tarjeta)}

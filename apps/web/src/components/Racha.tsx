@@ -139,7 +139,7 @@ export function CelebracionRacha({ antes, despues }: { antes: Racha; despues: Ra
     <div
       role="status"
       data-testid="celebracion-racha"
-      className="mb-6 rounded-3xl border border-primary/40 bg-gradient-to-br from-primary/25 to-secondary/15 p-5 flex items-center gap-4 animate-[pulse_1.2s_ease-in-out_2]"
+      className="mb-6 rounded-3xl border border-primary/40 bg-surface-container p-5 flex items-center gap-4 animate-[pulse_1.2s_ease-in-out_2]"
     >
       <span
         className="material-symbols-outlined text-[48px] text-primary"
@@ -150,7 +150,7 @@ export function CelebracionRacha({ antes, despues }: { antes: Racha; despues: Ra
       <div>
         {subeDiaria && (
           <p className="font-headline-sm text-headline-sm text-text-primary">
-            ¡Racha de {plural(despues.diaria, 'día', 'días')}!
+            Racha de {plural(despues.diaria, 'día', 'días')}
           </p>
         )}
         {subeSemanal && (

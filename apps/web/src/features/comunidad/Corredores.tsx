@@ -80,7 +80,7 @@ export function Corredores() {
                       className="w-12 h-12 shrink-0 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-12 h-12 shrink-0 rounded-full bg-primary-600/30 flex items-center justify-center text-primary-400 font-bold">
+                    <div className="w-12 h-12 shrink-0 rounded-full bg-primary-600/30 flex items-center justify-center text-primary-400 font-semibold">
                       {c.nombre.charAt(0).toUpperCase()}
                     </div>
                   )}

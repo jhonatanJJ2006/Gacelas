@@ -38,7 +38,7 @@ export function DetalleEvento() {
 
   return (
     <main className="w-full min-h-screen bg-surface flex flex-col lg:max-w-5xl lg:mx-auto lg:px-8 lg:py-8">
-      <div className="h-64 lg:h-80 lg:rounded-3xl lg:overflow-hidden bg-gradient-to-br from-primary-600 to-secondary-600 relative">
+      <div className="h-64 lg:h-80 lg:rounded-3xl lg:overflow-hidden bg-surface-container-low relative">
         <button
           onClick={() => navigate('/comunidad/eventos')}
           aria-label="Volver"
@@ -54,7 +54,7 @@ export function DetalleEvento() {
           <span className="material-symbols-outlined">share</span>
         </button>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="material-symbols-outlined text-[120px] text-white/20">event</span>
+          <span className="material-symbols-outlined text-[96px] text-text-secondary/30">event</span>
         </div>
         <div className="absolute bottom-4 left-4 right-4">
           <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full inline-flex items-center gap-2">
@@ -177,10 +177,10 @@ export function DetalleEvento() {
               })
             }}
             aria-pressed={inscrito}
-            className={`w-full h-14 active:scale-[0.98] font-bold text-base rounded-xl flex items-center justify-center gap-2 transition-all ${
+            className={`w-full h-14 active:scale-[0.98] font-semibold text-base rounded-xl flex items-center justify-center gap-2 transition ${
               inscrito
                 ? 'bg-surface-container-high text-text-primary border border-border-subtle'
-                : 'bg-primary-600 hover:bg-primary-700 text-bg-primary shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)]'
+                : 'bg-primary-600 hover:bg-primary-700 text-bg-primary'
             }`}
           >
             <span className="material-symbols-outlined text-[20px]">

@@ -29,7 +29,7 @@ export function Bienvenida() {
           </div>
           <button
             onClick={() => navigate('/inicio-sesion')}
-            className="text-text-secondary hover:text-text-primary text-sm font-semibold tracking-wide px-3 py-1.5 rounded-lg active:bg-surface-variant transition-colors min-h-[48px] flex items-center"
+            className="text-text-secondary hover:text-text-primary text-sm font-semibold px-3 py-1.5 rounded-lg active:bg-surface-variant transition-colors min-h-[48px] flex items-center"
             type="button"
           >
             Saltar
@@ -39,9 +39,6 @@ export function Bienvenida() {
 
       <main className="flex-1 min-h-0 w-full max-w-6xl mx-auto flex flex-col md:flex-row md:items-center md:gap-10 md:px-8">
         <section className="relative w-full flex-1 min-h-0 flex flex-col items-center justify-center px-4 overflow-hidden md:h-full md:max-h-[640px]">
-          <div className="absolute w-72 h-72 rounded-full bg-primary-600/20 blur-3xl -top-4 pointer-events-none"></div>
-          <div className="absolute w-52 h-52 rounded-full bg-secondary-600/15 blur-2xl top-20 pointer-events-none"></div>
-
           <div className="absolute inset-x-0 bottom-6 h-48 pointer-events-none opacity-40">
             <svg
               className="w-full h-full"
@@ -67,8 +64,7 @@ export function Bienvenida() {
             </svg>
           </div>
 
-          <div className="absolute bottom-8 w-64 h-12 bg-primary-600/30 rounded-full blur-xl transform -scale-y-50"></div>
-          <div className="absolute bottom-9 w-48 h-5 rounded-full border border-primary-500/40 bg-gradient-to-r from-transparent via-primary-600/30 to-transparent"></div>
+          <div className="absolute bottom-8 w-64 h-12 bg-black/40 rounded-full blur-xl transform -scale-y-50"></div>
 
           <div
             data-testid="bienvenida-corredor"
@@ -78,8 +74,8 @@ export function Bienvenida() {
               <Runner3D animation="Jog" cameraPosition={[0, 1.35, 3.9]} target={[0, 1.2, 0]} />
             </Suspense>
             <div className="absolute z-10 top-3 left-3 bg-surface/90 border border-border-subtle backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-md">
-              <span className="w-2 h-2 rounded-full bg-secondary-500 animate-pulse"></span>
-              <span className="text-[11px] font-semibold text-text-primary tracking-wide">
+              <span className="w-2 h-2 rounded-full bg-secondary-500"></span>
+              <span className="text-[11px] font-semibold text-text-primary">
                 2,100 msnm
               </span>
             </div>
@@ -98,12 +94,12 @@ export function Bienvenida() {
             aria-label="Progreso de introducción: Paso 1 de 3"
             className="flex items-center justify-center md:justify-start gap-2 mb-3 short:mb-2"
           >
-            <div className="h-2 w-8 rounded-full bg-primary-600 shadow-[0_0_10px_rgba(217,119,6,0.6)]"></div>
+            <div className="h-2 w-8 rounded-full bg-primary-600"></div>
             <div className="h-2 w-2 rounded-full bg-border-subtle"></div>
             <div className="h-2 w-2 rounded-full bg-border-subtle"></div>
           </div>
 
-          <h1 className="text-text-primary font-headline-lg text-[26px] md:text-4xl font-extrabold text-center md:text-left tracking-tight leading-tight mb-2">
+          <h1 className="text-text-primary font-headline-lg text-[26px] md:text-4xl font-semibold text-center md:text-left tracking-tight leading-tight mb-2">
             Corre con la manada de Loja
           </h1>
 
@@ -131,7 +127,7 @@ export function Bienvenida() {
           <div className="w-full max-w-sm mx-auto md:mx-0 md:max-w-none flex flex-col gap-2">
             <button
               onClick={() => navigate('/registro')}
-              className="w-full h-12 short:h-11 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all cursor-pointer"
+              className="w-full h-12 short:h-11 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-semibold text-base rounded-xl flex items-center justify-center gap-2 transition cursor-pointer"
               type="button"
             >
               <span>Crear cuenta</span>
@@ -140,7 +136,7 @@ export function Bienvenida() {
 
             <button
               onClick={() => navigate('/inicio-sesion')}
-              className="w-full h-12 bg-transparent hover:bg-surface-container active:scale-[0.99] border border-border-subtle/80 text-text-primary font-medium text-sm rounded-xl flex items-center justify-center transition-all cursor-pointer min-h-[48px]"
+              className="w-full h-12 bg-transparent hover:bg-surface-container active:scale-[0.99] border border-border-subtle/80 text-text-primary font-medium text-sm rounded-xl flex items-center justify-center transition cursor-pointer min-h-[48px]"
               type="button"
             >
               Ya tengo cuenta, iniciar sesión

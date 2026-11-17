@@ -28,7 +28,7 @@ export function FotoPerfil({
     )
   return (
     <div
-      className={`${className} rounded-full bg-gradient-to-br from-primary-600 to-primary-400 border-2 border-primary-600 flex items-center justify-center text-bg-primary text-2xl font-bold`}
+      className={`${className} rounded-full bg-primary-600 border-2 border-primary-600 flex items-center justify-center text-bg-primary text-2xl font-semibold`}
       aria-label="Foto de perfil"
     >
       {nombre.charAt(0).toUpperCase()}
@@ -82,7 +82,7 @@ export function Perfil() {
             >
               {carreras.length}
             </div>
-            <div className="font-label-md text-label-md text-text-secondary uppercase">
+            <div className="font-label-md text-label-md text-text-secondary">
               Carreras
             </div>
           </div>
@@ -90,7 +90,7 @@ export function Perfil() {
             <div className="font-headline-lg text-headline-lg text-text-primary leading-none mb-1">
               {carreras.filter((c) => c.publica).length}
             </div>
-            <div className="font-label-md text-label-md text-text-secondary uppercase">
+            <div className="font-label-md text-label-md text-text-secondary">
               Públicas
             </div>
           </div>
@@ -98,7 +98,7 @@ export function Perfil() {
             <div className="font-headline-lg text-headline-lg text-text-primary leading-none mb-1">
               {Unidades.texto(totalKm, m, 1)}
             </div>
-            <div className="font-label-md text-label-md text-text-secondary uppercase">
+            <div className="font-label-md text-label-md text-text-secondary">
               {Unidades.etiquetaDistancia(m)} totales
             </div>
           </div>

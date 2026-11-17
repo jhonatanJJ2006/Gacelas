@@ -37,7 +37,7 @@ export function RecuperarContrasena() {
               </span>
             </div>
 
-            <h1 className="text-text-primary font-headline-lg text-2xl font-bold mb-3">
+            <h1 className="text-text-primary font-headline-lg text-2xl font-semibold mb-3">
               Revisa tu correo
             </h1>
             <p className="text-text-secondary text-sm mb-8">
@@ -47,7 +47,7 @@ export function RecuperarContrasena() {
 
             <button
               onClick={() => navigate('/inicio-sesion')}
-              className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all cursor-pointer"
+              className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-semibold text-base rounded-xl flex items-center justify-center gap-2 transition cursor-pointer"
             >
               Volver al inicio de sesión
             </button>
@@ -77,7 +77,7 @@ export function RecuperarContrasena() {
               </span>
             </div>
 
-            <h1 className="text-text-primary font-headline-lg text-3xl font-bold mb-2">
+            <h1 className="text-text-primary font-headline-lg text-3xl font-semibold mb-2">
               Recuperar contraseña
             </h1>
             <p className="text-text-secondary text-sm">
@@ -108,7 +108,7 @@ export function RecuperarContrasena() {
 
             <button
               type="submit"
-              className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all cursor-pointer"
+              className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-semibold text-base rounded-xl flex items-center justify-center gap-2 transition cursor-pointer"
             >
               <span>Enviar enlace</span>
               <span className="material-symbols-outlined text-[20px]">arrow_forward</span>

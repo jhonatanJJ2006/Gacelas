@@ -168,7 +168,7 @@ export function EditarPerfil() {
               maxLength={150}
               value={bio}
               onChange={(e) => setBio(e.target.value.slice(0, 150))}
-              placeholder="Cuéntanos sobre ti..."
+              placeholder="Cuéntanos sobre ti"
               className={`${entrada} h-auto py-3 resize-none`}
             />
             <p className="text-xs text-text-secondary mt-1">{bio.length}/150 caracteres</p>

@@ -24,7 +24,7 @@ export function NuevaContrasena() {
   return (
     <div className="w-full min-h-[100dvh] bg-surface flex flex-col px-6 py-8">
       <form onSubmit={enviar} noValidate className="max-w-md mx-auto w-full my-auto space-y-4">
-        <h1 className="text-text-primary font-headline-lg text-2xl font-bold">Nueva contraseña</h1>
+        <h1 className="text-text-primary font-headline-lg text-2xl font-semibold">Nueva contraseña</h1>
         <p className="text-text-secondary text-sm">
           Escribe la contraseña que quieres usar desde ahora.
         </p>
@@ -44,7 +44,7 @@ export function NuevaContrasena() {
         <button
           type="submit"
           disabled={cargando}
-          className="w-full h-14 bg-primary-600 hover:bg-primary-700 text-bg-primary font-bold rounded-xl disabled:opacity-60"
+          className="w-full h-14 bg-primary-600 hover:bg-primary-700 text-bg-primary font-semibold rounded-xl disabled:opacity-60"
         >
           {cargando ? 'Guardando...' : 'Guardar contraseña'}
         </button>

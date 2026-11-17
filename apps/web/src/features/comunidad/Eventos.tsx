@@ -154,9 +154,9 @@ export function Eventos() {
               data-testid="evento"
             >
               <Link to={`/comunidad/eventos/${evento.id}`} className="block">
-                <div className="h-40 bg-gradient-to-br from-primary-600 to-secondary-600 relative overflow-hidden">
+                <div className="h-40 bg-surface-container-low relative overflow-hidden">
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[80px] text-white/20">
+                    <span className="material-symbols-outlined text-[48px] text-text-secondary/40">
                       event
                     </span>
                   </div>

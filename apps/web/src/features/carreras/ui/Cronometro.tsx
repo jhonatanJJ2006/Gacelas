@@ -135,7 +135,7 @@ export function PanelIntervalos() {
         <div
           className={`rounded-2xl p-space-md text-center ${estado.fase === 'trabajo' ? 'bg-primary-600/20' : 'bg-secondary-600/20'}`}
         >
-          <div className="text-label-lg font-label-lg uppercase tracking-wider text-on-surface">
+          <div className="text-label-lg font-label-lg text-on-surface">
             {estado.fase === 'trabajo'
               ? 'Trabajo'
               : estado.fase === 'descanso'
@@ -196,7 +196,7 @@ export function PanelIntervalos() {
       <button
         type="button"
         onClick={estado ? () => setTranscurrido(null) : iniciar}
-        className={`h-12 rounded-xl font-bold ${estado ? 'bg-danger/20 text-red-300' : 'bg-primary-600 text-bg-primary'}`}
+        className={`h-12 rounded-xl font-semibold ${estado ? 'bg-danger/20 text-red-300' : 'bg-primary-600 text-bg-primary'}`}
       >
         {estado ? 'Detener intervalos' : 'Iniciar intervalos'}
       </button>
@@ -270,7 +270,7 @@ export function PanelMetronomo() {
       <button
         type="button"
         onClick={() => setSonando((s) => !s)}
-        className={`w-full h-12 rounded-xl font-bold ${sonando ? 'bg-danger/20 text-red-300' : 'bg-primary-600 text-bg-primary'}`}
+        className={`w-full h-12 rounded-xl font-semibold ${sonando ? 'bg-danger/20 text-red-300' : 'bg-primary-600 text-bg-primary'}`}
       >
         {sonando ? 'Detener metrónomo' : 'Iniciar metrónomo'}
       </button>
@@ -333,7 +333,7 @@ export function Cronometro() {
                   if (mo.id === 'fartlek') setPestana('intervals')
                 }}
                 aria-pressed={modo === mo.id}
-                className={`flex-1 min-w-[110px] py-2 px-space-sm rounded-lg text-label-md font-label-md flex items-center justify-center gap-1.5 transition-all ${
+                className={`flex-1 min-w-[112px] py-2 px-space-sm rounded-lg text-label-md font-label-md flex items-center justify-center gap-1.5 transition ${
                   modo === mo.id
                     ? 'bg-primary-container/20 text-primary-400 shadow-sm'
                     : 'text-text-secondary hover:text-on-surface'
@@ -399,7 +399,7 @@ export function Cronometro() {
                 strokeWidth="6"
               />
               <circle
-                className="text-primary-500 transition-all duration-300"
+                className="text-primary-500 transition-[stroke-dashoffset] duration-300"
                 cx="120"
                 cy="120"
                 fill="none"
@@ -416,7 +416,7 @@ export function Cronometro() {
                 <span
                   className={`w-2 h-2 rounded-full ${e.fase === 'corriendo' ? 'bg-secondary-500 animate-pulse' : 'bg-text-secondary'}`}
                 ></span>
-                <span className="text-label-md font-label-md text-on-surface uppercase tracking-wider">
+                <span className="text-label-md font-label-md text-on-surface">
                   {e.fase === 'corriendo'
                     ? 'En marcha'
                     : e.fase === 'pausada'
@@ -494,7 +494,7 @@ export function Cronometro() {
             aria-label={!activa ? 'Iniciar' : e.fase === 'pausada' ? 'Reanudar' : 'Pausar'}
             className="w-20 h-20 rounded-full bg-primary-600 hover:bg-primary-700 active:scale-95 text-bg-primary flex items-center justify-center shadow-lg"
           >
-            <span className="material-symbols-outlined text-[36px] font-bold">
+            <span className="material-symbols-outlined text-[36px] font-semibold">
               {e.fase === 'corriendo' ? 'pause' : 'play_arrow'}
             </span>
           </button>

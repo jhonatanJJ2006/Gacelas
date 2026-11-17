@@ -135,7 +135,7 @@ export function CarreraEnCurso() {
         >
           <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-white/20" />
           <div className="flex items-center justify-between mb-1 text-xs text-text-secondary">
-            <span className="flex items-center gap-2 uppercase tracking-wider font-semibold text-primary-400">
+            <span className="flex items-center gap-2 font-semibold text-primary-400">
               <span
                 className={`w-2 h-2 rounded-full ${pausada ? 'bg-text-secondary' : 'bg-secondary animate-pulse'}`}
               />
@@ -151,7 +151,7 @@ export function CarreraEnCurso() {
               >
                 {Unidades.texto(e.distanciaKm, m)}
               </div>
-              <div className="text-xs uppercase tracking-[0.2em] text-text-secondary mt-1">
+              <div className="text-xs text-text-secondary mt-1">
                 {m ? 'Kilómetros' : 'Millas'}
               </div>
             </div>
@@ -159,13 +159,13 @@ export function CarreraEnCurso() {
               <div className="text-2xl font-light text-white tabular-nums" data-testid="tiempo">
                 {formatearHms(e.segundos)}
               </div>
-              <div className="text-[11px] uppercase tracking-wider text-text-secondary">Tiempo</div>
+              <div className="text-[11px] text-text-secondary">Tiempo</div>
             </div>
             <div className="text-right">
               <div className="text-2xl font-light text-white tabular-nums" data-testid="ritmo">
                 {formatearRitmo(Unidades.ritmo(e.ritmoActualSegKm, m))}
               </div>
-              <div className="text-[11px] uppercase tracking-wider text-text-secondary">
+              <div className="text-[11px] text-text-secondary">
                 Ritmo {Unidades.etiquetaRitmo(m)}
               </div>
             </div>
@@ -196,7 +196,7 @@ export function CarreraEnCurso() {
             <button
               onClick={terminar}
               aria-label="Terminar carrera"
-              className="flex-1 h-14 rounded-2xl bg-[#FF6A13] text-[#0b1220] flex items-center justify-center gap-2 font-bold"
+              className="flex-1 h-14 rounded-2xl bg-[#FF6A13] text-[#0b1220] flex items-center justify-center gap-2 font-semibold"
             >
               <span className="material-symbols-outlined">stop</span>Terminar
             </button>
@@ -215,7 +215,7 @@ export function CarreraEnCurso() {
 
         <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 pt-20 pb-10">
           <div className="mb-4 text-center">
-            <span className="font-label-lg text-label-lg text-primary uppercase tracking-wider flex items-center justify-center gap-2">
+            <span className="font-label-lg text-label-lg text-primary flex items-center justify-center gap-2">
               <span
                 className={`w-2 h-2 rounded-full ${pausada ? 'bg-text-secondary' : 'bg-secondary animate-pulse'}`}
               ></span>
@@ -236,7 +236,7 @@ export function CarreraEnCurso() {
               >
                 {Unidades.texto(e.distanciaKm, m)}
               </div>
-              <div className="font-headline-sm text-headline-sm text-text-secondary uppercase tracking-wider">
+              <div className="font-headline-sm text-headline-sm text-text-secondary">
                 {m ? 'Kilómetros' : 'Millas'}
               </div>
             </div>
@@ -248,7 +248,7 @@ export function CarreraEnCurso() {
                 >
                   {formatearHms(e.segundos)}
                 </div>
-                <div className="font-label-md text-label-md text-text-secondary uppercase">
+                <div className="font-label-md text-label-md text-text-secondary">
                   Tiempo
                 </div>
               </div>
@@ -259,7 +259,7 @@ export function CarreraEnCurso() {
                 >
                   {formatearRitmo(Unidades.ritmo(e.ritmoActualSegKm, m))}
                 </div>
-                <div className="font-label-md text-label-md text-text-secondary uppercase">
+                <div className="font-label-md text-label-md text-text-secondary">
                   Ritmo {Unidades.etiquetaRitmo(m)}
                 </div>
               </div>
@@ -279,7 +279,7 @@ export function CarreraEnCurso() {
             <button
               onClick={() => tracker.alternarPausa()}
               aria-label={pausada ? 'Reanudar' : 'Pausar'}
-              className="w-16 h-16 rounded-full bg-surface-container border-2 border-border-subtle flex items-center justify-center text-text-primary hover:bg-surface-container-high transition-all shadow-lg"
+              className="w-16 h-16 rounded-full bg-surface-container border-2 border-border-subtle flex items-center justify-center text-text-primary hover:bg-surface-container-high transition shadow-lg"
             >
               <span className="material-symbols-outlined text-[32px]">
                 {pausada ? 'play_arrow' : 'pause'}
@@ -288,7 +288,7 @@ export function CarreraEnCurso() {
             <button
               onClick={terminar}
               aria-label="Terminar carrera"
-              className="w-16 h-16 rounded-full bg-danger/20 border-2 border-danger flex items-center justify-center text-danger hover:bg-danger/30 transition-all shadow-lg"
+              className="w-16 h-16 rounded-full bg-danger/20 border-2 border-danger flex items-center justify-center text-danger hover:bg-danger/30 transition shadow-lg"
             >
               <span className="material-symbols-outlined text-[32px]">stop</span>
             </button>

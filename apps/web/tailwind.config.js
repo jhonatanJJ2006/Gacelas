@@ -139,23 +139,23 @@ export default {
         ],
         'headline-lg': [
           '30px',
-          { lineHeight: '38px', letterSpacing: '-0.01em', fontWeight: '700' },
+          { lineHeight: '38px', letterSpacing: '-0.01em', fontWeight: '600' },
         ],
         'headline-xl': [
           '36px',
-          { lineHeight: '44px', letterSpacing: '-0.02em', fontWeight: '700' },
+          { lineHeight: '44px', letterSpacing: '-0.02em', fontWeight: '600' },
         ],
         'headline-lg-mobile': [
           '30px',
-          { lineHeight: '36px', letterSpacing: '-0.01em', fontWeight: '700' },
+          { lineHeight: '36px', letterSpacing: '-0.01em', fontWeight: '600' },
         ],
         'headline-xl-mobile': [
           '36px',
-          { lineHeight: '40px', letterSpacing: '-0.02em', fontWeight: '700' },
+          { lineHeight: '40px', letterSpacing: '-0.02em', fontWeight: '600' },
         ],
         'metric-huge': [
           '48px',
-          { lineHeight: '52px', letterSpacing: '-0.03em', fontWeight: '700' },
+          { lineHeight: '52px', letterSpacing: '-0.03em', fontWeight: '600' },
         ],
       },
       borderRadius: {

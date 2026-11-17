@@ -31,7 +31,7 @@ export function AppLayout() {
                 <FotoPerfil foto={sesion.foto} nombre={sesion.nombre} className="h-8 w-8" />
               ) : (
                 <div className="h-8 w-8 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-on-primary font-bold text-sm">GL</span>
+                  <span className="text-on-primary font-semibold text-sm">GL</span>
                 </div>
               )}
             </Link>
@@ -45,7 +45,7 @@ export function AppLayout() {
             <Link
               to="/notificaciones"
               aria-label={sinLeer ? `Notificaciones (${sinLeer} sin leer)` : 'Notificaciones'}
-              className="relative w-12 h-12 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-container active:scale-95 transition-all"
+              className="relative w-12 h-12 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-container active:scale-95 transition"
             >
               <span className="material-symbols-outlined text-[24px]">notifications</span>
               {sinLeer > 0 && (

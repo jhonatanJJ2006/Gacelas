@@ -27,7 +27,7 @@ export function RankingSemanal() {
             className={`flex items-center gap-3 rounded-xl px-3 py-2 ${f.propio ? 'bg-primary/10 border border-primary/30' : ''}`}
           >
             <span
-              className={`w-6 text-center font-bold ${i === 0 ? 'text-primary' : 'text-text-secondary'}`}
+              className={`w-6 text-center font-semibold ${i === 0 ? 'text-primary' : 'text-text-secondary'}`}
             >
               {i + 1}
             </span>
@@ -86,12 +86,12 @@ export function MetaSemanal({ km, metaKm = 30 }: { km: number; metaKm?: number }
           strokeDashoffset={c * (1 - pct / 100)}
           transform="rotate(-90 44 44)"
         />
-        <text x="44" y="49" textAnchor="middle" className="fill-text-primary text-[16px] font-bold">
+        <text x="44" y="49" textAnchor="middle" className="fill-text-primary text-[16px] font-semibold">
           {pct}%
         </text>
       </svg>
       <div>
-        <p className="text-xs uppercase tracking-wider text-primary font-semibold">
+        <p className="text-xs text-primary font-semibold">
           Objetivo semanal
         </p>
         <p className="font-headline-sm text-headline-sm text-text-primary">
@@ -99,7 +99,7 @@ export function MetaSemanal({ km, metaKm = 30 }: { km: number; metaKm?: number }
           {Unidades.etiquetaDistancia(m)}
         </p>
         <p className="text-sm text-text-secondary">
-          {pct >= 100 ? '¡Meta cumplida!' : 'Sigue sumando kilómetros esta semana'}
+          {pct >= 100 ? 'Meta cumplida' : 'Sigue sumando kilómetros esta semana'}
         </p>
       </div>
     </section>

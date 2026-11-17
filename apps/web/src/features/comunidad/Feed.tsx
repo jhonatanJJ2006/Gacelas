@@ -165,7 +165,7 @@ export function Feed() {
                 data-testid="publicacion"
               >
                 <div className="p-4 flex items-center gap-3 border-b border-border-subtle relative">
-                  <div className="w-10 h-10 rounded-full bg-primary-600/30 flex items-center justify-center text-primary-400 font-bold">
+                  <div className="w-10 h-10 rounded-full bg-primary-600/30 flex items-center justify-center text-primary-400 font-semibold">
                     {post.autor.charAt(0)}
                   </div>
                   <div className="flex-1">
@@ -216,11 +216,11 @@ export function Feed() {
                   )}
                 </div>
 
-                <div className="h-48 bg-gradient-to-br from-primary-600/20 to-secondary-600/20 flex items-center justify-center">
+                <div className="h-48 bg-surface-container-low flex items-center justify-center">
                   {post.puntos.length > 1 ? (
                     <TrazadoRuta puntos={post.puntos} className="w-full h-full p-4" />
                   ) : (
-                    <span className="material-symbols-outlined text-[64px] text-primary">
+                    <span className="material-symbols-outlined text-[48px] text-text-secondary/40">
                       route
                     </span>
                   )}
@@ -318,7 +318,7 @@ export function Feed() {
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
             rows={3}
-            placeholder="Escribe un comentario..."
+            placeholder="Escribe un comentario"
             className="w-full px-3 py-2 bg-surface-container border border-border-subtle rounded-lg text-text-primary resize-none"
           />
         </Dialogo>

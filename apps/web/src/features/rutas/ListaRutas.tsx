@@ -8,6 +8,7 @@ import {
   type FiltroDistancia,
 } from '../../lib/rutas'
 import { Estrellas } from './Estrellas'
+import { TrazadoRuta } from '../../components/TrazadoRuta'
 import { Link, useNavigate } from 'react-router-dom'
 import { MapaRutas } from '../../components/MapaEditable'
 import { filtrarRutas, PESTANAS_RUTAS, type PestanaRutas } from '../../lib/filtros'
@@ -114,7 +115,7 @@ export function ListaRutas() {
             aria-label="Buscar rutas"
             value={consulta}
             onChange={(e) => setConsulta(e.target.value)}
-            placeholder="Buscar rutas..."
+            placeholder="Buscar rutas"
             className="w-full h-12 pl-12 pr-4 bg-surface-container border border-border-subtle rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent"
           />
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">
@@ -207,8 +208,14 @@ export function ListaRutas() {
               className="relative bg-surface-container rounded-2xl border border-border-subtle overflow-hidden hover:border-primary-600/50 transition-colors"
             >
               <Link to={`/rutas/${ruta.id}`} className="block" aria-label={`Abrir ${ruta.nombre}`}>
-                <div className="h-32 bg-gradient-to-br from-primary-600/30 to-secondary-600/30 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[64px] text-primary">route</span>
+                <div className="h-32 bg-surface-container-low flex items-center justify-center">
+                  {(ruta.puntos?.length ?? 0) > 1 ? (
+                    <TrazadoRuta puntos={ruta.puntos!} className="w-full h-full p-3" />
+                  ) : (
+                    <span className="material-symbols-outlined text-[48px] text-text-secondary/40">
+                      route
+                    </span>
+                  )}
                 </div>
                 <div className="p-4">
                   <h2 className="font-title-md text-title-md text-text-primary mb-1">

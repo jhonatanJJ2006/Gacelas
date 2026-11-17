@@ -39,7 +39,7 @@ export function Inicio() {
       <section className="flex flex-col space-y-space-xs pt-space-md lg:col-span-12 lg:pt-0">
         <div className="flex items-center justify-between">
           <div>
-            <span className="font-label-md text-label-md text-primary flex items-center gap-1.5 uppercase tracking-wider">
+            <span className="font-label-md text-label-md text-primary flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[16px]">location_on</span>
               Loja, Ecuador
             </span>
@@ -61,15 +61,15 @@ export function Inicio() {
       <section className="lg:col-span-7 lg:row-span-3 relative flex flex-col rounded-3xl overflow-hidden bg-surface-container-high border border-border-subtle shadow-2xl">
         <div className="absolute top-3 inset-x-3 z-20 flex items-center justify-between pointer-events-none">
           <div className="inline-flex items-center gap-1.5 px-3 max-[380px]:px-2 py-1 min-w-0 rounded-full bg-bg-secondary/90 backdrop-blur-md text-primary border border-primary/20 shadow-md">
-            <span className="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
-            <span className="font-label-md text-label-md font-bold tracking-wide uppercase whitespace-nowrap max-[380px]:text-[10px] max-[380px]:tracking-normal">
+            <span className="w-2 h-2 rounded-full bg-secondary"></span>
+            <span className="font-label-md text-label-md font-semibold whitespace-nowrap max-[380px]:text-[10px]">
               {semana.carreras} {semana.carreras === 1 ? 'carrera' : 'carreras'} esta semana
             </span>
           </div>
           <InsigniaRacha compacta />
         </div>
 
-        <div className="relative w-full h-[430px] lg:h-[560px] bg-surface-container-lowest">
+        <div className="relative w-full h-[432px] lg:h-[560px] bg-surface-container-lowest">
           <Suspense
             fallback={
               <div className="w-full h-full flex items-center justify-center text-text-secondary">
@@ -94,7 +94,7 @@ export function Inicio() {
             <span className="font-metric-huge text-metric-huge max-[380px]:text-[28px] whitespace-nowrap text-primary leading-none">
               {semana.diasCorridos.size}
             </span>
-            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
+            <span className="font-label-md text-label-md text-text-secondary mt-0.5">
               Días
             </span>
           </div>
@@ -105,7 +105,7 @@ export function Inicio() {
             >
               {Unidades.texto(semana.km, m, 1)}
             </span>
-            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
+            <span className="font-label-md text-label-md text-text-secondary mt-0.5">
               {Unidades.etiquetaDistancia(m)}
             </span>
           </div>
@@ -113,7 +113,7 @@ export function Inicio() {
             <span className="font-metric-huge text-metric-huge max-[380px]:text-[28px] whitespace-nowrap text-text-primary leading-none">
               {formatearRitmo(Unidades.ritmo(semana.ritmoSegKm, m))}
             </span>
-            <span className="font-label-md text-label-md text-text-secondary uppercase mt-0.5">
+            <span className="font-label-md text-label-md text-text-secondary mt-0.5">
               {Unidades.etiquetaRitmo(m)}
             </span>
           </div>
@@ -127,10 +127,10 @@ export function Inicio() {
 
         <Link
           to="/correr"
-          className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.98] rounded-2xl p-6 flex items-center justify-between shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all"
+          className="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.98] rounded-2xl p-6 flex items-center justify-between transition"
         >
           <div className="flex flex-col">
-            <span className="font-headline-sm text-headline-sm text-bg-primary font-bold">
+            <span className="font-headline-sm text-headline-sm text-bg-primary font-semibold">
               Empezar a correr
             </span>
             <span className="font-body-md text-body-md text-bg-primary mt-1">
@@ -193,8 +193,8 @@ export function Inicio() {
             to={`/comunidad/eventos/${proximo.id}`}
             className="block bg-surface-container rounded-2xl border border-border-subtle overflow-hidden"
           >
-            <div className="h-32 bg-gradient-to-br from-primary-600 to-secondary-600 flex items-center justify-center">
-              <span className="material-symbols-outlined text-[64px] text-white">event</span>
+            <div className="h-32 bg-surface-container-low flex items-center justify-center">
+              <span className="material-symbols-outlined text-[48px] text-text-secondary/40">event</span>
             </div>
             <div className="p-4">
               <div className="flex items-center gap-2 mb-2">

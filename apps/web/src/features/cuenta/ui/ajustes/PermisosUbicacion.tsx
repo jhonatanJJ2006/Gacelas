@@ -41,7 +41,7 @@ export function PermisosUbicacion() {
           </span>
         </div>
 
-        <h1 className="text-text-primary font-headline-lg text-3xl font-bold mb-4">
+        <h1 className="text-text-primary font-headline-lg text-3xl font-semibold mb-4">
           Activa tu ubicación
         </h1>
         <p className="text-text-secondary text-base mb-8 max-w-sm">
@@ -97,7 +97,7 @@ export function PermisosUbicacion() {
         <button
           onClick={handleAllow}
           disabled={pidiendo}
-          className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-[0_8px_20px_-4px_rgba(217,119,6,0.35)] transition-all cursor-pointer"
+          className="w-full h-14 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-bg-primary font-headline-md font-semibold text-base rounded-xl flex items-center justify-center gap-2 transition cursor-pointer"
         >
           <span>{pidiendo ? 'Esperando permiso...' : 'Permitir ubicación'}</span>
           <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
@@ -105,7 +105,7 @@ export function PermisosUbicacion() {
 
         <button
           onClick={handleSkip}
-          className="w-full h-12 bg-transparent hover:bg-surface-container active:scale-[0.99] text-text-secondary font-medium text-sm rounded-xl flex items-center justify-center transition-all cursor-pointer mt-3"
+          className="w-full h-12 bg-transparent hover:bg-surface-container active:scale-[0.99] text-text-secondary font-medium text-sm rounded-xl flex items-center justify-center transition cursor-pointer mt-3"
         >
           Configurar más tarde
         </button>
