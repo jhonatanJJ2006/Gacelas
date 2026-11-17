@@ -159,9 +159,7 @@ function Dashboard({ f }: { f: FuenteAdmin }) {
             key={t}
             className={`p-4 ${i === 0 ? 'bg-gradient-to-br from-[#7B1FA2] to-[#3b1a5c]' : tarjeta}`}
           >
-            <p className="rotulo-c2 !text-[#C084FC]">
-              {t}
-            </p>
+            <p className="rotulo-c2 !text-[#C084FC]">{t}</p>
             <p className="font-display italic text-[30px] text-white leading-tight">{v}</p>
             <p className="text-[12px] text-[#68DBA9]">{s}</p>
           </div>

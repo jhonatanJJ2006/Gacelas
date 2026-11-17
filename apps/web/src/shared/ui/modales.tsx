@@ -59,9 +59,7 @@ export function ResumenModal({ datos }: { datos: [string, string][] }) {
     <div className="grid grid-cols-3 gap-2 bg-c2-s2 border border-c2-linea p-3">
       {datos.map(([valor, etiqueta], i) => (
         <div key={etiqueta}>
-          <span className="rotulo-c2">
-            {etiqueta}
-          </span>
+          <span className="rotulo-c2">{etiqueta}</span>
           <span
             className={`font-display italic text-[20px] ${i === 0 ? 'text-c2-violeta' : 'text-white'}`}
           >

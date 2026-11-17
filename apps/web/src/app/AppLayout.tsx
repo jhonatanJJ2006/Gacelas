@@ -50,9 +50,7 @@ export function AppLayout() {
               <span className="font-display italic text-[18px] leading-none text-white truncate">
                 Runcity
               </span>
-              <span className="rotulo-c2 !text-c2-violeta mt-0.5">
-                Loja, Ecuador
-              </span>
+              <span className="rotulo-c2 !text-c2-violeta mt-0.5">Loja, Ecuador</span>
             </div>
           </div>
           <div className="flex items-center gap-space-xs">
