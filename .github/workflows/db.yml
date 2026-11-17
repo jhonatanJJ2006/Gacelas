@@ -53,7 +53,7 @@ jobs:
             echo "Probando $f"
             psql -v ON_ERROR_STOP=1 -h localhost -U postgres -d postgres -f "$f"
           done
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@v3
       - name: Generar tipos TypeScript
         run: |
           supabase gen types typescript --db-url "postgresql://postgres:postgres@localhost:5432/postgres" > apps/web/src/shared/supabase/tipos.gen.ts
