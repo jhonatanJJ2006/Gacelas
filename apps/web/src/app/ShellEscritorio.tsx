@@ -101,7 +101,7 @@ function BloqueRacha() {
           <span
             key={d}
             title={dias.has(i) ? 'Corriste' : i === hoy ? 'Hoy' : undefined}
-            className={`flex-1 h-5 rounded-sm grid place-items-center text-[9px] font-bold ${
+            className={`flex-1 h-5 rounded-sm grid place-items-center text-[11px] font-bold ${
               dias.has(i)
                 ? 'bg-c2-menta/80 text-[#003825]'
                 : i === hoy

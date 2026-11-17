@@ -52,7 +52,7 @@ export function Inicio() {
       <CabeceraMovil />
       <div className="flex flex-col gap-4 lg:grid lg:grid-cols-12 lg:gap-5">
         <Hero className="order-1 lg:order-none lg:col-span-12 xl:col-span-8" />
-        <PanelClima className="mov-escalon order-4 lg:order-none lg:col-span-6 xl:col-span-4" />
+        <PanelClima className="mov-escalon order-4 lg:order-none lg:col-span-6 xl:col-span-4 xl:self-start" />
         <PanelRutaSegura className="mov-escalon order-2 lg:order-none lg:col-span-6 xl:col-span-5" />
         <PanelSemana className="mov-escalon order-3 lg:order-none lg:col-span-6 xl:col-span-4" />
         <PanelReto className="mov-escalon order-8 lg:order-none lg:col-span-6 xl:col-span-3" />

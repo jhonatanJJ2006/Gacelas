@@ -136,7 +136,7 @@ export function Interruptor({
       >
         {/* Switch Material 3 como Android: pulgar grande blanco activo, pequeno gris inactivo. */}
         <span
-          className={`absolute top-1/2 -translate-y-1/2 rounded-full transition-all ${activo ? 'left-[22px] w-6 h-6 bg-white' : 'left-1.5 w-4 h-4 bg-text-secondary/60'}`}
+          className={`absolute top-1/2 -translate-y-1/2 rounded-full transition-[left,width,height,background-color] ${activo ? 'left-[22px] w-6 h-6 bg-white' : 'left-1.5 w-4 h-4 bg-text-secondary/60'}`}
         />
       </span>
     </button>

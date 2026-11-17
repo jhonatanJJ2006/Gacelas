@@ -9,7 +9,7 @@ export function IconoGacelas({ tam = 40, className = '' }: { tam?: number; class
       width={tam}
       height={tam}
       alt="Runcity"
-      className={`shrink-0 rounded-[22%] shadow-[0_0_18px_rgba(168,85,247,0.35)] ${className}`}
+      className={`shrink-0 rounded-[22%] ${className}`}
       style={{ width: tam, height: tam }}
     />
   )

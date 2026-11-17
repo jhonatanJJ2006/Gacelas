@@ -57,7 +57,7 @@ export function AppLayout() {
             <Link
               to="/notificaciones"
               aria-label={sinLeer ? `Notificaciones (${sinLeer} sin leer)` : 'Notificaciones'}
-              className="relative w-12 h-12 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-container active:scale-95 transition-all"
+              className="relative w-12 h-12 flex items-center justify-center rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-container active:scale-95 transition"
             >
               <span
                 className="material-symbols-outlined text-[24px]"

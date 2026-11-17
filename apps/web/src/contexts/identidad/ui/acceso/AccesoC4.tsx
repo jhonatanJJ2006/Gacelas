@@ -47,7 +47,7 @@ const labelCaps = 'text-[11px] leading-[14px] tracking-[0.12em] font-extrabold u
 export function ChipC4({ texto }: { texto: string }) {
   return (
     <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-[#232A3A]/75 px-3 py-1.5 shadow-[0_2px_5px_rgba(0,0,0,0.3)]">
-      <span className="h-1.5 w-1.5 rounded-full bg-[#C084FC] shadow-[0_0_4px_#C084FC]" />
+      <span className="h-1.5 w-1.5 rounded-full bg-[#C084FC]" />
       <span className="whitespace-nowrap text-[11px] leading-[14px] tracking-[0.06em] font-bold text-[#DFE2EE]">
         {texto}
       </span>
