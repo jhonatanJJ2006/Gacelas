@@ -363,6 +363,14 @@ internal class CicloCorredor {
     fun cerrar(): Boolean { if (cerrado) return false; cerrado = true; superficie = false; return true }
 }
 
+private var glb: java.nio.ByteBuffer? = null
+
+/** GLB del corredor leido una sola vez por proceso; cada instancia recibe una vista propia del mismo buffer. */
+@Synchronized
+private fun glbCorredor(ctx: android.content.Context): java.nio.ByteBuffer =
+    (glb ?: ctx.assets.open(MODELO_CORREDOR).use { val b = it.readBytes(); java.nio.ByteBuffer.allocateDirect(b.size).put(b) }.also { glb = it })
+        .duplicate().apply { rewind() }
+
 /** Motor Filament propio del corredor; todo ocurre en el hilo principal (Choreographer y callbacks de UiHelper). */
 internal class CorredorFilament(
     ctx: android.content.Context,
@@ -422,8 +430,7 @@ internal class CorredorFilament(
         materiales = com.google.android.filament.gltfio.UbershaderProvider(engine)
         cargador = com.google.android.filament.gltfio.AssetLoader(engine, materiales, com.google.android.filament.EntityManager.get())
         recursos = com.google.android.filament.gltfio.ResourceLoader(engine)
-        val bytes = ctx.assets.open(MODELO_CORREDOR).use { it.readBytes() }
-        asset = checkNotNull(cargador.createAsset(java.nio.ByteBuffer.allocateDirect(bytes.size).put(bytes).apply { rewind() })) { "GLB sin escena" }
+        asset = checkNotNull(cargador.createAsset(glbCorredor(ctx))) { "GLB sin escena" }
         recursos.loadResources(asset)
         asset.releaseSourceData()
         RecolorAvatar.textura(ctx, colores)?.let { bmp ->
