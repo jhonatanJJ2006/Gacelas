@@ -50,10 +50,14 @@ fun NavHostController.atras(): Boolean = if (estaActiva()) popBackStack() else f
 private fun NavHostController.estaActiva(): Boolean =
     currentBackStackEntry?.lifecycle?.currentState?.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED) ?: true
 
-/** Navega a una pestana principal sin apilar pantallas repetidas. */
+/**
+ * Navega a una pestana principal sin apilar pantallas repetidas. Si la carrera esta en la pila no se
+ * guarda: con saveState quedaba como estado de la pestana de debajo y al pulsarla se abria la carrera.
+ */
 fun NavHostController.irAPestana(ruta: String) {
+    val guardar = currentBackStack.value.none { it.destination.route in Destinos.flujoCarrera }
     navigate(ruta) {
-        popUpTo(Destinos.INICIO) { saveState = true }
+        popUpTo(Destinos.INICIO) { saveState = guardar }
         launchSingleTop = true
         restoreState = true
     }

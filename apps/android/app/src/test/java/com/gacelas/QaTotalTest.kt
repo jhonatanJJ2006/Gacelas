@@ -8,6 +8,7 @@ import com.gacelas.navigation.Destinos
 import com.gacelas.navigation.GacelasNavHost
 import com.gacelas.navigation.atras
 import com.gacelas.navigation.ir
+import com.gacelas.navigation.irAPestana
 import com.gacelas.ui.theme.GacelasTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -91,6 +92,23 @@ class QaTotalTest {
         compose.waitForIdle()
         compose.runOnIdle { assertEquals(Destinos.INICIO, nav.currentDestination?.route) }
     }
+
+    /** Regresion 0.9.21: la carrera abierta encima de una pestana no debe quedar guardada en esa pestana. */
+    private fun pulsarComunidadTrasCarrera(salir: () -> Unit) {
+        montar()
+        listOf({ nav.irAPestana(Destinos.COMUNIDAD) }, { nav.ir(Destinos.CORRER) }, { nav.ir(Destinos.CARRERA_EN_CURSO) }, salir, { nav.irAPestana(Destinos.COMUNIDAD) }).forEach { paso ->
+            compose.runOnIdle { paso() }
+            compose.waitForIdle()
+        }
+        compose.runOnIdle {
+            assertEquals(Destinos.COMUNIDAD, nav.currentDestination?.route)
+            assertFalse(nav.currentBackStack.value.any { it.destination.route in Destinos.flujoCarrera })
+        }
+    }
+
+    @Test fun comunidadNoAbreLaCarreraTrasCerrarlaAInicio() = pulsarComunidadTrasCarrera { nav.irAPestana(Destinos.INICIO) }
+
+    @Test fun comunidadNoAbreLaCarreraTrasPasarPorOtraPestana() = pulsarComunidadTrasCarrera { nav.irAPestana(Destinos.RUTAS) }
 
     @Test fun dobleAtrasNoSacaDosPantallas() {
         montar()
