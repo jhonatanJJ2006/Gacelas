@@ -1224,7 +1224,7 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
         com.gacelas.compartir.DatosCompartir(
             com.gacelas.compartir.DatosCompartir.Tipo.Carrera,
             titulo.ifBlank { "Mi carrera" },
-            // Privacidad: sin los primeros/ultimos 250 m (no revela la casa).
+            // Privacidad: oculta los puntos dentro de 300 m de la salida y llegada.
             com.gacelas.compartir.Compartir.recortarExtremos(estado.puntos.map { it.lat to it.lng }),
             estado.distanciaKm, estado.segundos, estado.ritmoPromedioSegKm, estado.desnivelM.toInt(), rachaDespues.diaria,
         ),

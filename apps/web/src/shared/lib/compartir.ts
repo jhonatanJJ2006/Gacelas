@@ -29,16 +29,14 @@ export const SITIO = 'https://gacelas.vercel.app'
 export const enlaceRuta = (id: string) => `${SITIO}/r/${encodeURIComponent(id)}`
 
 /**
- * Privacidad: quita los primeros y ultimos `metros` del trazo de una carrera para no revelar
- * dónde vive el corredor (la misma idea que el "ocultar casa" del en vivo).
+ * Privacidad: quita los puntos dentro de `metros` de la salida y llegada.
  */
-export function recortarExtremos(puntos: Punto[], metros = 250): Punto[] {
+export function recortarExtremos(puntos: Punto[], metros = 300): Punto[] {
   if (puntos.length < 3) return []
   const corte = (lista: Punto[]) => {
-    let d = 0
+    const origen = lista[0]
     for (let i = 1; i < lista.length; i++) {
-      d += haversineM(lista[i - 1].lat, lista[i - 1].lng, lista[i].lat, lista[i].lng)
-      if (d >= metros) return i
+      if (haversineM(origen.lat, origen.lng, lista[i].lat, lista[i].lng) > metros) return i
     }
     return lista.length
   }

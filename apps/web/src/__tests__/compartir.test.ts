@@ -24,11 +24,33 @@ const carrera: DatosCompartir = {
 }
 
 describe('compartir', () => {
-  it('oculta los primeros y ultimos 250 m de una carrera', () => {
-    const r = recortarExtremos(linea, 250)
+  it('oculta los puntos dentro de 300 m de la salida y llegada', () => {
+    const r = recortarExtremos(linea)
     expect(r[0].lat).toBeCloseTo(linea[3].lat, 6)
     expect(r[r.length - 1].lat).toBeCloseTo(linea[17].lat, 6)
-    expect(recortarExtremos(linea.slice(0, 4), 250)).toEqual([])
+    expect(recortarExtremos(linea.slice(0, 4))).toEqual([])
+  })
+  it('usa distancia geografica al extremo en vez de distancia acumulada', () => {
+    const ruta = [
+      { lat: 0, lng: 0 },
+      { lat: 0, lng: 0.001 },
+      { lat: 0.001, lng: 0.001 },
+      { lat: 0.001, lng: 0 },
+      { lat: 0.002, lng: 0 },
+      { lat: 0.003, lng: 0 },
+      { lat: 0.004, lng: 0 },
+      { lat: 0.005, lng: 0 },
+      { lat: 0.006, lng: 0 },
+      { lat: 0.007, lng: 0 },
+      { lat: 0.008, lng: 0 },
+      { lat: 0.009, lng: 0 },
+      { lat: 0.01, lng: 0 },
+      { lat: 0.011, lng: 0 },
+      { lat: 0.012, lng: 0 },
+    ]
+    const r = recortarExtremos(ruta)
+    expect(r[0]).toBe(ruta[5])
+    expect(r[r.length - 1]).toBe(ruta[11])
   })
   it('proyecta el trazo dentro de la caja', () => {
     const caja = { x: 60, y: 100, ancho: 960, alto: 900 }

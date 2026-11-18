@@ -24,11 +24,34 @@ class CompartirTest {
     private val linea = (0..20).map { -4.0 + it * 0.0009 to -79.2 }
     private val datos = DatosCompartir(DatosCompartir.Tipo.Carrera, "Vuelta al Jipiro", linea, 5.234, 1712, 327, 48, 6, enlaceRuta("abc"))
 
-    @Test fun ocultaInicioYFin() {
-        val r = Compartir.recortarExtremos(linea, 250.0)
+    @Test fun ocultaPuntosDentroDe300MetrosDeSalidaYLlegada() {
+        val r = Compartir.recortarExtremos(linea)
         assertEquals(linea[3].first, r.first().first, 1e-9)
         assertEquals(linea[17].first, r.last().first, 1e-9)
-        assertTrue(Compartir.recortarExtremos(linea.take(4), 250.0).isEmpty())
+        assertTrue(Compartir.recortarExtremos(linea.take(4)).isEmpty())
+    }
+
+    @Test fun recortaPorRadioGeograficoNoPorDistanciaAcumulada() {
+        val ruta = listOf(
+            0.0 to 0.0,
+            0.0 to 0.001,
+            0.001 to 0.001,
+            0.001 to 0.0,
+            0.002 to 0.0,
+            0.003 to 0.0,
+            0.004 to 0.0,
+            0.005 to 0.0,
+            0.006 to 0.0,
+            0.007 to 0.0,
+            0.008 to 0.0,
+            0.009 to 0.0,
+            0.010 to 0.0,
+            0.011 to 0.0,
+            0.012 to 0.0,
+        )
+        val r = Compartir.recortarExtremos(ruta)
+        assertEquals(ruta[5], r.first())
+        assertEquals(ruta[11], r.last())
     }
 
     @Test fun proyectaDentroDeLaCaja() {

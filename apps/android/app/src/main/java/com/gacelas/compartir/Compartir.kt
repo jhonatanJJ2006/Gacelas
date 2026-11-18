@@ -35,12 +35,12 @@ object Compartir {
         return 2 * 6_371_000 * asin(sqrt(h))
     }
 
-    /** Privacidad: quita los primeros y ultimos [metros] para no revelar la casa del corredor. */
-    fun recortarExtremos(p: List<Pair<Double, Double>>, metros: Double = 250.0): List<Pair<Double, Double>> {
+    /** Privacidad: quita los puntos dentro del radio de salida y llegada. */
+    fun recortarExtremos(p: List<Pair<Double, Double>>, metros: Double = 300.0): List<Pair<Double, Double>> {
         if (p.size < 3) return emptyList()
         fun corte(l: List<Pair<Double, Double>>): Int {
-            var d = 0.0
-            for (i in 1 until l.size) { d += hv(l[i - 1], l[i]); if (d >= metros) return i }
+            val origen = l.first()
+            for (i in 1 until l.size) if (hv(origen, l[i]) > metros) return i
             return l.size
         }
         val ini = corte(p)
