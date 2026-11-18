@@ -14,6 +14,10 @@ object Destinos {
     const val EVENTOS = "comunidad/eventos"
     const val PERFIL = "perfil"
 
+    const val SEMANA = "inicio/semana"
+    const val CLIMA = "inicio/clima"
+    const val MAPA_SEGURIDAD = "inicio/seguridad"
+
     const val CORRER = "correr"
     const val CARRERA_EN_CURSO = "correr/en-curso"
     const val CRONOMETRO = "correr/cronometro"
@@ -41,6 +45,8 @@ object Destinos {
     const val EDITAR_PERFIL = "perfil/editar"
     const val MIS_REPORTES = "perfil/reportes"
     const val AVATAR = "perfil/avatar"
+    const val LOGROS = "perfil/logros"
+    const val MEDALLERO = "perfil/medallero"
     const val DETALLE_CARRERA = "perfil/carrera/{id}"
     fun detalleCarrera(id: String) = "perfil/carrera/$id"
 
@@ -64,7 +70,8 @@ object Destinos {
     val todas = acceso + conBarraInferior + listOf(
         CORRER, CARRERA_EN_CURSO, CRONOMETRO, RESUMEN,
         BUSCADOR_RUTAS, NAVEGACION, DETALLE_EVENTO, EN_VIVO, DETALLE_EN_VIVO, DETALLE_RUTA, CREAR_RUTA, CLUBES, DETALLE_CLUB, EVENTO_EN_VIVO,
-        EDITAR_PERFIL, AVATAR,
+        EDITAR_PERFIL, AVATAR, LOGROS, MEDALLERO,
+        SEMANA, CLIMA, MAPA_SEGURIDAD,
         AJUSTES, PRIVACIDAD, CONFIG_NOTIFICACIONES, NOTIFICACIONES, BRUJULA, MAPAS_OFFLINE,
         MAPA_VIVO, TERMINOS, POLITICA_PRIVACIDAD,
     )

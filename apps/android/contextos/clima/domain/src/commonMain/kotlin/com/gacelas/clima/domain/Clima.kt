@@ -19,7 +19,28 @@ data class ClimaActual(
     val consultadoMs: Long,
     /** Pronostico por hora de las proximas horas (widget "Clima para correr"); vacio lo oculta. */
     val horas: List<HoraClima> = emptyList(),
+    /** Ultimos 7 dias y proximos 7 (pantalla de clima); vacio en caches antiguas. */
+    val dias: List<DiaClima> = emptyList(),
 )
+
+/**
+ * Un dia de clima: fecha local "2026-11-17", codigo WMO, maxima y minima redondeadas,
+ * probabilidad de lluvia (%), lluvia acumulada (mm) y viento maximo (km/h).
+ */
+data class DiaClima(
+    val fecha: String,
+    val codigoWmo: Int,
+    val maxima: Int,
+    val minima: Int,
+    val probLluvia: Int,
+    val lluviaMm: Double,
+    val vientoKmh: Double,
+) {
+    /** Dia de lluvia para correr: 50 % o mas de probabilidad o mas de 1 mm, o codigo de lluvia/tormenta. */
+    val lluvioso: Boolean get() = probLluvia >= 50 || lluviaMm > 1.0 || codigoWmo >= 61
+    val caluroso: Boolean get() = maxima >= 26
+    val ventoso: Boolean get() = vientoKmh >= 30
+}
 
 /** Una hora del pronostico: hora local (0-23), grados redondeados y codigo WMO. */
 data class HoraClima(val hora: Int, val temperatura: Int, val codigoWmo: Int)
@@ -28,7 +49,7 @@ data class HoraClima(val hora: Int, val temperatura: Int, val codigoWmo: Int)
 data class Coordenadas(val lat: Double, val lng: Double)
 
 /** Respuesta cruda de la fuente: temperatura, codigo WMO y si es de dia. */
-data class LecturaClima(val temperatura: Double, val codigoWmo: Int, val esDeDia: Boolean, val horas: List<HoraClima> = emptyList())
+data class LecturaClima(val temperatura: Double, val codigoWmo: Int, val esDeDia: Boolean, val horas: List<HoraClima> = emptyList(), val dias: List<DiaClima> = emptyList())
 
 /** Puerto de la fuente de datos (Open-Meteo en infraestructura). */
 fun interface FuenteClima {
@@ -115,5 +136,5 @@ object ReglasClima {
     }
 
     fun aClima(l: LecturaClima, lugar: String, ahoraMs: Long) =
-        ClimaActual(l.temperatura.roundToInt(), descripcion(l.codigoWmo, l.esDeDia), lugar, ahoraMs, l.horas)
+        ClimaActual(l.temperatura.roundToInt(), descripcion(l.codigoWmo, l.esDeDia), lugar, ahoraMs, l.horas, l.dias)
 }

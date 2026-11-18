@@ -193,7 +193,25 @@ class EstadisticasTest {
         assertEquals(300, s.ritmoSegKm)
         assertEquals(3, s.racha)
     }
-    @Test fun rachaSiHoyNoCorrio() = assertEquals(1, Estadisticas.racha(listOf(carrera(ms(2026, 10, 8))), ms(2026, 10, 9)))
+    @Test fun diasDeLaSemana() {
+        // Viernes 9 de octubre de 2026: miercoles y jueves corridos, lunes y martes sin carrera, viernes hoy, finde por llegar.
+        val hoy = ms(2026, 10, 9, 8)
+        val lista = listOf(carrera(ms(2026, 10, 8)), carrera(ms(2026, 10, 7)), carrera(ms(2026, 10, 1)))
+        val dias = Estadisticas.diasDeSemana(lista, Estadisticas.inicioSemana(hoy), hoy)
+        assertEquals(7, dias.size)
+        assertEquals(
+            listOf(com.gacelas.actividad.domain.reglas.EstadoDia.SinCarrera, com.gacelas.actividad.domain.reglas.EstadoDia.SinCarrera,
+                com.gacelas.actividad.domain.reglas.EstadoDia.Corrido, com.gacelas.actividad.domain.reglas.EstadoDia.Corrido,
+                com.gacelas.actividad.domain.reglas.EstadoDia.Hoy, com.gacelas.actividad.domain.reglas.EstadoDia.Futuro,
+                com.gacelas.actividad.domain.reglas.EstadoDia.Futuro),
+            dias.map { it.estado },
+        )
+        assertEquals(5.0, dias[2].km, 1e-9)
+        // Si hoy ya corrio, cuenta como corrido.
+        val conHoy = Estadisticas.diasDeSemana(lista + carrera(ms(2026, 10, 9, 7)), Estadisticas.inicioSemana(hoy), hoy)
+        assertEquals(com.gacelas.actividad.domain.reglas.EstadoDia.Corrido, conHoy[4].estado)
+    }
+    @Test fun rachaSiHoyNoCorrio() =assertEquals(1, Estadisticas.racha(listOf(carrera(ms(2026, 10, 8))), ms(2026, 10, 9)))
     @Test fun mes() {
         val r = Estadisticas.mes(listOf(carrera(ms(2026, 10, 2)), carrera(ms(2026, 9, 30))), ms(2026, 10, 9))
         assertEquals(1, r.carreras); assertEquals(10, r.desnivelM)

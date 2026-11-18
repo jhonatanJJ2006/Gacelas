@@ -168,6 +168,8 @@ private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
             onComunidad = { nav.irAPestana(Destinos.COMUNIDAD) }, onRutas = { nav.irAPestana(Destinos.RUTAS) }, onRuta = { nav.ir(Destinos.detalleRuta(it)) },
             onBuscar = { nav.ir(Destinos.BUSCADOR_RUTAS) }, onNotificaciones = { nav.ir(Destinos.NOTIFICACIONES) },
             onProgreso = { nav.irAPestana(Destinos.PERFIL) }, onMapaVivo = { nav.ir(Destinos.MAPA_VIVO) },
+            onSemana = { nav.ir(Destinos.SEMANA) }, onClima = { nav.ir(Destinos.CLIMA) }, onSeguridad = { nav.ir(Destinos.MAPA_SEGURIDAD) },
+            onClubes = { nav.ir(Destinos.CLUBES) },
         )
     }
     conBarra(nav, Destinos.RUTAS) {
@@ -185,6 +187,7 @@ private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
             onAjustes = { nav.ir(Destinos.AJUSTES) },
             onCarrera = { nav.ir(Destinos.detalleCarrera(it)) },
             onReportes = { nav.ir(Destinos.MIS_REPORTES) },
+            onLogros = { nav.ir(Destinos.LOGROS) }, onMedallero = { nav.ir(Destinos.MEDALLERO) }, onCorrer = { nav.ir(Destinos.CORRER) },
         )
     }
 }
@@ -239,6 +242,8 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
     composable(Destinos.MIS_REPORTES) { com.gacelas.perfil.MisReportesScreen(onAtras = { nav.atras() }) }
     composable(Destinos.EDITAR_PERFIL) { EditarPerfilScreen(onAtras = { nav.atras() }, onGuardar = { nav.atras() }, onAvatar = { nav.ir(Destinos.AVATAR) }) }
     composable(Destinos.DETALLE_CARRERA) { e -> com.gacelas.perfil.DetalleCarreraScreen(e.arguments?.getString("id").orEmpty(), onAtras = { nav.atras() }) }
+    composable(Destinos.LOGROS) { com.gacelas.social.LogrosScreen(onAtras = { nav.atras() }) }
+    composable(Destinos.MEDALLERO) { com.gacelas.perfil.MedalleroScreen(onAtras = { nav.atras() }) }
     composable(Destinos.AVATAR) { Avatar3DScreen(onAtras = { nav.atras() }, onGuardar = { nav.atras() }) }
     composable(Destinos.AJUSTES) {
         AjustesPreferenciasScreen(
@@ -268,6 +273,9 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
     }
     composable(Destinos.TERMINOS) { com.gacelas.legal.DocumentoLegalScreen(terminos = true, onAtras = { nav.atras() }) }
     composable(Destinos.POLITICA_PRIVACIDAD) { com.gacelas.legal.DocumentoLegalScreen(terminos = false, onAtras = { nav.atras() }) }
+    composable(Destinos.SEMANA) { com.gacelas.inicio.SemanaScreen(onAtras = { nav.atras() }, onCorrer = { nav.ir(Destinos.CORRER) }, onCarrera = { nav.ir(Destinos.detalleCarrera(it)) }) }
+    composable(Destinos.CLIMA) { com.gacelas.inicio.ClimaScreen(onAtras = { nav.atras() }, onRuta = { nav.ir(Destinos.detalleRuta(it)) }) }
+    composable(Destinos.MAPA_SEGURIDAD) { com.gacelas.seguridad.MapaSeguridadScreen(onAtras = { nav.atras() }) }
     composable(Destinos.MAPA_VIVO) { com.gacelas.vivo.MapaVivoScreen(onAtras = { nav.atras() }, onPrivacidad = { nav.ir(Destinos.PRIVACIDAD) }) }
     composable(Destinos.CONFIG_NOTIFICACIONES) { ConfiguracionNotificacionesScreen(onAtras = { nav.atras() }) }
     composable(Destinos.NOTIFICACIONES) {

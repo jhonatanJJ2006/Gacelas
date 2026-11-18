@@ -13,6 +13,16 @@ data class ResumenSemana(
     val racha: Int,
 )
 
+/** Estado de un dia en la pantalla "Esta semana". */
+enum class EstadoDia { Corrido, SinCarrera, Hoy, Futuro }
+
+data class DiaSemana(val indice: Int, val inicioMs: Long, val estado: EstadoDia, val carreras: List<Carrera>) {
+    val km: Double get() = carreras.sumOf { it.distanciaKm }
+    val segundos: Int get() = carreras.sumOf { it.segundos }
+    val desnivelM: Int get() = carreras.sumOf { it.desnivelM }
+    val ritmoSegKm: Int? get() = if (km > 0.01) (segundos / km).toInt() else null
+}
+
 data class ResumenPeriodo(val carreras: Int, val km: Double, val segundos: Int, val desnivelM: Int)
 
 object Estadisticas {
@@ -24,6 +34,9 @@ object Estadisticas {
     }
 
     fun diaSemana(ms: Long): Int = Fechas.diaSemana(ms)
+
+    /** Hora local (0-23) en que empezo una carrera. */
+    fun hora(ms: Long): Int = Fechas.hora(ms)
 
     fun semana(carreras: List<Carrera>, ahoraMs: Long): ResumenSemana {
         val desde = inicioSemana(ahoraMs)
@@ -37,6 +50,25 @@ object Estadisticas {
             carreras = semana.size,
             racha = racha(carreras, ahoraMs),
         )
+    }
+
+    /**
+     * Los 7 dias (lunes a domingo) de la semana que empieza en [inicioSemanaMs]: con carrera,
+     * pasados sin carrera, hoy sin carrera todavia o aun por llegar.
+     */
+    fun diasDeSemana(carreras: List<Carrera>, inicioSemanaMs: Long, hoyMs: Long): List<DiaSemana> {
+        val hoy = inicioDia(hoyMs)
+        return (0..6).map { i ->
+            val dia = Fechas.sumarDias(inicioDia(inicioSemanaMs), i)
+            val delDia = carreras.filter { inicioDia(it.inicioMs) == dia }.sortedBy { it.inicioMs }
+            val estado = when {
+                delDia.isNotEmpty() -> EstadoDia.Corrido
+                dia == hoy -> EstadoDia.Hoy
+                dia > hoy -> EstadoDia.Futuro
+                else -> EstadoDia.SinCarrera
+            }
+            DiaSemana(i, dia, estado, delDia)
+        }
     }
 
     fun racha(carreras: List<Carrera>, ahoraMs: Long): Int {
