@@ -102,7 +102,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
     val remotas by (repo?.rutas ?: remember { kotlinx.coroutines.flow.MutableStateFlow(null) }).collectAsState()
     val meGusta by (repo?.meGusta ?: remember { kotlinx.coroutines.flow.MutableStateFlow(emptySet<String>()) }).collectAsState()
     val ruta = RutasLoja.conOficiales(remotas ?: MockData.rutas).firstOrNull { it.id == id }
-        ?.let { r -> if (r.puntos.isNotEmpty()) r else r.copy(puntos = com.gacelas.rutas.infrastructure.TrazosRutas.puntos[r.id.removePrefix("ruta-")].orEmpty()) }
+        ?.let { r -> if (r.puntos.isNotEmpty()) r else r.copy(puntos = RutasLoja.todas.firstOrNull { it.id == r.id }?.puntos ?: com.gacelas.rutas.infrastructure.TrazosRutas.puntos[r.id.removePrefix("ruta-")].orEmpty()) }
     var reportando by remember { mutableStateOf(false) }
     val perfil by sesionState()
     val ajustes by ajustesState()
@@ -168,18 +168,29 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             val puntos = ruta.puntos.map { PuntoGps(it.first, it.second, 0) }
-            // Mapa arriba a todo el ancho, con volver, guardar y compartir encima.
-            Box(Modifier.fillMaxWidth().height(340.dp).testTag("mapa-detalle-ruta")) {
-                MapaGacelas(puntos.map { LatLng(it.lat, it.lng) }, Modifier.fillMaxSize(), zoom = 14f) {
-                    com.gacelas.ui.components.MapaEsquemaC2(ruta.puntos, Modifier.fillMaxSize(), yo = null,
-                        marcadores = listOfNotNull(ruta.puntos.firstOrNull()), margenArriba = 70.dp, margenAbajo = 40.dp)
-                }
-                Box(Modifier.fillMaxWidth().height(90.dp).align(Alignment.BottomCenter).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(androidx.compose.ui.graphics.Color.Transparent, com.gacelas.ui.components.Tablero.Noche))))
+            // Con fotos: galeria arriba y el mapa con la ruta justo debajo. Sin fotos: el mapa encabeza.
+            val galeria = fotos.ifEmpty { ruta.fotos }
+            val botones: @Composable androidx.compose.foundation.layout.BoxScope.() -> Unit = {
                 Row(Modifier.fillMaxWidth().statusBarsPadding().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                     com.gacelas.ui.components.BotonVolverMapa(onAtras)
                     Spacer(Modifier.weight(1f))
                     com.gacelas.ui.components.BotonVidrio(Icons.Filled.Share, "Compartir ruta", { compartiendo = true }, tag = "detalle-compartir")
                 }
+            }
+            if (galeria.isNotEmpty()) Box(Modifier.fillMaxWidth().height(300.dp)) {
+                com.gacelas.ui.components.GaleriaC2(galeria.size, alto = 300.dp, forma = androidx.compose.ui.graphics.RectangleShape, tag = "galeria-detalle") { i ->
+                    com.gacelas.ui.components.FotoRemotaC2(galeria[i], Modifier.fillMaxSize(), "Foto ${i + 1} de la ruta")
+                }
+                Box(Modifier.fillMaxWidth().height(110.dp).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(com.gacelas.ui.components.Tablero.Noche.copy(alpha = 0.8f), androidx.compose.ui.graphics.Color.Transparent))))
+                botones()
+            }
+            Box(Modifier.fillMaxWidth().height(if (galeria.isNotEmpty()) 260.dp else 340.dp).testTag("mapa-detalle-ruta")) {
+                MapaGacelas(puntos.map { LatLng(it.lat, it.lng) }, Modifier.fillMaxSize(), zoom = 14f) {
+                    com.gacelas.ui.components.MapaEsquemaC2(ruta.puntos, Modifier.fillMaxSize(), yo = null,
+                        marcadores = listOfNotNull(ruta.puntos.firstOrNull()), margenArriba = 70.dp, margenAbajo = 40.dp)
+                }
+                Box(Modifier.fillMaxWidth().height(90.dp).align(Alignment.BottomCenter).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(androidx.compose.ui.graphics.Color.Transparent, com.gacelas.ui.components.Tablero.Noche))))
+                if (galeria.isEmpty()) botones()
                 Box(Modifier.align(Alignment.BottomEnd).padding(end = 14.dp, bottom = 22.dp)) {
                     com.gacelas.ui.components.BotonReportarMapa(onClick = { reportando = true })
                 }
@@ -314,19 +325,7 @@ fun PerfilElevacion(alturas: List<Int>, distanciaKm: Double) {
     }
 }
 
-/** Imagen remota sin dependencias extra (descarga y decodifica a tamano reducido). */
+/** Miniatura de una foto de la ruta. */
 @Composable
-private fun FotoRemota(url: String) {
-    val img by androidx.compose.runtime.produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, url) {
-        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-            runCatching {
-                val bytes = java.net.URL(url).readBytes()
-                val op = android.graphics.BitmapFactory.Options().apply { inSampleSize = 4 }
-                android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size, op)?.asImageBitmap()
-            }.getOrNull()
-        }
-    }
-    Box(Modifier.size(110.dp).clip(RoundedCornerShape(12.dp)).background(GColors.SurfaceContainer)) {
-        img?.let { androidx.compose.foundation.Image(it, "Foto de la ruta", Modifier.fillMaxSize(), contentScale = androidx.compose.ui.layout.ContentScale.Crop) }
-    }
-}
+private fun FotoRemota(url: String) =
+    com.gacelas.ui.components.FotoRemotaC2(url, Modifier.size(110.dp).clip(RoundedCornerShape(12.dp)), "Foto de la ruta")

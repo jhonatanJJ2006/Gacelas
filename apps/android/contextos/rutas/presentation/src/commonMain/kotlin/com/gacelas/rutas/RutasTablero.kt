@@ -47,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.testTag
@@ -160,9 +161,12 @@ fun RutasTablero(
                 RotuloWidget(if (cargando) "Cargando rutas" else "${visibles.size} ${if (visibles.size == 1) "ruta" else "rutas"} en el mapa", Modifier.weight(1f))
                 Text(if (cerca != null) "Orden: más cerca" else "Orden: recomendadas", style = GType.labelMd, color = Color.White.copy(alpha = 0.6f), maxLines = 1)
             }
-            if (visibles.isEmpty() && !cargando) Text(
+            if (visibles.isEmpty() && !cargando) com.gacelas.ui.components.EstadoVacioC2(
+                Icons.Filled.Search, "Sin rutas en el mapa",
                 if (consulta.isNotBlank()) "No hay rutas que coincidan con \"$consulta\"." else "No hay rutas con estos filtros.",
-                style = GType.bodyMd, color = Color.White.copy(alpha = 0.75f), modifier = Modifier.padding(horizontal = 16.dp).testTag("rutas-vacio"),
+                Modifier.padding(horizontal = 14.dp).clip(RoundedCornerShape(20.dp)).background(Color(0xCC1A0B2E)).padding(12.dp),
+                accion = "Limpiar", onAccion = { onConsulta(""); onFiltros(FiltrosRuta()); soloOficiales = false },
+                compacto = true, tag = "rutas-vacio",
             )
             LazyRow(state = estadoCarrusel, contentPadding = PaddingValues(horizontal = 14.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.testTag("rutas-carrusel")) {
                 itemsIndexed(visibles, key = { _, r -> r.id }) { _, r ->
@@ -185,9 +189,12 @@ private fun TarjetaCarrusel(
     onTocar: () -> Unit, onCorrer: () -> Unit, onGuardar: () -> Unit,
 ) {
     val forma = RoundedCornerShape(24.dp)
+    // Misma sensacion que el buscador de Inicio: la tarjeta elegida crece un poco y su borde se enciende.
+    val escala by androidx.compose.animation.core.animateFloatAsState(if (elegida) 1.04f else 1f, com.gacelas.ui.movimiento.Mov.medio(), label = "escala-tarjeta")
+    val borde by androidx.compose.animation.animateColorAsState(if (elegida) colorDificultad(r.dificultad) else Tablero.WidgetBorde, com.gacelas.ui.movimiento.Mov.medio(), label = "borde-tarjeta")
     Column(
-        Modifier.width(300.dp).clip(forma).background(Tablero.FondoWidget).background(Color(0xCC1A0B2E))
-            .border(if (elegida) 1.5.dp else 1.dp, if (elegida) GColors.C2Violeta else Tablero.WidgetBorde, forma)
+        Modifier.width(300.dp).graphicsLayer { scaleX = escala; scaleY = escala }.clip(forma).background(Tablero.FondoWidget).background(Color(0xCC1A0B2E))
+            .border(if (elegida) 1.5.dp else 1.dp, borde, forma)
             .clickable(onClickLabel = if (elegida) "Abrir ruta" else "Elegir ruta", onClick = onTocar).testTag("tarjeta-ruta-${r.id}").padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -195,11 +202,8 @@ private fun TarjetaCarrusel(
             MiniTrazoC2(r.puntos, Modifier.size(64.dp).clip(RoundedCornerShape(16.dp)), cuadricula = false, grosor = 2.5.dp)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    val (texto, color) = when (r.dificultad) {
-                        Dificultad.Facil -> "FÁCIL" to GColors.C2Menta
-                        Dificultad.Moderado -> "MEDIA" to Color(0xFFFBBF24)
-                        Dificultad.Dificil -> "DIFÍCIL" to Color(0xFFF472B6)
-                    }
+                    val color = colorDificultad(r.dificultad)
+                    val texto = if (r.dificultad == Dificultad.Moderado) "MEDIA" else r.dificultad.etiqueta.uppercase()
                     Text(texto, style = GType.labelMd.copy(fontSize = 10.sp, fontWeight = FontWeight.Black), color = color,
                         modifier = Modifier.clip(RoundedCornerShape(6.dp)).background(color.copy(alpha = 0.16f)).padding(horizontal = 6.dp, vertical = 2.dp))
                     if (seguridad != null) Row(
