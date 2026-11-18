@@ -79,9 +79,7 @@ describe('compartir', () => {
   it('copia PNG al portapapeles cuando el navegador lo permite', async () => {
     const anterior = navigator.clipboard
     const escribir = vi.fn().mockResolvedValue(undefined)
-    class ClipboardItemMock {
-      constructor(_contenido: Record<string, Blob>) {}
-    }
+    class ClipboardItemMock {}
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
       value: { write: escribir },
