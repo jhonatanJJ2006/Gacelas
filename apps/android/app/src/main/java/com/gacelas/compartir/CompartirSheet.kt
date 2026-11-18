@@ -2,10 +2,15 @@ package com.gacelas.compartir
 
 import android.content.ActivityNotFoundException
 import android.content.ClipData
+import android.content.ContentValues
 import android.content.Context
+import android.content.ClipboardManager
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +48,7 @@ import com.gacelas.ui.theme.GType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.IOException
 
 /** Guarda el bitmap en cache/compartir y devuelve un content:// del FileProvider. */
 fun guardarParaCompartir(context: Context, bmp: Bitmap, nombre: String): Uri {
@@ -50,6 +56,50 @@ fun guardarParaCompartir(context: Context, bmp: Bitmap, nombre: String): Uri {
     val f = File(dir, "$nombre.png")
     f.outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     return FileProvider.getUriForFile(context, "${context.packageName}.archivos", f)
+}
+
+/** Guarda el PNG en Fotos/Galería y devuelve su URI para compartir o copiar. */
+fun guardarEnGaleria(context: Context, bmp: Bitmap): Uri {
+    val nombre = "runcity-${System.currentTimeMillis()}.png"
+    val valores = ContentValues().apply {
+        put(MediaStore.Images.Media.DISPLAY_NAME, nombre)
+        put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/Runcity")
+            put(MediaStore.Images.Media.IS_PENDING, 1)
+        } else {
+            val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Runcity")
+            if (!dir.exists() && !dir.mkdirs()) throw IOException("No se pudo crear la carpeta de imágenes")
+            put(MediaStore.Images.Media.DATA, File(dir, nombre).absolutePath)
+        }
+    }
+    val uri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, valores)
+        ?: throw IOException("No se pudo crear la imagen en la galería")
+    try {
+        val stream = context.contentResolver.openOutputStream(uri)
+            ?: throw IOException("No se pudo escribir la imagen")
+        stream.use { if (!bmp.compress(Bitmap.CompressFormat.PNG, 100, it)) throw IOException("No se pudo codificar el PNG") }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            context.contentResolver.update(uri, ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) }, null, null)
+        }
+        return uri
+    } catch (e: IOException) {
+        context.contentResolver.delete(uri, null, null)
+        throw e
+    } catch (e: SecurityException) {
+        context.contentResolver.delete(uri, null, null)
+        throw e
+    }
+}
+
+fun copiarImagen(context: Context, uri: Uri) {
+    val clip = ClipData.newUri(context.contentResolver, "Imagen Runcity", uri)
+    (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(clip)
+}
+
+fun copiarEnlace(context: Context, enlace: String) {
+    (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
+        .setPrimaryClip(ClipData.newPlainText("Enlace Runcity", enlace))
 }
 
 object Intenciones {
@@ -79,15 +129,18 @@ object Intenciones {
      * Historia de Instagram: fondo = historia 1080x1920 y, si hay, sticker encima.
      * https://developers.facebook.com/docs/instagram-platform/sharing-to-stories
      */
-    fun historiaInstagram(fondo: Uri?, sticker: Uri?, appId: String, paquete: String) = Intent("com.instagram.share.ADD_TO_STORY").apply {
-        putExtra("source_application", appId.ifBlank { paquete })
-        // Sin fondo: Instagram deja elegir la foto al usuario y pone el sticker encima.
-        if (fondo != null) setDataAndType(fondo, "image/png") else type = "image/png"
-        if (sticker != null) putExtra("interactive_asset_uri", sticker)
-        putExtra("top_background_color", "#0B1220")
-        putExtra("bottom_background_color", "#111827")
-        setPackage(INSTAGRAM)
-        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    fun historiaInstagram(fondo: Uri?, sticker: Uri?, appId: String): Intent {
+        require(appId.isNotBlank()) { "FACEBOOK_APP_ID no está configurado" }
+        return Intent("com.instagram.share.ADD_TO_STORY").apply {
+            putExtra("source_application", appId)
+            // Sin fondo: Instagram deja elegir la foto al usuario y pone el sticker encima.
+            if (fondo != null) setDataAndType(fondo, "image/png") else type = "image/png"
+            if (sticker != null) putExtra("interactive_asset_uri", sticker)
+            putExtra("top_background_color", "#0B1220")
+            putExtra("bottom_background_color", "#111827")
+            setPackage(INSTAGRAM)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
     }
 }
 
@@ -125,12 +178,16 @@ fun CompartirDialogo(datos: DatosCompartir, onCerrar: () -> Unit) {
                 }, enabled = bmp != null, icono = null)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TextButton(onClick = {
-                        val fondo = guardarParaCompartir(context, ImagenCompartir.generar(context, datos, FormatoCompartir.Historia), "ig-fondo")
-                        val sticker = guardarParaCompartir(context, ImagenCompartir.generar(context, datos, FormatoCompartir.Sticker), "ig-sticker")
-                        context.grantUriPermission(Intenciones.INSTAGRAM, fondo, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        context.grantUriPermission(Intenciones.INSTAGRAM, sticker, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        // El fondo ya incluye todo; el sticker se ofrece solo si se eligio ese formato.
-                        lanzar(Intenciones.historiaInstagram(fondo, if (formato == FormatoCompartir.Sticker) sticker else null, BuildConfig.FACEBOOK_APP_ID, context.packageName), "Instagram no está instalado")
+                        if (BuildConfig.FACEBOOK_APP_ID.isBlank()) {
+                            context.aviso("Instagram Stories requiere configurar FACEBOOK_APP_ID")
+                        } else {
+                            val fondo = guardarParaCompartir(context, ImagenCompartir.generar(context, datos, FormatoCompartir.Historia), "ig-fondo")
+                            val sticker = guardarParaCompartir(context, ImagenCompartir.generar(context, datos, FormatoCompartir.Sticker), "ig-sticker")
+                            context.grantUriPermission(Intenciones.INSTAGRAM, fondo, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            context.grantUriPermission(Intenciones.INSTAGRAM, sticker, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            // El fondo ya incluye todo; el sticker se ofrece solo si se eligio ese formato.
+                            lanzar(Intenciones.historiaInstagram(fondo, if (formato == FormatoCompartir.Sticker) sticker else null, BuildConfig.FACEBOOK_APP_ID), "Instagram no está instalado")
+                        }
                     }, modifier = Modifier.weight(1f)) { Text("Instagram Historia", color = GColors.Primary400) }
                     TextButton(onClick = {
                         bmp?.let { lanzar(Intenciones.whatsapp(guardarParaCompartir(context, it, "wa"), texto), "WhatsApp no está instalado") }

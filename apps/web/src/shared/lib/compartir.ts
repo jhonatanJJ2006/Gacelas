@@ -14,6 +14,9 @@ export interface DatosCompartir {
   ritmoSegKm?: number | null
   desnivelM?: number
   rachaDias?: number
+  recordLabel?: string | null
+  fechaMs?: number
+  handle?: string
   /** Texto de la etiqueta superior: "Carrera" o "Ruta". */
   tipo: 'carrera' | 'ruta'
   enlace: string
@@ -26,7 +29,13 @@ export const TAMANOS: Record<FormatoCompartir, { ancho: number; alto: number }> 
 }
 
 export const SITIO = 'https://gacelas.vercel.app'
+export const HANDLE_RUNCITY = '@runcity'
 export const enlaceRuta = (id: string) => `${SITIO}/r/${encodeURIComponent(id)}`
+
+export function normalizarHandle(h?: string | null) {
+  const limpio = (h ?? '').trim().replace(/^@+/, '').replace(/\s+/g, '').slice(0, 30)
+  return limpio ? `@${limpio}` : HANDLE_RUNCITY
+}
 
 /**
  * Privacidad: quita los puntos dentro de `metros` de la salida y llegada.
@@ -97,6 +106,16 @@ export function textoCompartir(d: DatosCompartir) {
 export const enlaceWhatsApp = (d: DatosCompartir) =>
   `https://wa.me/?text=${encodeURIComponent(`${textoCompartir(d)}\n${d.enlace}`)}`
 
+export async function copiarImagen(imagen: Blob): Promise<boolean> {
+  if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') return false
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': imagen })])
+    return true
+  } catch {
+    return false
+  }
+}
+
 function cargar(src: string): Promise<HTMLImageElement | null> {
   return new Promise((ok) => {
     const img = new Image()
@@ -143,8 +162,11 @@ export async function generarImagen(d: DatosCompartir, formato: FormatoCompartir
     if (d.rachaDias && d.rachaDias > 0) {
       g.fillStyle = naranja
       g.font = fuente(800, 40)
-      g.fillText(`🔥 ${d.rachaDias} días de racha`, 60, 850)
+      g.fillText(`🔥 ${d.rachaDias} días de racha`, 60, 825)
     }
+    g.fillStyle = '#fff'
+    g.font = fuente(600, 24)
+    g.fillText(normalizarHandle(d.handle), 60, 875)
     return aBlob(cv)
   }
 
@@ -231,6 +253,8 @@ export async function generarImagen(d: DatosCompartir, formato: FormatoCompartir
   g.font = fuente(600, historia ? 32 : 26)
   g.textAlign = 'right'
   g.fillText('gacelas.vercel.app', W - 60, pieY - 10)
+  g.font = fuente(600, historia ? 28 : 22)
+  g.fillText(normalizarHandle(d.handle), W - 60, pieY + (historia ? 38 : 28))
   g.textAlign = 'left'
   return aBlob(cv)
 }
@@ -279,7 +303,7 @@ function trazo(
   punto(pts[pts.length - 1], '#EF4444')
 }
 
-function redondeado(
+export function redondeado(
   g: CanvasRenderingContext2D,
   x: number,
   y: number,

@@ -68,11 +68,16 @@ class CompartirTest {
 
     @Test fun intencionHistoriaInstagram() {
         val u = android.net.Uri.parse("content://com.gacelas.archivos/compartir/a.png")
-        val i = Intenciones.historiaInstagram(u, u, "", "com.gacelas")
+        val i = Intenciones.historiaInstagram(u, u, "123456")
         assertEquals("com.instagram.share.ADD_TO_STORY", i.action)
         assertEquals("com.instagram.android", i.`package`)
-        assertEquals("com.gacelas", i.getStringExtra("source_application"))
+        assertEquals("123456", i.getStringExtra("source_application"))
         assertEquals("image/png", i.type)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun instagramStoriesExigeFacebookAppId() {
+        Intenciones.historiaInstagram(null, null, "")
     }
 
     @Test fun generaImagenesDeMarca() {

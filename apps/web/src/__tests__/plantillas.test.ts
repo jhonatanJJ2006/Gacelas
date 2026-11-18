@@ -1,12 +1,15 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { DatosCompartir } from '../shared/lib/compartir'
 import {
   ajusteCubrir,
   COLOCACION_INICIAL,
   datosPlantilla,
+  dibujarPlantilla,
   normalizarHandle,
+  PLANTILLAS,
   rectColocacion,
   TAMANO_PLANTILLA,
+  textoInsignia,
 } from '../shared/lib/plantillas'
 
 const d: DatosCompartir = {
@@ -23,7 +26,35 @@ describe('plantillas', () => {
   it('normaliza el @usuario', () => {
     expect(normalizarHandle('  gacelas running ')).toBe('@gacelasrunning')
     expect(normalizarHandle('@@lola')).toBe('@lola')
-    expect(normalizarHandle('   ')).toBe('')
+    expect(normalizarHandle('   ')).toBe('@runcity')
+  })
+  it('solo muestra la insignia cuando hay record o racha', () => {
+    expect(textoInsignia(d)).toBeNull()
+    expect(textoInsignia({ ...d, recordLabel: '5K' })).toBe('Récord personal · 5K')
+    expect(textoInsignia({ ...d, rachaDias: 2 })).toBe('Racha de 2 días')
+  })
+  it('renderiza las cuatro plantillas con marca y handle', () => {
+    const fillText = vi.fn()
+    const g = {
+      clearRect: vi.fn(),
+      fillText,
+      fillRect: vi.fn(),
+      measureText: vi.fn(() => ({ width: 100 })),
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      arcTo: vi.fn(),
+      closePath: vi.fn(),
+      fill: vi.fn(),
+      stroke: vi.fn(),
+    } as unknown as CanvasRenderingContext2D
+    for (const { id } of PLANTILLAS) {
+      dibujarPlantilla(g, d, id, '@corredora')
+      expect(fillText).toHaveBeenCalledWith('RUNCITY', expect.any(Number), expect.any(Number))
+      expect(fillText).toHaveBeenCalledWith('@corredora', expect.any(Number), expect.any(Number))
+      fillText.mockClear()
+    }
+    expect(PLANTILLAS.map(({ id }) => id)).toEqual(['estadisticas', 'traza', 'fecha', 'logro'])
   })
   it('datos compactos de una carrera', () => {
     expect(datosPlantilla(d)).toEqual([
@@ -45,11 +76,10 @@ describe('plantillas', () => {
     })
   })
   it('coloca la superposicion manteniendo la proporcion y limita la escala', () => {
-    const r = rectColocacion('minimal', { cx: 0.5, cy: 0.5, escala: 5 }, 1000, 2000)
+    const r = rectColocacion('estadisticas', { cx: 0.5, cy: 0.5, escala: 5 }, 1000, 2000)
     expect(r.ancho).toBe(1600)
-    expect(r.alto).toBeCloseTo(
-      (1600 * TAMANO_PLANTILLA.minimal.alto) / TAMANO_PLANTILLA.minimal.ancho
-    )
-    expect(COLOCACION_INICIAL.trazo.escala).toBeGreaterThan(0)
+    expect(r.alto).toBeCloseTo((1600 * 1920) / 1080)
+    expect(COLOCACION_INICIAL.traza.escala).toBeGreaterThan(0)
+    expect(Object.values(TAMANO_PLANTILLA)).toEqual(Array(4).fill({ ancho: 1080, alto: 1920 }))
   })
 })

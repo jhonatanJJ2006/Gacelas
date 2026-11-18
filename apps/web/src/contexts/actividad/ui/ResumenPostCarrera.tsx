@@ -2,7 +2,12 @@ import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { nuevoRecord } from '../../../shared/kernel/estadisticas'
 import { rachaTrasCarrera } from '../../../shared/kernel/rachas'
-import { recortarExtremos, SITIO, type DatosCompartir } from '../../../shared/lib/compartir'
+import {
+  HANDLE_RUNCITY,
+  recortarExtremos,
+  SITIO,
+  type DatosCompartir,
+} from '../../../shared/lib/compartir'
 import { formatearMs, formatearRitmo, Unidades } from '../../../shared/lib/geo'
 import { CompartirDialogo } from '../../../shared/ui/CompartirDialogo'
 import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
@@ -45,6 +50,11 @@ export function ResumenPostCarrera() {
       desnivelM: e.desnivelM,
       rachaDias: racha.despues.diaria,
       enlace: SITIO,
+      fechaMs: e.inicioMs,
+      recordLabel: record?.etiqueta ?? null,
+      handle: sesion?.username?.trim()
+        ? `@${sesion.username.trim().replace(/^@+/, '')}`
+        : HANDLE_RUNCITY,
     })
     setCompartiendo(true)
   }
@@ -359,10 +369,10 @@ export function ResumenPostCarrera() {
             <button
               onClick={abrirCompartir}
               data-testid="compartir-carrera"
-              className="w-full h-12 bg-surface-container border border-border-subtle text-text-primary font-semibold rounded-xl flex items-center justify-center gap-2"
+              className="w-full h-14 bg-primary-600 text-on-primary font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg"
             >
               <span className="material-symbols-outlined text-[20px]">share</span>
-              Compartir en redes
+              Compartir historia
             </button>
           )}
           <button
