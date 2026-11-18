@@ -1,11 +1,23 @@
 {
+  "images": {
+    "sizes": [256, 640, 1080],
+    "formats": ["image/webp"],
+    "minimumCacheTTL": 2592000,
+    "remotePatterns": [
+      {
+        "protocol": "https",
+        "hostname": "yampnicdjlmimeoqmowb.supabase.co",
+        "pathname": "/storage/v1/object/public/**"
+      }
+    ]
+  },
   "rewrites": [
     {
       "source": "/r/:id",
       "destination": "/api/r?id=:id"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/((?!api/|_vercel/).*)",
       "destination": "/index.html"
     }
   ],

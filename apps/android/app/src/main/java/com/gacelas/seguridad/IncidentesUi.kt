@@ -78,7 +78,8 @@ fun limpiarFoto(bitmap: Bitmap, ladoMax: Int = 1600): ByteArray {
     }
 }
 
-private fun leerFoto(context: Context, uri: Uri): ByteArray? = runCatching {
+/** Lee la foto elegida y la limpia con [limpiarFoto]; null si no se pudo leer. Llamar fuera del hilo principal. */
+fun leerFoto(context: Context, uri: Uri): ByteArray? = runCatching {
     context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it) }?.let { limpiarFoto(it) }
 }.getOrNull()
 

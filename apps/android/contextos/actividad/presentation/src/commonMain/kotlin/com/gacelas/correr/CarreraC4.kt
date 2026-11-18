@@ -2,6 +2,8 @@ package com.gacelas.correr
 
 import com.gacelas.actividad.presentation.tiempoTexto
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -262,9 +264,9 @@ fun ContenidoCarreraC4(
 }
 
 /**
- * Hoja de la carrera en la direccion A "Tablero": cabecera con En vivo, Voz y Crono; panel de
- * mosaicos (distancia grande en degradado con el objetivo, ritmo, tiempo, promedio, desnivel y el
- * km en curso), parciales y Bloquear / PAUSAR / Terminar.
+ * Hoja de la carrera en la direccion A "Tablero". 0.9.21: plegada por defecto para que se vea el mapa
+ * (cabecera, distancia, ritmo, tiempo y Bloquear / PAUSAR / Terminar). Tocar o subir el tirador
+ * despliega promedio, desnivel, km en curso y parciales.
  */
 @Composable
 private fun HojaMetricasC4(
@@ -272,9 +274,11 @@ private fun HojaMetricasC4(
     onBloquear: () -> Unit, onPausa: () -> Unit, onTerminar: () -> Unit,
     enVivo: Boolean = false, vozActiva: Boolean = false, onVoz: (() -> Unit)? = null, onCrono: () -> Unit = {},
 ) {
+    var expandida by rememberSaveable { mutableStateOf(false) }
     val espacio = if (bajo) 6.dp else 8.dp
-    com.gacelas.ui.components.HojaTablero(tag = "tarjeta-metricas") {
-        Row(Modifier.fillMaxWidth().padding(top = 0.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+    val cifra = if (bajo) 20 else 22
+    com.gacelas.ui.components.HojaTablero(tag = "tarjeta-metricas", espacio = 6.dp, expandida = expandida, onExpandida = { expandida = it }) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             if (enVivo) Row(Modifier.weight(1f).testTag("chip-en-vivo"), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.Sensors, null, tint = GColorsC2.Menta, modifier = Modifier.size(14.dp))
                 Text(" En vivo · seguidores", style = TextStyle(fontFamily = Inter, fontSize = 12.sp, fontWeight = FontWeight.Bold), color = GColorsC2.Menta, maxLines = 1)
@@ -285,54 +289,56 @@ private fun HojaMetricasC4(
         }
         val km = e.parciales.filter { !it.manual }
         Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(espacio)) {
-            // Distancia: mosaico grande 2x2 en degradado con la barra del objetivo.
+            // Distancia en degradado (con la barra del objetivo si hay) y ritmo y tiempo al lado.
             Column(
-                Modifier.weight(1.9f).fillMaxHeight().clip(RoundedCornerShape(22.dp)).background(com.gacelas.ui.components.GradienteC2)
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                Modifier.weight(1.3f).fillMaxHeight().clip(RoundedCornerShape(18.dp)).background(com.gacelas.ui.components.GradienteC2)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 com.gacelas.ui.components.RotuloWidget(if (e.pausada) "En pausa" else "Distancia", color = Color.White.copy(alpha = 0.85f))
                 Row(verticalAlignment = Alignment.Bottom) {
-                    com.gacelas.ui.components.TextoAjustableC2(Unidades.texto(e.distanciaKm, m).replace('.', ','), TextStyle(fontFamily = num, fontSize = if (bajo) 52.sp else 70.sp, lineHeight = if (bajo) 54.sp else 72.sp), Color.White,
+                    com.gacelas.ui.components.TextoAjustableC2(Unidades.texto(e.distanciaKm, m).replace('.', ','), TextStyle(fontFamily = num, fontSize = if (bajo) 34.sp else 40.sp, lineHeight = if (bajo) 36.sp else 42.sp), Color.White,
                         Modifier.weight(1f, fill = false).testTag("distancia"), minimo = 0.6f)
-                    Text(if (m) " km" else " mi", style = TextStyle(fontFamily = Inter, fontSize = 15.sp, fontWeight = FontWeight.Bold), color = Color.White.copy(alpha = 0.85f), modifier = Modifier.padding(bottom = 8.dp))
+                    Text(if (m) " km" else " mi", style = TextStyle(fontFamily = Inter, fontSize = 13.sp, fontWeight = FontWeight.Bold), color = Color.White.copy(alpha = 0.85f), modifier = Modifier.padding(bottom = 5.dp))
                 }
-                if (objetivo != null && objetivo.activo) Column(Modifier.testTag("objetivo-carrera"), verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    objetivo.progreso(e)?.let { com.gacelas.ui.components.BarraProgresoTablero(it) }
-                    Row {
-                        Text("Objetivo ${objetivo.valorTexto(m)}", style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.Bold), color = Color.White, maxLines = 1, modifier = Modifier.weight(1f))
-                        Text(objetivo.estado(e, m).replace('.', ','), style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.Bold), color = if (objetivo.cumplido(e)) GColorsC2.Menta else Color.White, maxLines = 1)
-                    }
-                } else Text(if (km.isEmpty()) "Primer km en curso" else "Km ${km.size} completado", style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.Bold), color = Color.White.copy(alpha = 0.85f))
+                if (objetivo != null && objetivo.activo) objetivo.progreso(e)?.let {
+                    com.gacelas.ui.components.BarraProgresoTablero(it, Modifier.padding(top = 4.dp).testTag("objetivo-carrera"))
+                }
             }
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(espacio)) {
-                com.gacelas.ui.components.CeldaTablero("Ritmo", formatearRitmo(Unidades.ritmo(e.ritmoActualSegKm ?: e.ritmoPromedioSegKm, m)), Modifier.fillMaxWidth(), unidad = Unidades.etiquetaRitmo(m),
-                    color = GColorsC2.Menta, tamano = if (bajo) 24 else 30, tag = "chip-Ritmo")
-                com.gacelas.ui.components.CeldaTablero("Tiempo", if (e.segundos < 3600) formatearMs(e.segundos) else e.tiempoTexto, Modifier.fillMaxWidth(), tamano = if (bajo) 24 else 30, tag = "chip-Tiempo")
+            com.gacelas.ui.components.CeldaTablero("Ritmo", formatearRitmo(Unidades.ritmo(e.ritmoActualSegKm ?: e.ritmoPromedioSegKm, m)), Modifier.weight(1f).fillMaxHeight(), unidad = Unidades.etiquetaRitmo(m),
+                color = GColorsC2.Menta, tamano = cifra, tag = "chip-Ritmo")
+            com.gacelas.ui.components.CeldaTablero("Tiempo", if (e.segundos < 3600) formatearMs(e.segundos) else e.tiempoTexto, Modifier.weight(1f).fillMaxHeight(), tamano = cifra, tag = "chip-Tiempo")
+        }
+        AnimatedVisibility(expandida, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                if (objetivo != null && objetivo.activo) Row(Modifier.padding(horizontal = 4.dp)) {
+                    Text("Objetivo ${objetivo.valorTexto(m)}", style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.Bold), color = Color.White, maxLines = 1, modifier = Modifier.weight(1f))
+                    Text(objetivo.estado(e, m).replace('.', ','), style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.Bold), color = if (objetivo.cumplido(e)) GColorsC2.Menta else Color.White, maxLines = 1)
+                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(espacio)) {
+                    com.gacelas.ui.components.CeldaTablero("Promedio", formatearRitmo(Unidades.ritmo(e.ritmoPromedioSegKm, m)), Modifier.weight(1f), tamano = cifra - 2, tag = "chip-Prom")
+                    com.gacelas.ui.components.CeldaTablero("Desnivel", "+${e.desnivelM.toInt()}", Modifier.weight(1f), unidad = "m", color = GColorsC2.Cielo, tamano = cifra - 2)
+                    val enCurso = km.size + 1
+                    val segKm = e.segundos - km.sumOf { it.segundos }
+                    com.gacelas.ui.components.CeldaTablero("Km $enCurso", formatearMs(segKm.coerceAtLeast(0)), Modifier.weight(1f), unidad = "parcial", tamano = cifra - 2, tag = "chip-km-actual")
+                }
+                Row(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.06f)).border(1.dp, Color.White.copy(alpha = 0.09f), RoundedCornerShape(16.dp))
+                        .clickable(onClickLabel = "Ver parciales", onClick = onCrono).padding(horizontal = 12.dp, vertical = 9.dp),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    com.gacelas.ui.components.RotuloWidget("Parciales", color = Color.White.copy(alpha = 0.55f))
+                    Box(Modifier.weight(1f)) { BarrasParciales(e) }
+                    val mejor = km.minByOrNull { it.segundos / it.distanciaKm.coerceAtLeast(0.001) }
+                    Text(if (mejor != null) "Mejor ${formatearMs(mejor.segundos)}" else "Km 1", style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.Bold), color = GColorsC2.Menta, maxLines = 1)
+                }
             }
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(espacio)) {
-            com.gacelas.ui.components.CeldaTablero("Promedio", formatearRitmo(Unidades.ritmo(e.ritmoPromedioSegKm, m)), Modifier.weight(1f), tamano = if (bajo) 20 else 24, tag = "chip-Prom")
-            com.gacelas.ui.components.CeldaTablero("Desnivel", "+${e.desnivelM.toInt()}", Modifier.weight(1f), unidad = "m", color = GColorsC2.Cielo, tamano = if (bajo) 20 else 24)
-            val enCurso = km.size + 1
-            val segKm = e.segundos - km.sumOf { it.segundos }
-            com.gacelas.ui.components.CeldaTablero("Km $enCurso", formatearMs(segKm.coerceAtLeast(0)), Modifier.weight(1f), unidad = "parcial", tamano = if (bajo) 20 else 24, tag = "chip-km-actual")
-        }
-        Row(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.06f)).border(1.dp, Color.White.copy(alpha = 0.09f), RoundedCornerShape(16.dp))
-                .clickable(onClickLabel = "Ver parciales", onClick = onCrono).padding(horizontal = 12.dp, vertical = 9.dp),
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            com.gacelas.ui.components.RotuloWidget("Parciales", color = Color.White.copy(alpha = 0.55f))
-            Box(Modifier.weight(1f)) { BarrasParciales(e) }
-            val mejor = km.minByOrNull { it.segundos / it.distanciaKm.coerceAtLeast(0.001) }
-            Text(if (mejor != null) "Mejor ${formatearMs(mejor.segundos)}" else "Km 1", style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.Bold), color = GColorsC2.Menta, maxLines = 1)
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            com.gacelas.ui.components.BotonCuadroTablero("Bloquear", Icons.Filled.Lock, onBloquear, tag = "boton-bloqueo", descripcion = "Bloquear pantalla", alto = 62.dp)
+            com.gacelas.ui.components.BotonCuadroTablero("Bloquear", Icons.Filled.Lock, onBloquear, tag = "boton-bloqueo", descripcion = "Bloquear pantalla", alto = 52.dp)
             com.gacelas.ui.components.BotonTablero(if (e.pausada) "Reanudar" else "Pausar", onPausa, Modifier.weight(1f), icono = if (e.pausada) Icons.Filled.PlayArrow else Icons.Filled.Pause,
-                blanco = true, alto = 62.dp, tag = "boton-pausa")
-            com.gacelas.ui.components.BotonCuadroTablero("Terminar", Icons.Filled.Flag, onTerminar, tag = "boton-stop", descripcion = "Terminar carrera", alto = 62.dp)
+                blanco = true, alto = 52.dp, tag = "boton-pausa")
+            com.gacelas.ui.components.BotonCuadroTablero("Terminar", Icons.Filled.Flag, onTerminar, tag = "boton-stop", descripcion = "Terminar carrera", alto = 52.dp)
         }
     }
 }

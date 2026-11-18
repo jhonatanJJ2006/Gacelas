@@ -67,6 +67,9 @@ object Destinos {
     /** Pantallas con barra inferior. */
     val conBarraInferior = listOf(INICIO, RUTAS, COMUNIDAD, EVENTOS, PERFIL)
 
+    /** Pantallas de una carrera: no pertenecen a ninguna pestana, asi que no se guardan con su pila. */
+    val flujoCarrera = listOf(CORRER, CARRERA_EN_CURSO, CRONOMETRO, RESUMEN, NAVEGACION)
+
     val todas = acceso + conBarraInferior + listOf(
         CORRER, CARRERA_EN_CURSO, CRONOMETRO, RESUMEN,
         BUSCADOR_RUTAS, NAVEGACION, DETALLE_EVENTO, EN_VIVO, DETALLE_EN_VIVO, DETALLE_RUTA, CREAR_RUTA, CLUBES, DETALLE_CLUB, EVENTO_EN_VIVO,

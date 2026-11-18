@@ -24,9 +24,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CutCornerShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -81,6 +79,7 @@ fun DialogoC2(
     @Suppress("UNUSED_PARAMETER") textContentColor: Color = GColors.C2Muted,
 ) {
     CapaHojaC2(onDismissRequest) {
+        val arrastre = rememberArrastreHojaC2(onDismissRequest)
         BoxWithConstraints(
             Modifier.fillMaxSize().clickable(remember { MutableInteractionSource() }, null, onClick = onDismissRequest)
                 .statusBarsPadding().imePadding().testTag("dialogo-c2-ventana"),
@@ -92,20 +91,19 @@ fun DialogoC2(
             // de navegacion) y solo su contenido se separa de esa barra (navigationBarsPadding abajo).
             val altoMax = maxHeight - 24.dp
             Column(
-                modifier.fillMaxWidth().widthIn(max = 560.dp).heightIn(max = altoMax)
+                modifier.desplazadaPor(arrastre).fillMaxWidth().widthIn(max = 560.dp).heightIn(max = altoMax)
                     .clip(Tablero.FormaHoja)
                     .background(Tablero.FondoHoja).border(1.dp, Color(0x40C084FC), Tablero.FormaHoja).testTag("dialogo-c2-hoja")
                     .clickable(remember { MutableInteractionSource() }, null) {},
             ) {
                 Box(Modifier.fillMaxWidth().height(3.dp).background(Brush.horizontalGradient(listOf(Color.Transparent, GColors.C2Violeta))))
-                Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
-                    Box(Modifier.width(40.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(alpha = 0.25f)))
-                }
+                // Franja de arrastre de 32 dp; el cuerpo compensa con menos margen superior.
+                ManijaHojaC2(arrastre, onDismissRequest, alto = 32.dp)
                 MaterialTheme(colorScheme = darkColorScheme(primary = GColors.C2Violeta, onPrimary = GColors.C2Bg, surface = GColors.C2Card)) {
                     // Cuerpo scrolleable: titulo y texto ceden espacio; las acciones quedan siempre visibles.
                     Column(
                         Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())
-                            .padding(start = 24.dp, end = 24.dp, top = 18.dp).testTag("dialogo-c2-cuerpo"),
+                            .padding(start = 24.dp, end = 24.dp, top = 4.dp).testTag("dialogo-c2-cuerpo"),
                         verticalArrangement = Arrangement.spacedBy(14.dp),
                     ) {
                         if (icon != null || title != null) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {

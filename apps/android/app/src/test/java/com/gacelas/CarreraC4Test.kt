@@ -16,6 +16,10 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeRight
+import androidx.compose.ui.test.swipeUp
+import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.unit.dp
+import org.junit.Assert.assertTrue
 import com.gacelas.correr.ContenidoCarreraC4
 import com.gacelas.correr.TrazadoRuta
 import com.gacelas.correr.VistaCarrera
@@ -71,6 +75,24 @@ class CarreraC4Test {
         compose.onAllNodesWithTag("panel-cronometro").assertCountEquals(0)
         compose.onAllNodes(hasScrollAction()).assertCountEquals(0)
         captura("cerrado")
+    }
+
+    /** 0.9.21: la hoja plegada deja ver el mapa (menos de 260 dp) y el tirador despliega el resto. */
+    @Test fun hojaPlegadaSeDespliegaConElTirador() {
+        mostrar()
+        val alto = compose.onNodeWithTag("tarjeta-metricas").getBoundsInRoot().let { it.bottom - it.top }
+        assertTrue("hoja plegada mide $alto", alto < 260.dp)
+        compose.onAllNodesWithTag("chip-Prom").assertCountEquals(0)
+        compose.onNodeWithTag("tirador-tablero").performClick()
+        compose.mainClock.advanceTimeBy(600)
+        compose.onNodeWithTag("chip-Prom").assertIsDisplayed()
+        captura("hoja-desplegada")
+        compose.onNodeWithTag("tirador-tablero").performClick()
+        compose.mainClock.advanceTimeBy(600)
+        compose.onAllNodesWithTag("chip-Prom").assertCountEquals(0)
+        compose.onNodeWithTag("tirador-tablero").performTouchInput { swipeUp(startY = centerY, endY = centerY - 300f) }
+        compose.mainClock.advanceTimeBy(600)
+        compose.onNodeWithTag("chip-Prom").assertIsDisplayed()
     }
 
     @Test fun panelSeAbreConParcialesYVuelta() {

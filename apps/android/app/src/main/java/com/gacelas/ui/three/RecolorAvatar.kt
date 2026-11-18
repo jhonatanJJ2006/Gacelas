@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.gacelas.identidad.domain.modelo.ConfigAvatar
 import org.json.JSONObject
+import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -45,21 +46,47 @@ object RecolorAvatar {
     private var base: Bitmap? = null
     private var mascara: ByteArray? = null
 
-    /** Textura recoloreada (1024 px, en cache por combinacion); null si no hay nada que cambiar o falla. */
+    /**
+     * Textura recoloreada (1024 px); null si no hay nada que cambiar o falla. En cache de memoria por
+     * combinacion y, desde 0.9.21, en disco: tenir cuesta 1 M de texeles en el hilo principal, asi que
+     * solo se hace la primera vez y despues (incluso tras cerrar la app) se lee el JPEG guardado.
+     */
     @Synchronized
     fun textura(context: Context, colores: Map<Int, Int>): Bitmap? {
         if (colores.isEmpty()) return null
         cache[colores]?.let { return it }
+        val archivo = archivoCache(context, colores)
+        val salida = runCatching { BitmapFactory.decodeFile(archivo.path, BitmapFactory.Options().apply { inScaled = false }) }.getOrNull()
+            ?: tenida(context, colores)?.also { guardar(it, archivo) } ?: return null
+        if (cache.size > 6) cache.clear()
+        cache[colores] = salida
+        return salida
+    }
+
+    private fun tenida(context: Context, colores: Map<Int, Int>): Bitmap? {
         val b = base ?: texturaBase(context)?.also { base = it } ?: return null
         val m = mascara ?: leerMascara(context)?.also { mascara = it } ?: return null
         val px = IntArray(LADO * LADO)
         b.getPixels(px, 0, LADO, 0, 0, LADO, LADO)
         tenir(px, m, colores)
-        val salida = Bitmap.createBitmap(px, LADO, LADO, Bitmap.Config.ARGB_8888)
-        if (cache.size > 6) cache.clear()
-        cache[colores] = salida
-        return salida
+        return Bitmap.createBitmap(px, LADO, LADO, Bitmap.Config.ARGB_8888)
     }
+
+    /** Nombre por version de la app (un modelo nuevo invalida lo guardado) y por combinacion de colores. */
+    internal fun archivoCache(context: Context, colores: Map<Int, Int>): File =
+        File(File(context.filesDir, "avatar3d"), "v${com.gacelas.BuildConfig.VERSION_CODE}-" +
+            colores.toSortedMap().entries.joinToString("_") { "${it.key}-${Integer.toHexString(it.value)}" } + ".jpg")
+
+    /** Escribe en otro hilo (no retrasa el primer cuadro) y borra lo de versiones anteriores. */
+    private fun guardar(bmp: Bitmap, archivo: File) = Thread {
+        runCatching {
+            val dir = archivo.parentFile!!.apply { mkdirs() }
+            dir.listFiles()?.filter { !it.name.startsWith("v${com.gacelas.BuildConfig.VERSION_CODE}-") }?.forEach { it.delete() }
+            val tmp = File(dir, archivo.name + ".tmp")
+            tmp.outputStream().use { bmp.compress(Bitmap.CompressFormat.JPEG, 92, it) }
+            tmp.renameTo(archivo)
+        }
+    }.start()
 
     /**
      * Tine en sitio: por zona se calcula la luminancia media y cada texel toma el color objetivo
@@ -93,7 +120,7 @@ object RecolorAvatar {
         ByteArray(px.size) { (px[it] and 0xFF).toByte() }
     }.getOrNull()
 
-    /** Textura base del GLB (imagen del baseColorTexture), reducida a 1024 px. */
+    /** Textura base del GLB (imagen del baseColorTexture), a 1024 px (el GLB ya la trae a ese tamano desde 0.9.21). */
     private fun texturaBase(context: Context): Bitmap? = runCatching {
         val d = context.assets.open(MODELO_CORREDOR).use { it.readBytes() }
         val bb = ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)
