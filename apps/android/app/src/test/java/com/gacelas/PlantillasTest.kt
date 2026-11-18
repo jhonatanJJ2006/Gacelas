@@ -25,25 +25,44 @@ class PlantillasTest {
 
     @Test fun normalizaHandleYDatos() {
         assertEquals("@lola", Plantillas.normalizarHandle(" @@lo la "))
-        assertEquals("", Plantillas.normalizarHandle("  "))
+        assertEquals("@runcity", Plantillas.normalizarHandle("  "))
         assertEquals(listOf("Distancia" to "5.02 km", "Ritmo" to "5'12\" /km", "Tiempo" to "26:10"), Plantillas.datos(d))
+    }
+
+    @Test fun insigniaOpcionalYHandleDeRespaldo() {
+        assertEquals(null, Plantillas.insignia(d.copy(rachaDias = 0)))
+        assertEquals("Racha de 3 días", Plantillas.insignia(d.copy(rachaDias = 3)))
+        assertEquals("Récord personal · 5K", Plantillas.insignia(d.copy(recordLabel = "5K")))
+        assertEquals("@runcity", Plantillas.normalizarHandle(""))
+        val limpia = Plantillas.generar(d.copy(rachaDias = 0), Plantilla.Estadisticas, "@runcity")
+        val conRecord = Plantillas.generar(d.copy(recordLabel = "5K"), Plantilla.Estadisticas, "@runcity")
+        assertEquals(0, Color.alpha(limpia.getPixel(540, 1190)))
+        assertTrue(Color.alpha(conRecord.getPixel(540, 1190)) > 0)
     }
 
     @Test fun coverYColocacion() {
         val r = Plantillas.ajusteCubrir(4000, 3000, 1080, 1920)
         assertEquals(1156.25f, r.left, 0.01f); assertEquals(1687.5f, r.width(), 0.01f)
         assertEquals(1.6f, Colocacion(2f, -1f, 9f).limitada().escala)
+        assertEquals(1080f, Plantillas.rect(Plantillas.inicial(Plantilla.Estadisticas), 1080, 1920, FormatoFoto.Historia).width(), 0.01f)
     }
 
-    @Test fun plantillasTransparentesConTrazoMorado() {
+    @Test fun plantillasTransparentesNueveDieciseisYComposiciones() {
         val dir = File("build/plantillas").apply { mkdirs() }
         Plantilla.entries.forEach { p ->
-            val b = Plantillas.generar(d, p, HANDLE_GACELAS)
-            assertEquals(p.ancho, b.width)
+            val b = Plantillas.generar(d.copy(fechaMs = 1_700_000_000_000L), p, HANDLE_GACELAS)
+            assertEquals(1080, b.width)
+            assertEquals(1920, b.height)
             assertEquals(0, Color.alpha(b.getPixel(0, 0)))
             assertEquals(0, Color.alpha(b.getPixel(b.width - 1, b.height - 1)))
             val px = IntArray(b.width * b.height).also { b.getPixels(it, 0, b.width, 0, 0, b.width, b.height) }
-            assertTrue("$p sin trazo", px.count { Color.alpha(it) > 200 && Color.red(it) in 170..215 && Color.green(it) in 110..155 && Color.blue(it) > 230 } > 200)
+            assertTrue("$p sin contenido", px.count { Color.alpha(it) > 200 } > 200)
+            if (p == Plantilla.Traza) {
+                assertTrue("$p sin trazo", px.count {
+                    Color.alpha(it) > 200 && Color.red(it) in 170..215 &&
+                        Color.green(it) in 110..155 && Color.blue(it) > 230
+                } > 200)
+            }
             assertTrue("$p mayormente transparente", px.count { Color.alpha(it) == 0 } > px.size * 0.7)
             File(dir, "${p.name}.png").outputStream().use { b.compress(Bitmap.CompressFormat.PNG, 100, it) }
             val foto = Bitmap.createBitmap(400, 300, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.rgb(40, 90, 160)) }
@@ -51,6 +70,12 @@ class PlantillasTest {
             assertEquals(1080, c.width); assertEquals(1920, c.height)
             assertEquals(255, Color.alpha(c.getPixel(5, 5)))
             File(dir, "foto-${p.name}.png").outputStream().use { c.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            listOf(FormatoFoto.Post45, FormatoFoto.Cuadrado).forEach { f ->
+                val capa = Plantillas.generar(d, p, HANDLE_GACELAS, f)
+                val salida = Plantillas.componer(foto, capa, p, Plantillas.inicial(p), f)
+                assertEquals(f.ancho, salida.width)
+                assertEquals(f.alto, salida.height)
+            }
         }
     }
 }

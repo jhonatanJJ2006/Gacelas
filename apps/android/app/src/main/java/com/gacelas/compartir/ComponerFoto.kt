@@ -6,6 +6,9 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -42,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.gacelas.BuildConfig
 import com.gacelas.ui.aviso
 import com.gacelas.ui.components.BotonPrimario
@@ -49,6 +53,7 @@ import com.gacelas.ui.components.CampoTexto
 import com.gacelas.ui.components.Pastilla
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
+import java.io.IOException
 
 /** Lee una foto de la galeria reducida a ~2160 px de lado mayor. */
 fun leerFoto(context: Context, uri: Uri, lado: Int = 2160): Bitmap? = runCatching {
@@ -59,18 +64,29 @@ fun leerFoto(context: Context, uri: Uri, lado: Int = 2160): Bitmap? = runCatchin
     context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = muestra }) }
 }.getOrNull()
 
+private fun guardarGaleriaConAviso(context: Context, bitmap: Bitmap) {
+    try {
+        guardarEnGaleria(context, bitmap)
+        context.aviso("Imagen guardada en la galería")
+    } catch (e: IOException) {
+        context.aviso("No se pudo guardar la imagen en la galería")
+    } catch (e: SecurityException) {
+        context.aviso("Permiso denegado para guardar la imagen")
+    }
+}
+
 /** Compositor estilo Strava: foto propia + plantilla transparente que se arrastra y escala. */
 @Composable
 fun ComponerFotoDialogo(datos: DatosCompartir, onCerrar: () -> Unit, onImagenMarca: () -> Unit) {
     val context = LocalContext.current
     var foto by remember { mutableStateOf<Bitmap?>(null) }
-    var plantilla by remember { mutableStateOf(Plantilla.TrazoDatos) }
+    var plantilla by remember { mutableStateOf(Plantilla.Estadisticas) }
     var formato by remember { mutableStateOf(FormatoFoto.Historia) }
-    var handle by remember { mutableStateOf(HANDLE_GACELAS) }
-    var col by remember { mutableStateOf(Plantillas.inicial(Plantilla.TrazoDatos)) }
+    var handle by remember { mutableStateOf(datos.handle) }
+    var col by remember { mutableStateOf(Plantillas.inicial(Plantilla.Estadisticas)) }
     var tam by remember { mutableStateOf(IntSize.Zero) }
     val h = Plantillas.normalizarHandle(handle)
-    val capa = remember(datos, plantilla, h) { Plantillas.generar(datos, plantilla, h) }
+    val capa = remember(datos, plantilla, h, formato) { Plantillas.generar(datos, plantilla, h, formato) }
     // Vista previa a media resolucion para que arrastrar sea fluido.
     val vista = remember(foto, capa, plantilla, col, formato) {
         val f = Plantillas.componer(foto, capa, plantilla, col, formato)
@@ -78,9 +94,25 @@ fun ComponerFotoDialogo(datos: DatosCompartir, onCerrar: () -> Unit, onImagenMar
     }
     val galeria = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> uri?.let { foto = leerFoto(context, it) } }
     val camara = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { b -> if (b != null) foto = b }
+    var imagenPendiente by remember { mutableStateOf<Bitmap?>(null) }
+    val permisoGuardar = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { concedido ->
+        val pendiente = imagenPendiente
+        imagenPendiente = null
+        if (concedido && pendiente != null) guardarGaleriaConAviso(context, pendiente)
+        else if (!concedido) context.aviso("Se necesita permiso para guardar la imagen en la galería")
+    }
     val texto = "${Compartir.texto(datos)}\n${datos.enlace}"
     fun lanzar(i: Intent, si: String) = try { context.startActivity(i) } catch (_: ActivityNotFoundException) { context.aviso(si) }
     fun exportar() = guardarParaCompartir(context, Plantillas.componer(foto, capa, plantilla, col, formato), "gacelas-foto-${formato.name.lowercase()}")
+    fun guardar() {
+        val imagen = Plantillas.componer(foto, capa, plantilla, col, formato)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+        ) {
+            imagenPendiente = imagen
+            permisoGuardar.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        } else guardarGaleriaConAviso(context, imagen)
+    }
 
     com.gacelas.ui.components.DialogoC2(
         onDismissRequest = onCerrar,
@@ -107,16 +139,37 @@ fun ComponerFotoDialogo(datos: DatosCompartir, onCerrar: () -> Unit, onImagenMar
                         },
                 ) { Image(vista.asImageBitmap(), "Vista previa: arrastra y pellizca los datos", Modifier.fillMaxWidth(), contentScale = ContentScale.Fit) }
                 Text("Arrastra para mover, pellizca para cambiar el tamaño.", style = GType.bodySm, color = GColors.TextSecondary)
-                CampoTexto("Usuario a mostrar", handle, { handle = it.take(31) }, "@usuario (vacío para ocultar)")
+                CampoTexto("Usuario a mostrar", handle, { handle = it.take(31) }, "@usuario (respaldo @runcity)")
                 BotonPrimario("Compartir", { lanzar(Intenciones.selector(exportar(), texto), "No hay apps para compartir") }, icono = null)
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     TextButton(onClick = {
-                        val sticker = guardarParaCompartir(context, capa, "ig-sticker-${plantilla.name.lowercase()}")
-                        val fondo = foto?.let { guardarParaCompartir(context, Plantillas.componer(it, Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), plantilla, col, FormatoFoto.Historia), "ig-fondo-foto") }
-                        listOfNotNull(sticker, fondo).forEach { context.grantUriPermission(Intenciones.INSTAGRAM, it, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
-                        lanzar(Intenciones.historiaInstagram(fondo, sticker, BuildConfig.FACEBOOK_APP_ID, context.packageName), "Instagram no está instalado")
+                            if (BuildConfig.FACEBOOK_APP_ID.isBlank()) {
+                                context.aviso("Instagram Stories requiere configurar FACEBOOK_APP_ID")
+                            } else {
+                                val sticker = guardarParaCompartir(context, capa, "ig-sticker-${plantilla.name.lowercase()}")
+                                val fondo = foto?.let { guardarParaCompartir(context, Plantillas.componer(it, Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), plantilla, col, FormatoFoto.Historia), "ig-fondo-foto") }
+                                listOfNotNull(sticker, fondo).forEach { context.grantUriPermission(Intenciones.INSTAGRAM, it, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+                                lanzar(Intenciones.historiaInstagram(fondo, sticker, BuildConfig.FACEBOOK_APP_ID), "Instagram no está instalado")
+                            }
                     }, modifier = Modifier.weight(1f)) { Text("Instagram Historia", color = GColors.Primary400) }
                     TextButton(onClick = { lanzar(Intenciones.whatsapp(exportar(), texto), "WhatsApp no está instalado") }, modifier = Modifier.weight(1f)) { Text("WhatsApp", color = GColors.Secondary500) }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    TextButton(onClick = { guardar() }, modifier = Modifier.weight(1f)) { Text("Guardar en galería", color = GColors.TextPrimary) }
+                    TextButton(onClick = {
+                        try {
+                            copiarImagen(context, exportar())
+                            context.aviso("Imagen copiada")
+                        } catch (e: SecurityException) {
+                            context.aviso("No se pudo copiar la imagen")
+                        }
+                    }, modifier = Modifier.weight(1f)) { Text("Copiar imagen", color = GColors.TextPrimary) }
+                }
+                TextButton(onClick = {
+                    copiarEnlace(context, datos.enlace)
+                    context.aviso("Enlace copiado")
+                }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                    Text("Copiar enlace", color = GColors.TextSecondary)
                 }
                 TextButton(onClick = onImagenMarca) { Text("Usar imagen Runcity (sin foto)", color = GColors.TextSecondary) }
             }

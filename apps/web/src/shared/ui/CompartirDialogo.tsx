@@ -1,6 +1,7 @@
 import { createPortal } from 'react-dom'
 import { useEffect, useState } from 'react'
 import {
+  copiarImagen,
   compartirNativo,
   enlaceWhatsApp,
   generarImagen,
@@ -68,8 +69,21 @@ export function CompartirDialogo({
       setAviso('Tu navegador no comparte imágenes: descárgala o usa el enlace.')
   }
   const copiar = async () => {
-    await navigator.clipboard?.writeText(datos.enlace).catch(() => undefined)
-    setAviso('Enlace copiado')
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Portapapeles no disponible')
+      await navigator.clipboard.writeText(datos.enlace)
+      setAviso('Enlace copiado')
+    } catch {
+      setAviso('No se pudo copiar el enlace en este navegador.')
+    }
+  }
+  const copiarImagenMarca = async () => {
+    if (!imagen) return
+    setAviso(
+      (await copiarImagen(imagen))
+        ? 'Imagen copiada'
+        : 'No se pudo copiar la imagen en este navegador.'
+    )
   }
   const { ancho, alto } = TAMANOS[formato]
 
@@ -160,13 +174,20 @@ export function CompartirDialogo({
               >
                 <span className="material-symbols-outlined">ios_share</span>Compartir imagen
               </button>
+              <button
+                onClick={() => void copiarImagenMarca()}
+                disabled={!imagen}
+                className="h-12 rounded-xl bg-surface-container text-text-primary disabled:opacity-60"
+              >
+                Copiar imagen
+              </button>
               <a
                 href={url ?? undefined}
                 download={`gacelas-${formato}.png`}
                 aria-disabled={!url}
                 className="h-12 rounded-xl bg-surface-container text-text-primary flex items-center justify-center gap-1"
               >
-                <span className="material-symbols-outlined">download</span>Descargar
+                <span className="material-symbols-outlined">download</span>Guardar imagen
               </a>
               <button
                 onClick={() => void copiar()}

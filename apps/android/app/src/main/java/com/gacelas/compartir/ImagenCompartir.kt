@@ -23,6 +23,7 @@ object ImagenCompartir {
         val w = f.ancho.toFloat(); val h = f.alto.toFloat()
         val bmp = Bitmap.createBitmap(f.ancho, f.alto, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
+        val handle = Plantillas.normalizarHandle(d.handle)
         val logo = BitmapFactory.decodeResource(context.resources, R.drawable.compartir_logo)
         val texto = { peso: Int, px: Float, color: Int -> Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = px; this.color = color; typeface = Typeface.create(Typeface.SANS_SERIF, if (peso >= 700) Typeface.BOLD else Typeface.NORMAL) } }
 
@@ -35,7 +36,8 @@ object ImagenCompartir {
                 val x = 60 + i * (w - 120) / m.size
                 c.drawText(v, x, 720f, texto(800, 54f, BLANCO)); c.drawText(e.uppercase(), x, 770f, texto(600, 30f, GRIS))
             }
-            if (d.rachaDias > 0) c.drawText("🔥 ${d.rachaDias} días de racha", 60f, 850f, texto(800, 40f, NARANJA))
+            Plantillas.insignia(d)?.let { c.drawText(it, 60f, 850f, texto(800, 34f, NARANJA)) }
+            c.drawText(handle, 60f, 885f, texto(600, 22f, BLANCO))
             return bmp
         }
 
@@ -75,12 +77,13 @@ object ImagenCompartir {
             c.drawText(e.uppercase(), x, y + if (historia) 130 else 90, texto(600, if (historia) 34f else 26f, GRIS))
         }
         val pieY = if (historia) 1760f else 1010f
-        if (d.rachaDias > 0) {
+        Plantillas.insignia(d)?.let { logro ->
             val alto = if (historia) 96f else 70f
             c.drawRoundRect(RectF(60f, pieY - (if (historia) 70 else 52), 60f + (if (historia) 520 else 400), pieY - (if (historia) 70 else 52) + alto), 48f, 48f, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0x29F59E0B })
-            c.drawText("🔥 ${d.rachaDias} ${if (d.rachaDias == 1) "día" else "días"} de racha", 90f, pieY - (if (historia) 7 else 6), texto(800, if (historia) 44f else 34f, NARANJA))
+            c.drawText(logro, 90f, pieY - (if (historia) 7 else 6), texto(800, if (historia) 38f else 30f, NARANJA))
         }
         c.drawText("gacelas.vercel.app", w - 60, pieY - 10, texto(600, if (historia) 32f else 26f, GRIS).apply { textAlign = Paint.Align.RIGHT })
+        c.drawText(handle, w - 60, pieY + (if (historia) 38 else 28), texto(600, if (historia) 28f else 22f, BLANCO).apply { textAlign = Paint.Align.RIGHT })
         return bmp
     }
 

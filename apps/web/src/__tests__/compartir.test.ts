@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
+  copiarImagen,
   enlaceRuta,
   enlaceWhatsApp,
   metricas,
@@ -74,5 +75,32 @@ describe('compartir', () => {
     const wa = enlaceWhatsApp(carrera)
     expect(wa.startsWith('https://wa.me/?text=')).toBe(true)
     expect(decodeURIComponent(wa)).toContain('https://gacelas.vercel.app/r/abc')
+  })
+  it('copia PNG al portapapeles cuando el navegador lo permite', async () => {
+    const anterior = navigator.clipboard
+    const escribir = vi.fn().mockResolvedValue(undefined)
+    class ClipboardItemMock {
+      constructor(_contenido: Record<string, Blob>) {}
+    }
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { write: escribir },
+    })
+    vi.stubGlobal('ClipboardItem', ClipboardItemMock)
+    try {
+      expect(await copiarImagen(new Blob(['png'], { type: 'image/png' }))).toBe(true)
+      expect(escribir).toHaveBeenCalledOnce()
+    } finally {
+      vi.unstubAllGlobals()
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: anterior })
+    }
+  })
+  it('usa descarga como fallback si ClipboardItem no está disponible', async () => {
+    vi.stubGlobal('ClipboardItem', undefined)
+    try {
+      expect(await copiarImagen(new Blob(['png'], { type: 'image/png' }))).toBe(false)
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 })

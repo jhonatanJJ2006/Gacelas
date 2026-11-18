@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { compartirNativo, type DatosCompartir } from '../lib/compartir'
+import { copiarImagen as copiarImagenPortapapeles, compartirNativo, type DatosCompartir } from '../lib/compartir'
 import {
   COLOCACION_INICIAL,
   dibujarComposicion,
   exportarComposicion,
   FORMATOS_FOTO,
   generarSuperposicion,
-  HANDLE_GACELAS,
+  HANDLE_RUNCITY,
   lienzoPlantilla,
   normalizarHandle,
   PLANTILLAS,
@@ -22,21 +22,24 @@ const chip = (activo: boolean) =>
 /** Compositor estilo Strava: tu foto + plantilla transparente que se arrastra y escala. */
 export function ComponerFoto({ datos }: { datos: DatosCompartir }) {
   const [foto, setFoto] = useState<HTMLImageElement | null>(null)
-  const [plantilla, setPlantilla] = useState<Plantilla>('trazoDatos')
+  const [plantilla, setPlantilla] = useState<Plantilla>('traza')
   const [formato, setFormato] = useState<FormatoFoto>('historia')
-  const [handle, setHandle] = useState(HANDLE_GACELAS)
-  const [col, setCol] = useState<Colocacion>(COLOCACION_INICIAL.trazoDatos)
+  const [handle, setHandle] = useState(datos.handle ?? HANDLE_RUNCITY)
+  const [col, setCol] = useState<Colocacion>(COLOCACION_INICIAL.traza)
   const [aviso, setAviso] = useState<string | null>(null)
   const lienzo = useRef<HTMLCanvasElement>(null)
   const arrastre = useRef<{ x: number; y: number; c: Colocacion } | null>(null)
   const h = normalizarHandle(handle)
-  const capa = useMemo(() => lienzoPlantilla(datos, plantilla, h), [datos, plantilla, h])
+  const capa = useMemo(
+    () => lienzoPlantilla(datos, plantilla, h, formato),
+    [datos, plantilla, h, formato]
+  )
   const { ancho: W, alto: H } = FORMATOS_FOTO[formato]
 
   useEffect(() => {
     const cv = lienzo.current
     if (!cv) return
-    dibujarComposicion(cv.getContext('2d')!, W, H, foto, capa, plantilla, col)
+    dibujarComposicion(cv.getContext('2d')!, W, H, foto, capa, plantilla, col, formato)
   }, [W, H, foto, capa, plantilla, col])
 
   const elegirPlantilla = (p: Plantilla) => {
@@ -55,7 +58,7 @@ export function ComponerFoto({ datos }: { datos: DatosCompartir }) {
   }
   const bajar = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const p = aCoord(e)
-    const r = rectColocacion(plantilla, col, 1, 1)
+    const r = rectColocacion(plantilla, col, 1, 1, formato)
     if (p.x < r.x || p.x > r.x + r.ancho || p.y < r.y || p.y > r.y + r.alto) return
     e.currentTarget.setPointerCapture(e.pointerId)
     arrastre.current = { ...p, c: col }
@@ -84,6 +87,19 @@ export function ComponerFoto({ datos }: { datos: DatosCompartir }) {
     if (!(await compartirNativo(datos, b))) {
       descargar(b, `gacelas-${formato}.png`)
       setAviso('Tu navegador no comparte imágenes: la descargamos.')
+    }
+  }
+  const copiarImagen = async () => {
+    const copiada = await copiarImagenPortapapeles(await exportar())
+    setAviso(copiada ? 'Imagen copiada' : 'No se pudo copiar la imagen en este navegador.')
+  }
+  const copiarEnlace = async () => {
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Portapapeles no disponible')
+      await navigator.clipboard.writeText(datos.enlace)
+      setAviso('Enlace copiado')
+    } catch {
+      setAviso('No se pudo copiar el enlace en este navegador.')
     }
   }
 
@@ -176,7 +192,7 @@ export function ComponerFoto({ datos }: { datos: DatosCompartir }) {
         value={handle}
         maxLength={31}
         onChange={(e) => setHandle(e.target.value)}
-        placeholder="@usuario (vacío para ocultar)"
+        placeholder="@usuario (respaldo @runcity)"
         className="w-full h-11 px-3 bg-surface-container border border-border-subtle rounded-lg text-text-primary"
       />
       <div className="grid grid-cols-2 gap-2">
@@ -191,15 +207,28 @@ export function ComponerFoto({ datos }: { datos: DatosCompartir }) {
           className="h-12 rounded-xl bg-surface-container text-text-primary"
           data-testid="descargar-composicion"
         >
-          Descargar imagen
+          Guardar imagen
+        </button>
+        <button
+          onClick={() => void copiarImagen()}
+          className="h-12 rounded-xl bg-surface-container text-text-primary"
+          data-testid="copiar-imagen"
+        >
+          Copiar imagen
+        </button>
+        <button
+          onClick={() => void copiarEnlace()}
+          className="h-12 rounded-xl bg-surface-container text-text-primary"
+        >
+          Copiar enlace
         </button>
         <button
           onClick={() =>
             void generarSuperposicion(datos, plantilla, h).then((b) =>
-              descargar(b, `gacelas-${plantilla}-transparente.png`)
+              descargar(b, `runcity-${plantilla}-transparente.png`)
             )
           }
-          className="h-12 rounded-xl bg-surface-container text-text-primary"
+          className="col-span-2 h-12 rounded-xl bg-surface-container text-text-primary"
           data-testid="descargar-transparente"
         >
           PNG transparente

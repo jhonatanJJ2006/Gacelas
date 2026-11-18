@@ -1,13 +1,21 @@
 import { decimal } from './geo'
-import { formatoRitmo, formatoTiempo, proyectar, type DatosCompartir } from './compartir'
+import {
+  formatoRitmo,
+  formatoTiempo,
+  HANDLE_RUNCITY,
+  normalizarHandle,
+  proyectar,
+  type DatosCompartir,
+} from './compartir'
+export { normalizarHandle }
 
-/** Plantillas transparentes (estilo Strava) para poner encima de una foto propia. */
-export type Plantilla = 'trazo' | 'trazoDatos' | 'datosGrandes' | 'minimal'
+/** Plantillas transparentes 9:16 para poner encima de una foto propia. */
+export type Plantilla = 'estadisticas' | 'traza' | 'fecha' | 'logro'
 export const PLANTILLAS: { id: Plantilla; etiqueta: string }[] = [
-  { id: 'trazoDatos', etiqueta: 'Trazo + datos' },
-  { id: 'trazo', etiqueta: 'Solo trazo' },
-  { id: 'datosGrandes', etiqueta: 'Datos grandes' },
-  { id: 'minimal', etiqueta: 'Minimal' },
+  { id: 'estadisticas', etiqueta: 'Estadísticas' },
+  { id: 'traza', etiqueta: 'Traza de ruta' },
+  { id: 'fecha', etiqueta: 'Día y fecha' },
+  { id: 'logro', etiqueta: 'Logro / racha' },
 ]
 
 export type FormatoFoto = 'historia' | 'post45' | 'cuadrado'
@@ -20,20 +28,21 @@ export const FORMATOS_FOTO: Record<FormatoFoto, { ancho: number; alto: number; e
 
 /** Tamano del lienzo transparente de cada plantilla. */
 export const TAMANO_PLANTILLA: Record<Plantilla, { ancho: number; alto: number }> = {
-  trazo: { ancho: 900, alto: 900 },
-  trazoDatos: { ancho: 900, alto: 900 },
-  datosGrandes: { ancho: 900, alto: 1000 },
-  minimal: { ancho: 1000, alto: 360 },
+  estadisticas: { ancho: 1080, alto: 1920 },
+  traza: { ancho: 1080, alto: 1920 },
+  fecha: { ancho: 1080, alto: 1920 },
+  logro: { ancho: 1080, alto: 1920 },
 }
 
-export const NARANJA = '#FF6A13'
-export const HANDLE_GACELAS = '@gacelasrunningteam'
+export const NARANJA = '#C084FC'
+export const HANDLE_GACELAS = HANDLE_RUNCITY
 const FUENTE = '"Inter", "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif'
 
-/** Normaliza el @usuario: sin espacios, con @, maximo 30 caracteres. */
-export function normalizarHandle(h: string) {
-  const limpio = h.trim().replace(/^@+/, '').replace(/\s+/g, '').slice(0, 30)
-  return limpio ? `@${limpio}` : ''
+export function textoInsignia(d: DatosCompartir) {
+  if (d.recordLabel?.trim()) return `Récord personal · ${d.recordLabel.trim()}`
+  return d.rachaDias && d.rachaDias > 0
+    ? `Racha de ${d.rachaDias} ${d.rachaDias === 1 ? 'día' : 'días'}`
+    : null
 }
 
 /** Datos compactos (etiqueta, valor) para las plantillas. */
@@ -60,15 +69,21 @@ export interface Colocacion {
   escala: number
 }
 export const COLOCACION_INICIAL: Record<Plantilla, Colocacion> = {
-  trazo: { cx: 0.5, cy: 0.55, escala: 0.75 },
-  trazoDatos: { cx: 0.62, cy: 0.62, escala: 0.62 },
-  datosGrandes: { cx: 0.5, cy: 0.5, escala: 0.7 },
-  minimal: { cx: 0.5, cy: 0.86, escala: 0.85 },
+  estadisticas: { cx: 0.5, cy: 0.5, escala: 1 },
+  traza: { cx: 0.5, cy: 0.5, escala: 1 },
+  fecha: { cx: 0.5, cy: 0.5, escala: 1 },
+  logro: { cx: 0.5, cy: 0.5, escala: 1 },
 }
 
 /** Rectangulo donde va la superposicion dentro del lienzo final. */
-export function rectColocacion(p: Plantilla, c: Colocacion, W: number, H: number) {
-  const t = TAMANO_PLANTILLA[p]
+export function rectColocacion(
+  _p: Plantilla,
+  c: Colocacion,
+  W: number,
+  H: number,
+  f: FormatoFoto = 'historia'
+) {
+  const t = FORMATOS_FOTO[f]
   const ancho = Math.max(0.15, Math.min(1.6, c.escala)) * W
   const alto = (ancho * t.alto) / t.ancho
   return { x: c.cx * W - ancho / 2, y: c.cy * H - alto / 2, ancho, alto }
@@ -150,48 +165,65 @@ function handle(
   sinSombra(g)
 }
 
-/** Dibuja la plantilla transparente en un contexto de TAMANO_PLANTILLA[p]. */
-export function dibujarPlantilla(g: G, d: DatosCompartir, p: Plantilla, h: string) {
-  const { ancho: W, alto: H } = TAMANO_PLANTILLA[p]
+/** Dibuja una plantilla transparente en el formato de salida seleccionado. */
+export function dibujarPlantilla(
+  g: G,
+  d: DatosCompartir,
+  p: Plantilla,
+  h: string,
+  f: FormatoFoto = 'historia'
+) {
+  const { ancho: W, alto: H } = FORMATOS_FOTO[f]
+  const sx = W / 1080
+  const sy = H / 1920
   g.clearRect(0, 0, W, H)
-  const datos = datosPlantilla(d)
-  if (p === 'trazo') {
-    linea(g, d, { x: 40, y: 30, ancho: W - 80, alto: H - 150 }, 11)
-    marca(g, W / 2, H - 70, 26, 'center')
-    handle(g, h, W / 2, H - 22, 26, 'center')
-  } else if (p === 'trazoDatos') {
-    marca(g, 20, 48, 26)
-    linea(g, d, { x: 10, y: 80, ancho: W * 0.62, alto: H - 200 }, 9)
-    sombra(g)
-    let y = 210
-    for (const [k, v] of datos) {
-      texto(g, k.toUpperCase(), W * 0.7, y, 20, 400, 'left', 3)
-      texto(g, v, W * 0.7, y + 46, 40, 300)
-      y += 130
+  const t = (s: string, x: number, y: number, px: number, peso = 500, alinear: CanvasTextAlign = 'left') =>
+    texto(g, s, x * sx, y * sy, px * sx, peso, alinear)
+  const pie = () => {
+    marca(g, W / 2, 1770 * sy, 38 * sx, 'center')
+    handle(g, normalizarHandle(h), W / 2, 1840 * sy, 30 * sx, 'center')
+  }
+  const metrica = (titulo: string, valor: string, x: number, y: number) => {
+    t(titulo.toUpperCase(), x, y, 26, 600)
+    t(valor, x, y + 70, 56, 700)
+  }
+  if (p === 'estadisticas') {
+    t('DISTANCIA', 72, 350, 28, 600)
+    t(`${decimal(d.distanciaKm, 2)}`, 72, 560, 172, 800)
+    t('KILÓMETROS', 80, 625, 30, 600)
+    metrica('Tiempo', formatoTiempo(d.segundos ?? 0), 80, 850)
+    metrica('Ritmo / km', formatoRitmo(d.ritmoSegKm), 580, 850)
+    const badge = textoInsignia(d)
+    if (badge) {
+      g.fillStyle = 'rgba(192,132,252,0.22)'
+      redondeado(g, 64 * sx, 1130 * sy, W - 128 * sx, 120 * sy, 36 * sx)
+      g.fill()
+      t(badge, 540, 1210, 38, 700, 'center')
     }
-    sinSombra(g)
-    handle(g, h, W - 20, H - 30, 28, 'right')
-  } else if (p === 'datosGrandes') {
-    sombra(g)
-    const [dist, ...resto] = datos
-    texto(g, dist[1].replace(' km', ''), W / 2, 230, 210, 200, 'center', -4)
-    texto(g, 'KILÓMETROS', W / 2, 290, 26, 400, 'center', 8)
-    resto.forEach(([k, v], i) => {
-      const x = resto.length === 1 ? W / 2 : W * (0.27 + i * 0.46)
-      texto(g, v, x, 400, 52, 300, 'center')
-      texto(g, k.toUpperCase(), x, 440, 20, 400, 'center', 4)
-    })
-    sinSombra(g)
-    linea(g, d, { x: W * 0.18, y: 480, ancho: W * 0.64, alto: 380 }, 8)
-    marca(g, W / 2, H - 70, 24, 'center')
-    handle(g, h, W / 2, H - 24, 24, 'center')
+    pie()
+  } else if (p === 'traza') {
+    linea(g, d, { x: 70 * sx, y: 250 * sy, ancho: W - 140 * sx, alto: 760 * sy }, 12 * sx)
+    metrica('Distancia', `${decimal(d.distanciaKm, 2)} km`, 80, 1170)
+    metrica('Tiempo', formatoTiempo(d.segundos ?? 0), 570, 1170)
+    metrica('Ritmo / km', formatoRitmo(d.ritmoSegKm), 80, 1435)
+    metrica('Desnivel', `${Math.round(d.desnivelM ?? 0)} m`, 570, 1435)
+    pie()
+  } else if (p === 'fecha') {
+    const date = new Date(d.fechaMs ?? 0)
+    const dia = new Intl.DateTimeFormat('es-EC', { weekday: 'long' }).format(date)
+    const fecha = new Intl.DateTimeFormat('es-EC', { day: 'numeric', month: 'long', year: 'numeric' }).format(date)
+    t(dia.charAt(0).toUpperCase() + dia.slice(1), 72, 720, 76, 700)
+    t(fecha, 72, 900, 54, 400)
+    t(`${decimal(d.distanciaKm, 2)} km`, 72, 1160, 64, 700)
+    pie()
   } else {
-    linea(g, d, { x: 10, y: 20, ancho: 200, alto: H - 40 }, 6)
-    sombra(g)
-    texto(g, datos.map((x) => x[1]).join('   ·   '), 250, H / 2 + 6, 42, 300)
-    sinSombra(g)
-    marca(g, 250, H / 2 - 70, 22)
-    handle(g, h, 250, H / 2 + 80, 24)
+    t(textoInsignia(d) ?? 'CADA CARRERA CUENTA', 72, 600, 58, 800)
+    t(`${decimal(d.distanciaKm, 2)} km`, 72, 850, 88, 700)
+    if (d.segundos) {
+      metrica('Tiempo', formatoTiempo(d.segundos), 80, 1100)
+      metrica('Ritmo / km', formatoRitmo(d.ritmoSegKm), 570, 1100)
+    }
+    pie()
   }
 }
 
@@ -200,12 +232,12 @@ const aBlob = (cv: HTMLCanvasElement) =>
     cv.toBlob((b) => (b ? ok(b) : mal(new Error('No se pudo generar la imagen'))), 'image/png')
   )
 
-export function lienzoPlantilla(d: DatosCompartir, p: Plantilla, h: string) {
-  const { ancho, alto } = TAMANO_PLANTILLA[p]
+export function lienzoPlantilla(d: DatosCompartir, p: Plantilla, h: string, f: FormatoFoto = 'historia') {
+  const { ancho, alto } = FORMATOS_FOTO[f]
   const cv = document.createElement('canvas')
   cv.width = ancho
   cv.height = alto
-  dibujarPlantilla(cv.getContext('2d')!, d, p, h)
+  dibujarPlantilla(cv.getContext('2d')!, d, p, h, f)
   return cv
 }
 
@@ -221,14 +253,15 @@ export function dibujarComposicion(
   foto: (CanvasImageSource & { width: number; height: number }) | null,
   capa: HTMLCanvasElement,
   p: Plantilla,
-  c: Colocacion
+  c: Colocacion,
+  f: FormatoFoto = 'historia'
 ) {
   g.clearRect(0, 0, W, H)
   if (foto) {
     const a = ajusteCubrir(foto.width, foto.height, W, H)
     g.drawImage(foto, a.sx, a.sy, a.sw, a.sh, 0, 0, W, H)
   }
-  const r = rectColocacion(p, c, W, H)
+  const r = rectColocacion(p, c, W, H, f)
   g.drawImage(capa, r.x, r.y, r.ancho, r.alto)
 }
 
@@ -243,6 +276,6 @@ export async function exportarComposicion(
   const cv = document.createElement('canvas')
   cv.width = ancho
   cv.height = alto
-  dibujarComposicion(cv.getContext('2d')!, ancho, alto, foto, capa, p, c)
+  dibujarComposicion(cv.getContext('2d')!, ancho, alto, foto, capa, p, c, f)
   return aBlob(cv)
 }

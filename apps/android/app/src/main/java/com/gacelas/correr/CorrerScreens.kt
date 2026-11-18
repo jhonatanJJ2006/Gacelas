@@ -1190,7 +1190,7 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
                     if (estado.segundos > 0) Box(
                         Modifier.weight(1f).height(48.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.07f)).clickable { compartiendo = true }.testTag("resumen-instagram"),
                         contentAlignment = Alignment.Center,
-                    ) { Text("Historia para Instagram", style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = Color.White, maxLines = 1) }
+                    ) { Text("Compartir historia", style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = Color.White, maxLines = 1) }
                     Box(
                         Modifier.weight(1f).height(48.dp).clip(RoundedCornerShape(14.dp)).background(Color(0x33BE185D)).clickable(onClick = salirSinGuardar).testTag("resumen-descartar"),
                         contentAlignment = Alignment.Center,
@@ -1212,7 +1212,7 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Filled.Share, null, tint = Color.White, modifier = Modifier.size(18.dp))
-                Text("  Compartir", style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = Color.White)
+                Text("  Compartir historia", style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = Color.White)
             }
             com.gacelas.ui.components.BotonTablero(
                 if (guardando) "Guardando..." else if (publica) "Guardar y publicar" else "Guardar carrera", guardar,
@@ -1227,6 +1227,10 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
             // Privacidad: oculta los puntos dentro de 300 m de la salida y llegada.
             com.gacelas.compartir.Compartir.recortarExtremos(estado.puntos.map { it.lat to it.lng }),
             estado.distanciaKm, estado.segundos, estado.ritmoPromedioSegKm, estado.desnivelM.toInt(), rachaDespues.diaria,
+            fechaMs = estado.inicioMs,
+            recordLabel = record?.etiqueta,
+            handle = perfilActual?.username?.trim()?.takeIf { it.isNotBlank() }?.let { "@${it.removePrefix("@")}" }
+                ?: com.gacelas.compartir.HANDLE_RUNCITY,
         ),
     ) { compartiendo = false }
 }

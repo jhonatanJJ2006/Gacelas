@@ -10,13 +10,16 @@ import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Typeface
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /** Plantillas transparentes (estilo Strava) para poner sobre una foto propia. Igual que la web. */
-enum class Plantilla(val etiqueta: String, val ancho: Int, val alto: Int, val cx: Float, val cy: Float, val escala: Float) {
-    TrazoDatos("Trazo + datos", 900, 900, 0.62f, 0.62f, 0.62f),
-    Trazo("Solo trazo", 900, 900, 0.5f, 0.55f, 0.75f),
-    DatosGrandes("Datos grandes", 900, 1000, 0.5f, 0.5f, 0.7f),
-    Minimal("Minimal", 1000, 360, 0.5f, 0.86f, 0.85f),
+enum class Plantilla(val etiqueta: String, val cx: Float = 0.5f, val cy: Float = 0.5f, val escala: Float = 1f) {
+    Estadisticas("Estadísticas"),
+    Traza("Traza de ruta"),
+    Fecha("Día y fecha"),
+    Logro("Logro / racha"),
 }
 
 enum class FormatoFoto(val etiqueta: String, val ancho: Int, val alto: Int) {
@@ -27,7 +30,7 @@ data class Colocacion(val cx: Float, val cy: Float, val escala: Float) {
     fun limitada() = Colocacion(cx.coerceIn(0f, 1f), cy.coerceIn(0f, 1f), escala.coerceIn(0.15f, 1.6f))
 }
 
-const val HANDLE_GACELAS = "@gacelasrunningteam"
+const val HANDLE_GACELAS = HANDLE_RUNCITY
 private const val NARANJA = 0xFFC084FC.toInt()
 
 object Plantillas {
@@ -35,13 +38,17 @@ object Plantillas {
 
     fun normalizarHandle(h: String): String {
         val l = h.trim().trimStart('@').replace(Regex("\\s+"), "").take(30)
-        return if (l.isEmpty()) "" else "@$l"
+        return if (l.isEmpty()) HANDLE_RUNCITY else "@$l"
     }
+
+    fun insignia(d: DatosCompartir): String? =
+        d.recordLabel?.takeIf { it.isNotBlank() }?.let { "Récord personal · $it" }
+            ?: d.rachaDias.takeIf { it > 0 }?.let { "Racha de $it ${if (it == 1) "día" else "días"}" }
 
     fun datos(d: DatosCompartir): List<Pair<String, String>> = buildList {
         add("Distancia" to "%.2f km".format(java.util.Locale.US, d.distanciaKm))
         if (d.segundos > 0) { add("Ritmo" to "${Compartir.ritmo(d.ritmoSegKm)} /km"); add("Tiempo" to Compartir.tiempo(d.segundos)) }
-        else d.desnivelM?.let { add("Desnivel" to "$it m") }
+        d.desnivelM?.let { add("Desnivel" to "$it m") }
     }
 
     /** Recorte tipo cover (x, y, ancho, alto de la parte de la foto que se usa). */
@@ -51,10 +58,10 @@ object Plantillas {
         return RectF((iw - sw) / 2, (ih - sh) / 2, (iw - sw) / 2 + sw, (ih - sh) / 2 + sh)
     }
 
-    fun rect(p: Plantilla, c: Colocacion, w: Int, h: Int): RectF {
+    fun rect(c: Colocacion, w: Int, h: Int, f: FormatoFoto): RectF {
         val l = c.limitada()
         val ancho = l.escala * w
-        val alto = ancho * p.alto / p.ancho
+        val alto = ancho * f.alto / f.ancho
         return RectF(l.cx * w - ancho / 2, l.cy * h - alto / 2, l.cx * w + ancho / 2, l.cy * h + alto / 2)
     }
 
@@ -91,38 +98,68 @@ object Plantillas {
         c.drawRect(x0, y + px * 0.22f, x0 + w, y + px * 0.22f + maxOf(1.5f, px * 0.05f), p)
     }
 
-    /** PNG transparente de la plantilla. */
-    fun generar(d: DatosCompartir, p: Plantilla, h: String): Bitmap {
-        val bmp = Bitmap.createBitmap(p.ancho, p.alto, Bitmap.Config.ARGB_8888)
+    /** PNG transparente de la plantilla en el formato seleccionado. */
+    fun generar(d: DatosCompartir, p: Plantilla, h: String, f: FormatoFoto = FormatoFoto.Historia): Bitmap {
+        val bmp = Bitmap.createBitmap(f.ancho, f.alto, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
         c.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
-        val w = p.ancho.toFloat(); val hh = p.alto.toFloat()
-        val datos = datos(d)
+        val w = f.ancho.toFloat(); val hh = f.alto.toFloat()
+        val sx = w / 1080f
+        val sy = hh / 1920f
+        fun texto(t: String, x: Float, y: Float, px: Float, peso: Int = 500, a: Paint.Align = Paint.Align.LEFT) {
+            c.drawText(t, x * sx, y * sy, pintura(px * sx, peso, a))
+        }
+        fun pie() {
+            marca(c, w / 2, 1770f * sy, 36f * sx, Paint.Align.CENTER)
+            handle(c, Plantillas.normalizarHandle(h), w / 2, 1840f * sy, 30f * sx, Paint.Align.CENTER)
+        }
+        fun etiqueta(t: String, x: Float, y: Float, valor: String, a: Paint.Align = Paint.Align.LEFT) {
+            texto(t.uppercase(), x, y, 24f, 600, a)
+            texto(valor, x, y + 64f, 52f, 700, a)
+        }
         when (p) {
-            Plantilla.Trazo -> { linea(c, d, 40f, 30f, w - 80, hh - 150, 11f); marca(c, w / 2, hh - 70, 26f, Paint.Align.CENTER); handle(c, h, w / 2, hh - 22, 26f, Paint.Align.CENTER) }
-            Plantilla.TrazoDatos -> {
-                marca(c, 20f, 48f, 26f)
-                linea(c, d, 10f, 80f, w * 0.62f, hh - 200, 9f)
-                var y = 210f
-                datos.forEach { (k, v) -> c.drawText(k.uppercase(), w * 0.7f, y, pintura(20f, 400, espaciado = 0.15f)); c.drawText(v, w * 0.7f, y + 46, pintura(40f, 300)); y += 130 }
-                handle(c, h, w - 20, hh - 30, 28f, Paint.Align.RIGHT)
-            }
-            Plantilla.DatosGrandes -> {
-                val dist = datos.first().second.removeSuffix(" km")
-                c.drawText(dist, w / 2, 230f, pintura(210f, 200, Paint.Align.CENTER, -0.02f))
-                c.drawText("KILÓMETROS", w / 2, 290f, pintura(26f, 400, Paint.Align.CENTER, 0.3f))
-                val resto = datos.drop(1)
-                resto.forEachIndexed { i, (k, v) ->
-                    val x = if (resto.size == 1) w / 2 else w * (0.27f + i * 0.46f)
-                    c.drawText(v, x, 400f, pintura(52f, 300, Paint.Align.CENTER)); c.drawText(k.uppercase(), x, 440f, pintura(20f, 400, Paint.Align.CENTER, 0.2f))
+            Plantilla.Estadisticas -> {
+                texto("DISTANCIA", 72f, 350f, 28f, 600)
+                texto("%.2f".format(java.util.Locale.US, d.distanciaKm), 72f, 560f, 172f, 800)
+                texto("KILÓMETROS", 80f, 625f, 30f, 600)
+                val ritmo = Compartir.ritmo(d.ritmoSegKm)
+                etiqueta("Tiempo", 80f, 850f, Compartir.tiempo(d.segundos))
+                etiqueta("Ritmo / km", 580f, 850f, ritmo)
+                insignia(d)?.let {
+                    c.drawRoundRect(
+                        RectF(64f * sx, 1130f * sy, w - 64f * sx, 1250f * sy),
+                        36f * sx, 36f * sx,
+                        Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0x38C084FC },
+                    )
+                    texto(it, 540f, 1210f, 38f, 700, Paint.Align.CENTER)
                 }
-                linea(c, d, w * 0.18f, 480f, w * 0.64f, 380f, 8f)
-                marca(c, w / 2, hh - 70, 24f, Paint.Align.CENTER); handle(c, h, w / 2, hh - 24, 24f, Paint.Align.CENTER)
+                pie()
             }
-            Plantilla.Minimal -> {
-                linea(c, d, 10f, 20f, 200f, hh - 40, 6f)
-                c.drawText(datos.joinToString("   ·   ") { it.second }, 250f, hh / 2 + 6, pintura(42f, 300))
-                marca(c, 250f, hh / 2 - 70, 22f); handle(c, h, 250f, hh / 2 + 80, 24f)
+            Plantilla.Traza -> {
+                linea(c, d, 70f * sx, 250f * sy, w - 140f * sx, 760f * sy, 12f * sx)
+                etiqueta("Distancia", 80f, 1170f, "%.2f km".format(java.util.Locale.US, d.distanciaKm))
+                etiqueta("Tiempo", 570f, 1170f, Compartir.tiempo(d.segundos))
+                etiqueta("Ritmo / km", 80f, 1435f, Compartir.ritmo(d.ritmoSegKm))
+                etiqueta("Desnivel", 570f, 1435f, "${d.desnivelM ?: 0} m")
+                pie()
+            }
+            Plantilla.Fecha -> {
+                val fecha = SimpleDateFormat("EEEE|d 'de' MMMM yyyy", Locale("es", "EC"))
+                    .format(Date(d.fechaMs)).split('|')
+                texto(fecha[0].replaceFirstChar { it.uppercase() }, 72f, 720f, 76f, 700)
+                texto(fecha.getOrElse(1) { "" }, 72f, 900f, 54f, 400)
+                texto("%.2f km".format(java.util.Locale.US, d.distanciaKm), 72f, 1160f, 64f, 700)
+                pie()
+            }
+            Plantilla.Logro -> {
+                val logro = insignia(d)
+                texto(logro ?: "CADA CARRERA CUENTA", 72f, 600f, 58f, 800)
+                texto("%.2f km".format(java.util.Locale.US, d.distanciaKm), 72f, 850f, 88f, 700)
+                if (d.segundos > 0) {
+                    etiqueta("Tiempo", 80f, 1100f, Compartir.tiempo(d.segundos))
+                    etiqueta("Ritmo / km", 570f, 1100f, Compartir.ritmo(d.ritmoSegKm))
+                }
+                pie()
             }
         }
         return bmp
@@ -137,7 +174,7 @@ object Plantillas {
             val r = ajusteCubrir(it.width, it.height, f.ancho, f.alto)
             c.drawBitmap(it, Rect(r.left.toInt(), r.top.toInt(), r.right.toInt(), r.bottom.toInt()), Rect(0, 0, f.ancho, f.alto), filtro)
         }
-        c.drawBitmap(capa, null, rect(p, col, f.ancho, f.alto), filtro)
+        c.drawBitmap(capa, null, rect(col, f.ancho, f.alto, f), filtro)
         return bmp
     }
 }

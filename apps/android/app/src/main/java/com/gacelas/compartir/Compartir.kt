@@ -20,11 +20,15 @@ data class DatosCompartir(
     val desnivelM: Int? = null,
     val rachaDias: Int = 0,
     val enlace: String = SITIO,
+    val fechaMs: Long = 0L,
+    val recordLabel: String? = null,
+    val handle: String = HANDLE_RUNCITY,
 ) {
     enum class Tipo { Carrera, Ruta }
 }
 
 const val SITIO = "https://gacelas.vercel.app"
+const val HANDLE_RUNCITY = "@runcity"
 fun enlaceRuta(id: String) = "$SITIO/r/${URLEncoder.encode(id, "UTF-8")}"
 
 /** Logica pura de la imagen para compartir (igual que apps/web/src/lib/compartir.ts). */
