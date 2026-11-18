@@ -1,5 +1,9 @@
 package com.gacelas.perfil
 
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.material.icons.filled.DirectionsWalk
+import androidx.compose.material.icons.filled.Checkroom
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.BarChart
 import com.gacelas.ui.components.TarjetaRacha
 import android.graphics.BitmapFactory
@@ -117,7 +121,7 @@ fun FotoPerfil(path: String?, tamano: androidx.compose.ui.unit.Dp) {
 }
 
 @Composable
-fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Unit, onCarrera: (String) -> Unit = {}, onReportes: () -> Unit = {}) {
+fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Unit, onCarrera: (String) -> Unit = {}, onReportes: () -> Unit = {}, onLogros: () -> Unit = {}, onMedallero: () -> Unit = {}, onCorrer: () -> Unit = {}) {
     val perfil by sesionState()
     val carreras by carrerasState()
     val ajustes by ajustesState()
@@ -192,8 +196,11 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
             com.gacelas.ui.components.EsqueletoMetricas()
             com.gacelas.ui.components.EsqueletoTarjetas(2, etiqueta = "Cargando estadísticas")
         }
-        TarjetaRacha(com.gacelas.ui.rachaState(), carreras)
-        com.gacelas.social.ListaLogros(carreras)
+        val racha = com.gacelas.ui.rachaState()
+        var verRacha by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+        TarjetaRacha(racha, carreras, onClick = { verRacha = true })
+        if (verRacha) com.gacelas.ui.components.HojaRachaC2(racha, carreras, onCerrar = { verRacha = false }) { verRacha = false; onCorrer() }
+        com.gacelas.social.ListaLogros(carreras, onVerTodos = onLogros)
         EstadisticasHistoricas(hist, m)
         KilometrajeMensual(meses, m)
         Tarjeta {
@@ -205,7 +212,7 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
             }
         }
         Records(recs)
-        Medallero(meds)
+        Medallero(meds, onVerTodo = onMedallero)
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Actividades recientes", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
             Text("${carreras.size} en total", style = GType.labelMd, color = GColors.TextSecondary)
@@ -372,19 +379,16 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
     val scope = rememberCoroutineScope()
     val ajustes by ajustesState()
     val guardado = ajustes.avatar
-    val equipaciones = listOf(GColors.Primary, GColors.Secondary, GColors.Info, GColors.Danger)
     var equipacion by remember(guardado) { mutableIntStateOf(guardado.equipacion) }
     var estilo by remember(guardado) { mutableStateOf(guardado.estilo) }
-    var lentes by remember(guardado) { mutableStateOf(guardado.lentes) }
-    var reloj by remember(guardado) { mutableStateOf(guardado.reloj) }
-    var audifonos by remember(guardado) { mutableStateOf(guardado.audifonos) }
-    var complexion by remember(guardado) { mutableStateOf(guardado.complexion ?: "hombre") }
-    var tonoPiel by remember(guardado) { mutableIntStateOf(guardado.tonoPiel ?: 0) }
-    var peinado by remember(guardado) { mutableStateOf(guardado.peinado ?: "corto") }
-    var colorShorts by remember(guardado) { mutableIntStateOf(guardado.colorShorts ?: 0) }
+    var tonoPiel by remember(guardado) { mutableStateOf(guardado.tonoPiel) }
+    var colorShorts by remember(guardado) { mutableStateOf(guardado.colorShorts) }
+    var colorZapatillas by remember(guardado) { mutableStateOf(guardado.colorZapatillas) }
+    // Vista previa en vivo: el corredor se repinta con cada eleccion (RecolorAvatar).
+    val config = guardado.copy(equipacion = equipacion, estilo = estilo, tonoPiel = tonoPiel, colorShorts = colorShorts, colorZapatillas = colorZapatillas)
     val guardar: () -> Unit = {
         scope.launch {
-            c.ajustes.actualizar { it.copy(avatar = ConfigAvatar(equipacion, estilo, lentes, reloj, audifonos, complexion, tonoPiel, peinado, colorShorts)) }
+            c.ajustes.actualizar { it.copy(avatar = config) }
             // Volver siempre en el hilo principal: la navegacion no admite otro hilo.
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main.immediate) {
                 context.aviso("Avatar guardado")
@@ -397,77 +401,67 @@ fun Avatar3DScreen(onAtras: () -> Unit, onGuardar: () -> Unit) {
             Text("Guardar", style = GType.labelLg, color = GColors.Primary500, modifier = Modifier.clickable(onClick = guardar).padding(12.dp))
         }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding()) {
-            Box(Modifier.fillMaxWidth().height(340.dp).background(Brush.verticalGradient(listOf(GColors.SurfaceLow, equipaciones[equipacion].copy(alpha = 0.18f))))) {
-                Runner3D(ClipCorredor.Idle, autoRotar = true, camara = Position(0f, 0.3f, 4.4f))
+            val fondo = com.gacelas.ui.three.RecolorAvatar.EQUIPACIONES.getOrNull(equipacion)?.let { Color(it) } ?: GColors.Primary
+            Box(Modifier.fillMaxWidth().height(360.dp).background(Brush.verticalGradient(listOf(GColors.SurfaceLow, fondo.copy(alpha = 0.22f)))).testTag("avatar-vista")) {
+                Runner3D(ClipCorredor.Idle, autoRotar = true, camara = Position(0f, 0.3f, 3.6f), avatar = config)
+                Text(
+                    "Arrastra para girarlo", style = GType.labelMd, color = GColors.C2Muted,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp),
+                )
             }
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Tarjeta {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Palette, null, tint = GColors.Primary500)
-                        Text("  Equipación", style = GType.titleMd, color = GColors.TextPrimary)
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        equipaciones.forEachIndexed { i, c ->
-                            Box(Modifier.size(44.dp).clip(CircleShape).background(c)
-                                .border(3.dp, if (i == equipacion) GColors.TextPrimary else Color.Transparent, CircleShape)
-                                .clickable { equipacion = i }.semantics { contentDescription = "Equipación ${i + 1}"; selected = i == equipacion })
-                        }
-                    }
-                }
-                // Rasgos guardados; el modelo GLB actual tiene una sola textura y aun no los pinta.
-                EtiquetaGrupo("Género y complexión")
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("hombre" to "Hombre", "mujer" to "Mujer").forEach { (k, t) -> Pastilla(t, k == complexion, { complexion = k }) }
-                }
-                EtiquetaGrupo("Tono de piel")
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    TONOS_PIEL.forEachIndexed { i, t ->
-                        Box(Modifier.size(40.dp).clip(CircleShape).background(t).border(3.dp, if (i == tonoPiel) GColors.Primary else Color.Transparent, CircleShape).clickable { tonoPiel = i }
-                            .semantics { contentDescription = "Tono de piel ${i + 1}"; selected = i == tonoPiel })
-                    }
-                }
-                EtiquetaGrupo("Cabello y peinado")
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("corto" to "Corto runner", "coleta" to "Coleta", "rapado" to "Rapado").forEach { (k, t) -> Pastilla(t, k == peinado, { peinado = k }) }
-                }
-                EtiquetaGrupo("Shorts")
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    COLORES_SHORTS.forEachIndexed { i, (col, n) ->
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Box(Modifier.size(40.dp).clip(CircleShape).background(col).border(3.dp, if (i == colorShorts) GColors.Primary else Color.Transparent, CircleShape).clickable { colorShorts = i }
-                                .semantics { contentDescription = "Shorts $n"; selected = i == colorShorts })
-                            Text(n, style = GType.labelMd, color = GColors.TextSecondary)
-                        }
-                    }
-                }
+                SelectorColor("Camiseta", Icons.Filled.Palette, com.gacelas.ui.three.RecolorAvatar.EQUIPACIONES, equipacion) { equipacion = it ?: 0 }
+                SelectorColor("Tono de piel", Icons.Filled.Face, listOf<Int?>(null) + com.gacelas.ui.three.RecolorAvatar.TONOS_PIEL, tonoPiel?.plus(1) ?: 0) { tonoPiel = it?.minus(1)?.takeIf { v -> v >= 0 } }
+                SelectorColor("Shorts", Icons.Filled.Checkroom, listOf<Int?>(null) + com.gacelas.ui.three.RecolorAvatar.COLORES_SHORTS, colorShorts?.plus(1) ?: 0) { colorShorts = it?.minus(1)?.takeIf { v -> v >= 0 } }
+                SelectorColor("Zapatillas", Icons.Filled.DirectionsWalk, listOf<Int?>(null) + com.gacelas.ui.three.RecolorAvatar.COLORES_ZAPATILLAS, colorZapatillas?.plus(1) ?: 0) { colorZapatillas = it?.minus(1)?.takeIf { v -> v >= 0 } }
                 EtiquetaGrupo("Estilo de carrera")
+                Text("Cambia cómo se mueve tu corredor en Inicio y aquí.", style = GType.bodySm, color = GColors.C2Muted)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(
-                        "Dinámico" to Icons.AutoMirrored.Filled.DirectionsRun,
-                        "Relajado" to Icons.Filled.SelfImprovement,
-                        "Veloz" to Icons.Filled.Bolt,
-                    ).forEach { (n, ic) ->
+                        Triple("Dinámico", Icons.AutoMirrored.Filled.DirectionsRun, "Listo"),
+                        Triple("Relajado", Icons.Filled.SelfImprovement, "Trote"),
+                        Triple("Veloz", Icons.Filled.Bolt, "Carrera"),
+                    ).forEach { (n, ic, mov) ->
                         val activo = n == estilo
                         Column(
                             Modifier.weight(1f).clip(RoundedCornerShape(16.dp)).background(if (activo) GColors.Primary.copy(alpha = 0.2f) else GColors.SurfaceContainer)
-                                .border(2.dp, if (activo) GColors.Primary else GColors.BorderSubtle, RoundedCornerShape(16.dp)).clickable { estilo = n }.semantics { selected = activo }.padding(12.dp),
+                                .border(2.dp, if (activo) GColors.Primary else GColors.BorderSubtle, RoundedCornerShape(16.dp)).clickable { estilo = n }.semantics { selected = activo }.padding(12.dp)
+                                .testTag("estilo-$n"),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Icon(ic, null, tint = if (activo) GColors.Primary500 else GColors.TextSecondary)
                             Text(n, style = GType.labelMd, color = GColors.TextPrimary)
+                            Text(mov, style = GType.bodySm, color = GColors.C2Muted)
                         }
                     }
-                }
-                EtiquetaGrupo("Accesorios")
-                Tarjeta(padding = 0.dp) {
-                    FilaInterruptor(Icons.Filled.Visibility, "Lentes deportivos", checked = lentes, onChange = { lentes = it })
-                    FilaInterruptor(Icons.Filled.Watch, "Reloj GPS", checked = reloj, onChange = { reloj = it })
-                    FilaInterruptor(Icons.Filled.Headphones, "Audífonos", checked = audifonos, onChange = { audifonos = it })
                 }
             }
         }
     }
 }
 
-private val TONOS_PIEL = listOf(Color(0xFFF5D0B5), Color(0xFFE0AC85), Color(0xFFC68863), Color(0xFF8D5A3B), Color(0xFF5C3A24))
-private val COLORES_SHORTS = listOf(Color(0xFF111827) to "Negro", Color(0xFF7B1FA2) to "Morado", Color(0xFF1E3A8A) to "Azul", Color(0xFFE5E7EB) to "Blanco")
+/** Fila de muestras de color; la primera (null) es el color original del modelo. */
+@Composable
+private fun SelectorColor(titulo: String, icono: androidx.compose.ui.graphics.vector.ImageVector, colores: List<Int?>, elegido: Int, onElegir: (Int?) -> Unit) {
+    Tarjeta(Modifier.testTag("selector-${titulo.lowercase().replace(' ', '-')}")) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(icono, null, tint = GColors.Primary500)
+            Text("  $titulo", style = GType.titleMd, color = GColors.TextPrimary)
+        }
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            colores.forEachIndexed { i, col ->
+                val activo = i == elegido
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Box(
+                        Modifier.size(44.dp).clip(CircleShape)
+                            .background(if (col == null) Brush.sweepGradient(listOf(GColors.C2Violeta, Color(0xFFDB2777), GColors.C2Violeta)) else Brush.linearGradient(listOf(Color(col), Color(col))))
+                            .border(3.dp, if (activo) GColors.TextPrimary else GColors.BorderSubtle, CircleShape)
+                            .clickable { onElegir(if (col == null && i == 0) null else i) }
+                            .semantics { contentDescription = "$titulo ${if (col == null) "original" else "color ${i + 1}"}"; selected = activo },
+                    )
+                    if (col == null) Text("Original", style = GType.labelMd, color = GColors.TextSecondary)
+                }
+            }
+        }
+    }
+}

@@ -58,8 +58,32 @@ window.gacelasGiro = (g, activo) => {
   if (!activo) baseGiro = null
 }
 
+// Colores del avatar (Perfil > Avatar): la app recolorea la textura (RecolorAvatar.kt) y la sirve como
+// PNG; aqui solo se sustituye el mapa de color base del unico material del corredor.
+let modelo = null
+let texturaPendiente = q.get('textura')
+function aplicarTextura(url) {
+  if (!modelo) {
+    texturaPendiente = url
+    return
+  }
+  new THREE.TextureLoader().load(url, (t) => {
+    t.flipY = false
+    t.colorSpace = THREE.SRGBColorSpace
+    modelo.traverse((o) => {
+      if (o.isMesh && o.material && o.material.map) {
+        o.material.map = t
+        o.material.needsUpdate = true
+      }
+    })
+  })
+}
+window.gacelasTextura = aplicarTextura
+
 new GLTFLoader().load(q.get('modelo') || '../models/gacelas-runner-animated.glb', (gltf) => {
   const m = gltf.scene
+  modelo = m
+  if (texturaPendiente) aplicarTextura(texturaPendiente)
   const caja = new THREE.Box3().setFromObject(m)
   const alto = caja.max.y - caja.min.y || 1
   const s = 1.8 / alto

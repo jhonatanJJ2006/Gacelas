@@ -6,6 +6,7 @@ import com.gacelas.clima.domain.CacheClima
 import com.gacelas.clima.domain.ClimaActual
 import com.gacelas.clima.domain.ClimaRepositorio
 import com.gacelas.clima.domain.Coordenadas
+import com.gacelas.clima.domain.DiaClima
 import com.gacelas.clima.domain.FuenteClima
 import com.gacelas.clima.domain.HoraClima
 import com.gacelas.clima.domain.LecturaClima
@@ -33,10 +34,15 @@ class OpenMeteoFuenteClima(
 
     companion object {
         fun url(c: Coordenadas) = "https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lng}" +
-            "&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code&forecast_hours=$HORAS&timezone=auto"
+            "&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code&forecast_hours=$HORAS&past_hours=0" +
+            "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max" +
+            "&past_days=$DIAS&forecast_days=$DIAS&timezone=auto"
 
         /** Horas de pronostico que pide el widget de clima. */
         const val HORAS = 8
+
+        /** Dias hacia atras y hacia adelante de la pantalla de clima. */
+        const val DIAS = 7
 
         fun leerJson(json: String): LecturaClima {
             val raiz = Json.parseToJsonElement(json).jsonObject
@@ -46,7 +52,27 @@ class OpenMeteoFuenteClima(
                 codigoWmo = actual.getValue("weather_code").jsonPrimitive.int,
                 esDeDia = actual["is_day"]?.jsonPrimitive?.let { runCatching { it.int == 1 }.getOrElse { _ -> it.boolean } } ?: true,
                 horas = runCatching { horas(raiz["hourly"]?.jsonObject) }.getOrElse { emptyList() },
+                dias = runCatching { dias(raiz["daily"]?.jsonObject) }.getOrElse { emptyList() },
             )
+        }
+
+        /** daily.time ("2026-11-17") con maxima, minima, lluvia y viento en paralelo. */
+        private fun dias(d: kotlinx.serialization.json.JsonObject?): List<DiaClima> {
+            if (d == null) return emptyList()
+            val t = d["time"]?.jsonArray ?: return emptyList()
+            fun col(k: String) = d[k]?.jsonArray
+            return t.indices.mapNotNull { i ->
+                fun num(k: String) = col(k)?.getOrNull(i)?.jsonPrimitive?.doubleOrNull
+                DiaClima(
+                    fecha = t[i].jsonPrimitive.content,
+                    codigoWmo = num("weather_code")?.toInt() ?: return@mapNotNull null,
+                    maxima = kotlin.math.round(num("temperature_2m_max") ?: return@mapNotNull null).toInt(),
+                    minima = kotlin.math.round(num("temperature_2m_min") ?: return@mapNotNull null).toInt(),
+                    probLluvia = num("precipitation_probability_max")?.toInt() ?: 0,
+                    lluviaMm = num("precipitation_sum") ?: 0.0,
+                    vientoKmh = num("wind_speed_10m_max") ?: 0.0,
+                )
+            }
         }
 
         /** hourly.time ("2026-11-13T07:00"), temperature_2m y weather_code en paralelo. */
@@ -66,16 +92,19 @@ class OpenMeteoFuenteClima(
 }
 
 @Serializable
-private data class ClimaGuardado(val t: Int = 0, val d: String = "", val l: String = "", val ms: Long = 0L, val hay: Boolean = false, val h: List<HoraGuardada> = emptyList())
+private data class ClimaGuardado(val t: Int = 0, val d: String = "", val l: String = "", val ms: Long = 0L, val hay: Boolean = false, val h: List<HoraGuardada> = emptyList(), val dd: List<DiaGuardado> = emptyList())
 
 @Serializable
 private data class HoraGuardada(val h: Int, val t: Int, val c: Int)
 
+@Serializable
+private data class DiaGuardado(val f: String, val c: Int, val mx: Int, val mn: Int, val p: Int, val mm: Double, val v: Double)
+
 /** Ultimo clima en DataStore (sobrevive sin red y entre aperturas). */
 class CacheClimaDataStore(store: DataStore<Preferences>) : CacheClima {
     private val valor = ValorJson(store, "clima_actual", ClimaGuardado.serializer(), ClimaGuardado())
-    override suspend fun leer(): ClimaActual? = valor.flujo.first().takeIf { it.hay }?.let { g -> ClimaActual(g.t, g.d, g.l, g.ms, g.h.map { HoraClima(it.h, it.t, it.c) }) }
-    override suspend fun guardar(c: ClimaActual) = valor.actualizar { ClimaGuardado(c.temperatura, c.descripcion, c.lugar, c.consultadoMs, true, c.horas.map { HoraGuardada(it.hora, it.temperatura, it.codigoWmo) }) }
+    override suspend fun leer(): ClimaActual? = valor.flujo.first().takeIf { it.hay }?.let { g -> ClimaActual(g.t, g.d, g.l, g.ms, g.h.map { HoraClima(it.h, it.t, it.c) }, g.dd.map { DiaClima(it.f, it.c, it.mx, it.mn, it.p, it.mm, it.v) }) }
+    override suspend fun guardar(c: ClimaActual) = valor.actualizar { ClimaGuardado(c.temperatura, c.descripcion, c.lugar, c.consultadoMs, true, c.horas.map { HoraGuardada(it.hora, it.temperatura, it.codigoWmo) }, c.dias.map { DiaGuardado(it.fecha, it.codigoWmo, it.maxima, it.minima, it.probLluvia, it.lluviaMm, it.vientoKmh) }) }
 }
 
 /**

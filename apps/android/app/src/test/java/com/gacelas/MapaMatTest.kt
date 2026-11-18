@@ -43,6 +43,10 @@ class MapaMatTest {
             assertTrue(capas.length() > 10)
             // Sin capa de POIs: el estilo Runcity los oculta.
             assertTrue((0 until capas.length()).none { capas.getJSONObject(it).optString("source-layer") == "poi" })
+            // Mapa 3D: edificios extruidos y relieve sombreado.
+            val porId = (0 until capas.length()).associate { capas.getJSONObject(it).let { c -> c.getString("id") to c.getString("type") } }
+            assertEquals("fill-extrusion", porId["edificios"])
+            assertEquals("hillshade", porId["relieve"])
         }
         assertTrue(Mapas.ESTILO_GACELAS.startsWith("asset://"))
     }

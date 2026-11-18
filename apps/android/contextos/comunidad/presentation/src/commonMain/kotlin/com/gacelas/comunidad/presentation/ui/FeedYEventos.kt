@@ -24,6 +24,9 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.draw.clip
@@ -150,14 +153,46 @@ fun FeedContenido(
             Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) { Pastilla(filtro.etiqueta, true, { vm.filtro(FiltroFeed.Todos) }) }
         }
         if (primeraCarga) Box(Modifier.padding(16.dp)) { com.gacelas.ui.components.EsqueletoTarjetas(3, etiqueta = "Cargando publicaciones", conImagen = true) }
-        else if (lista.isEmpty()) Text(
+        else if (lista.isEmpty()) {
+            val sugeridos by vm.sugeridos.collectAsState()
+            val publicar = { vm.filtro(FiltroFeed.Mias); onAviso("Tus carreras se publican al guardarlas. Desde el menú de cada una puedes agregar fotos.") }
             when (filtro) {
-                FiltroFeed.Siguiendo -> "Las carreras de quienes sigues aparecerán aquí."
-                FiltroFeed.Mias -> "Aún no tienes carreras públicas."
-                else -> "No hay publicaciones todavía."
-            },
-            style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.padding(16.dp),
-        )
+                FiltroFeed.Siguiendo -> {
+                    com.gacelas.ui.components.EstadoVacioC2(
+                        Icons.Filled.PersonAdd, "Aún no sigues a nadie",
+                        "Sigue a otros corredores de Loja para ver aquí sus carreras, rutas y fotos.",
+                        accion = "Descubrir corredores".takeIf { sugeridos.isEmpty() }, onAccion = { vm.filtro(FiltroFeed.Todos) },
+                        iconoAccion = Icons.Filled.Search, tag = "vacio-siguiendo",
+                    )
+                    if (sugeridos.isNotEmpty()) Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Corredores para seguir", style = GType.titleMd, color = GColors.TextPrimary)
+                        sugeridos.forEach { (id, nombre) ->
+                            val sigo = id in siguiendo
+                            Row(
+                                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(GColors.C2Card).padding(12.dp).testTag("sugerido-$id"),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                AvatarLetra(nombre, 40.dp)
+                                Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
+                                    Text(nombre, style = GType.labelLg, color = GColors.TextPrimary, maxLines = 1)
+                                    Text(handle(nombre), style = GType.bodySm, color = GColors.C2Muted, maxLines = 1)
+                                }
+                                com.gacelas.ui.components.BotonChipC2(if (sigo) "Siguiendo" else "Seguir", { vm.alternarSeguir(id) }, activo = sigo)
+                            }
+                        }
+                    }
+                }
+                FiltroFeed.Mias -> com.gacelas.ui.components.EstadoVacioC2(
+                    Icons.AutoMirrored.Filled.DirectionsRun, "Aún no tienes carreras públicas",
+                    "Cuando guardes una carrera aparecerá aquí con su ruta, sus datos y tus fotos.", tag = "vacio-mias",
+                )
+                else -> com.gacelas.ui.components.EstadoVacioC2(
+                    Icons.Filled.Image, "Haz la primera publicación",
+                    "Todavía nadie ha compartido nada. Sal a correr y comparte tu ruta con la comunidad.",
+                    accion = "Publicar", onAccion = publicar, tag = "vacio-feed",
+                )
+            }
+        }
         val kms = remember(lista) { lista.groupBy { if (it.propia) "yo" else it.autorId ?: it.autor }.mapValues { (_, l) -> l.sumOf { it.distanciaKm } } }
         (if (primeraCarga) emptyList() else lista).forEachIndexed { indice, p ->
             if (indice == 1 && eventoClub != null) Box(Modifier.padding(16.dp)) { TarjetaClub(eventoClub, inscritoClub, onAsistir, onEventoClub) }
@@ -250,28 +285,79 @@ fun FeedContenido(
         Spacer(Modifier.height(16.dp))
     }
     comentando?.let { p ->
-        var texto by remember(p.id) { mutableStateOf("") }
-        val hilo by produceState(emptyList<com.gacelas.comunidad.domain.modelo.ComentarioFeed>(), p.id) { value = vm.comentarios(p.id) }
-        com.gacelas.ui.components.DialogoC2(
-            onDismissRequest = { comentando = null },
-            title = { Text("Comentarios") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Column(Modifier.heightIn(max = 220.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        hilo.forEach { c -> Text("${c.autor}: ${c.texto}", style = GType.bodySm, color = GColors.TextPrimary) }
+        val locales = if (p.remota) emptyList() else ajustes.comentarios[p.id].orEmpty()
+        HojaComentarios(p, vm, locales, onAviso) { comentando = null }
+    }
+}
+
+/**
+ * Comentarios como en Instagram: hoja desde abajo con la lista (avatar, nombre en negrita junto al
+ * texto) y el campo fijo abajo sobre el teclado, en pildora, con "Publicar" que se activa al escribir.
+ */
+@Composable
+private fun HojaComentarios(p: Publicacion, vm: FeedViewModel, locales: List<String>, onAviso: (String) -> Unit, onCerrar: () -> Unit) {
+    var texto by remember(p.id) { mutableStateOf("") }
+    var recarga by remember(p.id) { mutableStateOf(0) }
+    val hilo by produceState(emptyList<com.gacelas.comunidad.domain.modelo.ComentarioFeed>(), p.id, recarga) { value = vm.comentarios(p.id) }
+    val todos = hilo.map { it.autor to it.texto } + locales.map { "Tú" to it }
+    com.gacelas.ui.components.HojaC2(onCerrar, Modifier.testTag("hoja-comentarios")) {
+        Column(Modifier.fillMaxWidth().imePadding().navigationBarsPadding()) {
+            Text(
+                "Comentarios", style = GType.titleMd, color = GColors.TextPrimary, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+            )
+            Box(Modifier.fillMaxWidth().height(1.dp).background(GColors.C2Linea))
+            if (todos.isEmpty()) Column(
+                Modifier.fillMaxWidth().padding(vertical = 36.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Text("Aún no hay comentarios", style = GType.headlineSm, color = GColors.TextPrimary)
+                Text("Inicia la conversación.", style = GType.bodyMd, color = GColors.C2Muted)
+            } else androidx.compose.foundation.lazy.LazyColumn(
+                Modifier.fillMaxWidth().heightIn(max = 460.dp).testTag("lista-comentarios"),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                items(todos.size) { i ->
+                    val (autor, cuerpo) = todos[i]
+                    Row(verticalAlignment = Alignment.Top) {
+                        AvatarLetra(autor, 32.dp)
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            androidx.compose.ui.text.buildAnnotatedString {
+                                pushStyle(androidx.compose.ui.text.SpanStyle(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = GColors.TextPrimary))
+                                append(autor); pop(); append("  "); append(cuerpo)
+                            },
+                            style = GType.bodyMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f),
+                        )
                     }
-                    CampoTexto("Comentario", texto, { texto = it }, "Escribe un aplauso o comentario...", lineas = 3)
                 }
-            },
-            confirmButton = {
-                TextButton(enabled = texto.isNotBlank(), onClick = {
-                    vm.comentar(p.id, texto, onAviso)
-                    comentando = null
-                }) { Text("Publicar") }
-            },
-            dismissButton = { com.gacelas.ui.components.BotonModalC2("Cancelar", { comentando = null }, secundario = true) },
-            containerColor = GColors.BgSecondary,
-        )
+            }
+            Box(Modifier.fillMaxWidth().height(1.dp).background(GColors.C2Linea))
+            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                AvatarLetra("Tú", 36.dp)
+                Spacer(Modifier.width(10.dp))
+                Row(
+                    Modifier.weight(1f).heightIn(min = 44.dp).clip(RoundedCornerShape(50)).border(1.dp, GColors.C2Linea, RoundedCornerShape(50))
+                        .padding(start = 16.dp, end = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(Modifier.weight(1f).padding(vertical = 10.dp)) {
+                        if (texto.isEmpty()) Text("Añade un comentario para ${p.autor}...", style = GType.bodyMd, color = GColors.C2Muted, maxLines = 1)
+                        androidx.compose.foundation.text.BasicTextField(
+                            texto, { texto = it }, maxLines = 4,
+                            textStyle = GType.bodyMd.copy(color = GColors.TextPrimary),
+                            cursorBrush = androidx.compose.ui.graphics.SolidColor(GColors.C2Violeta),
+                            modifier = Modifier.fillMaxWidth().testTag("campo-comentario"),
+                        )
+                    }
+                    TextButton(
+                        enabled = texto.isNotBlank(),
+                        onClick = { vm.comentar(p.id, texto, onAviso); texto = ""; recarga++ },
+                        modifier = Modifier.testTag("publicar-comentario"),
+                    ) { Text("Publicar", style = GType.labelLg, color = if (texto.isNotBlank()) GColors.C2Violeta else GColors.C2Muted.copy(alpha = 0.5f)) }
+                }
+            }
+        }
     }
 }
 
@@ -589,15 +675,15 @@ internal fun handle(nombre: String): String {
 @Composable
 private fun MediaPost(p: Publicacion, imagen: @Composable (String, Modifier) -> Unit) {
     val forma = RoundedCornerShape(18.dp)
-    val fotos = p.imagenes.take(2)
-    Row(Modifier.fillMaxWidth().height(if (fotos.isEmpty()) 170.dp else 200.dp).clip(forma).border(1.dp, GColors.C2Linea, forma).testTag("media-post"), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-        Box(Modifier.weight(if (fotos.isEmpty()) 1f else 1.15f).fillMaxHeight()) {
-            if (p.puntos.size >= 2) com.gacelas.ui.components.MapaEsquemaC2(p.puntos.map { it.lat to it.lng }, Modifier.fillMaxSize(), marcadores = listOf(p.puntos.first().let { it.lat to it.lng }), grosor = 3.dp)
-            else Icon(Icons.Filled.Route, null, tint = GColors.C2Violeta, modifier = Modifier.align(Alignment.Center).size(48.dp))
-            Text("RUTA", style = GType.labelMd.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary, modifier = Modifier.align(Alignment.BottomStart).padding(10.dp))
-        }
-        if (fotos.isNotEmpty()) Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            fotos.forEach { imagen(it, Modifier.fillMaxWidth().weight(1f)) }
+    val conRuta = p.puntos.size >= 2 || p.imagenes.isEmpty()
+    val paginas = (if (conRuta) 1 else 0) + p.imagenes.size
+    Box(Modifier.fillMaxWidth().clip(forma).border(1.dp, GColors.C2Linea, forma).testTag("media-post")) {
+        com.gacelas.ui.components.GaleriaC2(paginas, alto = if (p.imagenes.isEmpty()) 190.dp else 260.dp, forma = forma, tag = "galeria-post") { i ->
+            if (conRuta && i == 0) Box(Modifier.fillMaxSize().background(GColors.C2Card)) {
+                if (p.puntos.size >= 2) com.gacelas.ui.components.MapaEsquemaC2(p.puntos.map { it.lat to it.lng }, Modifier.fillMaxSize(), marcadores = listOf(p.puntos.first().let { it.lat to it.lng }), grosor = 3.dp)
+                else Icon(Icons.Filled.Route, null, tint = GColors.C2Violeta, modifier = Modifier.align(Alignment.Center).size(48.dp))
+                Text("RUTA", style = GType.labelMd.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = GColors.TextPrimary, modifier = Modifier.align(Alignment.BottomStart).padding(10.dp))
+            } else imagen(p.imagenes[i - if (conRuta) 1 else 0], Modifier.fillMaxSize())
         }
     }
 }

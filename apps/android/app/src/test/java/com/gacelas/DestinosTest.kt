@@ -7,8 +7,8 @@ import org.junit.Test
 
 class DestinosTest {
     @Test
-    fun hay26PantallasUnicas() {
-        assertEquals(35, Destinos.todas.size)
+    fun hay40PantallasUnicas() {
+        assertEquals(40, Destinos.todas.size)
         assertEquals(Destinos.todas.size, Destinos.todas.toSet().size)
     }
 
@@ -22,7 +22,9 @@ class DestinosTest {
             "perfil/editar", "perfil/avatar", "ajustes", "ajustes/privacidad", "ajustes/notificaciones", "notificaciones", "ajustes/brujula", "ajustes/mapas-offline",
             "comunidad/mapa", "legal/terminos", "legal/privacidad",
         )
-        assertEquals(web.toSet(), Destinos.todas.toSet())
+        // Pantallas propias de la app movil (vistas de Inicio y Perfil), aun sin ruta en la web.
+        val soloMovil = setOf("inicio/semana", "inicio/clima", "inicio/seguridad", "perfil/logros", "perfil/medallero")
+        assertEquals(web.toSet() + soloMovil, Destinos.todas.toSet())
     }
 
     @Test

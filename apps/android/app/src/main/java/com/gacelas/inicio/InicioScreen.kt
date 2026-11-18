@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import com.gacelas.actividad.domain.reglas.Estadisticas
@@ -71,6 +72,10 @@ fun InicioScreen(
     onNotificaciones: () -> Unit = {},
     onProgreso: () -> Unit = {},
     onMapaVivo: () -> Unit = {},
+    onSemana: () -> Unit = onProgreso,
+    onClima: (() -> Unit)? = null,
+    onSeguridad: () -> Unit = onMapaVivo,
+    onClubes: () -> Unit = onComunidad,
 ) {
     val (unidos, inscritos) = com.gacelas.comunidad.eventosState()
     val cont = com.gacelas.ui.contenedor()
@@ -104,8 +109,14 @@ fun InicioScreen(
     val ajustesNotif = ajustes
     val base by com.gacelas.notificaciones.notificacionesBase()
     val sinLeer = com.gacelas.comunidad.domain.reglas.notificacionesVisibles(ajustesNotif, base).count { !it.leida }
+    // Pertenencia a un club (null sin servidor): sin club, Inicio invita a unirse a uno.
+    val enClub by androidx.compose.runtime.produceState<Boolean?>(null, cont.clubes) { value = cont.clubes?.let { r -> runCatching { r.listar().second.isNotEmpty() }.getOrNull() } }
+    val perfil by sesionState()
+    val racha = com.gacelas.ui.rachaState()
+    var verRacha by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    if (verRacha) com.gacelas.ui.components.HojaRachaC2(racha, carreras, onCerrar = { verRacha = false }) { verRacha = false; onCorrer() }
     InicioTablero(
-        semana = semana, hoy = hoy, m = m, racha = com.gacelas.ui.rachaState(),
+        semana = semana, hoy = hoy, m = m, racha = racha,
         // Detras del corredor, el escenario de la version anterior (0.9.16), no el mapa: lo pidio el usuario.
         // La palabra "CORRE LOJA" queda sobre la tarjeta de la ruta del dia, detras del corredor.
         mapa = { com.gacelas.inicio.CapaEscenarioC2(Modifier.fillMaxSize(), margenPalabra = 150.dp) },
@@ -133,7 +144,11 @@ fun InicioScreen(
         zona = zona,
         corriendo = vivos.size,
         avisoPendientes = { com.gacelas.ui.AvisoCarrerasPendientes() },
-        corredor3D = { Runner3D(ClipCorredor.Idle, autoRotar = true, camara = Position(0f, 0.3f, 4.4f), sobreFondo = true) },
+        // Camara mas cerca (antes z = 4,4): el corredor llena el hero en vez de verse pequeno.
+        corredor3D = { Runner3D(ClipCorredor.Idle, autoRotar = true, camara = Position(0f, 0.25f, 3.1f), sobreFondo = true, avatar = ajustes.avatar) },
+        onSemana = onSemana, onRacha = { verRacha = true }, onClima = onClima, onSeguridad = onSeguridad,
+        enClub = enClub, onClubes = onClubes,
+        nombre = perfil?.nombre?.substringBefore(' ')?.takeIf { it.isNotBlank() },
     )
 }
 

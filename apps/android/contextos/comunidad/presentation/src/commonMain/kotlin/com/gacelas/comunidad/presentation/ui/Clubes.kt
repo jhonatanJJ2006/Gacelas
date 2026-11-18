@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
@@ -157,7 +159,21 @@ fun DetalleClubContenido(
                 CampoTexto("Escribe a los miembros", texto, vm::escribir, "Escribe algo a los miembros...", lineas = 2)
                 BotonPrimario("Publicar", { vm.publicar(aviso) }, icono = null)
             }
-            if (posts.isEmpty()) Text(if (yo?.activo == true || !c.conAprobacion) "Aún no hay publicaciones." else "Únete para ver las publicaciones.", style = GType.bodySm, color = GColors.TextSecondary)
+            if (posts.isEmpty()) when {
+                yo?.activo == true -> com.gacelas.ui.components.EstadoVacioC2(
+                    Icons.Filled.EditNote, "Sé el primero en publicar",
+                    "Todavía nadie escribió en este grupo. Propón una salida, comparte una ruta o saluda a los miembros.",
+                    compacto = true, tag = "vacio-posts-club",
+                )
+                c.conAprobacion -> com.gacelas.ui.components.EstadoVacioC2(
+                    Icons.Filled.Lock, "Publicaciones del grupo",
+                    "Únete para ver lo que comparten los miembros.", compacto = true, tag = "vacio-posts-club",
+                )
+                else -> com.gacelas.ui.components.EstadoVacioC2(
+                    Icons.Filled.EditNote, "Aún no hay publicaciones",
+                    "Únete y sé el primero en escribir al grupo.", compacto = true, tag = "vacio-posts-club",
+                )
+            }
             posts.forEach { p -> Tarjeta(padding = 12.dp) { Text(p.nombre, style = GType.labelLg, color = GColors.TextPrimary); Text(p.texto, style = GType.bodyMd, color = GColors.TextSecondary) } }
             Text("Miembros", style = GType.titleMd, color = GColors.TextPrimary)
             miembros.filter { it.activo }.forEach { m ->

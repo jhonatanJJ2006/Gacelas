@@ -1,5 +1,18 @@
 package com.gacelas.social
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material.icons.automirrored.filled.DirectionsRun
+import androidx.compose.material.icons.filled.Weekend
+import androidx.compose.material.icons.filled.NightsStay
+import androidx.compose.material.icons.filled.WbTwilight
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Terrain
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.EventAvailable
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.Route
+import androidx.compose.material.icons.filled.WorkspacePremium
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -121,16 +134,42 @@ fun ModalSinConexionContenido(onCerrar: () -> Unit) {
     )
 }
 
-private fun icono(l: Logro) = when (l) {
-    Logro.PrimeraCarrera -> Icons.Filled.DirectionsRun
+private fun icono(l: Logro): androidx.compose.ui.graphics.vector.ImageVector = when (l) {
+    Logro.PrimeraCarrera -> Icons.AutoMirrored.Filled.DirectionsRun
     Logro.Km5 -> Icons.Filled.Flag
     Logro.Km10 -> Icons.Filled.MilitaryTech
-    Logro.Racha7 -> Icons.Filled.LocalFireDepartment
+    Logro.Km15 -> Icons.Filled.EmojiEvents
+    Logro.Km21 -> Icons.Filled.WorkspacePremium
+    Logro.Total50 -> Icons.Filled.Route
+    Logro.Racha3, Logro.Racha7, Logro.Racha30 -> Icons.Filled.LocalFireDepartment
+    Logro.Carreras10, Logro.Carreras50 -> Icons.Filled.Repeat
+    Logro.SemanasMeta4 -> Icons.Filled.EventAvailable
+    Logro.Ritmo6, Logro.Ritmo5, Logro.Ritmo430 -> Icons.Filled.Speed
+    Logro.Escalador -> Icons.Filled.Terrain
+    Logro.Explorador -> Icons.Filled.Explore
+    Logro.Madrugador -> Icons.Filled.WbTwilight
+    Logro.Nocturno -> Icons.Filled.NightsStay
+    Logro.FinDeSemana -> Icons.Filled.Weekend
 }
 
-/** Logros en Perfil y modal C2 cuando una carrera nueva desbloquea uno. */
+private fun colorCategoria(c: com.gacelas.social.CategoriaLogro) = when (c) {
+    com.gacelas.social.CategoriaLogro.Distancia -> GColors.C2Violeta
+    com.gacelas.social.CategoriaLogro.Constancia -> androidx.compose.ui.graphics.Color(0xFFF97316)
+    com.gacelas.social.CategoriaLogro.Velocidad -> GColors.C2Menta
+    com.gacelas.social.CategoriaLogro.Exploracion -> GColors.C2Cielo
+    com.gacelas.social.CategoriaLogro.Horario -> androidx.compose.ui.graphics.Color(0xFFFBBF24)
+}
+
+private val unidadLogro = mapOf(
+    Logro.Km5 to "km", Logro.Km10 to "km", Logro.Km15 to "km", Logro.Km21 to "km", Logro.Total50 to "km",
+    Logro.Racha3 to "días", Logro.Racha7 to "días", Logro.Racha30 to "días", Logro.SemanasMeta4 to "semanas",
+    Logro.Carreras10 to "carreras", Logro.Carreras50 to "carreras", Logro.PrimeraCarrera to "carrera",
+    Logro.Escalador to "m", Logro.Explorador to "lugares", Logro.Madrugador to "salidas", Logro.Nocturno to "salidas", Logro.FinDeSemana to "salidas",
+)
+
+/** Logros guardados y la cola de recien ganados (modal); comparte estado entre Perfil y la pantalla de logros. */
 @Composable
-fun ListaLogros(carreras: List<Carrera>) {
+private fun estadoLogros(carreras: List<Carrera>): Map<String, Long> {
     val repo = contenedor().social
     var hechos by remember { mutableStateOf<Map<String, Long>>(emptyMap()) }
     var cola by remember { mutableStateOf<List<Logro>>(emptyList()) }
@@ -139,29 +178,86 @@ fun ListaLogros(carreras: List<Carrera>) {
         if (nuevos.isNotEmpty()) cola = cola + nuevos
         hechos = repo.desbloqueados()
     }
-    cola.firstOrNull()?.let { l ->
+    // Varios a la vez (p. ej. al estrenar logros nuevos): un solo aviso en lugar de una fila de modales.
+    if (cola.size > 2) ModalC2(
+        icono = Icons.Filled.EmojiEvents, titulo = "${cola.size} logros nuevos", texto = cola.joinToString(", ") { it.titulo } + ".",
+        primario = "Genial", onPrimario = { cola = emptyList() }, onCerrar = { cola = emptyList() }, tag = "modal-logro",
+    ) else cola.firstOrNull()?.let { l ->
         ModalC2(
             icono = icono(l), titulo = "Logro desbloqueado: ${l.titulo}", texto = l.descripcion,
             primario = "Genial", onPrimario = { cola = cola.drop(1) }, onCerrar = { cola = cola.drop(1) }, tag = "modal-logro",
         )
     }
+    return hechos
+}
+
+@Composable
+private fun DetalleLogro(l: Logro, carreras: List<Carrera>, hecho: Long?, onCerrar: () -> Unit) {
     val fecha = remember { SimpleDateFormat("d MMM yyyy", Locale("es", "EC")) }
+    val actual = com.gacelas.social.progresoLogro(l, carreras, System.currentTimeMillis())
+    com.gacelas.ui.components.HojaInsigniaC2(
+        icono(l), l.titulo, l.descripcion, l.comoConseguirlo,
+        actual = if (hecho != null) l.meta else actual, meta = l.meta, unidad = if (l.meta == 1 && unidadLogro[l] == null) "" else unidadLogro[l].orEmpty(),
+        fecha = hecho?.let { fecha.format(Date(it)) }, lograda = hecho != null || actual >= l.meta, onCerrar = onCerrar, color = colorCategoria(l.categoria),
+    )
+}
+
+@Composable
+private fun CeldaLogro(l: Logro, carreras: List<Carrera>, hecho: Long?, modifier: Modifier, onClick: () -> Unit) {
+    val actual = com.gacelas.social.progresoLogro(l, carreras, System.currentTimeMillis())
+    val lograda = hecho != null || actual >= l.meta
+    com.gacelas.ui.components.InsigniaC2(
+        icono(l), l.titulo, if (lograda) "Conseguido" else "$actual/${l.meta}", lograda, actual.toFloat() / l.meta, onClick,
+        modifier, colorCategoria(l.categoria), tag = "logro-${l.codigo}",
+    )
+}
+
+/** Logros en Perfil: los 6 mas avanzados (ganados primero), cada uno abre su detalle; "Ver todos" abre la pantalla. */
+@Composable
+fun ListaLogros(carreras: List<Carrera>, onVerTodos: () -> Unit = {}) {
+    val hechos = estadoLogros(carreras)
+    var abierto by remember { mutableStateOf<Logro?>(null) }
+    val ahora = remember { System.currentTimeMillis() }
+    val orden = remember(carreras, hechos) {
+        Logro.entries.sortedByDescending { l -> if (l.codigo in hechos) 2f else com.gacelas.social.progresoLogro(l, carreras, ahora).toFloat() / l.meta }.take(6)
+    }
     Tarjeta(Modifier.testTag("logros")) {
-        Text("LOGROS", style = GType.titleMd, color = GColors.TextPrimary)
-        Logro.entries.chunked(2).forEach { fila ->
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("LOGROS", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+            Text("${hechos.size} de ${Logro.entries.size}", style = GType.labelMd, color = GColors.C2Muted)
+        }
+        orden.chunked(3).forEach { fila ->
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                fila.forEach { l ->
-                    val f = hechos[l.codigo]
-                    Column(
-                        Modifier.weight(1f).background(if (f != null) GColors.C2S2 else GColors.C2Card)
-                            .border(1.dp, if (f != null) GColors.C2Violeta else GColors.C2Linea).padding(10.dp).testTag("logro-${l.codigo}"),
-                    ) {
-                        Icon(icono(l), null, tint = if (f != null) GColors.C2Violeta else GColors.C2Muted)
-                        Text(l.titulo, style = GType.labelLg, color = if (f != null) GColors.TextPrimary else GColors.C2Muted)
-                        Text(if (f != null) "Desbloqueado el ${fecha.format(Date(f))}" else l.descripcion, style = GType.bodySm, color = GColors.C2Muted)
+                fila.forEach { l -> CeldaLogro(l, carreras, hechos[l.codigo], Modifier.weight(1f)) { abierto = l } }
+                repeat(3 - fila.size) { Box(Modifier.weight(1f)) }
+            }
+        }
+        com.gacelas.ui.components.BotonSecundario("Ver todos los logros", onVerTodos, Modifier.testTag("ver-logros"), color = GColors.Primary400)
+    }
+    abierto?.let { l -> DetalleLogro(l, carreras, hechos[l.codigo]) { abierto = null } }
+}
+
+/** Todos los logros por categoria; los bloqueados muestran su progreso y como conseguirlos. */
+@Composable
+fun LogrosScreen(onAtras: () -> Unit) {
+    val carreras by com.gacelas.ui.carrerasState()
+    val hechos = estadoLogros(carreras)
+    var abierto by remember { mutableStateOf<Logro?>(null) }
+    Column(Modifier.background(com.gacelas.ui.components.Tablero.Fondo)) {
+        com.gacelas.ui.components.EncabezadoAtras("Logros", onAtras)
+        com.gacelas.ui.components.Pantalla {
+            Text("${hechos.size} de ${Logro.entries.size} conseguidos", style = GType.bodyMd, color = GColors.C2Muted, modifier = Modifier.testTag("logros-resumen"))
+            com.gacelas.social.CategoriaLogro.entries.forEach { cat ->
+                val delGrupo = Logro.entries.filter { it.categoria == cat }
+                Text(cat.titulo, style = GType.titleMd, color = colorCategoria(cat))
+                delGrupo.chunked(3).forEach { fila ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        fila.forEach { l -> CeldaLogro(l, carreras, hechos[l.codigo], Modifier.weight(1f)) { abierto = l } }
+                        repeat(3 - fila.size) { Box(Modifier.weight(1f)) }
                     }
                 }
             }
         }
     }
+    abierto?.let { l -> DetalleLogro(l, carreras, hechos[l.codigo]) { abierto = null } }
 }

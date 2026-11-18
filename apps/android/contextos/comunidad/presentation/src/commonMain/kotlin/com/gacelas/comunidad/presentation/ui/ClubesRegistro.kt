@@ -203,21 +203,13 @@ private fun Modifier.horizontalScrollCompat() = this.then(Modifier.horizontalScr
 
 /** Estado vacío ilustrado con una acción principal (crear) o secundaria (limpiar filtros). */
 @Composable
-private fun VacioClubes(icono: ImageVector, titulo: String, texto: String, accion: String, principal: Boolean = true, onAccion: () -> Unit) {
-    Column(
-        Modifier.fillMaxWidth().padding(top = 32.dp, start = 8.dp, end = 8.dp).testTag("vacio-clubes"),
-        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Box(Modifier.size(96.dp).clip(FormaC2).background(GColors.C2Morado.copy(alpha = 0.25f)), contentAlignment = Alignment.Center) {
-            Icon(icono, null, tint = GColors.C2Violeta, modifier = Modifier.size(48.dp))
-        }
-        Text(titulo, style = GType.headlineSm, color = GColors.TextPrimary, textAlign = TextAlign.Center)
-        Text(texto, style = GType.bodyMd, color = GColors.TextSecondary, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(4.dp))
-        if (principal) BotonPrimario(accion, onAccion, Modifier.testTag("vacio-accion"), icono = Icons.Filled.Add)
-        else BotonSecundario(accion, onAccion, Modifier.testTag("vacio-accion"), color = GColors.Primary400)
-    }
-}
+private fun VacioClubes(icono: ImageVector, titulo: String, texto: String, accion: String, principal: Boolean = true, onAccion: () -> Unit) =
+    com.gacelas.ui.components.EstadoVacioC2(
+        icono, titulo, texto, Modifier.padding(top = 16.dp),
+        accion = accion.takeIf { principal }, onAccion = onAccion.takeIf { principal },
+        secundaria = accion.takeIf { !principal }, onSecundaria = onAccion.takeIf { !principal },
+        tag = "vacio-clubes",
+    )
 
 /** Error de carga con reintento. */
 @Composable

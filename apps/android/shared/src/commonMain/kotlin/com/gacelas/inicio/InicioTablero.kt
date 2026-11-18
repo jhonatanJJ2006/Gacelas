@@ -133,6 +133,16 @@ fun InicioTablero(
     avisoPendientes: @Composable () -> Unit = {},
     /** Corredor 3D parado sobre el mapa (propuesta A); null lo oculta (pruebas). */
     corredor3D: (@Composable BoxScope.() -> Unit)? = null,
+    /** Cada bloque abre su propia vista; por defecto, lo de antes. */
+    onSemana: () -> Unit = onProgreso,
+    onRacha: () -> Unit = onProgreso,
+    onClima: (() -> Unit)? = null,
+    onSeguridad: () -> Unit = onMapaVivo,
+    /** null: no se sabe (sin servidor); false muestra el estado vacio que invita a unirse a un club. */
+    enClub: Boolean? = null,
+    onClubes: () -> Unit = onComunidad,
+    /** Nombre corto para el saludo del hero; null lo oculta. */
+    nombre: String? = null,
 ) {
     val scroll = rememberScrollState()
     val alcance = rememberCoroutineScope()
@@ -141,12 +151,31 @@ fun InicioTablero(
     fun marcar(i: Int) = Modifier.onGloballyPositioned { pos[i] = it.positionInRoot().y + scroll.value - pos[0] }
     Column(Modifier.fillMaxSize().onGloballyPositioned { pos[0] = it.positionInRoot().y }.verticalScroll(scroll).testTag("inicio-tablero")) {
         // 1. Mapa vivo protagonista con buscador, clima, campana, chips y la ruta del dia.
-        Box(Modifier.fillMaxWidth().height(452.dp).testTag("inicio-mapa")) {
+        Box(Modifier.fillMaxWidth().height(520.dp).testTag("inicio-mapa")) {
             mapa()
             Box(Modifier.fillMaxWidth().height(150.dp).background(Brush.verticalGradient(listOf(Tablero.Noche.copy(alpha = 0.92f), Color.Transparent))))
             Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(170.dp).background(Brush.verticalGradient(listOf(Color.Transparent, Tablero.Noche))))
             // Entre los controles de arriba y la tarjeta de la ruta del dia, para no taparlos.
-            if (corredor3D != null) Box(Modifier.matchParentSize().padding(top = 96.dp, bottom = 140.dp).testTag("inicio-corredor")) { corredor3D() }
+            if (corredor3D != null) Box(Modifier.matchParentSize().padding(top = 84.dp, bottom = 92.dp).testTag("inicio-corredor")) { corredor3D() }
+            // Saludo a la izquierda y dos accesos flotantes a la derecha: llenan el aire alrededor del corredor.
+            Column(
+                Modifier.align(Alignment.TopStart).statusBarsPadding().padding(start = 16.dp, top = 128.dp).width(150.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                if (nombre != null) Text("Hola, $nombre", style = GType.headlineSm, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.testTag("inicio-saludo"))
+                Text(
+                    if (semana.carreras == 0) "Hoy es un buen día para empezar la semana."
+                    else "${semana.carreras} ${if (semana.carreras == 1) "carrera" else "carreras"} esta semana",
+                    style = GType.bodySm, color = Color.White.copy(alpha = 0.72f),
+                )
+            }
+            Column(
+                Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(end = 14.dp, top = 132.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.End,
+            ) {
+                ChipFlotante(Icons.Filled.LocalFireDepartment, Color(0xFFF97316), "${racha.diaria}", if (racha.diaria == 1) "día" else "días", "Ver tu racha", onRacha, "chip-racha")
+                ChipFlotante(Icons.Filled.Map, GColors.C2Violeta, dec1(Unidades.distancia(semana.km, m)), Unidades.etiquetaDistancia(m), "Ver tu semana", onSemana, "chip-semana")
+            }
             Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 14.dp).padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Row(
@@ -159,7 +188,7 @@ fun InicioTablero(
                     }
                     if (clima != null) Row(
                         Modifier.height(48.dp).vidrioC2(RoundedCornerShape(16.dp))
-                            .clickable(role = Role.Button, onClickLabel = "Ver clima para correr") { alcance.launch { scroll.animateScrollTo(pos[1].toInt()) } }
+                            .clickable(role = Role.Button, onClickLabel = "Ver clima para correr") { onClima?.invoke() ?: alcance.launch { scroll.animateScrollTo(pos[1].toInt()) } }
                             .testTag("inicio-clima").padding(horizontal = 12.dp),
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
@@ -183,9 +212,9 @@ fun InicioTablero(
         // 2. Cuadricula de widgets.
         Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp).padding(top = 4.dp, bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             avisoPendientes()
-            WidgetSemana(semana, hoy, m, metaKm, kmPorDia, onProgreso)
+            WidgetSemana(semana, hoy, m, metaKm, kmPorDia, onSemana)
             Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                WidgetC2("Racha", Modifier.weight(1f).fillMaxHeight(), onClick = onProgreso, tag = "widget-racha", descripcion = "Ver tu progreso") {
+                WidgetC2("Racha", Modifier.weight(1f).fillMaxHeight(), onClick = onRacha, tag = "widget-racha", descripcion = "Ver tu racha") {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         Icon(Icons.Filled.LocalFireDepartment, null, tint = Color(0xFFF97316), modifier = Modifier.size(26.dp))
                         CifraTablero("${racha.diaria}", if (racha.diaria == 1) "día" else "días", tamano = 40)
@@ -200,7 +229,7 @@ fun InicioTablero(
                 }
                 val horas = clima?.horas.orEmpty()
                 if (horas.isNotEmpty()) Box(Modifier.weight(1f).fillMaxHeight().then(marcar(1))) {
-                    WidgetClima(horas, onCorrer, Modifier.fillMaxSize())
+                    WidgetClima(horas, onClima ?: onCorrer, Modifier.fillMaxSize())
                 } else if (evento != null) WidgetEvento(evento, inscrito, onEvento, Modifier.weight(1f).fillMaxHeight())
             }
             val hayRitmo = ritmoSemanas.count { it != null } >= 2
@@ -211,15 +240,37 @@ fun InicioTablero(
                 else if (!hayRitmo) Spacer(Modifier.weight(1f))
             }
             if (zona != null) Box(marcar(2)) {
-                WidgetSeguridad(zona, onMapaVivo)
+                WidgetSeguridad(zona, onSeguridad)
             }
-            if (evento == null) WidgetC2("Comunidad", Modifier.fillMaxWidth(), onClick = onComunidad, tag = "widget-comunidad", descripcion = "Abrir comunidad") {
+            if (evento == null && enClub == false) WidgetC2("Comunidad", Modifier.fillMaxWidth(), tag = "widget-comunidad") {
+                com.gacelas.ui.components.EstadoVacioC2(
+                    Icons.Filled.Groups, "Aún no estás en un club",
+                    "Únete a un grupo de Loja para salir a correr acompañado y enterarte de sus encuentros.",
+                    accion = "Buscar clubes", onAccion = onClubes, iconoAccion = Icons.Filled.Search, tag = "inicio-sin-club",
+                )
+            } else if (evento == null) WidgetC2("Comunidad", Modifier.fillMaxWidth(), onClick = onComunidad, tag = "widget-comunidad", descripcion = "Abrir comunidad") {
                 Text("Aún no hay salidas próximas. Mira lo que publica tu club.", style = GType.bodySm, color = Color.White.copy(alpha = 0.75f))
             }
         }
     }
 }
 
+
+/** Acceso flotante del hero (racha, km de la semana): icono, cifra y unidad sobre vidrio. */
+@Composable
+private fun ChipFlotante(icono: ImageVector, color: Color, valor: String, unidad: String, descripcion: String, onClick: () -> Unit, tag: String) {
+    Row(
+        Modifier.vidrioC2(RoundedCornerShape(18.dp)).clickable(role = Role.Button, onClickLabel = descripcion, onClick = onClick).testTag(tag)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Icon(icono, null, tint = color, modifier = Modifier.size(22.dp))
+        Column {
+            Text(valor, style = GType.titleMd.copy(fontWeight = FontWeight.Bold), color = Color.White, maxLines = 1)
+            Text(unidad, style = GType.labelMd.copy(fontSize = 10.sp), color = Color.White.copy(alpha = 0.65f), maxLines = 1)
+        }
+    }
+}
 
 /** Codigo WMO aproximado desde la descripcion guardada (cache antigua sin horas). */
 private fun codigoDe(descripcion: String): Int = when {

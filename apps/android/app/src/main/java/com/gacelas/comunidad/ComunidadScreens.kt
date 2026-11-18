@@ -67,22 +67,10 @@ fun FeedScreen(onEventos: () -> Unit, onEnVivo: () -> Unit = {}, onClubes: (() -
     )
 }
 
-/** Foto remota del feed (descarga y decodifica reducida, sin dependencias extra). */
+/** Foto remota del feed. */
 @Composable
-private fun FotoFeed(url: String, modifier: Modifier) {
-    val img by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, url) {
-        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-            runCatching {
-                val bytes = java.net.URL(url).readBytes()
-                val op = android.graphics.BitmapFactory.Options().apply { inSampleSize = 2 }
-                android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size, op)?.asImageBitmap()
-            }.getOrNull()
-        }
-    }
-    Box(modifier.background(com.gacelas.ui.theme.GColors.SurfaceHigh)) {
-        img?.let { androidx.compose.foundation.Image(it, "Foto de la publicación", Modifier.fillMaxSize(), contentScale = androidx.compose.ui.layout.ContentScale.Crop) }
-    }
-}
+private fun FotoFeed(url: String, modifier: Modifier) =
+    com.gacelas.ui.components.FotoRemotaC2(url, modifier, "Foto de la publicación")
 
 /** Eventos creados (de la base con servidor, o los del usuario sin el). No se muestran eventos de ejemplo. */
 @Composable

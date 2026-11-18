@@ -57,6 +57,19 @@ import org.maplibre.android.maps.MapLibreMap
 private val NARANJA = Color(0xFFC084FC)
 private val MAGENTA = Color(0xFFD6338A)
 
+/** Trazo de una ruta elegida: brillo ancho, contorno oscuro y linea de color (buscador de Inicio y modo mapa de Rutas). */
+fun trazoSeleccionado(puntos: List<LatLng>, color: Color = NARANJA): List<TrazoMapa> = listOf(
+    TrazoMapa(puntos, color, 14f, 0.18f),
+    TrazoMapa(puntos, Color(0xFF05080F), 9f),
+    TrazoMapa(puntos, color, 5f),
+)
+
+/** Pines de inicio (verde) y meta (oscuro) de una ruta. */
+fun pinesRuta(puntos: List<LatLng>): List<CirculoMapa> = listOf(
+    CirculoMapa(puntos.first(), 7f, Color(0xFF10B981), bordeDp = 2.5f),
+    CirculoMapa(puntos.last(), 7f, Color(0xFF111827), bordeDp = 2.5f),
+)
+
 /**
  * Mapa estilo Runcity (MapLibre + OpenStreetMap, funciona sin red en las zonas descargadas):
  * trazo con contorno y brillo, pines de inicio y meta, "estas aqui" con halo y controles propios.
@@ -161,17 +174,10 @@ fun MapaGacelas(
         if (puntos.size >= 2 && rutaMagenta) {
             add(TrazoMapa(puntos, MAGENTA, 16f, 0.25f))
             add(TrazoMapa(puntos, MAGENTA, 5f))
-        } else if (puntos.size >= 2) {
-            add(TrazoMapa(puntos, NARANJA, 14f, 0.18f))
-            add(TrazoMapa(puntos, Color(0xFF05080F), 9f))
-            add(TrazoMapa(puntos, NARANJA, 5f))
-        }
+        } else if (puntos.size >= 2) addAll(trazoSeleccionado(puntos))
     }
     val circulos = buildList {
-        if (puntos.size >= 2 && !seguir) {
-            add(CirculoMapa(puntos.first(), 7f, Color(0xFF10B981), bordeDp = 2.5f))
-            add(CirculoMapa(puntos.last(), 7f, Color(0xFF111827), bordeDp = 2.5f))
-        }
+        if (puntos.size >= 2 && !seguir) addAll(pinesRuta(puntos))
         if (seguir && !con3d && ultimo != null) {
             add(CirculoMapa(ultimo, 16f, NARANJA.copy(alpha = 0.18f), NARANJA.copy(alpha = 0.35f), 1f))
             add(CirculoMapa(ultimo, 6f, NARANJA, bordeDp = 2.5f))

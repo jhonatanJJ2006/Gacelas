@@ -72,6 +72,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.withStyle
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.NorthWest
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -109,7 +113,14 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
     val q by vm.consulta.collectAsState()
     val listaVm by vm.lista.collectAsState()
     // Rutas del catalogo local sin geometria: se completa con el trazo real empaquetado (TrazosRutas).
-    val lista = remember(listaVm) { listaVm.map { r -> if (r.puntos.isNotEmpty()) r else r.copy(puntos = com.gacelas.rutas.infrastructure.TrazosRutas.puntos[r.id.removePrefix("ruta-")].orEmpty()) } }
+    // Del servidor pueden llegar sin path: primero el trazo del catalogo oficial y si no el de ejemplo.
+    val lista = remember(listaVm) {
+        listaVm.map { r ->
+            if (r.puntos.isNotEmpty()) r
+            else r.copy(puntos = com.gacelas.rutas.domain.modelo.RutasLoja.todas.firstOrNull { it.id == r.id }?.puntos
+                ?: com.gacelas.rutas.infrastructure.TrazosRutas.puntos[r.id.removePrefix("ruta-")].orEmpty())
+        }
+    }
     val perfilSesion by com.gacelas.ui.sesionState()
     val remotas by (repo?.rutas ?: remember { kotlinx.coroutines.flow.MutableStateFlow(emptyList()) }).collectAsState()
     var leidas by remember { mutableStateOf(false) }
@@ -121,12 +132,12 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
     // Rutas abre en Lista; el Mapa es la vista secundaria y "atras" desde el Mapa vuelve a la Lista.
     var comoLista by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(true) }
     val cargando = repo != null && remotas == null && !leidas && q.pestana == com.gacelas.rutas.domain.modelo.PestanaRutas.Explorar
+    val pedirUbicacion = com.gacelas.ui.rememberPedirUbicacion { u -> vm.ordenarCerca(u.first, u.second) }
     val onCerca = {
-        if (q.cerca != null) vm.quitarCercania()
-        else {
-            val u = ultimaUbicacion(context)
-            if (u == null || repo == null) context.aviso("Activa la ubicación para ver rutas cercanas")
-            else vm.ordenarCerca(u.first, u.second)
+        when {
+            q.cerca != null -> vm.quitarCercania()
+            repo == null -> context.aviso("Sin conexión con el servidor no podemos ordenar por cercanía")
+            else -> pedirUbicacion()
         }
     }
     val alternarGuardada = { id: String, guardada: Boolean ->
@@ -144,6 +155,7 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
             onAlternarGuardada = alternarGuardada,
             mapaRutas = { MapaRutasAgrupadas(lista, onRuta, it) },
             onVerMapa = { comoLista = false },
+            imagen = { url, mod -> com.gacelas.ui.components.FotoRemotaC2(url, mod, "Foto de la ruta") },
         )
         return
     }
@@ -160,43 +172,50 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
     )
 }
 
-/** Mapa del tablero de Rutas: todas las rutas tenues, la elegida resaltada y controles MAPA y REPORTAR reales. */
+/**
+ * Mapa del tablero de Rutas: cada ruta con el color de su dificultad (facil verde, media ambar,
+ * dificil rojo), la elegida con brillo y pines como en el buscador de Inicio y la camara volando a
+ * ella. Controles: Centrar (pide la ubicacion con el dialogo nativo) y Norte.
+ */
 @Composable
 private fun androidx.compose.foundation.layout.BoxScope.MapaRutasTablero(elegida: com.gacelas.rutas.domain.modelo.Ruta?, otras: List<com.gacelas.rutas.domain.modelo.Ruta>, alElegir: (String) -> Unit) {
     val context = LocalContext.current
     val dens = androidx.compose.ui.platform.LocalDensity.current.density
     var mapa by remember { mutableStateOf<org.maplibre.android.maps.MapLibreMap?>(null) }
-    var vista3d by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     var rumbo by remember { mutableStateOf(0f) }
-    var reportar by remember { mutableStateOf(false) }
-    val trazo = { r: com.gacelas.rutas.domain.modelo.Ruta -> r.puntos.map { LatLng(it.first, it.second) }.ifEmpty { com.gacelas.ui.components.Mapas.trazo(r.id) } }
-    val principal = remember(elegida?.id) { elegida?.let(trazo).orEmpty() }
-    val resto = remember(otras) { otras.take(12).map(trazo).filter { it.size >= 2 } }
-    val salidas = remember(otras, elegida) { (listOfNotNull(elegida) + otras).filter { it.puntos.isNotEmpty() }.map { com.gacelas.ui.components.CirculoMapa(LatLng(it.puntos.first().first, it.puntos.first().second), 8f, GColors.C2Morado, id = it.id) } }
+    val principal = remember(elegida) { elegida?.let(::trazoRuta).orEmpty() }
+    val resto = remember(otras) { otras.map { it to trazoRuta(it) }.filter { it.second.size >= 2 } }
+    val salidas = remember(otras, elegida) {
+        (listOfNotNull(elegida) + otras).mapNotNull { r -> trazoRuta(r).firstOrNull()?.let { com.gacelas.ui.components.CirculoMapa(it, 7f, com.gacelas.rutas.colorDificultad(r.dificultad), Color.White, 1.5f, id = r.id) } }
+    }
     // Tu posicion (punto azul con halo) para saber donde estas respecto a las rutas.
-    val yo = remember { ultimaUbicacion(context)?.let { LatLng(it.first, it.second) } }
+    var yo by remember { mutableStateOf(ultimaUbicacion(context)?.let { LatLng(it.first, it.second) }) }
     val tuPunto = yo?.let { listOf(com.gacelas.ui.components.CirculoMapa(it, 18f, GColors.Info.copy(alpha = 0.25f), Color.Transparent, 0f), com.gacelas.ui.components.CirculoMapa(it, 8f, GColors.Info, Color.White, 3f)) }.orEmpty()
+    val centrar = com.gacelas.ui.rememberPedirUbicacion { u ->
+        yo = LatLng(u.first, u.second)
+        mapa?.animateCamera(org.maplibre.android.camera.CameraUpdateFactory.newLatLngZoom(LatLng(u.first, u.second), 15.0), 900)
+    }
     if (com.gacelas.ui.components.Mapas.configurado()) {
         com.gacelas.ui.components.MapaLibre(
             Modifier.fillMaxSize(),
-            trazos = resto.map { com.gacelas.ui.components.TrazoMapa(it, Color(0xFF8B8FB8), 3f, 0.7f) } +
-                (if (principal.size >= 2) listOf(com.gacelas.ui.components.TrazoMapa(principal, GColors.C2Violeta, 14f, 0.3f), com.gacelas.ui.components.TrazoMapa(principal, GColors.C2Violeta, 5f)) else emptyList()),
-            circulos = salidas + tuPunto, zoom = 13.6,
+            trazos = resto.map { (r, t) -> com.gacelas.ui.components.TrazoMapa(t, com.gacelas.rutas.colorDificultad(r.dificultad), 4f, 0.8f) } +
+                (if (principal.size >= 2) com.gacelas.ui.components.trazoSeleccionado(principal, com.gacelas.rutas.colorDificultad(elegida!!.dificultad)) else emptyList()),
+            circulos = salidas + (if (principal.size >= 2) com.gacelas.ui.components.pinesRuta(principal) else emptyList()) + tuPunto, zoom = 13.6,
             centro = principal.takeIf { it.isNotEmpty() }?.let { p -> LatLng(p.sumOf { it.latitude } / p.size, p.sumOf { it.longitude } / p.size) } ?: com.gacelas.ui.components.Mapas.CENTRO_LOJA,
             alTocarCirculo = alElegir,
             alMoverCamara = { rumbo = it.cameraPosition.bearing.toFloat() },
             alListo = { mapa = it },
         )
-        LaunchedEffect(elegida?.id, mapa) {
+        LaunchedEffect(principal, mapa) {
             val mp = mapa ?: return@LaunchedEffect
             // Encuadre en la franja libre entre la cabecera y el carrusel. Incluye tu posicion si estas cerca
             // (unos 15 km); si estas lejos de Loja, solo la ruta para no alejar el mapa.
             val cerca = yo?.takeIf { y -> principal.any { kotlin.math.abs(it.latitude - y.latitude) < 0.15 && kotlin.math.abs(it.longitude - y.longitude) < 0.15 } }
             if (principal.size >= 2) mp.animateCamera(org.maplibre.android.camera.CameraUpdateFactory.newLatLngBounds(com.gacelas.ui.components.MapaMat.limites(principal + listOfNotNull(cerca)),
-                (40 * dens).toInt(), (140 * dens).toInt(), (90 * dens).toInt(), (340 * dens).toInt()))
+                (40 * dens).toInt(), (190 * dens).toInt(), (90 * dens).toInt(), (330 * dens).toInt()), 900)
         }
     } else com.gacelas.ui.components.MapaEsquemaC2(
-        elegida?.puntos.orEmpty(), Modifier.fillMaxSize().graphicsLayer { if (vista3d) { rotationX = 30f; cameraDistance = 12f * density } },
+        elegida?.puntos.orEmpty(), Modifier.fillMaxSize(),
         otros = otras.take(8).map { it.puntos }.filter { it.size >= 2 },
         marcadores = (listOfNotNull(elegida) + otras.take(4)).mapNotNull { it.puntos.firstOrNull() },
         margenArriba = 130.dp, margenAbajo = 330.dp,
@@ -207,25 +226,22 @@ private fun androidx.compose.foundation.layout.BoxScope.MapaRutasTablero(elegida
         verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         com.gacelas.correr.GrupoControlesC4("Mapa") {
-            com.gacelas.correr.ControlEtiquetadoC4("Centrar", "Centrar el mapa en tu posición", {
-                val u = ultimaUbicacion(context)
-                val mp = mapa
-                if (u == null) context.aviso("Activa la ubicación para centrar el mapa")
-                else mp?.animateCamera(org.maplibre.android.camera.CameraUpdateFactory.newLatLngZoom(LatLng(u.first, u.second), 15.0))
-            }, "boton-recentrar") { Icon(Icons.Filled.MyLocation, null, tint = Color.White, modifier = Modifier.size(20.dp)) }
+            com.gacelas.correr.ControlEtiquetadoC4("Centrar", "Centrar el mapa en tu posición", centrar, "boton-recentrar") {
+                Icon(Icons.Filled.MyLocation, null, tint = Color.White, modifier = Modifier.size(20.dp))
+            }
             com.gacelas.correr.ControlEtiquetadoC4("Norte", "Orientar el mapa al norte", {
                 mapa?.let { mp -> mp.animateCamera(org.maplibre.android.camera.CameraUpdateFactory.newCameraPosition(org.maplibre.android.camera.CameraPosition.Builder(mp.cameraPosition).bearing(0.0).build())) }
                 rumbo = 0f
             }, "boton-brujula") { Icon(Icons.Filled.Navigation, null, tint = Color.White, modifier = Modifier.size(20.dp).graphicsLayer { rotationZ = -rumbo }) }
-            com.gacelas.correr.SelectorVistaC4(vista3d) { v ->
-                vista3d = v
-                mapa?.let { mp -> mp.animateCamera(org.maplibre.android.camera.CameraUpdateFactory.newCameraPosition(org.maplibre.android.camera.CameraPosition.Builder(mp.cameraPosition).tilt(if (v) 55.0 else 0.0).build())) }
-            }
         }
-        com.gacelas.ui.components.BotonReportarMapa({ reportar = true })
     }
-    if (reportar) com.gacelas.seguridad.ui.HojaReportarIncidente(ultimaUbicacion(context), onCerrar = { reportar = false })
 }
+
+/** Trazo de una ruta: el suyo, el del catalogo oficial o el de ejemplo empaquetado (las del servidor pueden llegar sin path). */
+private fun trazoRuta(r: com.gacelas.rutas.domain.modelo.Ruta): List<LatLng> =
+    r.puntos.ifEmpty { com.gacelas.rutas.domain.modelo.RutasLoja.todas.firstOrNull { it.id == r.id }?.puntos.orEmpty() }
+        .map { LatLng(it.first, it.second) }
+        .ifEmpty { com.gacelas.ui.components.Mapas.trazo(r.id) }
 
 @Composable
 fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
@@ -243,6 +259,19 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
     val trazoSeleccion = todas.firstOrNull { it.id == seleccion }?.trazo.orEmpty().map { org.maplibre.android.geometry.LatLng(it.first, it.second) }
     val scope = rememberCoroutineScope()
     val actual = todas.firstOrNull { it.id == seleccion }
+    // Sugerencias al escribir: busquedas recientes, nombres de rutas y etiquetas.
+    var recientes by remember { mutableStateOf(busquedasRecientes(context)) }
+    var escribiendo by remember { mutableStateOf(false) }
+    val candidatos = remember(todas) { todas.map { it.nombre } + com.gacelas.rutas.domain.modelo.ETIQUETAS_RUTA.values }
+    val sugerencias = remember(consulta, candidatos, recientes) { com.gacelas.rutas.domain.reglas.SugerenciasBusqueda.sugerir(consulta, candidatos, recientes) }
+    val foco = androidx.compose.ui.platform.LocalFocusManager.current
+    val elegir = { texto: String ->
+        consulta = texto
+        todas.firstOrNull { it.nombre == texto }?.let { seleccion = it.id }
+        recientes = guardarBusqueda(context, texto)
+        escribiendo = false
+        foco.clearFocus()
+    }
     Box(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         MapaGacelas(trazoSeleccion, Modifier.fillMaxSize(), zoom = 14f) { MapaPlaceholder(rutaPrincipal = seleccion == "primary") }
         Column(Modifier.statusBarsPadding().padding(12.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -256,13 +285,14 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
                         Icon(Icons.Filled.MyLocation, null, tint = GColors.Primary500, modifier = Modifier.size(16.dp))
                         Text("  Mi ubicación GPS", style = GType.bodyMd, color = GColors.TextPrimary)
                     }
-                    CampoTexto("Destino", consulta, { consulta = it }, "¿A dónde quieres correr?", trailing = {
+                    Box(Modifier.onFocusChanged { if (it.hasFocus) escribiendo = true }) { CampoTexto("Destino", consulta, { consulta = it; escribiendo = true }, "¿A dónde quieres correr?", trailing = {
                         if (consulta.isNotEmpty()) IconButton(onClick = { consulta = "" }) { Icon(Icons.Filled.Close, "Borrar destino", tint = GColors.TextSecondary) }
                         else Icon(Icons.Filled.Search, null, tint = GColors.TextSecondary)
-                    })
+                    }) }
                 }
             }
-            androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (escribiendo && sugerencias.isNotEmpty()) ListaSugerencias(sugerencias, elegir) { consulta = it }
+            else androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(todas.take(4).size) { i ->
                     val r = todas[i]
                     com.gacelas.ui.components.Pastilla(r.nombre, consulta == r.nombre, { consulta = r.nombre; seleccion = r.id })
@@ -284,23 +314,9 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
             }
             if (sugeridas.isEmpty()) Text("Sin rutas para \"$consulta\". Prueba con Jipiro o Universitaria.", style = GType.bodyMd, color = GColors.TextSecondary)
             androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(sugeridas.size) { i ->
+                items(sugeridas.size, key = { sugeridas[it].id }) { i ->
                     val r = sugeridas[i]
-                    val activa = seleccion == r.id
-                    val etiqueta = etiquetaOpcion(r, sugeridas)
-                    Column(
-                        Modifier.width(170.dp).clip(RoundedCornerShape(16.dp)).background(if (activa) GColors.Primary.copy(alpha = 0.12f) else Color(0xFF141C2E))
-                            .border(2.dp, if (activa) GColors.Primary else Color(0xFF1F2B45), RoundedCornerShape(16.dp)).clickable { seleccion = r.id }.padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        etiqueta?.let { Text(it.uppercase(), style = GType.labelMd, color = if (activa) GColors.Primary500 else GColors.Secondary500) }
-                        Text(r.nombre, style = GType.labelLg, color = GColors.TextPrimary, maxLines = 1)
-                        Text("${"%.1f".format(r.distanciaKm)} km · ${r.minutos} min", style = GType.bodySm, color = GColors.TextSecondary)
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.AutoMirrored.Filled.TrendingUp, null, tint = GColors.TextSecondary, modifier = Modifier.size(14.dp))
-                            Text(" ${r.elevacionM} m", style = GType.bodySm, color = GColors.TextSecondary)
-                        }
-                    }
+                    TarjetaOpcionRuta(r, etiquetaOpcion(r, sugeridas), seleccion == r.id) { seleccion = r.id; recientes = guardarBusqueda(context, r.nombre) }
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -325,6 +341,73 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
             }
         }
     }
+}
+
+/** Opcion del buscador: todas iguales de ancho y alto; la elegida se ilumina y crece un poco. */
+@Composable
+private fun TarjetaOpcionRuta(r: RutaNavegable, etiqueta: String?, activa: Boolean, onElegir: () -> Unit) {
+    val forma = RoundedCornerShape(16.dp)
+    val fondo by androidx.compose.animation.animateColorAsState(if (activa) GColors.Primary.copy(alpha = 0.16f) else Color(0xFF141C2E), com.gacelas.ui.movimiento.Mov.medio(), label = "fondo-opcion")
+    val borde by androidx.compose.animation.animateColorAsState(if (activa) GColors.Primary500 else Color(0xFF1F2B45), com.gacelas.ui.movimiento.Mov.medio(), label = "borde-opcion")
+    val escala by androidx.compose.animation.core.animateFloatAsState(if (activa) 1.03f else 1f, com.gacelas.ui.movimiento.Mov.medio(), label = "escala-opcion")
+    Column(
+        Modifier.width(200.dp).height(112.dp).graphicsLayer { scaleX = escala; scaleY = escala }.clip(forma).background(fondo)
+            .border(2.dp, borde, forma).clickable(onClickLabel = "Elegir ruta", onClick = onElegir).padding(12.dp).testTag("opcion-ruta-${r.id}"),
+        verticalArrangement = Arrangement.SpaceBetween,
+    ) {
+        // La fila de etiqueta siempre ocupa su alto para que todas las tarjetas se lean igual.
+        Text((etiqueta ?: "Ruta").uppercase(), style = GType.labelMd, color = if (activa) GColors.Primary500 else if (etiqueta != null) GColors.Secondary500 else GColors.C2Muted, maxLines = 1)
+        Text(r.nombre, style = GType.labelLg, color = GColors.TextPrimary, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("${"%.1f".format(r.distanciaKm).replace('.', ',')} km", style = GType.bodySm, color = GColors.TextSecondary)
+            Text("${r.minutos} min", style = GType.bodySm, color = GColors.TextSecondary)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.AutoMirrored.Filled.TrendingUp, null, tint = GColors.TextSecondary, modifier = Modifier.size(14.dp))
+                Text(" ${r.elevacionM} m", style = GType.bodySm, color = GColors.TextSecondary)
+            }
+        }
+    }
+}
+
+/** Lista de sugerencias bajo el campo: reloj para recientes, lupa para el resto, coincidencia en negrita y flecha para completar. */
+@Composable
+private fun ListaSugerencias(lista: List<com.gacelas.rutas.domain.reglas.Sugerencia>, onElegir: (String) -> Unit, onCompletar: (String) -> Unit) {
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color(0xFF0F1626)).padding(vertical = 6.dp).testTag("sugerencias-busqueda"),
+    ) {
+        lista.forEach { sg ->
+            Row(
+                Modifier.fillMaxWidth().clickable { onElegir(sg.texto) }.padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp).testTag("sugerencia"),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                Icon(if (sg.reciente) Icons.Filled.History else Icons.Filled.Search, null, tint = GColors.C2Muted, modifier = Modifier.size(20.dp))
+                Text(
+                    androidx.compose.ui.text.buildAnnotatedString {
+                        val fin = (sg.desde + sg.largo).coerceAtMost(sg.texto.length)
+                        append(sg.texto.substring(0, sg.desde))
+                        withStyle(androidx.compose.ui.text.SpanStyle(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = GColors.TextPrimary)) { append(sg.texto.substring(sg.desde, fin)) }
+                        append(sg.texto.substring(fin))
+                    },
+                    style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f), maxLines = 1,
+                )
+                IconButton(onClick = { onCompletar(sg.texto) }) {
+                    Icon(Icons.Filled.NorthWest, "Completar con ${sg.texto}", tint = GColors.C2Muted, modifier = Modifier.size(18.dp))
+                }
+            }
+        }
+    }
+}
+
+private const val PREFS_BUSQUEDA = "busquedas_rutas"
+
+/** Ultimas 8 busquedas (solo en este telefono). */
+private fun busquedasRecientes(context: android.content.Context): List<String> =
+    context.getSharedPreferences(PREFS_BUSQUEDA, android.content.Context.MODE_PRIVATE).getString("lista", null)?.split('\n')?.filter { it.isNotBlank() }.orEmpty()
+
+private fun guardarBusqueda(context: android.content.Context, texto: String): List<String> {
+    val lista = (listOf(texto.trim()) + busquedasRecientes(context).filterNot { it.equals(texto.trim(), ignoreCase = true) }).filter { it.isNotBlank() }.take(8)
+    context.getSharedPreferences(PREFS_BUSQUEDA, android.content.Context.MODE_PRIVATE).edit().putString("lista", lista.joinToString("\n")).apply()
+    return lista
 }
 
 /** Etiqueta de la alternativa: la mas corta es Optima, la de menos desnivel Plano y la de mas, Trail (igual que la web). */

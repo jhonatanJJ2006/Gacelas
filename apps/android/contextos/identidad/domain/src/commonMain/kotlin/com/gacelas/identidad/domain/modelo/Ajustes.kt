@@ -10,8 +10,12 @@ data class ConfigIntervalos(val trabajoSeg: Int = 60, val descansoSeg: Int = 30,
 
 @Serializable
 data class ConfigAvatar(val equipacion: Int = 0, val estilo: String = "Dinámico", val lentes: Boolean = false, val reloj: Boolean = true, val audifonos: Boolean = true,
-    /** Rasgos guardados; el modelo GLB actual tiene una sola textura y aun no los pinta. */
+    /**
+     * Colores por zona del corredor (Android los pinta sobre la textura con una mascara; null = original).
+     * complexion, peinado y los accesorios se guardan, pero el modelo no tiene geometria para ellos.
+     */
     val complexion: String? = null, val tonoPiel: Int? = null, val peinado: String? = null, val colorShorts: Int? = null,
+    val colorZapatillas: Int? = null,
 )
 
 /** Preferencias del usuario guardadas en el dispositivo. */

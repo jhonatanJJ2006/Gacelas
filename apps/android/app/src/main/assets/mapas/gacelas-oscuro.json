@@ -6,6 +6,14 @@
       "type": "vector",
       "url": "https://tiles.openfreemap.org/planet",
       "attribution": "© OpenStreetMap contributors, OpenFreeMap"
+    },
+    "relieve": {
+      "type": "raster-dem",
+      "tiles": ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+      "tileSize": 256,
+      "encoding": "terrarium",
+      "maxzoom": 15,
+      "attribution": "Mapzen, AWS Terrain Tiles"
     }
   },
   "glyphs": "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
@@ -57,14 +65,13 @@
       }
     },
     {
-      "id": "edificios",
-      "type": "fill",
-      "source": "openmaptiles",
-      "source-layer": "building",
-      "minzoom": 15,
+      "id": "relieve",
+      "type": "hillshade",
+      "source": "relieve",
       "paint": {
-        "fill-color": "#151f33",
-        "fill-opacity": 0.8
+        "hillshade-shadow-color": "#05080f",
+        "hillshade-highlight-color": "#2a3550",
+        "hillshade-exaggeration": 0.45
       }
     },
     {
@@ -142,6 +149,19 @@
       "paint": {
         "line-color": "#2a3446",
         "line-width": ["interpolate", ["exponential", 1.6], ["zoom"], 10, 1.5, 20, 32]
+      }
+    },
+    {
+      "id": "edificios",
+      "type": "fill-extrusion",
+      "source": "openmaptiles",
+      "source-layer": "building",
+      "minzoom": 14,
+      "paint": {
+        "fill-extrusion-color": "#1f2a44",
+        "fill-extrusion-height": ["coalesce", ["get", "render_height"], 6],
+        "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
+        "fill-extrusion-opacity": 0.85
       }
     },
     {
