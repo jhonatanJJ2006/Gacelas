@@ -83,7 +83,11 @@ class SupabaseExplorarRepository(
             val lista = filas.map { rutaDesdeFila(it, yo) }
             val autores = lista.map { it.autorId }.filter { it != "gacelas" }.distinct()
             val nombres = autores.associateWith { a -> runCatching { backend.select("profiles", mapOf("id" to a)).firstOrNull()?.let { it.texto("full_name") ?: it.texto("username") } }.getOrNull() }
-            val conNombre = lista.map { it.copy(autorNombre = nombres[it.autorId]) }
+            // Una sola consulta para las fotos de todas las rutas (las tarjetas de la lista las muestran).
+            val fotos = runCatching { backend.select("route_photos", emptyMap(), "created_at", descendente = true) }.getOrDefault(emptyList())
+                .mapNotNull { f -> f.texto("route_id")?.let { id -> f.texto("path")?.let { id to urlFoto(it) } } }
+                .groupBy({ it.first }, { it.second })
+            val conNombre = lista.map { it.copy(autorNombre = nombres[it.autorId], fotos = fotos[it.id].orEmpty()) }
             offline?.guardarDelServidor(conNombre)
             _rutas.value = (offline?.rutasAhora() ?: conNombre).ifEmpty { null }
         }.onFailure {
@@ -148,8 +152,11 @@ class SupabaseExplorarRepository(
         return quedan
     }
 
+    /** Las fotos de demostracion (047) son https; las subidas por usuarios viven en el bucket. */
+    private fun urlFoto(path: String) = if (path.startsWith("http")) path else backend.urlPublica("route-photos", path)
+
     override suspend fun fotos(id: String): List<String> = runCatching {
-        backend.select("route_photos", mapOf("route_id" to id), "created_at", descendente = true).mapNotNull { it.texto("path") }.map { backend.urlPublica("route-photos", it) }
+        backend.select("route_photos", mapOf("route_id" to id), "created_at", descendente = true).mapNotNull { it.texto("path") }.map(::urlFoto)
     }.getOrDefault(emptyList())
 
     override suspend fun subirFoto(id: String, bytes: ByteArray, tipo: String) {

@@ -28,6 +28,8 @@ data class Ruta(
     val superficie: String? = null,
     /** Fuente y licencia del trazado. */
     val fuente: String? = null,
+    /** URLs de fotos de la ruta (route_photos), mas recientes primero. */
+    val fotos: List<String> = emptyList(),
 )
 
 /** Categorias del catalogo (routes.category). */

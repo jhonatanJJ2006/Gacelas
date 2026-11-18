@@ -6,6 +6,14 @@
       "type": "vector",
       "url": "https://tiles.openfreemap.org/planet",
       "attribution": "© OpenStreetMap contributors, OpenFreeMap"
+    },
+    "relieve": {
+      "type": "raster-dem",
+      "tiles": ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+      "tileSize": 256,
+      "encoding": "terrarium",
+      "maxzoom": 15,
+      "attribution": "Mapzen, AWS Terrain Tiles"
     }
   },
   "glyphs": "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
@@ -57,14 +65,13 @@
       }
     },
     {
-      "id": "edificios",
-      "type": "fill",
-      "source": "openmaptiles",
-      "source-layer": "building",
-      "minzoom": 15,
+      "id": "relieve",
+      "type": "hillshade",
+      "source": "relieve",
       "paint": {
-        "fill-color": "#e2e5ea",
-        "fill-opacity": 0.8
+        "hillshade-shadow-color": "#9aa3b2",
+        "hillshade-highlight-color": "#ffffff",
+        "hillshade-exaggeration": 0.45
       }
     },
     {
@@ -94,17 +101,7 @@
       "type": "line",
       "source": "openmaptiles",
       "source-layer": "transportation",
-      "filter": [
-        "in",
-        "class",
-        "minor",
-        "service",
-        "tertiary",
-        "secondary",
-        "primary",
-        "trunk",
-        "motorway"
-      ],
+      "filter": ["in", "class", "minor", "service", "tertiary", "secondary", "primary", "trunk", "motorway"],
       "layout": {
         "line-cap": "round",
         "line-join": "round"
@@ -142,6 +139,19 @@
       "paint": {
         "line-color": "#e5e7eb",
         "line-width": ["interpolate", ["exponential", 1.6], ["zoom"], 10, 1.5, 20, 32]
+      }
+    },
+    {
+      "id": "edificios",
+      "type": "fill-extrusion",
+      "source": "openmaptiles",
+      "source-layer": "building",
+      "minzoom": 14,
+      "paint": {
+        "fill-extrusion-color": "#d9dde5",
+        "fill-extrusion-height": ["coalesce", ["get", "render_height"], 6],
+        "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
+        "fill-extrusion-opacity": 0.85
       }
     },
     {
