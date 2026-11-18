@@ -120,3 +120,20 @@ No hizo falta una migración nueva:
 - Rutas abre en Lista. El Mapa muestra tu posición (punto azul) y la incluye en el encuadre si estás cerca de la ruta; "atrás" desde el Mapa vuelve a la Lista.
 - Rutas en Lista reserva la barra de estado y deja aire arriba; la columna de controles del Mapa ya no choca con los chips.
 - Rótulos de tarjetas con mayúscula inicial a 12 sp, coma decimal en Rutas, barra del Resumen sin solaparse y "Sin tiempo" en Detalle de ruta.
+
+## Android 0.9.20: cada bloque con su vista, estados vacíos y avatar editable
+
+- Inicio: corredor 3D más grande con saludo y accesos a la racha y a la semana. "Esta semana", Clima (7 días atrás y 7 adelante,
+  con rutas recomendadas según el clima) y Seguridad en tu zona (mapa de incidentes) tienen pantalla propia. La racha abre
+  una hoja propia con la semana en llamas, hitos y mapa de calor. El buscador sugiere mientras escribes y sus tarjetas miden igual.
+- Rutas: la lista muestra fotos de cada ruta en una galería y el detalle abre con fotos y mapa. Lista paginada de 20 en 20 sin
+  quedar bajo la barra inferior. Estados vacíos en Mis rutas (con Crear ruta) y Guardadas. El modo Mapa pinta cada ruta con el
+  color de su dificultad (fácil verde, media ámbar, difícil roja) y ya no tiene 3D/2D ni Reportar.
+- Ubicación: Cerca de mí, Centrar, Seguridad y Correr piden permiso y abren el diálogo nativo para activar el GPS.
+- Comunidad: publicaciones con galería (ruta y fotos), estados vacíos en Siguiendo (con corredores sugeridos), feed y clubes,
+  y comentarios en una hoja inferior al estilo de Instagram.
+- Correr: vuelve "¿Listo para correr?" antes del mapa de modos y la cuenta regresiva tiene anillo, animación y vibración.
+  El mapa muestra edificios en 3D y relieve sombreado.
+- Perfil: 20 logros y 12 medallas, cada uno con su detalle, progreso y cómo conseguirlo, y pantallas propias. El avatar 3D
+  cambia color de camiseta, piel, shorts y zapatillas (máscara de zonas en `tools/avatar`) y el estilo cambia la animación.
+- Supabase: migraciones 047 (fotos de demostración de rutas y publicaciones) y 048 (códigos de logros nuevos).
