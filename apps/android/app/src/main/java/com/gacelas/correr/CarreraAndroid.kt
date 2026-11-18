@@ -61,7 +61,7 @@ fun CarreraEnCursoC4(onCerrar: () -> Unit, onFinalizar: () -> Unit) {
             // Sin mapa configurado se ve el trazo, pero con los mismos controles al costado.
             else androidx.compose.foundation.layout.Box(Modifier.fillMaxSize()) {
                 com.gacelas.ui.components.MapaEsquemaC2(estado.puntos.map { it.lat to it.lng }, Modifier.fillMaxSize(), yo = estado.puntos.lastOrNull()?.let { it.lat to it.lng }, grosor = 5.dp,
-                    margenArriba = 70.dp, margenAbajo = 400.dp)
+                    margenArriba = 70.dp, margenAbajo = 230.dp)
                 controles({}, {}, 0f, true)
             }
         },

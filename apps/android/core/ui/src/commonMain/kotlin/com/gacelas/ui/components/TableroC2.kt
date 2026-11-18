@@ -55,6 +55,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -163,16 +168,46 @@ fun ChipVidrio(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier
     }
 }
 
-/** Hoja inferior del tablero (pegada al borde, con tirador y respetando la barra de gestos). */
+/**
+ * Hoja inferior del tablero (pegada al borde, con tirador y respetando la barra de gestos). Con
+ * [expandida] el tirador es interactivo: tocarlo alterna y arrastrarlo arriba/abajo despliega/pliega.
+ */
 @Composable
-fun HojaTablero(modifier: Modifier = Modifier, tag: String? = null, content: @Composable ColumnScope.() -> Unit) {
+fun HojaTablero(
+    modifier: Modifier = Modifier, tag: String? = null, espacio: Dp = 10.dp,
+    expandida: Boolean? = null, onExpandida: (Boolean) -> Unit = {},
+    content: @Composable ColumnScope.() -> Unit,
+) {
     Column(
         modifier.fillMaxWidth().clip(Tablero.FormaHoja).background(Tablero.FondoHoja).border(1.dp, Color(0x40C084FC), Tablero.FormaHoja)
-            .navigationBarsPadding().then(if (tag != null) Modifier.testTag(tag) else Modifier).padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+            .navigationBarsPadding().then(if (tag != null) Modifier.testTag(tag) else Modifier)
+            .padding(start = 16.dp, end = 16.dp, top = if (expandida != null) 0.dp else 8.dp, bottom = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(espacio),
     ) {
-        Box(Modifier.align(Alignment.CenterHorizontally).width(40.dp).height(4.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.25f)))
+        if (expandida == null) Box(Modifier.align(Alignment.CenterHorizontally).width(40.dp).height(4.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.25f)))
+        else TiradorTablero(expandida, onExpandida)
         content()
+    }
+}
+
+@Composable
+private fun TiradorTablero(expandida: Boolean, onExpandida: (Boolean) -> Unit) {
+    val actual = rememberUpdatedState(expandida)
+    val cambiar = rememberUpdatedState(onExpandida)
+    Box(
+        Modifier.fillMaxWidth().height(22.dp)
+            .pointerInput(Unit) {
+                var total = 0f
+                val umbral = 16.dp.toPx()
+                detectVerticalDragGestures(onDragStart = { total = 0f }, onDragEnd = {
+                    if (total < -umbral && !actual.value) cambiar.value(true) else if (total > umbral && actual.value) cambiar.value(false)
+                }) { _, d -> total += d }
+            }
+            .clickable(remember { MutableInteractionSource() }, null, onClickLabel = if (expandida) "Mostrar menos datos" else "Mostrar más datos") { onExpandida(!expandida) }
+            .testTag("tirador-tablero"),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(Modifier.width(40.dp).height(4.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.25f)))
     }
 }
 
