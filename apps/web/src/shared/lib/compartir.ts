@@ -303,7 +303,7 @@ function trazo(
   punto(pts[pts.length - 1], '#EF4444')
 }
 
-function redondeado(
+export function redondeado(
   g: CanvasRenderingContext2D,
   x: number,
   y: number,

@@ -80,8 +80,6 @@ describe('plantillas', () => {
     expect(r.ancho).toBe(1600)
     expect(r.alto).toBeCloseTo((1600 * 1920) / 1080)
     expect(COLOCACION_INICIAL.traza.escala).toBeGreaterThan(0)
-    expect(Object.values(TAMANO_PLANTILLA)).toEqual(
-      Array(4).fill({ ancho: 1080, alto: 1920 })
-    )
+    expect(Object.values(TAMANO_PLANTILLA)).toEqual(Array(4).fill({ ancho: 1080, alto: 1920 }))
   })
 })

@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { copiarImagen as copiarImagenPortapapeles, compartirNativo, type DatosCompartir } from '../lib/compartir'
+import {
+  copiarImagen as copiarImagenPortapapeles,
+  compartirNativo,
+  type DatosCompartir,
+} from '../lib/compartir'
 import {
   COLOCACION_INICIAL,
   dibujarComposicion,

@@ -5,9 +5,10 @@ import {
   HANDLE_RUNCITY,
   normalizarHandle,
   proyectar,
+  redondeado,
   type DatosCompartir,
 } from './compartir'
-export { normalizarHandle }
+export { HANDLE_RUNCITY, normalizarHandle }
 
 /** Plantillas transparentes 9:16 para poner encima de una foto propia. */
 export type Plantilla = 'estadisticas' | 'traza' | 'fecha' | 'logro'
@@ -177,8 +178,14 @@ export function dibujarPlantilla(
   const sx = W / 1080
   const sy = H / 1920
   g.clearRect(0, 0, W, H)
-  const t = (s: string, x: number, y: number, px: number, peso = 500, alinear: CanvasTextAlign = 'left') =>
-    texto(g, s, x * sx, y * sy, px * sx, peso, alinear)
+  const t = (
+    s: string,
+    x: number,
+    y: number,
+    px: number,
+    peso = 500,
+    alinear: CanvasTextAlign = 'left'
+  ) => texto(g, s, x * sx, y * sy, px * sx, peso, alinear)
   const pie = () => {
     marca(g, W / 2, 1770 * sy, 38 * sx, 'center')
     handle(g, normalizarHandle(h), W / 2, 1840 * sy, 30 * sx, 'center')
@@ -211,7 +218,11 @@ export function dibujarPlantilla(
   } else if (p === 'fecha') {
     const date = new Date(d.fechaMs ?? 0)
     const dia = new Intl.DateTimeFormat('es-EC', { weekday: 'long' }).format(date)
-    const fecha = new Intl.DateTimeFormat('es-EC', { day: 'numeric', month: 'long', year: 'numeric' }).format(date)
+    const fecha = new Intl.DateTimeFormat('es-EC', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(date)
     t(dia.charAt(0).toUpperCase() + dia.slice(1), 72, 720, 76, 700)
     t(fecha, 72, 900, 54, 400)
     t(`${decimal(d.distanciaKm, 2)} km`, 72, 1160, 64, 700)
@@ -232,7 +243,12 @@ const aBlob = (cv: HTMLCanvasElement) =>
     cv.toBlob((b) => (b ? ok(b) : mal(new Error('No se pudo generar la imagen'))), 'image/png')
   )
 
-export function lienzoPlantilla(d: DatosCompartir, p: Plantilla, h: string, f: FormatoFoto = 'historia') {
+export function lienzoPlantilla(
+  d: DatosCompartir,
+  p: Plantilla,
+  h: string,
+  f: FormatoFoto = 'historia'
+) {
   const { ancho, alto } = FORMATOS_FOTO[f]
   const cv = document.createElement('canvas')
   cv.width = ancho
