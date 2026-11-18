@@ -37,7 +37,7 @@ export function ResumenPostCarrera() {
     setDatosCompartir({
       tipo: 'carrera',
       titulo: titulo.trim() || tituloPorHora(e.inicioMs),
-      // Privacidad: sin los primeros/ultimos 250 m para no revelar la casa.
+      // Privacidad: oculta los puntos dentro de 300 m de la salida y llegada.
       puntos: recortarExtremos(e.puntos),
       distanciaKm: e.distanciaKm,
       segundos: e.segundos,
