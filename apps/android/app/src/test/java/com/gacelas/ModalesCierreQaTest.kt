@@ -54,6 +54,8 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.swipeDown
+import org.junit.Assert.assertEquals
 
 /** QA total: cada modal C2 (dialogo y hoja) cierra por boton, toque fuera y boton atras. */
 @RunWith(RobolectricTestRunner::class)
@@ -143,6 +145,27 @@ class ModalesCierreQaTest {
         compose.onNodeWithTag("hoja-c2-ventana", useUnmergedTree = true).performTouchInput { click(Offset(10f, 10f)) }; cerrado()
         compose.runOnIdle { abierto = true }
         compose.runOnIdle { compose.activity.onBackPressedDispatcher.onBackPressed() }; cerrado()
+    }
+
+    private fun arrastrarManija() =
+        compose.onNodeWithTag("hoja-c2-manija", useUnmergedTree = true).performTouchInput { swipeDown(startY = centerY, endY = centerY + 1500f) }
+
+    @Test fun hojaCierraArrastrandoLaManija() {
+        montar { c -> com.gacelas.ui.components.HojaC2(onCerrar = c) { Text("Contenido de la hoja") } }
+        arrastrarManija(); cerrado()
+    }
+
+    @Test fun dialogoCierraArrastrandoLaManija() {
+        montar { dialogo(it) }
+        arrastrarManija(); cerrado()
+    }
+
+    @Test fun hojaObligatoriaVuelveASuSitioTrasArrastrar() {
+        montar { _ -> com.gacelas.ui.components.HojaC2(onCerrar = {}) { Text("Contenido de la hoja") } }
+        val antes = compose.onNodeWithTag("hoja-c2", useUnmergedTree = true).getBoundsInRoot().top
+        arrastrarManija(); compose.waitForIdle()
+        assertTrue(abierto)
+        assertEquals(antes, compose.onNodeWithTag("hoja-c2", useUnmergedTree = true).getBoundsInRoot().top)
     }
 
     @OptIn(ExperimentalRoborazziApi::class)

@@ -41,6 +41,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.window.Dialog
+import androidx.compose.animation.core.animate
+import androidx.compose.foundation.gestures.DraggableState
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
 
 /**
  * Anfitrion de las hojas y modales C2 dentro de la MISMA ventana de la actividad.
@@ -97,12 +114,63 @@ fun AnfitrionHojasC2(hojas: HojasC2) {
                     val p = progreso.value
                     alpha = (p * 1.6f).coerceAtMost(1f)
                     translationY = (1f - p) * desplazamiento
-                }) { capa.contenido() }
+                }) { CompositionLocalProvider(LocalSaliendoC2 provides capa.saliendo) { capa.contenido() } }
                 if (saliendo) Box(Modifier.fillMaxSize().pointerInput(Unit) {
                     awaitPointerEventScope { while (true) awaitPointerEvent().changes.forEach { it.consume() } }
                 })
             }
         }
+    }
+}
+
+/** Si la capa de la hoja ya esta saliendo (la cerro su dueno); null fuera del anfitrion. */
+internal val LocalSaliendoC2 = staticCompositionLocalOf<State<Boolean>?> { null }
+
+/**
+ * Arrastre de la manija de una hoja C2: la hoja sigue al dedo hacia abajo y, al soltar, se cierra si
+ * paso del 25 % de su alto o se lanzo rapido. Si su dueno no la cierra (modales obligatorios), vuelve.
+ */
+class ArrastreHojaC2 internal constructor(private val cerrar: State<() -> Unit>, private val saliendo: State<Boolean>?) {
+    internal var y by mutableFloatStateOf(0f)
+    internal var alto = 0
+    internal val estado = DraggableState { d -> y = (y + d).coerceAtLeast(0f) }
+
+    internal suspend fun soltar(velocidad: Float) {
+        if (y > alto * 0.25f || velocidad > 1500f) {
+            cerrar.value()
+            // La capa se marca como saliendo en la siguiente composicion; si sale, se queda donde esta.
+            repeat(3) { withFrameNanos { } }
+            if (saliendo?.value == true) return
+        }
+        animate(y, 0f) { v, _ -> y = v }
+    }
+}
+
+@Composable
+internal fun rememberArrastreHojaC2(onCerrar: () -> Unit): ArrastreHojaC2 {
+    val cerrar = rememberUpdatedState(onCerrar)
+    val saliendo = LocalSaliendoC2.current
+    return remember { ArrastreHojaC2(cerrar, saliendo) }
+}
+
+/** Para el contenedor de la hoja: mide su alto y la desplaza con el dedo. */
+internal fun Modifier.desplazadaPor(a: ArrastreHojaC2) =
+    onSizeChanged { a.alto = it.height }.offset { IntOffset(0, a.y.roundToInt()) }
+
+/**
+ * Manija C2 (dibujo de 40x4) con toda la franja superior como zona de arrastre. Solo la manija arrastra,
+ * asi el scroll del contenido no compite con el gesto. Con lector de pantalla, la accion es cerrar.
+ */
+@Composable
+internal fun ManijaHojaC2(a: ArrastreHojaC2, onCerrar: () -> Unit, alto: Dp, modifier: Modifier = Modifier) {
+    Box(
+        modifier.fillMaxWidth().height(alto)
+            .draggable(a.estado, Orientation.Vertical, onDragStopped = { v -> a.soltar(v) })
+            .semantics { contentDescription = "Cerrar"; onClick("Cerrar") { onCerrar(); true } }
+            .testTag("hoja-c2-manija"),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(Modifier.width(40.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(alpha = 0.25f)))
     }
 }
 
@@ -149,6 +217,7 @@ fun HojaC2(
     contenido: @Composable () -> Unit,
 ) {
     CapaHojaC2(onCerrar) {
+        val arrastre = rememberArrastreHojaC2(onCerrar)
         BoxWithConstraints(
             Modifier.fillMaxSize().clickable(remember { MutableInteractionSource() }, null, onClick = onCerrar)
                 .statusBarsPadding().testTag("hoja-c2-ventana"),
@@ -156,14 +225,12 @@ fun HojaC2(
         ) {
             val altoMax = maxHeight - 24.dp
             Column(
-                modifier.fillMaxWidth().heightIn(max = altoMax)
+                modifier.desplazadaPor(arrastre).fillMaxWidth().heightIn(max = altoMax)
                     .clip(Tablero.FormaHoja).then(if (fondo == GColors.C2Bg) Modifier.background(Tablero.FondoHoja) else Modifier.background(fondo))
                     .border(if (borde != null) 2.dp else 1.dp, borde ?: Color(0x40C084FC), Tablero.FormaHoja)
                     .clickable(remember { MutableInteractionSource() }, null) {}.testTag("hoja-c2"),
             ) {
-                Box(Modifier.fillMaxWidth().padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
-                    Box(Modifier.width(40.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(alpha = 0.25f)))
-                }
+                ManijaHojaC2(arrastre, onCerrar, alto = 32.dp)
                 contenido()
             }
         }
