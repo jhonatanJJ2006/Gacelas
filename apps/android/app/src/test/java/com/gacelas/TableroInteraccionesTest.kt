@@ -77,7 +77,8 @@ class TableroInteraccionesTest {
         compose.tocar("nav-comunidad"); assertTrue(hayTexto("Comunidad") || hayTexto("COMUNIDAD"))
         compose.tocar("nav-perfil"); assertTrue(existe("perfil-nombre"))
         compose.tocar("nav-inicio"); assertTrue(existe("inicio-tablero"))
-        compose.tocar("nav-correr"); assertTrue(existe("pantalla-correr"))
+        // Correr abre primero "Listo para correr" (GPS, datos y permiso) y luego el mapa con los modos.
+        compose.tocar("nav-correr"); assertTrue(existe("listo-para-correr"))
     }
 
     @Test fun inicioBuscarNotificacionesYRutaDelDia() {
@@ -92,11 +93,14 @@ class TableroInteraccionesTest {
 
     @Test fun inicioWidgetSemanaAbreProgreso() {
         abrir(Destinos.INICIO)
-        compose.tocar("widget-semana"); assertTrue(existe("perfil-nombre"))
+        // "Esta semana" tiene su propia pantalla con los 7 dias.
+        compose.tocar("widget-semana"); assertTrue(existe("semana-selector")); assertTrue(existe("dia-0"))
     }
 
     @Test fun correrModosEditarYCuenta() {
+        org.robolectric.Shadows.shadowOf(app).grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
         abrir(Destinos.CORRER)
+        compose.tocar("listo-continuar")
         assertTrue(existe("modo-ruta"))
         compose.tocar("modo-libre"); assertTrue(hayTexto("Sin meta"))
         compose.tocar("correr-editar"); assertTrue(existe("hoja-objetivo"))

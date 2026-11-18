@@ -282,24 +282,8 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit, onRuta: (String) -
             scopeGps.launch { consentimientos.registrar(com.gacelas.legal.TipoConsentimiento.GpsCarrera, true); iniciar() }
         },
     )
-    LaunchedEffect(cuenta) {
-        val n = cuenta ?: return@LaunchedEffect
-        kotlinx.coroutines.delay(1000)
-        if (n <= 1) { cuenta = null; empezarCarrera(context, tracker); onEmpezar() } else cuenta = n - 1
-    }
-    cuenta?.let { n ->
-        PantallaCompleta {
-            Column(Modifier.fillMaxWidth().padding(top = 120.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text("Prepárate, arrancamos en", style = GType.bodyLg, color = GColors.TextSecondary)
-                // Cada numero "late": entra grande (1,5x) y transparente y se asienta en 350 ms.
-                val escalaMov = com.gacelas.ui.movimiento.Mov.escala
-                val latido = remember(n) { androidx.compose.animation.core.Animatable(if (escalaMov <= 0f) 1f else 0f) }
-                LaunchedEffect(n) { latido.animateTo(1f, com.gacelas.ui.movimiento.MovimientoC2.spec(com.gacelas.ui.movimiento.MovimientoC2.LARGO, escalaMov, com.gacelas.ui.movimiento.MovimientoC2.Entrar)) }
-                Text("$n", style = GType.headlineLg.copy(fontSize = androidx.compose.ui.unit.TextUnit(96f, androidx.compose.ui.unit.TextUnitType.Sp)), color = GColors.Primary500,
-                    modifier = Modifier.graphicsLayer { val p = latido.value; alpha = p; scaleX = 1.5f - 0.5f * p; scaleY = scaleX }.testTag("cuenta-regresiva"))
-                TextButton(onClick = { cuenta = null; empezarCarrera(context, tracker); onEmpezar() }) { Text("Empezar ya") }
-            }
-        }
+    cuenta?.let { total ->
+        CuentaRegresivaC2(total, onTerminar = { cuenta = null; empezarCarrera(context, tracker); onEmpezar() })
         return
     }
     val pedirPermisoOEmpezar = {
@@ -318,6 +302,20 @@ fun CorrerScreen(onCerrar: () -> Unit, onEmpezar: () -> Unit, onRuta: (String) -
         }
         Unit
     }
+    var listo by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    val pedirUbicacion = com.gacelas.ui.rememberPedirUbicacion { u ->
+        permiso = true
+        posicion = u
+    }
+    if (!listo) {
+        ListoParaCorrer(
+            permiso = permiso, senal = senal, precision = precision, notificaciones = notificaciones,
+            onActivarNotificaciones = activarNotificaciones, onCerrar = onCerrar, onGps = pedirUbicacion,
+            onContinuar = { if (permiso) listo = true else pedirUbicacion() },
+        )
+        return
+    }
+    androidx.activity.compose.BackHandler { listo = false }
     PreCarrera(
         permiso = permiso, precision = precision, posicion = posicion, notificaciones = notificaciones,
         onActivarNotificaciones = activarNotificaciones, onCerrar = onCerrar, onEmpezar = pedirPermisoOEmpezar,
@@ -560,6 +558,110 @@ private fun FilaDato(etiqueta: String, valor: String) {
     Row(Modifier.fillMaxWidth()) {
         Text(etiqueta, style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.weight(1f))
         Text(valor, style = GType.labelLg, color = GColors.TextPrimary)
+    }
+}
+
+/**
+ * Paso previo a la carrera (vuelve la pantalla "Listo para correr" de antes del rediseno 0.9.16):
+ * estado del GPS con su precision, datos de la grabacion, la semana y el boton para seguir.
+ * Sin permiso o con el GPS apagado lo pide con el dialogo nativo que sale desde abajo.
+ */
+@Composable
+private fun ListoParaCorrer(
+    permiso: Boolean, senal: String, precision: Float?, notificaciones: Boolean,
+    onActivarNotificaciones: () -> Unit, onCerrar: () -> Unit, onGps: () -> Unit, onContinuar: () -> Unit,
+) {
+    val carreras by com.gacelas.ui.carrerasState()
+    val ajustes by ajustesState()
+    val racha = com.gacelas.ui.rachaState()
+    val ahora = remember { System.currentTimeMillis() }
+    val semana = remember(carreras) { com.gacelas.actividad.domain.reglas.Estadisticas.semana(carreras, ahora) }
+    PantallaCompleta {
+        BotonCerrar(onCerrar)
+        Column(Modifier.fillMaxWidth().testTag("listo-para-correr"), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            com.gacelas.ui.components.IlustracionVacio(Icons.AutoMirrored.Filled.DirectionsRun, 150.dp)
+            Text("¿LISTO PARA CORRER?", style = GType.headlineLg, color = GColors.TextPrimary, textAlign = TextAlign.Center)
+            Text("Activa el GPS y comienza a grabar tu carrera", style = GType.bodyLg, color = GColors.C2Muted, textAlign = TextAlign.Center)
+        }
+        val gpsListo = permiso && precision != null
+        val colorGps = if (gpsListo) GColors.Secondary500 else GColors.Primary500
+        TarjetaC2(fondo = colorGps.copy(alpha = 0.12f), borde = colorGps, onClick = if (gpsListo) null else onGps, modifier = Modifier.testTag("tarjeta-gps")) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                com.gacelas.ui.components.IconoCirculo(if (permiso) Icons.Filled.GpsFixed else Icons.Filled.GpsOff, colorGps.copy(alpha = 0.25f), colorGps, 44.dp)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(if (permiso) "GPS activado" else "Activar GPS", style = GType.titleMd, color = GColors.TextPrimary)
+                    Text(senal, style = GType.bodySm, color = colorGps)
+                }
+                if (gpsListo) Icon(Icons.Filled.CheckCircle, null, tint = colorGps)
+                else Text("ACTIVAR", style = GType.labelLg, color = colorGps)
+            }
+        }
+        TarjetaC2 {
+            FilaDato("Tipo de actividad", "Carrera")
+            FilaDato("Ubicación", "Loja, Ecuador")
+            FilaDato("Grabación", if (permiso) "GPS en primer plano" else "Requiere permiso")
+            FilaDato("Esta semana", "${semana.carreras} de ${ajustes.metaSemanal} carreras")
+            FilaDato("Racha", if (racha.diaria == 0) "Empieza hoy" else "${racha.diaria} ${if (racha.diaria == 1) "día" else "días"}")
+            FilaDato("Cuenta regresiva", if (ajustes.cuentaRegresivaSeg > 0) "${ajustes.cuentaRegresivaSeg} s" else "Sin cuenta")
+        }
+        if (!notificaciones) com.gacelas.core.notificaciones.AvisoNotificacionesBloqueadas(
+            "Puedes correr igual, pero no verás la notificación con tiempo, distancia y los botones Pausar/Terminar.",
+            onActivarNotificaciones,
+        )
+        Column(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(Modifier.testTag("listo-continuar")) { BotonRedondo(Icons.Filled.PlayArrow, if (permiso) "Continuar" else "Dar permiso de ubicación", Color(0xFF7B1FA2), 112.dp, onContinuar) }
+            Text(if (permiso) "Toca para elegir el modo y empezar" else "Toca para dar permiso de ubicación", style = GType.labelLg, color = GColors.TextSecondary)
+        }
+    }
+}
+
+/**
+ * Cuenta regresiva 3, 2, 1, ¡YA!: cada numero entra grande y transparente y se asienta, sobre un
+ * anillo que se vacia en un segundo; vibra en cada numero. Con animaciones desactivadas no anima.
+ */
+@Composable
+private fun CuentaRegresivaC2(total: Int, onTerminar: () -> Unit) {
+    var n by remember { mutableStateOf(total) }
+    val escalaMov = com.gacelas.ui.movimiento.Mov.escala
+    val haptico = androidx.compose.ui.platform.LocalHapticFeedback.current
+    val entrada = remember(n) { androidx.compose.animation.core.Animatable(if (escalaMov <= 0f) 1f else 0f) }
+    val anillo = remember(n) { androidx.compose.animation.core.Animatable(1f) }
+    val terminar by androidx.compose.runtime.rememberUpdatedState(onTerminar)
+    LaunchedEffect(n) {
+        haptico.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+        launch { entrada.animateTo(1f, com.gacelas.ui.movimiento.MovimientoC2.spec(com.gacelas.ui.movimiento.MovimientoC2.LARGO, escalaMov, com.gacelas.ui.movimiento.MovimientoC2.Entrar)) }
+        if (n > 0) launch { anillo.animateTo(0f, androidx.compose.animation.core.tween(if (escalaMov <= 0f) 0 else 1000, easing = androidx.compose.animation.core.LinearEasing)) }
+        delay(if (n > 0) 1000 else 600)
+        if (n > 0) n -= 1 else terminar()
+    }
+    Box(
+        Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Brush.radialGradient(listOf(Color(0xFF2A0A3D), Color(0xFF0B0716))))
+            .statusBarsPadding().navigationBarsPadding().testTag("capa-cuenta-regresiva"),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text("Prepárate, arrancamos en", style = GType.bodyLg, color = GColors.TextSecondary, modifier = Modifier.align(Alignment.TopCenter).padding(top = 96.dp))
+        Box(Modifier.size(240.dp), contentAlignment = Alignment.Center) {
+            androidx.compose.foundation.Canvas(Modifier.fillMaxSize()) {
+                val grosor = 10.dp.toPx()
+                drawCircle(Color.White.copy(alpha = 0.08f), style = androidx.compose.ui.graphics.drawscope.Stroke(grosor))
+                drawArc(
+                    GColors.C2Violeta, -90f, 360f * anillo.value, false,
+                    topLeft = androidx.compose.ui.geometry.Offset(grosor / 2, grosor / 2),
+                    size = androidx.compose.ui.geometry.Size(size.width - grosor, size.height - grosor),
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(grosor, cap = androidx.compose.ui.graphics.StrokeCap.Round),
+                )
+            }
+            Text(
+                if (n > 0) "$n" else "¡YA!",
+                style = GType.headlineLg.copy(fontSize = androidx.compose.ui.unit.TextUnit(if (n > 0) 120f else 72f, androidx.compose.ui.unit.TextUnitType.Sp)),
+                color = if (n > 0) Color.White else GColors.C2Menta,
+                modifier = Modifier.graphicsLayer { val p = entrada.value; alpha = p; scaleX = 1.6f - 0.6f * p; scaleY = scaleX }.testTag("cuenta-regresiva"),
+            )
+        }
+        TextButton(onClick = onTerminar, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 32.dp)) {
+            Text("Empezar ya", style = GType.labelLg, color = GColors.TextPrimary)
+        }
     }
 }
 
