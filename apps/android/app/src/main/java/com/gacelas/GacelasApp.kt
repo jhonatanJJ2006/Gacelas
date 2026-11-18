@@ -31,9 +31,14 @@ private fun actualizacionAndroid(store: DataStore<Preferences>): com.gacelas.dat
         ?.let { com.gacelas.data.actualizacion.ActualizacionRepository(store, it, BuildConfig.VERSION_CODE) }
 
 class GacelasApp : Application(), coil3.SingletonImageLoader.Factory {
-    /** Coil: fundido corto al llegar cada foto; memoria y disco con los valores por defecto de Coil 3. */
+    /**
+     * Coil: fundido corto al llegar cada foto; memoria y disco con los valores por defecto de Coil 3.
+     * En las pruebas (Robolectric) no hay red: las fotos fallan al instante en vez de colgar el esqueleto.
+     */
     override fun newImageLoader(context: coil3.PlatformContext): coil3.ImageLoader =
-        coil3.ImageLoader.Builder(context).crossfade(200).build()
+        coil3.ImageLoader.Builder(context).crossfade(200)
+            .apply { if (android.os.Build.FINGERPRINT == "robolectric") networkCachePolicy(coil3.request.CachePolicy.DISABLED) }
+            .build()
 
     private val alcance = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val contenedor: Contenedor by lazy {
