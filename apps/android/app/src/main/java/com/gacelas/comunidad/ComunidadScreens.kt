@@ -37,15 +37,19 @@ fun FeedScreen(onEventos: () -> Unit, onEnVivo: () -> Unit = {}, onClubes: (() -
     val c = contenedor()
     val vm = viewModel { c.feedViewModel() }
     var fotosPara by remember { mutableStateOf<String?>(null) }
+    val alcanceFotos = androidx.compose.runtime.rememberCoroutineScope()
     val selector = androidx.activity.compose.rememberLauncherForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.PickMultipleVisualMedia(6),
     ) { uris ->
         val id = fotosPara ?: return@rememberLauncherForActivityResult
         fotosPara = null
-        val fotos = uris.mapNotNull { u ->
-            runCatching { context.contentResolver.openInputStream(u)?.use { it.readBytes() }?.let { it to (context.contentResolver.getType(u) ?: "image/jpeg") } }.getOrNull()
+        // Se leen y reescalan (1600 px, JPEG 80, sin EXIF) fuera del hilo principal.
+        alcanceFotos.launch {
+            val fotos = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                uris.mapNotNull { u -> com.gacelas.seguridad.ui.leerFoto(context, u)?.let { it to "image/jpeg" } }
+            }
+            if (fotos.isNotEmpty()) vm.subirFotos(id, fotos) { context.aviso(it) }
         }
-        if (fotos.isNotEmpty()) vm.subirFotos(id, fotos) { context.aviso(it) }
     }
     val (eventos, inscritos) = eventosState()
     val creados by c.eventos.creados.collectAsState(initial = emptyList())

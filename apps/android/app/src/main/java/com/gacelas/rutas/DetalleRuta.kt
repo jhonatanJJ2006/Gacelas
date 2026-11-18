@@ -127,9 +127,9 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
         subiendo = true
         scope.launch {
             runCatching {
-                val tipo = context.contentResolver.getType(uri) ?: "image/jpeg"
-                val bytes = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { context.contentResolver.openInputStream(uri)!!.use { it.readBytes() } }
-                repo.subirFoto(id, bytes, tipo)
+                val bytes = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { com.gacelas.seguridad.ui.leerFoto(context, uri) }
+                    ?: error("No se pudo leer la foto")
+                repo.subirFoto(id, bytes, "image/jpeg")
                 vm.recargarFotos()
             }.onSuccess { context.aviso("Foto subida") }.onFailure { context.aviso(it.message ?: "No se pudo subir la foto") }
             subiendo = false
@@ -179,7 +179,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
             }
             if (galeria.isNotEmpty()) Box(Modifier.fillMaxWidth().height(300.dp)) {
                 com.gacelas.ui.components.GaleriaC2(galeria.size, alto = 300.dp, forma = androidx.compose.ui.graphics.RectangleShape, tag = "galeria-detalle") { i ->
-                    com.gacelas.ui.components.FotoRemotaC2(galeria[i], Modifier.fillMaxSize(), "Foto ${i + 1} de la ruta")
+                    com.gacelas.ui.components.FotoRemotaC2(galeria[i], Modifier.fillMaxSize(), "Foto ${i + 1} de la ruta", ancho = 1080)
                 }
                 Box(Modifier.fillMaxWidth().height(110.dp).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(com.gacelas.ui.components.Tablero.Noche.copy(alpha = 0.8f), androidx.compose.ui.graphics.Color.Transparent))))
                 botones()
@@ -328,4 +328,4 @@ fun PerfilElevacion(alturas: List<Int>, distanciaKm: Double) {
 /** Miniatura de una foto de la ruta. */
 @Composable
 private fun FotoRemota(url: String) =
-    com.gacelas.ui.components.FotoRemotaC2(url, Modifier.size(110.dp).clip(RoundedCornerShape(12.dp)), "Foto de la ruta")
+    com.gacelas.ui.components.FotoRemotaC2(url, Modifier.size(110.dp).clip(RoundedCornerShape(12.dp)), "Foto de la ruta", ancho = 256)

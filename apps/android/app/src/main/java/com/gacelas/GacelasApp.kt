@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import coil3.request.crossfade
 
 private val Context.almacenGacelas: DataStore<Preferences> by preferencesDataStore(name = "gacelas")
 
@@ -29,7 +30,11 @@ private fun actualizacionAndroid(store: DataStore<Preferences>): com.gacelas.dat
     (if (android.os.Build.FINGERPRINT == "robolectric") null else com.gacelas.data.actualizacion.ReglasActualizacion.urlManifiesto(BuildConfig.SUPABASE_URL))
         ?.let { com.gacelas.data.actualizacion.ActualizacionRepository(store, it, BuildConfig.VERSION_CODE) }
 
-class GacelasApp : Application() {
+class GacelasApp : Application(), coil3.SingletonImageLoader.Factory {
+    /** Coil: fundido corto al llegar cada foto; memoria y disco con los valores por defecto de Coil 3. */
+    override fun newImageLoader(context: coil3.PlatformContext): coil3.ImageLoader =
+        coil3.ImageLoader.Builder(context).crossfade(200).build()
+
     private val alcance = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val contenedor: Contenedor by lazy {
         val store = applicationContext.almacenGacelas

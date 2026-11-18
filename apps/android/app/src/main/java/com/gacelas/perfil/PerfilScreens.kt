@@ -6,15 +6,12 @@ import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.BarChart
 import com.gacelas.ui.components.TarjetaRacha
-import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import com.gacelas.identidad.domain.modelo.ConfigAvatar
@@ -112,9 +109,10 @@ import io.github.sceneview.math.Position
 /** Foto de perfil guardada en el dispositivo o avatar con degradado. */
 @Composable
 fun FotoPerfil(path: String?, tamano: androidx.compose.ui.unit.Dp) {
-    val bitmap = remember(path) { path?.let { runCatching { BitmapFactory.decodeFile(it)?.asImageBitmap() }.getOrNull() } }
-    if (bitmap != null) {
-        Image(bitmap, "Foto de perfil", Modifier.size(tamano).clip(CircleShape), contentScale = ContentScale.Crop)
+    // Coil la decodifica fuera del hilo principal y al tamano del circulo (antes, archivo completo en el hilo de UI).
+    val archivo = remember(path) { path?.let(::File)?.takeIf { it.exists() } }
+    if (archivo != null) {
+        coil3.compose.AsyncImage(archivo, "Foto de perfil", Modifier.size(tamano).clip(CircleShape), contentScale = ContentScale.Crop)
     } else {
         AvatarCirculo(tamano, 0)
     }
