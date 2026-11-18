@@ -30,7 +30,7 @@ BEGIN
     AND NOT EXISTS (SELECT 1 FROM rutas.route_photos p WHERE p.route_id = r.id);
 
   -- 4 a 6 fotos en 4 carreras publicas del feed (ya tienen trazado y metricas).
-  INSERT INTO public.post_images (activity_id, user_id, path, position)
+  INSERT INTO comunidad.post_images (activity_id, user_id, path, position)
   SELECT a.id, a.user_id, 'https://picsum.photos/seed/' || a.id || '-' || n || '/1200/900', n
   FROM public.activities a
   JOIN (VALUES ('da000000-0000-4000-8000-000000000001'::uuid, 5),
@@ -38,5 +38,5 @@ BEGIN
                ('da000000-0000-4000-8000-000000000004'::uuid, 4),
                ('da000000-0000-4000-8000-000000000006'::uuid, 5)) AS t(id, total) ON t.id = a.id
   CROSS JOIN LATERAL generate_series(0, t.total - 1) AS n
-  WHERE NOT EXISTS (SELECT 1 FROM public.post_images i WHERE i.activity_id = a.id);
+  WHERE NOT EXISTS (SELECT 1 FROM comunidad.post_images i WHERE i.activity_id = a.id);
 END $$;

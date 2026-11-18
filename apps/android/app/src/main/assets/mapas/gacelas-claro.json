@@ -101,7 +101,17 @@
       "type": "line",
       "source": "openmaptiles",
       "source-layer": "transportation",
-      "filter": ["in", "class", "minor", "service", "tertiary", "secondary", "primary", "trunk", "motorway"],
+      "filter": [
+        "in",
+        "class",
+        "minor",
+        "service",
+        "tertiary",
+        "secondary",
+        "primary",
+        "trunk",
+        "motorway"
+      ],
       "layout": {
         "line-cap": "round",
         "line-join": "round"
