@@ -157,3 +157,9 @@ No hizo falta una migración nueva:
   - Las texturas del GLB bajan de 2048 a 1024 px (de unos 45 MB a 11 MB de memoria de GPU).
   - La textura del avatar tenida se guarda en el teléfono (`filesDir/avatar3d`), así que el tenido solo se hace la primera vez.
   - El GLB se lee una sola vez por proceso.
+
+## Android 0.9.22: fotos de demostración más ligeras
+
+- Las fotos de demostración de rutas y del feed (picsum.photos, migración 047) se piden al ancho de la vista (256, 640 o
+  1080 px) y en WebP, en vez del JPEG de 1200 px: unos 19 KB por foto en lugar de unos 86 KB. Las fotos de Supabase
+  Storage siguen pasando por Vercel Image Optimization.

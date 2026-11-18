@@ -27,13 +27,22 @@ import java.net.URLEncoder
 /** Anchos que acepta Vercel Image Optimization (images.sizes en apps/web/vercel.json). */
 private val ANCHOS_VERCEL = listOf(256, 640, 1080)
 
+/** Fotos de demostracion (migracion 047): https://picsum.photos/seed/<semilla>/<ancho>/<alto>. */
+private val PICSUM = Regex("""^https://picsum\.photos/seed/([^/?#]+)/(\d+)/(\d+)$""")
+
 /**
  * Las fotos publicas de Supabase Storage se piden a Vercel Image Optimization: WebP al ancho pedido y
- * cache de 30 dias en el borde, en vez del original de varios MB. Otras URLs no se tocan.
+ * cache de 30 dias en el borde, en vez del original de varios MB. Las de demostracion de picsum se
+ * piden ya a ese ancho y en WebP (picsum lo admite en la URL). Otras URLs no se tocan.
  */
 fun urlFotoOptimizada(url: String, ancho: Int, supabase: String = BuildConfig.SUPABASE_URL, sitio: String = SITIO): String {
-    if (supabase.isBlank() || !url.startsWith("${supabase.trimEnd('/')}/storage/v1/object/public/")) return url
     val w = ANCHOS_VERCEL.firstOrNull { it >= ancho } ?: ANCHOS_VERCEL.last()
+    PICSUM.matchEntire(url)?.destructured?.let { (semilla, a, h) ->
+        val original = a.toInt()
+        if (w >= original || original <= 0) return url
+        return "https://picsum.photos/seed/$semilla/$w/${((h.toLong() * w + original / 2) / original).coerceAtLeast(1)}.webp"
+    }
+    if (supabase.isBlank() || !url.startsWith("${supabase.trimEnd('/')}/storage/v1/object/public/")) return url
     return "$sitio/_vercel/image?url=${URLEncoder.encode(url, "UTF-8")}&w=$w&q=70"
 }
 

@@ -19,6 +19,15 @@ class FotoOptimizadaTest {
         assertEquals(true, opt(foto, 4000).contains("&w=1080&"))
     }
 
+    @Test fun fotosDemoDePicsumSePidenAlAnchoYEnWebp() {
+        assertEquals("https://picsum.photos/seed/r1-1/640/427.webp", opt("https://picsum.photos/seed/r1-1/1200/800", 640))
+        assertEquals("https://picsum.photos/seed/a2-3/256/192.webp", opt("https://picsum.photos/seed/a2-3/1200/900", 110))
+        // Si se pide igual o mas que el original, queda la original.
+        assertEquals("https://picsum.photos/seed/r1-1/1080/720", opt("https://picsum.photos/seed/r1-1/1080/720", 1080))
+        assertEquals("https://picsum.photos/seed/x/640/480", opt("https://picsum.photos/seed/x/640/480", 640))
+        assertEquals("https://picsum.photos/id/5/1200/800", opt("https://picsum.photos/id/5/1200/800", 640))
+    }
+
     @Test fun otrasUrlsYSinServidorQuedanIgual() {
         assertEquals("https://otra.com/x.jpg", opt("https://otra.com/x.jpg", 640))
         assertEquals("$supa/storage/v1/object/sign/privado.jpg", opt("$supa/storage/v1/object/sign/privado.jpg", 640))
