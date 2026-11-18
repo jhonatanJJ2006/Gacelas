@@ -137,3 +137,23 @@ No hizo falta una migración nueva:
 - Perfil: 20 logros y 12 medallas, cada uno con su detalle, progreso y cómo conseguirlo, y pantallas propias. El avatar 3D
   cambia color de camiseta, piel, shorts y zapatillas (máscara de zonas en `tools/avatar`) y el estilo cambia la animación.
 - Supabase: migraciones 047 (fotos de demostración de rutas y publicaciones) y 048 (códigos de logros nuevos).
+
+## Android 0.9.21: hojas que se arrastran, carrera con más mapa, fotos y 3D más rápidos
+
+- Hojas y modales (`HojaC2`, `DialogoC2`, `ModalC2`): la manija de arriba ahora arrastra. Si se baja más de un cuarto del alto
+  o se lanza hacia abajo, la hoja se cierra; si no, vuelve a su sitio. Los modales obligatorios (términos, actualización
+  obligatoria) vuelven solos. Con lector de pantalla, la manija es el botón "Cerrar".
+- Carrera en curso: la hoja de datos va plegada por defecto (unos 200 dp en vez de 410) con distancia, ritmo, tiempo y los
+  botones a 52 dp. Tocar o subir el tirador despliega el objetivo, el promedio, el desnivel, el km en curso y los parciales.
+- Navegación: corregido el error por el que, tras salir de una carrera abierta desde Comunidad, al pulsar Comunidad se abría
+  la carrera. La pila de la carrera ya no se guarda como estado de la pestaña (`Destinos.flujoCarrera`).
+- Fotos:
+  - Las fotos de Supabase Storage se piden a Vercel Image Optimization (`/_vercel/image`, WebP de 256, 640 o 1080 px y caché
+    de 30 días, configurado en `apps/web/vercel.json`). Si Vercel falla, se carga la original.
+  - Mientras cargan se ve un esqueleto que late; si no cargan, un icono.
+  - Las fotos nuevas del feed y de rutas se suben reescaladas a 1600 px en JPEG al 80 % y sin EXIF, igual que las de incidentes.
+  - La foto de perfil se decodifica fuera del hilo principal.
+- Corredor 3D:
+  - Las texturas del GLB bajan de 2048 a 1024 px (de unos 45 MB a 11 MB de memoria de GPU).
+  - La textura del avatar tenida se guarda en el teléfono (`filesDir/avatar3d`), así que el tenido solo se hace la primera vez.
+  - El GLB se lee una sola vez por proceso.
