@@ -59,6 +59,7 @@ fun publicacionesFeed(
         Publicacion(
             "act-${a.id}", MockData.usuario(a.usuarioId)?.nombre ?: "", false, i + 1, a.fecha, a.titulo, a.distanciaKm,
             a.duracionSegundos, (a.duracionSegundos / a.distanciaKm).toInt(), a.likes, a.comentarios,
+            puntos = a.puntos.map { (lat, lng) -> com.gacelas.actividad.domain.modelo.PuntoGps(lat, lng, 0) }, imagenes = a.imagenes,
         )
     }
     return propias + comunidad
@@ -93,6 +94,11 @@ class FeedViewModel(
     /** Publicaciones visibles con el filtro elegido. */
     val publicaciones: StateFlow<List<Publicacion>> = combine(base, _filtro, ajustes, _siguiendo) { b, f, a, sg -> filtrarFeed(b, f, a.ocultas, sg) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, filtrarFeed(base.value, FiltroFeed.Todos, emptySet()))
+
+    /** Corredores que aparecen en el feed y aun no sigues (id, nombre): sugerencias de "Siguiendo" vacio. */
+    val sugeridos: StateFlow<List<Pair<String, String>>> = combine(base, _siguiendo) { b, sg ->
+        b.filter { !it.propia && it.autorId != null && it.autorId !in sg }.distinctBy { it.autorId }.take(5).map { it.autorId!! to it.autor }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     init {
         if (feed != null) {

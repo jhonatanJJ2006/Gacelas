@@ -21,6 +21,9 @@ data class Actividad(
     val fecha: String,
     val likes: Int,
     val comentarios: Int,
+    /** Trazo (lat, lng) y fotos de ejemplo para ver el feed con ruta e imagenes sin servidor. */
+    val puntos: List<Pair<Double, Double>> = emptyList(),
+    val imagenes: List<String> = emptyList(),
 )
 
 data class Split(val id: Int, val distancia: Double, val ritmo: String, val tiempo: String, val etiqueta: String, val actual: Boolean = false)
@@ -40,8 +43,12 @@ object MockData {
     val usuarioActual = Usuario(ID_USUARIO, "Jhonatan Runner", "jhonatan_runs")
 
     val actividades = listOf(
-        Actividad("1", "1", "Carrera matutina", 5.2, 1714, "5:30", "hace 2h", 23, 5),
-        Actividad("2", "2", "Entrenamiento de intervalos", 8.5, 2720, "5:20", "hace 4h", 18, 3),
+        Actividad("1", "1", "Carrera matutina", 5.2, 1714, "5:30", "hace 2h", 23, 5,
+            puntos = com.gacelas.rutas.domain.modelo.RutasLoja.todas.first { it.id == "loja-la-tebaida" }.puntos,
+            imagenes = (1..5).map { "https://picsum.photos/seed/gacelas-tebaida-$it/1200/900" }),
+        Actividad("2", "2", "Entrenamiento de intervalos", 8.5, 2720, "5:20", "hace 4h", 18, 3,
+            puntos = com.gacelas.rutas.domain.modelo.RutasLoja.todas.first { it.id == "loja-jipiro" }.puntos,
+            imagenes = (1..4).map { "https://picsum.photos/seed/gacelas-jipiro-$it/1200/900" }),
     )
 
     val rutas = listOf(
