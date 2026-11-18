@@ -102,22 +102,27 @@ fun Runner3D(
      * el WebView transparente de 0.9.1-0.9.4 no se dibujaba en telefonos reales.
      */
     sobreFondo: Boolean = false,
+    /** Colores por zona y estilo (Perfil > Avatar); null deja el modelo original. */
+    avatar: com.gacelas.identidad.domain.modelo.ConfigAvatar? = null,
 ) {
     val context = LocalContext.current
     val filament = !LocalInspectionMode.current && remember { soporta3D(context) }
+    val clip = RecolorAvatar.clip(avatar, clip)
+    val colores = remember(avatar) { avatar?.let(RecolorAvatar::colores).orEmpty() }
     // Inicio (sobreFondo): Filament en un TextureView translucido. Desde 0.9.1 aqui se usaba el WebView
     // transparente y en telefonos reales el corredor no se dibujaba; 0.9.0 (Filament) si se veia.
     val motor = motorCorredor(sobreFondo, filament)
-    if (motor == MotorCorredor.FilamentTranslucido) { Runner3DFilamentTransparente(clip, modifier, autoRotar, camara); return }
+    if (motor == MotorCorredor.FilamentTranslucido) { Runner3DFilamentTransparente(clip, modifier, autoRotar, camara, colores); return }
     if (motor == MotorCorredor.WebGL) {
         // Sin Filament (GPU emulada con SwiftShader, drivers problematicos) se dibuja el mismo GLB con WebGL.
         if (LocalInspectionMode.current || Build.FINGERPRINT == "robolectric") Runner3DFallback(modifier)
-        else Runner3DWeb(clip, modifier, autoRotar, camara, rumboRelativo)
+        else Runner3DWeb(clip, modifier, autoRotar, camara, rumboRelativo, colores)
         return
     }
     val engine = rememberEngine()
     val modelLoader = rememberModelLoader(engine)
-    val modelo = remember(clip) {
+    var texturaAvatar by remember { androidx.compose.runtime.mutableStateOf<com.google.android.filament.Texture?>(null) }
+    val modelo = remember(clip, colores) {
         runCatching {
             ModelNode(
                 modelInstance = modelLoader.createModelInstance(MODELO_CORREDOR),
@@ -129,6 +134,12 @@ fun Runner3D(
                 // se baja medio cuerpo para que la camara, que mira al origen, lo encuadre entero.
                 position = Position(0f, clip.alturaY, 0f)
                 playAnimation(clip.nombre, loop = true)
+                RecolorAvatar.textura(context, colores)?.let { bmp ->
+                    val t = texturaFilament(engine, bmp)
+                    aplicarTextura(modelInstance.materialInstances, t)
+                    texturaAvatar?.let(engine::destroyTexture)
+                    texturaAvatar = t
+                }
             }
         }.onFailure { Log.w(TAG, "No se pudo cargar el corredor 3D", it) }.getOrNull()
     }
@@ -136,6 +147,7 @@ fun Runner3D(
         Runner3DFallback(modifier)
         return
     }
+    androidx.compose.runtime.DisposableEffect(engine) { onDispose { texturaAvatar?.let { runCatching { engine.destroyTexture(it) } } } }
     val camaraNode = rememberCameraNode(engine) {
         position = camara
         lookAt(Position(0f, 0f, 0f))
@@ -177,9 +189,14 @@ fun Runner3DWeb(
     autoRotar: Boolean = false,
     camara: Position = Position(0f, 1.2f, 3.5f),
     rumboRelativo: Float = 0f,
+    colores: Map<Int, Int> = emptyMap(),
 ) {
+    val coloresActuales by androidx.compose.runtime.rememberUpdatedState(colores)
+    // La textura recoloreada se sirve como PNG (ver shouldInterceptRequest); la clave evita la cache del WebView.
+    val urlTextura = if (colores.isEmpty()) null else "${HOST_ASSETS}avatar/textura-${colores.hashCode()}.png"
     val url = remember(autoRotar, camara) {
-        "${HOST_ASSETS}runner3d/index.html?clip=${clip.nombre}&rotar=${if (autoRotar) 1 else 0}&cam=${camara.x},${camara.y},${camara.z}"
+        "${HOST_ASSETS}runner3d/index.html?clip=${clip.nombre}&rotar=${if (autoRotar) 1 else 0}&cam=${camara.x},${camara.y},${camara.z}" +
+            (urlTextura?.let { "&textura=" + java.net.URLEncoder.encode(it, "UTF-8") } ?: "")
     }
     // El respaldo se dibuja DEBAJO del WebView hasta que runner3d.js confirma un cuadro con pixeles del
     // corredor (GacelasCorredor.primerCuadro). Que la pagina cargue no basta: un WebView puede cargar bien y
@@ -231,6 +248,10 @@ fun Runner3DWeb(
                         val u = request.url.toString()
                         if (!u.startsWith(HOST_ASSETS)) return null
                         val ruta = request.url.path.orEmpty().removePrefix("/assets/")
+                        if (ruta.startsWith("avatar/textura")) return RecolorAvatar.textura(ctx, coloresActuales)?.let { bmp ->
+                            val png = java.io.ByteArrayOutputStream().also { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }.toByteArray()
+                            android.webkit.WebResourceResponse("image/png", null, png.inputStream())
+                        }
                         val tipo = when {
                             ruta.endsWith(".html") -> "text/html"
                             ruta.endsWith(".js") -> "application/javascript"
@@ -252,6 +273,7 @@ fun Runner3DWeb(
         },
         update = { w ->
             w.evaluateJavascript("window.gacelasClip&&gacelasClip('${clip.nombre}');window.gacelasRumbo&&gacelasRumbo($rumboRelativo)", null)
+            urlTextura?.let { w.evaluateJavascript("window.gacelasTextura&&gacelasTextura('$it')", null) }
         },
         onRelease = { vista = null; it.destroy() },
     )
@@ -289,6 +311,7 @@ fun Runner3DFilamentTransparente(
     modifier: Modifier = Modifier,
     autoRotar: Boolean = false,
     camara: Position = Position(0f, 1.2f, 3.5f),
+    colores: Map<Int, Int> = emptyMap(),
 ) {
     val context = LocalContext.current
     val salvaguarda = remember { SalvaguardaCorredor(context, com.gacelas.BuildConfig.VERSION_CODE.toLong()) }
@@ -302,12 +325,13 @@ fun Runner3DFilamentTransparente(
         var esperando by remember { androidx.compose.runtime.mutableStateOf(true) }
         androidx.compose.runtime.LaunchedEffect(Unit) { kotlinx.coroutines.delay(8_000); esperando = false }
         if (!visto && !fallo && esperando) com.gacelas.ui.components.EsqueletoEscena3D()
-        if (!fallo) {
+        // Otro color = otra textura: se recrea la vista de Filament con la nueva combinacion.
+        if (!fallo) androidx.compose.runtime.key(colores) {
             androidx.compose.ui.viewinterop.AndroidView(
                 modifier = Modifier.fillMaxSize().testTag("corredor-3d-filament"),
                 factory = { ctx ->
                     val tv = android.view.TextureView(ctx).apply { isOpaque = false }
-                    runCatching { CorredorFilament(ctx, tv, clip.nombre, camara, giro, salvaguarda) { visto = true } }
+                    runCatching { CorredorFilament(ctx, tv, clip.nombre, camara, giro, salvaguarda, colores) { visto = true } }
                         .onSuccess { tv.tag = it }
                         .onFailure { Log.w(TAG, "Filament no pudo iniciar el corredor", it); fallo = true }
                     tv
@@ -347,8 +371,10 @@ internal class CorredorFilament(
     private val camara: Position,
     private val giro: GiroArrastre,
     private val salvaguarda: SalvaguardaCorredor,
+    colores: Map<Int, Int>,
     private val onPrimerCuadro: () -> Unit,
 ) : android.view.Choreographer.FrameCallback {
+    private var textura: com.google.android.filament.Texture? = null
     private val ciclo = CicloCorredor()
     private val tv = tv
     private val engine: com.google.android.filament.Engine
@@ -400,6 +426,9 @@ internal class CorredorFilament(
         asset = checkNotNull(cargador.createAsset(java.nio.ByteBuffer.allocateDirect(bytes.size).put(bytes).apply { rewind() })) { "GLB sin escena" }
         recursos.loadResources(asset)
         asset.releaseSourceData()
+        RecolorAvatar.textura(ctx, colores)?.let { bmp ->
+            textura = texturaFilament(engine, bmp).also { aplicarTextura(asset.instance.materialInstances, it) }
+        }
         scene.addEntities(asset.entities)
         animador = asset.instance.animator
         indice = (0 until (animador?.animationCount ?: 0)).firstOrNull { animador?.getAnimationName(it) == clip } ?: 0
@@ -479,6 +508,7 @@ internal class CorredorFilament(
             engine.flushAndWait()
             scene.removeEntities(asset.entities)
             cargador.destroyAsset(asset)
+            textura?.let(engine::destroyTexture)
             recursos.destroy()
             cargador.destroy()
             materiales.destroyMaterials()
@@ -495,6 +525,24 @@ internal class CorredorFilament(
         }.onFailure { Log.w(TAG, "Error al cerrar Filament", it) }
         salvaguarda.terminarPaso()
     }
+}
+
+/** Textura sRGB con mipmaps a partir de la textura recoloreada del avatar. */
+internal fun texturaFilament(engine: com.google.android.filament.Engine, bmp: android.graphics.Bitmap): com.google.android.filament.Texture {
+    val t = com.google.android.filament.Texture.Builder().width(bmp.width).height(bmp.height).levels(0xff)
+        .sampler(com.google.android.filament.Texture.Sampler.SAMPLER_2D).format(com.google.android.filament.Texture.InternalFormat.SRGB8_A8).build(engine)
+    com.google.android.filament.android.TextureHelper.setBitmap(engine, t, 0, bmp)
+    t.generateMipmaps(engine)
+    return t
+}
+
+/** Sustituye el color base (baseColorMap del ubershader de gltfio) en todos los materiales del corredor. */
+internal fun aplicarTextura(instancias: Array<com.google.android.filament.MaterialInstance>, t: com.google.android.filament.Texture) {
+    val muestreo = com.google.android.filament.TextureSampler(
+        com.google.android.filament.TextureSampler.MinFilter.LINEAR_MIPMAP_LINEAR, com.google.android.filament.TextureSampler.MagFilter.LINEAR,
+        com.google.android.filament.TextureSampler.WrapMode.REPEAT,
+    )
+    instancias.forEach { runCatching { it.setParameter("baseColorMap", t, muestreo) }.onFailure { e -> Log.w(TAG, "Sin baseColorMap", e) } }
 }
 
 /** true si el cuadro tiene algun pixel no transparente (hay corredor dibujado). */

@@ -1,5 +1,11 @@
 package com.gacelas.perfil
 
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.automirrored.filled.DirectionsRun
+import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -157,28 +163,69 @@ fun Records(lista: List<RecordPersonal>) {
     }
 }
 
+private fun iconoMedalla(id: String): androidx.compose.ui.graphics.vector.ImageVector = when {
+    id.startsWith("racha") -> Icons.Filled.LocalFireDepartment
+    id.startsWith("desnivel") -> Icons.Filled.Terrain
+    id == "primera" -> Icons.AutoMirrored.Filled.DirectionsRun
+    id == "centenario" || id.endsWith("00k") -> Icons.Filled.Route
+    else -> Icons.Filled.WorkspacePremium
+}
+
+/** Medallero en Perfil: 6 medallas (ganadas primero), cada una abre su detalle; [onVerTodo] abre la pantalla. */
 @Composable
-fun Medallero(lista: List<Medalla>) {
+fun Medallero(lista: List<Medalla>, onVerTodo: (() -> Unit)? = null) {
+    var abierta by remember { mutableStateOf<Medalla?>(null) }
     Column(Modifier.testTag("medallero"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Titulo(Icons.Filled.MilitaryTech, "Medallero", "${lista.count { it.lograda }} de ${lista.size}")
-        lista.chunked(3).forEach { fila ->
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                fila.forEach { x ->
-                    Tarjeta(Modifier.weight(1f).alpha(if (x.lograda) 1f else 0.4f), padding = 10.dp) {
-                        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Box(
-                                Modifier.size(48.dp).clip(CircleShape).background(if (x.lograda) GColors.Primary.copy(alpha = 0.3f) else GColors.SurfaceHigh)
-                                    .border(2.dp, if (x.lograda) GColors.Primary400 else GColors.BorderSubtle, CircleShape),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Icon(if (x.lograda) Icons.Filled.WorkspacePremium else Icons.Filled.Lock, null, tint = if (x.lograda) GColors.Primary400 else GColors.TextSecondary)
-                            }
-                            Text(x.titulo, style = GType.labelMd, color = GColors.TextPrimary, textAlign = TextAlign.Center)
-                            Text(x.descripcion, style = GType.bodySm, color = GColors.TextSecondary, textAlign = TextAlign.Center)
-                        }
-                    }
-                }
+        val visibles = if (onVerTodo == null) lista else lista.sortedByDescending { if (it.lograda) 2f else it.actual.toFloat() / it.meta }.take(6)
+        CuadriculaMedallas(visibles) { abierta = it }
+        if (onVerTodo != null) com.gacelas.ui.components.BotonSecundario("Ver todo el medallero", onVerTodo, Modifier.testTag("ver-medallero"), color = GColors.Primary400)
+    }
+    abierta?.let { DetalleMedalla(it) { abierta = null } }
+}
+
+@Composable
+private fun CuadriculaMedallas(lista: List<Medalla>, onAbrir: (Medalla) -> Unit) {
+    lista.chunked(3).forEach { fila ->
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            fila.forEach { x ->
+                com.gacelas.ui.components.InsigniaC2(
+                    iconoMedalla(x.id), x.titulo, if (x.lograda) x.descripcion else "${x.actual}/${x.meta} ${x.unidad}".trim(), x.lograda,
+                    x.actual.toFloat() / x.meta, { onAbrir(x) }, Modifier.weight(1f), GColors.Primary400, tag = "medalla-${x.id}",
+                )
+            }
+            repeat(3 - fila.size) { Box(Modifier.weight(1f)) }
+        }
+    }
+}
+
+@Composable
+private fun DetalleMedalla(x: Medalla, onCerrar: () -> Unit) = com.gacelas.ui.components.HojaInsigniaC2(
+    iconoMedalla(x.id), x.titulo, x.descripcion, x.comoConseguirla, x.actual, x.meta, x.unidad, null, x.lograda, onCerrar, GColors.Primary400,
+)
+
+/** Todas las medallas: ganadas arriba y por ganar abajo, cada una con su progreso. */
+@Composable
+fun MedalleroScreen(onAtras: () -> Unit) {
+    val carreras by com.gacelas.ui.carrerasState()
+    val lista = remember(carreras) { com.gacelas.actividad.domain.reglas.EstadisticasPerfil.medallas(carreras) }
+    var abierta by remember { mutableStateOf<Medalla?>(null) }
+    Column(Modifier.background(com.gacelas.ui.components.Tablero.Fondo)) {
+        com.gacelas.ui.components.EncabezadoAtras("Medallero", onAtras)
+        com.gacelas.ui.components.Pantalla {
+            val (ganadas, faltan) = lista.partition { it.lograda }
+            Text("${ganadas.size} de ${lista.size} medallas", style = GType.bodyMd, color = GColors.C2Muted)
+            if (ganadas.isEmpty()) com.gacelas.ui.components.EstadoVacioC2(
+                Icons.Filled.MilitaryTech, "Tu medallero está vacío", "Guarda tu primera carrera para ganar la medalla Primera zancada.", compacto = true, tag = "medallero-vacio",
+            ) else {
+                Text("Conseguidas", style = GType.titleMd, color = GColors.TextPrimary)
+                CuadriculaMedallas(ganadas) { abierta = it }
+            }
+            if (faltan.isNotEmpty()) {
+                Text("Por conseguir", style = GType.titleMd, color = GColors.TextPrimary)
+                CuadriculaMedallas(faltan) { abierta = it }
             }
         }
     }
+    abierta?.let { DetalleMedalla(it) { abierta = null } }
 }

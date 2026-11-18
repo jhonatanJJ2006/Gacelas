@@ -15,7 +15,11 @@ data class KmMes(val anio: Int, val mes: Int, val etiqueta: String, val km: Doub
 
 data class RecordPersonal(val etiqueta: String, val km: Double, val segundos: Int?)
 
-data class Medalla(val id: String, val titulo: String, val descripcion: String, val lograda: Boolean)
+/** Medalla del medallero: [actual] de [meta] en [unidad] ("km", "días"...), y como ganarla. */
+data class Medalla(
+    val id: String, val titulo: String, val descripcion: String, val lograda: Boolean,
+    val actual: Int = if (lograda) 1 else 0, val meta: Int = 1, val unidad: String = "", val comoConseguirla: String = descripcion,
+)
 
 data class RetoMes(val titulo: String, val metaKm: Double, val km: Double, val diasRestantes: Int)
 
@@ -81,13 +85,23 @@ object EstadisticasPerfil {
     fun medallas(carreras: List<Carrera>): List<Medalla> {
         val max = carreras.maxOfOrNull { it.distanciaKm } ?: 0.0
         val total = carreras.sumOf { it.distanciaKm }
+        val subida = carreras.sumOf { it.desnivelM }
+        val racha = mejorRacha(carreras)
+        fun m(id: String, titulo: String, desc: String, actual: Double, meta: Int, unidad: String, como: String) =
+            Medalla(id, titulo, desc, actual >= meta, kotlin.math.floor(actual).toInt().coerceAtMost(meta), meta, unidad, como)
         return listOf(
-            Medalla("primera", "Primera zancada", "Primera carrera guardada", carreras.isNotEmpty()),
-            Medalla("5k", "Gacela 5K", "Una carrera de 5 km", max >= 5),
-            Medalla("10k", "Diez mil", "Una carrera de 10 km", max >= 10),
-            Medalla("21k", "Media maratón", "Una carrera de 21 km", max >= 21.0975),
-            Medalla("centenario", "Centenario", "100 km acumulados", total >= 100),
-            Medalla("racha7", "Semana perfecta", "7 días seguidos corriendo", mejorRacha(carreras) >= 7),
+            m("primera", "Primera zancada", "Primera carrera guardada", carreras.size.toDouble(), 1, "carrera", "Guarda tu primera carrera."),
+            m("5k", "Gacela 5K", "Una carrera de 5 km", max, 5, "km", "Corre 5 km en una sola salida."),
+            m("10k", "Diez mil", "Una carrera de 10 km", max, 10, "km", "Corre 10 km en una sola salida."),
+            Medalla("21k", "Media maratón", "Una carrera de 21 km", max >= 21.0975, minOf(max.toInt(), 21), 21, "km", "Completa 21,1 km en una sola salida."),
+            Medalla("42k", "Maratón", "Una carrera de 42 km", max >= 42.195, minOf(max.toInt(), 42), 42, "km", "Completa los 42,2 km de un maratón."),
+            m("centenario", "Centenario", "100 km acumulados", total, 100, "km", "Suma 100 km entre todas tus carreras."),
+            m("500k", "Quinientos", "500 km acumulados", total, 500, "km", "Suma 500 km entre todas tus carreras."),
+            m("1000k", "Mil kilómetros", "1000 km acumulados", total, 1000, "km", "Suma 1000 km entre todas tus carreras."),
+            m("racha7", "Semana perfecta", "7 días seguidos corriendo", racha.toDouble(), 7, "días", "Corre 7 días seguidos sin saltarte ninguno."),
+            m("racha30", "Mes de hierro", "30 días seguidos corriendo", racha.toDouble(), 30, "días", "Corre 30 días seguidos sin saltarte ninguno."),
+            m("desnivel1000", "Andino", "1000 m de subida acumulada", subida.toDouble(), 1000, "m", "Acumula 1000 m de desnivel positivo entre tus carreras."),
+            m("desnivel5000", "Cumbre", "5000 m de subida acumulada", subida.toDouble(), 5000, "m", "Acumula 5000 m de desnivel positivo: más que subir al Chimborazo desde el mar."),
         )
     }
 
