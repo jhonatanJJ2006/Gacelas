@@ -50,6 +50,8 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.runtime.getValue
 import com.gacelas.navigation.Destinos
+import com.gacelas.ui.LocalIdioma
+import com.gacelas.ui.tr
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
 import com.gacelas.ui.theme.GColors
@@ -105,7 +107,7 @@ fun BarraInferior(rutaActual: String, onNavegar: (String) -> Unit) {
                                 contentAlignment = Alignment.Center,
                             ) { Icon(item.icono, contentDescription = item.etiqueta, tint = Color.White, modifier = Modifier.size(32.dp)) }
                         }
-                        Text(item.etiqueta, style = GType.labelMd.copy(fontWeight = FontWeight.ExtraBold), color = GColors.C2Violeta, maxLines = 1)
+                        Text(tr(LocalIdioma.current, item.etiqueta), style = GType.labelMd.copy(fontWeight = FontWeight.ExtraBold), color = GColors.C2Violeta, maxLines = 1)
                     }
                 } else {
                     val activo = rutaActual == item.ruta || (item.ruta == Destinos.COMUNIDAD && rutaActual == Destinos.EVENTOS)
@@ -119,7 +121,7 @@ fun BarraInferior(rutaActual: String, onNavegar: (String) -> Unit) {
                         Box(Modifier.width(54.dp).height(30.dp).clip(CircleShape).background(capsula), contentAlignment = Alignment.Center) {
                             Icon(item.icono, contentDescription = null, tint = color, modifier = Modifier.size(24.dp))
                         }
-                        TextoAjustableC2(item.etiqueta, GType.labelMd.copy(fontWeight = if (activo) FontWeight.ExtraBold else FontWeight.SemiBold), color,
+                        TextoAjustableC2(tr(LocalIdioma.current, item.etiqueta), GType.labelMd.copy(fontWeight = if (activo) FontWeight.ExtraBold else FontWeight.SemiBold), color,
                             Modifier.padding(top = 2.dp), minimo = 0.7f)
                     }
                 }

@@ -64,6 +64,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.gacelas.navigation.Destinos
+import com.gacelas.ui.LocalIdioma
+import com.gacelas.ui.tr
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 import com.gacelas.ui.theme.SpaceGrotesk
@@ -275,7 +277,7 @@ fun DockTablero(rutaActual: String, onNavegar: (String) -> Unit, modifier: Modif
                     horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
                 ) {
                     Icon(item.icono, contentDescription = item.etiqueta, tint = if (activo) Color.White else Color.White.copy(alpha = 0.55f), modifier = Modifier.size(21.dp))
-                    TextoAjustableC2(item.etiqueta, GType.labelMd.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold), if (activo) Color.White else Color.White.copy(alpha = 0.55f), minimo = 0.7f)
+                    TextoAjustableC2(tr(LocalIdioma.current, item.etiqueta), GType.labelMd.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold), if (activo) Color.White else Color.White.copy(alpha = 0.55f), minimo = 0.7f)
                 }
             }
             Row(
@@ -286,7 +288,7 @@ fun DockTablero(rutaActual: String, onNavegar: (String) -> Unit, modifier: Modif
             ) {
                 Icon(Icons.Filled.PlayArrow, contentDescription = "Correr", tint = Color.White, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
-                TextoAjustableC2("CORRER", GType.labelLg.copy(fontWeight = FontWeight.Black, letterSpacing = 0.06.em), Color.White, minimo = 0.7f)
+                TextoAjustableC2(tr(LocalIdioma.current, "CORRER"), GType.labelLg.copy(fontWeight = FontWeight.Black, letterSpacing = 0.06.em), Color.White, minimo = 0.7f)
             }
         }
     }

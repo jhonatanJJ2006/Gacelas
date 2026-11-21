@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { traducir } from '../../../../shared/i18n/textos'
 import { nivelCorredor } from '../../../../shared/kernel/nivel'
 import { BotonTexto, Dialogo, Interruptor } from '../../../../shared/ui/ui'
 import { descartarCarrera, useActividad } from '../../../actividad/api'
@@ -99,9 +100,14 @@ export function AjustesPreferencias() {
   const nombre = sesion?.nombre ?? 'Corredor'
   const m = ajustes.unidadesMetricas
   const ritmo = ajustes.ritmoObjetivoSeg
+  const t = (es: string) => traducir(ajustes.idioma, es)
 
   return (
-    <PantallaAjustes titulo="Ajustes" subtitulo="Club Gacelas Loja • 2,100 msnm" volverA="/perfil">
+    <PantallaAjustes
+      titulo={t('Ajustes')}
+      subtitulo="Club Gacelas Loja • 2,100 msnm"
+      volverA="/perfil"
+    >
       <div className="flex items-center gap-4 p-4 tarjeta-c2">
         <FotoPerfil foto={sesion?.foto} nombre={nombre} className="w-14 h-14" />
         <div className="flex-1 min-w-0">
@@ -120,7 +126,7 @@ export function AjustesPreferencias() {
           to="/perfil/editar"
           className="px-3 py-2 rounded-lg bg-primary-600/15 text-primary text-label-md font-semibold"
         >
-          Editar perfil
+          {t('Editar perfil')}
         </Link>
       </div>
 
@@ -218,24 +224,24 @@ export function AjustesPreferencias() {
         </Fila>
       </Seccion>
 
-      <Seccion titulo="Apariencia" etiqueta="Interfaz">
+      <Seccion titulo={t('Apariencia')} etiqueta={t('Interfaz')}>
         <Fila
           icono="dark_mode"
-          titulo="Tema"
-          descripcion="Optimizado para salidas nocturnas y al alba"
+          titulo={t('Tema')}
+          descripcion={t('Optimizado para salidas nocturnas y al alba')}
         >
           <button
             onClick={() => void actualizar({ modoOscuro: !ajustes.modoOscuro })}
-            aria-label="Cambiar tema"
+            aria-label={t('Cambiar tema')}
             className="text-primary text-label-md font-semibold"
           >
-            {ajustes.modoOscuro ? 'Oscuro' : 'Claro'}
+            {ajustes.modoOscuro ? t('Oscuro') : t('Claro')}
           </button>
         </Fila>
         <Fila
           icono="language"
-          titulo="Idioma de la aplicación"
-          descripcion="Configuración regional"
+          titulo={t('Idioma de la aplicación')}
+          descripcion={t('Configuración regional')}
         >
           <button
             aria-label="Idioma"
@@ -247,11 +253,11 @@ export function AjustesPreferencias() {
         </Fila>
       </Seccion>
 
-      <Seccion titulo="Rachas" etiqueta="Constancia">
+      <Seccion titulo={t('Rachas')} etiqueta={t('Constancia')}>
         <Fila
           icono="local_fire_department"
-          titulo="Meta semanal"
-          descripcion="Carreras por semana para mantener la racha"
+          titulo={t('Meta semanal')}
+          descripcion={t('Carreras por semana para mantener la racha')}
         >
           <div className="flex items-center" aria-label="Meta semanal de carreras" role="group">
             <button
@@ -275,20 +281,20 @@ export function AjustesPreferencias() {
         </Fila>
       </Seccion>
 
-      <Seccion titulo="Cuenta" etiqueta="Seguridad y dispositivos">
-        <Enlace to="/ajustes/privacidad" icono="lock" texto="Privacidad y ubicación" />
-        <Enlace to="/ajustes/notificaciones" icono="notifications" texto="Notificaciones" />
-        <Enlace to="/ajustes/mapas-offline" icono="download" texto="Mapas offline" />
-        <Enlace to="/ajustes/brujula" icono="explore" texto="Brújula" />
+      <Seccion titulo={t('Cuenta')} etiqueta={t('Seguridad y dispositivos')}>
+        <Enlace to="/ajustes/privacidad" icono="lock" texto={t('Privacidad y ubicación')} />
+        <Enlace to="/ajustes/notificaciones" icono="notifications" texto={t('Notificaciones')} />
+        <Enlace to="/ajustes/mapas-offline" icono="download" texto={t('Mapas offline')} />
+        <Enlace to="/ajustes/brujula" icono="explore" texto={t('Brújula')} />
         <Boton
           onClick={() => setDialogo('acerca')}
           icono="info"
-          texto="Acerca de"
+          texto={t('Acerca de')}
           detalle={`v${VERSION_APP}`}
         />
-        <Boton onClick={() => setDialogo('ayuda')} icono="help" texto="Ayuda y soporte" />
-        <Enlace to="/legal/terminos" icono="gavel" texto="Términos y condiciones" />
-        <Enlace to="/legal/privacidad" icono="policy" texto="Política de privacidad" />
+        <Boton onClick={() => setDialogo('ayuda')} icono="help" texto={t('Ayuda y soporte')} />
+        <Enlace to="/legal/terminos" icono="gavel" texto={t('Términos y condiciones')} />
+        <Enlace to="/legal/privacidad" icono="policy" texto={t('Política de privacidad')} />
       </Seccion>
       <section>
         <button
@@ -296,7 +302,7 @@ export function AjustesPreferencias() {
           className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-danger/20 text-red-300 rounded-xl hover:bg-danger/30 transition-colors"
         >
           <span className="material-symbols-outlined">logout</span>
-          <span className="font-body-md text-body-md font-medium">Cerrar sesión</span>
+          <span className="font-body-md text-body-md font-medium">{t('Cerrar sesión')}</span>
         </button>
       </section>
 
@@ -340,12 +346,12 @@ export function AjustesPreferencias() {
         </p>
       </Dialogo>
       <Dialogo
-        titulo="¿Cerrar sesión?"
+        titulo={t('¿Cerrar sesión?')}
         abierto={dialogo === 'salir'}
         onCerrar={cerrar}
         acciones={
           <>
-            <BotonTexto onClick={cerrar}>Cancelar</BotonTexto>
+            <BotonTexto onClick={cerrar}>{t('Cancelar')}</BotonTexto>
             <BotonTexto
               peligro
               onClick={async () => {
@@ -354,7 +360,7 @@ export function AjustesPreferencias() {
                 navigate('/bienvenida', { replace: true })
               }}
             >
-              Cerrar sesión
+              {t('Cerrar sesión')}
             </BotonTexto>
           </>
         }

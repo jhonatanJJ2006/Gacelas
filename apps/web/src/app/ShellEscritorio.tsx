@@ -11,6 +11,7 @@ import { useRutas } from '../contexts/rutas/api'
 import { diaSemana, inicioSemana, resumenSemana } from '../shared/kernel/estadisticas'
 import { nivelCorredor } from '../shared/kernel/nivel'
 import { rachaEnRiesgo } from '../shared/kernel/rachas'
+import { traducir } from '../shared/i18n/textos'
 import { Unidades } from '../shared/lib/geo'
 import { useEsEscritorio } from '../shared/lib/useEsEscritorio'
 import { AvatarIniciales, Progreso } from '../shared/ui/Visual'
@@ -256,7 +257,7 @@ function BarraLateral({ pathname }: { pathname: string }) {
               >
                 {item.icon}
               </span>
-              <span className="flex-1 truncate">{item.label}</span>
+              <span className="flex-1 truncate">{traducir(ajustes.idioma, item.label)}</span>
               {n > 0 && (
                 <span
                   data-testid={`contador-${item.contador}`}

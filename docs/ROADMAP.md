@@ -239,11 +239,10 @@ Ver [plans/completados/fase-4-rutas.md](plans/completados/fase-4-rutas.md).
 
 **Features**:
 
-- [ ] Soporte multi-idioma (i18n)
-- [ ] Español (Ecuador, España, México)
-- [ ] Inglés
-- [ ] Portugués (Brasil)
-- [ ] Unidades (métrico/imperial)
+- [x] Soporte multi-idioma (i18n) en web y Android
+- [x] Español (Ecuador), por defecto, e inglés
+- [ ] Español (España, México) y portugués (Brasil)
+- [x] Unidades (métrico/imperial)
 
 ### 10.2 Localización
 
