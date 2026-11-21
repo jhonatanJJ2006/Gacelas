@@ -325,7 +325,7 @@ Ver [plans/completados/fase-4-rutas.md](plans/completados/fase-4-rutas.md).
 | Fase 2  | Feed social y follows           | Desarrollo incremental | Completo      |
 | Fase 3  | Live tracking                   | Desarrollo incremental | Completa      |
 | Fase 4  | Rutas y exploración             | Desarrollo incremental | Completa      |
-| Fase 5  | Eventos y clubes                | Desarrollo incremental | Pendiente     |
+| Fase 5  | Eventos y clubes                | Desarrollo incremental | Completa      |
 | Fase 6  | Análisis avanzados              | Desarrollo incremental | Pendiente     |
 | Fase 7  | Gamificación                    | Desarrollo incremental | Pendiente     |
 | Fase 8+ | Monetización y escala           | Futuro                 | Ideas futuras |
@@ -336,6 +336,6 @@ Ver [plans/completados/fase-4-rutas.md](plans/completados/fase-4-rutas.md).
 
 ## Siguiente Paso Inmediato
 
-**Siguiente paso**: Fase 5, eventos y clubes.
+**Siguiente paso**: Fase 6, análisis avanzados.
 
 Ver [CONTRIBUTING.md](CONTRIBUTING.md) para comenzar a contribuir al desarrollo.
