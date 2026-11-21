@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PorterDuff
@@ -14,12 +16,41 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/** Plantillas transparentes (estilo Strava) para poner sobre una foto propia. Igual que la web. */
+/** Plantillas transparentes para poner sobre una foto propia. */
 enum class Plantilla(val etiqueta: String, val cx: Float = 0.5f, val cy: Float = 0.5f, val escala: Float = 1f) {
     Estadisticas("Estadísticas"),
     Traza("Traza de ruta"),
     Fecha("Día y fecha"),
     Logro("Logro / racha"),
+    Distancia("Distancia"),
+    Lateral("Lateral"),
+    Tarjeta("Tarjeta"),
+}
+
+/** Ajuste solo de la foto de fondo. Los valores por defecto no la cambian. */
+data class AjusteFoto(
+    val brillo: Float = 0f,
+    val contraste: Float = 1f,
+    val saturacion: Float = 1f,
+    val opacidad: Float = 1f,
+) {
+    fun esIdentidad() = brillo == 0f && contraste == 1f && saturacion == 1f && opacidad == 1f
+
+    /** Saturación primero; después brillo, contraste y opacidad. */
+    fun matriz(): ColorMatrix {
+        val m = ColorMatrix()
+        m.setSaturation(saturacion.coerceIn(0f, 2f))
+        val c = contraste.coerceIn(0f, 2f)
+        val t = (1f - c) * 128f + brillo.coerceIn(-1f, 1f) * 255f
+        val a = opacidad.coerceIn(0f, 1f)
+        m.postConcat(ColorMatrix(floatArrayOf(
+            c, 0f, 0f, 0f, t,
+            0f, c, 0f, 0f, t,
+            0f, 0f, c, 0f, t,
+            0f, 0f, 0f, a, 0f,
+        )))
+        return m
+    }
 }
 
 enum class FormatoFoto(val etiqueta: String, val ancho: Int, val alto: Int) {
@@ -161,18 +192,69 @@ object Plantillas {
                 }
                 pie()
             }
+            Plantilla.Distancia -> {
+                texto("%.2f".format(java.util.Locale.US, d.distanciaKm), 540f, 900f, 168f, 800, Paint.Align.CENTER)
+                texto("KILÓMETROS", 540f, 990f, 32f, 600, Paint.Align.CENTER)
+                pie()
+            }
+            Plantilla.Lateral -> {
+                linea(c, d, 48f * sx, 220f * sy, 560f * sx, 1400f * sy, 14f * sx)
+                etiqueta("Distancia", 1020f, 640f, "%.2f km".format(java.util.Locale.US, d.distanciaKm), Paint.Align.RIGHT)
+                etiqueta("Tiempo", 1020f, 860f, Compartir.tiempo(d.segundos), Paint.Align.RIGHT)
+                etiqueta("Ritmo", 1020f, 1080f, Compartir.ritmo(d.ritmoSegKm), Paint.Align.RIGHT)
+                etiqueta("Desnivel", 1020f, 1300f, "${d.desnivelM ?: 0} m", Paint.Align.RIGHT)
+                pie()
+            }
+            Plantilla.Tarjeta -> {
+                val left = 160f * sx
+                val top = 640f * sy
+                val right = w - 160f * sx
+                val bottom = 1180f * sy
+                val borde = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    style = Paint.Style.STROKE
+                    strokeWidth = 4f * sx
+                    color = Color.WHITE
+                }
+                c.drawRoundRect(RectF(left, top, right, bottom), 28f * sx, 28f * sx, borde)
+                val diente = Path()
+                diente.moveTo(left, bottom)
+                val paso = (right - left) / 16f
+                var x = left
+                while (x < right - 0.5f) {
+                    val siguiente = minOf(x + paso, right)
+                    diente.lineTo((x + siguiente) / 2f, bottom + 22f * sy)
+                    diente.lineTo(siguiente, bottom)
+                    x = siguiente
+                }
+                c.drawPath(diente, borde)
+                val fecha = SimpleDateFormat("EEEE|d 'de' MMMM", Locale("es", "EC"))
+                    .format(Date(d.fechaMs)).split('|')
+                texto(fecha[0].replaceFirstChar { it.uppercase() }, 540f, 820f, 64f, 700, Paint.Align.CENTER)
+                texto("%.2f km".format(java.util.Locale.US, d.distanciaKm), 540f, 960f, 72f, 800, Paint.Align.CENTER)
+                texto(fecha.getOrElse(1) { "" }, 540f, 1060f, 36f, 400, Paint.Align.CENTER)
+                pie()
+            }
         }
         return bmp
     }
 
-    /** Foto (cover) + plantilla colocada. Sin foto queda transparente. */
-    fun componer(foto: Bitmap?, capa: Bitmap, p: Plantilla, col: Colocacion, f: FormatoFoto): Bitmap {
+    /** Foto (cover) + plantilla colocada. El ajuste solo tiñe la foto. Sin foto queda transparente. */
+    fun componer(
+        foto: Bitmap?,
+        capa: Bitmap,
+        p: Plantilla,
+        col: Colocacion,
+        f: FormatoFoto,
+        ajuste: AjusteFoto = AjusteFoto(),
+    ): Bitmap {
         val bmp = Bitmap.createBitmap(f.ancho, f.alto, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
         val filtro = Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG)
         foto?.let {
+            val pintura = Paint(filtro)
+            if (!ajuste.esIdentidad()) pintura.colorFilter = ColorMatrixColorFilter(ajuste.matriz())
             val r = ajusteCubrir(it.width, it.height, f.ancho, f.alto)
-            c.drawBitmap(it, Rect(r.left.toInt(), r.top.toInt(), r.right.toInt(), r.bottom.toInt()), Rect(0, 0, f.ancho, f.alto), filtro)
+            c.drawBitmap(it, Rect(r.left.toInt(), r.top.toInt(), r.right.toInt(), r.bottom.toInt()), Rect(0, 0, f.ancho, f.alto), pintura)
         }
         c.drawBitmap(capa, null, rect(col, f.ancho, f.alto, f), filtro)
         return bmp

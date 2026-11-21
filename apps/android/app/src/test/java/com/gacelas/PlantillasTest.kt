@@ -2,6 +2,7 @@ package com.gacelas
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import com.gacelas.compartir.AjusteFoto
 import com.gacelas.compartir.Colocacion
 import com.gacelas.compartir.DatosCompartir
 import com.gacelas.compartir.FormatoFoto
@@ -57,7 +58,7 @@ class PlantillasTest {
             assertEquals(0, Color.alpha(b.getPixel(b.width - 1, b.height - 1)))
             val px = IntArray(b.width * b.height).also { b.getPixels(it, 0, b.width, 0, 0, b.width, b.height) }
             assertTrue("$p sin contenido", px.count { Color.alpha(it) > 200 } > 200)
-            if (p == Plantilla.Traza) {
+            if (p == Plantilla.Traza || p == Plantilla.Lateral) {
                 assertTrue("$p sin trazo", px.count {
                     Color.alpha(it) > 200 && Color.red(it) in 170..215 &&
                         Color.green(it) in 110..155 && Color.blue(it) > 230
@@ -77,5 +78,35 @@ class PlantillasTest {
                 assertEquals(f.alto, salida.height)
             }
         }
+    }
+
+    @Test fun plantillasNuevasYAjusteDeFoto() {
+        assertTrue(Plantilla.entries.map { it.name }.containsAll(listOf("Distancia", "Lateral", "Tarjeta")))
+        val foto = Bitmap.createBitmap(80, 80, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.rgb(40, 90, 160)) }
+        val capa = Plantillas.generar(d.copy(fechaMs = 1_700_000_000_000L), Plantilla.Distancia, "@runcity")
+        val col = Plantillas.inicial(Plantilla.Distancia)
+        fun armar(a: AjusteFoto) = Plantillas.componer(foto, capa, Plantilla.Distancia, col, FormatoFoto.Historia, a)
+        val base = armar(AjusteFoto())
+        val brillante = armar(AjusteFoto(brillo = 1f))
+        val clara = armar(AjusteFoto(opacidad = 0f))
+        fun luz(c: Int) = Color.red(c) + Color.green(c) + Color.blue(c)
+        assertTrue(luz(brillante.getPixel(5, 5)) > luz(base.getPixel(5, 5)))
+        assertEquals(0, Color.alpha(clara.getPixel(5, 5)))
+        var blanco: Pair<Int, Int>? = null
+        for (y in 700 until 1000 step 2) {
+            for (x in 200 until 880 step 2) {
+                val p = base.getPixel(x, y)
+                if (Color.alpha(p) > 220 && Color.red(p) > 245 && Color.green(p) > 245 && Color.blue(p) > 245) {
+                    blanco = x to y
+                    break
+                }
+            }
+            if (blanco != null) break
+        }
+        val (x, y) = checkNotNull(blanco) { "la plantilla Distancia no dejo un pixel blanco" }
+        val pb = brillante.getPixel(x, y)
+        val pc = clara.getPixel(x, y)
+        assertTrue(Color.red(pb) > 230 && Color.green(pb) > 230 && Color.blue(pb) > 230)
+        assertTrue(Color.alpha(pc) > 200 && Color.red(pc) > 230)
     }
 }
