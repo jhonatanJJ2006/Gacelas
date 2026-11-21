@@ -124,10 +124,10 @@ Ver [plans/completados/fase-4-rutas.md](plans/completados/fase-4-rutas.md).
 
 **Features**:
 
-- [ ] Sistema de badges/trofeos
-- [ ] Logros por hitos (primera carrera, 10km, 100km total, etc.)
-- [ ] Colección de badges en perfil
-- [ ] Notificación al desbloquear logro
+- [x] Sistema de badges/trofeos
+- [x] Logros por hitos (primera carrera, 10km, 100km total, etc.)
+- [x] Colección de badges en perfil
+- [x] Notificación al desbloquear logro
 
 **Ejemplos de logros**:
 
@@ -141,8 +141,9 @@ Ver [plans/completados/fase-4-rutas.md](plans/completados/fase-4-rutas.md).
 
 **Features**:
 
-- [ ] Ranking semanal/mensual de distancia
-- [ ] Ranking por seguidores/club
+- [x] Ranking semanal de distancia
+- [ ] Ranking mensual de distancia
+- [x] Ranking del club
 - [ ] Ranking global (opcional)
 - [ ] Filtros por género, edad, ubicación
 
@@ -155,8 +156,7 @@ Ver [plans/completados/fase-4-rutas.md](plans/completados/fase-4-rutas.md).
 
 **Features**:
 
-- [ ] Desafíos comunitarios ("Corre 50km este mes")
-- [ ] Progreso visual (barra de progreso)
+- [x] Desafío del mes, con progreso sobre las carreras guardadas y aviso al completarlo
 - [ ] Invitar amigos a desafíos
 - [ ] Reward al completar (badge especial)
 

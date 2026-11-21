@@ -23,12 +23,18 @@ import {
   type MiembroClub,
   type PostClub,
 } from '../api'
+import { Unidades } from '../../../shared/lib/geo'
 import { EsqueletoPantalla } from '../../../shared/ui/Esqueletos'
+import { useActividad } from '../../actividad/api'
+import { rankingClub, useComunidad } from '../../comunidad/api'
 
 export function DetalleClub() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const sesion = useIdentidad((s) => s.sesion)
+  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
+  const carreras = useActividad((s) => s.carreras)
+  const remotas = useComunidad((s) => s.publicaciones)
   const [club, setClub] = useState<Club | null | undefined>(undefined)
   const [miembros, setMiembros] = useState<MiembroClub[]>([])
   const [posts, setPosts] = useState<PostClub[]>([])
@@ -155,6 +161,17 @@ export function DetalleClub() {
               {club.conAprobacion ? 'Privado, con solicitud' : 'Público'}
               {lleno && ' · Cupo lleno'}
             </p>
+            <RankingDelClub
+              filas={rankingClub(
+                carreras,
+                sesion?.nombre ?? 'Tú',
+                yoId,
+                remotas,
+                miembros.filter((x) => x.estado === 'active'),
+                Date.now()
+              )}
+              m={m}
+            />
             {esGrupo && (
               <dl className="grid grid-cols-2 gap-2" data-testid="datos-grupo">
                 {(
@@ -505,5 +522,37 @@ export function DetalleClub() {
       </Dialogo>
       <Aviso mensaje={aviso} />
     </main>
+  )
+}
+
+function RankingDelClub({
+  filas,
+  m,
+}: {
+  filas: { nombre: string; km: number; propio: boolean }[]
+  m: boolean
+}) {
+  if (filas.length === 0) return null
+  return (
+    <div data-testid="ranking-club" className="pt-2 border-t border-border-subtle">
+      <h2 className="text-sm font-semibold text-text-primary">Ranking del club</h2>
+      <p className="text-xs text-text-secondary">Kilómetros de esta semana</p>
+      <ol className="mt-2 space-y-1">
+        {filas.map((f, i) => (
+          <li
+            key={`${f.nombre}-${i}`}
+            className="flex justify-between gap-3 text-sm text-text-primary"
+          >
+            <span className="truncate">
+              {i + 1}. {f.nombre}
+              {f.propio ? ' (tú)' : ''}
+            </span>
+            <span className="shrink-0">
+              {Unidades.texto(f.km, m, 1)} {Unidades.etiquetaDistancia(m)}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
   )
 }
