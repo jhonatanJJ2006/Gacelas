@@ -74,11 +74,11 @@ El chip de clima de Inicio (C2, mismo diseño) muestra datos reales de Open-Mete
 
 ### Estado actual
 
-- Migraciones SQL numeradas en `backend/migrations` (`001_initial_schema.sql` a `014_...`), aplicadas en orden. No hay carpeta `supabase/` de la CLI.
+- Migraciones SQL numeradas en `supabase/migrations/`, aplicadas en orden por `db.yml`.
 - RLS activado en las tablas de usuario; las políticas están en la misma migración que crea la tabla (unas 75 `create policy`).
 - Lógica en base de datos: RPC para en vivo (`008_live_rpc.sql`), rachas (`006`), privacidad (`004`, `005`).
 - Storage: buckets `route-photos` (010), `share-images` (011) y `app-releases` (013), con políticas propias.
-- Seeds de datos de ejemplo en las migraciones `003` y `014`.
+- Seeds de datos de ejemplo en `backend/seeds/` (`003` y `014`), fuera de las migraciones.
 
 ### Convenciones
 
@@ -91,10 +91,10 @@ El chip de clima de Inicio (C2, mismo diseño) muestra datos reales de Open-Mete
 
 ### Objetivo y pendientes
 
-- Pendiente: separar seeds de esquema (`backend/seeds/`) para no cargar datos de ejemplo en producción.
-- Pendiente: tests de RLS (pgTAP o script con dos usuarios) ejecutados en CI contra Postgres local.
-- Pendiente: generar tipos TypeScript desde el esquema (`supabase gen types`) para `apps/web/src/data/tipos.ts`.
-- Pendiente: decidir si se adopta la estructura `supabase/` de la CLI (migraciones con timestamp) en un ADR.
+- Hecho: seeds aparte del esquema, en `backend/seeds/`.
+- Hecho: tests de RLS en `backend/tests/rls/`, ejecutados por `.github/workflows/db.yml` contra Postgres efímero.
+- Hecho: `db.yml` genera los tipos con `supabase gen types` en `apps/web/src/shared/supabase/tipos.gen.ts`.
+- Hecho: las migraciones viven en `supabase/migrations/`.
 
 ## CI/CD y releases
 
@@ -127,7 +127,7 @@ graph TD
 - Hecho: pantallas de comunidad (#67, #68), dibujar ruta (#69) y corredor 3D de Inicio (#70) compartidos con iOS, con capturas de paridad.
 - Pendiente: configurar login en iOS (Sign in with Apple / sesión de Supabase en el build).
 - Pendiente: firma iOS y subida a TestFlight (secrets `IOS_CERT_P12`, `IOS_PROFILE`, `ASC_API_KEY` ya previstos en el workflow).
-- Pendiente: workflow de migraciones (validar SQL en Postgres efímero en PR; aplicar en producción solo manualmente o con aprobación).
+- Hecho: `db.yml` valida las migraciones y las pruebas RLS en Postgres efímero. Aplicarlas en producción sigue siendo manual.
 - Pendiente: chequeo automático de reglas de dependencias (ver móvil y web).
 - Convención: versión semántica `vMAYOR.MENOR.PARCHE`; la misma versión en Android (`versionName`), iOS (`CFBundleShortVersionString`) y los metadatos publicados en `app-releases`. Android deriva `versionCode` de `versionName`.
 

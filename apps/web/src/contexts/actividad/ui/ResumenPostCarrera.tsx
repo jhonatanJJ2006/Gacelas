@@ -22,6 +22,7 @@ import {
 } from '../../rutas/api'
 import { descartarCarrera, tracker, useCarrera } from '../application/carreraStore'
 import { useActividad } from '../application/estado'
+import { carreraAGpx, nombreGpx } from '../domain/gpx'
 import { caloriasEstimadas } from '../domain/metricas'
 import { ritmoPromedio, tituloPorHora } from '../domain/runTracker'
 import { CelebracionRacha } from './Racha'
@@ -365,6 +366,25 @@ export function ResumenPostCarrera() {
             <span className="material-symbols-outlined text-[20px]">save</span>
             <span>Guardar carrera</span>
           </button>
+          {e.puntos.length > 0 && (
+            <button
+              type="button"
+              data-testid="descargar-gpx"
+              onClick={() =>
+                descargarTexto(
+                  nombreGpx(titulo.trim() || tituloPorHora(e.inicioMs)),
+                  carreraAGpx({
+                    titulo: titulo.trim() || tituloPorHora(e.inicioMs),
+                    inicioMs: e.inicioMs,
+                    puntos: e.puntos,
+                  })
+                )
+              }
+              className="w-full h-14 bg-surface-container border border-border-subtle text-text-primary font-bold rounded-xl"
+            >
+              Descargar GPX
+            </button>
+          )}
           {e.segundos > 0 && (
             <button
               onClick={abrirCompartir}
@@ -388,4 +408,13 @@ export function ResumenPostCarrera() {
       )}
     </div>
   )
+}
+
+function descargarTexto(nombre: string, contenido: string) {
+  const url = URL.createObjectURL(new Blob([contenido], { type: 'application/gpx+xml' }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = nombre
+  a.click()
+  URL.revokeObjectURL(url)
 }
