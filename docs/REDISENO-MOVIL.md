@@ -158,6 +158,13 @@ No hizo falta una migración nueva:
   - La textura del avatar tenida se guarda en el teléfono (`filesDir/avatar3d`), así que el tenido solo se hace la primera vez.
   - El GLB se lee una sola vez por proceso.
 
+## Android 0.9.23: historias en una galería
+
+- Compartir una carrera o una ruta abre una cuadrícula de plantillas 9:16. La foto elegida queda detrás de todas.
+- Plantillas nuevas: distancia, columna lateral y tarjeta con la fecha. La historia de marca Runcity es una tarjeta más y no usa la foto.
+- Al abrir una plantilla se arrastra, se pellizca y se ajusta el brillo, el contraste, la saturación y la opacidad de la foto.
+- La barra inferior manda la historia a Instagram, copia la imagen, la guarda o copia el enlace. Más abre WhatsApp y el selector del sistema.
+
 ## Android 0.9.22: fotos de demostración más ligeras
 
 - Las fotos de demostración de rutas y del feed (picsum.photos, migración 047) se piden al ancho de la vista (256, 640 o
