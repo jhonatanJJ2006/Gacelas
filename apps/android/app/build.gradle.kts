@@ -32,29 +32,48 @@ listOf("SUPABASE_URL", "SUPABASE_ANON_KEY", "GOOGLE_WEB_CLIENT_ID").filter { loc
 // cuando el cliente tenia 23:CF...). La lista vive en gradle.properties (gacelas.firmasGoogle).
 // Ademas, desde v0.9.12 la actualizacion solo instala si el certificado es gacelas.firmaPublicacion.
 // Ver docs/REGRESIONES.md.
-fun sha1Keystore(archivo: File): String? = runCatching {
+fun sha1Keystore(archivo: File, alias: String, pass: String): String? = runCatching {
     // keystore.type.compat (activo por defecto) permite leer JKS y PKCS12 con el tipo por defecto.
-    val ks = KeyStore.getInstance(KeyStore.getDefaultType()).apply { archivo.inputStream().use { load(it, "android".toCharArray()) } }
-    MessageDigest.getInstance("SHA-1").digest(ks.getCertificate("androiddebugkey").encoded).joinToString(":") { "%02X".format(it) }
+    val ks = KeyStore.getInstance(KeyStore.getDefaultType()).apply { archivo.inputStream().use { load(it, pass.toCharArray()) } }
+    MessageDigest.getInstance("SHA-1").digest(ks.getCertificate(alias).encoded).joinToString(":") { "%02X".format(it) }
 }.getOrNull()
+
+// El keystore de publicacion no esta en el repo. Ruta, alias y contrasenas salen de
+// local.properties o de -P. Los valores por defecto son los del keystore documentado
+// en docs/SUPABASE.md (alias y contrasena de un debug keystore). No se copia encima
+// de ~/.android/debug.keystore.
+fun propFirma(local: String, gradle: String, defecto: String): String {
+    val deLocal = localProp(local)
+    if (deLocal.isNotBlank()) return deLocal
+    val deGradle = project.findProperty(gradle) as String?
+    if (!deGradle.isNullOrBlank()) return deGradle
+    return defecto
+}
+
+val keystorePublicacion = File(propFirma(
+    "GACELAS_KEYSTORE",
+    "gacelas.keystore",
+    "C:/Users/ASUS/Documents/Gacelas-firma-android/runcity-publicacion.keystore",
+))
+val aliasPublicacion = propFirma("GACELAS_KEY_ALIAS", "gacelas.keyAlias", "androiddebugkey")
+val passAlmacen = propFirma("GACELAS_STORE_PASSWORD", "gacelas.storePassword", "android")
+val passClave = propFirma("GACELAS_KEY_PASSWORD", "gacelas.keyPassword", "android")
 
 if (project.findProperty("gacelas.release") == "true") {
     val registradas = (project.findProperty("gacelas.firmasGoogle") as String?).orEmpty().split(',').map { it.trim().uppercase() }.filter { it.isNotEmpty() }
     val publicacion = (project.findProperty("gacelas.firmaPublicacion") as String?).orEmpty().trim().uppercase()
-    val keystore = File(System.getProperty("user.home"), ".android/debug.keystore")
-    val sha1 = sha1Keystore(keystore)
+    if (!keystorePublicacion.isFile) throw GradleException(
+        "No esta el keystore de publicacion en ${keystorePublicacion.path}. La ruta esta en docs/SUPABASE.md."
+    )
+    val sha1 = sha1Keystore(keystorePublicacion, aliasPublicacion, passAlmacen)
     if (sha1 == null || sha1 !in registradas) throw GradleException(
         "La firma del APK (SHA-1 ${sha1 ?: "desconocida"}) no esta en gacelas.firmasGoogle. Registrala en Google Cloud " +
             "(cliente OAuth Android com.gacelas) y agregala a gradle.properties, o Google se quedara cargando al iniciar sesion."
     )
-    // Las dos huellas de firmasGoogle sirven para el login, pero una actualizacion solo instala
-    // si el certificado es el mismo que el de la app ya instalada. Desde v0.9.12 el APK publicado
-    // usa F1:A2. Publicar con 23:CF (u otra) falla en el telefono con INSTALL_FAILED_UPDATE_INCOMPATIBLE.
     if (publicacion.isEmpty() || sha1 != publicacion) throw GradleException(
         "La firma del APK (SHA-1 $sha1) no es gacelas.firmaPublicacion ($publicacion). " +
-            "Android no instala esa actualizacion encima de v0.9.12-v0.9.17. " +
-            "Usa el debug.keystore de esa huella. Si el telefono aun tiene una version firmada con 23:CF " +
-            "(v0.9.8 a v0.9.11, o un APK de Android Studio de esa maquina), hay que desinstalar la app una vez."
+            "Android no instala esa actualizacion encima de las publicadas desde v0.9.18. " +
+            "Usa el keystore documentado en docs/SUPABASE.md."
     )
 }
 
@@ -86,15 +105,18 @@ android {
         defaultConfig { ndk { abiFilters += abi.split(",") } }
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = keystorePublicacion
+            storePassword = passAlmacen
+            keyAlias = aliasPublicacion
+            keyPassword = passClave
+        }
+    }
+
     buildTypes {
         // Con -Pgacelas.minify=true el debug tambien pasa por R8 (quita iconos y clases sin uso).
         debug {
-            if (project.findProperty("gacelas.release") == "true" && project.findProperty("gacelas.minify") != "true") {
-                // APK publicado: solo se quitan los iconos sin uso (app/proguard-iconos.pro). Sin esto el
-                // APK no cabe en el bucket app-releases (limite de 50 MiB).
-                isMinifyEnabled = true
-                proguardFiles("proguard-iconos.pro")
-            }
             if (project.findProperty("gacelas.minify") == "true") {
                 isMinifyEnabled = true
                 isShrinkResources = true
@@ -102,8 +124,11 @@ android {
             }
         }
         release {
-            isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
+            // APK publicado: solo se quitan los iconos sin uso. Sin esto no cabe en el bucket
+            // app-releases (limite de 50 MiB).
+            isMinifyEnabled = true
+            proguardFiles("proguard-iconos.pro")
         }
     }
 
