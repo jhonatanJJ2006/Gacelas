@@ -3,6 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { formatearMs, formatearRitmo, Unidades } from '../../../../shared/lib/geo'
 import { TrazadoRuta } from '../../../../shared/ui/TrazadoRuta'
 import { BotonTexto, Dialogo } from '../../../../shared/ui/ui'
+import {
+  carreraATcx,
+  descargarTexto,
+  GraficoElevacion,
+  GraficoRitmo,
+  nombreTcx,
+} from '../../../actividad/api'
 import { useActividad } from '../../../actividad/api'
 import { useIdentidad } from '../../application/estado'
 
@@ -74,6 +81,24 @@ export function DetalleCarrera() {
             </div>
           ))}
         </section>
+        <GraficoRitmo parciales={c.parciales} />
+        <GraficoElevacion puntos={c.puntos} />
+        {c.puntos.length > 0 && (
+          <button
+            type="button"
+            data-testid="descargar-tcx"
+            onClick={() =>
+              descargarTexto(
+                nombreTcx(c.titulo, c.inicioMs),
+                carreraATcx(c),
+                'application/vnd.garmin.tcx+xml'
+              )
+            }
+            className="w-full h-12 rounded-xl border border-border-subtle text-text-primary font-semibold"
+          >
+            Descargar TCX
+          </button>
+        )}
         {c.parciales.length > 0 && (
           <section className="p-4 rounded-2xl bg-surface-container border border-border-subtle">
             <h2 className="font-title-md text-title-md text-text-primary mb-2">Parciales</h2>

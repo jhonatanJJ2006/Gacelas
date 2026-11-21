@@ -49,6 +49,7 @@ object Destinos {
     const val MEDALLERO = "perfil/medallero"
     const val DETALLE_CARRERA = "perfil/carrera/{id}"
     fun detalleCarrera(id: String) = "perfil/carrera/$id"
+    const val COMPARAR = "perfil/comparar"
 
     const val AJUSTES = "ajustes"
     const val ADMIN = "ajustes/admin"

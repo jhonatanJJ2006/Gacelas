@@ -105,6 +105,11 @@ const DetalleCarrera = lazy(() =>
     default: m.DetalleCarrera,
   }))
 )
+const CompararCarreras = lazy(() =>
+  import('../contexts/actividad/ui/CompararCarreras').then((m) => ({
+    default: m.CompararCarreras,
+  }))
+)
 const EditarPerfil = lazy(() =>
   import('../contexts/identidad/ui/perfil/EditarPerfil').then((m) => ({ default: m.EditarPerfil }))
 )
@@ -266,6 +271,7 @@ export function AppRoutes() {
 
             <Route path="/perfil/editar" element={<EditarPerfil />} />
             <Route path="/perfil/carrera/:id" element={<DetalleCarrera />} />
+            <Route path="/perfil/comparar" element={<CompararCarreras />} />
             <Route path="/perfil/avatar" element={<Avatar3D />} />
             <Route path="/perfil/reportes" element={<MisReportes />} />
 
