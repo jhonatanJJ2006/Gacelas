@@ -158,6 +158,10 @@ No hizo falta una migración nueva:
   - La textura del avatar tenida se guarda en el teléfono (`filesDir/avatar3d`), así que el tenido solo se hace la primera vez.
   - El GLB se lee una sola vez por proceso.
 
+## Android 1.0.0: historias en una galería
+
+Misma entrega que 0.9.23, publicada como versión estable. Compartir abre la cuadrícula de plantillas, la foto queda detrás y se ajustan brillo, contraste, saturación y opacidad.
+
 ## Android 0.9.23: historias en una galería
 
 - Compartir una carrera o una ruta abre una cuadrícula de plantillas 9:16. La foto elegida queda detrás de todas.
