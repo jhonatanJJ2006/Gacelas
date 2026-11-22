@@ -55,9 +55,11 @@ fun DetalleCarreraScreen(id: String, onAtras: () -> Unit) {
     val c: Carrera? = estado.carrera
     val ajustes by ajustesState()
     val m = ajustes.unidadesMetricas
+    val context = androidx.compose.ui.platform.LocalContext.current
     DetalleCarreraContenido(
         c = c, fecha = c?.let { SimpleDateFormat("EEEE d 'de' MMMM, HH:mm", Locale("es", "EC")).format(Date(it.inicioMs)) }.orEmpty(), m = m,
         onAtras = onAtras, onEliminar = { vm.eliminar(); onAtras() },
+        onExportarTcx = { carrera -> compartirTcx(context, carrera) },
         mapa = { carrera ->
             MapaGacelas(carrera.puntos.aLatLng(), Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(20.dp))) {
                 com.gacelas.ui.components.MapaEsquemaC2(carrera.puntos.map { it.lat to it.lng }, Modifier.fillMaxWidth().height(240.dp),

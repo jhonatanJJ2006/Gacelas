@@ -16,9 +16,10 @@
 #   - apps/android/local.properties con SUPABASE_URL, SUPABASE_ANON_KEY y GOOGLE_WEB_CLIENT_ID.
 #   - SUPABASE_SERVICE_ROLE_KEY en el entorno o en backend/.env (nunca va dentro del APK).
 #   - versionName ya subido en apps/android/app/build.gradle.kts (versionCode se calcula solo).
-#   - gh autenticado, jq, sha256sum y el debug.keystore de publicacion
+#   - gh autenticado, jq, sha256sum y el keystore de publicacion
 #     (SHA-1 19:85:26:6B:79:BB:75:61:1C:AB:96:19:F7:E4:65:08:1C:CC:C2:7F desde v0.9.18, gacelas.firmaPublicacion).
-#     Donde esta ese keystore: docs/SUPABASE.md. keytool debe estar en el PATH.
+#     Donde esta ese keystore: docs/SUPABASE.md. No se copia a ~/.android/debug.keystore.
+#     keytool debe estar en el PATH.
 set -euo pipefail
 RAIZ="$(cd "$(dirname "$0")/.." && pwd)"
 NOTAS="${1:?Falta el texto de las notas}"
@@ -30,20 +31,30 @@ KEY="${SUPABASE_SERVICE_ROLE_KEY:-$(grep -sE '^SUPABASE_SERVICE_ROLE_KEY=' "$RAI
 [ -n "$KEY" ] || { echo "Falta SUPABASE_SERVICE_ROLE_KEY (entorno o backend/.env)"; exit 1; }
 
 # Falla antes de compilar si el keystore no es el de las actualizaciones ya instaladas.
-KEYSTORE="${HOME}/.android/debug.keystore"
+# Alias y contrasenas se leen del LEEME de al lado, sin imprimirlos.
+KEYSTORE="${GACELAS_KEYSTORE:-C:/Users/ASUS/Documents/Gacelas-firma-android/runcity-publicacion.keystore}"
+LEEME="$(dirname "$KEYSTORE")/LEEME.md"
+campo() { grep -F "$1" "$LEEME" | head -1 | sed -n 's/.*`\([^`]*\)`.*/\1/p'; }
+ALIAS="$(campo '| Alias |')"
+STOREPASS="$(campo '| Contrasena del almacen |')"
+KEYPASS="$(campo '| Contrasena de la clave |')"
+[ -n "$ALIAS" ] || ALIAS=androiddebugkey
+[ -n "$STOREPASS" ] || STOREPASS=android
+[ -n "$KEYPASS" ] || KEYPASS=android
 ESPERADA="$(grep -E '^gacelas.firmaPublicacion=' "$AND/gradle.properties" | cut -d= -f2- | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')"
-ACTUAL="$(keytool -list -v -keystore "$KEYSTORE" -alias androiddebugkey -storepass android -keypass android 2>/dev/null | awk -F': ' 'tolower($1) ~ /sha1$/ { gsub(/[[:space:]]/, "", $2); print toupper($2); exit }' || true)"
+ACTUAL="$(keytool -list -v -keystore "$KEYSTORE" -alias "$ALIAS" -storepass "$STOREPASS" -keypass "$KEYPASS" 2>/dev/null | awk -F': ' 'tolower($1) ~ /sha1$/ { gsub(/[[:space:]]/, "", $2); print toupper($2); exit }' || true)"
 [ -n "$ESPERADA" ] || { echo "gradle.properties no tiene gacelas.firmaPublicacion"; exit 1; }
-[ -n "$ACTUAL" ] || { echo "No se pudo leer ~/.android/debug.keystore (alias androiddebugkey)."; exit 1; }
-[ "$ACTUAL" = "$ESPERADA" ] || { echo "El debug.keystore ($ACTUAL) no es la firma de publicacion ($ESPERADA)."; echo "No se publica: Android no instalaria ese APK encima de v0.9.12 en adelante."; exit 1; }
+[ -f "$KEYSTORE" ] || { echo "No esta el keystore de publicacion. La ruta esta en docs/SUPABASE.md."; exit 1; }
+[ -n "$ACTUAL" ] || { echo "No se pudo leer el keystore de publicacion."; exit 1; }
+[ "$ACTUAL" = "$ESPERADA" ] || { echo "El keystore ($ACTUAL) no es la firma de publicacion ($ESPERADA)."; echo "No se publica: Android no instalaria ese APK encima de las versiones desde v0.9.18."; exit 1; }
 
 NOMBRE="$(grep -oE 'versionName = "[^"]+"' "$AND/app/build.gradle.kts" | cut -d'"' -f2)"
 IFS='.' read -r MA MI PA <<< "$NOMBRE"
 CODIGO=$(( MA * 10000 + MI * 100 + PA ))
 echo "Publicando $NOMBRE (versionCode $CODIGO)"
 
-(cd "$AND" && ./gradlew clean assembleDebug testDebugUnitTest -Pgacelas.abi=arm64-v8a -Pgacelas.release=true --console=plain -q)
-APK="$AND/app/build/outputs/apk/debug/app-debug.apk"
+(cd "$AND" && ./gradlew clean assembleRelease testDebugUnitTest -Pgacelas.abi=arm64-v8a -Pgacelas.release=true -Pgacelas.keystore="$KEYSTORE" -Pgacelas.keyAlias="$ALIAS" -Pgacelas.storePassword="$STOREPASS" -Pgacelas.keyPassword="$KEYPASS" --console=plain -q)
+APK="$AND/app/build/outputs/apk/release/app-release.apk"
 SHA="$(sha256sum "$APK" | cut -d' ' -f1)"
 BYTES="$(stat -c %s "$APK")"
 ASSET="runcity-$NOMBRE-arm64.apk"
@@ -72,7 +83,7 @@ cp "$APK" "$TMP/$ASSET"
 git -C "$RAIZ" tag "v$NOMBRE" && git -C "$RAIZ" push origin "v$NOMBRE"
 gh release create "v$NOMBRE" "$TMP/$ASSET" --repo "$REPO" --prerelease --verify-tag --title "Runcity v$NOMBRE" --notes "$(echo "$NOTAS" | tr ';' '\n' | sed 's/^ */- /')
 
-APK debug arm64-v8a ($BYTES bytes, sha256 $SHA)."
+APK release arm64-v8a ($BYTES bytes, sha256 $SHA)."
 
 # 2) Comprobar el asset de archivo en GitHub (hace falta gh autenticado; la URL publica 404 en un repo privado).
 mkdir -p "$TMP/gh"
