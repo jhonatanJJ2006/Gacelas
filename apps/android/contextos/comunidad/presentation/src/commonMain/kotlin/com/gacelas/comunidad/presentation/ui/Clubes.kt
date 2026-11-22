@@ -77,6 +77,7 @@ fun DetalleClubContenido(
     onClub: (String) -> Unit = {},
     onReportar: ((Club) -> Unit)? = null,
     selectorPunto: SelectorPunto? = null,
+    ranking: List<com.gacelas.comunidad.domain.reglas.FilaRanking> = emptyList(),
 ) {
     val datos by vm.estado.collectAsState()
     var editando by remember { mutableStateOf(false) }
@@ -136,6 +137,16 @@ fun DetalleClubContenido(
                 Text("Grupos (${datos.grupos.size})", style = GType.titleMd, color = GColors.TextPrimary)
                 if (datos.grupos.isEmpty()) Text("Esta comunidad aún no tiene grupos.", style = GType.bodySm, color = GColors.TextSecondary)
                 datos.grupos.forEach { g -> TarjetaClub(g) { onClub(g.id) } }
+            }
+            if (ranking.isNotEmpty()) {
+                Text("Ranking del club", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.testTag("ranking-club"))
+                Text("Kilómetros de esta semana", style = GType.bodySm, color = GColors.TextSecondary)
+                ranking.forEachIndexed { i, f ->
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text("${i + 1}. ${f.nombre}${if (f.propio) " (tú)" else ""}", style = GType.bodyMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+                        Text("${"%.1f".format(f.km)} km", style = GType.labelLg, color = GColors.TextPrimary)
+                    }
+                }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Eventos", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))

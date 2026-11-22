@@ -31,3 +31,22 @@ export function rankingSemanal(
   if (!mapa.has('yo')) mapa.set('yo', { nombre, km: 0, propio: true })
   return [...mapa.values()].sort((a, b) => b.km - a.km).slice(0, 5)
 }
+
+/** La misma semana, solo con las carreras de los miembros activos del club. */
+export function rankingClub(
+  propias: CarreraGuardada[],
+  nombre: string,
+  miId: string | null,
+  remotas: PublicacionRemota[],
+  miembros: { usuarioId: string }[],
+  ahora: number
+): FilaRanking[] {
+  const ids = new Set(miembros.map((m) => m.usuarioId))
+  const soy = miId != null && ids.has(miId)
+  return rankingSemanal(
+    soy ? propias : [],
+    nombre,
+    remotas.filter((r) => ids.has(r.autorId) && r.autorId !== miId),
+    ahora
+  ).filter((f) => soy || !f.propio)
+}

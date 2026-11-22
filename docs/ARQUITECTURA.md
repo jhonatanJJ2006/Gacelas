@@ -123,7 +123,7 @@ graph TD
 
 ### Objetivo y pendientes
 
-- Pendiente: APK release firmada y adjunta al mismo Release `v*` (hoy solo hay APK debug).
+- Hecho: el APK que publica `scripts/publicar-android.sh` es release, firmado con el keystore de `docs/SUPABASE.md` (la misma SHA-1 `19:85`). El CI sigue subiendo solo el APK debug.
 - Hecho: pantallas de comunidad (#67, #68), dibujar ruta (#69) y corredor 3D de Inicio (#70) compartidos con iOS, con capturas de paridad.
 - Pendiente: configurar login en iOS (Sign in with Apple / sesión de Supabase en el build).
 - Pendiente: firma iOS y subida a TestFlight (secrets `IOS_CERT_P12`, `IOS_PROFILE`, `ASC_API_KEY` ya previstos en el workflow).
