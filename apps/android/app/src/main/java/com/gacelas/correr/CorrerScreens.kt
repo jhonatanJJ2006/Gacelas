@@ -1147,6 +1147,7 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
                     }
                 }
                 val alturas = estado.puntos.mapNotNull { it.altitudM }
+                com.gacelas.perfil.GraficoElevacion(estado.puntos, Modifier.fillMaxWidth())
                 Row(Modifier.fillMaxWidth().height(androidx.compose.foundation.layout.IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     if (alturas.size > 2) com.gacelas.ui.components.WidgetC2("Elevación", Modifier.weight(1f).fillMaxHeight(), tag = "resumen-elevacion") {
                         com.gacelas.ui.components.CifraTablero("+${estado.desnivelM.toInt()}", "m", tamano = 26, color = GColors.C2Cielo)
@@ -1191,6 +1192,17 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
                         Modifier.weight(1f).height(48.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.07f)).clickable { compartiendo = true }.testTag("resumen-instagram"),
                         contentAlignment = Alignment.Center,
                     ) { Text("Compartir historia", style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = Color.White, maxLines = 1) }
+                    if (estado.puntos.isNotEmpty()) Box(
+                        Modifier.weight(1f).height(48.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.07f))
+                            .clickable {
+                                com.gacelas.perfil.compartirTcx(
+                                    context,
+                                    titulo.ifBlank { tituloSugerido(estado.inicioMs.takeIf { it > 0 } ?: ahora) },
+                                    estado.inicioMs, estado.segundos, estado.distanciaKm, estado.puntos,
+                                )
+                            }.testTag("descargar-tcx"),
+                        contentAlignment = Alignment.Center,
+                    ) { Text("TCX", style = GType.labelLg.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold), color = Color.White, maxLines = 1) }
                     Box(
                         Modifier.weight(1f).height(48.dp).clip(RoundedCornerShape(14.dp)).background(Color(0x33BE185D)).clickable(onClick = salirSinGuardar).testTag("resumen-descartar"),
                         contentAlignment = Alignment.Center,

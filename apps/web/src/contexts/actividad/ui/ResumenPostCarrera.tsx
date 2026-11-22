@@ -22,9 +22,12 @@ import {
 } from '../../rutas/api'
 import { descartarCarrera, tracker, useCarrera } from '../application/carreraStore'
 import { useActividad } from '../application/estado'
+import { carreraATcx, nombreTcx } from '../domain/analisis'
 import { carreraAGpx, nombreGpx } from '../domain/gpx'
 import { caloriasEstimadas } from '../domain/metricas'
 import { ritmoPromedio, tituloPorHora } from '../domain/runTracker'
+import { descargarTexto } from './descargar'
+import { GraficoElevacion, GraficoRitmo } from './GraficosCarrera'
 import { CelebracionRacha } from './Racha'
 
 export function ResumenPostCarrera() {
@@ -261,6 +264,33 @@ export function ResumenPostCarrera() {
           </div>
         </div>
 
+        <div className="space-y-3 mb-6">
+          <GraficoRitmo parciales={e.parciales} />
+          <GraficoElevacion puntos={e.puntos} />
+          {e.puntos.length > 0 && (
+            <button
+              type="button"
+              data-testid="descargar-tcx"
+              onClick={() =>
+                descargarTexto(
+                  nombreTcx(titulo.trim() || tituloPorHora(e.inicioMs), e.inicioMs),
+                  carreraATcx({
+                    titulo: titulo.trim() || tituloPorHora(e.inicioMs),
+                    inicioMs: e.inicioMs,
+                    segundos: e.segundos,
+                    distanciaKm: e.distanciaKm,
+                    puntos: e.puntos,
+                  }),
+                  'application/vnd.garmin.tcx+xml'
+                )
+              }
+              className="w-full h-12 rounded-xl border border-border-subtle text-text-primary font-semibold"
+            >
+              Descargar TCX
+            </button>
+          )}
+        </div>
+
         <div className="space-y-3">
           <input
             type="text"
@@ -377,7 +407,8 @@ export function ResumenPostCarrera() {
                     titulo: titulo.trim() || tituloPorHora(e.inicioMs),
                     inicioMs: e.inicioMs,
                     puntos: e.puntos,
-                  })
+                  }),
+                  'application/gpx+xml'
                 )
               }
               className="w-full h-14 bg-surface-container border border-border-subtle text-text-primary font-bold rounded-xl"
@@ -408,13 +439,4 @@ export function ResumenPostCarrera() {
       )}
     </div>
   )
-}
-
-function descargarTexto(nombre: string, contenido: string) {
-  const url = URL.createObjectURL(new Blob([contenido], { type: 'application/gpx+xml' }))
-  const a = document.createElement('a')
-  a.href = url
-  a.download = nombre
-  a.click()
-  URL.revokeObjectURL(url)
 }

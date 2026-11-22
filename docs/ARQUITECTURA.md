@@ -113,7 +113,7 @@ graph TD
 
 ### Estado actual
 
-- Cuatro workflows: `ci.yml` (build, formato, lint de código y de documentación, tests; jobs en paralelo), `web-tests.yml`, `android.yml` (matriz build/test/lint en paralelo, APK debug como artefacto) e `ios.yml`.
+- Cuatro workflows: `ci.yml` (build, formato, lint de código y de documentación, tests y `pnpm arch`; jobs en paralelo), `web-tests.yml`, `android.yml` (matriz build/test/lint en paralelo, APK debug como artefacto) e `ios.yml`.
 - Filtros de rutas: cada workflow corre solo si cambian sus carpetas (en `ios.yml`, job `cambios` con `dorny/paths-filter`).
 - `ios.yml`: `Tests shared (iosSimulatorArm64)` y `Build simulador` corren en paralelo en `macos-15`. Cachés: Gradle (`setup-gradle`), una sola entrada `~/.konan` compartida, SPM, framework compartido (`shared/build` + `.gradle`) y DerivedData de Xcode. En CI solo se compila el target `iosSimulatorArm64`.
 - Capturas del simulador (matriz de 3 grupos + `Unir capturas`): solo en push a `main`, `workflow_dispatch` o PR con label `capturas`. Otros labels no lanzan ni cancelan runs.
@@ -123,12 +123,12 @@ graph TD
 
 ### Objetivo y pendientes
 
-- Pendiente: APK release firmada y adjunta al mismo Release `v*` (hoy solo hay APK debug).
+- Hecho: el APK que publica `scripts/publicar-android.sh` es release, firmado con el keystore de `docs/SUPABASE.md` (la misma SHA-1 `19:85`). El CI sigue subiendo solo el APK debug.
 - Hecho: pantallas de comunidad (#67, #68), dibujar ruta (#69) y corredor 3D de Inicio (#70) compartidos con iOS, con capturas de paridad.
 - Pendiente: configurar login en iOS (Sign in with Apple / sesión de Supabase en el build).
 - Pendiente: firma iOS y subida a TestFlight (secrets `IOS_CERT_P12`, `IOS_PROFILE`, `ASC_API_KEY` ya previstos en el workflow).
 - Hecho: `db.yml` valida las migraciones y las pruebas RLS en Postgres efímero. Aplicarlas en producción sigue siendo manual.
-- Pendiente: chequeo automático de reglas de dependencias (ver móvil y web).
+- Hecho: `pnpm arch` corre en el CI de la web. Android no tiene un segundo linter de dependencias.
 - Convención: versión semántica `vMAYOR.MENOR.PARCHE`; la misma versión en Android (`versionName`), iOS (`CFBundleShortVersionString`) y los metadatos publicados en `app-releases`. Android deriva `versionCode` de `versionName`.
 
 ## Dónde va cada cosa (resumen)

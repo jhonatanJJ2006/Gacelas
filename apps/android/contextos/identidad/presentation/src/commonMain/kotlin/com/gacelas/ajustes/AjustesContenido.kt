@@ -74,6 +74,7 @@ import com.gacelas.ui.components.FilaInterruptor
 import com.gacelas.ui.components.Pantalla
 import com.gacelas.ui.components.Tarjeta
 import com.gacelas.ui.theme.GColors
+import com.gacelas.ui.tr
 import com.gacelas.ui.theme.GType
 
 @Composable
@@ -188,12 +189,12 @@ fun AjustesContenido(
             FilaInterruptor(Icons.Filled.Warning, "Alertas de zona", "Aviso al acercarte a reportes de inseguridad", checked = a.alertasZona, onChange = { v -> guardar { it.copy(alertasZona = v) } })
             FilaAjuste(Icons.Filled.Sos, "Contactos de emergencia", if (a.contactosEmergencia.isEmpty()) "Sin contactos: el SOS solo llama al 911" else "${a.contactosEmergencia.size} de 3 contactos", onClick = onPrivacidad)
         }
-        EtiquetaSeccion("Apariencia", "Interfaz")
+        EtiquetaSeccion(tr(a.idioma, "Apariencia"), tr(a.idioma, "Interfaz"))
         Tarjeta(padding = 0.dp) {
-            FilaAjuste(Icons.Filled.DarkMode, "Tema", "Optimizado para salidas nocturnas y al alba", onClick = { guardar { it.copy(modoOscuro = !it.modoOscuro) } }, trailing = {
-                Text(if (a.modoOscuro) "Oscuro" else "Claro", style = GType.labelMd, color = GColors.Primary)
+            FilaAjuste(Icons.Filled.DarkMode, tr(a.idioma, "Tema"), tr(a.idioma, "Optimizado para salidas nocturnas y al alba"), onClick = { guardar { it.copy(modoOscuro = !it.modoOscuro) } }, trailing = {
+                Text(tr(a.idioma, if (a.modoOscuro) "Oscuro" else "Claro"), style = GType.labelMd, color = GColors.Primary)
             })
-            FilaAjuste(Icons.Filled.Language, "Idioma de la aplicación", "Configuración regional", onClick = { guardar { it.copy(idioma = if (it.idioma == "en") "es-EC" else "en") } }, trailing = {
+            FilaAjuste(Icons.Filled.Language, tr(a.idioma, "Idioma de la aplicación"), tr(a.idioma, "Configuración regional"), onClick = { guardar { it.copy(idioma = if (it.idioma == "en") "es-EC" else "en") } }, trailing = {
                 Text(if (a.idioma == "en") "English" else "Español (Ecuador)", style = GType.labelMd, color = GColors.TextPrimary)
             })
         }
@@ -203,9 +204,9 @@ fun AjustesContenido(
             onBrujula?.let { FilaAjuste(Icons.Filled.Explore, "Brújula", "Rumbo y calibración", onClick = it) }
         }
         mapaOffline()
-        EtiquetaSeccion("Rachas", "Constancia")
+        EtiquetaSeccion(tr(a.idioma, "Rachas"), tr(a.idioma, "Constancia"))
         Tarjeta(padding = 0.dp) {
-            FilaAjuste(Icons.Filled.LocalFireDepartment, "Meta semanal", "Carreras por semana para mantener la racha", trailing = {
+            FilaAjuste(Icons.Filled.LocalFireDepartment, tr(a.idioma, "Meta semanal"), tr(a.idioma, "Carreras por semana para mantener la racha"), trailing = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = { guardar { it.copy(metaSemanal = (it.metaSemanal - 1).coerceAtLeast(1)) } }) {
                         Icon(Icons.Filled.Remove, "Menos carreras por semana", tint = GColors.Primary500)

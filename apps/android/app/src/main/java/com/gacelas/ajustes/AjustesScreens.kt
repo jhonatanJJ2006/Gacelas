@@ -315,7 +315,10 @@ fun ExtraNotificaciones() {
             Text("${(pct * 100).roundToInt()}%", style = GType.labelMd, color = GColors.Primary500)
         }
         androidx.compose.material3.LinearProgressIndicator(progress = { pct.toFloat() }, modifier = Modifier.fillMaxWidth(), color = GColors.Primary, trackColor = GColors.SurfaceHigh)
-        Text("Cierra en ${reto.diasRestantes} días", style = GType.bodySm, color = GColors.TextSecondary)
+        Text(
+            if (reto.km >= reto.metaKm) "Reto completado. Buen trabajo." else "Cierra en ${reto.diasRestantes} días",
+            style = GType.bodySm, color = GColors.TextSecondary, modifier = Modifier.testTag("aviso-reto"),
+        )
     }
     EtiquetaGrupo("Preferencias de alertas")
     Tarjeta(padding = 0.dp) {

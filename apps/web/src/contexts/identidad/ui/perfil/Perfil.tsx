@@ -504,7 +504,18 @@ function Resumen({
             .
           </p>
         ) : (
-          <TablaActividades lista={carreras.slice(0, 5)} m={m} onBorrar={onBorrar} />
+          <>
+            {carreras.length >= 2 && (
+              <Link
+                to="/perfil/comparar"
+                data-testid="ir-comparar"
+                className="inline-block mb-3 text-[13px] font-semibold text-c2-violeta"
+              >
+                Comparar dos carreras
+              </Link>
+            )}
+            <TablaActividades lista={carreras.slice(0, 5)} m={m} onBorrar={onBorrar} />
+          </>
         )}
       </Panel>
 

@@ -8,3 +8,8 @@ SUPABASE_URL=
 SUPABASE_ANON_KEY=
 # ID del cliente OAuth de tipo "Aplicacion web" (el mismo que esta en Supabase). Sin el, el boton de Google avisa.
 GOOGLE_WEB_CLIENT_ID=
+# Opcional. Si se omiten, el release usa el keystore documentado en docs/SUPABASE.md.
+# GACELAS_KEYSTORE=
+# GACELAS_KEY_ALIAS=
+# GACELAS_STORE_PASSWORD=
+# GACELAS_KEY_PASSWORD=

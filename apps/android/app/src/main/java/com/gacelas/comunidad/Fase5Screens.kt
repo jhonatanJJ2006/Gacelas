@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -52,10 +53,19 @@ fun DetalleClubScreen(id: String, onAtras: () -> Unit, onEvento: (String) -> Uni
     val c = contenedor()
     val context = LocalContext.current
     val vm = viewModel(key = "detalle-club-$id") { c.detalleClubViewModel(id) }
+    val datos by vm.estado.collectAsState()
+    val carreras by com.gacelas.ui.carrerasState()
+    val perfil by com.gacelas.ui.sesionState()
+    val pubs by androidx.compose.runtime.produceState(emptyList<com.gacelas.comunidad.domain.modelo.Publicacion>(), c.feed) {
+        value = c.feed?.publicaciones().orEmpty()
+    }
+    val ranking = androidx.compose.runtime.remember(pubs, carreras, datos.miembros, datos.yoId, perfil?.nombre) {
+        com.gacelas.comunidad.domain.reglas.Ranking.club(carreras, perfil?.nombre ?: "Tú", datos.yoId, pubs, datos.miembros, System.currentTimeMillis())
+    }
     var reportando by remember { mutableStateOf<com.gacelas.comunidad.domain.modelo.Club?>(null) }
     DetalleClubContenido(
         id, vm, conServidor = c.clubes != null, onAtras = onAtras, onEvento = onEvento, onCrearEvento = onCrearEvento, onAviso = { context.aviso(it) },
-        onClub = onClub, onReportar = { reportando = it }, selectorPunto = selectorPuntoMapa,
+        onClub = onClub, onReportar = { reportando = it }, selectorPunto = selectorPuntoMapa, ranking = ranking,
     )
     reportando?.let { club ->
         val tipo = if (club.tipo == com.gacelas.comunidad.domain.modelo.TipoClub.comunidad) com.gacelas.social.TipoContenido.Comunidad else com.gacelas.social.TipoContenido.Grupo

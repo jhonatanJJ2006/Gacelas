@@ -39,7 +39,11 @@ import com.gacelas.ui.theme.GType
  * octubre, 18:30"); [mapa] dibuja el recorrido (MapLibre en Android); [onEliminar] tras confirmar.
  */
 @Composable
-fun DetalleCarreraContenido(c: Carrera?, fecha: String, m: Boolean, onAtras: () -> Unit, onEliminar: () -> Unit, mapa: @Composable (Carrera) -> Unit) {
+fun DetalleCarreraContenido(
+    c: Carrera?, fecha: String, m: Boolean, onAtras: () -> Unit, onEliminar: () -> Unit,
+    onExportarTcx: ((Carrera) -> Unit)? = null,
+    mapa: @Composable (Carrera) -> Unit,
+) {
     var confirmar by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo).testTag("detalle-carrera")) {
         EncabezadoAtras(c?.titulo ?: "Carrera", onAtras)
@@ -59,6 +63,11 @@ fun DetalleCarreraContenido(c: Carrera?, fecha: String, m: Boolean, onAtras: () 
                     Metrica(formatearRitmo(Unidades.ritmo(c.ritmoSegKm, m)), Unidades.etiquetaRitmo(m))
                     Metrica("${c.desnivelM} m", "Desnivel")
                 }
+            }
+            GraficoRitmo(c.parciales)
+            GraficoElevacion(c.puntos)
+            if (onExportarTcx != null && c.puntos.isNotEmpty()) {
+                BotonSecundario("Descargar TCX", { onExportarTcx(c) }, Modifier.fillMaxWidth().testTag("descargar-tcx"))
             }
             if (c.parciales.isNotEmpty()) Tarjeta {
                 Text("Parciales", style = GType.titleMd, color = GColors.TextPrimary)

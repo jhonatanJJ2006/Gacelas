@@ -4,6 +4,7 @@ import { notificacionesVisibles, useAvisos } from '../contexts/avisos/api'
 import { FotoPerfil } from '../contexts/identidad'
 import { useIdentidad } from '../contexts/identidad/api'
 import { BarraSuperior } from './BarraSuperior'
+import { traducir } from '../shared/i18n/textos'
 import { iniciales } from '../shared/ui/Visual'
 
 export function AppLayout() {
@@ -121,7 +122,9 @@ export function AppLayout() {
                 >
                   {item.icon}
                 </span>
-                <span className="font-label-md text-label-md">{item.label}</span>
+                <span className="font-label-md text-label-md">
+                  {item.label ? traducir(ajustes.idioma, item.label) : ''}
+                </span>
               </Link>
             )
           )}

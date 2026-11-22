@@ -192,6 +192,7 @@ fun GacelasRaiz() {
         is EstadoSesion.Lista -> {
             val inicio = remember { if (e.perfil != null) Destinos.INICIO else Destinos.BIENVENIDA }
             Box(Modifier.fillMaxSize()) {
+                androidx.compose.runtime.CompositionLocalProvider(com.gacelas.ui.LocalIdioma provides ajustes.idioma) {
                 GacelasNavHost(inicio = inicio, sesionActiva = e.perfil != null)
                 if (e.perfil != null) {
                     var doc by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf<Boolean?>(null) }
@@ -201,6 +202,7 @@ fun GacelasRaiz() {
                 }
                 com.gacelas.ui.components.AnfitrionAvisosC2()
                 com.gacelas.social.ModalSinConexion()
+                }
             }
         }
     }
