@@ -23,6 +23,7 @@ import {
 import { descartarCarrera, tracker, useCarrera } from '../application/carreraStore'
 import { useActividad } from '../application/estado'
 import { carreraATcx, nombreTcx } from '../domain/analisis'
+import { carreraAGpx, nombreGpx } from '../domain/gpx'
 import { caloriasEstimadas } from '../domain/metricas'
 import { ritmoPromedio, tituloPorHora } from '../domain/runTracker'
 import { descargarTexto } from './descargar'
@@ -395,6 +396,26 @@ export function ResumenPostCarrera() {
             <span className="material-symbols-outlined text-[20px]">save</span>
             <span>Guardar carrera</span>
           </button>
+          {e.puntos.length > 0 && (
+            <button
+              type="button"
+              data-testid="descargar-gpx"
+              onClick={() =>
+                descargarTexto(
+                  nombreGpx(titulo.trim() || tituloPorHora(e.inicioMs)),
+                  carreraAGpx({
+                    titulo: titulo.trim() || tituloPorHora(e.inicioMs),
+                    inicioMs: e.inicioMs,
+                    puntos: e.puntos,
+                  }),
+                  'application/gpx+xml'
+                )
+              }
+              className="w-full h-14 bg-surface-container border border-border-subtle text-text-primary font-bold rounded-xl"
+            >
+              Descargar GPX
+            </button>
+          )}
           {e.segundos > 0 && (
             <button
               onClick={abrirCompartir}

@@ -110,7 +110,7 @@ Ver [plans/completados/fase-4-rutas.md](plans/completados/fase-4-rutas.md).
 
 **Features**:
 
-- [ ] Exportar actividad a GPX
+- [x] Exportar actividad a GPX
 - [x] Exportar actividad a TCX
 - [ ] Importar desde Strava/Garmin (futuro)
 

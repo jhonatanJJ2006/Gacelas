@@ -102,7 +102,7 @@ describe('rutas de ejemplo: web = Android', () => {
     'apps/android/contextos/rutas/infrastructure/src/commonMain/kotlin/com/gacelas/rutas/infrastructure/TrazosRutas.kt'
   )
   const trazos = Object.fromEntries(
-    [...trazosKt.matchAll(/"(\w+)" to listOf\(([^)]*(?:\)[^)]*)*?)\),\n/g)].map((m) => [
+    [...trazosKt.matchAll(/"(\w+)" to listOf\(([^)]*)\),?\r?\n/g)].map((m) => [
       m[1],
       [...m[2].matchAll(/(-?[\d.]+) to (-?[\d.]+)/g)].map((p) => ({
         lat: Number(p[1]),
