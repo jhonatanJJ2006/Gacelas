@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { kmPorSemana, recordsPersonales } from '../contexts/analitica/domain/paneles'
-import { rankingSemanal } from '../contexts/comunidad/domain/ranking'
+import { rankingClub, rankingSemanal } from '../contexts/comunidad/domain/ranking'
 import { inicioSemana } from '../shared/kernel/semana'
 import type { CarreraGuardada } from '../shared/kernel/tipos'
 
@@ -42,6 +42,39 @@ describe('paneles de escritorio', () => {
       ['Ana', 8],
       ['Yo', 5],
     ])
+  })
+  it('el ranking del club deja fuera a quien no es miembro', () => {
+    const remota = {
+      id: 'a',
+      autorId: 'u2',
+      autor: 'Ana',
+      titulo: 't',
+      inicioMs: ahora - 3_600_000,
+      distanciaKm: 8,
+      segundos: 2400,
+      likes: 0,
+      comentarios: 0,
+      puntos: [],
+    }
+    const fuera = { ...remota, id: 'b', autorId: 'u3', autor: 'Luis', distanciaKm: 12 }
+    const r = rankingClub(
+      [carrera(1, 5, 1500)],
+      'Yo',
+      'u1',
+      [remota, fuera],
+      [{ usuarioId: 'u1' }, { usuarioId: 'u2' }],
+      ahora
+    )
+    expect(r.map((f) => f.nombre)).toEqual(['Ana', 'Yo'])
+    const ajeno = rankingClub(
+      [carrera(1, 5, 1500)],
+      'Yo',
+      'u9',
+      [remota],
+      [{ usuarioId: 'u2' }],
+      ahora
+    )
+    expect(ajeno.map((f) => f.nombre)).toEqual(['Ana'])
   })
   it('km por semana y records', () => {
     expect(new Date(inicioSemana(ahora)).getDay()).toBe(1)

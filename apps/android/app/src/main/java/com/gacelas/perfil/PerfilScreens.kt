@@ -119,7 +119,7 @@ fun FotoPerfil(path: String?, tamano: androidx.compose.ui.unit.Dp) {
 }
 
 @Composable
-fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Unit, onCarrera: (String) -> Unit = {}, onReportes: () -> Unit = {}, onLogros: () -> Unit = {}, onMedallero: () -> Unit = {}, onCorrer: () -> Unit = {}) {
+fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Unit, onCarrera: (String) -> Unit = {}, onReportes: () -> Unit = {}, onLogros: () -> Unit = {}, onMedallero: () -> Unit = {}, onCorrer: () -> Unit = {}, onComparar: () -> Unit = {}) {
     val perfil by sesionState()
     val carreras by carrerasState()
     val ajustes by ajustesState()
@@ -218,6 +218,11 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
         if (carreras.isEmpty()) {
             Tarjeta { Text("Todavía no guardas carreras. Toca el botón Correr para grabar la primera.", style = GType.bodyMd, color = GColors.TextSecondary) }
         }
+        if (carreras.size >= 2) Text(
+            "Comparar dos carreras",
+            style = GType.labelLg, color = GColors.Primary500,
+            modifier = Modifier.clickable(onClick = onComparar).testTag("ir-comparar").padding(bottom = 8.dp),
+        )
         carreras.take(20).forEach { c ->
             Tarjeta(Modifier.clickable { onCarrera(c.id) }.testTag("carrera-${c.id}")) {
                 Row(verticalAlignment = Alignment.Top) {
