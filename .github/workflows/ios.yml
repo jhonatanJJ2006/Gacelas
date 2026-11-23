@@ -38,7 +38,7 @@ jobs:
     outputs:
       ios: ${{ steps.f.outputs.ios == 'true' || github.event_name != 'pull_request' && github.event_name != 'push' || startsWith(github.ref, 'refs/tags/') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v4
         id: f
         with:
@@ -62,7 +62,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
         with: { distribution: temurin, java-version: '17' }
       - uses: gradle/actions/setup-gradle@v6
@@ -84,7 +84,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
         with: { distribution: temurin, java-version: '17' }
       - uses: gradle/actions/setup-gradle@v6
@@ -184,7 +184,7 @@ jobs:
       matrix:
         grupos: ['pantallas', 'carrera mapa', 'sensores', 'comunidad']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with: { sparse-checkout: apps/ios/ci }
       - name: Arrancar simulador (en segundo plano)
         run: apps/ios/ci/capturas.sh boot
@@ -217,7 +217,7 @@ jobs:
     env:
       ORG_GRADLE_PROJECT_gacelas.ios.soloSimulador: 'false'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
         with: { distribution: temurin, java-version: '17' }
       - uses: gradle/actions/setup-gradle@v6
