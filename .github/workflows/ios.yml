@@ -188,7 +188,7 @@ jobs:
         with: { sparse-checkout: apps/ios/ci }
       - name: Arrancar simulador (en segundo plano)
         run: apps/ios/ci/capturas.sh boot
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with: { name: ios-builds }
       - run: unzip -q Gacelas-simulator.app.zip
       - name: Capturas en simulador
@@ -259,7 +259,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
           mkdir -p Payload && cp -R build/Build/Products/Release-iphoneos/iosApp.app Payload/
           zip -qry $GITHUB_WORKSPACE/Gacelas-unsigned.ipa Payload
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with: { name: ios-builds }
       - uses: actions/upload-artifact@v4
         with: { name: ios-ipa, path: Gacelas-unsigned.ipa }
