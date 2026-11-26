@@ -1,5 +1,6 @@
 package com.gacelas.ui.components
 
+import com.gacelas.ui.theme.GColors
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -73,7 +74,7 @@ fun MarcaGacelasA(
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         IconoGacelas(tam)
         Column {
-            Text("RUNCITY", style = TextStyle(fontFamily = SpaceGrotesk, fontSize = tamTexto.sp, fontWeight = FontWeight.Black, letterSpacing = .08.em), color = Color.White)
+            Text("RUNCITY", style = TextStyle(fontFamily = SpaceGrotesk, fontSize = tamTexto.sp, fontWeight = FontWeight.Black, letterSpacing = .08.em), color = GColors.TextPrimary)
             if (subtitulo != null) Text(subtitulo, style = TextStyle(fontSize = (tamTexto * .45f).sp, fontWeight = FontWeight.SemiBold, letterSpacing = .14.em), color = Tinta.MoradoClaro)
         }
     }

@@ -1,5 +1,6 @@
 package com.gacelas.acceso
 
+import com.gacelas.ui.theme.GColors
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -43,20 +44,20 @@ fun BotonGoogleVisual(
         onClick = onClick,
         enabled = !cargando,
         colors = if (portada) ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF1C2028), contentColor = Color.White,
-            disabledContainerColor = Color(0xFF1C2028), disabledContentColor = Color.White.copy(alpha = 0.6f),
+            containerColor = Color(0xFF1C2028), contentColor = GColors.OnPrimary,
+            disabledContainerColor = Color(0xFF1C2028), disabledContentColor = GColors.TextPrimary.copy(alpha = 0.6f),
         ) else ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF131314), contentColor = Color(0xFFE3E3E3),
-            disabledContainerColor = Color(0xFF131314), disabledContentColor = Color(0xFFE3E3E3).copy(alpha = 0.6f),
+            containerColor = if (GColors.claro) Color.White else Color(0xFF131314), contentColor = if (GColors.claro) Color(0xFF1F1F1F) else Color(0xFFE3E3E3),
+            disabledContainerColor = if (GColors.claro) Color.White else Color(0xFF131314), disabledContentColor = (if (GColors.claro) Color(0xFF1F1F1F) else Color(0xFFE3E3E3)).copy(alpha = 0.6f),
         ),
-        border = BorderStroke(1.dp, if (portada) Color.White.copy(alpha = 0.10f) else Color(0xFF8E918F)),
+        border = BorderStroke(1.dp, if (portada) GColors.TextPrimary.copy(alpha = 0.10f) else if (GColors.claro) Color(0xFF747775) else Color(0xFF8E918F)),
         shape = CircleShape,
         contentPadding = PaddingValues(horizontal = 16.dp),
         modifier = Modifier.fillMaxWidth().height(alto).testTag("boton-google"),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
-                if (cargando) CircularProgressIndicator(Modifier.size(18.dp), color = Color(0xFFE3E3E3), strokeWidth = 2.dp)
+                if (cargando) CircularProgressIndicator(Modifier.size(18.dp), color = if (GColors.claro) Color(0xFF1F1F1F) else Color(0xFFE3E3E3), strokeWidth = 2.dp)
                 else Image(imagenGacelas(ImagenGacelas.GoogleG), contentDescription = null, modifier = Modifier.size(20.dp))
             }
             Text(

@@ -182,7 +182,20 @@ private sealed interface EstadoSesion {
 fun GacelasRaiz() {
     val c = contenedor()
     val ajustes by ajustesState()
-    SideEffect { GColors.claro = !ajustes.modoOscuro }
+    // Tema elegido en Ajustes (Claro, Oscuro o Sistema). Se fija antes de componer el resto para no
+    // pintar un cuadro con el tema equivocado; GColors.claro es estado de Compose, asi que todo se recompone.
+    val claro = ajustes.tema.esClaro(androidx.compose.foundation.isSystemInDarkTheme())
+    GColors.claro = claro
+    val actividad = androidx.compose.ui.platform.LocalContext.current as? androidx.activity.ComponentActivity
+    androidx.compose.runtime.DisposableEffect(claro) {
+        // Iconos de las barras del sistema: oscuros sobre fondo claro y claros sobre fondo oscuro.
+        val transparente = android.graphics.Color.TRANSPARENT
+        actividad?.enableEdgeToEdge(
+            statusBarStyle = if (claro) androidx.activity.SystemBarStyle.light(transparente, transparente) else androidx.activity.SystemBarStyle.dark(transparente),
+            navigationBarStyle = if (claro) androidx.activity.SystemBarStyle.light(transparente, transparente) else androidx.activity.SystemBarStyle.dark(transparente),
+        )
+        onDispose { }
+    }
     val flujo = remember(c) { c.auth.sesion.map { EstadoSesion.Lista(it) } }
     val estado by flujo.collectAsState(initial = EstadoSesion.Cargando)
     when (val e = estado) {

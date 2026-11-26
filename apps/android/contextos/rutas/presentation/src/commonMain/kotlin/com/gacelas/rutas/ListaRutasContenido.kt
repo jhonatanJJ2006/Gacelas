@@ -252,7 +252,7 @@ private fun TarjetaRutaLista(
 /** Color unico por dificultad para etiquetas, tarjetas y trazos del mapa: facil verde, media ambar, dificil rojo. */
 fun colorDificultad(d: Dificultad): Color = when (d) {
     Dificultad.Facil -> GColors.Secondary500
-    Dificultad.Moderado -> Color(0xFFFBBF24)
+    Dificultad.Moderado -> GColors.Alerta
     Dificultad.Dificil -> GColors.Danger
 }
 

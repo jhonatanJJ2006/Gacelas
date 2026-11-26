@@ -79,7 +79,7 @@ fun ResumenModalC2(datos: List<Pair<String, String>>) {
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         datos.forEachIndexed { i, (valor, etiqueta) ->
-            MetricaC2(valor, etiqueta, Modifier.weight(1f), color = if (i == 0) GColors.C2Violeta else Color.White)
+            MetricaC2(valor, etiqueta, Modifier.weight(1f), color = if (i == 0) GColors.C2Violeta else GColors.TextPrimary)
         }
     }
 }
@@ -137,6 +137,6 @@ fun ToastC2(texto: String, error: Boolean, modifier: Modifier = Modifier) {
         Box(Modifier.size(30.dp).clip(FormaBotonC2).background(acento.copy(alpha = 0.18f)), contentAlignment = Alignment.Center) {
             Icon(if (error) Icons.Filled.ErrorOutline else Icons.Filled.CheckCircle, null, tint = acento, modifier = Modifier.size(18.dp))
         }
-        Text(texto, style = GType.bodyMd.copy(fontWeight = FontWeight.SemiBold), color = Color.White, modifier = Modifier.weight(1f))
+        Text(texto, style = GType.bodyMd.copy(fontWeight = FontWeight.SemiBold), color = GColors.TextPrimary, modifier = Modifier.weight(1f))
     }
 }

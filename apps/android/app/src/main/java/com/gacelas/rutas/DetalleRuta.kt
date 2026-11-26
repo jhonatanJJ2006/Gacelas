@@ -301,7 +301,7 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
                 )
             }
             com.gacelas.ui.components.BotonGrandeC2("Correr esta ruta", { com.gacelas.rutas.infrastructure.RutaActiva.id = id; onCorrer() }, Modifier.weight(1f),
-                icono = { Icon(Icons.AutoMirrored.Filled.DirectionsRun, null, tint = androidx.compose.ui.graphics.Color.White) }, tag = "boton-correr-ruta")
+                icono = { Icon(Icons.AutoMirrored.Filled.DirectionsRun, null, tint = GColors.TextPrimary) }, tag = "boton-correr-ruta")
         }
     }
 }

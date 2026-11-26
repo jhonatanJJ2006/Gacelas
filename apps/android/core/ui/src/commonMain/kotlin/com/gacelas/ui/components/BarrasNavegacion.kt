@@ -74,7 +74,7 @@ fun BarraSuperior(sinLeer: Int, onNotificaciones: () -> Unit, onPerfil: () -> Un
         Modifier.fillMaxWidth().statusBarsPadding().height(62.dp).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("RUNCITY", style = GType.headlineSm.copy(fontWeight = FontWeight.Normal), color = Color.White, modifier = Modifier.weight(1f))
+        Text("RUNCITY", style = GType.headlineSm.copy(fontWeight = FontWeight.Normal), color = GColors.TextPrimary, modifier = Modifier.weight(1f))
         BotonVidrio(Icons.Filled.Notifications, "Notificaciones", onNotificaciones, tag = "boton-notificaciones", tamano = 42.dp, punto = sinLeer > 0)
         Spacer(Modifier.width(8.dp))
         BotonVidrio(Icons.Filled.Person, "Perfil", onPerfil, tag = "boton-perfil-barra", tamano = 42.dp)
@@ -105,7 +105,7 @@ fun BarraInferior(rutaActual: String, onNavegar: (String) -> Unit) {
                                 Modifier.size(56.dp).shadow(10.dp, CircleShape, ambientColor = GColors.C2Morado, spotColor = GColors.C2Morado).clip(CircleShape)
                                     .background(GradienteC2),
                                 contentAlignment = Alignment.Center,
-                            ) { Icon(item.icono, contentDescription = item.etiqueta, tint = Color.White, modifier = Modifier.size(32.dp)) }
+                            ) { Icon(item.icono, contentDescription = item.etiqueta, tint = GColors.OnPrimary, modifier = Modifier.size(32.dp)) }
                         }
                         Text(tr(LocalIdioma.current, item.etiqueta), style = GType.labelMd.copy(fontWeight = FontWeight.ExtraBold), color = GColors.C2Violeta, maxLines = 1)
                     }

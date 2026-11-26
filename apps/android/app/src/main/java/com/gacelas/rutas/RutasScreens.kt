@@ -186,11 +186,11 @@ private fun androidx.compose.foundation.layout.BoxScope.MapaRutasTablero(elegida
     val principal = remember(elegida) { elegida?.let(::trazoRuta).orEmpty() }
     val resto = remember(otras) { otras.map { it to trazoRuta(it) }.filter { it.second.size >= 2 } }
     val salidas = remember(otras, elegida) {
-        (listOfNotNull(elegida) + otras).mapNotNull { r -> trazoRuta(r).firstOrNull()?.let { com.gacelas.ui.components.CirculoMapa(it, 7f, com.gacelas.rutas.colorDificultad(r.dificultad), Color.White, 1.5f, id = r.id) } }
+        (listOfNotNull(elegida) + otras).mapNotNull { r -> trazoRuta(r).firstOrNull()?.let { com.gacelas.ui.components.CirculoMapa(it, 7f, com.gacelas.rutas.colorDificultad(r.dificultad), GColors.TextPrimary, 1.5f, id = r.id) } }
     }
     // Tu posicion (punto azul con halo) para saber donde estas respecto a las rutas.
     var yo by remember { mutableStateOf(ultimaUbicacion(context)?.let { LatLng(it.first, it.second) }) }
-    val tuPunto = yo?.let { listOf(com.gacelas.ui.components.CirculoMapa(it, 18f, GColors.Info.copy(alpha = 0.25f), Color.Transparent, 0f), com.gacelas.ui.components.CirculoMapa(it, 8f, GColors.Info, Color.White, 3f)) }.orEmpty()
+    val tuPunto = yo?.let { listOf(com.gacelas.ui.components.CirculoMapa(it, 18f, GColors.Info.copy(alpha = 0.25f), Color.Transparent, 0f), com.gacelas.ui.components.CirculoMapa(it, 8f, GColors.Info, GColors.OnPrimary, 3f)) }.orEmpty()
     val centrar = com.gacelas.ui.rememberPedirUbicacion { u ->
         yo = LatLng(u.first, u.second)
         mapa?.animateCamera(org.maplibre.android.camera.CameraUpdateFactory.newLatLngZoom(LatLng(u.first, u.second), 15.0), 900)
@@ -227,12 +227,12 @@ private fun androidx.compose.foundation.layout.BoxScope.MapaRutasTablero(elegida
     ) {
         com.gacelas.correr.GrupoControlesC4("Mapa") {
             com.gacelas.correr.ControlEtiquetadoC4("Centrar", "Centrar el mapa en tu posición", centrar, "boton-recentrar") {
-                Icon(Icons.Filled.MyLocation, null, tint = Color.White, modifier = Modifier.size(20.dp))
+                Icon(Icons.Filled.MyLocation, null, tint = GColors.TextPrimary, modifier = Modifier.size(20.dp))
             }
             com.gacelas.correr.ControlEtiquetadoC4("Norte", "Orientar el mapa al norte", {
                 mapa?.let { mp -> mp.animateCamera(org.maplibre.android.camera.CameraUpdateFactory.newCameraPosition(org.maplibre.android.camera.CameraPosition.Builder(mp.cameraPosition).bearing(0.0).build())) }
                 rumbo = 0f
-            }, "boton-brujula") { Icon(Icons.Filled.Navigation, null, tint = Color.White, modifier = Modifier.size(20.dp).graphicsLayer { rotationZ = -rumbo }) }
+            }, "boton-brujula") { Icon(Icons.Filled.Navigation, null, tint = GColors.TextPrimary, modifier = Modifier.size(20.dp).graphicsLayer { rotationZ = -rumbo }) }
         }
     }
 }
@@ -276,7 +276,7 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
         MapaGacelas(trazoSeleccion, Modifier.fillMaxSize(), zoom = 14f) { MapaPlaceholder(rutaPrincipal = seleccion == "primary") }
         Column(Modifier.statusBarsPadding().padding(12.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color(0xFF0F1626)).padding(8.dp),
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(GColors.PanelAlto).padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = onAtras) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Atrás", tint = GColors.TextPrimary) }
@@ -301,7 +301,7 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
         }
         Column(
             Modifier.align(Alignment.BottomCenter).fillMaxWidth().clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
-                .background(Color(0xFF0F1626)).navigationBarsPadding().padding(16.dp),
+                .background(GColors.PanelAlto).navigationBarsPadding().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Box(Modifier.align(Alignment.CenterHorizontally).width(40.dp).height(4.dp).clip(CircleShape).background(GColors.BorderSubtle))
@@ -347,8 +347,8 @@ fun BuscadorRutasScreen(onAtras: () -> Unit, onNavegar: () -> Unit) {
 @Composable
 private fun TarjetaOpcionRuta(r: RutaNavegable, etiqueta: String?, activa: Boolean, onElegir: () -> Unit) {
     val forma = RoundedCornerShape(16.dp)
-    val fondo by androidx.compose.animation.animateColorAsState(if (activa) GColors.Primary.copy(alpha = 0.16f) else Color(0xFF141C2E), com.gacelas.ui.movimiento.Mov.medio(), label = "fondo-opcion")
-    val borde by androidx.compose.animation.animateColorAsState(if (activa) GColors.Primary500 else Color(0xFF1F2B45), com.gacelas.ui.movimiento.Mov.medio(), label = "borde-opcion")
+    val fondo by androidx.compose.animation.animateColorAsState(if (activa) GColors.Primary.copy(alpha = 0.16f) else GColors.PanelOpcion, com.gacelas.ui.movimiento.Mov.medio(), label = "fondo-opcion")
+    val borde by androidx.compose.animation.animateColorAsState(if (activa) GColors.Primary500 else GColors.BordeOpcion, com.gacelas.ui.movimiento.Mov.medio(), label = "borde-opcion")
     val escala by androidx.compose.animation.core.animateFloatAsState(if (activa) 1.03f else 1f, com.gacelas.ui.movimiento.Mov.medio(), label = "escala-opcion")
     Column(
         Modifier.width(200.dp).height(112.dp).graphicsLayer { scaleX = escala; scaleY = escala }.clip(forma).background(fondo)
@@ -373,7 +373,7 @@ private fun TarjetaOpcionRuta(r: RutaNavegable, etiqueta: String?, activa: Boole
 @Composable
 private fun ListaSugerencias(lista: List<com.gacelas.rutas.domain.reglas.Sugerencia>, onElegir: (String) -> Unit, onCompletar: (String) -> Unit) {
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Color(0xFF0F1626)).padding(vertical = 6.dp).testTag("sugerencias-busqueda"),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(GColors.PanelAlto).padding(vertical = 6.dp).testTag("sugerencias-busqueda"),
     ) {
         lista.forEach { sg ->
             Row(

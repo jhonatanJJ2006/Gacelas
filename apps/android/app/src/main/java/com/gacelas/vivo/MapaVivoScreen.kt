@@ -90,7 +90,7 @@ fun MapaVivoScreen(onAtras: () -> Unit, onPrivacidad: () -> Unit, inicial: List<
                 MapaLibre(
                     Modifier.fillMaxWidth().height(380.dp),
                     circulos = incidentes.map { CirculoMapa(LatLng(it.lat, it.lng), 7f, com.gacelas.seguridad.ui.colorIncidente(it), GColors.C2Bg, 2f, id = "inc-" + it.id) } +
-                        corredores.map { CirculoMapa(LatLng(it.lat, it.lng), 9f, colorEstado(it.corriendo), Color.White, 2f, id = it.userId) },
+                        corredores.map { CirculoMapa(LatLng(it.lat, it.lng), 9f, colorEstado(it.corriendo), GColors.TextPrimary, 2f, id = it.userId) },
                     centro = centro, zoom = 13.0,
                     alTocarCirculo = { id -> elegido = corredores.firstOrNull { it.userId == id } },
                 )

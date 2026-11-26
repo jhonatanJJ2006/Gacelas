@@ -1,5 +1,6 @@
 package com.gacelas.ui.components
 
+import com.gacelas.ui.theme.GColors
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -79,7 +80,7 @@ fun GaleriaC2(
         }
         if (paginas > 1) {
             Text(
-                "${estado.currentPage + 1}/$paginas", style = GType.labelMd, color = Color.White,
+                "${estado.currentPage + 1}/$paginas", style = GType.labelMd, color = GColors.TextPrimary,
                 modifier = Modifier.align(Alignment.TopEnd).padding(8.dp).clip(RoundedCornerShape(50))
                     .background(Color.Black.copy(alpha = 0.5f)).padding(horizontal = 8.dp, vertical = 2.dp),
             )
@@ -93,7 +94,7 @@ fun GaleriaC2(
                 repeat(paginas) { i ->
                     val activo = i == estado.currentPage
                     val ancho by animateDpAsState(if (activo) 14.dp else 6.dp, Mov.corto(), label = "punto")
-                    val color by animateColorAsState(if (activo) Color.White else Color.White.copy(alpha = 0.5f), Mov.corto(), label = "color-punto")
+                    val color by animateColorAsState(if (activo) GColors.TextPrimary else GColors.TextPrimary.copy(alpha = 0.5f), Mov.corto(), label = "color-punto")
                     Box(Modifier.width(ancho).height(6.dp).clip(CircleShape).background(color))
                 }
             }
@@ -106,5 +107,5 @@ private fun Flecha(icono: androidx.compose.ui.graphics.vector.ImageVector, modif
     Box(
         modifier.padding(6.dp).size(26.dp).clip(CircleShape).background(Color.Black.copy(alpha = 0.35f)),
         contentAlignment = Alignment.Center,
-    ) { Icon(icono, null, tint = Color.White, modifier = Modifier.size(20.dp)) }
+    ) { Icon(icono, null, tint = GColors.TextPrimary, modifier = Modifier.size(20.dp)) }
 }

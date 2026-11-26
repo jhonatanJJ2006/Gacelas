@@ -102,7 +102,7 @@ fun CifraAnimada(objetivo: Double, formato: (Double) -> String, estilo: TextStyl
 internal data class ParticulaC2(val angulo: Float, val alcance: Float, val color: Color, val giro: Float)
 
 internal fun particulasC2(n: Int = 28): List<ParticulaC2> {
-    val colores = listOf(GColors.C2Violeta, GColors.C2Morado, GColors.C2Menta, Color.White)
+    val colores = listOf(GColors.C2Violeta, GColors.C2Morado, GColors.C2Menta, GColors.OnPrimary)
     return List(n) { i ->
         val a = (i.toFloat() / n) * 2f * PI.toFloat() + (i % 3) * 0.13f
         ParticulaC2(a, 0.55f + (i * 37 % 45) / 100f, colores[i % colores.size], (i * 53 % 360).toFloat())

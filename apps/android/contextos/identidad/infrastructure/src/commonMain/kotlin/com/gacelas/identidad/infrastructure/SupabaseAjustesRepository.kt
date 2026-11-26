@@ -64,8 +64,12 @@ class SupabaseAjustesRepository(
         val altasLikes = likesFilas.mapNotNull { f -> f.texto("post_id")?.let { CambioClave(it, marcaMs(f)) } }
         valor.actualizar { actual ->
             val base = if (fila == null) actual else {
-                val prefs = fila["prefs"]?.let { ajustesTolerantes(it) } ?: actual
+                val prefsJson = fila["prefs"]
+                val prefs = prefsJson?.let { ajustesTolerantes(it) } ?: actual
+                // Cuentas anteriores al modo claro no traen tema: se conserva el elegido en este dispositivo.
+                val tieneTema = (prefsJson as? kotlinx.serialization.json.JsonObject)?.containsKey("tema") == true
                 prefs.copy(
+                    tema = if (tieneTema) prefs.tema else actual.tema,
                     visibilidad = VIS_A_DB.entries.firstOrNull { it.value == fila.texto("visibility") }?.key ?: prefs.visibilidad,
                     ocultarHogar = fila.logico("hide_home") ?: prefs.ocultarHogar,
                     radioHogarM = fila.entero("home_radius_m") ?: prefs.radioHogarM,

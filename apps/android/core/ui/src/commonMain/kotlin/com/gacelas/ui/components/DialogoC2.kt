@@ -75,7 +75,7 @@ fun DialogoC2(
     title: (@Composable () -> Unit)? = null,
     text: (@Composable () -> Unit)? = null,
     @Suppress("UNUSED_PARAMETER") containerColor: Color = GColors.C2Card,
-    @Suppress("UNUSED_PARAMETER") titleContentColor: Color = Color.White,
+    @Suppress("UNUSED_PARAMETER") titleContentColor: Color = GColors.TextPrimary,
     @Suppress("UNUSED_PARAMETER") textContentColor: Color = GColors.C2Muted,
 ) {
     CapaHojaC2(onDismissRequest) {
@@ -93,7 +93,7 @@ fun DialogoC2(
             Column(
                 modifier.desplazadaPor(arrastre).fillMaxWidth().widthIn(max = 560.dp).heightIn(max = altoMax)
                     .clip(Tablero.FormaHoja)
-                    .background(Tablero.FondoHoja).border(1.dp, Color(0x40C084FC), Tablero.FormaHoja).testTag("dialogo-c2-hoja")
+                    .background(Tablero.FondoHoja).border(1.dp, GColors.BordeHoja, Tablero.FormaHoja).testTag("dialogo-c2-hoja")
                     .clickable(remember { MutableInteractionSource() }, null) {},
             ) {
                 Box(Modifier.fillMaxWidth().height(3.dp).background(Brush.horizontalGradient(listOf(Color.Transparent, GColors.C2Violeta))))
@@ -113,7 +113,7 @@ fun DialogoC2(
                             ) { CompositionLocalProvider(LocalContentColor provides GColors.C2Violeta) { icon() } }
                             if (title != null) Box(Modifier.weight(1f)) {
                                 CompositionLocalProvider(
-                                    LocalContentColor provides Color.White,
+                                    LocalContentColor provides GColors.TextPrimary,
                                     LocalTextStyle provides TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontSize = 26.sp, lineHeight = 30.sp),
                                 ) { title() }
                             }
@@ -127,7 +127,7 @@ fun DialogoC2(
                         Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 14.dp, bottom = 18.dp).navigationBarsPadding().testTag("dialogo-c2-acciones"),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        CompositionLocalProvider(LocalContentColor provides Color.White) {
+                        CompositionLocalProvider(LocalContentColor provides GColors.TextPrimary) {
                             confirmButton()
                             dismissButton?.invoke()
                         }
@@ -143,22 +143,22 @@ fun DialogoC2(
 fun BotonModalC2(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier, peligro: Boolean = false, secundario: Boolean = false, enabled: Boolean = true) {
     val forma = androidx.compose.foundation.shape.RoundedCornerShape(18.dp)
     val fondo = when {
-        !enabled -> Brush.linearGradient(listOf(Color.White.copy(alpha = 0.06f), Color.White.copy(alpha = 0.06f)))
-        secundario -> Brush.linearGradient(listOf(Color.White.copy(alpha = 0.08f), Color.White.copy(alpha = 0.08f)))
+        !enabled -> Brush.linearGradient(listOf(GColors.TextPrimary.copy(alpha = 0.06f), GColors.TextPrimary.copy(alpha = 0.06f)))
+        secundario -> Brush.linearGradient(listOf(GColors.TextPrimary.copy(alpha = 0.08f), GColors.TextPrimary.copy(alpha = 0.08f)))
         peligro -> Brush.linearGradient(listOf(Color(0xFF9D174D), PeligroC2))
         else -> GradienteC2
     }
     val interaccion = remember { MutableInteractionSource() }
     Box(
         modifier.fillMaxWidth().height(54.dp).pulsacionC2(interaccion).clip(forma).background(fondo)
-            .then(if (secundario || !enabled) Modifier.border(1.dp, Color.White.copy(alpha = 0.12f), forma) else Modifier)
+            .then(if (secundario || !enabled) Modifier.border(1.dp, GColors.TextPrimary.copy(alpha = 0.12f), forma) else Modifier)
             .clickable(interaccion, androidx.compose.material3.ripple(), enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             texto,
             style = TextStyle(fontFamily = Inter, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp),
-            color = if (enabled) Color.White else GColors.C2Muted,
+            color = if (enabled) GColors.TextPrimary else GColors.C2Muted,
         )
     }
 }

@@ -1,5 +1,6 @@
 package com.gacelas.shared
 
+import com.gacelas.ui.theme.GColors
 import com.gacelas.actividad.presentation.tiempoTexto
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -54,7 +55,7 @@ fun PantallaSensores(e: EstadoSensores, onCarrera: () -> Unit = {}, onVolver: ()
         Box(Modifier.fillMaxWidth().height(220.dp), contentAlignment = Alignment.Center) { Rosa(e.rumbo) }
         Text(
             e.rumbo?.let { "${it.toInt()}° ${cardinal(it)}" } ?: "Rumbo: esperando…",
-            color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.testTag("rumbo"),
+            color = GColors.TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.testTag("rumbo"),
         )
         val fuente = when {
             e.rumbo == null -> "sin datos"
@@ -81,7 +82,7 @@ fun PantallaSensores(e: EstadoSensores, onCarrera: () -> Unit = {}, onVolver: ()
         Box(
             Modifier.fillMaxWidth().height(52.dp).clip(CircleShape).background(ColoresC4.Naranja).clickable(onClick = onCarrera),
             contentAlignment = Alignment.Center,
-        ) { Text(if (c.activa) "Detener carrera" else "Iniciar carrera", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 17.sp) }
+        ) { Text(if (c.activa) "Detener carrera" else "Iniciar carrera", color = GColors.OnPrimary, fontWeight = FontWeight.Bold, fontSize = 17.sp) }
     }
 }
 
@@ -91,7 +92,7 @@ fun cardinal(g: Float): String = listOf("N", "NE", "E", "SE", "S", "SO", "O", "N
 private fun Tarjeta(contenido: @Composable () -> Unit) {
     Column(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(ColoresC4.Tarjeta)
-            .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(20.dp)).padding(16.dp),
+            .border(1.dp, GColors.TextPrimary.copy(alpha = 0.08f), RoundedCornerShape(20.dp)).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) { contenido() }
 }
@@ -101,7 +102,7 @@ private fun Fila(k: String, v: String) {
     Row(Modifier.fillMaxWidth()) {
         Text(k, color = ColoresC4.Secondary, fontSize = 14.sp)
         Spacer(Modifier.weight(1f))
-        Text(v, color = Color.White, fontSize = 14.sp, fontFamily = FontFamily.Monospace)
+        Text(v, color = GColors.TextPrimary, fontSize = 14.sp, fontFamily = FontFamily.Monospace)
     }
 }
 
@@ -109,11 +110,11 @@ private fun Fila(k: String, v: String) {
 private fun Rosa(rumbo: Float?) {
     Box(Modifier.size(200.dp), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
-            drawCircle(Color.White.copy(alpha = 0.12f), style = Stroke(2.dp.toPx()))
+            drawCircle(GColors.TextPrimary.copy(alpha = 0.12f), style = Stroke(2.dp.toPx()))
             for (i in 0 until 36) {
                 val a = rad(i * 10.0 - 90)
                 val r1 = size.minDimension / 2; val r2 = r1 - (if (i % 9 == 0) 16.dp else 8.dp).toPx()
-                drawLine(Color.White.copy(alpha = if (i % 9 == 0) 0.7f else 0.25f),
+                drawLine(GColors.TextPrimary.copy(alpha = if (i % 9 == 0) 0.7f else 0.25f),
                     Offset(center.x + r1 * kotlin.math.cos(a).toFloat(), center.y + r1 * kotlin.math.sin(a).toFloat()),
                     Offset(center.x + r2 * kotlin.math.cos(a).toFloat(), center.y + r2 * kotlin.math.sin(a).toFloat()), 2.dp.toPx())
             }

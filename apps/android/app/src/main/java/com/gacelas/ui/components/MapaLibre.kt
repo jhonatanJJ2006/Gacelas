@@ -1,5 +1,6 @@
 package com.gacelas.ui.components
 
+import com.gacelas.ui.theme.GColors
 import android.graphics.PointF
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -38,7 +39,7 @@ import org.maplibre.geojson.Point
 data class TrazoMapa(val puntos: List<LatLng>, val color: Color, val anchoDp: Float, val opacidad: Float = 1f)
 
 /** Circulo de tamano fijo en pantalla (radio en dp). Con [id] se puede tocar. */
-data class CirculoMapa(val centro: LatLng, val radioDp: Float, val relleno: Color, val borde: Color = Color.White, val bordeDp: Float = 2f, val id: String? = null)
+data class CirculoMapa(val centro: LatLng, val radioDp: Float, val relleno: Color, val borde: Color = GColors.TextPrimary, val bordeDp: Float = 2f, val id: String? = null)
 
 private const val FUENTE_TRAZOS = "gacelas-trazos"
 private const val FUENTE_CIRCULOS = "gacelas-circulos"
@@ -67,7 +68,7 @@ fun MapaLibre(
     modifier: Modifier,
     trazos: List<TrazoMapa> = emptyList(),
     circulos: List<CirculoMapa> = emptyList(),
-    oscuro: Boolean = true,
+    oscuro: Boolean = !com.gacelas.ui.theme.GColors.claro,
     centro: LatLng = Mapas.CENTRO_LOJA,
     zoom: Double = 14.0,
     alTocar: ((LatLng) -> Unit)? = null,

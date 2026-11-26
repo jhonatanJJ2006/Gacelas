@@ -131,19 +131,19 @@ fun RutasTablero(
                 ) {
                     Icon(Icons.Filled.Search, null, tint = GColors.C2Violeta, modifier = Modifier.size(20.dp))
                     Box(Modifier.weight(1f)) {
-                        if (consulta.isEmpty()) Text("Buscar en Loja", style = GType.bodyMd, color = Color.White.copy(alpha = 0.6f), maxLines = 1)
-                        BasicTextField(consulta, onConsulta, singleLine = true, textStyle = GType.bodyMd.copy(color = Color.White), cursorBrush = SolidColor(GColors.C2Violeta),
+                        if (consulta.isEmpty()) Text("Buscar en Loja", style = GType.bodyMd, color = GColors.TextPrimary.copy(alpha = 0.6f), maxLines = 1)
+                        BasicTextField(consulta, onConsulta, singleLine = true, textStyle = GType.bodyMd.copy(color = GColors.TextPrimary), cursorBrush = SolidColor(GColors.C2Violeta),
                             modifier = Modifier.fillMaxWidth().testTag("rutas-buscar"))
                     }
-                    if (consulta.isNotEmpty()) Icon(Icons.Filled.Close, "Borrar búsqueda", tint = Color.White.copy(alpha = 0.7f), modifier = Modifier.size(18.dp).clickable { onConsulta("") })
+                    if (consulta.isNotEmpty()) Icon(Icons.Filled.Close, "Borrar búsqueda", tint = GColors.TextPrimary.copy(alpha = 0.7f), modifier = Modifier.size(18.dp).clickable { onConsulta("") })
                 }
                 val activos = listOfNotNull(filtros.dificultad, filtros.etiqueta, filtros.distancia.takeIf { it != com.gacelas.rutas.domain.modelo.FiltroDistancia.Todas }).size
                 Row(
                     Modifier.height(48.dp).vidrioC2(RoundedCornerShape(16.dp)).clickable(role = Role.Button) { hojaFiltros = true }.testTag("boton-filtros").padding(horizontal = 12.dp),
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    Icon(Icons.Filled.Tune, null, tint = Color.White, modifier = Modifier.size(18.dp))
-                    Text(if (activos > 0) "Filtros $activos" else "Filtros", style = GType.labelLg.copy(fontWeight = FontWeight.Bold), color = Color.White, maxLines = 1)
+                    Icon(Icons.Filled.Tune, null, tint = GColors.TextPrimary, modifier = Modifier.size(18.dp))
+                    Text(if (activos > 0) "Filtros $activos" else "Filtros", style = GType.labelLg.copy(fontWeight = FontWeight.Bold), color = GColors.TextPrimary, maxLines = 1)
                 }
             }
             Row(Modifier.horizontalScroll(rememberScrollState()).testTag("filtro-categoria"), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -159,12 +159,12 @@ fun RutasTablero(
         Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(bottom = espacioInferior + 4.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 RotuloWidget(if (cargando) "Cargando rutas" else "${visibles.size} ${if (visibles.size == 1) "ruta" else "rutas"} en el mapa", Modifier.weight(1f))
-                Text(if (cerca != null) "Orden: más cerca" else "Orden: recomendadas", style = GType.labelMd, color = Color.White.copy(alpha = 0.6f), maxLines = 1)
+                Text(if (cerca != null) "Orden: más cerca" else "Orden: recomendadas", style = GType.labelMd, color = GColors.TextPrimary.copy(alpha = 0.6f), maxLines = 1)
             }
             if (visibles.isEmpty() && !cargando) com.gacelas.ui.components.EstadoVacioC2(
                 Icons.Filled.Search, "Sin rutas en el mapa",
                 if (consulta.isNotBlank()) "No hay rutas que coincidan con \"$consulta\"." else "No hay rutas con estos filtros.",
-                Modifier.padding(horizontal = 14.dp).clip(RoundedCornerShape(20.dp)).background(Color(0xCC1A0B2E)).padding(12.dp),
+                Modifier.padding(horizontal = 14.dp).clip(RoundedCornerShape(20.dp)).background(GColors.Velo).padding(12.dp),
                 accion = "Limpiar", onAccion = { onConsulta(""); onFiltros(FiltrosRuta()); soloOficiales = false },
                 compacto = true, tag = "rutas-vacio",
             )
@@ -193,7 +193,7 @@ private fun TarjetaCarrusel(
     val escala by androidx.compose.animation.core.animateFloatAsState(if (elegida) 1.04f else 1f, com.gacelas.ui.movimiento.Mov.medio(), label = "escala-tarjeta")
     val borde by androidx.compose.animation.animateColorAsState(if (elegida) colorDificultad(r.dificultad) else Tablero.WidgetBorde, com.gacelas.ui.movimiento.Mov.medio(), label = "borde-tarjeta")
     Column(
-        Modifier.width(300.dp).graphicsLayer { scaleX = escala; scaleY = escala }.clip(forma).background(Tablero.FondoWidget).background(Color(0xCC1A0B2E))
+        Modifier.width(300.dp).graphicsLayer { scaleX = escala; scaleY = escala }.clip(forma).background(Tablero.FondoWidget).background(GColors.Velo)
             .border(if (elegida) 1.5.dp else 1.dp, borde, forma)
             .clickable(onClickLabel = if (elegida) "Abrir ruta" else "Elegir ruta", onClick = onTocar).testTag("tarjeta-ruta-${r.id}").padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -207,37 +207,37 @@ private fun TarjetaCarrusel(
                     Text(texto, style = GType.labelMd.copy(fontSize = 10.sp, fontWeight = FontWeight.Black), color = color,
                         modifier = Modifier.clip(RoundedCornerShape(6.dp)).background(color.copy(alpha = 0.16f)).padding(horizontal = 6.dp, vertical = 2.dp))
                     if (seguridad != null) Row(
-                        Modifier.clip(RoundedCornerShape(6.dp)).background(Color.White.copy(alpha = 0.08f)).padding(horizontal = 6.dp, vertical = 2.dp),
+                        Modifier.clip(RoundedCornerShape(6.dp)).background(GColors.TextPrimary.copy(alpha = 0.08f)).padding(horizontal = 6.dp, vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(Icons.Filled.Shield, null, tint = Color.White.copy(alpha = 0.8f), modifier = Modifier.size(11.dp))
-                        Text(" ${seguridad.removePrefix("seguridad ")}", style = GType.labelMd.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold), color = Color.White, maxLines = 1)
+                        Icon(Icons.Filled.Shield, null, tint = GColors.TextPrimary.copy(alpha = 0.8f), modifier = Modifier.size(11.dp))
+                        Text(" ${seguridad.removePrefix("seguridad ")}", style = GType.labelMd.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold), color = GColors.TextPrimary, maxLines = 1)
                     }
                     if (r.oficial) Text("OFICIAL", style = GType.labelMd.copy(fontSize = 10.sp, fontWeight = FontWeight.Black), color = GColors.C2Violeta)
                 }
-                TextoAjustableC2(r.nombre, GType.headlineSm.copy(fontSize = 20.sp, lineHeight = 23.sp), Color.White, minimo = 0.7f)
+                TextoAjustableC2(r.nombre, GType.headlineSm.copy(fontSize = 20.sp, lineHeight = 23.sp), GColors.TextPrimary, minimo = 0.7f)
                 Text(
                     listOfNotNull(
                         "${Unidades.texto(r.distanciaKm, m, 1).replace('.', ',')} ${Unidades.etiquetaDistancia(m)}",
                         "+${r.elevacionM} m",
                         distanciaCerca?.let { "a ${Unidades.texto(it, m, 1).replace('.', ',')} ${Unidades.etiquetaDistancia(m)}" },
                     ).joinToString(" · "),
-                    style = GType.bodySm.copy(fontSize = 11.5.sp), color = Color.White.copy(alpha = 0.65f), maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    style = GType.bodySm.copy(fontSize = 11.5.sp), color = GColors.TextPrimary.copy(alpha = 0.65f), maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }
         }
         if (r.perfilElevacion.size > 2) LineaC2(r.perfilElevacion.map { it.toFloat() }, Modifier.height(34.dp).semantics { contentDescription = "Perfil de elevación" }, color = GColors.C2Violeta)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
-                Modifier.weight(1f).height(44.dp).clip(RoundedCornerShape(14.dp)).background(Color.White).clickable(role = Role.Button, onClickLabel = "Correr esta ruta", onClick = onCorrer)
+                Modifier.weight(1f).height(44.dp).clip(RoundedCornerShape(14.dp)).background(GColors.TextPrimary).clickable(role = Role.Button, onClickLabel = "Correr esta ruta", onClick = onCorrer)
                     .testTag("correr-ruta-${r.id}"),
                 contentAlignment = Alignment.Center,
             ) { Text("CORRER", style = GType.labelLg.copy(fontWeight = FontWeight.Black), color = Color(0xFF3B0764)) }
             Box(
-                Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.08f))
+                Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(GColors.TextPrimary.copy(alpha = 0.08f))
                     .clickable(role = Role.Button, onClickLabel = if (guardada) "Quitar de guardadas" else "Guardar ruta", onClick = onGuardar).testTag("guardar-ruta-${r.id}"),
                 contentAlignment = Alignment.Center,
-            ) { Icon(if (guardada) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, if (guardada) "Quitar de guardadas" else "Guardar ruta", tint = Color.White, modifier = Modifier.size(20.dp)) }
+            ) { Icon(if (guardada) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, if (guardada) "Quitar de guardadas" else "Guardar ruta", tint = GColors.TextPrimary, modifier = Modifier.size(20.dp)) }
         }
     }
 }

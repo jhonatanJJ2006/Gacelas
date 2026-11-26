@@ -39,7 +39,7 @@ import com.gacelas.actividad.domain.reglas.Rachas
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
-private val Aviso = GColors.C2Morado
+private val Aviso get() = GColors.C2Morado
 private val Fuego = Color(0xFFF97316)
 
 private fun plural(n: Int, uno: String, varios: String) = "$n ${if (n == 1) uno else varios}"
@@ -159,7 +159,7 @@ fun HojaRachaC2(r: Racha, carreras: List<Carrera>, onCerrar: () -> Unit, onCorre
                 Box(Modifier.size(150.dp).clip(CircleShape).background(androidx.compose.ui.graphics.Brush.radialGradient(listOf(tono.copy(alpha = 0.35f), Color.Transparent))))
                 Icon(Icons.Filled.LocalFireDepartment, null, tint = if (r.diaria > 0) Fuego else GColors.C2Muted.copy(alpha = 0.5f), modifier = Modifier.size(120.dp))
                 Text(
-                    "${r.diaria}", style = GType.headlineLg.copy(fontSize = androidx.compose.ui.unit.TextUnit(40f, androidx.compose.ui.unit.TextUnitType.Sp)), color = Color.White,
+                    "${r.diaria}", style = GType.headlineLg.copy(fontSize = androidx.compose.ui.unit.TextUnit(40f, androidx.compose.ui.unit.TextUnitType.Sp)), color = GColors.TextPrimary,
                     modifier = Modifier.padding(top = 30.dp).testTag("racha-numero"),
                 )
             }
@@ -204,7 +204,7 @@ fun HojaRachaC2(r: Racha, carreras: List<Carrera>, onCerrar: () -> Unit, onCorre
                     HITOS_RACHA.take(5).forEach { h ->
                         val logrado = r.mejorDiaria >= h
                         Text(
-                            "$h", style = GType.labelMd, color = if (logrado) Color.White else GColors.C2Muted,
+                            "$h", style = GType.labelMd, color = if (logrado) GColors.TextPrimary else GColors.C2Muted,
                             modifier = Modifier.clip(CircleShape).background(if (logrado) Fuego else GColors.C2S2).padding(horizontal = 10.dp, vertical = 3.dp),
                         )
                     }

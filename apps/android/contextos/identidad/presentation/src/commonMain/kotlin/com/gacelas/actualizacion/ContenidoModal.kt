@@ -1,5 +1,6 @@
 package com.gacelas.actualizacion
 
+import com.gacelas.ui.theme.GColors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -71,15 +72,15 @@ sealed interface Fase {
 
 /** Colores y medidas del export de Stitch (update-modal V3 "Compacta"). */
 object M3 {
-    val Tarjeta = Color(0xFF191F2F)
-    val Panel = Color(0xFF232A3A)
-    val Secondary = Color(0xFFA8B0C2)
+    val Tarjeta get() = GColors.C2Card
+    val Panel get() = GColors.C2S2
+    val Secondary get() = GColors.C2Muted
     val Naranja = Color(0xFF7B1FA2)
-    val Enlace = Color(0xFFC084FC)
-    val Magenta = Color(0xFFC084FC)
+    val Enlace get() = GColors.C2Violeta
+    val Magenta get() = GColors.C2Violeta
     val MagentaOscuro = Color(0xFF7B1FA2)
-    val Error = Color(0xFFFFB4AB)
-    fun blanco(a: Float) = Color.White.copy(alpha = a)
+    val Error get() = GColors.PeligroTexto
+    fun blanco(a: Float) = GColors.TextPrimary.copy(alpha = a)
 }
 
 private val display = SpaceGrotesk
@@ -131,7 +132,7 @@ fun ContenidoModal(
                     }
                     Spacer(Modifier.height(8.dp))
                 }
-                Text("Hay una nueva versión", style = TextStyle(fontFamily = display, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 26.sp, lineHeight = 30.sp), color = Color.White)
+                Text("Hay una nueva versión", style = TextStyle(fontFamily = display, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 26.sp, lineHeight = 30.sp), color = GColors.TextPrimary)
                 if (!compacto || obligatoria) {
                     Spacer(Modifier.height(4.dp))
                     Text(
@@ -154,7 +155,7 @@ private fun Cabecera(actual: String, nueva: String) {
         com.gacelas.ui.components.IconoGacelas(32.dp)
         Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
-            Text("RUNCITY", style = TextStyle(fontFamily = display, fontSize = 13.sp, lineHeight = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.05.em), color = Color.White)
+            Text("RUNCITY", style = TextStyle(fontFamily = display, fontSize = 13.sp, lineHeight = 16.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.05.em), color = GColors.TextPrimary)
             Text("LOJA RUNNING CO.", style = TextStyle(fontFamily = Inter, fontSize = 8.5.sp, lineHeight = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.1.em), color = M3.Secondary.copy(alpha = 0.8f))
         }
         Row(
@@ -166,7 +167,7 @@ private fun Cabecera(actual: String, nueva: String) {
             Spacer(Modifier.width(6.dp))
             Text("→", style = base.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold), color = M3.Magenta)
             Spacer(Modifier.width(6.dp))
-            Text("v$nueva", style = base.copy(fontWeight = FontWeight.SemiBold), color = Color.White)
+            Text("v$nueva", style = base.copy(fontWeight = FontWeight.SemiBold), color = GColors.TextPrimary)
             Spacer(Modifier.width(4.dp))
             Box(Modifier.size(6.dp).clip(CircleShape).background(M3.Magenta))
         }
@@ -219,9 +220,9 @@ private fun BotonNaranja(texto: String, onClick: () -> Unit) {
             .clip(com.gacelas.ui.components.FormaBotonC2).background(Brush.horizontalGradient(listOf(M3.MagentaOscuro, Color(0xFFA855F7)))).clickable(onClick = onClick).testTag("boton-actualizar"),
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(texto, style = TextStyle(fontFamily = Inter, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 16.sp, fontWeight = FontWeight.Black), color = Color.White)
+        Text(texto, style = TextStyle(fontFamily = Inter, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 16.sp, fontWeight = FontWeight.Black), color = GColors.OnPrimary)
         Spacer(Modifier.width(8.dp))
-        Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = Color.White, modifier = Modifier.size(20.dp))
+        Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = GColors.OnPrimary, modifier = Modifier.size(20.dp))
     }
 }
 
@@ -244,8 +245,8 @@ private fun Pie(fase: Fase, versionNueva: String, obligatoria: Boolean, onActual
                     Box(Modifier.size(6.dp).clip(CircleShape).background(M3.Magenta))
                     Spacer(Modifier.width(6.dp))
                     val st = TextStyle(fontFamily = display, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                    Text("Descargando $versionNueva…", style = st, color = Color.White, modifier = Modifier.weight(1f))
-                    Text("${fase.porcentaje}%", style = st.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.025).em), color = Color.White, modifier = Modifier.testTag("porcentaje"))
+                    Text("Descargando $versionNueva…", style = st, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
+                    Text("${fase.porcentaje}%", style = st.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.025).em), color = GColors.TextPrimary, modifier = Modifier.testTag("porcentaje"))
                 }
                 BarraProgreso(fase.porcentaje / 100f)
                 Text(textoBytes(fase.hechos, fase.total), style = TextStyle(fontFamily = Inter, fontSize = 11.sp), color = M3.Secondary.copy(alpha = 0.8f), modifier = Modifier.testTag("bytes"))

@@ -225,7 +225,7 @@ fun RutaSugeridaC2(ruta: com.gacelas.rutas.domain.modelo.Ruta?, m: Boolean, onRu
 @Composable
 fun ChipC2(
     rotulo: String, valor: String, resto: String = "", acento: Color, modifier: Modifier = Modifier,
-    borde: Color = Color(0xFF2C3446), fondo: Brush = Brush.linearGradient(listOf(GColors.C2Card, GColors.C2Card)),
+    borde: Color = GColors.C2Linea, fondo: Brush = Brush.linearGradient(listOf(GColors.C2Card, GColors.C2Card)),
 ) {
     val estilo = GType.labelMd.copy(fontFamily = com.gacelas.ui.theme.Inter, fontSize = 12.sp, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold)
     Text(
@@ -234,7 +234,7 @@ fun ChipC2(
             pushStyle(androidx.compose.ui.text.SpanStyle(color = acento)); append(valor.uppercase()); pop()
             append(resto.uppercase())
         },
-        style = estilo, color = Color.White,
+        style = estilo, color = GColors.TextPrimary,
         modifier = modifier.sesgoX(-10f).background(fondo).border(1.dp, borde).padding(horizontal = 10.dp, vertical = 6.dp),
     )
 }

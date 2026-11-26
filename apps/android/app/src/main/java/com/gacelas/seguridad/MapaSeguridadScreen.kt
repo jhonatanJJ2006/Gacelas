@@ -75,7 +75,7 @@ fun MapaSeguridadScreen(onAtras: () -> Unit) {
             circulos = incidentes.flatMap { i ->
                 val color = colorIncidente(i)
                 listOf(CirculoMapa(LatLng(i.lat, i.lng), 22f, color.copy(alpha = 0.18f), Color.Transparent, 0f), CirculoMapa(LatLng(i.lat, i.lng), 8f, color, GColors.C2Bg, 2f, id = i.id))
-            } + yo?.let { listOf(CirculoMapa(it, 18f, GColors.Info.copy(alpha = 0.25f), Color.Transparent, 0f), CirculoMapa(it, 8f, GColors.Info, Color.White, 3f)) }.orEmpty(),
+            } + yo?.let { listOf(CirculoMapa(it, 18f, GColors.Info.copy(alpha = 0.25f), Color.Transparent, 0f), CirculoMapa(it, 8f, GColors.Info, GColors.OnPrimary, 3f)) }.orEmpty(),
             centro = yo ?: Mapas.CENTRO_LOJA, zoom = 14.5,
             alListo = { m -> mapa = m; m.animateCamera(CameraUpdateFactory.tiltTo(45.0)) },
         )

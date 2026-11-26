@@ -69,7 +69,7 @@ class RepositoriosTest {
 
     @Test fun ajustes_persisten() = runBlocking {
         val repo = LocalAjustesRepository(store)
-        assertTrue(repo.ajustes.first().modoOscuro)
+        assertEquals(com.gacelas.identidad.domain.modelo.ModoTema.Oscuro, repo.ajustes.first().tema)
         repo.actualizar { it.copy(unidadesMetricas = false, visibilidad = Visibilidad.Privado, metronomoBpm = 180) }
         val a = LocalAjustesRepository(store).ajustes.first()
         assertEquals(false, a.unidadesMetricas); assertEquals(Visibilidad.Privado, a.visibilidad); assertEquals(180, a.metronomoBpm)
