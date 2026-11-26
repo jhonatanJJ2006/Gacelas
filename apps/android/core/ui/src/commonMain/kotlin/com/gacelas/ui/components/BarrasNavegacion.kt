@@ -52,8 +52,6 @@ import androidx.compose.runtime.getValue
 import com.gacelas.navigation.Destinos
 import com.gacelas.ui.LocalIdioma
 import com.gacelas.ui.tr
-import com.gacelas.ui.navegacion.BarraNavColapsable
-import com.gacelas.ui.navegacion.ItemNavColapsable
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
 import com.gacelas.ui.theme.GColors
@@ -83,35 +81,68 @@ fun BarraSuperior(sinLeer: Int, onNotificaciones: () -> Unit, onPerfil: () -> Un
     }
 }
 
-/**
- * Barra inferior de las pantallas principales: navbar B "menu colapsable" (burbuja morada elevada
- * que salta a la seccion activa), el mismo componente que usa el panel de administracion. Las
- * secciones son las de [itemsNav]; no lleva insignias (no hay conteos reales por pestana).
- */
 @Composable
 fun BarraInferior(rutaActual: String, onNavegar: (String) -> Unit) {
-    val idioma = LocalIdioma.current
-    val items = itemsNav.map { ItemNavColapsable(id = it.ruta, etiqueta = tr(idioma, it.etiqueta), icono = it.icono) }
-    val activa = if (rutaActual == Destinos.EVENTOS) Destinos.COMUNIDAD else rutaActual
-    BarraNavColapsable(items = items, seleccionado = activa, onElegir = onNavegar, prefijoTag = "nav")
+    // Rediseno movil: barra C2 con borde superior, capsula en la pestana activa y el boton de correr al
+    // centro, mas grande, con halo morado y etiqueta. Respeta la barra de gestos (navigationBarsPadding).
+    Column(Modifier.fillMaxWidth().background(GColors.C2Bg).navigationBarsPadding()) {
+        Box(Modifier.fillMaxWidth().height(1.dp).background(GColors.C2Linea))
+        Row(
+            Modifier.fillMaxWidth().height(72.dp).padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            itemsNav.forEach { item ->
+                val interaccion = remember { MutableInteractionSource() }
+                if (item.principal) {
+                    Column(
+                        Modifier.weight(1f).wrapContentHeight(Alignment.Bottom, unbounded = true).offset(y = (-4).dp).pulsacionC2(interaccion).clickable(interaccion, null, role = androidx.compose.ui.semantics.Role.Button) { onNavegar(item.ruta) }
+                            .testTag("nav-correr"),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Box(Modifier.size(66.dp).clip(CircleShape).background(GColors.C2Morado.copy(alpha = 0.24f)), contentAlignment = Alignment.Center) {
+                            Box(
+                                Modifier.size(56.dp).shadow(10.dp, CircleShape, ambientColor = GColors.C2Morado, spotColor = GColors.C2Morado).clip(CircleShape)
+                                    .background(GradienteC2),
+                                contentAlignment = Alignment.Center,
+                            ) { Icon(item.icono, contentDescription = item.etiqueta, tint = GColors.OnPrimary, modifier = Modifier.size(32.dp)) }
+                        }
+                        Text(tr(LocalIdioma.current, item.etiqueta), style = GType.labelMd.copy(fontWeight = FontWeight.ExtraBold), color = GColors.C2Violeta, maxLines = 1)
+                    }
+                } else {
+                    val activo = rutaActual == item.ruta || (item.ruta == Destinos.COMUNIDAD && rutaActual == Destinos.EVENTOS)
+                    val color by animateColorAsState(if (activo) GColors.C2Violeta else GColors.C2Muted, Mov.corto(), label = "pestana")
+                    val capsula by animateColorAsState(if (activo) GColors.C2Morado.copy(alpha = 0.22f) else Color.Transparent, Mov.corto(), label = "capsula")
+                    Column(
+                        Modifier.weight(1f).pulsacionC2(interaccion).clickable(interaccion, null, role = androidx.compose.ui.semantics.Role.Tab) { onNavegar(item.ruta) }
+                            .semantics { selected = activo }.testTag("nav-${item.ruta}").padding(vertical = 6.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Box(Modifier.width(54.dp).height(30.dp).clip(CircleShape).background(capsula), contentAlignment = Alignment.Center) {
+                            Icon(item.icono, contentDescription = null, tint = color, modifier = Modifier.size(24.dp))
+                        }
+                        TextoAjustableC2(tr(LocalIdioma.current, item.etiqueta), GType.labelMd.copy(fontWeight = if (activo) FontWeight.ExtraBold else FontWeight.SemiBold), color,
+                            Modifier.padding(top = 2.dp), minimo = 0.7f)
+                    }
+                }
+            }
+        }
+    }
 }
-
-/** Alto de la barra (burbuja + barra + margenes, sin la barra de gestos); el contenido deja este espacio libre. */
-private val AltoBarraInferior = 94.dp
 
 /** Espacio que el dock ocupa abajo; las pantallas que dibujan bajo el dock (mapa de Rutas) lo usan para no tapar botones. */
 val LocalEspacioDock = androidx.compose.runtime.staticCompositionLocalOf { 0.dp }
 
 /**
  * Scaffold de las pantallas principales (direccion A "Tablero"): fondo morado con degradado, dock
- * barra inferior con burbuja (navbar B colapsable) y, salvo en Inicio y Rutas (el mapa llega al borde superior), la
+ * flotante con CORRER a la derecha y, salvo en Inicio y Rutas (el mapa llega al borde superior), la
  * barra superior. El contenido reserva el alto del dock para que nunca tape un boton; Rutas dibuja el
  * mapa por debajo y usa [LocalEspacioDock] para subir sus tarjetas.
  */
 @Composable
 fun ScaffoldPrincipal(rutaActual: String, sinLeer: Int, onNavegar: (String) -> Unit, content: @Composable () -> Unit) {
     val nav = androidx.compose.foundation.layout.WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    val espacio = AltoBarraInferior + nav
+    val espacio = AltoDock + nav
     val bajoDock = rutaActual == Destinos.RUTAS
     Box(Modifier.fillMaxSize().background(Tablero.Fondo)) {
         Column(Modifier.fillMaxSize()) {

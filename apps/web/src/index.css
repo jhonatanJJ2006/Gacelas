@@ -753,11 +753,6 @@ a.c2-boton:active {
   --nc-globo: rgb(var(--c-text-primary, 255 255 255));
   --nc-sobre-globo: rgb(var(--c-c2-bg, 12 19 34));
 }
-/* Escritorio: el riel (sticky) es un hermano del contenido; la barra inferior no se usa. */
-.navc-solo-riel .navc-barra,
-.navc-solo-barra .navc-riel {
-  display: none !important;
-}
 /* Pantallas bajas: la lista de 11 secciones cabe sin desplazarse. */
 @media (min-width: 1024px) and (max-height: 860px) {
   .navc-usuario .navc-riel {

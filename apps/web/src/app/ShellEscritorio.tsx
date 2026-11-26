@@ -154,7 +154,7 @@ function BarraLateral() {
       claveAlmacen="runcity.usuario.nav.colapsado"
       buscador={false}
       pie={<BotonBuscar />}
-      className="navc-usuario navc-solo-riel"
+      className="navc-usuario"
     />
   )
 }

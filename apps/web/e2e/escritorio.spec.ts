@@ -70,7 +70,7 @@ test.describe('Escritorio', () => {
       'page'
     )
     // La barra inferior movil no se muestra en escritorio.
-    await expect(page.getByTestId('nav-barra')).toBeHidden()
+    await expect(page.locator('nav.fixed.bottom-0')).toBeHidden()
   })
 
   test('riel colapsable: 96 px, se expande a 248 px y recuerda el estado', async ({

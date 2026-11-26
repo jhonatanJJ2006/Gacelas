@@ -4,23 +4,11 @@ import { notificacionesVisibles, useAvisos } from '../contexts/avisos/api'
 import { FotoPerfil } from '../contexts/identidad'
 import { useIdentidad } from '../contexts/identidad/api'
 import { BarraSuperior } from './BarraSuperior'
-import { useEsEscritorio } from '../shared/lib/useEsEscritorio'
 import { traducir } from '../shared/i18n/textos'
 import { iniciales } from '../shared/ui/Visual'
-import { NavColapsable, type ItemNav } from '../shared/ui/navegacion/NavColapsable'
-
-/** Secciones de la barra inferior (las de la app de usuario, en su orden). */
-const NAV_MOVIL = [
-  { path: '/inicio', label: 'Inicio', icon: 'home' },
-  { path: '/rutas', label: 'Rutas', icon: 'map' },
-  { path: '/correr', label: 'Correr', icon: 'play_arrow' },
-  { path: '/comunidad', label: 'Comunidad', icon: 'groups' },
-  { path: '/perfil', label: 'Perfil', icon: 'person' },
-]
 
 export function AppLayout() {
   const location = useLocation()
-  const escritorio = useEsEscritorio()
   const refPagina = useEntradaPagina<HTMLDivElement>(location.pathname)
 
   const isActive = (path: string) =>
@@ -33,13 +21,13 @@ export function AppLayout() {
   // Comunidad (Figma C2) e Inicio (rediseno web) traen su propia cabecera en movil.
   const sinBarra = location.pathname === '/comunidad' || location.pathname === '/inicio'
 
-  const itemsInferior: ItemNav[] = NAV_MOVIL.map((item) => ({
-    id: item.path.slice(1),
-    etiqueta: traducir(ajustes.idioma, item.label),
-    a: item.path,
-    icono: item.icon,
-    activoEn: () => isActive(item.path),
-  }))
+  const navItems = [
+    { path: '/inicio', label: 'Inicio', icon: 'home' },
+    { path: '/rutas', label: 'Rutas', icon: 'map' },
+    { path: '/correr', label: '', icon: 'play_arrow', isMain: true },
+    { path: '/comunidad', label: 'Comunidad', icon: 'groups' },
+    { path: '/perfil', label: 'Perfil', icon: 'person' },
+  ]
 
   return (
     <div className="min-h-screen flex flex-col bg-bg-primary text-text-primary">
@@ -99,16 +87,49 @@ export function AppLayout() {
         </div>
       </main>
 
-      {/* Barra inferior (movil y web angosta); el riel de escritorio lo pinta ShellEscritorio. */}
-      {!escritorio && (
-        <NavColapsable
-          items={itemsInferior}
-          etiqueta="Navegación principal"
-          claveAlmacen="runcity.usuario.nav.movil"
-          buscador={false}
-          className="navc-usuario navc-solo-barra"
-        />
-      )}
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-bg-secondary/95 backdrop-blur-xl border-t border-border-subtle pb-safe">
+        <div className="flex items-center justify-around h-20 px-2">
+          {navItems.map((item) =>
+            item.isMain ? (
+              <Link
+                key={item.path}
+                to={item.path}
+                aria-label="Correr"
+                className="flex flex-col items-center justify-center -mt-8"
+              >
+                <div className="w-14 h-14 rounded-full bg-primary-200 shadow-lg flex items-center justify-center text-on-primary active:scale-95 transition-transform">
+                  <span
+                    className="material-symbols-outlined text-[32px]"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    {item.icon}
+                  </span>
+                </div>
+              </Link>
+            ) : (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+                  isActive(item.path)
+                    ? 'text-primary-200'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                <span
+                  className="material-symbols-outlined text-[24px]"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  {item.icon}
+                </span>
+                <span className="font-label-md text-label-md">
+                  {item.label ? traducir(ajustes.idioma, item.label) : ''}
+                </span>
+              </Link>
+            )
+          )}
+        </div>
+      </nav>
     </div>
   )
 }
