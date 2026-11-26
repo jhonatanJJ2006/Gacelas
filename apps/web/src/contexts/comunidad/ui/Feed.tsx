@@ -624,7 +624,10 @@ export function Feed() {
           }
         >
           {hilo.length > 0 && (
-            <ul className="fade-bordes-y mb-3 max-h-60 overflow-y-auto space-y-2" aria-label="Comentarios">
+            <ul
+              className="fade-bordes-y mb-3 max-h-60 overflow-y-auto space-y-2"
+              aria-label="Comentarios"
+            >
               {hilo.map((c) => (
                 <li key={c.id} className="text-body-sm flex items-start gap-2">
                   <span className="flex-1">
