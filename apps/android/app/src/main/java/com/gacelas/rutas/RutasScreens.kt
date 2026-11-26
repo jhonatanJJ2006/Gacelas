@@ -161,6 +161,8 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
     }
     val espacio = com.gacelas.ui.components.LocalEspacioDock.current
     androidx.activity.compose.BackHandler { comoLista = true }
+    // Lo que tapan la cabecera y el carrusel (px): la ruta elegida se encuadra entera en la franja libre.
+    var zonaLibre by remember { mutableStateOf<Pair<Float, Float>?>(null) }
     RutasTablero(
         lista = lista, guardadas = guardadas, consulta = q.texto, onConsulta = vm::buscar, filtros = q.filtros, onFiltros = vm::filtrar,
         cerca = q.cerca, onCerca = onCerca, m = m, puedeDibujar = repo != null && perfilSesion != null,
@@ -168,7 +170,8 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
         onCorrerRuta = { id -> com.gacelas.rutas.infrastructure.RutaActiva.id = id; onCorrerRuta() },
         onDibujar = onDibujar, onAlternarGuardada = alternarGuardada, onVerLista = { comoLista = true },
         seguridad = seguridad, espacioInferior = espacio, cargando = cargando,
-        mapa = { elegida, otras, alElegir -> MapaRutasTablero(elegida, otras, alElegir) },
+        mapa = { elegida, otras, alElegir -> MapaRutasTablero(elegida, otras, alElegir, zonaLibre) },
+        alMedirZonaLibre = { arriba, abajo -> zonaLibre = arriba to abajo },
     )
 }
 
@@ -178,7 +181,7 @@ fun ListaRutasScreen(onBuscar: () -> Unit, onRuta: (String) -> Unit, onDibujar: 
  * ella. Controles: Centrar (pide la ubicacion con el dialogo nativo) y Norte.
  */
 @Composable
-private fun androidx.compose.foundation.layout.BoxScope.MapaRutasTablero(elegida: com.gacelas.rutas.domain.modelo.Ruta?, otras: List<com.gacelas.rutas.domain.modelo.Ruta>, alElegir: (String) -> Unit) {
+private fun androidx.compose.foundation.layout.BoxScope.MapaRutasTablero(elegida: com.gacelas.rutas.domain.modelo.Ruta?, otras: List<com.gacelas.rutas.domain.modelo.Ruta>, alElegir: (String) -> Unit, zonaLibre: Pair<Float, Float>?) {
     val context = LocalContext.current
     val dens = androidx.compose.ui.platform.LocalDensity.current.density
     var mapa by remember { mutableStateOf<org.maplibre.android.maps.MapLibreMap?>(null) }
@@ -206,14 +209,19 @@ private fun androidx.compose.foundation.layout.BoxScope.MapaRutasTablero(elegida
             alMoverCamara = { rumbo = it.cameraPosition.bearing.toFloat() },
             alListo = { mapa = it },
         )
-        LaunchedEffect(principal, mapa) {
-            val mp = mapa ?: return@LaunchedEffect
-            // Encuadre en la franja libre entre la cabecera y el carrusel. Incluye tu posicion si estas cerca
-            // (unos 15 km); si estas lejos de Loja, solo la ruta para no alejar el mapa.
-            val cerca = yo?.takeIf { y -> principal.any { kotlin.math.abs(it.latitude - y.latitude) < 0.15 && kotlin.math.abs(it.longitude - y.longitude) < 0.15 } }
-            if (principal.size >= 2) mp.animateCamera(org.maplibre.android.camera.CameraUpdateFactory.newLatLngBounds(com.gacelas.ui.components.MapaMat.limites(principal + listOfNotNull(cerca)),
-                (40 * dens).toInt(), (190 * dens).toInt(), (90 * dens).toInt(), (330 * dens).toInt()), 900)
-        }
+        // Encuadre animado de la ruta ENTERA en la franja libre entre la cabecera y el carrusel (medidas reales;
+        // sin medir aun, los valores de siempre). Incluye tu posicion si estas cerca (unos 15 km); si estas lejos de
+        // Loja, solo la ruta para no alejar el mapa.
+        val cerca = yo?.takeIf { y -> principal.any { kotlin.math.abs(it.latitude - y.latitude) < 0.15 && kotlin.math.abs(it.longitude - y.longitude) < 0.15 } }
+        com.gacelas.ui.components.EncuadrarRutaEfecto(
+            mapa, principal + listOfNotNull(cerca),
+            com.gacelas.mapa.EncuadreMapa.paddingDp(
+                dens, arriba = zonaLibre?.let { it.first / dens + 16f } ?: 190f, abajo = zonaLibre?.let { it.second / dens + 16f } ?: 330f,
+                izquierda = 40f, derecha = 90f,
+            ),
+            clave = elegida?.id to zonaLibre?.let { (it.first / 8).toInt() to (it.second / 8).toInt() },
+            activo = principal.isNotEmpty(),
+        )
     } else com.gacelas.ui.components.MapaEsquemaC2(
         elegida?.puntos.orEmpty(), Modifier.fillMaxSize(),
         otros = otras.take(8).map { it.puntos }.filter { it.size >= 2 },

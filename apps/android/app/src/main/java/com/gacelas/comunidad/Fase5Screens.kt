@@ -1,7 +1,6 @@
 package com.gacelas.comunidad
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,11 +18,9 @@ import com.gacelas.comunidad.presentation.ui.EventoEnVivoContenido
 import com.gacelas.ui.aviso
 import com.gacelas.ui.components.CirculoMapa
 import com.gacelas.ui.components.MapaLibre
-import com.gacelas.ui.components.MapaMat
 import com.gacelas.ui.components.Mapas
 import com.gacelas.ui.components.TrazoMapa
 import com.gacelas.ui.contenedor
-import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 
@@ -82,11 +79,13 @@ fun EventoEnVivoScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
         vm, onAtras, onCorrer,
         mapa = if (!Mapas.configurado()) null else { trazos, circulos, encuadre ->
             var mapaEvento by remember { mutableStateOf<MapLibreMap?>(null) }
-            LaunchedEffect(encuadre.size, mapaEvento) {
-                val m = mapaEvento ?: return@LaunchedEffect
-                if (encuadre.size < 2) return@LaunchedEffect
-                runCatching { m.moveCamera(CameraUpdateFactory.newLatLngBounds(MapaMat.limites(encuadre.map { LatLng(it.lat, it.lng) }), 120)) }
-            }
+            // Todos los corredores a la vista: se anima al aparecer el primero y cuando cambia cuantos hay (el
+            // movimiento en vivo no arrastra la camara).
+            com.gacelas.ui.components.EncuadrarRutaEfecto(
+                mapaEvento, encuadre.map { LatLng(it.lat, it.lng) },
+                com.gacelas.mapa.EncuadreMapa.paddingDp(androidx.compose.ui.platform.LocalDensity.current.density, arriba = 48f, abajo = 48f, izquierda = 48f, derecha = 48f),
+                clave = encuadre.size,
+            )
             MapaLibre(
                 Modifier.fillMaxSize().testTag("mapa-evento"),
                 trazos = trazos.map { t -> TrazoMapa(t.puntos.map { LatLng(it.lat, it.lng) }, Color(t.argb), t.anchoDp, t.opacidad) },

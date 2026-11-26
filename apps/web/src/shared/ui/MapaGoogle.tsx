@@ -3,8 +3,10 @@ import { haversineM } from '../lib/geo'
 import { rumboReciente, tieneMapIdPropio, tramosPorRitmo } from '../lib/mapaEstilo'
 import { type Coordenada } from '../lib/mapas'
 import { combinar, useRumboSensor } from '../lib/rumbo'
+import { type PaddingMapa } from '../lib/encuadre'
 import { Corredor3DHtml } from './mapa/Corredor3DHtml'
 import { Corredor3DMapa } from './mapa/Corredor3DMapa'
+import { EncuadrarRuta } from './mapa/EncuadrarRuta'
 import {
   BotonSeguir,
   MapaBase,
@@ -35,6 +37,7 @@ export function MapaGoogle({
   plan,
   adelanteM,
   recentrar = 0,
+  paddingEncuadre,
 }: {
   puntos: PuntoMapa[]
   alternativa: ReactNode
@@ -50,6 +53,8 @@ export function MapaGoogle({
   adelanteM?: number
   /** Cambia el valor para volver a seguir al corredor (boton propio de la pantalla). */
   recentrar?: number
+  /** Espacio que tapan paneles sobre el mapa; la ruta se encuadra en la franja libre. */
+  paddingEncuadre?: number | Partial<PaddingMapa>
 }) {
   const tramos = useMemo(() => tramosPorRitmo(puntos), [puntos])
   const ultimo = puntos[puntos.length - 1] ?? null
@@ -90,7 +95,8 @@ export function MapaGoogle({
       }
     >
       {plan && <RutaPlan camino={plan} />}
-      <RutaEstilizada tramos={tramos} ajustar={!seguir} />
+      <RutaEstilizada tramos={tramos} />
+      {!seguir && puntos.length > 0 && <EncuadrarRuta puntos={puntos} padding={paddingEncuadre} />}
       {!seguir && puntos.length > 1 && <Pin pos={puntos[0]} tipo="inicio" />}
       {!seguir && puntos.length > 1 && <Pin pos={puntos[puntos.length - 1]} tipo="meta" />}
       {seguir &&

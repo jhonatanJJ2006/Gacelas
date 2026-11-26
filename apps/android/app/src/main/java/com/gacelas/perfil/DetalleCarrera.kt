@@ -61,7 +61,8 @@ fun DetalleCarreraScreen(id: String, onAtras: () -> Unit) {
         onAtras = onAtras, onEliminar = { vm.eliminar(); onAtras() },
         onExportarTcx = { carrera -> compartirTcx(context, carrera) },
         mapa = { carrera ->
-            MapaGacelas(carrera.puntos.aLatLng(), Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(20.dp))) {
+            MapaGacelas(carrera.puntos.aLatLng(), Modifier.fillMaxWidth().height(240.dp).clip(RoundedCornerShape(20.dp)),
+                paddingEncuadre = com.gacelas.mapa.EncuadreMapa.paddingDp(androidx.compose.ui.platform.LocalDensity.current.density, arriba = 32f, abajo = 32f, izquierda = 32f, derecha = 32f)) {
                 com.gacelas.ui.components.MapaEsquemaC2(carrera.puntos.map { it.lat to it.lng }, Modifier.fillMaxWidth().height(240.dp),
                     marcadores = listOfNotNull(carrera.puntos.firstOrNull()?.let { it.lat to it.lng }))
             }

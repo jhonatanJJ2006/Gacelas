@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Unidades } from '../../../shared/lib/geo'
 import { trazoDeOpcion } from '../../../shared/lib/mapas'
+import { usePaddingPaneles } from '../../../shared/lib/usePaddingPaneles'
 import { MapaGoogle } from '../../../shared/ui/MapaGoogle'
 import { useIdentidad } from '../../identidad/api'
 import { useRutas } from '../application/estado'
@@ -22,16 +23,22 @@ export function BuscadorRutas() {
   const guardadas = useRutas((s) => s.rutasGuardadas)
   const alternarGuardada = useRutas((s) => s.alternarRutaGuardada)
   const destinos = rutas.slice(0, 4).map((r) => r.nombre)
+  // La ruta se encuadra en la franja libre entre la cabecera y la hoja de rutas.
+  const mapaRef = useRef<HTMLDivElement>(null)
+  const cabeceraRef = useRef<HTMLDivElement>(null)
+  const hojaRef = useRef<HTMLDivElement>(null)
+  const paddingMapa = usePaddingPaneles(mapaRef, [cabeceraRef, hojaRef])
   const rutaId = seleccionada?.id.startsWith('ruta-') ? seleccionada.id.slice(5) : null
   const guardada = rutaId != null && guardadas.includes(rutaId)
 
   return (
     <main className="zona-oscura w-full min-h-screen bg-[#070b13] flex flex-col relative">
       <h1 className="sr-only">Buscar rutas</h1>
-      <div className="absolute inset-0 z-0 bg-[#0b1220] overflow-hidden">
+      <div ref={mapaRef} className="absolute inset-0 z-0 bg-[#0b1220] overflow-hidden">
         <MapaGoogle
           puntos={trazoDeOpcion(selectedRoute)}
           zoom={14}
+          paddingEncuadre={paddingMapa}
           className="w-full h-full"
           alternativa={
             <svg className="w-full h-full object-cover scale-110 opacity-90" viewBox="0 0 600 900">
@@ -105,7 +112,7 @@ export function BuscadorRutas() {
       </div>
 
       <div className="relative z-30 flex-1 flex flex-col">
-        <div className="pt-6 px-4 space-y-3">
+        <div ref={cabeceraRef} className="pt-6 px-4 space-y-3">
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigate('/rutas')}
@@ -166,7 +173,10 @@ export function BuscadorRutas() {
 
         <div className="flex-1" />
 
-        <div className="rounded-t-3xl bg-[#0f1625]/95 border-t border-text-primary/10 p-5 pb-8">
+        <div
+          ref={hojaRef}
+          className="rounded-t-3xl bg-[#0f1625]/95 border-t border-text-primary/10 p-5 pb-8"
+        >
           {seleccionada && (
             <div className="flex items-start justify-between mb-3">
               <div>

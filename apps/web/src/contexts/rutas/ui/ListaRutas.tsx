@@ -1,5 +1,5 @@
 import { EsqueletoLista } from '../../../shared/ui/Esqueletos'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ID_USUARIO, type Ruta } from '../../../mocks/data'
 import { Unidades, decimal } from '../../../shared/lib/geo'
@@ -105,6 +105,9 @@ export function ListaRutas() {
   const [verMapa, setVerMapa] = useState(false)
   const [orden, setOrden] = useState<Orden>('Recomendadas')
   const [seleccion, setSeleccion] = useState<string | null>(null)
+  /** Ruta que la camara del mapa muestra entera (marcador o boton "Ver en el mapa"). */
+  const [enMapa, setEnMapa] = useState<string | null>(null)
+  const zonaMapa = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const sociales = useRutas((s) => s.rutasSociales)
   const cargando = useRutas((s) => s.cargandoRutas)
@@ -121,6 +124,25 @@ export function ListaRutas() {
     ? ordenarPorCercania(filtradas, cerca)
     : ordenarRutas(filtradas, orden, seguridad)
   const elegida = rutas.find((r) => r.id === seleccion) ?? rutas[0]
+  const rutasMapa = useMemo(
+    () =>
+      rutas
+        .filter((r) => (r.puntos?.length ?? 0) > 0)
+        .map((r) => ({
+          id: r.id,
+          nombre: r.nombre,
+          salida: r.puntos![0],
+          camino: r.puntos,
+          detalle: `${Unidades.texto(r.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)} · +${r.elevacionM} m · ${r.dificultad}`,
+        })),
+    [rutas, m]
+  )
+  const abrirRuta = useCallback((id: string) => navigate(`/rutas/${id}`), [navigate])
+  const verEnMapa = (id: string) => {
+    setSeleccion(id)
+    setEnMapa(id)
+    zonaMapa.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
   const oficiales = todas.filter((r) => r.oficial).length
   const alternarCerca = () => {
     if (cerca) return setCerca(null)
@@ -380,13 +402,16 @@ export function ListaRutas() {
           </div>
 
           {verMapa && (
-            <div className="pb-4">
+            <div className="pb-4" ref={zonaMapa}>
               <MapaRutas
                 className="h-[420px] lg:h-[520px] rounded-[10px] border border-c2-linea overflow-hidden"
-                onAbrir={(id) => navigate(`/rutas/${id}`)}
-                rutas={rutas
-                  .filter((r) => (r.puntos?.length ?? 0) > 0)
-                  .map((r) => ({ id: r.id, nombre: r.nombre, salida: r.puntos![0] }))}
+                onAbrir={abrirRuta}
+                elegida={enMapa}
+                onElegir={(id) => {
+                  setEnMapa(id)
+                  if (id) setSeleccion(id)
+                }}
+                rutas={rutasMapa}
               />
             </div>
           )}
@@ -476,6 +501,20 @@ export function ListaRutas() {
                         </span>
                       </span>
                     </Link>
+                    {verMapa && (ruta.puntos?.length ?? 0) > 0 && (
+                      <button
+                        onClick={() => verEnMapa(ruta.id)}
+                        aria-label={`Ver ${ruta.nombre} en el mapa`}
+                        aria-pressed={enMapa === ruta.id}
+                        data-testid="ver-en-mapa"
+                        className="absolute bottom-2.5 right-2.5 h-8 px-3 rounded-md border border-c2-morado/50 text-c2-violeta hover:text-white hover:bg-c2-morado/30 text-[12px] font-semibold inline-flex items-center gap-1"
+                      >
+                        <span aria-hidden="true" className="material-symbols-outlined text-[16px]">
+                          my_location
+                        </span>
+                        Ver en el mapa
+                      </button>
+                    )}
                     <button
                       onClick={() => void alternar(ruta.id)}
                       aria-label={

@@ -98,6 +98,8 @@ fun MapaGacelas(
     controlesPropios: (@Composable androidx.compose.foundation.layout.BoxScope.(recentrar: () -> Unit, norte: () -> Unit, rumbo: Float, siguiendo: Boolean) -> Unit)? = null,
     /** Falso oculta el corredor 3D (p. ej. con un panel abierto encima). */
     corredorVisible: Boolean = true,
+    /** Espacio (px) que tapan botones o paneles sobre el mapa; la ruta se encuadra entera en la franja libre. Por defecto, 80 px de aire. */
+    paddingEncuadre: com.gacelas.mapa.PaddingPx = com.gacelas.mapa.PaddingPx.todos(80f),
     alternativa: @Composable () -> Unit,
 ) {
     if (!Mapas.configurado() || LocalInspectionMode.current) {
@@ -148,7 +150,7 @@ fun MapaGacelas(
         val m = mapa ?: return@LaunchedEffect
         runCatching {
             when {
-                ultimo == null -> if (plan.size >= 2) m.animateCamera(CameraUpdateFactory.newLatLngBounds(MapaMat.limites(plan), 80))
+                ultimo == null -> if (plan.isNotEmpty()) m.encuadrarRuta(context, plan, paddingEncuadre, zoomUnPunto = zoom.toDouble())
                 seguir && !siguiendo -> Unit
                 seguir && modo3d -> {
                     val r = (rumbo ?: m.cameraPosition.bearing.toFloat()).toDouble()
@@ -161,8 +163,9 @@ fun MapaGacelas(
                     ultimoAnimado = ultimo
                     m.easeCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(centro).zoom(z).tilt(60.0).bearing(r).padding(0.0, arriba, 0.0, 0.0).build()), if (nuevoPunto) MapaCompacto.ANIMACION_PUNTO_MS else 500, !nuevoPunto)
                 }
-                seguir || puntos.size < 2 -> m.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(ultimo).zoom(zoom.toDouble()).tilt(0.0).bearing(0.0).build()), 900)
-                else -> m.animateCamera(CameraUpdateFactory.newLatLngBounds(MapaMat.limites(puntos), 80))
+                seguir -> m.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(ultimo).zoom(zoom.toDouble()).tilt(0.0).bearing(0.0).build()), 900)
+                // Ruta entera (un punto: centrada con el zoom pedido), animada y dentro de la franja libre.
+                else -> m.encuadrarRuta(context, puntos, paddingEncuadre, zoomUnPunto = zoom.toDouble())
             }
         }
     }

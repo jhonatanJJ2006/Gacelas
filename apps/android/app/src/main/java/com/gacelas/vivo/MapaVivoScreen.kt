@@ -87,12 +87,21 @@ fun MapaVivoScreen(onAtras: () -> Unit, onPrivacidad: () -> Unit, inicial: List<
         Box(Modifier.fillMaxWidth().height(380.dp).clip(RoundedCornerShape(20.dp)).background(GColors.C2Card).border(1.dp, com.gacelas.ui.components.Tablero.WidgetBorde, RoundedCornerShape(20.dp)).testTag("mapa-vivo")) {
             if (Mapas.configurado() && !androidx.compose.ui.platform.LocalInspectionMode.current) {
                 val centro = corredores.firstOrNull()?.let { LatLng(it.lat, it.lng) } ?: Mapas.CENTRO_LOJA
+                var mapaVivo by remember { mutableStateOf<org.maplibre.android.maps.MapLibreMap?>(null) }
+                // Corredores e incidentes a la vista: se anima al cargar y cuando cambia cuantos hay (no sigue el movimiento).
+                val visibles = corredores.map { LatLng(it.lat, it.lng) } + incidentes.map { LatLng(it.lat, it.lng) }
+                com.gacelas.ui.components.EncuadrarRutaEfecto(
+                    mapaVivo, visibles,
+                    com.gacelas.mapa.EncuadreMapa.paddingDp(androidx.compose.ui.platform.LocalDensity.current.density, arriba = 56f, abajo = 40f, izquierda = 40f, derecha = 40f),
+                    clave = visibles.size, zoomUnPunto = 14.0,
+                )
                 MapaLibre(
                     Modifier.fillMaxWidth().height(380.dp),
                     circulos = incidentes.map { CirculoMapa(LatLng(it.lat, it.lng), 7f, com.gacelas.seguridad.ui.colorIncidente(it), GColors.C2Bg, 2f, id = "inc-" + it.id) } +
                         corredores.map { CirculoMapa(LatLng(it.lat, it.lng), 9f, colorEstado(it.corriendo), GColors.TextPrimary, 2f, id = it.userId) },
                     centro = centro, zoom = 13.0,
                     alTocarCirculo = { id -> elegido = corredores.firstOrNull { it.userId == id } },
+                    alListo = { mapaVivo = it },
                 )
             } else EsquemaCorredores(corredores) { elegido = it }
             com.gacelas.seguridad.ui.BotonReportarIncidente(Modifier.align(Alignment.TopEnd).padding(10.dp)) {
