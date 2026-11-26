@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach } from 'vitest'
-import { fireEvent, screen } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { prepararApp, renderRuta } from '../test/utils'
 import { fuenteDemo } from '../contexts/admin/ui/fuente'
 
@@ -44,7 +44,53 @@ describe('panel de administración', () => {
     expect(await screen.findByText('Richard Carapaz')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Evento' }))
     expect(screen.queryByText('Richard Carapaz')).not.toBeInTheDocument()
-    expect(screen.getByText('Reto nocturno vía a Cuenca')).toBeInTheDocument()
+    // La cola y el detalle del caso elegido muestran el mismo titulo.
+    expect(screen.getAllByText('Reto nocturno vía a Cuenca').length).toBeGreaterThan(0)
+  })
+
+  it('el resumen muestra cifras reales de la fuente y la accion rapida lleva al siguiente caso', async () => {
+    renderRuta('/admin?demo')
+    const kpis = await screen.findByTestId('kpis')
+    await waitFor(() => expect(kpis).toHaveTextContent('2.418'))
+    expect(kpis).toHaveTextContent('52')
+    expect(await screen.findAllByTestId('marca-corredor')).toHaveLength(17)
+    expect(screen.getAllByTestId('marca-incidente')).toHaveLength(9)
+    // El SOS no tiene lectura para el panel: se dice, no se inventa una cifra.
+    expect(screen.getByTestId('sos-pendiente')).toHaveTextContent('fuente pendiente')
+    const atender = await screen.findByTestId('atender-siguiente')
+    await waitFor(() => expect(atender).toBeEnabled())
+    fireEvent.click(atender)
+    expect(await screen.findByTestId('detalle-caso')).toBeInTheDocument()
+  })
+
+  it('asignarme el siguiente caso toma el pendiente mas antiguo (en revision)', async () => {
+    renderRuta('/admin/moderacion?demo')
+    const boton = await screen.findByTestId('asignarme-siguiente')
+    await waitFor(() => expect(boton).toBeEnabled())
+    fireEvent.click(boton)
+    await waitFor(() => expect(screen.getByRole('tab', { name: /En revisión 2/ })).toBeInTheDocument())
+  })
+
+  it('usuarios filtra por suspendidos y muestra la ficha', async () => {
+    renderRuta('/admin/usuarios?demo')
+    expect((await screen.findAllByText('Andrea Montaño')).length).toBeGreaterThan(0)
+    expect(screen.getByTestId('ficha-usuario')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Suspendidos' }))
+    expect(screen.queryByText('Andrea Montaño')).not.toBeInTheDocument()
+  })
+
+  it('rutas y eventos lista rutas con su trazado y los eventos proximos', async () => {
+    renderRuta('/admin/rutas?demo')
+    expect(await screen.findByText('Parque Jipiro')).toBeInTheDocument()
+    expect(await screen.findByText('Trail Podocarpus')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Crear evento' })).toBeInTheDocument()
+  })
+
+  it('ajustes reune versiones, terminos y notificaciones', async () => {
+    renderRuta('/admin/ajustes?demo')
+    expect(await screen.findByTestId('push-no-disponible')).toBeInTheDocument()
+    expect(await screen.findByTestId('version-terminos')).toHaveTextContent('2026-10-25')
+    expect(screen.getByLabelText('Nueva versión mínima')).toBeInTheDocument()
   })
 
   it('muestra estadísticas con gráficos y exportación en modo demo', async () => {

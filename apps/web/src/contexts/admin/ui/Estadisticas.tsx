@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
-import { BarrasHorizontales, GraficoBarras, GraficoLinea } from '../../../shared/ui/Graficos'
+import { useEffect, useState, type ReactNode } from 'react'
 import { aCsv, aPdf, descargar } from '../../analitica/api'
+import { BarrasDia, Boton, Cabecera, Chip, ErrorCarga, Vacio, decimal1, entero, useCarga, type Tono } from './kit'
+import { MOTIVOS } from './casos'
 import type { Estadisticas as Datos, FuenteAdmin } from './fuente'
 
-const tarjeta = 'bg-c2-card border border-c2-linea'
 const hoy = () => new Date().toLocaleDateString('en-CA')
 const haceDias = (n: number) => {
   const d = new Date()
@@ -12,6 +12,7 @@ const haceDias = (n: number) => {
 }
 const RANGOS: [string, number][] = [
   ['7 días', 6],
+  ['14 días', 13],
   ['30 días', 29],
   ['90 días', 89],
   ['1 año', 364],
@@ -73,33 +74,63 @@ export function pdfEstadisticas(d: Datos): Uint8Array {
   ])
 }
 
-function Kpi({ t, v, s }: { t: string; v: string | number; s?: string }) {
+function Kpi({ t, v, s, tono }: { t: string; v: string | number; s?: string; tono?: Tono }) {
   return (
-    <div className={`${tarjeta} p-3`}>
-      <p className="rotulo-c2 !text-c2-violeta">{t}</p>
-      <p className="text-[20px] font-bold tabular-nums text-text-primary leading-tight">
-        {typeof v === 'number' ? v.toLocaleString('es-EC') : v}
+    <div className="adm-kpi">
+      <p className="adm-t2" style={{ fontSize: 12 }}>{t}</p>
+      <p
+        className={`adm-num c-${tono ?? 'neu'}`}
+        style={{ fontSize: 26, color: tono ? 'hsl(var(--tt))' : undefined }}
+      >
+        {typeof v === 'number' ? entero(v) : v}
       </p>
-      {s && <p className="text-[11px] text-c2-menta">{s}</p>}
+      {s && <p className="adm-t3" style={{ fontSize: 12 }}>{s}</p>}
     </div>
   )
 }
 
-function Panel({ titulo, children }: { titulo: string; children: React.ReactNode }) {
+function Panel({ titulo, nota, children }: { titulo: string; nota?: string; children: ReactNode }) {
   return (
-    <section className={`${tarjeta} p-4`}>
-      <h2 className="font-display italic uppercase text-text-primary text-[16px] mb-3">{titulo}</h2>
+    <section className="adm-card adm-pad">
+      <div className="adm-fila" style={{ justifyContent: 'space-between', marginBottom: 12 }}>
+        <h2 className="adm-h2">{titulo}</h2>
+        {nota && <span className="adm-t3" style={{ fontSize: 12 }}>{nota}</span>}
+      </div>
       {children}
     </section>
   )
 }
 
-/** Estadisticas del panel con rango de fechas, graficos y exportacion CSV y PDF. */
+/** Barras horizontales con tokens del panel. */
+function Ranking({ datos, tono = 'pri', testId }: { datos: { etiqueta: string; valor: number }[]; tono?: Tono; testId?: string }) {
+  const max = Math.max(1, ...datos.map((d) => d.valor))
+  return (
+    <ul data-testid={testId} style={{ display: 'grid', gap: 10, listStyle: 'none' }}>
+      {datos.map((d, i) => (
+        <li key={`${d.etiqueta}-${i}`}>
+          <div className="adm-fila" style={{ justifyContent: 'space-between', fontSize: 13 }}>
+            <span className="adm-ell">{d.etiqueta}</span>
+            <b className="adm-num">{entero(d.valor)}</b>
+          </div>
+          <span className={`adm-barra c-${tono}`} style={{ marginTop: 4 }}>
+            <i style={{ width: `${(d.valor / max) * 100}%` }} />
+          </span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+const NOMBRE_MES = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+
+/** Reportes del panel: rango de fechas, cifras, graficos y exportacion CSV y PDF. */
 export function Estadisticas({ f }: { f: FuenteAdmin }) {
-  const [desde, setDesde] = useState(haceDias(29))
+  const [desde, setDesde] = useState(haceDias(13))
   const [hasta, setHasta] = useState(hoy())
   const [datos, setDatos] = useState<Datos | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const ecu = useCarga(() => f.importacionesEcu(), [f])
+  const ajustes = useCarga(() => f.ajustes(), [f])
   useEffect(() => {
     let vivo = true
     setError(null)
@@ -120,164 +151,176 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
   const t = datos?.totales
   const nombre = `gacelas-estadisticas-${desde}-a-${hasta}`
   const semanal = datos && datos.serie.length > 45
-  // En rangos largos las barras de carreras se agrupan por semana para que sigan legibles.
-  const carreras = datos
-    ? semanal
-      ? datos.serie.reduce<{ etiqueta: string; valor: number }[]>((acc, s, i) => {
-          if (i % 7 === 0) acc.push({ etiqueta: corta(s.dia), valor: 0 })
-          acc[acc.length - 1].valor += s.carreras
-          return acc
-        }, [])
-      : datos.serie.map((s) => ({ etiqueta: corta(s.dia), valor: s.carreras }))
-    : []
+  // En rangos largos las barras se agrupan por semana para que sigan legibles.
+  const agrupar = (valor: (s: Datos['serie'][number]) => number) =>
+    datos
+      ? semanal
+        ? datos.serie.reduce<{ etiqueta: string; valor: number }[]>((acc, s, i) => {
+            if (i % 7 === 0) acc.push({ etiqueta: corta(s.dia), valor: 0 })
+            acc[acc.length - 1].valor += valor(s)
+            return acc
+          }, [])
+        : datos.serie.map((s) => ({ etiqueta: corta(s.dia), valor: valor(s) }))
+      : []
+  const por = semanal ? 'por semana' : 'por día'
+  const minima = (ajustes.datos ?? []).find((a) => a.key === 'version_minima_android')?.value as string | undefined
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h1 className="font-display italic uppercase text-[28px] lg:text-[34px] text-text-primary">
-          Estadísticas
-        </h1>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            disabled={!datos}
-            data-testid="estadisticas-csv"
-            onClick={() =>
-              datos && descargar(`${nombre}.csv`, csvEstadisticas(datos), 'text/csv;charset=utf-8')
-            }
-            className="h-10 px-4 -skew-x-12 font-black italic uppercase text-[13px] bg-c2-s2 text-text-primary disabled:opacity-50"
-          >
-            CSV
-          </button>
-          <button
-            type="button"
-            disabled={!datos}
-            data-testid="estadisticas-pdf"
-            onClick={() =>
-              datos && descargar(`${nombre}.pdf`, pdfEstadisticas(datos), 'application/pdf')
-            }
-            className="h-10 px-4 -skew-x-12 font-black italic uppercase text-[13px] bg-gradient-to-r from-[#7B1FA2] to-c2-morado text-on-primary disabled:opacity-50"
-          >
-            PDF
-          </button>
-        </div>
-      </div>
-      <div className="flex flex-wrap items-end gap-3 mb-5" data-testid="rango-estadisticas">
-        <label className="text-[11px] uppercase font-bold text-c2-muted">
-          Desde
-          <input
-            type="date"
-            value={desde}
-            max={hasta}
-            onChange={(e) => setDesde(e.target.value)}
-            className="block mt-1 h-9 bg-c2-s2 px-2 text-text-primary text-[13px] [color-scheme:dark]"
-          />
-        </label>
-        <label className="text-[11px] uppercase font-bold text-c2-muted">
-          Hasta
-          <input
-            type="date"
-            value={hasta}
-            min={desde}
-            max={hoy()}
-            onChange={(e) => setHasta(e.target.value)}
-            className="block mt-1 h-9 bg-c2-s2 px-2 text-text-primary text-[13px] [color-scheme:dark]"
-          />
-        </label>
-        <div className="flex flex-wrap gap-1">
-          {RANGOS.map(([n, d]) => (
-            <button
-              key={n}
-              type="button"
-              onClick={() => {
-                setDesde(haceDias(d))
-                setHasta(hoy())
-              }}
-              className={`px-3 h-9 text-[12px] font-semibold border ${desde === haceDias(d) && hasta === hoy() ? 'border-c2-violeta text-c2-violeta' : 'border-c2-linea text-c2-muted'}`}
+      <Cabecera
+        kicker="Estadísticas"
+        extra={
+          <>
+            <span className="adm-fila adm-envuelve" data-testid="rango-estadisticas" style={{ gap: 6 }}>
+              {RANGOS.map(([n, d]) => (
+                <button
+                  key={n}
+                  type="button"
+                  className="adm-chip c-neu"
+                  aria-pressed={desde === haceDias(d) && hasta === hoy()}
+                  onClick={() => {
+                    setDesde(haceDias(d))
+                    setHasta(hoy())
+                  }}
+                >
+                  {n}
+                </button>
+              ))}
+              <input
+                aria-label="Desde"
+                type="date"
+                value={desde}
+                max={hasta}
+                onChange={(e) => setDesde(e.target.value)}
+                className="adm-input"
+                style={{ height: 32 }}
+              />
+              <input
+                aria-label="Hasta"
+                type="date"
+                value={hasta}
+                min={desde}
+                max={hoy()}
+                onChange={(e) => setHasta(e.target.value)}
+                className="adm-input"
+                style={{ height: 32 }}
+              />
+            </span>
+            <Boton
+              deshabilitado={!datos}
+              testId="estadisticas-csv"
+              onClick={() => datos && descargar(`${nombre}.csv`, csvEstadisticas(datos), 'text/csv;charset=utf-8')}
             >
-              {n}
-            </button>
-          ))}
-        </div>
-      </div>
-      {error && (
-        <p
-          role="alert"
-          className="mb-4 border border-c2-peligro bg-c2-card p-3 text-sm text-text-primary"
-        >
-          No se pudo cargar: {error}. Revisa que la migración 023 esté aplicada.
-        </p>
-      )}
+              Exportar CSV
+            </Boton>
+            <Boton
+              deshabilitado={!datos}
+              testId="estadisticas-pdf"
+              onClick={() => datos && descargar(`${nombre}.pdf`, pdfEstadisticas(datos), 'application/pdf')}
+            >
+              Exportar PDF
+            </Boton>
+          </>
+        }
+      >
+        Reportes
+      </Cabecera>
+      <ErrorCarga mensaje={error} />
       {datos && t && (
-        <div className="space-y-4" data-testid="estadisticas">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-            <Kpi
-              t="Usuarios nuevos"
-              v={t.usuarios_nuevos}
-              s={`${t.usuarios_total.toLocaleString('es-EC')} en total`}
-            />
-            <Kpi t="Corredores activos" v={t.usuarios_activos} />
-            <Kpi t="Carreras" v={t.carreras} s={`${t.km.toLocaleString('es-EC')} km`} />
+        <div style={{ display: 'grid', gap: 16 }} data-testid="estadisticas">
+          <div className="adm-cuatro">
+            <Kpi t="Carreras" v={t.carreras} s={`${t.usuarios_activos} corredores activos`} />
+            <Kpi t="Kilómetros" v={decimal1(t.km)} tono="pri" s="en el rango" />
+            <Kpi t="Usuarios" v={t.usuarios_total} s={`${t.usuarios_nuevos} nuevos`} />
             <Kpi
               t="Retención"
               v={`${datos.retencion.porcentaje}%`}
+              tono="ok"
               s={`${datos.retencion.vuelven} de ${datos.retencion.previos} volvieron`}
             />
-            <Kpi t="Eventos" v={t.eventos} s={`${t.inscripciones} inscripciones`} />
-            <Kpi
-              t="Reportes"
-              v={t.reportes}
-              s={`${datos.reportes.por_estado.pendiente ?? 0} pendientes`}
-            />
           </div>
-          <div className="grid lg:grid-cols-2 gap-4">
-            <Panel titulo="Usuarios nuevos por día">
-              <GraficoLinea
-                testId="grafico-nuevos"
-                datos={datos.serie.map((s) => ({ etiqueta: corta(s.dia), valor: s.nuevos }))}
-              />
+          <div className="adm-g2 adm-g-rep">
+            <Panel titulo={`Kilómetros ${por}`} nota={`${datos.serie.length} días`}>
+              <BarrasDia datos={agrupar((s) => s.km)} tono="pri" unidad=" km" testId="grafico-km" />
             </Panel>
-            <Panel titulo={semanal ? 'Carreras por semana' : 'Carreras por día'}>
-              <GraficoBarras testId="grafico-carreras" datos={carreras} resaltar={-1} />
+            <Panel titulo={`Altas ${por}`}>
+              <BarrasDia datos={agrupar((s) => s.nuevos)} tono="ok" testId="grafico-nuevos" />
+            </Panel>
+          </div>
+          <div className="adm-g2 adm-g-rep">
+            <Panel titulo={`Carreras ${por}`}>
+              <BarrasDia datos={agrupar((s) => s.carreras)} tono="warn" testId="grafico-carreras" resaltarMax />
             </Panel>
             <Panel titulo="Rutas más corridas">
               {datos.rutas_top.length ? (
-                <BarrasHorizontales
-                  testId="rutas-top"
-                  datos={datos.rutas_top.map((r) => ({ etiqueta: r.nombre, valor: r.corridas }))}
-                />
+                <Ranking testId="rutas-top" datos={datos.rutas_top.map((r) => ({ etiqueta: r.nombre, valor: r.corridas }))} />
               ) : (
-                <p className="text-c2-muted text-[13px]">Sin recorridos de rutas en el rango.</p>
+                <Vacio titulo="Sin recorridos de rutas en el rango" />
               )}
+            </Panel>
+          </div>
+          <div className="adm-g2 adm-g-rep">
+            <Panel titulo="Reportes de moderación" nota={`${t.reportes} en el rango`}>
+              <div className="adm-g2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+                <div>
+                  <p className="adm-lbl" style={{ marginBottom: 8 }}>Por estado</p>
+                  <Ranking tono="info" datos={aBarras(datos.reportes.por_estado, ESTADO)} />
+                </div>
+                <div>
+                  <p className="adm-lbl" style={{ marginBottom: 8 }}>Por tipo</p>
+                  <Ranking tono="bad" datos={aBarras(datos.reportes.por_tipo, TIPO)} />
+                </div>
+                <div>
+                  <p className="adm-lbl" style={{ marginBottom: 8 }}>Por motivo</p>
+                  <Ranking tono="pri" datos={aBarras(datos.reportes.por_motivo, MOTIVOS)} />
+                </div>
+              </div>
             </Panel>
             <Panel titulo="Eventos con más inscritos">
               {datos.eventos_top.length ? (
-                <BarrasHorizontales
-                  color="rgb(var(--c-c2-menta))"
-                  datos={datos.eventos_top.map((e) => ({ etiqueta: e.titulo, valor: e.inscritos }))}
-                />
+                <Ranking tono="ok" datos={datos.eventos_top.map((e) => ({ etiqueta: e.titulo, valor: e.inscritos }))} />
               ) : (
-                <p className="text-c2-muted text-[13px]">Sin eventos en el rango.</p>
+                <Vacio titulo="Sin eventos en el rango" />
               )}
-            </Panel>
-            <Panel titulo="Reportes por estado">
-              <BarrasHorizontales
-                color="rgb(var(--c-c2-cielo))"
-                datos={aBarras(datos.reportes.por_estado, ESTADO)}
-              />
-            </Panel>
-            <Panel titulo="Reportes por tipo y motivo">
-              <BarrasHorizontales color="#BE185D" datos={aBarras(datos.reportes.por_tipo, TIPO)} />
-              <div className="mt-3">
-                <BarrasHorizontales
-                  color="rgb(var(--c-c2-morado))"
-                  datos={aBarras(datos.reportes.por_motivo)}
-                />
-              </div>
             </Panel>
           </div>
         </div>
       )}
+      <div className="adm-g2 adm-g-rep" style={{ marginTop: 16 }}>
+        <Panel titulo="Importaciones del ECU 911" nota="Filas agregadas por mes">
+          {ecu.datos && ecu.datos.length > 0 ? (
+            <ul style={{ display: 'grid', gap: 10, listStyle: 'none' }} data-testid="importaciones-ecu">
+              {ecu.datos.map((m) => (
+                <li key={`${m.anio}-${m.mes}`} className="adm-fila" style={{ justifyContent: 'space-between' }}>
+                  <b>{m.anio}-{String(m.mes).padStart(2, '0')}</b>
+                  <span className="adm-t2">{NOMBRE_MES[m.mes]} {m.anio}</span>
+                  {m.agrupaciones > 0 ? (
+                    <Chip tono="ok">{entero(m.agrupaciones)} agrupaciones</Chip>
+                  ) : (
+                    <Chip>Sin datos</Chip>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Vacio
+              testId="ecu-reportes-vacio"
+              titulo={ecu.error ? 'No se pudo leer la carga del ECU 911' : 'Sin cargas del ECU 911'}
+              texto={ecu.error ?? 'Todavía no hay datos en incidentes_agregados.'}
+            />
+          )}
+          <p className="adm-t3" style={{ fontSize: 12, marginTop: 10 }}>
+            Estado de la importación (errores, filas leídas) no se guarda hoy: fuente pendiente.
+          </p>
+        </Panel>
+        <Panel titulo="Versión de Android">
+          <p className="adm-num" style={{ fontSize: 26 }}>{minima ?? 'Sin definir'}</p>
+          <p className="adm-t2" style={{ fontSize: 13 }}>Versión mínima exigida. Cámbiala en Ajustes.</p>
+          <p className="adm-t3" style={{ fontSize: 12, marginTop: 10 }}>
+            El historial de versiones publicadas no está en la base de datos: fuente pendiente.
+          </p>
+        </Panel>
+      </div>
     </>
   )
 }
