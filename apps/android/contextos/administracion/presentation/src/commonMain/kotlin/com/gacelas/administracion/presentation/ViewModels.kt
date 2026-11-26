@@ -18,6 +18,7 @@ import com.gacelas.administracion.domain.RolAdmin
 import com.gacelas.administracion.domain.RutaAdmin
 import com.gacelas.administracion.domain.UsuarioAdmin
 import com.gacelas.administracion.domain.buscar
+import com.gacelas.administracion.domain.siguienteCaso
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -94,6 +95,12 @@ class DashboardAdminViewModel(private val repo: AdminRepositorio) : SeccionViewM
     override suspend fun cargar() = repo.metricas()
 }
 
+/** Casos pendientes (Resumen: siguiente caso y cola corta). */
+class PendientesAdminViewModel(private val repo: AdminRepositorio) : SeccionViewModel<List<ReporteAdmin>>() {
+    init { recargar() }
+    override suspend fun cargar() = repo.reportes(EstadoReporte.Pendiente, null)
+}
+
 class UsuariosAdminViewModel(private val repo: AdminRepositorio) : SeccionViewModel<List<UsuarioAdmin>>() {
     private val _busqueda = MutableStateFlow("")
     val busqueda: StateFlow<String> = _busqueda.asStateFlow()
@@ -132,6 +139,16 @@ class ModeracionAdminViewModel(
     fun moderar(r: ReporteAdmin, accion: AccionModeracion) = ejecutar("Caso actualizado") {
         moderarReporte(r, accion, _notas.value[r.id].orEmpty())
         _notas.update { it - r.id }
+    }
+
+    /**
+     * "Asignarme el siguiente caso": toma el pendiente mas antiguo con la accion en_revision, que el
+     * servidor registra con el moderador que la hizo (moderar_reporte). No hay esquema nuevo.
+     */
+    fun asignarmeSiguiente(): Boolean {
+        val siguiente = (estado.value as? Carga.Listo)?.datos?.siguienteCaso() ?: return false
+        moderar(siguiente, AccionModeracion.EnRevision)
+        return true
     }
 }
 
