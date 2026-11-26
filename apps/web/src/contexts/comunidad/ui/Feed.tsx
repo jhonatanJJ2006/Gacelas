@@ -420,7 +420,7 @@ export function Feed() {
                       </span>
                       <InsigniaNivel nivel={nivelDe(post)} />
                       <span className="text-[12px] text-c2-muted truncate min-w-0">
-                        {handle(post.autor)} · {post.tiempo}
+                        {post.usuario ? `@${post.usuario}` : handle(post.autor)} · {post.tiempo}
                       </span>
                       <button
                         onClick={() => setMenuPost(menuPost === post.id ? null : post.id)}

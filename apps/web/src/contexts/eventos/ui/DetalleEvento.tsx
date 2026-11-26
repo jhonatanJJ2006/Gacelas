@@ -25,9 +25,8 @@ export function DetalleEvento() {
   if (!evento) return <Navigate to="/comunidad/eventos" replace />
 
   const inscrito = inscritos.includes(evento.id)
-  const participantes = estado
-    ? evento.participantes + estado.inscritos
-    : evento.participantes + (inscrito ? 1 : 0)
+  // Mismo total que la tarjeta de la lista (personas ya sumadas + yo) y que la linea de cupos.
+  const participantes = evento.participantes + (inscrito ? 1 : 0)
   const enEspera = estado?.miEstado === 'waitlist'
 
   const compartirEvento = async () => {
@@ -152,7 +151,7 @@ export function DetalleEvento() {
           </h2>
           {estado && (
             <p className="text-sm text-text-secondary mb-3" data-testid="cupo-evento">
-              {textoCupo(estado)}
+              {textoCupo({ ...estado, inscritos: participantes })}
               {enEspera && ` · estás en la lista de espera (puesto ${estado.miPosicion})`}
             </p>
           )}
