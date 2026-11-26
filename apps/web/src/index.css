@@ -2,7 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/*
+ * Tokens de tema (modo oscuro por defecto, claro con la clase `tema-claro` en <html>).
+ * Los valores van como "R G B" para usar rgb(var(--token) / <alpha>) desde tailwind.config.js.
+ * Contraste WCAG AA: texto >= 4,5:1 y componentes >= 3:1 en los dos modos (docs/TEMA.md).
+ * Para zonas que siempre son oscuras (hero con foto, escenario de Inicio) se usa `.zona-oscura`.
+ */
+:root,
+.zona-oscura {
   --c-surface: 12 19 34;
   --c-surface-dim: 12 19 34;
   --c-surface-bright: 50 57 73;
@@ -20,35 +27,104 @@
   --c-border-subtle: 44 52 70;
   --c-on-surface: 220 226 247;
   --c-on-background: 220 226 247;
+  --c-on-surface-variant: 201 207 219;
+  /* Tokens C2 */
+  --c-c2-bg: 12 19 34;
+  --c-c2-card: 25 31 47;
+  --c-c2-s2: 35 42 58;
+  --c-c2-linea: 44 52 70;
+  --c-c2-muted: 168 176 194;
+  --c-c2-violeta: 192 132 252;
+  --c-c2-morado: 168 85 247;
+  --c-c2-menta: 104 219 169;
+  --c-c2-cielo: 150 204 255;
+  --c-c2-peligro: 190 24 93;
+  /* Textos y colores de marca que cambian de modo */
+  --c-primary: 192 132 252;
+  --c-primary-200: 233 213 255;
+  --c-primary-500: 168 85 247;
+  --c-secondary: 104 219 169;
+  --c-secondary-500: 16 185 129;
+  --c-tertiary: 150 204 255;
+  --c-success: 5 150 105;
+  --c-warning: 245 158 11;
+  --c-alerta: 251 191 36;
+  --c-rosa: 244 114 182;
+  --c-peligro-texto: 252 165 165;
+  /* Texto sobre relleno violeta o menta (pastilla activa) */
+  --c-on-violeta: 12 19 34;
+  --c-on-menta: 12 19 34;
+  /* Cristal sobre el mapa o fotos (controles, chips flotantes) y su texto */
+  --c-vidrio: 18 26 42;
+  --c-sobre-vidrio: 255 255 255;
+  /* Sombra y velo */
+  --c-sombra: 0 0 0;
+  /* Barras de desplazamiento (los usa el agente de scrollbars) */
+  --c-scroll-pista: 12 19 34;
+  --c-scroll-pulgar: 74 64 110;
+  --c-scroll-pulgar-hover: 168 85 247;
+  /* Mapa (CSS de respaldo cuando no hay Google Maps) */
+  --c-mapa-fondo: 13 20 34;
+  color-scheme: dark;
 }
 
-/* Rediseño C2: solo fondos oscuros. La clase se conserva para Ajustes, pero usa la misma paleta oscura. */
+/* Modo claro: mismo violeta de marca, fondos neutros con un matiz frio y textos oscuros. */
 .tema-claro {
-  --c-surface: 12 19 34;
-  --c-surface-dim: 12 19 34;
-  --c-surface-bright: 50 57 73;
-  --c-surface-variant: 46 53 69;
-  --c-surface-container: 25 31 47;
-  --c-surface-container-low: 20 27 43;
-  --c-surface-container-high: 35 42 58;
-  --c-surface-container-highest: 46 53 69;
-  --c-surface-container-lowest: 7 14 29;
-  --c-background: 12 19 34;
-  --c-bg-primary: 12 19 34;
-  --c-bg-secondary: 25 31 47;
-  --c-text-primary: 255 255 255;
-  --c-text-secondary: 168 176 194;
-  --c-border-subtle: 44 52 70;
-  --c-on-surface: 220 226 247;
-  --c-on-background: 220 226 247;
+  --c-surface: 243 243 247;
+  --c-surface-dim: 243 243 247;
+  --c-surface-bright: 255 255 255;
+  --c-surface-variant: 226 225 234;
+  --c-surface-container: 255 255 255;
+  --c-surface-container-low: 247 247 250;
+  --c-surface-container-high: 234 234 241;
+  --c-surface-container-highest: 223 222 232;
+  --c-surface-container-lowest: 255 255 255;
+  --c-background: 243 243 247;
+  --c-bg-primary: 243 243 247;
+  --c-bg-secondary: 255 255 255;
+  --c-text-primary: 22 18 38;
+  --c-text-secondary: 79 76 97;
+  --c-border-subtle: 208 207 222;
+  --c-on-surface: 22 18 38;
+  --c-on-background: 22 18 38;
+  --c-on-surface-variant: 79 76 97;
+  --c-c2-bg: 243 243 247;
+  --c-c2-card: 255 255 255;
+  --c-c2-s2: 234 234 241;
+  --c-c2-linea: 208 207 222;
+  --c-c2-muted: 79 76 97;
+  --c-c2-violeta: 122 32 182;
+  --c-c2-morado: 123 33 202;
+  --c-c2-menta: 9 113 79;
+  --c-c2-cielo: 18 87 165;
+  --c-c2-peligro: 167 27 57;
+  --c-primary: 110 29 165;
+  --c-primary-200: 91 37 126;
+  --c-primary-500: 122 32 182;
+  --c-secondary: 9 113 79;
+  --c-secondary-500: 10 123 85;
+  --c-tertiary: 18 87 165;
+  --c-success: 9 113 79;
+  --c-warning: 149 81 4;
+  --c-alerta: 149 81 4;
+  --c-rosa: 156 17 87;
+  --c-peligro-texto: 167 27 27;
+  --c-on-violeta: 255 255 255;
+  --c-on-menta: 255 255 255;
+  --c-vidrio: 255 255 255;
+  --c-sobre-vidrio: 22 18 38;
+  --c-sombra: 40 30 80;
+  --c-scroll-pista: 243 243 247;
+  --c-scroll-pulgar: 140 134 176;
+  --c-scroll-pulgar-hover: 122 32 182;
+  --c-mapa-fondo: 238 238 244;
+  color-scheme: light;
 }
 
 :root {
   font-family: Archivo, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -118,7 +194,8 @@ body {
   letter-spacing: 0.03em;
 }
 body {
-  background: #0c1322;
+  background: rgb(var(--c-bg-primary));
+  color: rgb(var(--c-text-primary));
   font-variant-numeric: tabular-nums;
 }
 
@@ -130,6 +207,18 @@ body {
     background:
       radial-gradient(60% 55% at 55% 55%, #7b1fa2aa 0, #4a154b66 45%, #0c132200 75%),
       linear-gradient(160deg, #191f2f, #0c1322);
+  }
+  /* Modo claro del escenario: lavanda suave con el mismo halo y rayas violeta. */
+  .tema-claro .escenario-c2 {
+    background:
+      radial-gradient(60% 55% at 55% 55%, #a855f72e 0, #c084fc26 45%, #f3f3f700 75%),
+      linear-gradient(160deg, #ffffff, #ebe7f7);
+  }
+  .tema-claro .escenario-c2::before {
+    background: repeating-linear-gradient(115deg, #7a20b61a 0 2px, transparent 2px 38px);
+  }
+  .tema-claro .escenario-c2::after {
+    background: radial-gradient(50% 50% at 50% 50%, #a855f740, transparent 70%);
   }
   .escenario-c2::before {
     content: '';
@@ -148,6 +237,23 @@ body {
     pointer-events: none;
     background: radial-gradient(50% 50% at 50% 50%, #c084fc55, transparent 70%);
     transform: skewX(-20deg);
+  }
+  /* Fondos de panel con degradado de marca: violeta profundo en oscuro, lavanda suave en claro. */
+  .fondo-hero {
+    background: linear-gradient(160deg, #2a0a3d 0%, #1a0b2e 55%, #191f2f 100%);
+    border-color: #3b1a55;
+  }
+  .fondo-acento {
+    background: linear-gradient(170deg, #2a0a3d 0%, #191f2f 70%);
+    border-color: #3b1a55;
+  }
+  .tema-claro .fondo-hero {
+    background: linear-gradient(160deg, #ede2fa 0%, #f5eefc 55%, #ffffff 100%);
+    border-color: #d8c6ee;
+  }
+  .tema-claro .fondo-acento {
+    background: linear-gradient(170deg, #efe5fb 0%, #ffffff 70%);
+    border-color: #d8c6ee;
   }
   /* Android FormaBotonC2: esquinas superior izquierda e inferior derecha cortadas 10dp. */
   .forma-boton-c2 {
@@ -173,7 +279,7 @@ body {
   }
   .pastilla-c2[aria-pressed='true'],
   .pastilla-c2[aria-selected='true'] {
-    @apply bg-c2-violeta text-[#0c1322];
+    @apply bg-c2-violeta text-c2-sobre-violeta;
   }
   .pildora-c2 {
     @apply inline-flex items-center gap-1 px-2.5 py-1 bg-c2-s2 text-[12px] font-semibold text-text-primary;
@@ -185,10 +291,10 @@ body {
       @apply flex w-full justify-between rounded-md h-8 px-2.5 py-0 text-[13px] font-medium normal-case not-italic tracking-normal bg-transparent text-c2-muted;
     }
     .opcion-filtro:hover {
-      @apply text-white bg-c2-s2;
+      @apply text-text-primary bg-c2-s2;
     }
     .opcion-filtro[aria-pressed='true'] {
-      @apply bg-c2-morado/20 text-white;
+      @apply bg-c2-morado/20 text-text-primary;
     }
   }
   /* Rediseno web: paneles, rotulos y cifras (docs/REDISENO-WEB.md). */
@@ -201,7 +307,7 @@ body {
     font-style: italic;
     font-synthesis: style;
     letter-spacing: 0.035em;
-    @apply text-[19px] leading-tight text-white;
+    @apply text-[19px] leading-tight text-text-primary;
   }
   /* Rotulos en mayuscula inicial a 12px: las mayusculas espaciadas de 10px no se leian (igual que en Android). */
   .rotulo-c2 {
@@ -217,10 +323,10 @@ body {
     @apply uppercase;
   }
   .mapa-c2 {
-    background-color: #101827;
+    background-color: rgb(var(--c-mapa-fondo));
     background-image:
-      linear-gradient(#1b2436 1px, transparent 1px),
-      linear-gradient(90deg, #1b2436 1px, transparent 1px);
+      linear-gradient(rgb(var(--c-c2-linea) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--c-c2-linea) / 0.5) 1px, transparent 1px);
     background-size: 22px 22px;
   }
   .etiqueta-c2 {
@@ -281,7 +387,10 @@ body {
     cursor: not-allowed;
   }
   .boton-c2:disabled::before {
-    background: rgb(220 226 248 / 0.12);
+    background: rgb(var(--c-on-surface) / 0.12);
+  }
+  .tema-claro .boton-c2:disabled {
+    color: rgb(var(--c-text-primary) / 0.38);
   }
   /* Boton de la landing (solo web, sin equivalente en la app): corte en paralelogramo y degradado. */
   .boton-landing {
@@ -296,7 +405,7 @@ body {
     --boton-c2-sombra: #f472b6;
   }
   .boton-c2-secundario {
-    @apply relative flex w-full items-center justify-center gap-2 h-12 bg-c2-s2 text-white font-black italic uppercase text-[15px];
+    @apply relative flex w-full items-center justify-center gap-2 h-12 bg-c2-s2 text-text-primary font-black italic uppercase text-[15px];
     clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
   }
 }

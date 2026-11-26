@@ -35,12 +35,12 @@ fun textoPendientes(n: Int) = if (n == 1) "1 carrera sin subir" else "$n carrera
 fun AvisoSincronizacionC2(pendientes: Int, subiendo: Boolean, onSubir: () -> Unit, modifier: Modifier = Modifier) {
     if (pendientes <= 0) return
     Row(
-        modifier.fillMaxWidth().clip(FormaC2).background(Color(0xFF2A1F0A)).border(1.dp, Color(0xFFB7791F), FormaC2)
+        modifier.fillMaxWidth().clip(FormaC2).background(GColors.AvisoFondo).border(1.dp, Color(0xFFB7791F), FormaC2)
             .padding(horizontal = 14.dp, vertical = 12.dp).testTag("aviso-pendientes"),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Icon(Icons.Filled.CloudUpload, null, tint = Color(0xFFF6AD55), modifier = Modifier.size(22.dp))
+        Icon(Icons.Filled.CloudUpload, null, tint = GColors.AvisoTexto, modifier = Modifier.size(22.dp))
         Column(Modifier.weight(1f)) {
             Text(textoPendientes(pendientes), style = GType.labelLg, color = GColors.TextPrimary)
             Text(
@@ -50,7 +50,7 @@ fun AvisoSincronizacionC2(pendientes: Int, subiendo: Boolean, onSubir: () -> Uni
         }
         Text(
             "SUBIR AHORA",
-            style = GType.labelMd, color = if (subiendo) GColors.C2Muted else Color(0xFFF6AD55),
+            style = GType.labelMd, color = if (subiendo) GColors.C2Muted else GColors.AvisoTexto,
             modifier = Modifier.clip(FormaBotonC2).border(1.dp, Color(0xFFB7791F), FormaBotonC2)
                 .clickable(enabled = !subiendo, role = Role.Button, onClickLabel = "Subir carreras pendientes", onClick = onSubir)
                 .padding(horizontal = 10.dp, vertical = 8.dp).testTag("subir-pendientes"),

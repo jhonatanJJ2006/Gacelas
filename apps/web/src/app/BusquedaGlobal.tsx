@@ -205,12 +205,12 @@ export function BusquedaGlobal({ abierto, onCerrar }: { abierto: boolean; onCerr
             aria-expanded="true"
             aria-controls="resultados-busqueda"
             aria-activedescendant={resultados[activo] ? `resultado-${activo}` : undefined}
-            className="flex-1 min-w-0 bg-transparent outline-none text-[15px] text-white placeholder:text-c2-muted"
+            className="flex-1 min-w-0 bg-transparent outline-none text-[15px] text-text-primary placeholder:text-c2-muted"
           />
           <button
             type="button"
             onClick={onCerrar}
-            className="text-[11px] font-semibold text-c2-muted border border-c2-linea rounded px-2 py-1 hover:text-white"
+            className="text-[11px] font-semibold text-c2-muted border border-c2-linea rounded px-2 py-1 hover:text-text-primary"
           >
             Esc
           </button>
@@ -246,7 +246,7 @@ export function BusquedaGlobal({ abierto, onCerrar }: { abierto: boolean; onCerr
                     {r.icono}
                   </span>
                   <span className="flex-1 min-w-0">
-                    <span className="block text-[14px] text-white truncate">{r.titulo}</span>
+                    <span className="block text-[14px] text-text-primary truncate">{r.titulo}</span>
                     {r.detalle && (
                       <span className="block text-[12px] text-c2-muted truncate">{r.detalle}</span>
                     )}

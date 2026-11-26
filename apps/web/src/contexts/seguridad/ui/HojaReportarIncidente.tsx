@@ -81,7 +81,7 @@ export function HojaReportarIncidente({
         data-testid="hoja-reportar"
         className="relative w-full max-w-lg rounded-t-[14px] bg-c2-card border-t-2 border-c2-violeta px-5 pt-2 pb-[max(env(safe-area-inset-bottom),20px)] space-y-4 max-h-[90dvh] overflow-y-auto"
       >
-        <div className="mx-auto h-1.5 w-12 rounded-full bg-white/20" />
+        <div className="mx-auto h-1.5 w-12 rounded-full bg-text-primary/20" />
         <h2
           id="titulo-reportar"
           className="font-display italic uppercase text-[22px] text-text-primary"
@@ -113,7 +113,7 @@ export function HojaReportarIncidente({
                 onClick={() => setTipo(t.id)}
                 className={`h-11 px-3 rounded-xl flex items-center gap-2 text-sm text-left border ${
                   tipo === t.id
-                    ? 'bg-c2-violeta/20 border-c2-violeta text-white'
+                    ? 'bg-c2-violeta/20 border-c2-violeta text-text-primary'
                     : 'bg-c2-bg border-c2-linea text-text-primary'
                 }`}
               >
@@ -152,7 +152,7 @@ export function HojaReportarIncidente({
           nombre y con la ubicación aproximada.
         </p>
         {error && (
-          <p role="alert" className="text-sm text-[#FF8A7A]">
+          <p role="alert" className="text-sm text-peligro-texto">
             {error}
           </p>
         )}

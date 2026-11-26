@@ -1,5 +1,17 @@
 package com.gacelas.ajustes
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import com.gacelas.ui.components.Pastilla
+import com.gacelas.identidad.domain.modelo.ModoTema
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Add
@@ -191,9 +203,7 @@ fun AjustesContenido(
         }
         EtiquetaSeccion(tr(a.idioma, "Apariencia"), tr(a.idioma, "Interfaz"))
         Tarjeta(padding = 0.dp) {
-            FilaAjuste(Icons.Filled.DarkMode, tr(a.idioma, "Tema"), tr(a.idioma, "Optimizado para salidas nocturnas y al alba"), onClick = { guardar { it.copy(modoOscuro = !it.modoOscuro) } }, trailing = {
-                Text(tr(a.idioma, if (a.modoOscuro) "Oscuro" else "Claro"), style = GType.labelMd, color = GColors.Primary)
-            })
+            SelectorTema(a.tema, a.idioma) { t -> guardar { it.copy(tema = t) } }
             FilaAjuste(Icons.Filled.Language, tr(a.idioma, "Idioma de la aplicación"), tr(a.idioma, "Configuración regional"), onClick = { guardar { it.copy(idioma = if (it.idioma == "en") "es-EC" else "en") } }, trailing = {
                 Text(if (a.idioma == "en") "English" else "Español (Ecuador)", style = GType.labelMd, color = GColors.TextPrimary)
             })
@@ -283,5 +293,32 @@ fun AjustesContenido(
             text = { Text("Tus carreras guardadas siguen en tu cuenta. Las que estén sin sincronizar se subirán la próxima vez que entres.") },
             containerColor = GColors.BgSecondary,
         )
+    }
+}
+
+/** Selector de tema de tres valores (Claro, Oscuro, Sistema); se guarda en Ajustes.tema. */
+@androidx.compose.runtime.Composable
+internal fun SelectorTema(actual: ModoTema, idioma: String, alElegir: (ModoTema) -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp).testTag("selector-tema")) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(34.dp).clip(RoundedCornerShape(4.dp)).background(GColors.C2S2), contentAlignment = Alignment.Center) {
+                Icon(Icons.Filled.DarkMode, contentDescription = null, tint = GColors.Primary500, modifier = Modifier.size(18.dp))
+            }
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Text(tr(idioma, "Tema"), style = GType.bodyMd.copy(fontWeight = FontWeight.SemiBold), color = GColors.TextPrimary)
+                Text(tr(idioma, "Claro, oscuro o el del sistema"), style = GType.bodySm, color = GColors.TextSecondary)
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+        Row(Modifier.fillMaxWidth().semantics { contentDescription = tr(idioma, "Tema") }, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf(
+                Triple(ModoTema.Claro, "Claro", Icons.Filled.LightMode),
+                Triple(ModoTema.Oscuro, "Oscuro", Icons.Filled.DarkMode),
+                Triple(ModoTema.Sistema, "Sistema", Icons.Filled.Contrast),
+            ).forEach { (modo, texto, icono) ->
+                Pastilla(tr(idioma, texto), actual == modo, { alElegir(modo) }, icono, relleno = 8.dp, modifier = Modifier.weight(1f).testTag("tema-${modo.name.lowercase()}"))
+            }
+        }
     }
 }

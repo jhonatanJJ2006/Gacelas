@@ -112,7 +112,7 @@ fun EsqueletoPantalla(modifier: Modifier = Modifier, etiqueta: String = "Cargand
 @Composable
 fun EsqueletoMapa(modifier: Modifier = Modifier) {
     val alfa by pulsoEsqueleto()
-    Box(modifier.fillMaxSize().background(Color(0xFF0A0E16)).testTag("esqueleto-mapa").semantics { contentDescription = "Cargando mapa" }) {
+    Box(modifier.fillMaxSize().background(GColors.MapaFondo).testTag("esqueleto-mapa").semantics { contentDescription = "Cargando mapa" }) {
         Column(Modifier.fillMaxSize().padding(24.dp).graphicsLayer { alpha = alfa * 0.6f }, verticalArrangement = Arrangement.SpaceEvenly) {
             listOf(0.9f, 0.6f, 0.8f, 0.5f, 0.75f).forEach { BloqueEsqueleto(alto = 6.dp, ancho = it, forma = RoundedCornerShape(3.dp)) }
         }

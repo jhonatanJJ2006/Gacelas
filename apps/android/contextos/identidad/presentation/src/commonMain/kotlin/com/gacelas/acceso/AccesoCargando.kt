@@ -1,5 +1,6 @@
 package com.gacelas.acceso
 
+import com.gacelas.ui.theme.GColors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -26,12 +27,12 @@ enum class FaseGoogle(val texto: String) { Cuenta("Elige tu cuenta de Google…"
 fun CargandoGoogle(fase: FaseGoogle) {
     androidx.compose.ui.window.Dialog(onDismissRequest = {}, properties = androidx.compose.ui.window.DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)) {
         Column(
-            Modifier.clip(RoundedCornerShape(24.dp)).background(Color(0xFF131926)).border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(24.dp))
+            Modifier.clip(RoundedCornerShape(24.dp)).background(GColors.Panel).border(1.dp, GColors.TextPrimary.copy(alpha = 0.1f), RoundedCornerShape(24.dp))
                 .padding(horizontal = 28.dp, vertical = 24.dp).testTag("cargando-google"),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             CircularProgressIndicator(Modifier.size(36.dp), color = Color(0xFF7B1FA2), strokeWidth = 3.dp)
-            Text(fase.texto, fontFamily = com.gacelas.ui.theme.Inter, fontSize = 15.sp, color = Color.White)
+            Text(fase.texto, fontFamily = com.gacelas.ui.theme.Inter, fontSize = 15.sp, color = GColors.TextPrimary)
         }
     }
 }
@@ -44,6 +45,6 @@ fun ErrorGoogle(mensaje: String, titulo: String = "No se pudo entrar con Google"
         confirmButton = { com.gacelas.ui.components.BotonModalC2("Entendido", onCerrar) },
         title = { Text(titulo) },
         text = { Text(mensaje, modifier = Modifier.testTag("error-google")) },
-        containerColor = Color(0xFF131926), titleContentColor = Color.White, textContentColor = Color(0xFFBCC7DE),
+        containerColor = GColors.Panel, titleContentColor = GColors.TextPrimary, textContentColor = GColors.C2Muted,
     )
 }

@@ -1,5 +1,6 @@
 package com.gacelas.acceso
 
+import com.gacelas.ui.theme.GColors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -132,7 +133,7 @@ fun InicioSesionC4(
                     Modifier.padding(horizontal = 20.dp).navigationBarsPadding().padding(top = 8.dp, bottom = if (compacto) 8.dp else 24.dp),
                     alpha = 0.96f, padding = if (minimo) 16.dp else if (compacto) 20.dp else 24.dp,
                 ) {
-                    Text("Bienvenido de vuelta", style = C4Texto.headlineLgMobile.copy(fontSize = if (compacto) 20.sp else 24.sp), color = Color.White)
+                    Text("Bienvenido de vuelta", style = C4Texto.headlineLgMobile.copy(fontSize = if (compacto) 20.sp else 24.sp), color = GColors.TextPrimary)
                     if (!compacto) {
                         Spacer(Modifier.height(6.dp))
                         Text("Inicia sesión para seguir corriendo", style = C4Texto.bodySm, color = C4.Subtitulo.copy(alpha = 0.8f))

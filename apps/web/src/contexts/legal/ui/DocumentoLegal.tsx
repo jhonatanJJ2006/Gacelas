@@ -136,7 +136,7 @@ export function DocumentoLegal({ tipo }: { tipo: Tipo }) {
                   aria-current={activo ? 'page' : undefined}
                   className={`flex min-h-[44px] items-center px-3 text-sm font-semibold transition-colors sm:px-4 ${FOCO} ${
                     activo
-                      ? 'bg-primary-600 text-white'
+                      ? 'bg-primary-600 text-on-primary'
                       : 'text-c2-muted hover:bg-c2-s2 hover:text-text-primary'
                   }`}
                 >

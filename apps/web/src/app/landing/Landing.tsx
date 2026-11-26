@@ -93,7 +93,7 @@ type DatosMapa = {
   readonly vivo: Punto
 }
 
-const COLORES_MANADA = ['bg-primary-400', 'bg-[#F472B6]'] as const
+const COLORES_MANADA = ['bg-primary-400', 'bg-rosa'] as const
 
 /**
  * Capa de puntos sobre un mapa generado desde OpenStreetMap (scripts/generar-mapas-landing.py).
@@ -105,12 +105,12 @@ function PuntosRuta({ datos }: { datos: DatosMapa }) {
     <>
       <span
         aria-hidden="true"
-        className="absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-[#F472B6] bg-surface"
+        className="absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-rosa bg-surface"
         style={en(datos.inicio)}
       />
       <span
         aria-hidden="true"
-        className="absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-surface bg-[#F472B6]"
+        className="absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-surface bg-rosa"
         style={en(datos.fin)}
       />
       {datos.manada.map((m, i) => (
@@ -193,7 +193,7 @@ function TarjetaRuta() {
             {r.tipo}, {r.dificultad.toLowerCase()}
           </p>
         </div>
-        <span aria-hidden="true" className="material-symbols-outlined text-[28px] text-[#F472B6]">
+        <span aria-hidden="true" className="material-symbols-outlined text-[28px] text-rosa">
           route
         </span>
       </div>
@@ -306,7 +306,7 @@ function Funciones() {
                     </span>
                   </p>
                   <p
-                    className={`mt-0.5 text-xs font-bold ${'dificil' in r ? 'text-[#F472B6]' : 'text-c2-menta'}`}
+                    className={`mt-0.5 text-xs font-bold ${'dificil' in r ? 'text-rosa' : 'text-c2-menta'}`}
                   >
                     {'dificil' in r ? 'Difícil' : 'Fácil'}
                   </p>

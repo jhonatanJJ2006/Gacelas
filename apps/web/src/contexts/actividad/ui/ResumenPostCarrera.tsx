@@ -192,7 +192,7 @@ export function ResumenPostCarrera() {
               alternativa={<TrazadoRuta puntos={e.puntos} className="w-full h-full" />}
             />
             {alturas.length > 1 && (
-              <span className="absolute bottom-2 left-2 px-2 py-1 rounded-lg bg-black/60 text-white text-label-sm">
+              <span className="absolute bottom-2 left-2 px-2 py-1 rounded-lg bg-black/60 text-on-primary text-label-sm">
                 {Math.round(Math.min(...alturas))} m - {Math.round(Math.max(...alturas))} m
               </span>
             )}
@@ -381,7 +381,7 @@ export function ResumenPostCarrera() {
             </div>
           )}
           {errorRuta && (
-            <p role="alert" className="text-sm text-red-300">
+            <p role="alert" className="text-sm text-peligro-texto">
               {errorRuta}
             </p>
           )}

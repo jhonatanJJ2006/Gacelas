@@ -129,7 +129,7 @@ fun ClimaScreen(onAtras: () -> Unit, onRuta: (String) -> Unit) {
                     actual.horas.forEach { h ->
                         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text("${h.hora}h", style = GType.labelMd, color = GColors.C2Muted)
-                            Icon(icono(h.codigoWmo), null, tint = if (h == mejor) androidx.compose.ui.graphics.Color(0xFFFBBF24) else GColors.C2Cielo, modifier = Modifier.size(20.dp))
+                            Icon(icono(h.codigoWmo), null, tint = if (h == mejor) GColors.Alerta else GColors.C2Cielo, modifier = Modifier.size(20.dp))
                             Text("${h.temperatura}°", style = GType.labelLg, color = GColors.TextPrimary)
                         }
                     }
@@ -185,7 +185,7 @@ private fun FilaDiaClima(d: DiaClima, nombre: String, elegido: Boolean, minimo: 
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(nombre, style = GType.labelLg, color = GColors.TextPrimary, modifier = Modifier.width(96.dp), maxLines = 1)
-        Icon(icono(d.codigoWmo), null, tint = if (d.lluvioso) GColors.C2Cielo else androidx.compose.ui.graphics.Color(0xFFFBBF24), modifier = Modifier.size(22.dp))
+        Icon(icono(d.codigoWmo), null, tint = if (d.lluvioso) GColors.C2Cielo else GColors.Alerta, modifier = Modifier.size(22.dp))
         Row(Modifier.width(48.dp), verticalAlignment = Alignment.CenterVertically) {
             if (d.probLluvia > 0) {
                 Icon(Icons.Filled.WaterDrop, null, tint = GColors.C2Cielo, modifier = Modifier.size(12.dp))
@@ -200,7 +200,7 @@ private fun FilaDiaClima(d: DiaClima, nombre: String, elegido: Boolean, minimo: 
                 val ini = (d.minima - minimo) / total
                 val ancho = ((d.maxima - d.minima) / total).coerceAtLeast(0.05f)
                 if (ini > 0f) Box(Modifier.weight(ini))
-                Box(Modifier.weight(ancho).height(6.dp).clip(CircleShape).background(Brush.horizontalGradient(listOf(GColors.C2Cielo, androidx.compose.ui.graphics.Color(0xFFFBBF24)))))
+                Box(Modifier.weight(ancho).height(6.dp).clip(CircleShape).background(Brush.horizontalGradient(listOf(GColors.C2Cielo, GColors.Alerta))))
                 val resto = 1f - ini - ancho
                 if (resto > 0f) Box(Modifier.weight(resto))
             }

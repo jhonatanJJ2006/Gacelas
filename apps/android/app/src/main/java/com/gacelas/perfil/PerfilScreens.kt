@@ -234,7 +234,7 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
                         Text(c.titulo, style = GType.labelLg, color = GColors.TextPrimary)
                         Text(fecha.format(Date(c.inicioMs)), style = GType.bodySm, color = GColors.TextSecondary)
                     }
-                    if (c.id in pendientes) Text("Sin subir", style = GType.bodySm, color = androidx.compose.ui.graphics.Color(0xFFF6AD55), modifier = Modifier.padding(end = 8.dp).testTag("sin-subir-${c.id}"))
+                    if (c.id in pendientes) Text("Sin subir", style = GType.bodySm, color = GColors.AvisoTexto, modifier = Modifier.padding(end = 8.dp).testTag("sin-subir-${c.id}"))
                     if (!c.publica) Text("Privada", style = GType.bodySm, color = GColors.TextSecondary)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {

@@ -76,11 +76,11 @@ export function pdfEstadisticas(d: Datos): Uint8Array {
 function Kpi({ t, v, s }: { t: string; v: string | number; s?: string }) {
   return (
     <div className={`${tarjeta} p-3`}>
-      <p className="rotulo-c2 !text-[#C084FC]">{t}</p>
-      <p className="text-[20px] font-bold tabular-nums text-white leading-tight">
+      <p className="rotulo-c2 !text-c2-violeta">{t}</p>
+      <p className="text-[20px] font-bold tabular-nums text-text-primary leading-tight">
         {typeof v === 'number' ? v.toLocaleString('es-EC') : v}
       </p>
-      {s && <p className="text-[11px] text-[#68DBA9]">{s}</p>}
+      {s && <p className="text-[11px] text-c2-menta">{s}</p>}
     </div>
   )
 }
@@ -88,7 +88,7 @@ function Kpi({ t, v, s }: { t: string; v: string | number; s?: string }) {
 function Panel({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
     <section className={`${tarjeta} p-4`}>
-      <h2 className="font-display italic uppercase text-white text-[16px] mb-3">{titulo}</h2>
+      <h2 className="font-display italic uppercase text-text-primary text-[16px] mb-3">{titulo}</h2>
       {children}
     </section>
   )
@@ -134,7 +134,7 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h1 className="font-display italic uppercase text-[28px] lg:text-[34px] text-white">
+        <h1 className="font-display italic uppercase text-[28px] lg:text-[34px] text-text-primary">
           Estadísticas
         </h1>
         <div className="flex gap-2">
@@ -145,7 +145,7 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
             onClick={() =>
               datos && descargar(`${nombre}.csv`, csvEstadisticas(datos), 'text/csv;charset=utf-8')
             }
-            className="h-10 px-4 -skew-x-12 font-black italic uppercase text-[13px] bg-c2-s2 text-white disabled:opacity-50"
+            className="h-10 px-4 -skew-x-12 font-black italic uppercase text-[13px] bg-c2-s2 text-text-primary disabled:opacity-50"
           >
             CSV
           </button>
@@ -156,7 +156,7 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
             onClick={() =>
               datos && descargar(`${nombre}.pdf`, pdfEstadisticas(datos), 'application/pdf')
             }
-            className="h-10 px-4 -skew-x-12 font-black italic uppercase text-[13px] bg-gradient-to-r from-[#7B1FA2] to-c2-morado text-white disabled:opacity-50"
+            className="h-10 px-4 -skew-x-12 font-black italic uppercase text-[13px] bg-gradient-to-r from-[#7B1FA2] to-c2-morado text-on-primary disabled:opacity-50"
           >
             PDF
           </button>
@@ -170,7 +170,7 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
             value={desde}
             max={hasta}
             onChange={(e) => setDesde(e.target.value)}
-            className="block mt-1 h-9 bg-c2-s2 px-2 text-white text-[13px] [color-scheme:dark]"
+            className="block mt-1 h-9 bg-c2-s2 px-2 text-text-primary text-[13px] [color-scheme:dark]"
           />
         </label>
         <label className="text-[11px] uppercase font-bold text-c2-muted">
@@ -181,7 +181,7 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
             min={desde}
             max={hoy()}
             onChange={(e) => setHasta(e.target.value)}
-            className="block mt-1 h-9 bg-c2-s2 px-2 text-white text-[13px] [color-scheme:dark]"
+            className="block mt-1 h-9 bg-c2-s2 px-2 text-text-primary text-[13px] [color-scheme:dark]"
           />
         </label>
         <div className="flex flex-wrap gap-1">
@@ -193,7 +193,7 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
                 setDesde(haceDias(d))
                 setHasta(hoy())
               }}
-              className={`px-3 h-9 text-[12px] font-semibold border ${desde === haceDias(d) && hasta === hoy() ? 'border-[#C084FC] text-[#C084FC]' : 'border-c2-linea text-c2-muted'}`}
+              className={`px-3 h-9 text-[12px] font-semibold border ${desde === haceDias(d) && hasta === hoy() ? 'border-c2-violeta text-c2-violeta' : 'border-c2-linea text-c2-muted'}`}
             >
               {n}
             </button>
@@ -201,7 +201,10 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
         </div>
       </div>
       {error && (
-        <p role="alert" className="mb-4 border border-c2-peligro bg-c2-card p-3 text-sm text-white">
+        <p
+          role="alert"
+          className="mb-4 border border-c2-peligro bg-c2-card p-3 text-sm text-text-primary"
+        >
           No se pudo cargar: {error}. Revisa que la migración 023 esté aplicada.
         </p>
       )}
@@ -250,7 +253,7 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
             <Panel titulo="Eventos con más inscritos">
               {datos.eventos_top.length ? (
                 <BarrasHorizontales
-                  color="#68DBA9"
+                  color="rgb(var(--c-c2-menta))"
                   datos={datos.eventos_top.map((e) => ({ etiqueta: e.titulo, valor: e.inscritos }))}
                 />
               ) : (
@@ -259,14 +262,17 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
             </Panel>
             <Panel titulo="Reportes por estado">
               <BarrasHorizontales
-                color="#96CCFF"
+                color="rgb(var(--c-c2-cielo))"
                 datos={aBarras(datos.reportes.por_estado, ESTADO)}
               />
             </Panel>
             <Panel titulo="Reportes por tipo y motivo">
               <BarrasHorizontales color="#BE185D" datos={aBarras(datos.reportes.por_tipo, TIPO)} />
               <div className="mt-3">
-                <BarrasHorizontales color="#A855F7" datos={aBarras(datos.reportes.por_motivo)} />
+                <BarrasHorizontales
+                  color="rgb(var(--c-c2-morado))"
+                  datos={aBarras(datos.reportes.por_motivo)}
+                />
               </div>
             </Panel>
           </div>

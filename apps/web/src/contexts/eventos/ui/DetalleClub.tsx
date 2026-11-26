@@ -285,7 +285,7 @@ export function DetalleClub() {
                         onClick={() =>
                           void intentar(() => clubes.borrarPost(p.id), 'Publicación borrada')
                         }
-                        className="text-xs text-red-300 mt-2"
+                        className="text-xs text-peligro-texto mt-2"
                       >
                         Borrar
                       </button>
@@ -445,7 +445,7 @@ export function DetalleClub() {
                       onClick={() =>
                         void intentar(() => clubes.salir(id, m.usuarioId), 'Miembro expulsado')
                       }
-                      className="text-xs text-red-300"
+                      className="text-xs text-peligro-texto"
                     >
                       Expulsar
                     </button>
@@ -477,7 +477,7 @@ export function DetalleClub() {
             type="button"
             data-testid="eliminar-club"
             onClick={() => setBorrando(true)}
-            className="inline-flex items-center gap-1 text-[13px] text-red-300"
+            className="inline-flex items-center gap-1 text-[13px] text-peligro-texto"
           >
             <span className="material-symbols-outlined text-[16px]">delete</span>
             {esGrupo ? 'Eliminar grupo' : 'Eliminar comunidad'}

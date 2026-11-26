@@ -103,7 +103,7 @@ fun DetalleEnVivoContenido(
         }
         val puntos = x.puntos.mapIndexed { i, p -> PuntoGps(p.lat, p.lng, i.toLong()) }
         Tarjeta(padding = 8.dp) {
-            mapa(x.puntos.map { Coord(it.lat, it.lng) }, Modifier.fillMaxWidth().height(320.dp), a.modoOscuro) {
+            mapa(x.puntos.map { Coord(it.lat, it.lng) }, Modifier.fillMaxWidth().height(320.dp), !GColors.claro) {
                 TrazadoRuta(puntos, Modifier.fillMaxWidth().height(320.dp))
             }
             if (x.oculta) Row(Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {

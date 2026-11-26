@@ -132,13 +132,13 @@ export function Perfil() {
     <div className="flex flex-col w-full px-4 lg:px-8 lg:max-w-[1440px] lg:mx-auto pb-space-3xl lg:pb-10 pt-space-md lg:pt-0">
       <section
         aria-label="Tu perfil"
-        className="panel-c2 relative overflow-hidden border border-[#3B1A55] bg-[linear-gradient(160deg,#2A0A3D_0%,#1A0B2E_55%,#191F2F_100%)] p-5 lg:p-6"
+        className="fondo-hero panel-c2 relative overflow-hidden border p-5 lg:p-6"
       >
         <div className="flex flex-col lg:flex-row lg:items-center gap-5">
           <div className="flex items-center gap-4 min-w-0 flex-1">
             <FotoPerfil foto={sesion?.foto} nombre={nombre} className="w-20 h-20 shrink-0" />
             <div className="min-w-0 flex-1">
-              <h1 className="font-display italic text-[28px] lg:text-[32px] leading-tight text-white truncate tracking-[0.035em]">
+              <h1 className="font-display italic text-[28px] lg:text-[32px] leading-tight text-text-primary truncate tracking-[0.035em]">
                 {nombre}
               </h1>
               <p className="text-[12.5px] text-c2-muted truncate">
@@ -174,7 +174,10 @@ export function Perfil() {
               ['Siguiendo', siguiendo.length, 'total-siguiendo'],
             ].map(([t, v, id]) => (
               <div key={t} className="text-center">
-                <div className="cifra-c2 text-[26px] leading-none text-white" data-testid={id}>
+                <div
+                  className="cifra-c2 text-[26px] leading-none text-text-primary"
+                  data-testid={id}
+                >
                   {v}
                 </div>
                 <div className="text-[11px] text-c2-muted mt-1">{t}</div>
@@ -184,21 +187,21 @@ export function Perfil() {
           <div className="grid grid-cols-[1fr_1fr_auto] lg:grid-cols-1 gap-2 lg:w-[200px]">
             <Link
               to="/perfil/avatar"
-              className="panel-c2 h-10 flex items-center justify-center gap-1.5 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-white text-[13px] font-bold"
+              className="panel-c2 h-10 flex items-center justify-center gap-1.5 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-on-primary text-[13px] font-bold"
             >
               Editar avatar 3D
             </Link>
             <Link
               to="/perfil/editar"
               aria-label="Editar perfil"
-              className="h-10 rounded-md flex items-center justify-center gap-1.5 border border-c2-linea text-white text-[13px] hover:border-c2-morado"
+              className="h-10 rounded-md flex items-center justify-center gap-1.5 border border-c2-linea text-text-primary text-[13px] hover:border-c2-morado"
             >
               Editar perfil
             </Link>
             <Link
               to="/ajustes"
               aria-label="Configuración"
-              className="h-10 w-10 lg:w-auto rounded-md flex items-center justify-center gap-1.5 border border-c2-linea text-c2-muted text-[13px] hover:text-white hover:border-c2-morado"
+              className="h-10 w-10 lg:w-auto rounded-md flex items-center justify-center gap-1.5 border border-c2-linea text-c2-muted text-[13px] hover:text-text-primary hover:border-c2-morado"
             >
               <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
                 settings
@@ -221,7 +224,7 @@ export function Perfil() {
               role="tab"
               aria-selected={p === pestana}
               onClick={() => setPestana(p)}
-              className={`h-8 px-3 rounded text-[13px] font-semibold whitespace-nowrap ${p === pestana ? 'bg-c2-s2 text-white' : 'text-c2-muted hover:text-white'}`}
+              className={`h-8 px-3 rounded text-[13px] font-semibold whitespace-nowrap ${p === pestana ? 'bg-c2-s2 text-text-primary' : 'text-c2-muted hover:text-text-primary'}`}
             >
               {p}
               {p !== 'Resumen' && (
@@ -234,7 +237,7 @@ export function Perfil() {
           <Link
             to="/perfil/reportes"
             data-testid="ir-reportes"
-            className="h-8 px-3 rounded text-[13px] font-semibold whitespace-nowrap text-c2-muted hover:text-white flex items-center"
+            className="h-8 px-3 rounded text-[13px] font-semibold whitespace-nowrap text-c2-muted hover:text-text-primary flex items-center"
           >
             Reportes
           </Link>
@@ -250,7 +253,7 @@ export function Perfil() {
                 key={p}
                 aria-pressed={p === periodo}
                 onClick={() => setPeriodo(p)}
-                className={`h-7 px-2.5 rounded text-[12px] font-semibold ${p === periodo ? 'bg-c2-s2 text-white' : 'text-c2-muted hover:text-white'}`}
+                className={`h-7 px-2.5 rounded text-[12px] font-semibold ${p === periodo ? 'bg-c2-s2 text-text-primary' : 'text-c2-muted hover:text-text-primary'}`}
               >
                 {p}
               </button>
@@ -289,7 +292,7 @@ export function Perfil() {
                 type="button"
                 disabled={pag === 0}
                 onClick={() => irPagina(pag - 1)}
-                className="h-9 px-3 rounded-md border border-c2-linea text-white disabled:opacity-40"
+                className="h-9 px-3 rounded-md border border-c2-linea text-text-primary disabled:opacity-40"
               >
                 Anterior
               </button>
@@ -300,7 +303,7 @@ export function Perfil() {
                 type="button"
                 disabled={pag >= paginas - 1}
                 onClick={() => irPagina(pag + 1)}
-                className="h-9 px-3 rounded-md border border-c2-linea text-white disabled:opacity-40"
+                className="h-9 px-3 rounded-md border border-c2-linea text-text-primary disabled:opacity-40"
               >
                 Siguiente
               </button>
@@ -401,7 +404,7 @@ function Resumen({
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
           {[
             ['Distancia', Unidades.texto(km, m, 1), u, 'text-c2-violeta'],
-            ['Tiempo en movimiento', formatearHms(seg), '', 'text-white'],
+            ['Tiempo en movimiento', formatearHms(seg), '', 'text-text-primary'],
             ['Desnivel acumulado', `+${Math.round(desn)}`, 'm', 'text-c2-cielo'],
             [
               'Ritmo medio',
@@ -528,7 +531,7 @@ function Dato({ t, v, n }: { t: string; v: string; n: string }) {
   return (
     <div className="min-w-0">
       <Rotulo>{t}</Rotulo>
-      <p className="cifra-c2 text-[20px] text-white mt-1 whitespace-nowrap">{v}</p>
+      <p className="cifra-c2 text-[20px] text-text-primary mt-1 whitespace-nowrap">{v}</p>
       <p className="text-[11px] text-c2-muted truncate">{n}</p>
     </div>
   )
@@ -585,18 +588,15 @@ function RecordsLista({
       {filas.map(([e, v, n]) => (
         <li key={e} className="flex items-center gap-3 py-2.5">
           <span className="w-9 h-9 rounded-md bg-c2-s2 grid place-items-center shrink-0">
-            <span
-              aria-hidden="true"
-              className="material-symbols-outlined text-[18px] text-amber-400"
-            >
+            <span aria-hidden="true" className="material-symbols-outlined text-[18px] text-alerta">
               emoji_events
             </span>
           </span>
           <span className="flex-1 min-w-0">
-            <span className="block text-[13px] text-white font-semibold">{e}</span>
+            <span className="block text-[13px] text-text-primary font-semibold">{e}</span>
             <span className="block text-[11px] text-c2-muted truncate">{n}</span>
           </span>
-          <span className="cifra-c2 text-[18px] text-white whitespace-nowrap">{v}</span>
+          <span className="cifra-c2 text-[18px] text-text-primary whitespace-nowrap">{v}</span>
         </li>
       ))}
     </ul>
@@ -631,7 +631,7 @@ function Constancia({
     <Panel titulo="Constancia" className={className} testId="tarjeta-racha">
       <div className="flex flex-wrap gap-2 mb-4">
         <span
-          className={`text-[11.5px] font-semibold px-2.5 py-1 rounded-full ${rachaEnRiesgo(r, Date.now()) ? 'bg-amber-400/15 text-amber-400' : 'bg-c2-morado/20 text-c2-violeta'}`}
+          className={`text-[11.5px] font-semibold px-2.5 py-1 rounded-full ${rachaEnRiesgo(r, Date.now()) ? 'bg-alerta/15 text-alerta' : 'bg-c2-morado/20 text-c2-violeta'}`}
         >
           Racha diaria <span data-testid="racha-diaria">{plural(r.diaria, 'día', 'días')}</span>,
           mejor {r.mejorDiaria}
@@ -708,7 +708,7 @@ function TablaActividades({
               />
               <Link
                 to={`/perfil/carrera/${c.id}`}
-                className="font-semibold text-white truncate hover:text-c2-violeta"
+                className="font-semibold text-text-primary truncate hover:text-c2-violeta"
               >
                 {c.titulo}
               </Link>
@@ -718,8 +718,8 @@ function TablaActividades({
                 .toLocaleDateString('es-EC', { weekday: 'short', day: 'numeric', month: 'short' })
                 .replace(/\./g, '')}
             </span>
-            <span className="hidden lg:block text-right cifra-c2 text-[15px] text-white">{`${Unidades.texto(c.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}`}</span>
-            <span className="hidden lg:block text-right cifra-c2 text-[15px] text-white">
+            <span className="hidden lg:block text-right cifra-c2 text-[15px] text-text-primary">{`${Unidades.texto(c.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}`}</span>
+            <span className="hidden lg:block text-right cifra-c2 text-[15px] text-text-primary">
               {formatearMs(c.segundos)}
             </span>
             <span className="hidden lg:block text-right cifra-c2 text-[15px] text-c2-menta">
@@ -735,7 +735,7 @@ function TablaActividades({
               {c.publica ? 'Pública' : 'Privada'}
             </span>
             <span className="lg:hidden col-start-2 row-start-3 text-c2-muted">
-              <span className="text-white font-semibold">{`${Unidades.texto(c.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}`}</span>{' '}
+              <span className="text-text-primary font-semibold">{`${Unidades.texto(c.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}`}</span>{' '}
               · {formatearMs(c.segundos)} ·{' '}
               {formatearRitmo(
                 Unidades.ritmo(
@@ -749,7 +749,7 @@ function TablaActividades({
             <button
               onClick={() => onBorrar(c.id)}
               aria-label={`Eliminar ${c.titulo}`}
-              className="col-start-3 row-start-1 lg:col-start-auto lg:row-start-auto justify-self-end w-8 h-8 grid place-items-center text-c2-muted hover:text-pink-300"
+              className="col-start-3 row-start-1 lg:col-start-auto lg:row-start-auto justify-self-end w-8 h-8 grid place-items-center text-c2-muted hover:text-rosa"
             >
               <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
                 delete
@@ -805,7 +805,7 @@ function RutasFavoritas({
                   className="w-14 h-9 rounded shrink-0"
                 />
                 <span className="min-w-0">
-                  <span className="block text-[13px] text-white font-semibold truncate">
+                  <span className="block text-[13px] text-text-primary font-semibold truncate">
                     {r.nombre}
                   </span>
                   <span className="block text-[11px] text-c2-muted">{`${Unidades.texto(r.distanciaKm, m, 1)} ${Unidades.etiquetaDistancia(m)}`}</span>

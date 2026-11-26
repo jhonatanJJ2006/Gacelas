@@ -104,7 +104,7 @@ export function BotonTexto({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`px-5 h-11 -skew-x-12 font-black italic uppercase text-[14px] transition-colors disabled:opacity-50 ${peligro ? 'bg-c2-peligro text-white hover:brightness-110' : 'bg-c2-s2 text-c2-violeta hover:bg-c2-linea'}`}
+      className={`px-5 h-11 -skew-x-12 font-black italic uppercase text-[14px] transition-colors disabled:opacity-50 ${peligro ? 'bg-c2-peligro text-on-primary hover:brightness-110' : 'bg-c2-s2 text-c2-violeta hover:bg-c2-linea'}`}
     >
       {children}
     </button>
@@ -162,7 +162,7 @@ export function Aviso({ mensaje }: { mensaje: string | null }) {
         >
           {error ? 'error' : 'check_circle'}
         </span>
-        <span className="text-sm font-semibold text-white">{mensaje}</span>
+        <span className="text-sm font-semibold text-text-primary">{mensaje}</span>
       </div>
     </div>
   )

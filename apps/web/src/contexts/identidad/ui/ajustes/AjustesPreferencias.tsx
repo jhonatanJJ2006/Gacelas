@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { traducir } from '../../../../shared/i18n/textos'
 import { nivelCorredor } from '../../../../shared/kernel/nivel'
+import type { ModoTema } from '../../../../shared/kernel/tipos'
+import { normalizarTema } from '../../../../shared/lib/tema'
 import { BotonTexto, Dialogo, Interruptor } from '../../../../shared/ui/ui'
 import { descartarCarrera, useActividad } from '../../../actividad/api'
 import { InsigniaNivel } from '../../../comunidad'
@@ -39,11 +41,59 @@ function Fila({
   )
 }
 
+const OPCIONES_TEMA: { valor: ModoTema; texto: string; icono: string }[] = [
+  { valor: 'claro', texto: 'Claro', icono: 'light_mode' },
+  { valor: 'oscuro', texto: 'Oscuro', icono: 'dark_mode' },
+  { valor: 'sistema', texto: 'Sistema', icono: 'contrast' },
+]
+
+/** Selector de tema de tres valores (Claro, Oscuro, Sistema), accesible como grupo de opciones. */
+export function SelectorTema({
+  valor,
+  alCambiar,
+  t,
+}: {
+  valor: ModoTema
+  alCambiar: (m: ModoTema) => void
+  t: (es: string) => string
+}) {
+  return (
+    <div
+      role="radiogroup"
+      aria-label={t('Tema')}
+      data-testid="selector-tema"
+      className="grid w-full grid-cols-3 gap-px overflow-hidden rounded bg-c2-linea"
+    >
+      {OPCIONES_TEMA.map((o) => {
+        const activo = valor === o.valor
+        return (
+          <button
+            key={o.valor}
+            type="button"
+            role="radio"
+            aria-checked={activo}
+            data-testid={`tema-${o.valor}`}
+            onClick={() => alCambiar(o.valor)}
+            className={`flex h-10 items-center justify-center gap-1.5 text-label-md font-semibold ${
+              activo ? 'bg-c2-violeta text-c2-sobre-violeta' : 'bg-c2-s2 text-c2-muted'
+            }`}
+          >
+            <span className="material-symbols-outlined fill text-[18px]" aria-hidden="true">
+              {o.icono}
+            </span>
+            {t(o.texto)}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 function Enlace({ to, icono, texto }: { to: string; icono: string; texto: string }) {
   return (
     <Link
       to={to}
-      className="flex items-center justify-between px-4 py-3.5 hover:bg-white/5 transition-colors"
+      className="flex items-center justify-between px-4 py-3.5 hover:bg-text-primary/5 transition-colors"
     >
       <div className="flex items-center gap-3">
         <span className="w-[34px] h-[34px] shrink-0 rounded bg-c2-s2 flex items-center justify-center material-symbols-outlined fill text-[18px] text-primary-500">
@@ -70,7 +120,7 @@ function Boton({
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-white/5 transition-colors"
+      className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-text-primary/5 transition-colors"
     >
       <div className="flex items-center gap-3">
         <span className="w-[34px] h-[34px] shrink-0 rounded bg-c2-s2 flex items-center justify-center material-symbols-outlined fill text-[18px] text-primary-500">
@@ -225,19 +275,26 @@ export function AjustesPreferencias() {
       </Seccion>
 
       <Seccion titulo={t('Apariencia')} etiqueta={t('Interfaz')}>
-        <Fila
-          icono="dark_mode"
-          titulo={t('Tema')}
-          descripcion={t('Optimizado para salidas nocturnas y al alba')}
-        >
-          <button
-            onClick={() => void actualizar({ modoOscuro: !ajustes.modoOscuro })}
-            aria-label={t('Cambiar tema')}
-            className="text-primary text-label-md font-semibold"
-          >
-            {ajustes.modoOscuro ? t('Oscuro') : t('Claro')}
-          </button>
-        </Fila>
+        <div className="px-4 py-3.5">
+          <div className="mb-3 flex items-center gap-3">
+            <span className="w-[34px] h-[34px] shrink-0 rounded bg-c2-s2 flex items-center justify-center material-symbols-outlined fill text-[18px] text-primary-500">
+              dark_mode
+            </span>
+            <div className="min-w-0">
+              <div className="font-body-md text-body-md text-text-primary font-semibold">
+                {t('Tema')}
+              </div>
+              <p className="font-body-sm text-body-sm text-text-secondary">
+                {t('Claro, oscuro o el del sistema')}
+              </p>
+            </div>
+          </div>
+          <SelectorTema
+            valor={normalizarTema(ajustes.tema)}
+            alCambiar={(tema) => void actualizar({ tema })}
+            t={t}
+          />
+        </div>
         <Fila
           icono="language"
           titulo={t('Idioma de la aplicación')}
@@ -299,7 +356,7 @@ export function AjustesPreferencias() {
       <section>
         <button
           onClick={() => setDialogo('salir')}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-danger/20 text-red-300 rounded-xl hover:bg-danger/30 transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-danger/20 text-peligro-texto rounded-xl hover:bg-danger/30 transition-colors"
         >
           <span className="material-symbols-outlined">logout</span>
           <span className="font-body-md text-body-md font-medium">{t('Cerrar sesión')}</span>

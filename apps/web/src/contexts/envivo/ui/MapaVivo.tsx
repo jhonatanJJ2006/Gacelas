@@ -26,7 +26,8 @@ const iniciales = (n: string) =>
     .slice(0, 2)
     .map((p) => p[0]!.toUpperCase())
     .join('') || '?'
-const colorEstado = (corriendo: boolean) => (corriendo ? '#68DBA9' : '#96CCFF')
+const colorEstado = (corriendo: boolean) =>
+  corriendo ? 'rgb(var(--c-c2-menta))' : 'rgb(var(--c-c2-cielo))'
 export const haceCuanto = (ms: number, ahora: number) => {
   const s = Math.max(0, Math.floor((ahora - ms) / 1000))
   return s < 60 ? `hace ${s} s` : `hace ${Math.floor(s / 60)} min`
@@ -35,7 +36,7 @@ export const haceCuanto = (ms: number, ahora: number) => {
 function Avatar({ c }: { c: CorredorEnMapa }) {
   return (
     <span
-      className="w-10 h-10 rounded-full bg-[#232A3A] border-2 flex items-center justify-center text-sm font-bold text-text-primary overflow-hidden"
+      className="w-10 h-10 rounded-full bg-c2-s2 border-2 flex items-center justify-center text-sm font-bold text-text-primary overflow-hidden"
       style={{ borderColor: colorEstado(c.corriendo) }}
     >
       {c.avatarUrl ? (
@@ -70,7 +71,7 @@ function Esquema({
       className="relative w-full h-full"
       style={{
         backgroundImage:
-          'linear-gradient(#2C3446 1px, transparent 1px), linear-gradient(90deg, #2C3446 1px, transparent 1px)',
+          'linear-gradient(rgb(var(--c-c2-linea)) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--c-c2-linea)) 1px, transparent 1px)',
         backgroundSize: '48px 48px',
       }}
     >
@@ -90,7 +91,7 @@ function Esquema({
         )
       })}
       {lista.length === 0 && (
-        <p className="absolute inset-0 flex items-center justify-center text-[#A8B0C2]">
+        <p className="absolute inset-0 flex items-center justify-center text-c2-muted">
           Sin corredores visibles
         </p>
       )}
@@ -184,14 +185,14 @@ export function MapaVivo({
           <Link
             to="/ajustes/privacidad"
             data-testid="aviso-no-visible"
-            className="flex items-center gap-2 p-3 rounded-xl bg-[#191F2F] border border-[#2C3446] text-sm text-[#A8B0C2]"
+            className="flex items-center gap-2 p-3 rounded-xl bg-c2-card border border-c2-linea text-sm text-c2-muted"
           >
             <span className="material-symbols-outlined">location_off</span>
             No estás visible. Actívalo en Privacidad si quieres que otros te vean.
           </Link>
         )}
         <div
-          className="relative h-[380px] lg:h-[460px] rounded-2xl overflow-hidden bg-[#191F2F]"
+          className="relative h-[380px] lg:h-[460px] rounded-2xl overflow-hidden bg-c2-card"
           data-testid="mapa-vivo"
         >
           {claveMapas() && !inicial ? (
@@ -211,7 +212,7 @@ export function MapaVivo({
           <BotonReportarMapa onClick={abrirReporte} className="absolute right-3 top-3 z-10" />
         </div>
         {avisoReporte && (
-          <p role="status" className="text-sm text-[#68DBA9]">
+          <p role="status" className="text-sm text-c2-menta">
             {avisoReporte}
           </p>
         )}
@@ -221,12 +222,12 @@ export function MapaVivo({
           onCerrar={() => setReportando(false)}
           onEnviado={setAvisoReporte}
         />
-        <div className="flex gap-4 text-sm text-[#A8B0C2]">
+        <div className="flex gap-4 text-sm text-c2-muted">
           <span className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#68DBA9]" /> Corriendo
+            <span className="w-2.5 h-2.5 rounded-full bg-c2-menta" /> Corriendo
           </span>
           <span className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#96CCFF]" /> Visible, sin correr
+            <span className="w-2.5 h-2.5 rounded-full bg-c2-cielo" /> Visible, sin correr
           </span>
         </div>
         <p className="text-text-primary font-semibold">
@@ -241,7 +242,7 @@ export function MapaVivo({
               <button
                 onClick={() => setElegido(c)}
                 data-testid={`corredor-${c.userId}`}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#191F2F] text-left"
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-c2-card text-left"
               >
                 <Avatar c={c} />
                 <span className="flex-1">
@@ -250,7 +251,7 @@ export function MapaVivo({
                     {c.corriendo ? 'Corriendo' : 'Sin correr'}
                   </span>
                 </span>
-                <span className="text-sm text-[#A8B0C2]">{haceCuanto(c.actualizadoMs, ahora)}</span>
+                <span className="text-sm text-c2-muted">{haceCuanto(c.actualizadoMs, ahora)}</span>
               </button>
             </li>
           ))}

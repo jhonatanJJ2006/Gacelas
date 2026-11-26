@@ -19,7 +19,7 @@ export function InsigniaRacha({
     <div
       className={`inline-flex shrink-0 items-center gap-1 rounded-full border shadow-sm ${
         compacta ? 'px-2.5 py-1' : 'px-3 py-1.5'
-      } ${r.diaria > 0 ? 'bg-primary/15 border-primary/40' : 'bg-surface-container-highest/90 border-white/5'}`}
+      } ${r.diaria > 0 ? 'bg-primary/15 border-primary/40' : 'bg-surface-container-highest/90 border-text-primary/5'}`}
       title={riesgo ? 'Corre hoy para mantener tu racha' : undefined}
     >
       <span

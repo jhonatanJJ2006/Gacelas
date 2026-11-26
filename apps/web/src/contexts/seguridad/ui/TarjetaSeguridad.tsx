@@ -57,7 +57,7 @@ export function TarjetaSeguridad({ rutaId, inicial }: { rutaId: string; inicial?
                   <div className="text-[11px] text-text-secondary">{DIAS_CORTOS[d]}</div>
                   <div
                     className="mx-auto mt-1 h-1.5 w-6 rounded-full"
-                    style={{ background: v ? colorNivel(v.nivel) : '#2C3446' }}
+                    style={{ background: v ? colorNivel(v.nivel) : 'rgb(var(--c-c2-linea))' }}
                   />
                   <div className="mt-1 text-[11px] font-semibold text-text-primary capitalize">
                     {v?.nivel ?? '-'}

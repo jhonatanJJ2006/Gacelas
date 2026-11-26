@@ -199,7 +199,7 @@ export function CompartirDialogo({
                 href={enlaceWhatsApp(datos)}
                 target="_blank"
                 rel="noreferrer"
-                className="col-span-2 h-12 rounded-xl bg-[#128C4B] text-white font-semibold flex items-center justify-center gap-2"
+                className="col-span-2 h-12 rounded-xl bg-[#128C4B] text-on-primary font-semibold flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined">chat</span>Enviar por WhatsApp
               </a>

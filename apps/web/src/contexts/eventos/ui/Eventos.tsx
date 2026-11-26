@@ -105,7 +105,7 @@ export function Eventos() {
       return (
         <Link
           to={`/comunidad/eventos/${evento.id}`}
-          className="h-9 px-4 rounded-md border border-c2-linea text-white text-[13px] font-semibold inline-flex items-center justify-center hover:border-c2-morado"
+          className="h-9 px-4 rounded-md border border-c2-linea text-text-primary text-[13px] font-semibold inline-flex items-center justify-center hover:border-c2-morado"
         >
           Ver detalles
         </Link>
@@ -118,7 +118,7 @@ export function Eventos() {
           mostrarAviso('Inscripción cancelada')
         }}
         aria-pressed={inscrito}
-        className={`${grande ? 'panel-c2 h-12 px-6 text-[14px]' : 'h-9 px-4 rounded-md text-[13px]'} font-bold inline-flex items-center justify-center gap-1.5 transition-colors ${inscrito ? 'bg-c2-menta/15 text-c2-menta border border-c2-menta/40' : 'bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-white hover:brightness-110'}`}
+        className={`${grande ? 'panel-c2 h-12 px-6 text-[14px]' : 'h-9 px-4 rounded-md text-[13px]'} font-bold inline-flex items-center justify-center gap-1.5 transition-colors ${inscrito ? 'bg-c2-menta/15 text-c2-menta border border-c2-menta/40' : 'bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-on-primary hover:brightness-110'}`}
       >
         {inscrito ? 'Inscrito' : 'Inscribirse'}
       </button>
@@ -131,7 +131,9 @@ export function Eventos() {
     <div className="flex flex-col w-full px-4 lg:px-8 lg:max-w-[1440px] lg:mx-auto pt-space-md lg:pt-0 pb-space-3xl lg:pb-10">
       <div className="flex flex-wrap items-end gap-3 mb-5">
         <div className="flex-1 min-w-0">
-          <h1 className="titular-c2 text-[30px] lg:text-[34px] text-white leading-none">Eventos</h1>
+          <h1 className="titular-c2 text-[30px] lg:text-[34px] text-text-primary leading-none">
+            Eventos
+          </h1>
           <p className="text-[12.5px] text-c2-muted mt-1">
             {tresSemanas === 1 ? '1 evento' : `${tresSemanas} eventos`} en las próximas 3 semanas en
             Loja
@@ -141,7 +143,7 @@ export function Eventos() {
           to="/comunidad/clubes"
           aria-label="Clubes"
           data-testid="ir-clubes"
-          className="h-10 px-3 rounded-md border border-c2-linea text-white text-[13px] font-semibold inline-flex items-center gap-1.5 hover:border-c2-morado"
+          className="h-10 px-3 rounded-md border border-c2-linea text-text-primary text-[13px] font-semibold inline-flex items-center gap-1.5 hover:border-c2-morado"
         >
           <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
             groups
@@ -153,7 +155,7 @@ export function Eventos() {
           aria-pressed={vista === 'calendario'}
           data-testid="ver-calendario"
           aria-label={vista === 'lista' ? 'Ver calendario' : 'Ver lista'}
-          className="lg:hidden h-10 w-10 rounded-md border border-c2-linea text-white inline-flex items-center justify-center"
+          className="lg:hidden h-10 w-10 rounded-md border border-c2-linea text-text-primary inline-flex items-center justify-center"
         >
           <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
             {vista === 'lista' ? 'calendar_month' : 'list'}
@@ -165,7 +167,7 @@ export function Eventos() {
             setCreando(true)
           }}
           aria-label="Crear evento"
-          className="panel-c2 h-10 px-4 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-white text-[13px] font-bold inline-flex items-center gap-1.5"
+          className="panel-c2 h-10 px-4 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-on-primary text-[13px] font-bold inline-flex items-center gap-1.5"
         >
           <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
             add
@@ -196,7 +198,7 @@ export function Eventos() {
                   role="tab"
                   aria-selected={pestana === p}
                   onClick={() => setPestana(p)}
-                  className={`h-8 px-3 rounded text-[13px] font-semibold whitespace-nowrap ${pestana === p ? 'bg-c2-s2 text-white' : 'text-c2-muted hover:text-white'}`}
+                  className={`h-8 px-3 rounded text-[13px] font-semibold whitespace-nowrap ${pestana === p ? 'bg-c2-s2 text-text-primary' : 'text-c2-muted hover:text-text-primary'}`}
                 >
                   {p}
                   <span aria-hidden="true" className="text-c2-muted">
@@ -214,7 +216,7 @@ export function Eventos() {
                   key={t}
                   aria-pressed={tipo === t}
                   onClick={() => setTipo(tipo === t ? null : t)}
-                  className={`h-8 px-3 rounded-md border text-[12.5px] font-semibold whitespace-nowrap ${tipo === t ? 'border-c2-morado bg-c2-morado/20 text-white' : 'border-c2-linea text-c2-muted hover:text-white'}`}
+                  className={`h-8 px-3 rounded-md border text-[12.5px] font-semibold whitespace-nowrap ${tipo === t ? 'border-c2-morado bg-c2-morado/20 text-text-primary' : 'border-c2-linea text-c2-muted hover:text-text-primary'}`}
                 >
                   {TIPOS_EVENTO[t]}
                 </button>
@@ -257,7 +259,7 @@ export function Eventos() {
             <Panel titulo="Tu próximo evento" testId="mi-proximo-evento">
               {miProximo ? (
                 <Link to={`/comunidad/eventos/${miProximo.id}`} className="block group">
-                  <p className="text-[14px] font-semibold text-white group-hover:text-c2-violeta">
+                  <p className="text-[14px] font-semibold text-text-primary group-hover:text-c2-violeta">
                     {miProximo.titulo}
                   </p>
                   <p className="text-[12px] text-c2-muted">
@@ -467,13 +469,13 @@ function BloqueFecha({ ms, destacado }: { ms?: number; destacado?: boolean }) {
   const f = ms != null ? new Date(ms) : null
   return (
     <div
-      className={`w-14 shrink-0 rounded-md flex flex-col items-center justify-center py-1.5 ${destacado ? 'bg-[linear-gradient(160deg,#7B1FA2,#A855F7)] text-white' : 'bg-c2-s2 text-white'}`}
+      className={`w-14 shrink-0 rounded-md flex flex-col items-center justify-center py-1.5 ${destacado ? 'bg-[linear-gradient(160deg,#7B1FA2,#A855F7)] text-on-primary' : 'bg-c2-s2 text-text-primary'}`}
     >
       <span className="text-[10px] font-bold uppercase tracking-wider">
         {f ? f.toLocaleDateString('es-EC', { weekday: 'short' }).replace('.', '') : 'Fecha'}
       </span>
       <span className="cifra-c2 text-[24px] leading-none">{f ? f.getDate() : '--'}</span>
-      <span className="text-[10px] uppercase text-white/70">
+      <span className="text-[10px] uppercase text-text-primary/70">
         {f ? f.toLocaleDateString('es-EC', { month: 'short' }).replace('.', '') : ''}
       </span>
     </div>
@@ -497,11 +499,11 @@ function HeroEvento({
   return (
     <article
       data-testid="evento"
-      className="panel-c2 relative overflow-hidden border border-[#3B1A55] bg-[linear-gradient(160deg,#2A0A3D_0%,#1A0B2E_55%,#191F2F_100%)] lg:grid lg:grid-cols-[minmax(0,1fr)_38%]"
+      className="fondo-hero panel-c2 relative overflow-hidden border lg:grid lg:grid-cols-[minmax(0,1fr)_38%]"
     >
       <div className="p-5 lg:p-7 min-w-0">
         <div className="flex flex-wrap gap-1.5 mb-3">
-          <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-amber-400/15 text-amber-400">
+          <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-alerta/15 text-alerta">
             Evento principal
           </span>
           <span className="text-[11px] font-semibold px-2 py-1 rounded-full bg-c2-menta/15 text-c2-menta">
@@ -512,7 +514,7 @@ function HeroEvento({
           </span>
         </div>
         <Link to={`/comunidad/eventos/${evento.id}`} className="block">
-          <h2 className="titular-c2 text-[28px] lg:text-[40px] leading-[1.02] text-white hover:text-c2-violeta">
+          <h2 className="titular-c2 text-[28px] lg:text-[40px] leading-[1.02] text-text-primary hover:text-c2-violeta">
             {evento.titulo}
           </h2>
         </Link>
@@ -537,7 +539,7 @@ function HeroEvento({
                   key={t}
                   className="w-14 rounded-md bg-c2-bg/70 border border-c2-linea py-1.5 text-center"
                 >
-                  <div className="cifra-c2 text-[24px] leading-none text-white">
+                  <div className="cifra-c2 text-[24px] leading-none text-text-primary">
                     {String(v).padStart(2, '0')}
                   </div>
                   <div className="text-[10px] text-c2-muted">{t}</div>
@@ -554,7 +556,7 @@ function HeroEvento({
             ],
           ].map(([v, t]) => (
             <div key={t}>
-              <div className="cifra-c2 text-[22px] leading-none text-white">{v}</div>
+              <div className="cifra-c2 text-[22px] leading-none text-text-primary">{v}</div>
               <div className="text-[11px] text-c2-muted">{t}</div>
             </div>
           ))}
@@ -563,7 +565,7 @@ function HeroEvento({
           {accion}
           <Link
             to={ruta ? `/rutas/${ruta.id}` : `/comunidad/eventos/${evento.id}`}
-            className="h-12 px-5 rounded-md border border-c2-linea text-white text-[14px] font-semibold inline-flex items-center hover:border-c2-morado"
+            className="h-12 px-5 rounded-md border border-c2-linea text-text-primary text-[14px] font-semibold inline-flex items-center hover:border-c2-morado"
           >
             {ruta ? 'Ver recorrido' : 'Ver detalles'}
           </Link>
@@ -618,7 +620,7 @@ function FilaEvento({
         <span className="inline-block text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-c2-morado/20 text-c2-violeta mb-1">
           {TIPOS_EVENTO[evento.tipo ?? 'grupal']}
         </span>
-        <h3 className="font-display italic text-[18px] leading-tight text-white group-hover:text-c2-violeta truncate">
+        <h3 className="font-display italic text-[18px] leading-tight text-text-primary group-hover:text-c2-violeta truncate">
           {evento.titulo}
         </h3>
         {evento.creadoPorUsuario && (

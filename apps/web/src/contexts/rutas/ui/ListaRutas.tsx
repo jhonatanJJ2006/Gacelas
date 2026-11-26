@@ -72,12 +72,12 @@ const colorDificultad = (d: string) =>
     ? 'bg-c2-menta/15 text-c2-menta'
     : d === 'Moderado'
       ? 'bg-c2-morado/20 text-c2-violeta'
-      : 'bg-c2-peligro/20 text-pink-300'
+      : 'bg-c2-peligro/20 text-rosa'
 
 function ChipSeguridad({ s }: { s: SeguridadRuta | undefined }) {
   if (!s) return null
   const color =
-    s.nivel === 'bajo' ? 'text-c2-menta' : s.nivel === 'alto' ? 'text-pink-300' : 'text-amber-300'
+    s.nivel === 'bajo' ? 'text-c2-menta' : s.nivel === 'alto' ? 'text-rosa' : 'text-alerta'
   return (
     <span
       className={`inline-flex items-center gap-1 text-[11.5px] font-semibold ${color}`}
@@ -157,7 +157,7 @@ export function ListaRutas() {
     <div className="flex flex-col w-full px-4 lg:px-8 lg:max-w-[1440px] lg:mx-auto pb-space-3xl lg:pb-10">
       <div className="pt-space-md lg:pt-0 pb-4 flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="titular-c2 text-[28px] lg:text-[30px] leading-none text-white">
+          <h1 className="titular-c2 text-[28px] lg:text-[30px] leading-none text-text-primary">
             Rutas de Loja
           </h1>
           <p className="text-[12px] text-c2-muted mt-1.5">
@@ -171,7 +171,7 @@ export function ListaRutas() {
             aria-pressed={verMapa}
             data-testid="ver-mapa-rutas"
             aria-label={verMapa ? 'Ver lista' : 'Ver mapa'}
-            className="h-10 w-10 lg:w-auto lg:px-3 rounded-md bg-c2-card border border-c2-linea text-white flex items-center justify-center gap-2 text-[13px]"
+            className="h-10 w-10 lg:w-auto lg:px-3 rounded-md bg-c2-card border border-c2-linea text-text-primary flex items-center justify-center gap-2 text-[13px]"
           >
             <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
               {verMapa ? 'list' : 'map'}
@@ -181,7 +181,7 @@ export function ListaRutas() {
           <Link
             to="/rutas/buscar"
             aria-label="Planificar ruta"
-            className="h-10 w-10 lg:w-auto lg:px-3 rounded-md bg-c2-card border border-c2-linea text-white flex items-center justify-center gap-2 text-[13px]"
+            className="h-10 w-10 lg:w-auto lg:px-3 rounded-md bg-c2-card border border-c2-linea text-text-primary flex items-center justify-center gap-2 text-[13px]"
           >
             <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
               directions
@@ -192,7 +192,7 @@ export function ListaRutas() {
             <Link
               to="/rutas/crear"
               aria-label="Dibujar ruta"
-              className="panel-c2 h-10 w-10 lg:w-auto lg:px-4 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-white flex items-center justify-center gap-2 text-[13px] font-bold"
+              className="panel-c2 h-10 w-10 lg:w-auto lg:px-4 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-on-primary flex items-center justify-center gap-2 text-[13px] font-bold"
             >
               <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
                 add
@@ -215,7 +215,9 @@ export function ListaRutas() {
               aria-selected={tab === pestana}
               onClick={() => setPestana(tab)}
               className={`h-8 px-3 rounded text-[13px] font-semibold whitespace-nowrap ${
-                tab === pestana ? 'bg-c2-s2 text-white' : 'text-c2-muted hover:text-white'
+                tab === pestana
+                  ? 'bg-c2-s2 text-text-primary'
+                  : 'text-c2-muted hover:text-text-primary'
               }`}
             >
               {tab === 'Guardadas' ? `Guardadas (${guardadas.length})` : tab}
@@ -344,7 +346,7 @@ export function ListaRutas() {
                 value={consulta}
                 onChange={(e) => setConsulta(e.target.value)}
                 placeholder="Ruta, parque o barrio"
-                className="w-full h-11 pl-10 pr-3 text-[14px] bg-c2-card border border-c2-linea rounded-md text-white placeholder:text-c2-muted focus:outline-none focus:border-c2-morado"
+                className="w-full h-11 pl-10 pr-3 text-[14px] bg-c2-card border border-c2-linea rounded-md text-text-primary placeholder:text-c2-muted focus:outline-none focus:border-c2-morado"
               />
               <span
                 aria-hidden="true"
@@ -359,7 +361,7 @@ export function ListaRutas() {
                 aria-label="Ordenar rutas"
                 value={orden}
                 onChange={(e) => setOrden(e.target.value as Orden)}
-                className="bg-transparent text-white font-semibold text-[12.5px] outline-none pr-1 max-w-[132px]"
+                className="bg-transparent text-text-primary font-semibold text-[12.5px] outline-none pr-1 max-w-[132px]"
               >
                 {ORDENES.map((o) => (
                   <option key={o} value={o} className="bg-c2-card">
@@ -415,7 +417,7 @@ export function ListaRutas() {
                     onFocus={() => setSeleccion(ruta.id)}
                     className={`panel-c2 relative overflow-hidden border transition-colors ${
                       activa
-                        ? 'bg-[linear-gradient(160deg,#2A0A3D,#191F2F)] border-c2-morado/60'
+                        ? 'fondo-acento !border-c2-morado/60'
                         : 'bg-c2-card border-c2-linea hover:border-c2-morado/40'
                     }`}
                   >
@@ -432,7 +434,7 @@ export function ListaRutas() {
                           className="w-[96px] h-[80px] sm:w-[128px] sm:h-[92px] rounded"
                         />
                         {categoria && (
-                          <span className="absolute left-1.5 bottom-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-c2-bg/85 text-white">
+                          <span className="absolute left-1.5 bottom-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-c2-bg/85 text-text-primary">
                             {categoria}
                           </span>
                         )}
@@ -480,7 +482,7 @@ export function ListaRutas() {
                         guardada ? `Quitar ${ruta.nombre} de guardadas` : `Guardar ${ruta.nombre}`
                       }
                       aria-pressed={guardada}
-                      className="absolute top-2.5 right-2.5 w-9 h-9 flex items-center justify-center text-c2-violeta hover:text-white"
+                      className="absolute top-2.5 right-2.5 w-9 h-9 flex items-center justify-center text-c2-violeta hover:text-text-primary"
                     >
                       <span
                         aria-hidden="true"
@@ -553,7 +555,7 @@ function PanelRuta({
             [`${minutos}`, ritmo ? 'min a tu ritmo' : 'min a 6:30/km'],
           ].map(([v, u]) => (
             <div key={u} className="rounded bg-c2-s2 px-2 py-2 text-center">
-              <span className="block cifra-c2 text-[18px] text-white">{v}</span>
+              <span className="block cifra-c2 text-[18px] text-text-primary">{v}</span>
               <span className="block text-[10px] text-c2-muted">{u}</span>
             </div>
           ))}
@@ -574,7 +576,7 @@ function PanelRuta({
           <button
             type="button"
             onClick={onCorrer}
-            className="panel-c2 flex-1 h-11 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-white text-[13.5px] font-bold hover:brightness-110"
+            className="panel-c2 flex-1 h-11 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-on-primary text-[13.5px] font-bold hover:brightness-110"
           >
             Correr esta ruta
           </button>
@@ -582,7 +584,7 @@ function PanelRuta({
             type="button"
             onClick={onGuardar}
             aria-pressed={guardada}
-            className="h-11 px-4 rounded-md border border-c2-linea text-white text-[13px] hover:border-c2-morado"
+            className="h-11 px-4 rounded-md border border-c2-linea text-text-primary text-[13px] hover:border-c2-morado"
           >
             {guardada ? 'Guardada' : 'Guardar'}
           </button>
@@ -669,7 +671,7 @@ function Destacadas({ rutas, m }: { rutas: Ruta[]; m: boolean }) {
           </span>
           <span className="min-w-0">
             <Rotulo className="!text-[9.5px]">{d.rotulo}</Rotulo>
-            <span className="block text-[13.5px] font-bold text-white truncate">
+            <span className="block text-[13.5px] font-bold text-text-primary truncate">
               {d.ruta.nombre}
             </span>
             <span className="block text-[11.5px] text-c2-muted truncate">{d.nota}</span>

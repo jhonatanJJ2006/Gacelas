@@ -22,7 +22,9 @@ function Metrica({ valor, etiqueta, nota }: { valor: string; etiqueta: string; n
   return (
     <div className="metrica-c2">
       <span className="etiqueta-c2">{etiqueta}</span>
-      <span className="text-[17px] font-bold tabular-nums text-white leading-tight">{valor}</span>
+      <span className="text-[17px] font-bold tabular-nums text-text-primary leading-tight">
+        {valor}
+      </span>
       {nota && (
         <span
           className={`text-[11px] ${nota.startsWith('-') ? 'text-c2-peligro' : 'text-c2-menta'}`}
@@ -115,7 +117,9 @@ export function MisReportes() {
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
-        <h1 className="font-display italic uppercase text-[24px] text-white">Mis reportes</h1>
+        <h1 className="font-display italic uppercase text-[24px] text-text-primary">
+          Mis reportes
+        </h1>
       </header>
       <div className="px-margin lg:px-0 space-y-4">
         <div className="flex gap-2" role="tablist" aria-label="Periodo">
@@ -125,7 +129,7 @@ export function MisReportes() {
               role="tab"
               aria-selected={periodo === p}
               onClick={() => setPeriodo(p)}
-              className={`-skew-x-12 px-4 h-9 text-[12px] font-black italic uppercase ${periodo === p ? 'bg-c2-violeta text-c2-bg' : 'bg-c2-s2 text-white'}`}
+              className={`-skew-x-12 px-4 h-9 text-[12px] font-black italic uppercase ${periodo === p ? 'bg-c2-violeta text-c2-sobre-violeta' : 'bg-c2-s2 text-text-primary'}`}
             >
               {NOMBRE_PERIODO[p]}
             </button>
@@ -138,7 +142,7 @@ export function MisReportes() {
         <section className="tarjeta-c2 p-4">
           <span className="etiqueta-c2">Distancia</span>
           <p className="flex items-baseline gap-2">
-            <span className="valor-c2 text-white" data-testid="km-reporte">
+            <span className="valor-c2 text-text-primary" data-testid="km-reporte">
               {decimal(rep.actual.km)}
             </span>
             <span className="text-c2-muted text-[13px]">km</span>

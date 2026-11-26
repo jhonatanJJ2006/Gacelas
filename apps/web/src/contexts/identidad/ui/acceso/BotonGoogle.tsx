@@ -26,7 +26,7 @@ export function BotonGoogle() {
         onClick={entrar}
         disabled={cargando}
         data-testid="boton-google"
-        className="w-full h-[52px] bg-[#1C2028] hover:bg-[#232A3A] border border-white/10 text-white font-medium text-[15px] tracking-[-0.005em] rounded-full flex items-center justify-center gap-3 transition cursor-pointer disabled:opacity-60"
+        className="w-full h-[52px] bg-c2-card hover:bg-c2-s2 border border-c2-linea text-text-primary font-medium text-[15px] tracking-[-0.005em] rounded-full flex items-center justify-center gap-3 transition cursor-pointer disabled:opacity-60"
       >
         <svg aria-hidden="true" width="20" height="20" viewBox="0 0 48 48">
           <path

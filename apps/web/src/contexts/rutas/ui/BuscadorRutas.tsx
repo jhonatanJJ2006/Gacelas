@@ -26,7 +26,7 @@ export function BuscadorRutas() {
   const guardada = rutaId != null && guardadas.includes(rutaId)
 
   return (
-    <main className="w-full min-h-screen bg-[#070b13] flex flex-col relative">
+    <main className="zona-oscura w-full min-h-screen bg-[#070b13] flex flex-col relative">
       <h1 className="sr-only">Buscar rutas</h1>
       <div className="absolute inset-0 z-0 bg-[#0b1220] overflow-hidden">
         <MapaGoogle
@@ -110,19 +110,19 @@ export function BuscadorRutas() {
             <button
               onClick={() => navigate('/rutas')}
               aria-label="Volver"
-              className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white shadow-lg"
+              className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-on-primary shadow-lg"
             >
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
-            <span className="px-3 py-1 rounded-full bg-black/60 text-white text-label-md flex items-center gap-1">
+            <span className="px-3 py-1 rounded-full bg-black/60 text-on-primary text-label-md flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-success" />
               Loja • GPS
             </span>
           </div>
-          <div className="rounded-2xl bg-[#0f1625]/95 border border-white/10 p-3 space-y-2 shadow-xl">
+          <div className="rounded-2xl bg-[#0f1625]/95 border border-text-primary/10 p-3 space-y-2 shadow-xl">
             <div className="flex items-center gap-3">
               <span className="w-3 h-3 rounded-full bg-success shrink-0" />
-              <div className="flex-1 h-11 px-3 rounded-xl bg-[#141c2e] text-white flex items-center justify-between">
+              <div className="flex-1 h-11 px-3 rounded-xl bg-surface-container-low text-text-primary flex items-center justify-between">
                 <span>Mi ubicación</span>
                 <span className="text-label-sm text-success">GPS</span>
               </div>
@@ -136,13 +136,13 @@ export function BuscadorRutas() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="¿A dónde quieres correr?"
                   aria-label="Destino"
-                  className="w-full h-11 pl-3 pr-9 bg-[#141c2e] border border-primary/50 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-primary"
+                  className="w-full h-11 pl-3 pr-9 bg-surface-container-low border border-primary/50 rounded-xl text-text-primary placeholder-slate-400 focus:outline-none focus:border-primary"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
                     aria-label="Borrar destino"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-c2-muted"
                   >
                     <span className="material-symbols-outlined text-[18px]">close</span>
                   </button>
@@ -154,7 +154,7 @@ export function BuscadorRutas() {
                 <button
                   key={d}
                   onClick={() => setSearchQuery(d)}
-                  className="px-3 py-1.5 rounded-lg bg-[#141c2e] text-slate-300 text-label-md whitespace-nowrap flex items-center gap-1"
+                  className="px-3 py-1.5 rounded-lg bg-surface-container-low text-c2-muted text-label-md whitespace-nowrap flex items-center gap-1"
                 >
                   <span className="material-symbols-outlined text-[16px]">place</span>
                   {d}
@@ -166,12 +166,12 @@ export function BuscadorRutas() {
 
         <div className="flex-1" />
 
-        <div className="rounded-t-3xl bg-[#0f1625]/95 border-t border-white/10 p-5 pb-8">
+        <div className="rounded-t-3xl bg-[#0f1625]/95 border-t border-text-primary/10 p-5 pb-8">
           {seleccionada && (
             <div className="flex items-start justify-between mb-3">
               <div>
                 <div className="text-label-md text-primary uppercase">Ruta seleccionada</div>
-                <div className="text-white font-semibold">{seleccionada.name}</div>
+                <div className="text-text-primary font-semibold">{seleccionada.name}</div>
               </div>
               <span className="px-2 py-1 rounded-lg bg-success/15 text-success text-label-md">
                 {seleccionada.duration} min estimado
@@ -180,7 +180,7 @@ export function BuscadorRutas() {
           )}
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 max-h-[40vh]">
             {routes.length === 0 && (
-              <p className="text-slate-400 text-sm text-center w-full">
+              <p className="text-c2-muted text-sm text-center w-full">
                 No hay rutas con ese nombre.
               </p>
             )}
@@ -193,7 +193,9 @@ export function BuscadorRutas() {
                   onClick={() => setSelectedRoute(route.id)}
                   aria-pressed={activa}
                   className={`min-w-[150px] p-3 rounded-2xl border-2 text-left transition ${
-                    activa ? 'bg-primary-600/10 border-primary' : 'bg-[#141c2e] border-[#1f2b45]'
+                    activa
+                      ? 'bg-primary-600/10 border-primary'
+                      : 'bg-surface-container-low border-[#1f2b45]'
                   }`}
                 >
                   {etiqueta && (
@@ -201,13 +203,13 @@ export function BuscadorRutas() {
                       {etiqueta}
                     </span>
                   )}
-                  <h2 className="text-white font-semibold text-sm">{route.name}</h2>
-                  <div className="text-xs text-slate-400">
+                  <h2 className="text-text-primary font-semibold text-sm">{route.name}</h2>
+                  <div className="text-xs text-c2-muted">
                     {Unidades.texto(route.distance, m, 1)} {Unidades.etiquetaDistancia(m)} •{' '}
                     {route.duration} min
                   </div>
-                  <div className="flex justify-between text-xs mt-2 border-t border-white/10 pt-1">
-                    <span className="text-slate-300">
+                  <div className="flex justify-between text-xs mt-2 border-t border-text-primary/10 pt-1">
+                    <span className="text-c2-muted">
                       {route.distance > 0
                         ? `${Math.floor((route.duration * 60) / route.distance / 60)}:${String(
                             Math.round(((route.duration * 60) / route.distance) % 60)
@@ -230,7 +232,7 @@ export function BuscadorRutas() {
                 })
               }
               disabled={!seleccionada}
-              className="flex-1 h-14 bg-gradient-to-r from-[#7B1FA2] to-[#A855F7] text-white font-bold rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 h-14 bg-gradient-to-r from-[#7B1FA2] to-[#A855F7] text-on-primary font-bold rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined">play_circle</span>
               Confirmar y comenzar navegación
@@ -240,7 +242,7 @@ export function BuscadorRutas() {
                 onClick={() => void alternarGuardada(rutaId)}
                 aria-pressed={guardada}
                 aria-label={guardada ? 'Quitar de guardadas' : 'Guardar ruta'}
-                className="w-14 h-14 rounded-2xl bg-[#141c2e] border border-white/10 text-primary flex items-center justify-center"
+                className="w-14 h-14 rounded-2xl bg-surface-container-low border border-text-primary/10 text-primary flex items-center justify-center"
               >
                 <span className="material-symbols-outlined">
                   {guardada ? 'bookmark_added' : 'bookmark'}

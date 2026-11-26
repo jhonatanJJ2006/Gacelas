@@ -131,7 +131,7 @@ export function Runner3DFallback({ className = '' }: { className?: string }) {
       ) : (
         <svg
           viewBox="0 0 64 64"
-          className="w-24 h-24 text-amber-500"
+          className="w-24 h-24 text-alerta"
           fill="currentColor"
           aria-hidden="true"
         >
