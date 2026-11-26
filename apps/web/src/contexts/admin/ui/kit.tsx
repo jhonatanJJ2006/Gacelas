@@ -228,7 +228,10 @@ export function BarrasDia({
       </div>
       <figcaption className="adm-t3" style={{ display: 'flex', fontSize: 11, marginTop: 6 }}>
         {datos.map((d, i) => (
-          <span key={i} style={{ flex: 1, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'visible' }}>
+          <span
+            key={i}
+            style={{ flex: 1, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'visible' }}
+          >
             {i % cada === 0 ? d.etiqueta : ''}
           </span>
         ))}

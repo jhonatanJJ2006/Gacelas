@@ -12,8 +12,12 @@ const items = (ins?: number): ItemNav[] => [
 const montar = (ruta: string, ins?: number, clave = 'test.nav') =>
   render(
     <MemoryRouter initialEntries={[ruta]}>
-      <NavColapsable items={items(ins)} usuario={{ nombre: 'Ana Perez', detalle: 'Admin' }} claveAlmacen={clave} />
-    </MemoryRouter>,
+      <NavColapsable
+        items={items(ins)}
+        usuario={{ nombre: 'Ana Perez', detalle: 'Admin' }}
+        claveAlmacen={clave}
+      />
+    </MemoryRouter>
   )
 
 describe('NavColapsable', () => {

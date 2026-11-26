@@ -8,10 +8,20 @@ const etiquetaAjuste = (k: string) => {
   return t.charAt(0).toUpperCase() + t.slice(1)
 }
 
-function Seccion({ titulo, children, ancho }: { titulo: string; children: ReactNode; ancho?: boolean }) {
+function Seccion({
+  titulo,
+  children,
+  ancho,
+}: {
+  titulo: string
+  children: ReactNode
+  ancho?: boolean
+}) {
   return (
     <section className="adm-card adm-pad" style={ancho ? { gridColumn: '1 / -1' } : undefined}>
-      <h2 className="adm-h2" style={{ marginBottom: 12 }}>{titulo}</h2>
+      <h2 className="adm-h2" style={{ marginBottom: 12 }}>
+        {titulo}
+      </h2>
       {children}
     </section>
   )
@@ -25,12 +35,16 @@ export function Ajustes({ f }: { f: FuenteAdmin }) {
   const [nueva, setNueva] = useState('')
   const [v, setV] = useState('')
   const [confirmar, setConfirmar] = useState(false)
-  const min = (aj.datos ?? []).find((a) => a.key === 'version_minima_android')?.value as string | undefined
+  const min = (aj.datos ?? []).find((a) => a.key === 'version_minima_android')?.value as
+    string | undefined
   const equipo = (us.datos ?? []).filter((u) => u.role)
   return (
     <>
       <Cabecera kicker="Administración">Ajustes</Cabecera>
-      <div className="adm-g2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))' }}>
+      <div
+        className="adm-g2"
+        style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))' }}
+      >
         <Seccion titulo="Ajustes de la app">
           <ul style={{ display: 'grid', gap: 14, listStyle: 'none' }}>
             {(aj.datos ?? [])
@@ -53,8 +67,8 @@ export function Ajustes({ f }: { f: FuenteAdmin }) {
             Versión actual: <strong className="adm-num">{min ?? 'sin definir'}</strong>
           </p>
           <p className="adm-t2" style={{ fontSize: 13, margin: '6px 0 12px' }}>
-            Los APK se publican con scripts/publicar-android.sh en el bucket app-releases (android/latest.json). Las apps por
-            debajo de la versión mínima piden actualizar.
+            Los APK se publican con scripts/publicar-android.sh en el bucket app-releases
+            (android/latest.json). Las apps por debajo de la versión mínima piden actualizar.
           </p>
           <div className="adm-fila">
             <input
@@ -67,7 +81,8 @@ export function Ajustes({ f }: { f: FuenteAdmin }) {
             <Boton
               tipo="pri"
               onClick={() => {
-                if (/^\d+\.\d+\.\d+$/.test(v)) void f.guardarAjuste('version_minima_android', v).then(aj.recargar)
+                if (/^\d+\.\d+\.\d+$/.test(v))
+                  void f.guardarAjuste('version_minima_android', v).then(aj.recargar)
               }}
             >
               Guardar
@@ -77,11 +92,12 @@ export function Ajustes({ f }: { f: FuenteAdmin }) {
 
         <Seccion titulo="Términos y consentimientos">
           <p data-testid="version-terminos">
-            Versión vigente de los Términos: <strong className="adm-num">{ter.datos ?? '...'}</strong>
+            Versión vigente de los Términos:{' '}
+            <strong className="adm-num">{ter.datos ?? '...'}</strong>
           </p>
           <p className="adm-t2" style={{ fontSize: 13, margin: '6px 0 12px' }}>
-            Versión incluida en esta build: {VERSIONES_LEGALES.terminos}. Al publicar una versión nueva, las apps vuelven a
-            pedir la aceptación.
+            Versión incluida en esta build: {VERSIONES_LEGALES.terminos}. Al publicar una versión
+            nueva, las apps vuelven a pedir la aceptación.
           </p>
           <div className="adm-fila">
             <input
@@ -102,9 +118,10 @@ export function Ajustes({ f }: { f: FuenteAdmin }) {
             <Chip>No disponible</Chip>
             <p style={{ fontWeight: 700, margin: '10px 0 4px' }}>Envío de notificaciones push</p>
             <p className="adm-t2" style={{ fontSize: 13 }}>
-              Runcity todavía no tiene un servicio de envío push (FCM o APNs) conectado al servidor. Cuando exista, desde aquí
-              se podrán redactar avisos y elegir el público. Mientras tanto las notificaciones de la app son locales:
-              recordatorios de eventos y estado de la carrera.
+              Runcity todavía no tiene un servicio de envío push (FCM o APNs) conectado al servidor.
+              Cuando exista, desde aquí se podrán redactar avisos y elegir el público. Mientras
+              tanto las notificaciones de la app son locales: recordatorios de eventos y estado de
+              la carrera.
             </p>
           </div>
         </Seccion>
@@ -119,7 +136,9 @@ export function Ajustes({ f }: { f: FuenteAdmin }) {
                   <Avatar nombre={u.full_name ?? u.username} />
                   <div className="adm-grow">
                     <p style={{ fontWeight: 700 }}>{u.full_name ?? u.username}</p>
-                    <p className="adm-t3" style={{ fontSize: 12 }}>@{u.username}</p>
+                    <p className="adm-t3" style={{ fontSize: 12 }}>
+                      @{u.username}
+                    </p>
                   </div>
                   <Chip tono="info">{u.role === 'admin' ? 'Administrador' : 'Moderador'}</Chip>
                 </li>

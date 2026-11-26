@@ -1,7 +1,26 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { ESTADOS, MOTIVOS, estaAbierto, idCorto, nombreEstado, siguienteCaso, tonoEstado } from './casos'
-import { Avatar, Boton, Cabecera, Chip, Confirmar, ErrorCarga, Icono, Vacio, haceCuanto, useCarga } from './kit'
+import {
+  ESTADOS,
+  MOTIVOS,
+  estaAbierto,
+  idCorto,
+  nombreEstado,
+  siguienteCaso,
+  tonoEstado,
+} from './casos'
+import {
+  Avatar,
+  Boton,
+  Cabecera,
+  Chip,
+  Confirmar,
+  ErrorCarga,
+  Icono,
+  Vacio,
+  haceCuanto,
+  useCarga,
+} from './kit'
 import {
   definicionTipo,
   tiposRegistrados,
@@ -95,7 +114,10 @@ export function Moderacion({ f }: { f: FuenteAdmin }) {
             role="tab"
             aria-selected={filtro === s}
             className={`adm-chip c-${filtro === s ? 'pri' : tonoEstado(s)}`}
-            style={{ cursor: 'pointer', border: filtro === s ? '1px solid hsl(var(--primario) / 0.5)' : 0 }}
+            style={{
+              cursor: 'pointer',
+              border: filtro === s ? '1px solid hsl(var(--primario) / 0.5)' : 0,
+            }}
             onClick={() => {
               setFiltro(s)
               setElegido(null)
@@ -108,7 +130,12 @@ export function Moderacion({ f }: { f: FuenteAdmin }) {
         Moderación
       </Cabecera>
       <ErrorCarga mensaje={error} />
-      <div className="adm-fila adm-envuelve" role="group" aria-label="Tipo de contenido" style={{ marginBottom: 14, gap: 6 }}>
+      <div
+        className="adm-fila adm-envuelve"
+        role="group"
+        aria-label="Tipo de contenido"
+        style={{ marginBottom: 14, gap: 6 }}
+      >
         {[null, ...tipos].map((t) => (
           <button
             key={t ?? 'todos'}
@@ -131,9 +158,19 @@ export function Moderacion({ f }: { f: FuenteAdmin }) {
             Cola
           </h2>
           {lista.length === 0 ? (
-            <Vacio titulo="No hay reportes en esta lista" texto="Cambia el estado o el tipo para ver otros casos." />
+            <Vacio
+              titulo="No hay reportes en esta lista"
+              texto="Cambia el estado o el tipo para ver otros casos."
+            />
           ) : (
-            <ul style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 8, listStyle: 'none' }}>
+            <ul
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'minmax(0, 1fr)',
+                gap: 8,
+                listStyle: 'none',
+              }}
+            >
               {lista.map((r) => (
                 <li key={r.id}>
                   <button
@@ -143,7 +180,10 @@ export function Moderacion({ f }: { f: FuenteAdmin }) {
                     onClick={() => setElegido(r.id)}
                     data-testid={`reporte-${r.id}`}
                   >
-                    <span className="adm-fila" style={{ justifyContent: 'space-between', fontSize: 12 }}>
+                    <span
+                      className="adm-fila"
+                      style={{ justifyContent: 'space-between', fontSize: 12 }}
+                    >
                       <span className="adm-fila" style={{ gap: 8 }}>
                         <span className="adm-t3" style={{ fontWeight: 700 }}>
                           {idCorto(r)}
@@ -152,11 +192,15 @@ export function Moderacion({ f }: { f: FuenteAdmin }) {
                       </span>
                       <span className="adm-t3">{haceCuanto(r.created_at)}</span>
                     </span>
-                    <span className="adm-ell" style={{ display: 'block', fontWeight: 700, marginTop: 6 }}>
+                    <span
+                      className="adm-ell"
+                      style={{ display: 'block', fontWeight: 700, marginTop: 6 }}
+                    >
                       {r.resumen}
                     </span>
                     <span className="adm-t3" style={{ display: 'block', fontSize: 12 }}>
-                      {MOTIVOS[r.reason] ?? r.reason} · {r.total_reportes} {r.total_reportes === 1 ? 'reporte' : 'reportes'}
+                      {MOTIVOS[r.reason] ?? r.reason} · {r.total_reportes}{' '}
+                      {r.total_reportes === 1 ? 'reporte' : 'reportes'}
                     </span>
                   </button>
                 </li>
@@ -181,7 +225,10 @@ export function Moderacion({ f }: { f: FuenteAdmin }) {
           </>
         ) : (
           <section className="adm-card adm-pad" style={{ gridColumn: 'span 2' }}>
-            <Vacio titulo="Sin caso seleccionado" texto="Elige un reporte de la cola para ver su detalle y las acciones." />
+            <Vacio
+              titulo="Sin caso seleccionado"
+              texto="Elige un reporte de la cola para ver su detalle y las acciones."
+            />
             {siguiente && (
               <div style={{ marginTop: 12 }}>
                 <Boton tipo="pri" onClick={() => void asignarme()}>
@@ -211,19 +258,28 @@ export function Moderacion({ f }: { f: FuenteAdmin }) {
 function Detalle({ r }: { r: ReporteAdmin }) {
   const [abierto, setAbierto] = useState(true)
   return (
-    <section className="adm-card adm-pad" aria-label="Detalle del caso" style={{ alignSelf: 'start' }} data-testid="detalle-caso">
+    <section
+      className="adm-card adm-pad"
+      aria-label="Detalle del caso"
+      style={{ alignSelf: 'start' }}
+      data-testid="detalle-caso"
+    >
       <div className="adm-fila adm-envuelve" style={{ marginBottom: 10 }}>
         <Chip tono="pri">{etiquetaTipo(r.target_type)}</Chip>
         <Chip tono="bad">{MOTIVOS[r.reason] ?? r.reason}</Chip>
         <Chip tono={tonoEstado(r.status)}>{nombreEstado(r.status)}</Chip>
         {r.total_reportes > 1 && <Chip tono="ok">{r.total_reportes} reportes</Chip>}
       </div>
-      <h2 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.15 }}>{r.resumen}</h2>
+      <h2 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.15 }}>
+        {r.resumen}
+      </h2>
       <div className="adm-cita" style={{ margin: '16px 0' }}>
         <p className="adm-lbl" style={{ color: 'hsl(var(--primario-texto))' }}>
           Reporte
         </p>
-        <p style={{ fontSize: 15, marginTop: 4 }}>{r.detail ? `\u201C${r.detail}\u201D` : 'Sin detalle'}</p>
+        <p style={{ fontSize: 15, marginTop: 4 }}>
+          {r.detail ? `\u201C${r.detail}\u201D` : 'Sin detalle'}
+        </p>
       </div>
       <div className="adm-fila">
         <Avatar nombre={r.reportante || 'Anónimo'} />
@@ -241,16 +297,36 @@ function Detalle({ r }: { r: ReporteAdmin }) {
             onClick={() => setAbierto((x) => !x)}
             aria-expanded={abierto}
             className="adm-fila"
-            style={{ background: 'none', border: 0, color: 'hsl(var(--primario-texto))', fontWeight: 600, fontSize: 13, cursor: 'pointer', padding: 0 }}
+            style={{
+              background: 'none',
+              border: 0,
+              color: 'hsl(var(--primario-texto))',
+              fontWeight: 600,
+              fontSize: 13,
+              cursor: 'pointer',
+              padding: 0,
+            }}
           >
             <Icono nombre={abierto ? 'expand_less' : 'expand_more'} tam={18} />
             Historial ({r.acciones.length})
           </button>
           {abierto && (
-            <ol data-testid="historial" style={{ marginTop: 8, paddingLeft: 12, borderLeft: '2px solid hsl(var(--borde))', listStyle: 'none', display: 'grid', gap: 6 }}>
+            <ol
+              data-testid="historial"
+              style={{
+                marginTop: 8,
+                paddingLeft: 12,
+                borderLeft: '2px solid hsl(var(--borde))',
+                listStyle: 'none',
+                display: 'grid',
+                gap: 6,
+              }}
+            >
               {r.acciones.map((h, i) => (
                 <li key={i} className="adm-t2" style={{ fontSize: 13 }}>
-                  <strong style={{ color: 'hsl(var(--texto))' }}>{h.moderador || 'Moderación'}</strong>{' '}
+                  <strong style={{ color: 'hsl(var(--texto))' }}>
+                    {h.moderador || 'Moderación'}
+                  </strong>{' '}
                   {HISTORIAL[h.accion] ?? h.accion}
                   {h.nota ? `: ${h.nota}` : ''}{' '}
                   <span className="adm-t3">({new Date(h.fecha).toLocaleString('es-EC')})</span>
@@ -287,7 +363,11 @@ function Acciones({
   const incidente = r.target_type === 'incidente'
   const abierto = estaAbierto(r)
   return (
-    <aside className="adm-card adm-pad" aria-label="Acciones" style={{ alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <aside
+      className="adm-card adm-pad"
+      aria-label="Acciones"
+      style={{ alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: 10 }}
+    >
       <h2 className="adm-h2">Acciones</h2>
       <input
         value={nota}
@@ -316,7 +396,9 @@ function Acciones({
             <Boton
               tipo="bad"
               completo
-              onClick={() => pedir(r, r.target_type === 'usuario' ? 'suspender_usuario' : 'ocultar_contenido')}
+              onClick={() =>
+                pedir(r, r.target_type === 'usuario' ? 'suspender_usuario' : 'ocultar_contenido')
+              }
             >
               {def.accionOcultar}
             </Boton>
@@ -339,7 +421,8 @@ function Acciones({
       )}
       {incidente && abierto && (
         <p className="adm-t3" style={{ fontSize: 12 }}>
-          Verificar deja el incidente visible en el mapa; rechazarlo lo quita del índice de seguridad.
+          Verificar deja el incidente visible en el mapa; rechazarlo lo quita del índice de
+          seguridad.
         </p>
       )}
       {fallo && (
@@ -353,7 +436,13 @@ function Acciones({
         <p className="adm-t3" style={{ fontSize: 12, marginBottom: 10 }}>
           Toma el caso pendiente más antiguo y queda en tu historial.
         </p>
-        <Boton chico completo deshabilitado={!siguiente} onClick={() => void asignarme()} testId="asignarme-siguiente">
+        <Boton
+          chico
+          completo
+          deshabilitado={!siguiente}
+          onClick={() => void asignarme()}
+          testId="asignarme-siguiente"
+        >
           {siguiente ? `Tomar ${idCorto(siguiente)}` : 'Sin casos pendientes'}
         </Boton>
       </div>

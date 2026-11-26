@@ -68,7 +68,9 @@ describe('panel de administración', () => {
     const boton = await screen.findByTestId('asignarme-siguiente')
     await waitFor(() => expect(boton).toBeEnabled())
     fireEvent.click(boton)
-    await waitFor(() => expect(screen.getByRole('tab', { name: /En revisión 2/ })).toBeInTheDocument())
+    await waitFor(() =>
+      expect(screen.getByRole('tab', { name: /En revisión 2/ })).toBeInTheDocument()
+    )
   })
 
   it('usuarios filtra por suspendidos y muestra la ficha', async () => {

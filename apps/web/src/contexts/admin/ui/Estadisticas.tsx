@@ -1,6 +1,17 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { aCsv, aPdf, descargar } from '../../analitica/api'
-import { BarrasDia, Boton, Cabecera, Chip, ErrorCarga, Vacio, decimal1, entero, useCarga, type Tono } from './kit'
+import {
+  BarrasDia,
+  Boton,
+  Cabecera,
+  Chip,
+  ErrorCarga,
+  Vacio,
+  decimal1,
+  entero,
+  useCarga,
+  type Tono,
+} from './kit'
 import { MOTIVOS } from './casos'
 import type { Estadisticas as Datos, FuenteAdmin } from './fuente'
 
@@ -77,14 +88,20 @@ export function pdfEstadisticas(d: Datos): Uint8Array {
 function Kpi({ t, v, s, tono }: { t: string; v: string | number; s?: string; tono?: Tono }) {
   return (
     <div className="adm-kpi">
-      <p className="adm-t2" style={{ fontSize: 12 }}>{t}</p>
+      <p className="adm-t2" style={{ fontSize: 12 }}>
+        {t}
+      </p>
       <p
         className={`adm-num c-${tono ?? 'neu'}`}
         style={{ fontSize: 26, color: tono ? 'hsl(var(--tt))' : undefined }}
       >
         {typeof v === 'number' ? entero(v) : v}
       </p>
-      {s && <p className="adm-t3" style={{ fontSize: 12 }}>{s}</p>}
+      {s && (
+        <p className="adm-t3" style={{ fontSize: 12 }}>
+          {s}
+        </p>
+      )}
     </div>
   )
 }
@@ -94,7 +111,11 @@ function Panel({ titulo, nota, children }: { titulo: string; nota?: string; chil
     <section className="adm-card adm-pad">
       <div className="adm-fila" style={{ justifyContent: 'space-between', marginBottom: 12 }}>
         <h2 className="adm-h2">{titulo}</h2>
-        {nota && <span className="adm-t3" style={{ fontSize: 12 }}>{nota}</span>}
+        {nota && (
+          <span className="adm-t3" style={{ fontSize: 12 }}>
+            {nota}
+          </span>
+        )}
       </div>
       {children}
     </section>
@@ -102,7 +123,15 @@ function Panel({ titulo, nota, children }: { titulo: string; nota?: string; chil
 }
 
 /** Barras horizontales con tokens del panel. */
-function Ranking({ datos, tono = 'pri', testId }: { datos: { etiqueta: string; valor: number }[]; tono?: Tono; testId?: string }) {
+function Ranking({
+  datos,
+  tono = 'pri',
+  testId,
+}: {
+  datos: { etiqueta: string; valor: number }[]
+  tono?: Tono
+  testId?: string
+}) {
   const max = Math.max(1, ...datos.map((d) => d.valor))
   return (
     <ul data-testid={testId} style={{ display: 'grid', gap: 10, listStyle: 'none' }}>
@@ -121,7 +150,21 @@ function Ranking({ datos, tono = 'pri', testId }: { datos: { etiqueta: string; v
   )
 }
 
-const NOMBRE_MES = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+const NOMBRE_MES = [
+  '',
+  'ene',
+  'feb',
+  'mar',
+  'abr',
+  'may',
+  'jun',
+  'jul',
+  'ago',
+  'sep',
+  'oct',
+  'nov',
+  'dic',
+]
 
 /** Reportes del panel: rango de fechas, cifras, graficos y exportacion CSV y PDF. */
 export function Estadisticas({ f }: { f: FuenteAdmin }) {
@@ -163,7 +206,8 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
         : datos.serie.map((s) => ({ etiqueta: corta(s.dia), valor: valor(s) }))
       : []
   const por = semanal ? 'por semana' : 'por día'
-  const minima = (ajustes.datos ?? []).find((a) => a.key === 'version_minima_android')?.value as string | undefined
+  const minima = (ajustes.datos ?? []).find((a) => a.key === 'version_minima_android')?.value as
+    string | undefined
 
   return (
     <>
@@ -171,7 +215,11 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
         kicker="Estadísticas"
         extra={
           <>
-            <span className="adm-fila adm-envuelve" data-testid="rango-estadisticas" style={{ gap: 6 }}>
+            <span
+              className="adm-fila adm-envuelve"
+              data-testid="rango-estadisticas"
+              style={{ gap: 6 }}
+            >
               {RANGOS.map(([n, d]) => (
                 <button
                   key={n}
@@ -209,14 +257,19 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
             <Boton
               deshabilitado={!datos}
               testId="estadisticas-csv"
-              onClick={() => datos && descargar(`${nombre}.csv`, csvEstadisticas(datos), 'text/csv;charset=utf-8')}
+              onClick={() =>
+                datos &&
+                descargar(`${nombre}.csv`, csvEstadisticas(datos), 'text/csv;charset=utf-8')
+              }
             >
               Exportar CSV
             </Boton>
             <Boton
               deshabilitado={!datos}
               testId="estadisticas-pdf"
-              onClick={() => datos && descargar(`${nombre}.pdf`, pdfEstadisticas(datos), 'application/pdf')}
+              onClick={() =>
+                datos && descargar(`${nombre}.pdf`, pdfEstadisticas(datos), 'application/pdf')
+              }
             >
               Exportar PDF
             </Boton>
@@ -249,11 +302,19 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
           </div>
           <div className="adm-g2 adm-g-rep">
             <Panel titulo={`Carreras ${por}`}>
-              <BarrasDia datos={agrupar((s) => s.carreras)} tono="warn" testId="grafico-carreras" resaltarMax />
+              <BarrasDia
+                datos={agrupar((s) => s.carreras)}
+                tono="warn"
+                testId="grafico-carreras"
+                resaltarMax
+              />
             </Panel>
             <Panel titulo="Rutas más corridas">
               {datos.rutas_top.length ? (
-                <Ranking testId="rutas-top" datos={datos.rutas_top.map((r) => ({ etiqueta: r.nombre, valor: r.corridas }))} />
+                <Ranking
+                  testId="rutas-top"
+                  datos={datos.rutas_top.map((r) => ({ etiqueta: r.nombre, valor: r.corridas }))}
+                />
               ) : (
                 <Vacio titulo="Sin recorridos de rutas en el rango" />
               )}
@@ -261,24 +322,36 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
           </div>
           <div className="adm-g2 adm-g-rep">
             <Panel titulo="Reportes de moderación" nota={`${t.reportes} en el rango`}>
-              <div className="adm-g2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+              <div
+                className="adm-g2"
+                style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}
+              >
                 <div>
-                  <p className="adm-lbl" style={{ marginBottom: 8 }}>Por estado</p>
+                  <p className="adm-lbl" style={{ marginBottom: 8 }}>
+                    Por estado
+                  </p>
                   <Ranking tono="info" datos={aBarras(datos.reportes.por_estado, ESTADO)} />
                 </div>
                 <div>
-                  <p className="adm-lbl" style={{ marginBottom: 8 }}>Por tipo</p>
+                  <p className="adm-lbl" style={{ marginBottom: 8 }}>
+                    Por tipo
+                  </p>
                   <Ranking tono="bad" datos={aBarras(datos.reportes.por_tipo, TIPO)} />
                 </div>
                 <div>
-                  <p className="adm-lbl" style={{ marginBottom: 8 }}>Por motivo</p>
+                  <p className="adm-lbl" style={{ marginBottom: 8 }}>
+                    Por motivo
+                  </p>
                   <Ranking tono="pri" datos={aBarras(datos.reportes.por_motivo, MOTIVOS)} />
                 </div>
               </div>
             </Panel>
             <Panel titulo="Eventos con más inscritos">
               {datos.eventos_top.length ? (
-                <Ranking tono="ok" datos={datos.eventos_top.map((e) => ({ etiqueta: e.titulo, valor: e.inscritos }))} />
+                <Ranking
+                  tono="ok"
+                  datos={datos.eventos_top.map((e) => ({ etiqueta: e.titulo, valor: e.inscritos }))}
+                />
               ) : (
                 <Vacio titulo="Sin eventos en el rango" />
               )}
@@ -289,11 +362,22 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
       <div className="adm-g2 adm-g-rep" style={{ marginTop: 16 }}>
         <Panel titulo="Importaciones del ECU 911" nota="Filas agregadas por mes">
           {ecu.datos && ecu.datos.length > 0 ? (
-            <ul style={{ display: 'grid', gap: 10, listStyle: 'none' }} data-testid="importaciones-ecu">
+            <ul
+              style={{ display: 'grid', gap: 10, listStyle: 'none' }}
+              data-testid="importaciones-ecu"
+            >
               {ecu.datos.map((m) => (
-                <li key={`${m.anio}-${m.mes}`} className="adm-fila" style={{ justifyContent: 'space-between' }}>
-                  <b>{m.anio}-{String(m.mes).padStart(2, '0')}</b>
-                  <span className="adm-t2">{NOMBRE_MES[m.mes]} {m.anio}</span>
+                <li
+                  key={`${m.anio}-${m.mes}`}
+                  className="adm-fila"
+                  style={{ justifyContent: 'space-between' }}
+                >
+                  <b>
+                    {m.anio}-{String(m.mes).padStart(2, '0')}
+                  </b>
+                  <span className="adm-t2">
+                    {NOMBRE_MES[m.mes]} {m.anio}
+                  </span>
                   {m.agrupaciones > 0 ? (
                     <Chip tono="ok">{entero(m.agrupaciones)} agrupaciones</Chip>
                   ) : (
@@ -314,8 +398,12 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
           </p>
         </Panel>
         <Panel titulo="Versión de Android">
-          <p className="adm-num" style={{ fontSize: 26 }}>{minima ?? 'Sin definir'}</p>
-          <p className="adm-t2" style={{ fontSize: 13 }}>Versión mínima exigida. Cámbiala en Ajustes.</p>
+          <p className="adm-num" style={{ fontSize: 26 }}>
+            {minima ?? 'Sin definir'}
+          </p>
+          <p className="adm-t2" style={{ fontSize: 13 }}>
+            Versión mínima exigida. Cámbiala en Ajustes.
+          </p>
           <p className="adm-t3" style={{ fontSize: 12, marginTop: 10 }}>
             El historial de versiones publicadas no está en la base de datos: fuente pendiente.
           </p>

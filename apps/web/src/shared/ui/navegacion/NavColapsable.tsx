@@ -102,7 +102,9 @@ export function NavColapsable({
     })
 
   const activo = useMemo(() => {
-    const i = items.findIndex((it) => (it.activoEn ? it.activoEn(pathname) : pathname.startsWith(it.a.split('?')[0])))
+    const i = items.findIndex((it) =>
+      it.activoEn ? it.activoEn(pathname) : pathname.startsWith(it.a.split('?')[0])
+    )
     return i
   }, [items, pathname])
 
@@ -120,17 +122,31 @@ export function NavColapsable({
 
   return (
     <div className={`navc ${className}`}>
-      <nav aria-label={etiqueta} className="navc-riel" data-expandido={!colapsado} data-testid="nav-riel">
+      <nav
+        aria-label={etiqueta}
+        className="navc-riel"
+        data-expandido={!colapsado}
+        data-testid="nav-riel"
+      >
         {usuario && (
           <div className="navc-cab">
-            <span className="navc-av" aria-hidden style={usuario.foto ? { background: `center/cover url(${usuario.foto})` } : undefined}>
+            <span
+              className="navc-av"
+              aria-hidden
+              style={usuario.foto ? { background: `center/cover url(${usuario.foto})` } : undefined}
+            >
               {usuario.foto ? '' : iniciales(usuario.nombre)}
             </span>
             <span className="navc-nombre">
               <b>{usuario.nombre}</b>
               {usuario.detalle && <small>{usuario.detalle}</small>}
             </span>
-            <button type="button" className="navc-btn navc-cierra" onClick={alternar} aria-label="Contraer menú">
+            <button
+              type="button"
+              className="navc-btn navc-cierra"
+              onClick={alternar}
+              aria-label="Contraer menú"
+            >
               <Icono v="chevron_left" tam={18} />
             </button>
           </div>
@@ -140,7 +156,9 @@ export function NavColapsable({
             const n = cuenta(it.insignia)
             return (
               <div key={it.id} style={{ display: 'contents' }}>
-                {i > 0 && it.grupo !== items[i - 1].grupo && <div className="navc-sep" role="separator" />}
+                {i > 0 && it.grupo !== items[i - 1].grupo && (
+                  <div className="navc-sep" role="separator" />
+                )}
                 <Link
                   to={it.a}
                   className="navc-item"
@@ -150,11 +168,19 @@ export function NavColapsable({
                 >
                   <span className="navc-ico">
                     <Icono v={it.icono} />
-                    {n && <span className="navc-ins" data-testid={`nav-ins-${it.id}`}>{n}</span>}
+                    {n && (
+                      <span className="navc-ins" data-testid={`nav-ins-${it.id}`}>
+                        {n}
+                      </span>
+                    )}
                   </span>
                   <span className="navc-etq">{it.etiqueta}</span>
                   {n && <span className="navc-ins navc-ins-t">{n}</span>}
-                  {i === activo && <span className="navc-globo" aria-hidden>{it.globo ?? it.etiqueta}</span>}
+                  {i === activo && (
+                    <span className="navc-globo" aria-hidden>
+                      {it.globo ?? it.etiqueta}
+                    </span>
+                  )}
                 </Link>
               </div>
             )
@@ -163,7 +189,12 @@ export function NavColapsable({
         <div className="navc-pie">
           {pie}
           {buscador && (
-            <button type="button" className="navc-btn navc-busca" onClick={() => setBuscando(true)} aria-label="Buscar o ir a una sección">
+            <button
+              type="button"
+              className="navc-btn navc-busca"
+              onClick={() => setBuscando(true)}
+              aria-label="Buscar o ir a una sección"
+            >
               <Icono v="search" tam={18} />
               <span className="navc-busca-t">Buscar o ir a...</span>
               <kbd className="navc-atajo">Ctrl K</kbd>
@@ -183,7 +214,10 @@ export function NavColapsable({
       </nav>
 
       <nav aria-label={`${etiqueta} (móvil)`} className="navc-barra" data-testid="nav-barra">
-        <div className="navc-barra-i" style={{ ['--n' as string]: items.length, ['--i' as string]: Math.max(activo, 0) }}>
+        <div
+          className="navc-barra-i"
+          style={{ ['--n' as string]: items.length, ['--i' as string]: Math.max(activo, 0) }}
+        >
           {items.map((it, i) => {
             const n = cuenta(it.insignia)
             return (
@@ -205,9 +239,15 @@ export function NavColapsable({
           })}
         </div>
         {activo >= 0 && (
-          <span className="navc-burbuja" style={{ ['--n' as string]: items.length, ['--i' as string]: activo }} aria-hidden>
+          <span
+            className="navc-burbuja"
+            style={{ ['--n' as string]: items.length, ['--i' as string]: activo }}
+            aria-hidden
+          >
             <Icono v={items[activo].icono} />
-            {cuenta(items[activo].insignia) && <span className="navc-ins">{cuenta(items[activo].insignia)}</span>}
+            {cuenta(items[activo].insignia) && (
+              <span className="navc-ins">{cuenta(items[activo].insignia)}</span>
+            )}
           </span>
         )}
       </nav>
@@ -256,7 +296,9 @@ function Paleta({ items, onCerrar }: { items: ItemNav[]; onCerrar: () => void })
               </Link>
             </li>
           ))}
-          {lista.length === 0 && <li style={{ padding: '10px 12px', opacity: 0.7 }}>Sin resultados</li>}
+          {lista.length === 0 && (
+            <li style={{ padding: '10px 12px', opacity: 0.7 }}>Sin resultados</li>
+          )}
         </ul>
       </div>
     </div>

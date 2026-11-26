@@ -38,4 +38,5 @@ export function siguienteCaso(cola: ReporteAdmin[]): ReporteAdmin | null {
   )
 }
 
-export const estaAbierto = (r: ReporteAdmin) => r.status === 'pendiente' || r.status === 'en_revision'
+export const estaAbierto = (r: ReporteAdmin) =>
+  r.status === 'pendiente' || r.status === 'en_revision'

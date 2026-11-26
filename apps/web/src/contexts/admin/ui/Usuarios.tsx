@@ -1,5 +1,17 @@
 import { useMemo, useState } from 'react'
-import { Avatar, Boton, Cabecera, Chip, Confirmar, ErrorCarga, Icono, MiniBarras, Vacio, entero, useCarga } from './kit'
+import {
+  Avatar,
+  Boton,
+  Cabecera,
+  Chip,
+  Confirmar,
+  ErrorCarga,
+  Icono,
+  MiniBarras,
+  Vacio,
+  entero,
+  useCarga,
+} from './kit'
 import { MOTIVOS, estaAbierto } from './casos'
 import type { FuenteAdmin, UsuarioAdmin } from './fuente'
 
@@ -28,7 +40,11 @@ export function Usuarios({ f }: { f: FuenteAdmin }) {
     for (const r of cola.datos ?? []) {
       if (r.target_type !== 'usuario' || !estaAbierto(r)) continue
       const e = m.get(r.target_id)
-      m.set(r.target_id, { n: (e?.n ?? 0) + 1, ultimo: e?.ultimo ?? r.detail, motivo: e?.motivo ?? r.reason })
+      m.set(r.target_id, {
+        n: (e?.n ?? 0) + 1,
+        ultimo: e?.ultimo ?? r.detail,
+        motivo: e?.motivo ?? r.reason,
+      })
     }
     return m
   }, [cola.datos])
@@ -37,7 +53,11 @@ export function Usuarios({ f }: { f: FuenteAdmin }) {
   const lista = todos
     .filter((u) => `${u.username} ${u.full_name ?? ''}`.toLowerCase().includes(q.toLowerCase()))
     .filter((u) =>
-      filtro === 'reportes' ? reportesDe.has(u.id) : filtro === 'suspendidos' ? !!u.suspended_at : true
+      filtro === 'reportes'
+        ? reportesDe.has(u.id)
+        : filtro === 'suspendidos'
+          ? !!u.suspended_at
+          : true
     )
   const actual = lista.find((u) => u.id === abierto) ?? lista[0] ?? null
   const dias = serie.datos?.serie ?? []
@@ -56,7 +76,14 @@ export function Usuarios({ f }: { f: FuenteAdmin }) {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Buscar por nombre o usuario"
-                style={{ background: 'none', border: 0, color: 'inherit', font: 'inherit', width: '100%', outline: 'none' }}
+                style={{
+                  background: 'none',
+                  border: 0,
+                  color: 'inherit',
+                  font: 'inherit',
+                  width: '100%',
+                  outline: 'none',
+                }}
               />
             </label>
             {(
@@ -66,7 +93,13 @@ export function Usuarios({ f }: { f: FuenteAdmin }) {
                 ['suspendidos', 'Suspendidos'],
               ] as [Filtro, string][]
             ).map(([k, t]) => (
-              <button key={k} type="button" className="adm-chip c-neu" aria-pressed={filtro === k} onClick={() => setFiltro(k)}>
+              <button
+                key={k}
+                type="button"
+                className="adm-chip c-neu"
+                aria-pressed={filtro === k}
+                onClick={() => setFiltro(k)}
+              >
                 {t}
               </button>
             ))}
@@ -80,22 +113,36 @@ export function Usuarios({ f }: { f: FuenteAdmin }) {
       <div className="adm-tres" style={{ marginBottom: 16 }} data-testid="usuarios-kpis">
         <div className="adm-kpi adm-fila" style={{ justifyContent: 'space-between' }}>
           <div>
-            <p className="adm-t2" style={{ fontSize: 12 }}>Usuarios totales</p>
-            <p className="adm-num" style={{ fontSize: 28 }}>{met.datos ? entero(met.datos.usuarios) : '-'}</p>
-            <p className="adm-t3" style={{ fontSize: 12 }}>{us.datos ? `${suspendidos} suspendidos` : ''}</p>
+            <p className="adm-t2" style={{ fontSize: 12 }}>
+              Usuarios totales
+            </p>
+            <p className="adm-num" style={{ fontSize: 28 }}>
+              {met.datos ? entero(met.datos.usuarios) : '-'}
+            </p>
+            <p className="adm-t3" style={{ fontSize: 12 }}>
+              {us.datos ? `${suspendidos} suspendidos` : ''}
+            </p>
           </div>
         </div>
         <div className="adm-kpi adm-fila" style={{ justifyContent: 'space-between' }}>
           <div>
-            <p className="adm-t2" style={{ fontSize: 12 }}>Altas en 7 días</p>
-            <p className="adm-num" style={{ fontSize: 28 }}>{met.datos ? `+${entero(met.datos.usuarios_7d)}` : '-'}</p>
+            <p className="adm-t2" style={{ fontSize: 12 }}>
+              Altas en 7 días
+            </p>
+            <p className="adm-num" style={{ fontSize: 28 }}>
+              {met.datos ? `+${entero(met.datos.usuarios_7d)}` : '-'}
+            </p>
           </div>
           <MiniBarras valores={dias.map((d) => d.nuevos)} tono="ok" />
         </div>
         <div className="adm-kpi adm-fila" style={{ justifyContent: 'space-between' }}>
           <div>
-            <p className="adm-t2" style={{ fontSize: 12 }}>Carreras en 7 días</p>
-            <p className="adm-num" style={{ fontSize: 28 }}>{met.datos ? entero(met.datos.carreras_7d) : '-'}</p>
+            <p className="adm-t2" style={{ fontSize: 12 }}>
+              Carreras en 7 días
+            </p>
+            <p className="adm-num" style={{ fontSize: 28 }}>
+              {met.datos ? entero(met.datos.carreras_7d) : '-'}
+            </p>
           </div>
           <MiniBarras valores={dias.map((d) => d.carreras)} tono="warn" />
         </div>
@@ -120,17 +167,34 @@ export function Usuarios({ f }: { f: FuenteAdmin }) {
                 {lista.map((u) => {
                   const rep = reportesDe.get(u.id)?.n ?? 0
                   return (
-                    <tr key={u.id} aria-selected={actual?.id === u.id} onClick={() => setAbierto(u.id)}>
+                    <tr
+                      key={u.id}
+                      aria-selected={actual?.id === u.id}
+                      onClick={() => setAbierto(u.id)}
+                    >
                       <td>
                         <div className="adm-fila">
-                          <Avatar nombre={u.full_name ?? u.username} tono={u.suspended_at ? 'bad' : 'pri'} />
+                          <Avatar
+                            nombre={u.full_name ?? u.username}
+                            tono={u.suspended_at ? 'bad' : 'pri'}
+                          />
                           <div style={{ minWidth: 0 }}>
                             <p style={{ fontWeight: 700 }}>{u.full_name ?? u.username}</p>
-                            <p className="adm-t3" style={{ fontSize: 12 }}>@{u.username}</p>
+                            <p className="adm-t3" style={{ fontSize: 12 }}>
+                              @{u.username}
+                            </p>
                           </div>
                         </div>
                       </td>
-                      <td>{u.role ? <Chip tono="info">{u.role === 'admin' ? 'Administrador' : 'Moderador'}</Chip> : <Chip>Corredor</Chip>}</td>
+                      <td>
+                        {u.role ? (
+                          <Chip tono="info">
+                            {u.role === 'admin' ? 'Administrador' : 'Moderador'}
+                          </Chip>
+                        ) : (
+                          <Chip>Corredor</Chip>
+                        )}
+                      </td>
                       <td className="adm-num">{entero(u.km)}</td>
                       <td>
                         {u.suspended_at ? (
@@ -141,7 +205,12 @@ export function Usuarios({ f }: { f: FuenteAdmin }) {
                           <Chip tono="ok">Activa</Chip>
                         )}
                       </td>
-                      <td className="adm-num" style={{ color: rep > 0 ? 'hsl(var(--peligro-texto))' : undefined }}>{rep}</td>
+                      <td
+                        className="adm-num"
+                        style={{ color: rep > 0 ? 'hsl(var(--peligro-texto))' : undefined }}
+                      >
+                        {rep}
+                      </td>
                     </tr>
                   )
                 })}
@@ -199,25 +268,55 @@ function Ficha({
 }) {
   const nombre = u.full_name ?? u.username
   return (
-    <aside className="adm-card" style={{ alignSelf: 'start', overflow: 'hidden' }} aria-label="Ficha del usuario" data-testid="ficha-usuario">
-      <div style={{ background: 'hsl(var(--realce-primario))', padding: '22px 18px', textAlign: 'center' }}>
+    <aside
+      className="adm-card"
+      style={{ alignSelf: 'start', overflow: 'hidden' }}
+      aria-label="Ficha del usuario"
+      data-testid="ficha-usuario"
+    >
+      <div
+        style={{
+          background: 'hsl(var(--realce-primario))',
+          padding: '22px 18px',
+          textAlign: 'center',
+        }}
+      >
         <Avatar nombre={nombre} tam={64} tono="warn" />
         <h2 style={{ fontSize: 20, fontWeight: 800, marginTop: 8 }}>{nombre}</h2>
-        <p className="adm-t2" style={{ fontSize: 13 }}>@{u.username}</p>
+        <p className="adm-t2" style={{ fontSize: 13 }}>
+          @{u.username}
+        </p>
         <div className="adm-fila" style={{ justifyContent: 'center', marginTop: 8, gap: 6 }}>
-          <Chip>{u.role === 'admin' ? 'Administrador' : u.role === 'moderador' ? 'Moderador' : 'Corredor'}</Chip>
-          {u.suspended_at ? <Chip tono="bad">Suspendida</Chip> : rep ? <Chip tono="warn">Revisar</Chip> : null}
+          <Chip>
+            {u.role === 'admin'
+              ? 'Administrador'
+              : u.role === 'moderador'
+                ? 'Moderador'
+                : 'Corredor'}
+          </Chip>
+          {u.suspended_at ? (
+            <Chip tono="bad">Suspendida</Chip>
+          ) : rep ? (
+            <Chip tono="warn">Revisar</Chip>
+          ) : null}
         </div>
       </div>
       <div style={{ padding: 16, display: 'grid', gap: 12 }}>
         <div className="adm-tres" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           <Dato icono="flag" valor={entero(u.carreras)} etiqueta="Carreras" />
           <Dato icono="map" valor={entero(u.km)} etiqueta="Km" />
-          <Dato icono="warning" valor={String(rep?.n ?? 0)} etiqueta="Reportes" tono={rep ? 'bad' : undefined} />
+          <Dato
+            icono="warning"
+            valor={String(rep?.n ?? 0)}
+            etiqueta="Reportes"
+            tono={rep ? 'bad' : undefined}
+          />
         </div>
         {rep && (
           <div className="adm-card-el" style={{ padding: 12 }}>
-            <p className="adm-lbl" style={{ color: 'hsl(var(--advertencia-texto))' }}>Señal de riesgo</p>
+            <p className="adm-lbl" style={{ color: 'hsl(var(--advertencia-texto))' }}>
+              Señal de riesgo
+            </p>
             <p style={{ fontSize: 14, marginTop: 2 }}>
               {MOTIVOS[rep.motivo] ?? rep.motivo}
               {rep.ultimo ? `: ${rep.ultimo}` : ''}
@@ -235,7 +334,11 @@ function Ficha({
           <select
             aria-label="Rol del usuario"
             value={u.role ?? ''}
-            onChange={(e) => void f.cambiarRol(u.id, (e.target.value || null) as UsuarioAdmin['role']).then(recargar)}
+            onChange={(e) =>
+              void f
+                .cambiarRol(u.id, (e.target.value || null) as UsuarioAdmin['role'])
+                .then(recargar)
+            }
             className="adm-input"
           >
             <option value="">Corredor</option>
@@ -248,14 +351,31 @@ function Ficha({
   )
 }
 
-function Dato({ icono, valor, etiqueta, tono }: { icono: string; valor: string; etiqueta: string; tono?: 'bad' }) {
+function Dato({
+  icono,
+  valor,
+  etiqueta,
+  tono,
+}: {
+  icono: string
+  valor: string
+  etiqueta: string
+  tono?: 'bad'
+}) {
   return (
     <div className="adm-card-el" style={{ padding: '10px 6px', textAlign: 'center' }}>
-      <span className={tono ? 'c-bad' : 'adm-t2'} style={{ color: tono ? 'hsl(var(--tt))' : undefined }}>
+      <span
+        className={tono ? 'c-bad' : 'adm-t2'}
+        style={{ color: tono ? 'hsl(var(--tt))' : undefined }}
+      >
         <Icono nombre={icono} tam={18} />
       </span>
-      <p className="adm-num" style={{ fontSize: 20 }}>{valor}</p>
-      <p className="adm-t3" style={{ fontSize: 11 }}>{etiqueta}</p>
+      <p className="adm-num" style={{ fontSize: 20 }}>
+        {valor}
+      </p>
+      <p className="adm-t3" style={{ fontSize: 11 }}>
+        {etiqueta}
+      </p>
     </div>
   )
 }

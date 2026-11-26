@@ -56,11 +56,23 @@ export function MapaEscenario({
         ))}
       </g>
       <g stroke="hsl(var(--mapa-calle))" strokeWidth="9" fill="none" strokeLinecap="round">
-        <path d={`M0 ${ALTO * 0.62} C 160 ${ALTO * 0.5}, 330 ${ALTO * 0.75}, ${ANCHO} ${ALTO * 0.4}`} />
-        <path d={`M${ANCHO * 0.34} 0 C ${ANCHO * 0.4} ${ALTO * 0.4}, ${ANCHO * 0.3} ${ALTO * 0.7}, ${ANCHO * 0.38} ${ALTO}`} />
+        <path
+          d={`M0 ${ALTO * 0.62} C 160 ${ALTO * 0.5}, 330 ${ALTO * 0.75}, ${ANCHO} ${ALTO * 0.4}`}
+        />
+        <path
+          d={`M${ANCHO * 0.34} 0 C ${ANCHO * 0.4} ${ALTO * 0.4}, ${ANCHO * 0.3} ${ALTO * 0.7}, ${ANCHO * 0.38} ${ALTO}`}
+        />
       </g>
-      <g stroke="hsl(var(--mapa-rio))" strokeWidth="9" fill="none" strokeLinecap="round" opacity="0.9">
-        <path d={`M0 ${ALTO * 0.78} C 140 ${ALTO * 0.6}, 300 ${ALTO * 0.92}, 460 ${ALTO * 0.7} S ${ANCHO} ${ALTO * 0.6}, ${ANCHO} ${ALTO * 0.58}`} />
+      <g
+        stroke="hsl(var(--mapa-rio))"
+        strokeWidth="9"
+        fill="none"
+        strokeLinecap="round"
+        opacity="0.9"
+      >
+        <path
+          d={`M0 ${ALTO * 0.78} C 140 ${ALTO * 0.6}, 300 ${ALTO * 0.92}, 460 ${ALTO * 0.7} S ${ANCHO} ${ALTO * 0.6}, ${ANCHO} ${ALTO * 0.58}`}
+        />
       </g>
       {trazo.length > 1 && (
         <polyline
@@ -117,7 +129,12 @@ export function TrazoRuta({ puntos, etiqueta }: { puntos: PuntoGeo[]; etiqueta: 
   const ini = xy[0]
   const fin = xy[xy.length - 1]
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={etiqueta} style={{ width: '100%', display: 'block' }}>
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      role="img"
+      aria-label={etiqueta}
+      style={{ width: '100%', display: 'block' }}
+    >
       <rect width={W} height={H} fill="hsl(var(--mapa-fondo))" />
       <g stroke="hsl(var(--mapa-calle-2))" strokeWidth="1">
         {[40, 90, 150, 210, 270].map((x) => (
