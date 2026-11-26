@@ -144,6 +144,10 @@ body {
 /* Escritorio: los elementos fijos de cada pantalla respetan la barra lateral. */
 @media (min-width: 1024px) {
   .shell-escritorio .fixed.inset-x-0 {
+    left: 96px;
+  }
+  /* El riel colapsable (96 px) se expande a 248 px: los fijos siguen su ancho real. */
+  .shell-escritorio:has(.navc-riel[data-expandido='true']) .fixed.inset-x-0 {
     left: 248px;
   }
   .shell-escritorio .contenedor-escritorio {
@@ -726,4 +730,52 @@ a.c2-boton:active {
   .esqueleto-c2 {
     animation: none;
   }
+}
+
+/*
+ * Navbar colapsable de la app de usuario: los --nc-* salen de los tokens del tema (con respaldo
+ * oscuro si la variable no existe). Rellenos de marca fijos, como en el resto de la app.
+ */
+.navc.navc-usuario {
+  --nc-fondo: rgb(var(--c-c2-bg, 12 19 34));
+  --nc-riel: rgb(var(--c-c2-bg, 12 19 34));
+  --nc-superficie: rgb(var(--c-c2-card, 25 31 47));
+  --nc-elevada: rgb(var(--c-c2-s2, 35 42 58));
+  --nc-borde: rgb(var(--c-c2-linea, 44 52 70));
+  --nc-texto: rgb(var(--c-text-primary, 255 255 255));
+  --nc-texto-2: rgb(var(--c-text-secondary, 168 176 194));
+  --nc-texto-3: rgb(var(--c-c2-muted, 168 176 194));
+  --nc-primario: #a855f7;
+  --nc-primario-profundo: #7b1fa2;
+  --nc-primario-texto: rgb(var(--c-c2-violeta, 192 132 252));
+  --nc-sobre-primario: #ffffff;
+  --nc-peligro: #be185d;
+  --nc-globo: rgb(var(--c-text-primary, 255 255 255));
+  --nc-sobre-globo: rgb(var(--c-c2-bg, 12 19 34));
+}
+/* Pantallas bajas: la lista de 11 secciones cabe sin desplazarse. */
+@media (min-width: 1024px) and (max-height: 860px) {
+  .navc-usuario .navc-riel {
+    gap: 4px;
+  }
+  .navc-usuario .navc-item {
+    height: 44px;
+  }
+  .navc-usuario .navc-riel[data-expandido='true'] .navc-item {
+    height: 40px;
+  }
+}
+@media (min-width: 1024px) and (max-height: 700px) {
+  .navc-usuario .navc-item {
+    height: 38px;
+  }
+  .navc-usuario .navc-riel[data-expandido='true'] .navc-item {
+    height: 36px;
+  }
+  .navc-usuario .navc-lista {
+    gap: 2px;
+  }
+}
+.navc-usuario .navc-riel[data-expandido='false'] .navc-busca {
+  justify-content: center;
 }

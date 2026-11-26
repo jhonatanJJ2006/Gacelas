@@ -1,22 +1,16 @@
 import { useCallback, useMemo } from 'react'
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { create } from 'zustand'
 import { useEntradaPagina } from '../shared/lib/movimiento'
 import { useActividad } from '../contexts/actividad/api'
-import { useRacha } from '../contexts/actividad/ui/useRacha'
 import { notificacionesVisibles, useAvisos } from '../contexts/avisos/api'
-import { FotoPerfil } from '../contexts/identidad'
 import { useIdentidad } from '../contexts/identidad/api'
-import { useRutas } from '../contexts/rutas/api'
-import { diaSemana, inicioSemana, resumenSemana } from '../shared/kernel/estadisticas'
+import { inicioSemana, resumenSemana } from '../shared/kernel/estadisticas'
 import { nivelCorredor } from '../shared/kernel/nivel'
-import { rachaEnRiesgo } from '../shared/kernel/rachas'
 import { traducir } from '../shared/i18n/textos'
-import { Unidades } from '../shared/lib/geo'
 import { useEsEscritorio } from '../shared/lib/useEsEscritorio'
-import { AvatarIniciales, Progreso } from '../shared/ui/Visual'
+import { NavColapsable, type ItemNav } from '../shared/ui/navegacion/NavColapsable'
 import { BusquedaGlobal, useAtajoBusqueda } from './BusquedaGlobal'
-import { useEnVivo, useEventosVisibles, useSondeoEnVivo } from './datosApp'
 
 /** Estado de la busqueda global (Ctrl+K), compartido por la barra superior e Inicio movil. */
 export const useBusqueda = create<{ abierta: boolean; abrir(): void; cerrar(): void }>((set) => ({
@@ -62,59 +56,6 @@ export function navActiva(pathname: string, path: string) {
   return pathname === path || pathname.startsWith(`${path}/`)
 }
 
-const DIAS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
-
-/** Bloque de racha de la barra lateral: dias seguidos, estado y la semana de lunes a domingo. */
-function BloqueRacha() {
-  const r = useRacha()
-  const carreras = useActividad((s) => s.carreras)
-  const ahora = Date.now()
-  const dias = useMemo(() => resumenSemana(carreras, ahora).diasCorridos, [carreras]) // eslint-disable-line react-hooks/exhaustive-deps
-  const hoy = diaSemana(ahora)
-  const riesgo = rachaEnRiesgo(r, ahora)
-  const texto =
-    r.diaria === 0
-      ? 'Sin racha. Corre hoy para empezar una.'
-      : riesgo
-        ? `${r.diaria === 1 ? 'día' : 'días'}. Corre hoy para mantenerla`
-        : `${r.diaria === 1 ? 'día' : 'días'} seguidos. Vas al día`
-  return (
-    <div data-testid="racha-barra" className="fondo-acento panel-c2 mx-4 mb-2 p-3 border">
-      <div className="flex items-center justify-between">
-        <span className="rotulo-c2 !text-c2-violeta">Racha</span>
-        {riesgo && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-alerta/15 text-alerta">
-            en riesgo
-          </span>
-        )}
-      </div>
-      <div className="flex items-baseline gap-2 mt-1">
-        {r.diaria > 0 && (
-          <span className="cifra-c2 text-[26px] leading-none text-text-primary">{r.diaria}</span>
-        )}
-        <span className="text-[12px] text-c2-muted leading-tight">{texto}</span>
-      </div>
-      <div className="flex gap-1 mt-2" aria-label="Días corridos esta semana">
-        {DIAS.map((d, i) => (
-          <span
-            key={d}
-            title={dias.has(i) ? 'Corriste' : i === hoy ? 'Hoy' : undefined}
-            className={`flex-1 h-5 rounded-sm grid place-items-center text-[11px] font-bold ${
-              dias.has(i)
-                ? 'bg-c2-menta/80 text-[#003825]'
-                : i === hoy
-                  ? 'border border-c2-violeta text-c2-violeta'
-                  : 'bg-c2-s2 text-c2-muted'
-            }`}
-          >
-            {d}
-          </span>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 /** Meta semanal en km (la unica meta: ajustes.metaKmSemana, columna weekly_goal_km). */
 export function useMetaSemanal() {
   const carreras = useActividad((s) => s.carreras)
@@ -141,35 +82,6 @@ export function useMetaSemanal() {
   }, [carreras, metaKm]) // eslint-disable-line react-hooks/exhaustive-deps
 }
 
-function MetaLateral() {
-  const meta = useMetaSemanal()
-  const m = useIdentidad((s) => s.ajustes.unidadesMetricas)
-  return (
-    <Link
-      to="/perfil/editar"
-      title="Cambiar la meta semanal"
-      className="panel-c2 mx-4 mb-2 p-3 block bg-c2-card border border-c2-linea hover:border-c2-morado/50"
-      data-testid="meta-lateral"
-    >
-      <span className="flex justify-between items-baseline">
-        <span className="rotulo-c2">Meta semanal</span>
-        <span className="text-[11px] text-c2-muted">{meta.rango}</span>
-      </span>
-      <span className="flex items-baseline gap-1 mt-1">
-        <span className="cifra-c2 text-[20px] text-text-primary">
-          {Unidades.texto(meta.km, m, 1)}
-        </span>
-        <span className="text-c2-muted text-[12px]">
-          / {Unidades.texto(meta.metaKm, m, 0)} {Unidades.etiquetaDistancia(m)}
-        </span>
-      </span>
-      <span className="block mt-2">
-        <Progreso pct={meta.pct} etiqueta="Progreso de la meta semanal" />
-      </span>
-    </Link>
-  )
-}
-
 /**
  * Contenedor de escritorio (>=1024px): barra lateral fija con racha, navegacion con contadores,
  * meta semanal y usuario. En movil no pinta nada extra. La busqueda global (Ctrl+K) vive aqui.
@@ -183,9 +95,9 @@ export function ShellEscritorio() {
   useAtajoBusqueda(useCallback(() => abrir(), [abrir]))
 
   return (
-    <div className="shell-escritorio min-h-screen bg-bg-primary">
-      {escritorio && <BarraLateral pathname={pathname} />}
-      <div ref={refPagina} className="lg:pl-[248px]">
+    <div className="shell-escritorio min-h-screen bg-bg-primary lg:flex">
+      {escritorio && <BarraLateral />}
+      <div ref={refPagina} className="min-w-0 lg:flex-1">
         <Outlet />
       </div>
       <BusquedaGlobal abierto={busqueda.abierta} onCerrar={busqueda.cerrar} />
@@ -193,126 +105,56 @@ export function ShellEscritorio() {
   )
 }
 
-function BarraLateral({ pathname }: { pathname: string }) {
-  useSondeoEnVivo()
+/** Boton de busqueda global dentro del riel (reusa el estilo de los botones del navbar). */
+function BotonBuscar() {
+  const abrir = useBusqueda((s) => s.abrir)
+  return (
+    <button
+      type="button"
+      className="navc-btn navc-busca"
+      onClick={abrir}
+      aria-label="Buscar rutas, corredores y clubes"
+      data-testid="nav-buscar"
+    >
+      <span aria-hidden="true" className="material-symbols-outlined" style={{ fontSize: 18 }}>
+        search
+      </span>
+      <span className="navc-busca-t">Buscar</span>
+      <kbd className="navc-atajo">Ctrl K</kbd>
+    </button>
+  )
+}
+
+/** Riel de escritorio: el navbar colapsable compartido con las secciones de la app de usuario. */
+function BarraLateral() {
   const sesion = useIdentidad((s) => s.sesion)
   const ajustes = useIdentidad((s) => s.ajustes)
   const listaNotif = useAvisos((s) => s.notificaciones)
   const sinLeer = notificacionesVisibles(ajustes, listaNotif).filter((n) => !n.leida).length
-  const rutas = useRutas((s) => s.rutas)
-  const cargandoRutas = useRutas((s) => s.cargandoRutas)
-  const { proximos } = useEventosVisibles()
-  const enVivo = useEnVivo((s) => s.corredores.length)
   const carreras = useActividad((s) => s.carreras)
   const nivel = nivelCorredor(carreras.reduce((t, c) => t + c.distanciaKm, 0))
-  const contadores: Record<Contador, number> = {
-    rutas: cargandoRutas ? 0 : rutas.length,
-    eventos: proximos.length,
-    envivo: enVivo,
-    notif: sinLeer,
-  }
-  const nombre = sesion?.nombre ?? 'Corredor'
+  const items: ItemNav[] = NAV_ESCRITORIO.map((item) => ({
+    id: item.path.slice(1).replace(/\//g, '-'),
+    etiqueta: traducir(ajustes.idioma, item.label),
+    a: item.path,
+    icono: item.icon,
+    // Solo el conteo real de notificaciones sin leer; el resto no lleva insignia.
+    insignia: item.contador === 'notif' ? sinLeer : undefined,
+    activoEn: (p) => navActiva(p, item.path),
+  }))
   return (
-    <aside
-      aria-label="Navegación principal"
-      className="hidden lg:flex fixed inset-y-0 left-0 z-[60] w-[248px] flex-col bg-surface-container-lowest border-r border-c2-linea"
-    >
-      <Link
-        to="/inicio"
-        className="px-5 pt-5 pb-4 flex items-center gap-3 shrink-0"
-        aria-label="Runcity, ir a Inicio"
-      >
-        <span className="w-9 h-9 rounded-md bg-[linear-gradient(135deg,#7B1FA2,#A855F7)] grid place-items-center">
-          <span
-            aria-hidden="true"
-            className="material-symbols-outlined text-text-primary text-[20px]"
-          >
-            directions_run
-          </span>
-        </span>
-        <span>
-          <span className="block font-display italic text-[19px] leading-none text-text-primary tracking-[0.035em]">
-            Runcity
-          </span>
-          <span className="block rotulo-c2 !text-c2-violeta mt-1">Loja, Ecuador</span>
-        </span>
-      </Link>
-      <BloqueRacha />
-      <nav className="fade-bordes-y px-3 flex-1 min-h-0 overflow-y-auto space-y-0.5 pb-2">
-        {NAV_ESCRITORIO.map((item) => {
-          const on = navActiva(pathname, item.path)
-          const n = item.contador ? contadores[item.contador] : 0
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              aria-current={on ? 'page' : undefined}
-              className={`relative flex items-center gap-3 px-3 h-[34px] rounded-md text-[13.5px] transition-colors ${
-                on
-                  ? 'bg-c2-s2 text-text-primary font-semibold before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[3px] before:rounded before:bg-c2-violeta'
-                  : 'text-c2-muted hover:text-text-primary hover:bg-c2-card'
-              }`}
-            >
-              <span
-                aria-hidden="true"
-                className={`material-symbols-outlined text-[19px] ${on ? 'text-c2-violeta' : ''}`}
-              >
-                {item.icon}
-              </span>
-              <span className="flex-1 truncate">{traducir(ajustes.idioma, item.label)}</span>
-              {n > 0 && (
-                <span
-                  data-testid={`contador-${item.contador}`}
-                  aria-label={
-                    item.contador === 'notif'
-                      ? `${n} sin leer`
-                      : item.contador === 'envivo'
-                        ? `${n} corriendo ahora`
-                        : `${n}`
-                  }
-                  className={`text-[10.5px] font-bold px-1.5 rounded ${
-                    item.contador === 'notif'
-                      ? 'bg-c2-morado text-on-primary'
-                      : item.contador === 'envivo'
-                        ? 'bg-c2-menta/15 text-c2-menta'
-                        : 'text-c2-muted/70'
-                  }`}
-                >
-                  {n}
-                </span>
-              )}
-            </Link>
-          )
-        })}
-      </nav>
-      <MetaLateral />
-      <div className="px-4 pb-3">
-        <Link
-          to="/correr"
-          className="panel-c2 h-11 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] flex items-center justify-center gap-2 font-bold text-[14px] text-on-primary hover:brightness-110"
-        >
-          <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
-            play_circle
-          </span>
-          Empezar a correr
-        </Link>
-      </div>
-      <Link
-        to="/perfil"
-        className="border-t border-c2-linea px-4 py-3 flex items-center gap-3 min-w-0 hover:bg-c2-card"
-      >
-        {sesion?.foto ? (
-          <FotoPerfil foto={sesion.foto} nombre={nombre} className="h-9 w-9" />
-        ) : (
-          <AvatarIniciales nombre={nombre} tamano={36} />
-        )}
-        <span className="min-w-0">
-          <span className="block text-[13px] font-semibold text-text-primary truncate">
-            {nombre}
-          </span>
-          <span className="block text-[11px] text-c2-muted truncate">Nivel {nivel}</span>
-        </span>
-      </Link>
-    </aside>
+    <NavColapsable
+      items={items}
+      usuario={{
+        nombre: sesion?.nombre ?? 'Corredor',
+        detalle: `Nivel ${nivel}`,
+        foto: sesion?.foto ?? null,
+      }}
+      etiqueta="Navegación principal"
+      claveAlmacen="runcity.usuario.nav.colapsado"
+      buscador={false}
+      pie={<BotonBuscar />}
+      className="navc-usuario"
+    />
   )
 }
