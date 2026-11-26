@@ -8,10 +8,33 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#0C1322" />
+    <script>
+      // Tema antes del primer pintado (sin parpadeo). Misma regla que shared/lib/tema.ts:
+      // Ajustes.tema (claro, oscuro, sistema) guardado en localStorage; sin dato, oscuro.
+      ;(function () {
+        try {
+          var m = 'oscuro'
+          var a = JSON.parse(localStorage.getItem('gacelas:ajustes') || 'null')
+          if (a && (a.tema === 'claro' || a.tema === 'oscuro' || a.tema === 'sistema')) m = a.tema
+          var claro =
+            m === 'claro' ||
+            (m === 'sistema' &&
+              !!window.matchMedia &&
+              !matchMedia('(prefers-color-scheme: dark)').matches)
+          var r = document.documentElement
+          r.classList.toggle('tema-claro', claro)
+          r.classList.toggle('dark', !claro)
+          r.style.colorScheme = claro ? 'light' : 'dark'
+          r.setAttribute('data-tema', claro ? 'claro' : 'oscuro')
+          var tc = document.querySelector('meta[name="theme-color"]')
+          if (tc) tc.setAttribute('content', claro ? '#F3F3F7' : '#0C1322')
+        } catch (e) {}
+      })()
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Runcity</title>
     <meta name="application-name" content="Runcity" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="dark light" />
     <meta
       name="description"
       content="Runcity graba tus carreras con GPS, te lleva por rutas reales de Loja y deja que tu grupo te siga en vivo, solo cuando tú lo decidas."

@@ -27,7 +27,7 @@ export function ListaIncidentes({ lista }: { lista: IncidentePublico[] }) {
             data-testid={`incidente-${i.id}`}
             className="flex items-center gap-3 p-3 rounded-xl bg-c2-card border border-c2-linea"
           >
-            <span className="material-symbols-outlined text-[#F5C451]">
+            <span className="material-symbols-outlined text-alerta">
               {TIPOS_INCIDENTE.find((t) => t.id === i.tipo)?.icono ?? 'warning'}
             </span>
             <span className="flex-1 min-w-0">

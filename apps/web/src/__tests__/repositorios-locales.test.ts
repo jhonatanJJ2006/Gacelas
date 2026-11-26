@@ -55,12 +55,12 @@ describe('repositorios locales', () => {
     const { rutas, ajustes, eventos } = repositoriosLocales()
     expect(await rutas.alternarGuardada('1')).toEqual(['1'])
     expect(await rutas.alternarGuardada('1')).toEqual([])
-    expect((await ajustes.leer()).modoOscuro).toBe(true)
+    expect((await ajustes.leer()).tema).toBe('oscuro')
     await ajustes.actualizar({ unidadesMetricas: false, metronomoBpm: 180 })
     expect(await repositoriosLocales().ajustes.leer()).toMatchObject({
       unidadesMetricas: false,
       metronomoBpm: 180,
-      modoOscuro: true,
+      tema: 'oscuro',
     })
     await eventos.crear({ ...eventosMock[0], id: 'u1', creadoPorUsuario: true })
     expect((await eventos.creados()).map((e) => e.id)).toEqual(['u1'])

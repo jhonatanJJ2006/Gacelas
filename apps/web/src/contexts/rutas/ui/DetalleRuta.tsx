@@ -239,7 +239,7 @@ export function DetalleRuta() {
                 className="h-12 px-4 rounded-xl bg-surface-container flex items-center gap-2 text-text-primary"
               >
                 <span
-                  className={`material-symbols-outlined ${meGusta ? 'text-red-400' : ''}`}
+                  className={`material-symbols-outlined ${meGusta ? 'text-peligro-texto' : ''}`}
                   style={{ fontVariationSettings: meGusta ? "'FILL' 1" : "'FILL' 0" }}
                 >
                   favorite

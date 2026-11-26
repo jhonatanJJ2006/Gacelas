@@ -45,24 +45,30 @@ export function DetalleEvento() {
         <button
           onClick={() => navigate('/comunidad/eventos')}
           aria-label="Volver"
-          className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white shadow-lg z-10"
+          className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-on-primary shadow-lg z-10"
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
         <button
           onClick={() => void compartirEvento()}
           aria-label="Compartir evento"
-          className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white shadow-lg z-10"
+          className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-on-primary shadow-lg z-10"
         >
           <span className="material-symbols-outlined">share</span>
         </button>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="material-symbols-outlined fill text-[80px] text-white/40">event</span>
+          <span className="material-symbols-outlined fill text-[80px] text-text-primary/40">
+            event
+          </span>
         </div>
         <div className="absolute bottom-4 left-4 right-4">
           <div className="bg-primary-600 px-3 py-1 rounded-full inline-flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px] text-white">directions_run</span>
-            <span className="text-white font-label-md text-label-md">{evento.distanciaKm} km</span>
+            <span className="material-symbols-outlined text-[16px] text-text-primary">
+              directions_run
+            </span>
+            <span className="text-text-primary font-label-md text-label-md">
+              {evento.distanciaKm} km
+            </span>
           </div>
         </div>
       </div>
@@ -94,7 +100,7 @@ export function DetalleEvento() {
           <Link
             to={`/comunidad/eventos/${evento.id}/en-vivo`}
             data-testid="evento-en-vivo"
-            className="px-3 py-1 rounded-full bg-danger/20 text-sm text-red-300 flex items-center gap-1"
+            className="px-3 py-1 rounded-full bg-danger/20 text-sm text-peligro-texto flex items-center gap-1"
           >
             <span className="material-symbols-outlined text-[16px]">sensors</span>
             {evento.pasado ? 'Repetición' : 'En vivo'}

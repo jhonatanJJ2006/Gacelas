@@ -41,7 +41,7 @@ export function InicioSesion() {
 
   return (
     <div
-      className="relative flex min-h-[100dvh] w-full flex-col bg-[#0C1322]"
+      className="relative flex min-h-[100dvh] w-full flex-col bg-c2-bg"
       data-testid="pantalla-login"
     >
       <FondoMapaC4 login />
@@ -59,10 +59,10 @@ export function InicioSesion() {
         </div>
         <div className="px-5 pt-2 pb-6 short:pb-2">
           <TarjetaC4 alpha={0.96}>
-            <h1 className="font-display text-[24px] leading-[30px] tracking-[0.015em] text-white short:text-[20px]">
+            <h1 className="font-display text-[24px] leading-[30px] tracking-[0.015em] text-text-primary short:text-[20px]">
               Bienvenido de vuelta
             </h1>
-            <p className="mt-1.5 text-[13px] leading-[18px] text-[#D5DAE4]/80 short:hidden">
+            <p className="mt-1.5 text-[13px] leading-[18px] text-text-secondary short:hidden">
               Inicia sesión para seguir corriendo
             </p>
             <form onSubmit={handleSubmit} noValidate className="mt-5 short:mt-3.5">
@@ -94,7 +94,7 @@ export function InicioSesion() {
                   </label>
                   <Link
                     to="/recuperar-contrasena"
-                    className="text-[11px] font-medium leading-[14px] text-[#C084FC]"
+                    className="text-[11px] font-medium leading-[14px] text-c2-violeta"
                   >
                     ¿Olvidaste tu contraseña?
                   </Link>
@@ -132,7 +132,7 @@ export function InicioSesion() {
               <SeparadorC4 />
               <BotonGoogle />
               <PieC4 texto="¿No tienes cuenta?" enlace="Crear cuenta" a="/registro" />
-              <div className="flex justify-center pt-1.5 text-[12px] text-[#A8B0C2]">
+              <div className="flex justify-center pt-1.5 text-[12px] text-c2-muted">
                 <Link to="/legal/terminos" className="p-1.5" data-testid="pie-terminos">
                   Términos
                 </Link>

@@ -59,7 +59,7 @@ describe('ajustes', () => {
 
   it('modo claro, unidades y cerrar sesion', async () => {
     renderRuta('/ajustes')
-    await userEvent.click(await screen.findByRole('button', { name: 'Cambiar tema' }))
+    await userEvent.click(await screen.findByRole('radio', { name: 'Claro' }))
     expect(document.documentElement).toHaveClass('tema-claro')
     await userEvent.click(screen.getByRole('button', { name: 'mi' }))
     await userEvent.click(screen.getByRole('switch', { name: 'Autopausa' }))
@@ -67,7 +67,7 @@ describe('ajustes', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Bajar ritmo objetivo' }))
     await userEvent.click(screen.getByRole('button', { name: 'Bajar ritmo objetivo' }))
     expect(useIdentidad.getState().ajustes).toMatchObject({
-      modoOscuro: false,
+      tema: 'claro',
       unidadesMetricas: false,
       autopausa: false,
       cuentaRegresivaSeg: 5,

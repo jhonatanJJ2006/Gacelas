@@ -86,7 +86,9 @@ function HorasClima({ clima, max = 7 }: { clima: ClimaActual; max?: number }) {
             }`}
           >
             <span className="block text-[10px] text-c2-muted">{hhmm(horaLoja(h.ms))}</span>
-            <span className="block cifra-c2 text-[17px] text-white mt-0.5">{h.temperatura}°</span>
+            <span className="block cifra-c2 text-[17px] text-text-primary mt-0.5">
+              {h.temperatura}°
+            </span>
             <span
               className={`block text-[9.5px] mt-0.5 ${ideal ? 'text-c2-menta' : h.lluviaPct >= 50 ? 'text-c2-cielo' : 'text-c2-muted'}`}
             >
@@ -124,7 +126,7 @@ export function PanelClima({ className = '' }: { className?: string }) {
         <button
           type="button"
           onClick={e.reintentar}
-          className="mt-3 h-9 px-4 rounded-md border border-c2-linea text-[13px] text-white hover:border-c2-morado"
+          className="mt-3 h-9 px-4 rounded-md border border-c2-linea text-[13px] text-text-primary hover:border-c2-morado"
         >
           Reintentar
         </button>
@@ -147,7 +149,7 @@ export function PanelClima({ className = '' }: { className?: string }) {
           </span>
         </span>
         <div className="min-w-0 flex-1">
-          <p className="cifra-c2 text-[40px] leading-none text-white">{c.temperatura}°</p>
+          <p className="cifra-c2 text-[40px] leading-none text-text-primary">{c.temperatura}°</p>
           <p className="text-[12px] text-c2-muted mt-1 first-letter:uppercase">
             {c.descripcion}
             {c.sensacion != null ? `. Sensación ${c.sensacion}°` : ''}
@@ -164,7 +166,7 @@ export function PanelClima({ className = '' }: { className?: string }) {
       </div>
       {v ? (
         <p
-          className="mt-4 rounded-md border border-c2-menta/30 bg-c2-menta/10 px-3 py-2.5 text-[12.5px] text-white"
+          className="mt-4 rounded-md border border-c2-menta/30 bg-c2-menta/10 px-3 py-2.5 text-[12.5px] text-text-primary"
           data-testid="mejor-ventana"
         >
           <span className="font-bold text-c2-menta">Mejor ventana: {v.rango}.</span>
@@ -279,7 +281,7 @@ export function PanelRutaSegura({ className = '' }: { className?: string }) {
         <Link
           to={`/rutas/buscar?ruta=${r.id}`}
           onClick={() => elegirRutaActiva(r.id)}
-          className="panel-c2 mt-5 inline-flex h-10 px-5 items-center gap-2 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-white text-[13.5px] font-bold hover:brightness-110"
+          className="panel-c2 mt-5 inline-flex h-10 px-5 items-center gap-2 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-on-primary text-[13.5px] font-bold hover:brightness-110"
         >
           Correr esta ruta
         </Link>
@@ -314,20 +316,20 @@ export function PanelSemana({ className = '' }: { className?: string }) {
         <dl className="flex-1 min-w-0 space-y-1.5 text-[12.5px]">
           <div className="flex justify-between gap-2">
             <dt className="text-c2-muted">Meta semanal</dt>
-            <dd className="text-white font-semibold whitespace-nowrap">
+            <dd className="text-text-primary font-semibold whitespace-nowrap">
               <span data-testid="km-semana">{Unidades.texto(meta.km, m, 1)}</span> /{' '}
               {Unidades.texto(meta.metaKm, m, 0)} {u}
             </dd>
           </div>
           <div className="flex justify-between gap-2">
             <dt className="text-c2-muted">Carreras</dt>
-            <dd className="text-white font-semibold">
+            <dd className="text-text-primary font-semibold">
               {meta.carreras} / {metaCarreras}
             </dd>
           </div>
           <div className="flex justify-between gap-2">
             <dt className="text-c2-muted">Mejor día</dt>
-            <dd className="text-white font-semibold truncate">
+            <dd className="text-text-primary font-semibold truncate">
               {dias[mejor]! > 0
                 ? `${DIAS_LARGOS[mejor]}, ${Unidades.texto(dias[mejor]!, m, 1)} ${u}`
                 : 'Aún ninguno'}
@@ -376,7 +378,7 @@ export function PanelReto({ className = '' }: { className?: string }) {
       </div>
       <h2 className="titulo-panel mt-1">{reto.titulo}</h2>
       <p className="mt-2 flex items-baseline gap-1">
-        <span className="cifra-c2 text-[34px] leading-none text-white">
+        <span className="cifra-c2 text-[34px] leading-none text-text-primary">
           {Unidades.texto(reto.km, m, 1)}
         </span>
         <span className="text-[12px] text-c2-muted">
@@ -400,7 +402,7 @@ export function PanelReto({ className = '' }: { className?: string }) {
             {logros.map((l) => (
               <li key={l.id}>
                 <div className="flex justify-between text-[12.5px]">
-                  <span className="text-white truncate">{l.titulo}</span>
+                  <span className="text-text-primary truncate">{l.titulo}</span>
                   <span className="text-c2-muted shrink-0">{l.texto}</span>
                 </div>
                 <div className="mt-1">
@@ -503,7 +505,7 @@ export function PanelActividad({ className = '' }: { className?: string }) {
                   className="w-16 h-10 rounded shrink-0"
                 />
                 <span className="flex-1 min-w-0">
-                  <span className="block text-[13.5px] font-semibold text-white truncate">
+                  <span className="block text-[13.5px] font-semibold text-text-primary truncate">
                     {c.titulo || 'Carrera'}
                   </span>
                   <span className="block text-[11.5px] text-c2-muted truncate first-letter:uppercase">
@@ -512,7 +514,7 @@ export function PanelActividad({ className = '' }: { className?: string }) {
                 </span>
                 <span className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-right shrink-0">
                   <span>
-                    <span className="block cifra-c2 text-[16px] text-white">
+                    <span className="block cifra-c2 text-[16px] text-text-primary">
                       {Unidades.texto(c.distanciaKm, m, 1)}
                     </span>
                     <span className="block text-[9.5px] text-c2-muted">
@@ -520,7 +522,7 @@ export function PanelActividad({ className = '' }: { className?: string }) {
                     </span>
                   </span>
                   <span className="hidden sm:block">
-                    <span className="block cifra-c2 text-[16px] text-white">
+                    <span className="block cifra-c2 text-[16px] text-text-primary">
                       {duracion(c.segundos)}
                     </span>
                     <span className="block text-[9.5px] text-c2-muted">tiempo</span>
@@ -589,7 +591,9 @@ export function PanelEnRuta({ className = '' }: { className?: string }) {
                   className="flex items-center gap-3 hover:bg-c2-s2/40 rounded px-1 py-1"
                 >
                   <AvatarIniciales nombre={c.nombre} tamano={30} />
-                  <span className="flex-1 min-w-0 text-[13px] text-white truncate">{c.nombre}</span>
+                  <span className="flex-1 min-w-0 text-[13px] text-text-primary truncate">
+                    {c.nombre}
+                  </span>
                   <span className="text-[11.5px] text-c2-menta shrink-0">
                     {c.corriendo ? 'Corriendo' : 'En pausa'}
                   </span>
@@ -609,7 +613,9 @@ export function PanelEnRuta({ className = '' }: { className?: string }) {
                   <li key={p.id} className="flex items-center gap-3">
                     <AvatarIniciales nombre={p.autor} tamano={30} />
                     <span className="flex-1 min-w-0">
-                      <span className="block text-[13px] text-white truncate">{p.autor}</span>
+                      <span className="block text-[13px] text-text-primary truncate">
+                        {p.autor}
+                      </span>
                       <span className="block text-[11px] text-c2-muted truncate">
                         {Unidades.texto(p.distanciaKm, m, 1)} {Unidades.etiquetaDistancia(m)} en{' '}
                         {p.titulo}
@@ -667,18 +673,20 @@ export function PanelRanking({ className = '', max = 5 }: { className?: string; 
             className={`flex items-center gap-2.5 py-1.5 px-2 rounded ${f.propio ? 'bg-c2-morado/15 border border-c2-morado/40' : ''}`}
           >
             <span
-              className={`cifra-c2 w-4 text-[14px] ${i === 0 ? 'text-amber-400' : 'text-c2-muted'}`}
+              className={`cifra-c2 w-4 text-[14px] ${i === 0 ? 'text-alerta' : 'text-c2-muted'}`}
             >
               {i + 1}
             </span>
             <AvatarIniciales nombre={f.nombre} tamano={28} />
             <span
-              className={`flex-1 min-w-0 truncate text-[12.5px] ${f.propio ? 'font-bold text-white' : 'text-white'}`}
+              className={`flex-1 min-w-0 truncate text-[12.5px] ${f.propio ? 'font-bold text-text-primary' : 'text-text-primary'}`}
             >
               {f.nombre}
               {f.propio ? ' (tú)' : ''}
             </span>
-            <span className="cifra-c2 text-[14px] text-white">{Unidades.texto(f.km, m, 1)}</span>
+            <span className="cifra-c2 text-[14px] text-text-primary">
+              {Unidades.texto(f.km, m, 1)}
+            </span>
           </li>
         ))}
       </ol>
@@ -735,11 +743,13 @@ export function TarjetaEventoC2({
       >
         {d ? (
           <>
-            <span className="text-[9px] font-bold uppercase text-white/80">
+            <span className="text-[9px] font-bold uppercase text-text-primary/80">
               {DIA_CORTO[d.getDay()]}
             </span>
-            <span className="cifra-c2 text-[22px] leading-none text-white">{d.getDate()}</span>
-            <span className="text-[9px] font-bold uppercase text-white/80">
+            <span className="cifra-c2 text-[22px] leading-none text-text-primary">
+              {d.getDate()}
+            </span>
+            <span className="text-[9px] font-bold uppercase text-text-primary/80">
               {MES_CORTO[d.getMonth()]}
             </span>
           </>
@@ -750,7 +760,7 @@ export function TarjetaEventoC2({
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <h3 className="text-[13.5px] font-bold text-white leading-snug line-clamp-2">
+        <h3 className="text-[13.5px] font-bold text-text-primary leading-snug line-clamp-2">
           <Link to={`/comunidad/eventos/${evento.id}`} className="hover:text-c2-violeta">
             {evento.titulo}
           </Link>
@@ -768,7 +778,7 @@ export function TarjetaEventoC2({
             disabled={lleno}
             onClick={() => void alternar(evento.id)}
             aria-pressed={inscrito}
-            className={`text-[11px] font-bold px-2 py-1 rounded ${inscrito ? 'bg-c2-menta/15 text-c2-menta' : 'text-c2-violeta hover:text-white'} disabled:opacity-50`}
+            className={`text-[11px] font-bold px-2 py-1 rounded ${inscrito ? 'bg-c2-menta/15 text-c2-menta' : 'text-c2-violeta hover:text-text-primary'} disabled:opacity-50`}
           >
             {inscrito ? 'Inscrita' : lleno ? 'Cupo lleno' : 'Inscribirme'}
           </button>
@@ -873,7 +883,7 @@ export function PanelSeguridad({ className = '' }: { className?: string }) {
                   style={{ background: COLOR_TIPO[i.tipo] ?? '#F59E0B' }}
                 />
                 <span className="min-w-0">
-                  <span className="block text-[13px] font-semibold text-white">
+                  <span className="block text-[13px] font-semibold text-text-primary">
                     <span
                       aria-hidden="true"
                       className="material-symbols-outlined text-[14px] align-[-2px] mr-1 text-c2-muted"

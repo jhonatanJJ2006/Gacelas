@@ -171,7 +171,7 @@ export function Feed() {
             <Link to="/perfil" className="flex items-center gap-3 group">
               <AvatarLetra nombre={sesion?.nombre ?? 'Tú'} />
               <span className="min-w-0">
-                <span className="block text-[14px] font-semibold text-white truncate group-hover:text-c2-violeta">
+                <span className="block text-[14px] font-semibold text-text-primary truncate group-hover:text-c2-violeta">
                   {sesion?.nombre ?? 'Tú'}
                 </span>
                 {sesion?.username && (
@@ -188,7 +188,7 @@ export function Feed() {
                 [siguiendo.length, 'siguiendo'],
               ].map(([v, t]) => (
                 <div key={t}>
-                  <div className="cifra-c2 text-[20px] text-white leading-none">{v}</div>
+                  <div className="cifra-c2 text-[20px] text-text-primary leading-none">{v}</div>
                   <div className="text-[10.5px] text-c2-muted mt-1">{t}</div>
                 </div>
               ))}
@@ -210,7 +210,7 @@ export function Feed() {
                 key={f}
                 onClick={() => setFiltro(f)}
                 aria-pressed={filtro === f}
-                className={`w-full h-9 px-3 rounded text-left text-[13px] font-semibold ${filtro === f ? 'bg-c2-s2 text-white' : 'text-c2-muted hover:text-white'}`}
+                className={`w-full h-9 px-3 rounded text-left text-[13px] font-semibold ${filtro === f ? 'bg-c2-s2 text-text-primary' : 'text-c2-muted hover:text-text-primary'}`}
               >
                 {t}
               </button>
@@ -227,7 +227,7 @@ export function Feed() {
               <Link
                 key={to}
                 to={to}
-                className="flex items-center h-9 px-3 rounded text-[13px] text-c2-muted hover:text-white hover:bg-c2-s2/50"
+                className="flex items-center h-9 px-3 rounded text-[13px] text-c2-muted hover:text-text-primary hover:bg-c2-s2/50"
               >
                 {t}
               </Link>
@@ -241,7 +241,7 @@ export function Feed() {
             <span className="lg:hidden">
               <AvatarLetra nombre={sesion?.nombre ?? 'Tú'} />
             </span>
-            <h1 className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 lg:flex-1 font-display italic font-black uppercase text-[22px] text-white tracking-wide">
+            <h1 className="absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0 lg:flex-1 font-display italic font-black uppercase text-[22px] text-text-primary tracking-wide">
               Comunidad
             </h1>
             <button
@@ -249,7 +249,7 @@ export function Feed() {
               aria-label="Filtrar publicaciones"
               aria-expanded={menuFiltro}
               data-testid="boton-buscar-feed"
-              className="w-9 h-9 rounded-full bg-c2-s2 border border-c2-linea flex items-center justify-center text-white"
+              className="w-9 h-9 rounded-full bg-c2-s2 border border-c2-linea flex items-center justify-center text-text-primary"
             >
               <span className="material-symbols-outlined text-[20px]">search</span>
             </button>
@@ -267,7 +267,7 @@ export function Feed() {
                       setFiltro(f)
                       setMenuFiltro(false)
                     }}
-                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-c2-s2 ${filtro === f ? 'text-c2-violeta' : 'text-white'}`}
+                    className={`block w-full text-left px-4 py-2 text-sm hover:bg-c2-s2 ${filtro === f ? 'text-c2-violeta' : 'text-text-primary'}`}
                   >
                     {f}
                   </button>
@@ -276,21 +276,21 @@ export function Feed() {
                 <button
                   role="menuitem"
                   onClick={() => navigate('/comunidad/corredores')}
-                  className="block w-full text-left px-4 py-2 text-sm hover:bg-c2-s2 text-white"
+                  className="block w-full text-left px-4 py-2 text-sm hover:bg-c2-s2 text-text-primary"
                 >
                   Buscar corredores
                 </button>
                 <button
                   role="menuitem"
                   onClick={() => navigate('/comunidad/en-vivo')}
-                  className="block w-full text-left px-4 py-2 text-sm hover:bg-c2-s2 text-white"
+                  className="block w-full text-left px-4 py-2 text-sm hover:bg-c2-s2 text-text-primary"
                 >
                   Corredores en vivo
                 </button>
                 <button
                   role="menuitem"
                   onClick={() => navigate('/comunidad/eventos')}
-                  className="block w-full text-left px-4 py-2 text-sm hover:bg-c2-s2 text-white"
+                  className="block w-full text-left px-4 py-2 text-sm hover:bg-c2-s2 text-text-primary"
                 >
                   Eventos
                 </button>
@@ -309,7 +309,7 @@ export function Feed() {
                 aria-current={filtro === t.id ? 'page' : undefined}
                 className={`flex-1 h-11 text-[13px] font-black italic uppercase tracking-wide border-b-2 transition-colors ${
                   filtro === t.id
-                    ? 'text-white border-c2-violeta'
+                    ? 'text-text-primary border-c2-violeta'
                     : 'text-c2-muted border-transparent'
                 }`}
               >
@@ -328,7 +328,7 @@ export function Feed() {
             <Link
               to="/comunidad/en-vivo"
               data-testid="banner-en-vivo"
-              className="flex items-center gap-3 min-h-[44px] mx-4 mt-3 px-4 rounded-[10px] bg-c2-peligro/15 border border-c2-peligro/40 text-white text-sm lg:mx-0"
+              className="flex items-center gap-3 min-h-[44px] mx-4 mt-3 px-4 rounded-[10px] bg-c2-peligro/15 border border-c2-peligro/40 text-text-primary text-sm lg:mx-0"
             >
               <span className="w-2.5 h-2.5 rounded-full bg-c2-peligro animate-pulse" />
               <span className="flex-1 font-semibold">
@@ -366,7 +366,7 @@ export function Feed() {
               <button
                 onClick={() => navigate('/correr')}
                 data-testid="boton-publicar"
-                className="ml-auto h-9 px-5 text-white text-[13px] font-black italic uppercase bg-gradient-to-r from-[#7b1fa2] to-c2-morado [clip-path:polygon(8px_0,100%_0,calc(100%-8px)_100%,0_100%)]"
+                className="ml-auto h-9 px-5 text-on-primary text-[13px] font-black italic uppercase bg-gradient-to-r from-[#7b1fa2] to-c2-morado [clip-path:polygon(8px_0,100%_0,calc(100%-8px)_100%,0_100%)]"
               >
                 Publicar
               </button>
@@ -413,7 +413,7 @@ export function Feed() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <header className="relative flex items-center gap-1.5 min-w-0">
-                      <span className="text-[14px] font-bold text-white truncate">
+                      <span className="text-[14px] font-bold text-text-primary truncate">
                         {post.autor}
                       </span>
                       <InsigniaNivel nivel={nivelDe(post)} />
@@ -423,7 +423,7 @@ export function Feed() {
                       <button
                         onClick={() => setMenuPost(menuPost === post.id ? null : post.id)}
                         aria-label="Más opciones"
-                        className="ml-auto w-8 h-8 -mr-1 shrink-0 flex items-center justify-center text-c2-muted hover:text-white"
+                        className="ml-auto w-8 h-8 -mr-1 shrink-0 flex items-center justify-center text-c2-muted hover:text-text-primary"
                       >
                         <span className="material-symbols-outlined text-[18px]">more_horiz</span>
                       </button>
@@ -441,7 +441,7 @@ export function Feed() {
                                   setDejar({ id: post.autorId!, nombre: post.autor })
                                 else void alternarSeguir(post.autorId!)
                               }}
-                              className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-c2-s2"
+                              className="block w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-c2-s2"
                             >
                               {siguiendo.includes(post.autorId) ? 'Dejar de seguir' : 'Seguir'}
                             </button>
@@ -449,7 +449,7 @@ export function Feed() {
                           {post.propia && post.remota && (
                             <label
                               role="menuitem"
-                              className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-c2-s2 cursor-pointer"
+                              className="block w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-c2-s2 cursor-pointer"
                             >
                               Agregar fotos
                               <input
@@ -473,7 +473,7 @@ export function Feed() {
                               setMenuPost(null)
                               mostrarAviso('Publicación oculta')
                             }}
-                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-c2-s2"
+                            className="block w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-c2-s2"
                           >
                             Ocultar publicación
                           </button>
@@ -494,7 +494,7 @@ export function Feed() {
                         </div>
                       )}
                     </header>
-                    <p className="text-[14px] leading-snug text-white/90">{post.titulo}</p>
+                    <p className="text-[14px] leading-snug text-text-primary/90">{post.titulo}</p>
                     {post.distanciaKm > 0 && (
                       <div
                         className="mt-1.5 mb-2 flex flex-wrap items-baseline gap-x-3 font-display italic font-black text-[14px] tabular-nums"
@@ -506,13 +506,13 @@ export function Feed() {
                             {Unidades.etiquetaDistancia(m)}
                           </span>
                         </span>
-                        <span className="text-white">
+                        <span className="text-text-primary">
                           {formatearRitmo(Unidades.ritmo(post.ritmoSegKm, m))}
                           <span className="font-sans not-italic font-normal text-[10px] text-c2-muted">
                             /{m ? 'km' : 'mi'}
                           </span>
                         </span>
-                        <span className="text-white">{formatearMs(post.segundos)}</span>
+                        <span className="text-text-primary">{formatearMs(post.segundos)}</span>
                         <span className="text-c2-cielo" data-testid="desnivel-post">
                           +{post.desnivelM ?? 0}
                           <span className="font-sans not-italic font-normal text-[10px] text-c2-muted">
@@ -528,7 +528,7 @@ export function Feed() {
                       <ul className="mt-2 space-y-1">
                         {locales.map((c, i) => (
                           <li key={i} className="text-[13px] text-c2-muted">
-                            <strong className="text-white">Tú:</strong> {c}
+                            <strong className="text-text-primary">Tú:</strong> {c}
                           </li>
                         ))}
                       </ul>
@@ -539,7 +539,7 @@ export function Feed() {
                         onClick={() => abrirComentarios(post)}
                         aria-label="Comentar"
                         data-testid="accion-comentar"
-                        className="hover:text-white"
+                        className="hover:text-text-primary"
                       >
                         <span className="material-symbols-outlined">chat_bubble_outline</span>
                         {post.comentarios + locales.length}
@@ -571,7 +571,7 @@ export function Feed() {
                       <button
                         onClick={() => void compartirPost(post)}
                         aria-label="Compartir"
-                        className="hover:text-white"
+                        className="hover:text-text-primary"
                       >
                         <span className="material-symbols-outlined">ios_share</span>
                       </button>
@@ -585,11 +585,13 @@ export function Feed() {
                         <span className="flex gap-2 rounded-[10px] bg-c2-s2 border border-c2-linea p-2.5">
                           <AvatarLetra nombre={post.ultimoComentario.autor} chico />
                           <span className="min-w-0 text-[13px]">
-                            <strong className="text-white">{post.ultimoComentario.autor}</strong>{' '}
+                            <strong className="text-text-primary">
+                              {post.ultimoComentario.autor}
+                            </strong>{' '}
                             <span className="text-c2-muted">
                               {handle(post.ultimoComentario.autor)}
                             </span>
-                            <span className="block text-white/85">
+                            <span className="block text-text-primary/85">
                               {post.ultimoComentario.texto}
                             </span>
                           </span>

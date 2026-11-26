@@ -43,7 +43,7 @@ export function EsqueletoPantalla({ testId = 'esqueleto-pantalla' }: { testId?: 
       aria-busy="true"
       role="status"
       data-testid={testId}
-      className="min-h-[100dvh] bg-gradient-to-b from-[#2A0A3D] via-[#1A0B2E] to-[#120821] px-5 pt-[max(env(safe-area-inset-top),20px)] pb-24"
+      className="min-h-[100dvh] bg-c2-bg px-5 pt-[max(env(safe-area-inset-top),20px)] pb-24"
     >
       <span className="sr-only">Cargando</span>
       <div className="max-w-md mx-auto space-y-4">

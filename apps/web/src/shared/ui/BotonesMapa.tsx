@@ -26,7 +26,7 @@ export function BotonVolverMapa({
       onClick={onVolver ?? volver}
       aria-label="Volver"
       data-testid="volver-mapa"
-      className={`w-[42px] h-[42px] shrink-0 rounded-full bg-c2-card/95 border border-c2-linea text-white flex items-center justify-center shadow-lg backdrop-blur-md ${className}`}
+      className={`w-[42px] h-[42px] shrink-0 rounded-full bg-c2-card/95 border border-c2-linea text-text-primary flex items-center justify-center shadow-lg backdrop-blur-md ${className}`}
     >
       <span className="material-symbols-outlined text-[22px]">arrow_back</span>
     </button>
@@ -51,7 +51,7 @@ export function BotonReportarMapa({
       aria-label="Reportar incidente"
       title="Reportar incidente"
       data-testid="reportar-incidente"
-      className={`w-[42px] h-[42px] rounded-[6px] bg-c2-peligro border border-[#F472B6]/60 text-white flex items-center justify-center shadow-lg ${className}`}
+      className={`w-[42px] h-[42px] rounded-[6px] bg-c2-peligro border border-rosa/60 text-on-primary flex items-center justify-center shadow-lg ${className}`}
     >
       <span className="material-symbols-outlined text-[22px]">warning</span>
     </button>
@@ -82,7 +82,7 @@ export function ControlEtiquetado({
       title={descripcion}
       aria-pressed={presionado}
       data-testid={testId}
-      className={`w-[56px] h-[50px] flex flex-col items-center justify-center gap-0.5 text-white hover:bg-white/10 ${presionado === false ? 'text-c2-muted' : ''}`}
+      className={`w-[56px] h-[50px] flex flex-col items-center justify-center gap-0.5 text-text-primary hover:bg-text-primary/10 ${presionado === false ? 'text-c2-muted' : ''}`}
     >
       <span className="material-symbols-outlined text-[20px] leading-none" aria-hidden="true">
         {icono}
@@ -129,7 +129,7 @@ export function SelectorVista({
         aria-label={tresD ? 'Ver mapa en 3D' : 'Ver mapa en 2D'}
         title={tresD ? 'Vista 3D inclinada' : 'Vista 2D desde arriba'}
         data-testid={tresD ? 'vista-3d-on' : 'vista-2d-on'}
-        className={`w-full h-[28px] text-[12px] font-black italic ${activa ? 'bg-c2-violeta text-white' : 'text-c2-muted hover:text-white'}`}
+        className={`w-full h-[28px] text-[12px] font-black italic ${activa ? 'bg-c2-violeta text-c2-sobre-violeta' : 'text-c2-muted hover:text-text-primary'}`}
       >
         {tresD ? '3D' : '2D'}
       </button>

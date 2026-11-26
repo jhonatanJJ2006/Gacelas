@@ -63,7 +63,7 @@ export function ModalReporte({
               onChange={() => setMotivo(v)}
               className="accent-c2-violeta"
             />
-            <span className="text-white text-sm">{etiqueta}</span>
+            <span className="text-text-primary text-sm">{etiqueta}</span>
           </label>
         ))}
       </fieldset>
@@ -74,7 +74,7 @@ export function ModalReporte({
         maxLength={500}
         rows={2}
         placeholder="Detalle opcional"
-        className="mt-3 w-full px-3 py-2 bg-c2-s2 border border-c2-linea text-white resize-none"
+        className="mt-3 w-full px-3 py-2 bg-c2-s2 border border-c2-linea text-text-primary resize-none"
       />
     </ModalC2>
   )
@@ -118,7 +118,7 @@ export function ListaLogros() {
   useEffect(() => setHechos(logrosDesbloqueados()), [carreras])
   return (
     <section aria-label="Logros" className="tarjeta-c2 p-4">
-      <h2 className="font-display italic uppercase text-white text-[18px] mb-3">Logros</h2>
+      <h2 className="font-display italic uppercase text-text-primary text-[18px] mb-3">Logros</h2>
       <ul className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         {LOGROS.map((l) => {
           const fecha = hechos[l.codigo]
@@ -133,7 +133,7 @@ export function ListaLogros() {
               >
                 {l.icono}
               </span>
-              <p className="text-white text-sm font-bold">{l.titulo}</p>
+              <p className="text-text-primary text-sm font-bold">{l.titulo}</p>
               <p className="text-c2-muted text-[12px]">
                 {fecha
                   ? `Desbloqueado el ${new Date(fecha).toLocaleDateString('es-EC')}`

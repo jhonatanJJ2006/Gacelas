@@ -22,13 +22,13 @@ export function PaginaSOS() {
     }
   }, [id])
   return (
-    <main className="min-h-[100dvh] bg-gradient-to-b from-[#2A0A3D] via-[#1A0B2E] to-[#120821] text-white px-5 pt-[max(env(safe-area-inset-top),20px)] pb-10">
+    <main className="zona-oscura min-h-[100dvh] bg-gradient-to-b from-[#2A0A3D] via-[#1A0B2E] to-[#120821] text-on-primary px-5 pt-[max(env(safe-area-inset-top),20px)] pb-10">
       <div className="max-w-lg mx-auto space-y-4">
         <p className="font-display italic text-[14px] tracking-[0.2em] text-c2-violeta">RUNCITY</p>
         {a === undefined && (
           <div className="space-y-3" aria-busy="true" data-testid="sos-cargando">
-            <div className="h-9 w-2/3 bg-white/10 animate-pulse" />
-            <div className="h-[340px] bg-white/10 animate-pulse" />
+            <div className="h-9 w-2/3 bg-text-primary/10 animate-pulse" />
+            <div className="h-[340px] bg-text-primary/10 animate-pulse" />
           </div>
         )}
         {a === null && (
@@ -42,7 +42,7 @@ export function PaginaSOS() {
             <p
               role="status"
               data-testid="sos-estado"
-              className={`inline-flex items-center gap-2 px-3 py-1.5 text-sm font-bold ${a.activa ? 'bg-[#DC2626]' : 'bg-white/10'}`}
+              className={`inline-flex items-center gap-2 px-3 py-1.5 text-sm font-bold ${a.activa ? 'bg-danger' : 'bg-text-primary/10'}`}
             >
               {a.activa
                 ? `SOS activo desde las ${hora(a.inicio)}. Última posición a las ${hora(a.ultima)}.`
@@ -71,7 +71,7 @@ export function PaginaSOS() {
             <div className="grid gap-2">
               <a
                 href={`tel:${NUMERO_EMERGENCIA}`}
-                className="h-12 flex items-center justify-center font-black italic uppercase bg-[#DC2626]"
+                className="h-12 flex items-center justify-center font-black italic uppercase bg-danger"
               >
                 Llamar al {NUMERO_EMERGENCIA} (ECU 911)
               </a>

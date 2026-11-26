@@ -27,6 +27,8 @@ const EN: Record<string, string> = {
   'Optimizado para salidas nocturnas y al alba': 'Tuned for night runs and dawn',
   Oscuro: 'Dark',
   Claro: 'Light',
+  Sistema: 'System',
+  'Claro, oscuro o el del sistema': 'Light, dark or follow the system',
   'Idioma de la aplicación': 'App language',
   'Configuración regional': 'Regional settings',
   Rachas: 'Streaks',

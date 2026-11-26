@@ -17,7 +17,7 @@ export function Bienvenida() {
   const navigate = useNavigate()
   return (
     <div
-      className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-[#0C1322]"
+      className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-c2-bg"
       data-testid="pantalla-bienvenida"
     >
       <FondoMapaC4 login={false} />
@@ -29,7 +29,7 @@ export function Bienvenida() {
           <button
             type="button"
             onClick={() => navigate('/inicio-sesion')}
-            className="ml-1 rounded-full p-2 text-[11px] font-bold tracking-[0.06em] text-[#A8B0C2] whitespace-nowrap"
+            className="ml-1 rounded-full p-2 text-[11px] font-bold tracking-[0.06em] text-c2-muted whitespace-nowrap"
           >
             Saltar
           </button>
@@ -40,14 +40,14 @@ export function Bienvenida() {
         <div className="px-5 pt-2 pb-6 short:pb-3">
           <TarjetaC4>
             <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-[#C084FC]" />
-              <span className="rotulo-c2 !inline !text-[#C084FC]">Running en Loja, Ecuador</span>
+              <span className="h-2 w-2 rounded-full bg-c2-violeta" />
+              <span className="rotulo-c2 !inline !text-c2-violeta">Running en Loja, Ecuador</span>
             </div>
-            <h1 className="mt-3 font-display text-[26px] leading-[30px] tracking-[0.015em] text-white">
+            <h1 className="mt-3 font-display text-[26px] leading-[30px] tracking-[0.015em] text-text-primary">
               Corre. Comparte.
-              <br className="short:hidden" /> <span className="text-white">Supera.</span>
+              <br className="short:hidden" /> <span className="text-text-primary">Supera.</span>
             </h1>
-            <p className="mt-2.5 text-[15px] leading-6 tracking-[-0.005em] text-[#A8B0C2]/90 short:line-clamp-2">
+            <p className="mt-2.5 text-[15px] leading-6 tracking-[-0.005em] text-c2-muted/90 short:line-clamp-2">
               Únete a la comunidad de runners en Loja. Explora rutas andinas, registra tus marcas y
               corre acompañado.
             </p>
@@ -57,7 +57,7 @@ export function Bienvenida() {
             </div>
             <PieC4 texto="¿Ya tienes cuenta?" enlace="Inicia sesión" a="/inicio-sesion" />
             <p
-              className="pt-1.5 text-center text-[10px] text-[#A8B0C2]/50"
+              className="pt-1.5 text-center text-[10px] text-c2-muted/50"
               data-testid="version-app"
             >
               Versión {VERSION_APP} (web)

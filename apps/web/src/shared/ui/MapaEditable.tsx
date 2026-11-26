@@ -2,9 +2,10 @@ import { MarkerClusterer } from '@googlemaps/markerclusterer'
 import { APIProvider, Map, useMap, type MapMouseEvent } from '@vis.gl/react-google-maps'
 import { useEffect } from 'react'
 import { colorCorredor } from '../../contexts/eventos/api'
-import { ESTILO_GACELAS } from '../lib/mapaEstilo'
+import { estiloMapa } from '../lib/mapaEstilo'
 import { CENTRO_LOJA, claveMapas, type Coordenada } from '../lib/mapas'
 import { Controles } from './mapa/MapaBase'
+import { useTemaResuelto } from './useTema'
 
 function Linea({ puntos }: { puntos: Coordenada[] }) {
   const mapa = useMap()
@@ -50,6 +51,7 @@ export function MapaEditable({
   className?: string
 }) {
   const clave = claveMapas()
+  const tema = useTemaResuelto()
   if (!clave)
     return (
       <div
@@ -69,7 +71,7 @@ export function MapaEditable({
           disableDefaultUI
           clickableIcons={false}
           gestureHandling="greedy"
-          styles={ESTILO_GACELAS}
+          styles={estiloMapa(tema)}
 
           style={{ width: '100%', height: '100%' }}
           onClick={(e: MapMouseEvent) => {
@@ -123,6 +125,7 @@ export function MapaRutas({
   className?: string
 }) {
   const clave = claveMapas()
+  const tema = useTemaResuelto()
   if (!clave)
     return <p className="text-text-secondary p-4">El mapa necesita Google Maps configurado.</p>
   return (
@@ -133,7 +136,7 @@ export function MapaRutas({
           defaultZoom={12}
           disableDefaultUI
           gestureHandling="greedy"
-          styles={ESTILO_GACELAS}
+          styles={estiloMapa(tema)}
           clickableIcons={false}
           style={{ width: '100%', height: '100%' }}
         >
@@ -233,6 +236,7 @@ export function MapaCorredores({
   incidentes?: { id: string; lat: number; lng: number }[]
 }) {
   const clave = claveMapas()
+  const tema = useTemaResuelto()
   if (!clave)
     return <p className="text-text-secondary p-4">El mapa necesita Google Maps configurado.</p>
   return (
@@ -243,7 +247,7 @@ export function MapaCorredores({
           defaultZoom={14}
           disableDefaultUI
           gestureHandling="greedy"
-          styles={ESTILO_GACELAS}
+          styles={estiloMapa(tema)}
           clickableIcons={false}
           style={{ width: '100%', height: '100%' }}
         >

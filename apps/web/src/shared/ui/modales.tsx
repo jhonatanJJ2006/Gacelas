@@ -40,7 +40,7 @@ export function ModalC2({
           <button
             type="button"
             onClick={onPrimario}
-            className={`px-5 h-11 -skew-x-12 font-black italic uppercase text-[14px] text-white ${peligro ? 'bg-c2-peligro' : 'bg-gradient-to-r from-[#7B1FA2] to-c2-morado'} hover:brightness-110`}
+            className={`px-5 h-11 -skew-x-12 font-black italic uppercase text-[14px] text-on-primary ${peligro ? 'bg-c2-peligro' : 'bg-gradient-to-r from-[#7B1FA2] to-c2-morado'} hover:brightness-110`}
           >
             {primario}
           </button>
@@ -61,7 +61,7 @@ export function ResumenModal({ datos }: { datos: [string, string][] }) {
         <div key={etiqueta}>
           <span className="rotulo-c2">{etiqueta}</span>
           <span
-            className={`font-display italic text-[20px] ${i === 0 ? 'text-c2-violeta' : 'text-white'}`}
+            className={`font-display italic text-[20px] ${i === 0 ? 'text-c2-violeta' : 'text-text-primary'}`}
           >
             {valor}
           </span>

@@ -68,7 +68,7 @@ function useCarga<T>(f: () => Promise<T>, deps: unknown[]) {
 function Titulo({ children, extra }: { children: ReactNode; extra?: ReactNode }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-      <h1 className="font-display italic uppercase text-[28px] lg:text-[34px] text-white">
+      <h1 className="font-display italic uppercase text-[28px] lg:text-[34px] text-text-primary">
         {children}
       </h1>
       {extra}
@@ -84,10 +84,10 @@ function Etiqueta({
   children: ReactNode
 }) {
   const c = {
-    mint: 'bg-[#68DBA9] text-[#0C1322]',
-    peligro: 'bg-c2-peligro text-white',
+    mint: 'bg-c2-menta text-c2-sobre-violeta',
+    peligro: 'bg-c2-peligro text-on-primary',
     gris: 'bg-c2-s2 text-c2-muted',
-    violeta: 'bg-[#C084FC] text-[#0C1322]',
+    violeta: 'bg-c2-violeta text-c2-sobre-violeta',
   }[color]
   return (
     <span
@@ -110,9 +110,9 @@ function Boton({
   aria?: string
 }) {
   const c = {
-    primario: 'bg-gradient-to-r from-[#7B1FA2] to-c2-morado text-white',
-    secundario: 'bg-c2-s2 text-white',
-    peligro: 'bg-c2-peligro text-white',
+    primario: 'bg-gradient-to-r from-[#7B1FA2] to-c2-morado text-on-primary',
+    secundario: 'bg-c2-s2 text-text-primary',
+    peligro: 'bg-c2-peligro text-on-primary',
   }[tipo]
   return (
     <button
@@ -129,7 +129,10 @@ function Boton({
 function ErrorCarga({ mensaje }: { mensaje: string | null }) {
   if (!mensaje) return null
   return (
-    <p role="alert" className="mb-4 border border-c2-peligro bg-c2-card p-3 text-sm text-white">
+    <p
+      role="alert"
+      className="mb-4 border border-c2-peligro bg-c2-card p-3 text-sm text-text-primary"
+    >
       No se pudo cargar: {mensaje}. Revisa que las migraciones 020 y 023 estén aplicadas.
     </p>
   )
@@ -157,16 +160,16 @@ function Dashboard({ f }: { f: FuenteAdmin }) {
         {kpis.map(([t, v, s], i) => (
           <div
             key={t}
-            className={`p-4 ${i === 0 ? 'bg-gradient-to-br from-[#7B1FA2] to-[#3b1a5c]' : tarjeta}`}
+            className={`p-4 ${i === 0 ? 'zona-oscura bg-gradient-to-br from-[#7B1FA2] to-[#3b1a5c]' : tarjeta}`}
           >
-            <p className="rotulo-c2 !text-[#C084FC]">{t}</p>
-            <p className="font-display italic text-[30px] text-white leading-tight">{v}</p>
-            <p className="text-[12px] text-[#68DBA9]">{s}</p>
+            <p className="rotulo-c2 !text-c2-violeta">{t}</p>
+            <p className="font-display italic text-[30px] text-text-primary leading-tight">{v}</p>
+            <p className="text-[12px] text-c2-menta">{s}</p>
           </div>
         ))}
       </div>
       <section className={`${tarjeta} p-4`}>
-        <h2 className="font-display italic uppercase text-white text-[18px] mb-3">
+        <h2 className="font-display italic uppercase text-text-primary text-[18px] mb-3">
           Usuarios recientes
         </h2>
         <TablaUsuarios usuarios={(u.datos ?? []).slice(0, 5)} />
@@ -201,10 +204,10 @@ function TablaUsuarios({
               className={`border-b border-c2-linea ${onAbrir ? 'cursor-pointer hover:bg-c2-s2' : ''}`}
             >
               <td className="py-3">
-                <p className="text-white font-semibold">{u.full_name ?? u.username}</p>
+                <p className="text-text-primary font-semibold">{u.full_name ?? u.username}</p>
                 <p className="text-c2-muted text-[12px]">@{u.username}</p>
               </td>
-              <td className="font-display italic text-white">{u.km} km</td>
+              <td className="font-display italic text-text-primary">{u.km} km</td>
               <td>
                 {u.role ? (
                   <Etiqueta color="violeta">{u.role}</Etiqueta>
@@ -244,7 +247,7 @@ function Usuarios({ f }: { f: FuenteAdmin }) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Buscar usuarios"
-            className="h-10 px-3 bg-c2-card border border-c2-linea text-white"
+            className="h-10 px-3 bg-c2-card border border-c2-linea text-text-primary"
           />
         }
       >
@@ -276,7 +279,7 @@ function Usuarios({ f }: { f: FuenteAdmin }) {
                   .cambiarRol(actual.id, (e.target.value || null) as UsuarioAdmin['role'])
                   .then(recargar)
               }
-              className="mt-1 block w-full h-10 bg-c2-s2 border border-c2-linea text-white px-2 normal-case tracking-normal text-sm"
+              className="mt-1 block w-full h-10 bg-c2-s2 border border-c2-linea text-text-primary px-2 normal-case tracking-normal text-sm"
             >
               <option value="">Corredor</option>
               <option value="moderador">Moderador</option>
@@ -340,8 +343,8 @@ function TarjetaReporte({
             </Etiqueta>
             {r.total_reportes > 1 && <Etiqueta color="mint">{r.total_reportes} reportes</Etiqueta>}
           </div>
-          <p className="text-white font-semibold truncate">{r.resumen}</p>
-          <p className="text-white/80 text-[14px] my-1">{r.detail || 'Sin detalle'}</p>
+          <p className="text-text-primary font-semibold truncate">{r.resumen}</p>
+          <p className="text-text-primary/80 text-[14px] my-1">{r.detail || 'Sin detalle'}</p>
           <p className="text-c2-muted text-[12px]">
             {r.reportante ? `Reportado por ${r.reportante}, ` : 'Reportado el '}
             {new Date(r.created_at).toLocaleString('es-EC')}
@@ -350,7 +353,7 @@ function TarjetaReporte({
             <button
               type="button"
               onClick={() => setAbierto((x) => !x)}
-              className="mt-2 text-[12px] text-[#C084FC] underline"
+              className="mt-2 text-[12px] text-c2-violeta underline"
               aria-expanded={abierto}
             >
               Historial ({r.acciones.length})
@@ -360,7 +363,7 @@ function TarjetaReporte({
             <ol className="mt-2 border-l border-c2-linea pl-3 space-y-1" data-testid="historial">
               {r.acciones.map((h, i) => (
                 <li key={i} className="text-[12px] text-c2-muted">
-                  <span className="text-white">{h.moderador || 'Moderación'}</span>{' '}
+                  <span className="text-text-primary">{h.moderador || 'Moderación'}</span>{' '}
                   {ACCIONES[h.accion] ?? h.accion}
                   {h.nota ? `: ${h.nota}` : ''} ({new Date(h.fecha).toLocaleString('es-EC')})
                 </li>
@@ -374,7 +377,7 @@ function TarjetaReporte({
             onChange={(e) => setNota(e.target.value)}
             placeholder="Nota para el historial y el reportante"
             aria-label="Nota de moderación"
-            className="h-9 bg-c2-s2 px-3 text-[13px] text-white placeholder:text-c2-muted"
+            className="h-9 bg-c2-s2 px-3 text-[13px] text-text-primary placeholder:text-c2-muted"
           />
           <div className="flex flex-wrap gap-2">
             {abiertoCaso ? (
@@ -441,7 +444,7 @@ function Moderacion({ f }: { f: FuenteAdmin }) {
             role="tab"
             aria-selected={filtro === s}
             onClick={() => setFiltro(s)}
-            className={`-skew-x-12 px-3 h-8 text-[12px] font-black italic uppercase ${filtro === s ? 'bg-[#C084FC] text-[#0C1322]' : 'bg-c2-s2 text-white'}`}
+            className={`-skew-x-12 px-3 h-8 text-[12px] font-black italic uppercase ${filtro === s ? 'bg-c2-violeta text-c2-sobre-violeta' : 'bg-c2-s2 text-text-primary'}`}
           >
             {t} {cuenta(s)}
           </button>
@@ -453,7 +456,7 @@ function Moderacion({ f }: { f: FuenteAdmin }) {
             key={t ?? 'todos'}
             aria-pressed={tipo === t}
             onClick={() => setTipo(t)}
-            className={`px-3 h-7 text-[12px] font-semibold border ${tipo === t ? 'border-[#C084FC] text-[#C084FC]' : 'border-c2-linea text-c2-muted'}`}
+            className={`px-3 h-7 text-[12px] font-semibold border ${tipo === t ? 'border-c2-violeta text-c2-violeta' : 'border-c2-linea text-c2-muted'}`}
           >
             {t ? etiqueta(t) : 'Todo'}
           </button>
@@ -485,7 +488,7 @@ function Eventos({ f }: { f: FuenteAdmin }) {
             [k]: tipo === 'number' ? Number(e.target.value) : e.target.value,
           }))
         }
-        className="mt-1 block w-full h-10 bg-c2-s2 border border-c2-linea text-white px-2 normal-case tracking-normal text-sm"
+        className="mt-1 block w-full h-10 bg-c2-s2 border border-c2-linea text-text-primary px-2 normal-case tracking-normal text-sm"
       />
     </label>
   )
@@ -499,7 +502,7 @@ function Eventos({ f }: { f: FuenteAdmin }) {
         {(datos ?? []).map((e) => (
           <li key={e.id} className={`${tarjeta} p-4 flex flex-wrap items-center gap-3`}>
             <div className="flex-1 min-w-[200px]">
-              <p className="text-white font-semibold">{e.title}</p>
+              <p className="text-text-primary font-semibold">{e.title}</p>
               <p className="text-c2-muted text-[12px]">
                 {e.starts_at ? new Date(e.starts_at).toLocaleString('es-EC') : 'Sin fecha'} ·{' '}
                 {e.location} · {e.distance_km} km
@@ -603,7 +606,7 @@ function Rutas({ f }: { f: FuenteAdmin }) {
       borrar={(id) => f.borrarRuta(id)}
       fila={(r) => (
         <>
-          <p className="text-white font-semibold">{r.name}</p>
+          <p className="text-text-primary font-semibold">{r.name}</p>
           <p className="text-c2-muted text-[12px]">
             {r.distance_km} km · {r.difficulty}
           </p>
@@ -622,7 +625,7 @@ function Clubes({ f }: { f: FuenteAdmin }) {
       borrar={(id) => f.borrarClub(id)}
       fila={(x) => (
         <>
-          <p className="text-white font-semibold">{x.name}</p>
+          <p className="text-text-primary font-semibold">{x.name}</p>
           <p className="text-c2-muted text-[12px]">{x.description}</p>
         </>
       )}
@@ -636,7 +639,7 @@ function Push() {
       <Titulo>Notificaciones</Titulo>
       <section className={`${tarjeta} p-6 max-w-2xl`} data-testid="push-no-disponible">
         <Etiqueta color="gris">No disponible</Etiqueta>
-        <h2 className="font-display italic uppercase text-white text-[20px] mt-3">
+        <h2 className="font-display italic uppercase text-text-primary text-[20px] mt-3">
           Envío de notificaciones push
         </h2>
         <p className="text-c2-muted mt-2">
@@ -658,7 +661,7 @@ function Versiones({ f }: { f: FuenteAdmin }) {
     <>
       <Titulo>Versiones</Titulo>
       <section className={`${tarjeta} p-4 max-w-2xl space-y-3`}>
-        <p className="text-white">
+        <p className="text-text-primary">
           Versión mínima de Android:{' '}
           <strong className="font-display italic">{min ?? 'sin definir'}</strong>
         </p>
@@ -672,7 +675,7 @@ function Versiones({ f }: { f: FuenteAdmin }) {
             value={v}
             onChange={(e) => setV(e.target.value)}
             placeholder="1.2.0"
-            className="h-10 px-3 bg-c2-s2 border border-c2-linea text-white"
+            className="h-10 px-3 bg-c2-s2 border border-c2-linea text-text-primary"
           />
           <Boton
             onClick={() => {
@@ -700,10 +703,10 @@ function Ajustes({ f }: { f: FuenteAdmin }) {
       <Titulo>Ajustes y roles</Titulo>
       <div className="grid lg:grid-cols-2 gap-4">
         <section className={`${tarjeta} p-4`}>
-          <h2 className="font-display italic uppercase text-white text-[18px] mb-3">
+          <h2 className="font-display italic uppercase text-text-primary text-[18px] mb-3">
             Documentos legales
           </h2>
-          <p className="text-white" data-testid="version-terminos">
+          <p className="text-text-primary" data-testid="version-terminos">
             Versión vigente de los Términos:{' '}
             <strong className="font-display italic">{ter.datos ?? '...'}</strong>
           </p>
@@ -717,13 +720,13 @@ function Ajustes({ f }: { f: FuenteAdmin }) {
               value={nueva}
               onChange={(e) => setNueva(e.target.value)}
               placeholder="AAAA-MM-DD"
-              className="h-10 px-3 bg-c2-s2 border border-c2-linea text-white"
+              className="h-10 px-3 bg-c2-s2 border border-c2-linea text-text-primary"
             />
             <Boton onClick={() => nueva.trim() && setConfirmar(true)}>Publicar</Boton>
           </div>
         </section>
         <section className={`${tarjeta} p-4`}>
-          <h2 className="font-display italic uppercase text-white text-[18px] mb-3">
+          <h2 className="font-display italic uppercase text-text-primary text-[18px] mb-3">
             Ajustes de la app
           </h2>
           <ul className="space-y-2">
@@ -731,7 +734,7 @@ function Ajustes({ f }: { f: FuenteAdmin }) {
               .filter((a) => typeof a.value === 'boolean')
               .map((a) => (
                 <li key={a.key} className="flex items-center justify-between">
-                  <span className="text-white text-sm">{a.key.replace(/_/g, ' ')}</span>
+                  <span className="text-text-primary text-sm">{a.key.replace(/_/g, ' ')}</span>
                   <button
                     role="switch"
                     aria-checked={a.value === true}
@@ -748,7 +751,9 @@ function Ajustes({ f }: { f: FuenteAdmin }) {
           </ul>
         </section>
         <section className={`${tarjeta} p-4 lg:col-span-2`}>
-          <h2 className="font-display italic uppercase text-white text-[18px] mb-3">Equipo</h2>
+          <h2 className="font-display italic uppercase text-text-primary text-[18px] mb-3">
+            Equipo
+          </h2>
           <TablaUsuarios usuarios={equipo} />
           <p className="text-c2-muted text-sm mt-2">
             Asigna roles desde Usuarios, abriendo el detalle de cada persona.
@@ -780,7 +785,7 @@ function LoginAdmin() {
   const [pass, setPass] = useState('')
   const [error, setError] = useState<string | null>(null)
   return (
-    <div className="min-h-screen bg-[#0C1322] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-c2-bg flex items-center justify-center p-4">
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -790,7 +795,7 @@ function LoginAdmin() {
         }}
         className={`${tarjeta} p-6 w-full max-w-sm space-y-4`}
       >
-        <p className="font-display italic uppercase text-white text-[26px]">
+        <p className="font-display italic uppercase text-text-primary text-[26px]">
           Runcity <Etiqueta color="violeta">Admin</Etiqueta>
         </p>
         <input
@@ -799,7 +804,7 @@ function LoginAdmin() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Correo"
-          className="w-full h-11 px-3 bg-c2-s2 border border-c2-linea text-white"
+          className="w-full h-11 px-3 bg-c2-s2 border border-c2-linea text-text-primary"
         />
         <input
           aria-label="Contraseña"
@@ -807,10 +812,10 @@ function LoginAdmin() {
           value={pass}
           onChange={(e) => setPass(e.target.value)}
           placeholder="Contraseña"
-          className="w-full h-11 px-3 bg-c2-s2 border border-c2-linea text-white"
+          className="w-full h-11 px-3 bg-c2-s2 border border-c2-linea text-text-primary"
         />
-        {error && <p className="text-sm text-[#f472b6]">{error}</p>}
-        <button className="w-full h-11 -skew-x-12 bg-gradient-to-r from-[#7B1FA2] to-c2-morado text-white font-black italic uppercase">
+        {error && <p className="text-sm text-rosa">{error}</p>}
+        <button className="w-full h-11 -skew-x-12 bg-gradient-to-r from-[#7B1FA2] to-c2-morado text-on-primary font-black italic uppercase">
           Entrar al panel
         </button>
         <p className="text-c2-muted text-[12px]">Solo cuentas con rol de administrador.</p>
@@ -835,10 +840,10 @@ export function Admin() {
   if (!f?.demo && !sesion) return <LoginAdmin />
   if (!f || permitido === false)
     return (
-      <div className="min-h-screen bg-[#0C1322] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-c2-bg flex items-center justify-center p-4">
         <div className={`${tarjeta} p-6 max-w-md text-center`} data-testid="admin-sin-acceso">
           <span className="material-symbols-outlined text-[48px] text-c2-peligro">lock</span>
-          <h1 className="font-display italic uppercase text-white text-[24px]">
+          <h1 className="font-display italic uppercase text-text-primary text-[24px]">
             Acceso restringido
           </h1>
           <p className="text-c2-muted mt-2">
@@ -854,15 +859,15 @@ export function Admin() {
         </div>
       </div>
     )
-  if (permitido === null) return <div className="min-h-screen bg-[#0C1322]" />
+  if (permitido === null) return <div className="min-h-screen bg-c2-bg" />
   const sufijo = demo ? '?demo' : ''
   return (
-    <div className="min-h-screen bg-[#0C1322] lg:flex">
+    <div className="min-h-screen bg-c2-bg lg:flex">
       <nav
         aria-label="Secciones del panel"
         className="lg:w-[220px] lg:min-h-screen lg:border-r border-b lg:border-b-0 border-c2-linea p-3 lg:p-4 flex lg:flex-col gap-1 overflow-x-auto no-scrollbar"
       >
-        <p className="hidden lg:block font-display italic uppercase text-white text-[22px] mb-4">
+        <p className="hidden lg:block font-display italic uppercase text-text-primary text-[22px] mb-4">
           Runcity <Etiqueta color="violeta">Admin</Etiqueta>
         </p>
         {SECCIONES.map(([ruta, t, icono]) => (
@@ -871,7 +876,7 @@ export function Admin() {
             end
             to={`/admin/${ruta}${sufijo}`}
             className={({ isActive }) =>
-              `shrink-0 flex items-center gap-2 px-3 h-10 text-[13px] font-black italic uppercase ${isActive ? 'bg-[#C084FC] text-[#0C1322]' : 'text-c2-muted hover:text-white'}`
+              `shrink-0 flex items-center gap-2 px-3 h-10 text-[13px] font-black italic uppercase ${isActive ? 'bg-c2-violeta text-c2-sobre-violeta' : 'text-c2-muted hover:text-text-primary'}`
             }
           >
             <span className="material-symbols-outlined text-[18px]">{icono}</span>

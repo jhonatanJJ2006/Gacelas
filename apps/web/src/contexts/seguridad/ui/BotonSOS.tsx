@@ -95,7 +95,7 @@ export function BotonSOS({
           }}
           onKeyUp={(e) => (e.key === 'Enter' || e.key === ' ') && soltar()}
           onContextMenu={(e) => e.preventDefault()}
-          className={`relative w-[56px] h-[56px] rounded-full flex flex-col items-center justify-center text-white shadow-lg select-none touch-none ${activa ? 'bg-[#DC2626] animate-pulse' : 'bg-[#B91C1C]'} border-2 border-white/70`}
+          className={`relative w-[56px] h-[56px] rounded-full flex flex-col items-center justify-center text-on-primary shadow-lg select-none touch-none ${activa ? 'bg-danger animate-pulse' : 'bg-[#B91C1C]'} border-2 border-text-primary/70`}
         >
           <svg className="absolute inset-0 -rotate-90" viewBox="0 0 44 44" aria-hidden="true">
             <circle
@@ -119,7 +119,7 @@ export function BotonSOS({
         {ayuda && (
           <span
             role="status"
-            className="absolute right-[64px] top-1/2 -translate-y-1/2 whitespace-nowrap bg-c2-card border border-c2-linea px-3 py-2 text-[12px] text-white shadow-lg"
+            className="absolute right-[64px] top-1/2 -translate-y-1/2 whitespace-nowrap bg-c2-card border border-c2-linea px-3 py-2 text-[12px] text-text-primary shadow-lg"
           >
             Mantén pulsado 3 s para pedir ayuda
           </span>
@@ -155,7 +155,7 @@ export function HojaSOS({ abierta, onCerrar }: { abierta: boolean; onCerrar: () 
       peligro
     >
       <div className="space-y-3" data-testid="hoja-sos">
-        <p className="text-white">
+        <p className="text-text-primary">
           {alertaId
             ? 'Tu ubicación se comparte con un enlace privado mientras el SOS esté activo. Avisa a tus contactos o llama al 911.'
             : activando
@@ -165,7 +165,7 @@ export function HojaSOS({ abierta, onCerrar }: { abierta: boolean; onCerrar: () 
         {error && <p className="text-c2-peligro text-sm">{error}</p>}
         <a
           href={`tel:${NUMERO_EMERGENCIA}`}
-          className={`${boton} bg-[#DC2626] text-white`}
+          className={`${boton} bg-danger text-on-primary`}
           data-testid="llamar-911"
         >
           <span className="material-symbols-outlined">call</span>
@@ -175,7 +175,7 @@ export function HojaSOS({ abierta, onCerrar }: { abierta: boolean; onCerrar: () 
           <>
             <a
               href={enlaceSms(contactos, mensaje)}
-              className={`${boton} bg-gradient-to-r from-[#7B1FA2] to-c2-morado text-white`}
+              className={`${boton} bg-gradient-to-r from-[#7B1FA2] to-c2-morado text-on-primary`}
               data-testid="sos-sms"
             >
               <span className="material-symbols-outlined">sms</span>
@@ -188,7 +188,7 @@ export function HojaSOS({ abierta, onCerrar }: { abierta: boolean; onCerrar: () 
                   href={enlaceWhatsapp(c, mensaje)}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-3 px-3 py-2 bg-c2-s2 border border-c2-linea text-white"
+                  className="flex items-center gap-3 px-3 py-2 bg-c2-s2 border border-c2-linea text-text-primary"
                 >
                   <span className="material-symbols-outlined text-c2-menta">chat</span>
                   <span className="flex-1 text-left">WhatsApp a {c.nombre}</span>
@@ -216,7 +216,7 @@ export function HojaSOS({ abierta, onCerrar }: { abierta: boolean; onCerrar: () 
           <button
             type="button"
             onClick={() => void compartir()}
-            className={`${boton} bg-c2-s2 border border-c2-linea text-white`}
+            className={`${boton} bg-c2-s2 border border-c2-linea text-text-primary`}
           >
             <span className="material-symbols-outlined">share</span>
             Compartir enlace de ubicación
