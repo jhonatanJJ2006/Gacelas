@@ -39,7 +39,7 @@ test.describe('Escritorio', () => {
   test('barra lateral persistente y sin desborde horizontal', async ({ page, context }) => {
     await prepararGps(context)
     await registrarse(page)
-    const lateral = page.getByRole('complementary', { name: 'Navegación principal' })
+    const lateral = page.getByTestId('nav-riel')
     for (const ruta of PANTALLAS) {
       await page.goto(ruta)
       await expect(lateral, ruta).toBeVisible()
@@ -70,6 +70,60 @@ test.describe('Escritorio', () => {
       'page'
     )
     // La barra inferior movil no se muestra en escritorio.
-    await expect(page.locator('nav.fixed.bottom-0')).toBeHidden()
+    await expect(page.getByTestId('nav-barra')).toBeHidden()
+  })
+
+  test('riel colapsable: 96 px, se expande a 248 px y recuerda el estado', async ({
+    page,
+    context,
+  }) => {
+    await prepararGps(context)
+    await registrarse(page)
+    const riel = page.getByTestId('nav-riel')
+    const ancho = async () => (await riel.boundingBox())!.width
+    await expect(riel).toHaveAttribute('data-expandido', 'false')
+    await expect.poll(ancho).toBe(96)
+    // Secciones de la app de usuario, en su orden.
+    const etiquetas = await riel
+      .getByRole('link')
+      .evaluateAll((l) => l.map((a) => a.getAttribute('aria-label')))
+    expect(etiquetas).toEqual([
+      'Inicio',
+      'Correr',
+      'Rutas',
+      'Comunidad',
+      'Clubes y grupos',
+      'Eventos',
+      'En vivo',
+      'Corredores',
+      expect.stringMatching(/^Notificaciones/),
+      'Perfil',
+      'Ajustes',
+    ])
+    await expect(riel.locator('.navc-globo')).toHaveText('Inicio')
+    // El contenido no queda debajo del riel.
+    const izquierda = await page
+      .getByTestId('panel-ranking')
+      .evaluate((e) => e.getBoundingClientRect().left)
+    expect(izquierda).toBeGreaterThanOrEqual(96)
+    if (process.env.CAPTURAS)
+      await page.screenshot({ path: `${process.env.CAPTURAS}/riel-colapsado.png` })
+    await page.getByTestId('nav-alternar').click()
+    await expect(riel).toHaveAttribute('data-expandido', 'true')
+    await expect.poll(ancho).toBe(248)
+    await expect(riel.getByText('Clubes y grupos')).toBeVisible()
+    await expect(page.getByTestId('nav-buscar')).toBeVisible()
+    if (process.env.CAPTURAS) {
+      await page.waitForTimeout(500)
+      await page.screenshot({ path: `${process.env.CAPTURAS}/riel-expandido.png` })
+    }
+    await page.reload()
+    await expect(riel).toHaveAttribute('data-expandido', 'true')
+    await page.getByTestId('nav-alternar').click()
+    await page.reload()
+    await expect(riel).toHaveAttribute('data-expandido', 'false')
+    // La busqueda global sigue abriendose desde el riel.
+    await page.getByTestId('nav-buscar').click()
+    await expect(page.getByRole('dialog')).toBeVisible()
   })
 })
