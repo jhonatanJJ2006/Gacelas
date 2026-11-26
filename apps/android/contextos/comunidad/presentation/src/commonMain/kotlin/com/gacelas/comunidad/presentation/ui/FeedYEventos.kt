@@ -1,5 +1,6 @@
 package com.gacelas.comunidad.presentation.ui
 
+import com.gacelas.ui.movimiento.entradaLista
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.ui.platform.testTag
@@ -202,7 +203,7 @@ fun FeedContenido(
             var menu by remember { mutableStateOf(false) }
             val texto = "${p.titulo}: ${Unidades.texto(p.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)} en ${formatearMs(p.segundos)} con Runcity"
             val hilo = p.ultimoComentario != null
-            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 10.dp).testTag("post-c2")) {
+            Row(Modifier.entradaLista(indice).fillMaxWidth().height(IntrinsicSize.Min).padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 10.dp).testTag("post-c2")) {
                 Column(Modifier.fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
                     AvatarLetra(p.autor, 36.dp)
                     if (hilo) Box(Modifier.padding(top = 6.dp).width(2.dp).weight(1f).background(GColors.C2Linea))
@@ -414,8 +415,10 @@ fun EventosContenido(
                 if (e.id in inscritos) { vm.alternarInscripcion(e.id); onAviso("Inscripción cancelada") }
                 else uniendo = e
             }
-            if (i == 0) EventoPrincipal(e, e.id in inscritos, onClick = { onEvento(e.id) }, onInscribir = inscribir)
-            else TarjetaEvento(e, e.id in inscritos, onClick = { onEvento(e.id) }, onInscribir = inscribir)
+            Box(Modifier.entradaLista(i)) {
+                if (i == 0) EventoPrincipal(e, e.id in inscritos, onClick = { onEvento(e.id) }, onInscribir = inscribir)
+                else TarjetaEvento(e, e.id in inscritos, onClick = { onEvento(e.id) }, onInscribir = inscribir)
+            }
         }
     }
     uniendo?.let { e ->

@@ -1,3 +1,4 @@
+import { estiloEscalon } from '../../../shared/lib/movimiento'
 import { EsqueletoLista } from '../../../shared/ui/Esqueletos'
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -71,13 +72,14 @@ export function Corredores() {
           </p>
         ) : (
           <ul className="grid gap-3 lg:grid-cols-2">
-            {resultados.map((c) => {
+            {resultados.map((c, indice) => {
               const sigo = siguiendo.includes(c.id)
               return (
                 <li
                   key={c.id}
+                  style={estiloEscalon(indice)}
                   data-testid="corredor"
-                  className="flex items-center gap-3 min-w-0 bg-surface-container border border-border-subtle rounded-2xl p-4"
+                  className="mov-escalon flex items-center gap-3 min-w-0 bg-surface-container border border-border-subtle rounded-2xl p-4"
                 >
                   {c.foto ? (
                     <img

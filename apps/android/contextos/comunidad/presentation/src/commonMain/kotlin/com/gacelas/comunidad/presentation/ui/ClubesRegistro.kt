@@ -1,5 +1,6 @@
 package com.gacelas.comunidad.presentation.ui
 
+import com.gacelas.ui.movimiento.entradaLista
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -170,7 +171,7 @@ fun ClubesContenido(
             }
             if (propios.isNotEmpty()) {
                 TituloSeccion(if (esGrupo) "Mis grupos" else "Mis comunidades")
-                propios.forEach { tarjeta(it, true) }
+                propios.forEachIndexed { i, c -> Box(Modifier.entradaLista(i)) { tarjeta(c, true) } }
             }
             when {
                 lista.isEmpty() && filtrando -> VacioClubes(
@@ -187,7 +188,7 @@ fun ClubesContenido(
                 ) { creando = tipo }
                 otros.isNotEmpty() -> {
                     TituloSeccion("Descubrir")
-                    otros.forEach { tarjeta(it, false) }
+                    otros.forEachIndexed { i, c -> Box(Modifier.entradaLista(i)) { tarjeta(c, false) } }
                 }
                 else -> Text(
                     if (esGrupo) "Ya eres parte de todos los grupos. ¿Creas uno nuevo?" else "Ya eres parte de todas las comunidades.",

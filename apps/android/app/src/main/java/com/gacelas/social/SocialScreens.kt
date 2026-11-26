@@ -1,5 +1,6 @@
 package com.gacelas.social
 
+import com.gacelas.ui.movimiento.entradaLista
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.Weekend
@@ -226,8 +227,8 @@ fun ListaLogros(carreras: List<Carrera>, onVerTodos: () -> Unit = {}) {
             Text("LOGROS", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
             Text("${hechos.size} de ${Logro.entries.size}", style = GType.labelMd, color = GColors.C2Muted)
         }
-        orden.chunked(3).forEach { fila ->
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        orden.chunked(3).forEachIndexed { filaIdx, fila ->
+            Row(Modifier.entradaLista(filaIdx), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 fila.forEach { l -> CeldaLogro(l, carreras, hechos[l.codigo], Modifier.weight(1f)) { abierto = l } }
                 repeat(3 - fila.size) { Box(Modifier.weight(1f)) }
             }

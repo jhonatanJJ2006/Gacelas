@@ -1,3 +1,4 @@
+import { estiloEscalon } from '../../../shared/lib/movimiento'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAviso } from '../../../hooks'
@@ -239,8 +240,9 @@ export function Eventos() {
             <section key={grupo} className="mb-5" aria-label={grupo}>
               <h2 className="rotulo-c2 mb-2">{grupo}</h2>
               <div className="space-y-3">
-                {lista.map((evento) => (
+                {lista.map((evento, indice) => (
                   <FilaEvento
+                    indice={indice}
                     key={evento.id}
                     evento={evento}
                     participantes={evento.participantes + (inscritos.includes(evento.id) ? 1 : 0)}
@@ -488,6 +490,7 @@ function HeroEvento({
   ruta,
   accion,
 }: {
+  indice?: number
   evento: Evento
   participantes: number
   ruta?: Ruta
@@ -588,11 +591,13 @@ function HeroEvento({
 }
 
 function FilaEvento({
+  indice = 0,
   evento,
   participantes,
   ruta,
   accion,
 }: {
+  indice?: number
   evento: Evento
   participantes: number
   ruta?: Ruta
@@ -604,7 +609,8 @@ function FilaEvento({
   return (
     <article
       data-testid="evento"
-      className={`panel-c2 bg-c2-card border border-c2-linea p-3 sm:p-4 flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 hover:border-c2-morado/60 transition-colors ${evento.pasado ? 'opacity-80' : ''}`}
+      style={estiloEscalon(indice)}
+      className={`mov-escalon panel-c2 bg-c2-card border border-c2-linea p-3 sm:p-4 flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 hover:border-c2-morado/60 transition-colors ${evento.pasado ? 'opacity-80' : ''}`}
     >
       <BloqueFecha ms={evento.inicioMs} destacado={hoy} />
       {ruta?.puntos?.length ? (

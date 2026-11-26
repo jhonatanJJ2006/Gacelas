@@ -1,5 +1,6 @@
 package com.gacelas.ui.components
 
+import com.gacelas.ui.movimiento.DestelloEncima
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import com.gacelas.ui.movimiento.entradaEscalonada
+import com.gacelas.ui.movimiento.llamaC2
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,7 +56,7 @@ fun InsigniaRacha(r: Racha, modifier: Modifier = Modifier) {
             .padding(horizontal = 10.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(Icons.Filled.LocalFireDepartment, null, tint = if (r.diaria > 0) GColors.Primary500 else GColors.TextSecondary, modifier = Modifier.size(16.dp))
+        Icon(Icons.Filled.LocalFireDepartment, null, tint = if (r.diaria > 0) GColors.Primary500 else GColors.TextSecondary, modifier = Modifier.size(16.dp).then(if (r.diaria > 0) Modifier.llamaC2() else Modifier))
         Text(" Racha ${r.diaria}d", style = GType.labelMd, color = GColors.TextPrimary)
         if (riesgo) Text(" · en riesgo", style = GType.labelMd, color = Aviso)
     }
@@ -115,9 +118,10 @@ fun CelebracionRacha(antes: Racha, despues: Racha) {
     val diaria = despues.diaria > antes.diaria
     val semanal = despues.semanal > antes.semanal
     if (!diaria && !semanal) return
+    Box(Modifier.entradaEscalonada(0).testTag("celebracion-racha")) {
     Tarjeta(fondo = GColors.Primary500.copy(alpha = 0.15f), borde = GColors.Primary500) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Filled.LocalFireDepartment, null, tint = GColors.Primary500, modifier = Modifier.size(44.dp))
+            Icon(Icons.Filled.LocalFireDepartment, null, tint = GColors.Primary500, modifier = Modifier.size(44.dp).llamaC2())
             Spacer(Modifier.width(12.dp))
             Column {
                 if (diaria) Text("¡Racha de ${plural(despues.diaria, "día", "días")}!", style = GType.titleMd, color = GColors.TextPrimary)
@@ -125,6 +129,8 @@ fun CelebracionRacha(antes: Racha, despues: Racha) {
                 Text("Guarda la carrera para sumarla.", style = GType.bodySm, color = GColors.TextSecondary)
             }
         }
+    }
+    DestelloEncima(true)
     }
 }
 

@@ -1,3 +1,4 @@
+import { estiloEscalon } from '../../../shared/lib/movimiento'
 import { Fragment, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { compartir, useAviso } from '../../../hooks'
@@ -400,7 +401,8 @@ export function Feed() {
                   />
                 )}
                 <article
-                  className="relative flex gap-3 px-4 pt-3 pb-2 border-b border-c2-linea lg:px-0"
+                  style={estiloEscalon(indice)}
+                  className="mov-escalon relative flex gap-3 px-4 pt-3 pb-2 border-b border-c2-linea lg:px-0"
                   data-testid="publicacion"
                 >
                   <div className="relative flex flex-col items-center">

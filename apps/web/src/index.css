@@ -779,3 +779,205 @@ a.c2-boton:active {
 .navc-usuario .navc-riel[data-expandido='false'] .navc-busca {
   justify-content: center;
 }
+
+/*
+ * Animaciones ampliadas: salidas de hojas, iconos de navegacion, celebraciones, realce de tarjetas
+ * y campos. Mismas duraciones y curvas que arriba; el bloque prefers-reduced-motion las anula.
+ */
+@keyframes mov-desvanecer {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes mov-bajar {
+  to {
+    opacity: 0;
+    translate: 0 48px;
+  }
+}
+.mov-velo-salida {
+  animation: mov-desvanecer var(--mov-corto) var(--mov-salir) both;
+  pointer-events: none;
+}
+.mov-hoja-salida {
+  animation: mov-bajar var(--mov-corto) var(--mov-salir) both;
+}
+
+/* Icono de la pestana activa: rebote corto al activarse. */
+@keyframes mov-icono-activo {
+  0% {
+    scale: 0.8;
+  }
+  55% {
+    scale: 1.18;
+  }
+  100% {
+    scale: 1;
+  }
+}
+.mov-icono-activo {
+  animation: mov-icono-activo 320ms var(--mov-entrar) both;
+}
+
+/* Entrada con rebote para sellos y medallas (logro, racha). */
+@keyframes mov-pop {
+  0% {
+    opacity: 0;
+    scale: 0.5;
+  }
+  60% {
+    opacity: 1;
+    scale: 1.12;
+  }
+  100% {
+    scale: 1;
+  }
+}
+.mov-pop {
+  animation: mov-pop 450ms var(--mov-entrar) both;
+}
+
+/* Llama de racha: parpadeo suave y continuo. */
+@keyframes mov-llama {
+  0%,
+  100% {
+    scale: 1;
+    rotate: 0deg;
+  }
+  30% {
+    scale: 1.08 1.14;
+    rotate: -3deg;
+  }
+  60% {
+    scale: 0.97 1.05;
+    rotate: 2deg;
+  }
+}
+.mov-llama {
+  display: inline-block;
+  transform-origin: 50% 90%;
+  animation: mov-llama 1.6s ease-in-out infinite;
+}
+
+/* Punto de notificaciones sin leer: halo que late. */
+@keyframes mov-latido {
+  0% {
+    box-shadow: 0 0 0 0 rgb(var(--c-c2-violeta) / 0.55);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 7px rgb(var(--c-c2-violeta) / 0);
+  }
+}
+.mov-latido {
+  animation: mov-latido 1.8s ease-out infinite;
+}
+
+/* Confeti de celebraciones (ver shared/ui/Animaciones.tsx): paralelogramos que salen del centro. */
+@keyframes mov-confeti {
+  0% {
+    opacity: 1;
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: var(--dx) calc(var(--dy) + 70px);
+    rotate: calc(var(--giro) + 220deg);
+  }
+}
+.mov-confeti {
+  position: absolute;
+  left: 50%;
+  top: 35%;
+  width: 14px;
+  height: 6px;
+  transform: skewX(-20deg);
+  animation: mov-confeti 1200ms cubic-bezier(0.1, 0.6, 0.2, 1) both;
+}
+
+/* Tarjetas pulsables: se elevan un poco con el puntero y se hunden al presionar. */
+@layer components {
+  a.tarjeta-c2,
+  button.tarjeta-c2,
+  .tarjeta-c2[role='button'],
+  .mov-tarjeta {
+    transition:
+      translate var(--mov-corto) var(--mov-entrar),
+      scale var(--mov-corto) var(--mov-entrar),
+      border-color var(--mov-corto) var(--mov-entrar),
+      box-shadow var(--mov-corto) var(--mov-entrar);
+  }
+}
+@media (hover: hover) {
+  a.tarjeta-c2:hover,
+  button.tarjeta-c2:hover,
+  .tarjeta-c2[role='button']:hover,
+  .mov-tarjeta:hover {
+    translate: 0 -2px;
+    border-color: rgb(var(--c-c2-violeta) / 0.45);
+    box-shadow: 0 8px 20px -10px rgb(var(--c-c2-morado) / 0.45);
+  }
+}
+a.tarjeta-c2:active,
+button.tarjeta-c2:active,
+.tarjeta-c2[role='button']:active,
+.mov-tarjeta:active {
+  translate: 0 0;
+  scale: 0.985;
+}
+
+/* Campos de formulario: el borde y el halo de foco entran suavemente. */
+@layer base {
+  input,
+  select,
+  textarea {
+    transition:
+      border-color var(--mov-corto) var(--mov-entrar),
+      box-shadow var(--mov-corto) var(--mov-entrar),
+      background-color var(--mov-corto) var(--mov-entrar);
+  }
+}
+
+/* Enlaces de la pestana: el icono vuelve a su sitio al soltar. */
+a:active > .material-symbols-outlined {
+  scale: 0.9;
+}
+.material-symbols-outlined {
+  transition: scale var(--mov-corto) var(--mov-entrar);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mov-llama,
+  .mov-latido,
+  .mov-icono-activo,
+  .mov-pop,
+  .mov-confeti {
+    animation: none;
+  }
+  .mov-tarjeta:hover,
+  a.tarjeta-c2:hover,
+  button.tarjeta-c2:hover {
+    translate: none;
+  }
+}
+
+/* Barras verticales de graficos: crecen desde la base, escalonadas con style="--i: n". */
+@keyframes mov-crecer {
+  from {
+    scale: 1 0;
+  }
+}
+.mov-barra-v {
+  transform-origin: center bottom;
+  animation: mov-crecer 600ms var(--mov-entrar) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mov-barra-v {
+    animation: none;
+  }
+}

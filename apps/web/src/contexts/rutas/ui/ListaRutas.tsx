@@ -1,3 +1,4 @@
+import { estiloEscalon } from '../../../shared/lib/movimiento'
 import { EsqueletoLista } from '../../../shared/ui/Esqueletos'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -431,16 +432,17 @@ export function ListaRutas() {
               </p>
             )}
             {!cargando &&
-              rutas.map((ruta) => {
+              rutas.map((ruta, indice) => {
                 const guardada = guardadas.includes(ruta.id)
                 const activa = conPanel && elegida?.id === ruta.id
                 const categoria = CATEGORIAS_RUTA.find(([k]) => k === ruta.categoria)?.[1]
                 return (
                   <article
                     key={ruta.id}
+                    style={estiloEscalon(indice)}
                     onMouseEnter={() => setSeleccion(ruta.id)}
                     onFocus={() => setSeleccion(ruta.id)}
-                    className={`panel-c2 relative overflow-hidden border transition-colors ${
+                    className={`mov-escalon panel-c2 relative overflow-hidden border transition-colors ${
                       activa
                         ? 'fondo-acento !border-c2-morado/60'
                         : 'bg-c2-card border-c2-linea hover:border-c2-morado/40'

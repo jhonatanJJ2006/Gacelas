@@ -1,3 +1,4 @@
+import { estiloEscalon } from '../../../shared/lib/movimiento'
 import { Link } from 'react-router-dom'
 import { Unidades } from '../../../shared/lib/geo'
 import { tarjeta } from '../../../shared/ui/tarjeta'
@@ -24,7 +25,8 @@ export function RankingSemanal() {
         {filas.map((f, i) => (
           <li
             key={`${f.nombre}-${i}`}
-            className={`flex items-center gap-3 rounded-xl px-3 py-2 ${f.propio ? 'bg-primary/10 border border-primary/30' : ''}`}
+            style={estiloEscalon(i)}
+            className={`mov-escalon flex items-center gap-3 rounded-xl px-3 py-2 ${f.propio ? 'bg-primary/10 border border-primary/30' : ''}`}
           >
             <span
               className={`w-6 text-center font-bold ${i === 0 ? 'text-primary' : 'text-text-secondary'}`}

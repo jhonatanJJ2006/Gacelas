@@ -1,3 +1,4 @@
+import { estiloEscalon } from '../../../shared/lib/movimiento'
 import { Link } from 'react-router-dom'
 import { eventosMock } from '../../../mocks/data'
 import { tarjeta } from '../../../shared/ui/tarjeta'
@@ -13,8 +14,8 @@ export function ProximosEventos() {
     <section className={tarjeta} data-testid="panel-eventos">
       <h2 className="font-title-md text-title-md text-text-primary mb-3">Próximos eventos</h2>
       <ul className="space-y-1">
-        {lista.map((e) => (
-          <li key={e.id}>
+        {lista.map((e, i) => (
+          <li key={e.id} style={estiloEscalon(i)} className="mov-escalon">
             <Link
               to={`/comunidad/eventos/${e.id}`}
               className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-surface-container-high"

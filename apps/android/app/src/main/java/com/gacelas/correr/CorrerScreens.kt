@@ -1,5 +1,6 @@
 package com.gacelas.correr
 
+import com.gacelas.ui.movimiento.DestelloEncima
 import com.gacelas.ui.movimiento.entradaEscalonada
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material.icons.filled.LocalFireDepartment
@@ -1080,6 +1081,8 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
                     Text(titulo.ifBlank { if (estado.segundos > 0) tituloSugerido(estado.inicioMs.takeIf { it > 0 } ?: ahora) else "Carrera completada" }, style = GType.headlineLg.copy(fontSize = 30.sp, lineHeight = 34.sp), color = GColors.TextPrimary, maxLines = 2)
                     Text(if (estado.segundos > 0) horaTexto.replaceFirstChar { it.uppercase() } else "No hay datos de carrera para guardar", style = GType.bodySm, color = GColors.TextPrimary.copy(alpha = 0.65f))
                 }
+                // Destello al batir un record personal (no intercepta toques; sin animaciones no se dibuja).
+                if (record != null) DestelloEncima(true)
             }
             Column(Modifier.padding(horizontal = 14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 // Distancia y tiempo en el mosaico grande en degradado.

@@ -1,5 +1,6 @@
 package com.gacelas.inicio
 
+import com.gacelas.ui.movimiento.pulsacionC2
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -259,14 +260,15 @@ fun InicioTablero(
 /** Acceso flotante del hero (racha, km de la semana): icono, cifra y unidad sobre vidrio. */
 @Composable
 private fun ChipFlotante(icono: ImageVector, color: Color, valor: String, unidad: String, descripcion: String, onClick: () -> Unit, tag: String) {
+    val interaccion = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Row(
-        Modifier.vidrioC2(RoundedCornerShape(18.dp)).clickable(role = Role.Button, onClickLabel = descripcion, onClick = onClick).testTag(tag)
+        Modifier.pulsacionC2(interaccion).vidrioC2(RoundedCornerShape(18.dp)).clickable(interaccion, androidx.compose.foundation.LocalIndication.current, role = Role.Button, onClickLabel = descripcion, onClick = onClick).testTag(tag)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Icon(icono, null, tint = color, modifier = Modifier.size(22.dp))
         Column {
-            Text(valor, style = GType.titleMd.copy(fontWeight = FontWeight.Bold), color = GColors.TextPrimary, maxLines = 1)
+            Text(com.gacelas.ui.movimiento.textoContado(valor), style = GType.titleMd.copy(fontWeight = FontWeight.Bold), color = GColors.TextPrimary, maxLines = 1)
             Text(unidad, style = GType.labelMd.copy(fontSize = 10.sp), color = GColors.TextPrimary.copy(alpha = 0.65f), maxLines = 1)
         }
     }
@@ -332,7 +334,7 @@ private fun WidgetSemana(semana: ResumenSemana, hoy: Int, m: Boolean, metaKm: In
                 val p = (semana.km / metaKm).toFloat().coerceIn(0f, 1f)
                 AnilloC2(p, tamano = 96.dp, grosor = 11.dp) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("${(p * 100).toInt()}%", style = androidx.compose.ui.text.TextStyle(fontFamily = SpaceGrotesk, fontSize = 22.sp), color = GColors.TextPrimary)
+                        Text(com.gacelas.ui.movimiento.textoContado("${(p * 100).toInt()}%"), style = androidx.compose.ui.text.TextStyle(fontFamily = SpaceGrotesk, fontSize = 22.sp), color = GColors.TextPrimary)
                         Text("de $metaKm ${Unidades.etiquetaDistancia(m)}", style = GType.bodySm.copy(fontSize = 9.5.sp), color = GColors.TextPrimary.copy(alpha = 0.6f), maxLines = 1)
                     }
                 }
