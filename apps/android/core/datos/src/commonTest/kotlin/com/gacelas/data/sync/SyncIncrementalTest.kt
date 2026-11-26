@@ -65,6 +65,17 @@ class SyncIncrementalTest {
         assertEquals("b", consultas[1].claveExclusiva)
     }
 
+    @Test fun sinColumnaDeMarcaPaginaSoloPorClave() = runBlocking {
+        val filas = ('a'..'e').map { fila("id" to it.toString()) }
+        val consultas = mutableListOf<ConsultaPagina>()
+        val todas = bajarTodo({ q ->
+            consultas += q
+            filas.filter { f -> q.claveExclusiva == null || f.texto("id").orEmpty() > q.claveExclusiva!! }.take(q.limite)
+        }, ConsultaPagina("events", limite = 2))
+        assertEquals(listOf("a", "b", "c", "d", "e"), todas.map { it.texto("id") })
+        assertEquals(listOf(null, "b", "d"), consultas.map { it.claveExclusiva })
+    }
+
     @Test fun clavesIncrementalesSonIdempotentesYElBorradoGanaElEmpate() {
         val local = setOf("vieja", "queda")
         val altas = listOf(CambioClave("nueva", 20), CambioClave("queda", 10), CambioClave("rehecha", 30))

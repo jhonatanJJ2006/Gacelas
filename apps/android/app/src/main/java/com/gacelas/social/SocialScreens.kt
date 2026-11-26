@@ -225,7 +225,7 @@ fun ListaLogros(carreras: List<Carrera>, onVerTodos: () -> Unit = {}) {
     Tarjeta(Modifier.testTag("logros")) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("LOGROS", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
-            Text("${hechos.size} de ${Logro.entries.size}", style = GType.labelMd, color = GColors.C2Muted)
+            Text("${hechos.size} de ${Logro.entries.size} logros", style = GType.labelMd, color = GColors.C2Muted)
         }
         orden.chunked(3).forEachIndexed { filaIdx, fila ->
             Row(Modifier.entradaLista(filaIdx), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

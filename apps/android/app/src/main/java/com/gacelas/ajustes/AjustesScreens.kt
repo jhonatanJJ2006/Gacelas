@@ -136,7 +136,7 @@ private fun CabeceraAjustes(onEditarPerfil: () -> Unit) {
             Text(perfil?.nombre ?: "Corredor", style = GType.titleMd, color = GColors.TextPrimary)
             com.gacelas.comunidad.presentation.ui.InsigniaNivel(com.gacelas.comunidad.domain.modelo.nivelCorredor(km))
             perfil?.email?.let { Text(it, style = GType.bodySm, color = GColors.TextSecondary) }
-            Text("Sede Loja • ${km.roundToInt()} km totales", style = GType.bodySm, color = GColors.Secondary500, modifier = Modifier.testTag("ajustes-km"))
+            Text("Sede Loja • ${com.gacelas.tracking.Unidades.texto(km, true, 1)} km totales", style = GType.bodySm, color = GColors.Secondary500, modifier = Modifier.testTag("ajustes-km"))
         }
         TextButton(onClick = onEditarPerfil) { Text("Editar perfil", color = GColors.Primary) }
     }

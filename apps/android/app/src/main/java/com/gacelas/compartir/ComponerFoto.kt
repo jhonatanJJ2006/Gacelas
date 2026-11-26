@@ -74,12 +74,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import com.gacelas.BuildConfig
 import com.gacelas.ui.aviso
 import com.gacelas.ui.components.CampoTexto
-import com.gacelas.ui.components.propiedadesHojaC2
+import com.gacelas.ui.components.CapaHojaC2
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 import kotlinx.coroutines.Dispatchers
@@ -210,7 +209,10 @@ fun ComponerFotoDialogo(datos: DatosCompartir, onCerrar: () -> Unit) {
         lanzar(Intenciones.historiaInstagram(fondo, null, BuildConfig.FACEBOOK_APP_ID), "Instagram no está instalado")
     }
 
-    Dialog(onDismissRequest = { if (editando) editando = false else onCerrar() }, properties = propiedadesHojaC2()) {
+    // Capa dentro de la ventana de la actividad (como las hojas C2) y no un Dialog: la ventana propia del
+    // Dialog se colocaba bajo la barra de estado y media la pantalla completa, asi que la barra de acciones
+    // quedaba con su mitad fuera de pantalla (etiquetas cortadas, Guardar bajo la barra de gestos).
+    CapaHojaC2(onDismissRequest = { if (editando) editando = false else onCerrar() }, velo = false) {
         Column(Modifier.fillMaxSize().background(Color.Black).statusBarsPadding()) {
             if (editando) {
                 Editor(

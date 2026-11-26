@@ -83,7 +83,13 @@ class SupabaseFeedRepository(
         val url = { ruta: String ->
             if (ruta.startsWith("http")) ruta else backend.urlPublica(ruta.substringBefore('/'), ruta.substringAfter('/'))
         }
-        return filas(r).map { publicacionDesdeFilaFeed(it, yo, url = url) }
+        val filas = filas(r)
+        // El handle que se ve en el feed es el username real del perfil (el mismo de Perfil y Editar perfil).
+        val usuarios = runCatching {
+            backend.selectEn("profiles", "id", filas.mapNotNull { it.txt("user_id") })
+                .mapNotNull { p -> p.txt("id")?.let { id -> p.txt("username")?.ifBlank { null }?.let { id to it } } }.toMap()
+        }.getOrDefault(emptyMap())
+        return filas.map { f -> publicacionDesdeFilaFeed(f, yo, url = url).let { p -> p.copy(usuario = usuarios[f.txt("user_id")]) } }
     }
 
     override suspend fun alternarMeGusta(id: String, activo: Boolean) {

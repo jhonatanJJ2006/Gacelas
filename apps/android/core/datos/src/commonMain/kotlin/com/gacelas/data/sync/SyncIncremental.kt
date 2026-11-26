@@ -114,7 +114,8 @@ suspend fun bajarTodo(leer: suspend (ConsultaPagina) -> List<JsonObject>, base: 
         salida += pagina
         if (pagina.size < base.limite) return salida
         val ultima = pagina.last()
-        val nuevaMarca = ultima.texto(base.columnaMarca) ?: return salida
+        // Sin la columna de marca (base sin la migracion 044) se pagina solo por clave.
+        val nuevaMarca = ultima.texto(base.columnaMarca)
         val nuevaClave = ultima.texto(base.columnaClave) ?: return salida
         if (nuevaMarca == marca && nuevaClave == clave) return salida
         marca = nuevaMarca

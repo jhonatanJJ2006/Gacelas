@@ -215,7 +215,7 @@ fun FeedContenido(
                         Spacer(Modifier.width(6.dp))
                         InsigniaNivel(nivelCorredor(p.autorKm ?: kms[if (p.propia) "yo" else p.autorId ?: p.autor] ?: 0.0))
                         Spacer(Modifier.width(6.dp))
-                        Text("${handle(p.autor)} · ${p.cuando}", style = GType.bodySm, color = GColors.C2Muted, maxLines = 1, modifier = Modifier.weight(1f))
+                        Text("${p.usuario?.let { "@$it" } ?: handle(p.autor)} · ${p.cuando}", style = GType.bodySm, color = GColors.C2Muted, maxLines = 1, modifier = Modifier.weight(1f))
                         Box {
                             Icon(Icons.Filled.MoreHoriz, "Más opciones", tint = GColors.C2Muted, modifier = Modifier.size(18.dp).clickable { menu = true })
                             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
@@ -569,7 +569,8 @@ fun DetalleEventoContenido(
     val e by vm.evento.collectAsState()
     val inscrito = e.id in inscritos
     val estado by vm.estado.collectAsState()
-    val participantes = estado?.let { e.participantes + it.inscritos } ?: (e.participantes + if (inscrito && !e.creadoPorUsuario) 1 else 0)
+    // Mismo total que la tarjeta de la lista (personas ya sumadas + yo) y que la linea de cupos.
+    val participantes = e.participantes + if (inscrito && !e.creadoPorUsuario) 1 else 0
     val enEspera = estado?.miEstado == "waitlist"
     Column(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo)) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
@@ -617,7 +618,7 @@ fun DetalleEventoContenido(
                 Text(e.descripcion, style = GType.bodyMd, color = GColors.TextSecondary)
                 androidx.compose.material3.TextButton(onClick = onEnVivo) { Icon(Icons.Filled.Sensors, null, tint = GColors.Danger); Text(if (e.yaPaso()) " Repetición del evento" else " Ver evento en vivo", color = GColors.Danger) }
                 Text("Participantes ($participantes)", style = GType.titleMd, color = GColors.TextPrimary)
-                estado?.let { Text(com.gacelas.comunidad.domain.reglas.textoCupo(it) + if (enEspera) " · estás en la lista de espera (puesto ${it.miPosicion})" else "", style = GType.bodySm, color = GColors.TextSecondary) }
+                estado?.let { Text(com.gacelas.comunidad.domain.reglas.textoCupo(it.copy(inscritos = participantes)) + if (enEspera) " · estás en la lista de espera (puesto ${it.miPosicion})" else "", style = GType.bodySm, color = GColors.TextSecondary) }
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     repeat(minOf(participantes, 30)) { AvatarCirculo(36.dp, it) }
                 }
