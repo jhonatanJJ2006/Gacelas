@@ -391,10 +391,10 @@ private fun Cabecera(
     cerrar: String = "Cerrar",
 ) {
     Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onCerrar) { Icon(iconoCerrar, cerrar, tint = GColors.TextPrimary) }
-        Text(titulo, color = GColors.TextPrimary, style = GType.titleMd, modifier = Modifier.weight(1f), maxLines = 1)
-        IconButton(onClick = onFoto) { Icon(Icons.Outlined.AddPhotoAlternate, "Elegir foto", tint = GColors.TextPrimary) }
-        IconButton(onClick = onCamara) { Icon(Icons.Filled.PhotoCamera, "Tomar foto", tint = GColors.TextPrimary) }
+        IconButton(onClick = onCerrar) { Icon(iconoCerrar, cerrar, tint = Color.White) }
+        Text(titulo, color = Color.White, style = GType.titleMd, modifier = Modifier.weight(1f), maxLines = 1)
+        IconButton(onClick = onFoto) { Icon(Icons.Outlined.AddPhotoAlternate, "Elegir foto", tint = Color.White) }
+        IconButton(onClick = onCamara) { Icon(Icons.Filled.PhotoCamera, "Tomar foto", tint = Color.White) }
     }
 }
 
@@ -468,7 +468,7 @@ private fun Accion(etiqueta: String, icono: ImageVector, tag: String, modifier: 
         modifier.clickable(onClick = onClick).testTag(tag).padding(vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Icon(icono, etiqueta, tint = GColors.TextPrimary, modifier = Modifier.size(22.dp))
-        Text(etiqueta, color = GColors.TextPrimary, style = GType.bodySm, textAlign = TextAlign.Center, maxLines = 2)
+        Icon(icono, etiqueta, tint = Color.White, modifier = Modifier.size(22.dp))
+        Text(etiqueta, color = Color.White, style = GType.bodySm, textAlign = TextAlign.Center, maxLines = 2)
     }
 }
