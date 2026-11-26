@@ -58,7 +58,14 @@ fun MapaRutasAgrupadas(rutas: List<Ruta>, onRuta: (String) -> Unit, modifier: Mo
     val salidas = remember(rutas) {
         rutas.filter { it.puntos.isNotEmpty() }.map { CirculoMapa(LatLng(it.puntos.first().first, it.puntos.first().second), 9f, Color(0xFFC084FC), bordeDp = 2.5f, id = it.id) }
     }
-    MapaLibre(modifier, circulos = salidas, zoom = 12.0, alTocarCirculo = onRuta)
+    var mapa by remember { mutableStateOf<org.maplibre.android.maps.MapLibreMap?>(null) }
+    // Todas las salidas a la vista (animado) al abrir el mapa y cuando cambian las rutas visibles.
+    com.gacelas.ui.components.EncuadrarRutaEfecto(
+        mapa, salidas.map { it.centro },
+        com.gacelas.mapa.EncuadreMapa.paddingDp(androidx.compose.ui.platform.LocalDensity.current.density),
+        clave = salidas.map { it.id }, zoomUnPunto = 14.0,
+    )
+    MapaLibre(modifier, circulos = salidas, zoom = 12.0, alTocarCirculo = onRuta, alListo = { mapa = it })
 }
 
 /** Crear una ruta tocando el mapa punto a punto (UI compartida en shared, MapLibre Android). */

@@ -42,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -59,6 +60,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInParent
 import com.gacelas.rutas.domain.modelo.CategoriaRuta
 import com.gacelas.rutas.domain.modelo.Dificultad
 import com.gacelas.rutas.domain.modelo.FiltrosRuta
@@ -105,6 +109,11 @@ fun RutasTablero(
     /** Espacio del dock flotante (el carrusel queda encima). */
     espacioInferior: Dp = 0.dp,
     cargando: Boolean = false,
+    /**
+     * Avisa cuanto del mapa tapan la cabecera y el carrusel (px desde arriba y desde abajo), para que
+     * la camara encuadre la ruta elegida entera en la franja libre.
+     */
+    alMedirZonaLibre: (arribaPx: Float, abajoPx: Float) -> Unit = { _, _ -> },
 ) {
     var soloOficiales by rememberSaveable { mutableStateOf(false) }
     var hojaFiltros by rememberSaveable { mutableStateOf(false) }
@@ -116,11 +125,19 @@ fun RutasTablero(
         val i = visibles.indexOfFirst { it.id == elegida?.id }
         if (i >= 0 && i != estadoCarrusel.firstVisibleItemIndex) estadoCarrusel.animateScrollToItem(i)
     }
-    Box(Modifier.fillMaxSize().background(Tablero.Fondo).testTag("rutas-tablero")) {
+    var altoTablero by remember { mutableStateOf(0f) }
+    var cabeceraPx by remember { mutableStateOf(0f) }
+    var carruselPx by remember { mutableStateOf(0f) }
+    LaunchedEffect(cabeceraPx, carruselPx) { if (cabeceraPx > 0f && carruselPx > 0f) alMedirZonaLibre(cabeceraPx, carruselPx) }
+    Box(Modifier.fillMaxSize().background(Tablero.Fondo).onSizeChanged { altoTablero = it.height.toFloat() }.testTag("rutas-tablero")) {
         mapa(elegida, visibles.filter { it.id != elegida?.id }) { id -> elegidaId = id }
         Box(Modifier.fillMaxWidth().height(170.dp).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Tablero.Noche.copy(alpha = 0.9f), Color.Transparent))))
         // Cabecera: volver, buscador, Filtros y chips rapidos.
-        Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 14.dp).padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(
+            Modifier.fillMaxWidth().onGloballyPositioned { cabeceraPx = it.positionInParent().y + it.size.height }
+                .statusBarsPadding().padding(horizontal = 14.dp).padding(top = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
             // Lista y Mapa son dos modos separados y el cambio siempre esta a la vista (propuesta A).
             com.gacelas.ui.components.SelectorSegmentadoC2(listOf("Lista", "Mapa"), 1, { if (it == 0) onVerLista() }, tag = "rutas-vista")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -156,7 +173,11 @@ fun RutasTablero(
             }
         }
         // Abajo: encabezado y carrusel de tarjetas.
-        Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(bottom = espacioInferior + 4.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().onGloballyPositioned { carruselPx = altoTablero - it.positionInParent().y }
+                .padding(bottom = espacioInferior + 4.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
             Row(Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 RotuloWidget(if (cargando) "Cargando rutas" else "${visibles.size} ${if (visibles.size == 1) "ruta" else "rutas"} en el mapa", Modifier.weight(1f))
                 Text(if (cerca != null) "Orden: más cerca" else "Orden: recomendadas", style = GType.labelMd, color = GColors.TextPrimary.copy(alpha = 0.6f), maxLines = 1)

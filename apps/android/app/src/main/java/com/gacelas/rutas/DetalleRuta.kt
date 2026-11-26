@@ -185,7 +185,9 @@ fun DetalleRutaScreen(id: String, onAtras: () -> Unit, onCorrer: () -> Unit) {
                 botones()
             }
             Box(Modifier.fillMaxWidth().height(if (galeria.isNotEmpty()) 260.dp else 340.dp).testTag("mapa-detalle-ruta")) {
-                MapaGacelas(puntos.map { LatLng(it.lat, it.lng) }, Modifier.fillMaxSize(), zoom = 14f) {
+                // Los botones quedan arriba (70 dp) y el degradado abajo (40 dp): la ruta se ve entera entre ambos.
+                MapaGacelas(puntos.map { LatLng(it.lat, it.lng) }, Modifier.fillMaxSize(), zoom = 14f,
+                    paddingEncuadre = com.gacelas.mapa.EncuadreMapa.paddingDp(androidx.compose.ui.platform.LocalDensity.current.density, arriba = 76f, abajo = 44f, izquierda = 36f, derecha = 36f)) {
                     com.gacelas.ui.components.MapaEsquemaC2(ruta.puntos, Modifier.fillMaxSize(), yo = null,
                         marcadores = listOfNotNull(ruta.puntos.firstOrNull()), margenArriba = 70.dp, margenAbajo = 40.dp)
                 }

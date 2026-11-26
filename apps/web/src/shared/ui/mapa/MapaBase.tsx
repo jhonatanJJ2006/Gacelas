@@ -289,13 +289,7 @@ export function Pin({ pos, tipo }: { pos: Coordenada; tipo: 'inicio' | 'meta' })
 }
 
 /** Recorrido: contorno oscuro + brillo + linea por tramos de color y flechas de direccion. */
-export function RutaEstilizada({
-  tramos,
-  ajustar = false,
-}: {
-  tramos: { camino: Coordenada[]; color: string }[]
-  ajustar?: boolean
-}) {
+export function RutaEstilizada({ tramos }: { tramos: { camino: Coordenada[]; color: string }[] }) {
   const mapa = useMap()
   const tema = useTemaResuelto()
   useEffect(() => {
@@ -349,13 +343,8 @@ export function RutaEstilizada({
         ],
       }),
     ]
-    if (ajustar && todo.length > 1) {
-      const b = new google.maps.LatLngBounds()
-      todo.forEach((p) => b.extend(p))
-      mapa.fitBounds(b, 48)
-    }
     return () => capas.forEach((c) => c.setMap(null))
-  }, [mapa, tramos, ajustar, tema])
+  }, [mapa, tramos, tema])
   return null
 }
 
