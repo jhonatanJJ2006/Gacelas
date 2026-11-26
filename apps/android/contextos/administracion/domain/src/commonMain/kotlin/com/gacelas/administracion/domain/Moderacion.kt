@@ -99,3 +99,13 @@ fun etiquetaAccion(a: AccionModeracion, tipo: String): String = when (a) {
 }
 
 val AccionModeracion.destructiva: Boolean get() = this == AccionModeracion.OcultarContenido || this == AccionModeracion.SuspenderUsuario
+
+/**
+ * Caso pendiente mas antiguo: el que toma "Asignarme el siguiente caso". Solo cuenta lo pendiente;
+ * lo que ya esta en revision lo tiene alguien. Con fechas ISO el orden de texto es el cronologico.
+ */
+fun List<ReporteAdmin>.siguienteCaso(): ReporteAdmin? =
+    filter { it.estado == EstadoReporte.Pendiente }.minByOrNull { it.creadoEn }
+
+/** Codigo corto de un caso para mostrar (los identificadores reales son uuid). */
+fun idCorto(id: String): String = "R-" + id.takeLast(4).uppercase()

@@ -34,13 +34,13 @@ data class AccesoAdmin(val rol: RolAdmin?) {
 
 /** Secciones del panel, en el mismo orden que la web. */
 enum class SeccionAdmin(val titulo: String, val descripcion: String) {
-    Dashboard("Dashboard", "Métricas de la última semana"),
+    Dashboard("Resumen", "Estado del panel y siguiente caso"),
     Usuarios("Usuarios", "Buscar, suspender y cambiar rol"),
     Moderacion("Moderación", "Cola de reportes"),
-    Estadisticas("Estadísticas", "Uso por rango de fechas"),
+    Estadisticas("Reportes", "Uso por rango de fechas"),
     Eventos("Eventos", "Publicar y editar eventos"),
-    RutasYClubes("Rutas y clubes", "Listar y eliminar"),
-    Ajustes("Versiones y ajustes", "Versión mínima e interruptores"),
+    RutasYClubes("Rutas y eventos", "Rutas, eventos y clubes"),
+    Ajustes("Ajustes", "Versión mínima e interruptores"),
 }
 
 /** Resultado de admin_metricas(). */

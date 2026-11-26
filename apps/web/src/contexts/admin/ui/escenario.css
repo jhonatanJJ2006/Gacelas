@@ -1,0 +1,646 @@
+/*
+ * Panel de administracion "Escenario" (Propuesta 1). Tokens HSL de la paleta del panel
+ * (rediseno-admin/paleta): oscuro por defecto y claro con la clase `tema-claro` en <html>
+ * (la usa el selector de tema) o con data-tema="claro" en el propio panel.
+ * Los valores van sin envolver: hsl(var(--token)) o hsl(var(--token) / .14).
+ */
+.adm {
+  --fondo: 224 44% 4.9%;
+  --fondo-hundido: 225 44% 3.5%;
+  --barra: 224 45% 6.5%;
+  --superficie: 224 42% 8.8%;
+  --superficie-elevada: 222 41% 11.4%;
+  --borde: 222 32% 16.1%;
+  --borde-fuerte: 223 29% 24.3%;
+  --neutro: 225 20% 36.7%;
+  --texto: 225 32% 92.5%;
+  --texto-2: 222 18% 71%;
+  --texto-3: 223 16% 55.7%;
+  --primario: 271 91% 61.1%;
+  --primario-profundo: 282 68% 37.8%;
+  --primario-texto: 270 95% 75.3%;
+  --sobre-primario: 0 0% 100%;
+  --exito: 154 61% 63.3%;
+  --exito-texto: 154 61% 63.3%;
+  --sobre-exito: 162 68% 7.5%;
+  --advertencia: 38 92% 50.2%;
+  --advertencia-texto: 43 96% 56.3%;
+  --peligro: 350 89% 48.2%;
+  --peligro-texto: 351 95% 71.4%;
+  --sobre-peligro: 0 0% 100%;
+  --info: 209 100% 79.4%;
+  --info-texto: 209 100% 79.4%;
+  --invertido: 0 0% 100%;
+  --sobre-invertido: 221 48% 9%;
+  --realce-primario: 278 72% 13.9%;
+  --realce-peligro: 336 71% 13.5%;
+  --foco: 270 95% 75.3%;
+  --mapa-fondo: 221 44% 9.8%;
+  --mapa-calle: 220 33% 16.3%;
+  --mapa-calle-2: 219 40% 14.3%;
+  --mapa-rio: 211 61% 29.8%;
+  --mapa-borde: 222 23% 22.4%;
+  --mapa-etiqueta: 223 16% 55.7%;
+  --mapa-vivo: 154 61% 63.3%;
+  --mapa-ruta: 271 91% 65.1%;
+  /* Ambar de la accion rapida del Inicio de la app (no esta en la paleta del panel). */
+  --ambar-1: #e08a0a;
+  --ambar-2: #b45309;
+  --sobre-ambar: #ffffff;
+  color-scheme: dark;
+  min-height: 100vh;
+  background: hsl(var(--fondo));
+  color: hsl(var(--texto));
+  font-family: Archivo, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.tema-claro .adm,
+.adm[data-tema='claro'] {
+  --fondo: 240 20% 96%;
+  --fondo-hundido: 240 18% 92%;
+  --barra: 0 0% 100%;
+  --superficie: 0 0% 100%;
+  --superficie-elevada: 250 30% 97.5%;
+  --borde: 245 18% 88%;
+  --borde-fuerte: 245 14% 78%;
+  --neutro: 245 10% 62%;
+  --texto: 250 35% 11%;
+  --texto-2: 248 14% 30%;
+  --texto-3: 246 10% 40%;
+  --primario: 276 70% 42%;
+  --primario-profundo: 282 70% 32%;
+  --primario-texto: 276 70% 38%;
+  --exito: 160 80% 28%;
+  --exito-texto: 160 80% 26%;
+  --sobre-exito: 0 0% 100%;
+  --advertencia: 38 92% 50%;
+  --advertencia-texto: 32 95% 30%;
+  --peligro: 347 75% 44%;
+  --peligro-texto: 347 72% 38%;
+  --info: 212 75% 52%;
+  --info-texto: 212 80% 36%;
+  --invertido: 250 35% 11%;
+  --sobre-invertido: 0 0% 100%;
+  --realce-primario: 276 80% 95%;
+  --realce-peligro: 347 80% 96%;
+  --foco: 276 70% 42%;
+  --mapa-fondo: 228 25% 93%;
+  --mapa-calle: 0 0% 100%;
+  --mapa-calle-2: 228 20% 88%;
+  --mapa-rio: 210 70% 76%;
+  --mapa-borde: 230 15% 72%;
+  --mapa-etiqueta: 230 12% 38%;
+  --mapa-vivo: 158 70% 35%;
+  --mapa-ruta: 276 70% 50%;
+  color-scheme: light;
+}
+
+/* Colores semanticos para chips, puntos y avatares: --t relleno, --tt texto. */
+.adm .c-pri {
+  --t: var(--primario);
+  --tt: var(--primario-texto);
+}
+.adm .c-ok {
+  --t: var(--exito);
+  --tt: var(--exito-texto);
+}
+.adm .c-warn {
+  --t: var(--advertencia);
+  --tt: var(--advertencia-texto);
+}
+.adm .c-bad {
+  --t: var(--peligro);
+  --tt: var(--peligro-texto);
+}
+.adm .c-info {
+  --t: var(--info);
+  --tt: var(--info-texto);
+}
+.adm .c-neu {
+  --t: var(--neutro);
+  --tt: var(--texto-2);
+}
+
+.adm *:focus-visible {
+  outline: 2px solid hsl(var(--foco));
+  outline-offset: 2px;
+}
+
+/* Estructura */
+.adm-app {
+  display: block;
+}
+@media (min-width: 1024px) {
+  .adm-app {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+.adm-main {
+  padding: 20px 16px 110px;
+  min-width: 0;
+}
+@media (min-width: 1024px) {
+  .adm-main {
+    padding: 28px 32px 64px;
+    max-width: 1280px;
+    width: 100%;
+  }
+}
+
+/* Navegacion: navbar B colapsable compartido (shared/ui/navegacion). Aqui solo se le dan los tokens. */
+.adm .navc {
+  --nc-fondo: hsl(var(--fondo));
+  --nc-riel: hsl(var(--fondo-hundido));
+  --nc-superficie: hsl(var(--superficie-elevada));
+  --nc-elevada: hsl(var(--superficie-elevada));
+  --nc-borde: hsl(var(--borde));
+  --nc-texto: hsl(var(--texto));
+  --nc-texto-2: hsl(var(--texto-2));
+  --nc-texto-3: hsl(var(--texto-3));
+  --nc-primario: hsl(var(--primario));
+  --nc-primario-profundo: hsl(var(--primario-profundo));
+  --nc-primario-texto: hsl(var(--primario-texto));
+  --nc-sobre-primario: hsl(var(--sobre-primario));
+  --nc-peligro: hsl(var(--peligro));
+  --nc-sobre-peligro: hsl(var(--sobre-peligro));
+  --nc-globo: hsl(var(--invertido));
+  --nc-sobre-globo: hsl(var(--sobre-invertido));
+}
+
+.adm-marca-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: hsl(var(--sobre-primario));
+  background: linear-gradient(135deg, hsl(var(--primario-profundo)), hsl(var(--primario)));
+}
+
+/* Tarjetas y texto */
+.adm-card {
+  background: hsl(var(--superficie));
+  border: 1px solid hsl(var(--borde));
+  border-radius: 20px;
+}
+.adm-card-el {
+  background: hsl(var(--superficie-elevada));
+  border: 1px solid hsl(var(--borde));
+  border-radius: 14px;
+}
+.adm-pad {
+  padding: 18px;
+}
+.adm-kicker {
+  font-size: 12px;
+  font-weight: 700;
+  color: hsl(var(--primario-texto));
+}
+.adm-h1 {
+  font-size: clamp(26px, 3.2vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.adm-h2 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.adm-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: hsl(var(--texto-3));
+}
+.adm-t2 {
+  color: hsl(var(--texto-2));
+}
+.adm-t3 {
+  color: hsl(var(--texto-3));
+}
+.adm-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.adm-cab {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.adm-fila {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.adm-envuelve {
+  flex-wrap: wrap;
+}
+.adm-grow {
+  flex: 1;
+  min-width: 0;
+}
+.adm-ell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.adm-sep {
+  border-top: 1px solid hsl(var(--borde));
+}
+
+/* Chips, puntos, avatares */
+.adm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.35;
+  background: hsl(var(--t) / 0.14);
+  color: hsl(var(--tt));
+  border: 0;
+}
+.adm-chip.c-neu {
+  background: hsl(var(--superficie-elevada));
+  border: 1px solid hsl(var(--borde));
+}
+button.adm-chip {
+  cursor: pointer;
+}
+button.adm-chip[aria-pressed='true'],
+button.adm-chip[aria-selected='true'] {
+  background: hsl(var(--primario) / 0.22);
+  color: hsl(var(--primario-texto));
+  border: 1px solid hsl(var(--primario) / 0.5);
+}
+.adm-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: hsl(var(--t));
+  flex: none;
+}
+.adm-av {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  font-weight: 700;
+  flex: none;
+  background: hsl(var(--t) / 0.2);
+  color: hsl(var(--tt));
+}
+
+/* Botones */
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font:
+    600 14px Archivo,
+    system-ui,
+    sans-serif;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.adm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.adm-btn.full {
+  width: 100%;
+}
+.adm-btn.sm {
+  padding: 7px 12px;
+  font-size: 13px;
+}
+.adm-b-pri {
+  background: linear-gradient(90deg, hsl(var(--primario-profundo)), hsl(var(--primario)));
+  color: hsl(var(--sobre-primario));
+}
+.adm-b-sec {
+  background: hsl(var(--superficie-elevada));
+  border-color: hsl(var(--borde-fuerte));
+  color: hsl(var(--texto));
+}
+.adm-b-bad {
+  background: hsl(var(--peligro));
+  color: hsl(var(--sobre-peligro));
+}
+.adm-b-ok {
+  background: hsl(var(--exito));
+  color: hsl(var(--sobre-exito));
+}
+.adm-b-gho {
+  background: hsl(var(--primario) / 0.12);
+  color: hsl(var(--primario-texto));
+}
+.adm-btn:not(:disabled):hover {
+  filter: brightness(1.08);
+}
+
+/* Campos */
+.adm-input {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: hsl(var(--superficie-elevada));
+  border: 1px solid hsl(var(--borde-fuerte));
+  color: hsl(var(--texto));
+  font:
+    500 14px Archivo,
+    system-ui,
+    sans-serif;
+  min-width: 0;
+}
+.adm-input::placeholder {
+  color: hsl(var(--texto-3));
+}
+.adm-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: hsl(var(--texto-2));
+  margin-top: 12px;
+}
+.adm-label .adm-input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+}
+
+/* Barras, series y divisores */
+.adm-barra {
+  display: block;
+  width: 100%;
+  height: 6px;
+  border-radius: 99px;
+  background: hsl(var(--borde-fuerte) / 0.55);
+  overflow: hidden;
+}
+.adm-barra i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: hsl(var(--t));
+}
+.adm-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  width: 100%;
+}
+.adm-bars i {
+  flex: 1;
+  min-width: 3px;
+  border-radius: 6px;
+  background: hsl(var(--neutro));
+}
+.adm-bars i.on {
+  background: hsl(var(--t));
+}
+.adm-bars i.soft {
+  background: hsl(var(--t) / 0.55);
+}
+
+/* Tabla */
+.adm-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.adm-tabla th {
+  text-align: left;
+  padding: 0 10px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: hsl(var(--texto-3));
+}
+.adm-tabla td {
+  padding: 9px 10px;
+  vertical-align: middle;
+}
+.adm-tabla tbody tr {
+  cursor: pointer;
+  border-radius: 12px;
+}
+.adm-tabla tbody tr:hover td {
+  background: hsl(var(--superficie-elevada));
+}
+.adm-tabla tbody tr[aria-selected='true'] td {
+  background: hsl(var(--primario) / 0.14);
+}
+.adm-tabla tbody tr[aria-selected='true'] td:first-child {
+  border-radius: 12px 0 0 12px;
+}
+.adm-tabla tbody tr[aria-selected='true'] td:last-child {
+  border-radius: 0 12px 12px 0;
+}
+
+/* Accion rapida ambar */
+.adm-amb {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 18px 20px;
+  border-radius: 20px;
+  border: 0;
+  color: var(--sobre-ambar);
+  background: linear-gradient(135deg, var(--ambar-1), var(--ambar-2));
+  cursor: pointer;
+}
+.adm-amb:disabled {
+  cursor: default;
+  background: hsl(var(--superficie-elevada));
+  color: hsl(var(--texto-2));
+  border: 1px solid hsl(var(--borde));
+}
+.adm-amb-play {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgb(255 255 255 / 0.22);
+  flex: none;
+}
+.adm-amb:not(:disabled):hover {
+  filter: brightness(1.06);
+}
+
+/* Mapa esquematico */
+.adm-mapa {
+  position: relative;
+  background: hsl(var(--mapa-fondo));
+}
+.adm-mapa svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.adm-mapa-chip {
+  position: absolute;
+  top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  background: hsl(var(--barra) / 0.85);
+  border: 1px solid hsl(var(--borde));
+  backdrop-filter: blur(6px);
+}
+
+/* Grillas */
+.adm-g2 {
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 1024px) {
+  .adm-g-resumen {
+    grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+  }
+  .adm-g-mod {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.2fr) minmax(0, 0.7fr);
+  }
+  .adm-g-usr {
+    grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+  }
+  .adm-g-rut {
+    grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+  }
+  .adm-g-rep {
+    grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+  }
+}
+.adm-tres {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.adm-cuatro {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+.adm-kpi {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: hsl(var(--superficie));
+  border: 1px solid hsl(var(--borde));
+}
+
+/* Cola de moderacion */
+.adm-caso {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  text-align: left;
+  padding: 12px 14px 12px 18px;
+  border-radius: 14px;
+  background: hsl(var(--superficie-elevada));
+  border: 1px solid hsl(var(--borde));
+  position: relative;
+  cursor: pointer;
+  color: inherit;
+}
+.adm-caso::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 3px;
+  background: hsl(var(--t));
+}
+.adm-caso[aria-current='true'] {
+  background: hsl(var(--primario) / 0.14);
+  border-color: hsl(var(--primario) / 0.55);
+}
+.adm-cita {
+  background: hsl(var(--realce-primario));
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+/* Interruptor */
+.adm-sw {
+  width: 48px;
+  height: 28px;
+  border-radius: 99px;
+  padding: 3px;
+  border: 0;
+  background: hsl(var(--borde-fuerte));
+  cursor: pointer;
+  flex: none;
+  transition: background 0.15s;
+}
+.adm-sw[aria-checked='true'] {
+  background: hsl(var(--primario));
+}
+.adm-sw span {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+.adm-sw[aria-checked='true'] span {
+  transform: translateX(20px);
+}
+
+/* Dialogo */
+.adm-velo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: hsl(224 44% 3% / 0.7);
+}
+.adm-dialogo {
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 22px;
+  border-radius: 22px;
+  background: hsl(var(--superficie));
+  border: 1px solid hsl(var(--borde-fuerte));
+  color: hsl(var(--texto));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adm *,
+  .adm *::before {
+    transition: none !important;
+    animation: none !important;
+  }
+}
