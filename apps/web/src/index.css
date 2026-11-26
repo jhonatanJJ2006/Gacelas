@@ -167,14 +167,178 @@ body {
   }
 }
 
-.no-scrollbar {
-  scrollbar-width: none;
-}
 .material-symbols-outlined.fill {
   font-variation-settings: 'FILL' 1;
 }
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+
+/* ------------------------------------------------------------------------------------------
+   Barras de desplazamiento de Runcity.
+   Colores en variables: el modo claro/oscuro solo cambia estos valores.
+   Los tonos neutros salen de las variables de superficie del tema; el acento es el violeta de la marca.
+   ------------------------------------------------------------------------------------------ */
+:root {
+  --scroll-riel: transparent;
+  --scroll-pulgar: rgb(var(--c-text-secondary) / 0.26);
+  --scroll-pulgar-zona: rgb(var(--c-text-secondary) / 0.46);
+  --scroll-pulgar-hover: #c084fc;
+  --scroll-pulgar-activo: #e9d5ff;
+  --scroll-fade: 22px;
+}
+
+/* Modo claro: acento mas oscuro para que el pulgar tenga contraste sobre fondos claros.
+   Se aceptan los selectores habituales del interruptor de tema. */
+:root.light,
+:root.claro,
+:root[data-theme='light'],
+:root[data-tema='claro'],
+.light,
+[data-theme='light'],
+[data-tema='claro'] {
+  --scroll-pulgar-hover: #7b1fa2;
+  --scroll-pulgar-activo: #5e1781;
+}
+
+/* Solo con raton o trackpad: en pantallas tactiles se conservan las barras nativas superpuestas. */
+@media (hover: hover) and (pointer: fine) {
+  /* Chrome, Edge, Safari y WebView. */
+  *::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  *::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-corner {
+    background: var(--scroll-riel);
+  }
+  /* El borde transparente adelgaza el pulgar visible sin achicar la zona de agarre. */
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--scroll-pulgar);
+    background-clip: padding-box;
+    border: 3px solid transparent;
+    border-radius: 999px;
+    min-height: 40px;
+    min-width: 40px;
+  }
+  *:hover::-webkit-scrollbar-thumb {
+    background-color: var(--scroll-pulgar-zona);
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scroll-pulgar-hover);
+    border-width: 2px;
+  }
+  *::-webkit-scrollbar-thumb:active {
+    background-color: var(--scroll-pulgar-activo);
+    border-width: 2px;
+  }
+  /* Carruseles con .no-scrollbar: en escritorio llevan un riel fino que solo aparece al pasar el raton. */
+  .no-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .no-scrollbar::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-width: 2px;
+  }
+  .no-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: var(--scroll-pulgar);
+  }
+  .no-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scroll-pulgar-hover);
+  }
+
+  /* Firefox (no admite pseudoelementos; Chrome ignora ::-webkit-scrollbar si se define scrollbar-color,
+     por eso va dentro de @supports exclusivo de Gecko). */
+  @supports (-moz-appearance: none) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--scroll-pulgar) var(--scroll-riel);
+    }
+    *:hover {
+      scrollbar-color: var(--scroll-pulgar-zona) var(--scroll-riel);
+    }
+    .no-scrollbar {
+      scrollbar-color: transparent transparent;
+    }
+    .no-scrollbar:hover {
+      scrollbar-color: var(--scroll-pulgar) transparent;
+    }
+  }
+}
+
+/* En tactiles los carruseles .no-scrollbar siguen sin barra visible. */
+@media (hover: none), (pointer: coarse) {
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Desplazamiento suave para anclas y scrollIntoView; "reducir movimiento" lo apaga arriba. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Fades en los bordes de listas con scroll. El difuminado crece al alejarse del borde y desaparece
+   al llegar al tope, y si la lista no desborda no se nota. Requiere animation-timeline (Chrome/Edge 115+,
+   Safari 26); donde no existe, la lista queda sin fade. */
+@property --fade-ini {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --fade-fin {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@keyframes fade-scroll {
+  0% {
+    --fade-ini: 0px;
+    --fade-fin: var(--scroll-fade);
+  }
+  8%,
+  92% {
+    --fade-ini: var(--scroll-fade);
+    --fade-fin: var(--scroll-fade);
+  }
+  100% {
+    --fade-ini: var(--scroll-fade);
+    --fade-fin: 0px;
+  }
+}
+@supports (animation-timeline: scroll()) {
+  .fade-bordes-y {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--fade-ini),
+      #000 calc(100% - var(--fade-fin)),
+      transparent 100%
+    );
+    animation: fade-scroll linear both;
+    animation-timeline: scroll(self block);
+  }
+  .fade-bordes-x {
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 var(--fade-ini),
+      #000 calc(100% - var(--fade-fin)),
+      transparent 100%
+    );
+    animation: fade-scroll linear both;
+    animation-timeline: scroll(self inline);
+  }
+  /* "Reducir movimiento" fuerza duraciones minimas: aqui la duracion la marca el scroll, no el tiempo. */
+  @media (prefers-reduced-motion: reduce) {
+    .fade-bordes-y,
+    .fade-bordes-x {
+      animation-duration: auto !important;
+    }
+  }
 }
 
 /* Rediseño C2 Deporte cinetico: titulares display en Anton, cursiva y mayusculas. */

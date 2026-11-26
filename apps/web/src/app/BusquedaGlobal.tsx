@@ -218,7 +218,7 @@ export function BusquedaGlobal({ abierto, onCerrar }: { abierto: boolean; onCerr
         <ul
           id="resultados-busqueda"
           role="listbox"
-          className="overflow-y-auto overscroll-contain p-2 min-h-0"
+          className="fade-bordes-y overflow-y-auto overscroll-contain p-2 min-h-0"
         >
           {resultados.map((r, i) => {
             const cabecera = r.grupo !== grupoPrevio

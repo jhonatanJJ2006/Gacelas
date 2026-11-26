@@ -814,7 +814,7 @@ export function PanelEventos({
           </Link>
         </p>
       ) : (
-        <div className="flex gap-3 overflow-x-auto no-scrollbar lg:grid lg:grid-cols-2 ancho:grid-cols-3 lg:overflow-visible">
+        <div className="fade-bordes-x flex gap-3 overflow-x-auto no-scrollbar lg:grid lg:grid-cols-2 ancho:grid-cols-3 lg:overflow-visible">
           {eventos.slice(0, 3).map((e, i) => (
             <TarjetaEventoC2
               key={e.id}
