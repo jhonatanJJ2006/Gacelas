@@ -238,7 +238,7 @@ function BarraLateral({ pathname }: { pathname: string }) {
         </span>
       </Link>
       <BloqueRacha />
-      <nav className="px-3 flex-1 min-h-0 overflow-y-auto space-y-0.5 pb-2">
+      <nav className="fade-bordes-y px-3 flex-1 min-h-0 overflow-y-auto space-y-0.5 pb-2">
         {NAV_ESCRITORIO.map((item) => {
           const on = navActiva(pathname, item.path)
           const n = item.contador ? contadores[item.contador] : 0

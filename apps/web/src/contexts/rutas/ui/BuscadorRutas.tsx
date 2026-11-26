@@ -156,7 +156,7 @@ export function BuscadorRutas() {
                 )}
               </div>
             </div>
-            <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
+            <div className="fade-bordes-x flex gap-2 overflow-x-auto no-scrollbar pt-1">
               {destinos.map((d) => (
                 <button
                   key={d}
@@ -188,7 +188,7 @@ export function BuscadorRutas() {
               </span>
             </div>
           )}
-          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 max-h-[40vh]">
+          <div className="fade-bordes-x flex gap-3 overflow-x-auto no-scrollbar pb-1 max-h-[40vh]">
             {routes.length === 0 && (
               <p className="text-c2-muted text-sm text-center w-full">
                 No hay rutas con ese nombre.

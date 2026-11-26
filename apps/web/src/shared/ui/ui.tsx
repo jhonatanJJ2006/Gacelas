@@ -73,7 +73,7 @@ export function Dialogo({
         </div>
         <div
           data-testid="dialogo-contenido"
-          className="text-c2-muted text-sm space-y-3 min-h-0 flex-1 overflow-y-auto overscroll-contain"
+          className="fade-bordes-y text-c2-muted text-sm space-y-3 min-h-0 flex-1 overflow-y-auto overscroll-contain"
         >
           {children}
         </div>

@@ -426,7 +426,7 @@ export function Clubes() {
           </div>
           {tipo === 'grupo' && (
             <div
-              className="flex gap-2 overflow-x-auto pb-1 -mx-margin px-margin lg:mx-0 lg:px-0"
+              className="fade-bordes-x flex gap-2 overflow-x-auto pb-1 -mx-margin px-margin lg:mx-0 lg:px-0"
               aria-label="Filtrar por nivel"
               data-testid="filtros-nivel"
             >

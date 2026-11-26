@@ -186,7 +186,7 @@ function TablaUsuarios({
   onAbrir?: (u: UsuarioAdmin) => void
 }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="fade-bordes-x overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-[12px] font-semibold text-c2-muted border-b border-c2-linea">

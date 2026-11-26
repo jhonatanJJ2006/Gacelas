@@ -263,7 +263,7 @@ export function ListaRutas() {
           <div>
             <Rotulo className="hidden lg:block mb-2">Tipo</Rotulo>
             <div
-              className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:pb-0"
+              className="fade-bordes-x flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:pb-0"
               role="group"
               aria-label="Categoría"
               data-testid="filtro-categoria"
@@ -298,7 +298,7 @@ export function ListaRutas() {
           <div>
             <Rotulo className="hidden lg:block mb-2">Dificultad y cercanía</Rotulo>
             <div
-              className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:pb-0"
+              className="fade-bordes-x flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:pb-0"
               aria-label="Filtros de dificultad"
               role="group"
             >
@@ -325,7 +325,7 @@ export function ListaRutas() {
           <div>
             <Rotulo className="hidden lg:block mb-2">Distancia y etiquetas</Rotulo>
             <div
-              className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:pb-0"
+              className="fade-bordes-x flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:pb-0"
               role="group"
               aria-label="Distancia y tipo"
             >
