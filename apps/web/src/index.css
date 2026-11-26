@@ -59,7 +59,7 @@
   --c-sobre-vidrio: 255 255 255;
   /* Sombra y velo */
   --c-sombra: 0 0 0;
-  /* Barras de desplazamiento (los usa el agente de scrollbars) */
+  /* Barras de desplazamiento: los lee el bloque de scrollbars de mas abajo */
   --c-scroll-pista: 12 19 34;
   --c-scroll-pulgar: 74 64 110;
   --c-scroll-pulgar-hover: 168 85 247;
@@ -173,29 +173,17 @@ body {
 
 /* ------------------------------------------------------------------------------------------
    Barras de desplazamiento de Runcity.
-   Colores en variables: el modo claro/oscuro solo cambia estos valores.
-   Los tonos neutros salen de las variables de superficie del tema; el acento es el violeta de la marca.
+   Los colores salen de los tokens --c-scroll-* de cada tema (ver docs/TEMA.md); aqui solo se
+   derivan los estados. No hay selectores por tema: cambian solos con .dark y .tema-claro.
    ------------------------------------------------------------------------------------------ */
 :root {
   --scroll-riel: transparent;
-  --scroll-pulgar: rgb(var(--c-text-secondary) / 0.26);
-  --scroll-pulgar-zona: rgb(var(--c-text-secondary) / 0.46);
-  --scroll-pulgar-hover: #c084fc;
-  --scroll-pulgar-activo: #e9d5ff;
+  --scroll-riel-zona: rgb(var(--c-scroll-pista) / 0.7);
+  --scroll-pulgar: rgb(var(--c-scroll-pulgar) / 0.6);
+  --scroll-pulgar-zona: rgb(var(--c-scroll-pulgar));
+  --scroll-pulgar-hover: rgb(var(--c-scroll-pulgar-hover));
+  --scroll-pulgar-activo: rgb(var(--c-scroll-pulgar-hover));
   --scroll-fade: 22px;
-}
-
-/* Modo claro: acento mas oscuro para que el pulgar tenga contraste sobre fondos claros.
-   Se aceptan los selectores habituales del interruptor de tema. */
-:root.light,
-:root.claro,
-:root[data-theme='light'],
-:root[data-tema='claro'],
-.light,
-[data-theme='light'],
-[data-tema='claro'] {
-  --scroll-pulgar-hover: #7b1fa2;
-  --scroll-pulgar-activo: #5e1781;
 }
 
 /* Solo con raton o trackpad: en pantallas tactiles se conservan las barras nativas superpuestas. */
@@ -218,6 +206,9 @@ body {
     min-height: 40px;
     min-width: 40px;
   }
+  *:hover::-webkit-scrollbar-track {
+    background: var(--scroll-riel-zona);
+  }
   *:hover::-webkit-scrollbar-thumb {
     background-color: var(--scroll-pulgar-zona);
   }
@@ -238,6 +229,9 @@ body {
     background-color: transparent;
     border-width: 2px;
   }
+  .no-scrollbar:hover::-webkit-scrollbar-track {
+    background: transparent;
+  }
   .no-scrollbar:hover::-webkit-scrollbar-thumb {
     background-color: var(--scroll-pulgar);
   }
@@ -253,7 +247,7 @@ body {
       scrollbar-color: var(--scroll-pulgar) var(--scroll-riel);
     }
     *:hover {
-      scrollbar-color: var(--scroll-pulgar-zona) var(--scroll-riel);
+      scrollbar-color: var(--scroll-pulgar-zona) var(--scroll-riel-zona);
     }
     .no-scrollbar {
       scrollbar-color: transparent transparent;
