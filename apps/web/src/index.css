@@ -736,7 +736,7 @@ a.c2-boton:active {
  * Navbar colapsable de la app de usuario: los --nc-* salen de los tokens del tema (con respaldo
  * oscuro si la variable no existe). Rellenos de marca fijos, como en el resto de la app.
  */
-.navc-usuario {
+.navc.navc-usuario {
   --nc-fondo: rgb(var(--c-c2-bg, 12 19 34));
   --nc-riel: rgb(var(--c-c2-bg, 12 19 34));
   --nc-superficie: rgb(var(--c-c2-card, 25 31 47));
