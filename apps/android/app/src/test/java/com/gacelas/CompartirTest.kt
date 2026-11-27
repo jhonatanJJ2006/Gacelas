@@ -91,4 +91,24 @@ class CompartirTest {
             dir?.let { d -> File(d, "android-${f.name.lowercase()}.png").outputStream().use { b.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) } }
         }
     }
+
+    @Test fun fechaPlantillaNuncaUsaEpoch() {
+        val respaldo = 1_795_712_400_000L // 2026-11-26 17:00 UTC = mediodia en Ecuador
+        assertEquals(null, Compartir.fechaValidaMs(0L))
+        assertEquals(null, Compartir.fechaValidaMs(-1L))
+        assertEquals(respaldo, Compartir.fechaPlantillaMs(0L, respaldo))
+        val partes = Compartir.textoFechaPlantilla(0L, respaldo)
+        assertEquals("Jueves", partes[0])
+        assertEquals("26 de noviembre 2026", partes[1])
+        assertTrue(partes.none { it.contains("1970") || it.contains("1969") })
+    }
+
+    @Test fun fechaPlantillaAceptaMilisegundosOSegundosUnix() {
+        val ms = 1_700_000_000_000L
+        assertEquals(ms, Compartir.fechaValidaMs(ms))
+        assertEquals(ms, Compartir.fechaValidaMs(1_700_000_000L))
+        val partes = Compartir.textoFechaPlantilla(1_700_000_000L)
+        assertEquals("Martes", partes[0])
+        assertEquals("14 de noviembre 2023", partes[1])
+    }
 }

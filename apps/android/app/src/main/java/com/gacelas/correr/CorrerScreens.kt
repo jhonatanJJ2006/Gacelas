@@ -1242,7 +1242,7 @@ fun ResumenPostCarreraScreen(onCerrar: () -> Unit, onGuardar: () -> Unit, onDesc
             // Privacidad: oculta los puntos dentro de 300 m de la salida y llegada.
             com.gacelas.compartir.Compartir.recortarExtremos(estado.puntos.map { it.lat to it.lng }),
             estado.distanciaKm, estado.segundos, estado.ritmoPromedioSegKm, estado.desnivelM.toInt(), rachaDespues.diaria,
-            fechaMs = estado.inicioMs,
+            fechaMs = com.gacelas.compartir.Compartir.fechaPlantillaMs(estado.inicioMs, System.currentTimeMillis() - estado.segundos * 1000L),
             recordLabel = record?.etiqueta,
             handle = perfilActual?.username?.trim()?.takeIf { it.isNotBlank() }?.let { "@${it.removePrefix("@")}" }
                 ?: com.gacelas.compartir.HANDLE_RUNCITY,
