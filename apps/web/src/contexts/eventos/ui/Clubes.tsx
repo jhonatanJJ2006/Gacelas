@@ -1,3 +1,4 @@
+import { estiloEscalon } from '../../../shared/lib/movimiento'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAviso } from '../../../hooks'
@@ -201,7 +202,7 @@ export function Clubes() {
     const filas = km.get(id) ?? []
     return semanas.map((w) => filas.find((f) => f.semana === w)?.km ?? 0)
   }
-  const tarjeta = (c: Club) => {
+  const tarjeta = (c: Club, indice: number) => {
     const comunidad = c.comunidadId ? comunidades.get(c.comunidadId) : undefined
     const horario = textoHorario(c.dias, c.hora)
     const ritmo = c.tipo === 'grupo' ? textoRitmo(c.ritmoSegKm) : ''
@@ -215,7 +216,8 @@ export function Clubes() {
     return (
       <li
         key={c.id}
-        className="panel-c2 bg-c2-card border border-c2-linea p-4 flex flex-col gap-3 min-w-0"
+        style={estiloEscalon(indice)}
+        className="mov-escalon panel-c2 bg-c2-card border border-c2-linea p-4 flex flex-col gap-3 min-w-0"
       >
         <Link
           to={`/comunidad/clubes/${c.id}`}

@@ -166,6 +166,20 @@ Fuente unica: `core/ui/.../movimiento/MovimientoC2.kt` (Android e iOS) y
   semantica y con un escudo que evita una segunda pulsacion.
 - Resumen de carrera: cifras que cuentan desde 0, tarjetas escalonadas y destello de confeti
   morado y menta (1,2 s, no bloquea toques).
+- Cifras de estadisticas (Inicio, Perfil, resumen, panel de administracion): cuentan desde 0 con
+  `CifraTextoAnimada` / `textoContado` (Android) y `Contador` / `CifraTexto` (web). Conservan el
+  formato ya calculado (unidades, decimales, coma) y no animan tiempos ni ritmos (`5:30`) ni millares.
+- Listas (rutas, feed, eventos, clubes, notificaciones, actividades, ranking, logros): entrada
+  escalonada. En Android, `entradaLista` anima solo los primeros elementos para que un scroll no
+  los haga reaparecer; en web, clase `mov-escalon` con `style="--i: n"` (`estiloEscalon`).
+- Anillos y barras de progreso se llenan al aparecer y animan sus cambios; las barras verticales
+  de los graficos web crecen desde la base (`mov-barra-v`).
+- Pestana activa: el icono rebota (`reboteActivo` / `mov-icono-activo`). El punto de notificaciones
+  sin leer late (`HaloLatido` / `mov-latido`) y la llama de racha parpadea (`llamaC2` / `mov-llama`).
+- Celebraciones: confeti al batir un record, al subir la racha y al abrir un logro conseguido
+  (`DestelloEncima` en Android, `Confeti` en web); la medalla rebota (`mov-pop`).
+- Dialogos web: salida animada de 150 ms (`useSalidaAnimada`); hojas de compartir y de reportar
+  incidente suben 96 px al abrir. Tarjetas pulsables web se elevan 2 px con el puntero.
 - "Quitar animaciones" (Android) y `prefers-reduced-motion` (web): todo aparece en su estado final.
 - Videos de referencia: `docs/capturas/animaciones/` (fotogramas Robolectric cada 16 ms, a
   media velocidad).

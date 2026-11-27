@@ -1,7 +1,9 @@
-import type { CSSProperties, ReactNode } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Esqueleto } from './Esqueletos'
 import { decimal } from '../lib/geo'
+import { MOVIMIENTO, movimientoReducido, estiloEscalon } from '../lib/movimiento'
+import { CifraTexto, Contador } from './Animaciones'
 
 /*
  * Piezas del rediseno de la web (docs/REDISENO-WEB.md): paneles C2, rotulos, metricas grandes y
@@ -118,7 +120,7 @@ export function Cifra({
       <Rotulo>{rotulo}</Rotulo>
       <p className="mt-1 flex items-baseline gap-1 whitespace-nowrap">
         <span className={`cifra-c2 ${tamano} leading-none ${color}`} data-testid={testId}>
-          {valor}
+          {typeof valor === 'string' ? <CifraTexto texto={valor} /> : valor}
         </span>
         {unidad && <span className="text-[12px] text-c2-muted">{unidad}</span>}
       </p>
@@ -278,6 +280,12 @@ export function Anillo({
   const r = (tamano - grosor) / 2
   const c = 2 * Math.PI * r
   const v = Math.max(0, Math.min(100, pct))
+  // El arco se dibuja desde 0 al aparecer y anima los cambios (transicion de stroke-dasharray).
+  const [lleno, setLleno] = useState(() => (movimientoReducido() ? v : 0))
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setLleno(v))
+    return () => cancelAnimationFrame(id)
+  }, [v])
   return (
     <div
       className="relative shrink-0"
@@ -307,12 +315,15 @@ export function Anillo({
           stroke={color}
           strokeWidth={grosor}
           strokeLinecap="round"
-          strokeDasharray={`${(v / 100) * c} ${c}`}
+          strokeDasharray={`${(lleno / 100) * c} ${c}`}
+          style={{
+            transition: `stroke-dasharray ${MOVIMIENTO.conteo}ms ${MOVIMIENTO.entrar}`,
+          }}
           transform={`rotate(-90 ${tamano / 2} ${tamano / 2})`}
         />
       </svg>
       <span className="absolute inset-0 flex items-center justify-center cifra-c2 text-[20px]">
-        {texto ?? `${Math.round(v)}%`}
+        {texto ?? <Contador valor={v} formato={(n) => `${Math.round(n)}%`} />}
       </span>
     </div>
   )
@@ -348,8 +359,11 @@ export function Barras({
         <div key={i} className="flex-1 min-w-0 flex flex-col items-center gap-1.5">
           <div className="w-full flex items-end" style={{ height: alto }}>
             <div
-              className={`w-full rounded-t-[3px] ${i === resaltar ? 'bg-[linear-gradient(180deg,rgb(var(--c-c2-violeta)),#7B1FA2)]' : v > 0 ? 'bg-c2-morado/35' : 'bg-c2-s2'}`}
-              style={{ height: v > 0 ? `${Math.max(6, (v / max) * 100)}%` : 3 }}
+              className={`mov-barra-v w-full rounded-t-[3px] ${i === resaltar ? 'bg-[linear-gradient(180deg,rgb(var(--c-c2-violeta)),#7B1FA2)]' : v > 0 ? 'bg-c2-morado/35' : 'bg-c2-s2'}`}
+              style={{
+                height: v > 0 ? `${Math.max(6, (v / max) * 100)}%` : 3,
+                ...estiloEscalon(i),
+              }}
               title={formato(v)}
             />
           </div>
@@ -393,7 +407,10 @@ export function Progreso({
       aria-valuemax={100}
       aria-label={etiqueta}
     >
-      <div className={`h-full rounded-full ${fondo}`} style={{ width: `${v}%` }} />
+      <div
+        className={`mov-barra h-full rounded-full ${fondo}`}
+        style={{ width: `${v}%`, transition: `width ${MOVIMIENTO.medio}ms ${MOVIMIENTO.entrar}` }}
+      />
     </div>
   )
 }

@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.graphics.graphicsLayer
 import com.gacelas.ui.movimiento.Mov
 import com.gacelas.ui.movimiento.pulsacionC2
+import com.gacelas.ui.movimiento.reboteActivo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -119,7 +120,7 @@ fun BarraInferior(rutaActual: String, onNavegar: (String) -> Unit) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Box(Modifier.width(54.dp).height(30.dp).clip(CircleShape).background(capsula), contentAlignment = Alignment.Center) {
-                            Icon(item.icono, contentDescription = null, tint = color, modifier = Modifier.size(24.dp))
+                            Icon(item.icono, contentDescription = null, tint = color, modifier = Modifier.size(24.dp).reboteActivo(activo))
                         }
                         TextoAjustableC2(tr(LocalIdioma.current, item.etiqueta), GType.labelMd.copy(fontWeight = if (activo) FontWeight.ExtraBold else FontWeight.SemiBold), color,
                             Modifier.padding(top = 2.dp), minimo = 0.7f)

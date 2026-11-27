@@ -69,7 +69,7 @@ export function AppLayout() {
               {sinLeer > 0 && (
                 <span
                   data-testid="punto-notificaciones"
-                  className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary-container ring-2 ring-bg-secondary"
+                  className="mov-latido absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary-container ring-2 ring-bg-secondary"
                 ></span>
               )}
             </Link>
@@ -117,7 +117,7 @@ export function AppLayout() {
                 }`}
               >
                 <span
-                  className="material-symbols-outlined text-[24px]"
+                  className={`material-symbols-outlined text-[24px] ${isActive(item.path) ? 'mov-icono-activo' : ''}`}
                   style={{ fontVariationSettings: "'FILL' 1" }}
                 >
                   {item.icon}

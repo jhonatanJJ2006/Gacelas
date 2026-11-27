@@ -1,3 +1,4 @@
+import { CifraTexto, Confeti } from '../../../shared/ui/Animaciones'
 import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { nuevoRecord } from '../../../shared/kernel/estadisticas'
@@ -156,8 +157,9 @@ export function ResumenPostCarrera() {
       </header>
 
       <main className="lg:w-full lg:max-w-5xl lg:mx-auto flex-1 px-6 pb-8 overflow-auto">
-        <section className="rounded-3xl bg-gradient-to-b from-primary-600/20 to-surface-container border border-border-subtle p-6 mb-4 text-center">
-          <div className="w-20 h-20 rounded-full border-4 border-primary bg-surface-container flex items-center justify-center mx-auto mb-3">
+        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-primary-600/20 to-surface-container border border-border-subtle p-6 mb-4 text-center">
+          <Confeti activo={Boolean(record)} />
+          <div className="mov-pop w-20 h-20 rounded-full border-4 border-primary bg-surface-container flex items-center justify-center mx-auto mb-3">
             <span className="material-symbols-outlined text-[40px] text-primary">
               {record ? 'military_tech' : 'check_circle'}
             </span>
@@ -208,7 +210,7 @@ export function ResumenPostCarrera() {
               className="font-metric-huge text-[48px] text-text-primary leading-none"
               data-testid="resumen-distancia"
             >
-              {Unidades.texto(e.distanciaKm, m)}
+              <CifraTexto texto={Unidades.texto(e.distanciaKm, m)} />
             </span>
             <span className="text-primary font-semibold">{m ? 'Kilómetros' : 'Millas'}</span>
           </div>
@@ -253,7 +255,7 @@ export function ResumenPostCarrera() {
             >
               <div className="text-label-md text-text-secondary uppercase">{t}</div>
               <div className={`font-headline-lg text-headline-lg ${c}`} data-testid={id}>
-                {v}
+                {t === 'Calorías' || t === 'Desnivel (+)' ? <CifraTexto texto={v} /> : v}
               </div>
               <div className="text-body-sm text-text-secondary">{d}</div>
             </div>

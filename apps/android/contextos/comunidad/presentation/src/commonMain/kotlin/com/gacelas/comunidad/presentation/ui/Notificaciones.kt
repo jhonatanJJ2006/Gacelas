@@ -1,5 +1,6 @@
 package com.gacelas.comunidad.presentation.ui
 
+import com.gacelas.ui.movimiento.entradaLista
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.runtime.collectAsState
 import androidx.compose.material.icons.filled.LocalFireDepartment
@@ -79,10 +80,10 @@ fun NotificacionesContenido(vm: NotificacionesViewModel, onAtras: () -> Unit, on
         }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding()) {
             if (lista.isEmpty()) Text("No hay notificaciones.", style = GType.bodyMd, color = GColors.TextSecondary, modifier = Modifier.padding(16.dp))
-            lista.forEach { n ->
+            lista.forEachIndexed { indice, n ->
                 val (icono, color) = iconoNotificacion(n.tipo)
                 Row(
-                    Modifier.fillMaxWidth().background(if (!n.leida) GColors.SurfaceContainer.copy(alpha = 0.5f) else Color.Transparent)
+                    Modifier.entradaLista(indice).fillMaxWidth().background(if (!n.leida) GColors.SurfaceContainer.copy(alpha = 0.5f) else Color.Transparent)
                         .clickable {
                             vm.marcar(listOf(n.id))
                             onAbrir(n)

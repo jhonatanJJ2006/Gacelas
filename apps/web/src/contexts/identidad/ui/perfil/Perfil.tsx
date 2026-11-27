@@ -1,3 +1,4 @@
+import { Contador, CifraTexto } from '../../../../shared/ui/Animaciones'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { usuarioActualMock, type Ruta } from '../../../../mocks/data'
@@ -178,7 +179,7 @@ export function Perfil() {
                   className="cifra-c2 text-[26px] leading-none text-text-primary"
                   data-testid={id}
                 >
-                  {v}
+                  <Contador valor={Number(v)} />
                 </div>
                 <div className="text-[11px] text-c2-muted mt-1">{t}</div>
               </div>
@@ -417,7 +418,7 @@ function Resumen({
               <Rotulo>{t}</Rotulo>
               <p className="mt-1 flex items-baseline gap-1 whitespace-nowrap">
                 <span className={`cifra-c2 text-[26px] lg:text-[30px] leading-none ${color}`}>
-                  {v}
+                  <CifraTexto texto={String(v)} />
                 </span>
                 {un && <span className="text-[12px] text-c2-muted">{un}</span>}
               </p>
@@ -531,7 +532,9 @@ function Dato({ t, v, n }: { t: string; v: string; n: string }) {
   return (
     <div className="min-w-0">
       <Rotulo>{t}</Rotulo>
-      <p className="cifra-c2 text-[20px] text-text-primary mt-1 whitespace-nowrap">{v}</p>
+      <p className="cifra-c2 text-[20px] text-text-primary mt-1 whitespace-nowrap">
+        <CifraTexto texto={v} />
+      </p>
       <p className="text-[11px] text-c2-muted truncate">{n}</p>
     </div>
   )

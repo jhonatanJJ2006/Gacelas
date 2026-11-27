@@ -67,7 +67,7 @@ fun Contadores(carreras: Int, seguidores: Int, siguiendo: Int) {
         Row(Modifier.fillMaxWidth()) {
             listOf("Carreras" to carreras, "Seguidores" to seguidores, "Siguiendo" to siguiendo).forEach { (t, v) ->
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("$v", style = GType.headlineSm, color = GColors.TextPrimary)
+                    com.gacelas.ui.movimiento.CifraTextoAnimada("$v", GType.headlineSm, GColors.TextPrimary)
                     Text(t, style = GType.labelMd, color = GColors.TextSecondary)
                 }
             }
@@ -83,7 +83,7 @@ private fun Celda(t: String, v: String, u: String, icono: ImageVector, modifier:
             Icon(icono, null, tint = GColors.Primary400, modifier = Modifier.size(18.dp))
         }
         Row(verticalAlignment = Alignment.Bottom) {
-            Text(v, style = GType.headlineSm, color = GColors.TextPrimary, maxLines = 1)
+            com.gacelas.ui.movimiento.CifraTextoAnimada(v, GType.headlineSm, GColors.TextPrimary, maxLines = 1)
             if (u.isNotEmpty()) Text(" $u", style = GType.bodySm, color = GColors.Primary400)
         }
     }

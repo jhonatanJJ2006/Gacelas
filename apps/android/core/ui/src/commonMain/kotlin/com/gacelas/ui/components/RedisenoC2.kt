@@ -313,11 +313,17 @@ fun LineaC2(valores: List<Float>, modifier: Modifier = Modifier, color: Color = 
 /** Anillo de progreso con contenido al centro. */
 @Composable
 fun AnilloC2(progreso: Float, modifier: Modifier = Modifier, tamano: Dp = 64.dp, grosor: Dp = 7.dp, color: Color = GColors.C2Violeta, content: @Composable BoxScope.() -> Unit = {}) {
+    // El arco se dibuja desde 0 al aparecer y anima los cambios (con animaciones quitadas, directo).
+    val escala = com.gacelas.ui.movimiento.Mov.escala
+    val arco = androidx.compose.runtime.remember { androidx.compose.animation.core.Animatable(if (escala <= 0f) progreso.coerceIn(0f, 1f) else 0f) }
+    androidx.compose.runtime.LaunchedEffect(progreso) {
+        arco.animateTo(progreso.coerceIn(0f, 1f), com.gacelas.ui.movimiento.MovimientoC2.spec(com.gacelas.ui.movimiento.MovimientoC2.CONTEO, escala, com.gacelas.ui.movimiento.MovimientoC2.Estandar))
+    }
     Box(modifier.size(tamano), contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(tamano)) {
             val s = grosor.toPx(); val d = size.minDimension - s
             drawArc(GColors.C2S2, 0f, 360f, false, Offset(s / 2, s / 2), Size(d, d), style = Stroke(s))
-            drawArc(color, -90f, 360f * progreso.coerceIn(0f, 1f), false, Offset(s / 2, s / 2), Size(d, d), style = Stroke(s, cap = StrokeCap.Round))
+            drawArc(color, -90f, 360f * arco.value, false, Offset(s / 2, s / 2), Size(d, d), style = Stroke(s, cap = StrokeCap.Round))
         }
         content()
     }

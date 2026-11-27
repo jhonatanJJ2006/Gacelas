@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { Contador } from '../../../shared/ui/Animaciones'
 import { aCsv, aPdf, descargar } from '../../analitica/api'
 import {
   BarrasDia,
@@ -95,7 +96,7 @@ function Kpi({ t, v, s, tono }: { t: string; v: string | number; s?: string; ton
         className={`adm-num c-${tono ?? 'neu'}`}
         style={{ fontSize: 26, color: tono ? 'hsl(var(--tt))' : undefined }}
       >
-        {typeof v === 'number' ? entero(v) : v}
+        {typeof v === 'number' ? <Contador valor={v} formato={(n) => entero(Math.round(n))} /> : v}
       </p>
       {s && (
         <p className="adm-t3" style={{ fontSize: 12 }}>

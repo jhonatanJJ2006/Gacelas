@@ -1,3 +1,4 @@
+import { Contador, CifraTexto } from '../../shared/ui/Animaciones'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useActividad } from '../../contexts/actividad/api'
@@ -317,14 +318,14 @@ export function PanelSemana({ className = '' }: { className?: string }) {
           <div className="flex justify-between gap-2">
             <dt className="text-c2-muted">Meta semanal</dt>
             <dd className="text-text-primary font-semibold whitespace-nowrap">
-              <span data-testid="km-semana">{Unidades.texto(meta.km, m, 1)}</span> /{' '}
+              <CifraTexto testId="km-semana" texto={Unidades.texto(meta.km, m, 1)} /> /{' '}
               {Unidades.texto(meta.metaKm, m, 0)} {u}
             </dd>
           </div>
           <div className="flex justify-between gap-2">
             <dt className="text-c2-muted">Carreras</dt>
             <dd className="text-text-primary font-semibold">
-              {meta.carreras} / {metaCarreras}
+              <Contador valor={meta.carreras} /> / {metaCarreras}
             </dd>
           </div>
           <div className="flex justify-between gap-2">
@@ -378,9 +379,10 @@ export function PanelReto({ className = '' }: { className?: string }) {
       </div>
       <h2 className="titulo-panel mt-1">{reto.titulo}</h2>
       <p className="mt-2 flex items-baseline gap-1">
-        <span className="cifra-c2 text-[34px] leading-none text-text-primary">
-          {Unidades.texto(reto.km, m, 1)}
-        </span>
+        <CifraTexto
+          className="cifra-c2 text-[34px] leading-none text-text-primary"
+          texto={Unidades.texto(reto.km, m, 1)}
+        />
         <span className="text-[12px] text-c2-muted">
           / {Unidades.texto(reto.metaKm, m, 0)} {u}
         </span>

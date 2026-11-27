@@ -2,6 +2,7 @@ import { afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import type { ReactNode } from 'react'
+import { forzarMovimientoReducido } from '../shared/lib/movimiento'
 
 const mockUseGLTF = Object.assign(
   vi.fn(() => ({
@@ -35,8 +36,12 @@ vi.mock('three', () => ({
   Group: class {},
 }))
 
+// Las pruebas corren con "reducir movimiento": las cifras muestran el valor final al instante.
+forzarMovimientoReducido(true)
+
 afterEach(() => {
   cleanup()
+  forzarMovimientoReducido(true)
 })
 
 // jsdom no implementa canvas: sin contexto, la app usa el modo sin WebGL.

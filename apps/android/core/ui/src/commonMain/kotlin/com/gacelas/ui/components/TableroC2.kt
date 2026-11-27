@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.remember
+import com.gacelas.ui.movimiento.pulsacionC2
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
@@ -111,7 +112,7 @@ fun RotuloWidget(texto: String, modifier: Modifier = Modifier, color: Color = GC
 @Composable
 fun CifraTablero(valor: String, unidad: String = "", modifier: Modifier = Modifier, tamano: Int = 34, color: Color = GColors.TextPrimary, tag: String? = null) {
     Row(modifier.then(if (tag != null) Modifier.testTag(tag) else Modifier), verticalAlignment = Alignment.Bottom) {
-        TextoAjustableC2(valor, androidx.compose.ui.text.TextStyle(fontFamily = SpaceGrotesk, fontSize = tamano.sp, lineHeight = (tamano * 1.02).sp), color, minimo = 0.7f)
+        TextoAjustableC2(com.gacelas.ui.movimiento.textoContado(valor), androidx.compose.ui.text.TextStyle(fontFamily = SpaceGrotesk, fontSize = tamano.sp, lineHeight = (tamano * 1.02).sp), color, minimo = 0.7f)
         if (unidad.isNotEmpty()) Text(" $unidad", style = GType.bodySm.copy(fontSize = 12.sp), color = Tablero.Texto2, modifier = Modifier.padding(bottom = (tamano * 0.08).dp), maxLines = 1)
     }
 }
@@ -131,8 +132,9 @@ fun WidgetC2(
     padding: Dp = 14.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    var m = modifier.clip(Tablero.FormaWidget).background(Tablero.FondoWidget).border(1.dp, Tablero.WidgetBorde, Tablero.FormaWidget)
-    if (onClick != null) m = m.clickable(onClickLabel = descripcion, role = Role.Button, onClick = onClick)
+    val interaccion = remember { MutableInteractionSource() }
+    var m = (if (onClick != null) modifier.pulsacionC2(interaccion) else modifier).clip(Tablero.FormaWidget).background(Tablero.FondoWidget).border(1.dp, Tablero.WidgetBorde, Tablero.FormaWidget)
+    if (onClick != null) m = m.clickable(interaccion, androidx.compose.foundation.LocalIndication.current, onClickLabel = descripcion, role = Role.Button, onClick = onClick)
     if (tag != null) m = m.testTag(tag)
     Column(m.padding(padding), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (titulo != null || accion != null) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -146,13 +148,17 @@ fun WidgetC2(
 /** Boton redondo de vidrio (volver, notificaciones, filtros). */
 @Composable
 fun BotonVidrio(icono: ImageVector, descripcion: String, onClick: () -> Unit, modifier: Modifier = Modifier, tag: String? = null, tamano: Dp = 48.dp, punto: Boolean = false) {
+    val interaccion = remember { MutableInteractionSource() }
     Box(
-        modifier.size(tamano).vidrioC2(RoundedCornerShape(16.dp)).clickable(onClickLabel = descripcion, role = Role.Button, onClick = onClick)
+        modifier.size(tamano).pulsacionC2(interaccion).vidrioC2(RoundedCornerShape(16.dp)).clickable(interaccion, androidx.compose.foundation.LocalIndication.current, onClickLabel = descripcion, role = Role.Button, onClick = onClick)
             .semantics { contentDescription = descripcion }.then(if (tag != null) Modifier.testTag(tag) else Modifier),
         contentAlignment = Alignment.Center,
     ) {
         Icon(icono, null, tint = GColors.TextPrimary, modifier = Modifier.size(22.dp))
-        if (punto) Box(Modifier.align(Alignment.TopEnd).padding(top = 11.dp, end = 12.dp).size(8.dp).clip(CircleShape).background(GColors.C2Morado))
+        if (punto) Box(Modifier.align(Alignment.TopEnd).padding(top = 11.dp, end = 12.dp).size(8.dp), contentAlignment = Alignment.Center) {
+            com.gacelas.ui.movimiento.HaloLatido(GColors.C2Violeta, Modifier.matchParentSize())
+            Box(Modifier.matchParentSize().clip(CircleShape).background(GColors.C2Morado))
+        }
     }
 }
 
@@ -160,10 +166,11 @@ fun BotonVidrio(icono: ImageVector, descripcion: String, onClick: () -> Unit, mo
 @Composable
 fun ChipVidrio(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier, punto: Color? = null, icono: ImageVector? = null, activo: Boolean = false, tag: String? = null) {
     val forma = CircleShape
-    var m = modifier.clip(forma)
+    val interaccion = remember { MutableInteractionSource() }
+    var m = modifier.pulsacionC2(interaccion).clip(forma)
     m = if (activo) m.background(GradienteC2) else m.background(Tablero.Vidrio).border(1.dp, Tablero.VidrioBorde, forma)
     Row(
-        m.clickable(role = Role.Button, onClick = onClick).semantics { selected = activo }.then(if (tag != null) Modifier.testTag(tag) else Modifier)
+        m.clickable(interaccion, androidx.compose.foundation.LocalIndication.current, role = Role.Button, onClick = onClick).semantics { selected = activo }.then(if (tag != null) Modifier.testTag(tag) else Modifier)
             .heightIn(min = 32.dp).padding(horizontal = 11.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp),
     ) {

@@ -1,5 +1,6 @@
 package com.gacelas.comunidad.presentation.ui
 
+import com.gacelas.ui.movimiento.entradaLista
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -136,7 +137,7 @@ fun DetalleClubContenido(
             if (c.tipo == TipoClub.comunidad) {
                 Text("Grupos (${datos.grupos.size})", style = GType.titleMd, color = GColors.TextPrimary)
                 if (datos.grupos.isEmpty()) Text("Esta comunidad aún no tiene grupos.", style = GType.bodySm, color = GColors.TextSecondary)
-                datos.grupos.forEach { g -> TarjetaClub(g) { onClub(g.id) } }
+                datos.grupos.forEachIndexed { i, g -> Box(Modifier.entradaLista(i)) { TarjetaClub(g) { onClub(g.id) } } }
             }
             if (ranking.isNotEmpty()) {
                 Text("Ranking del club", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.testTag("ranking-club"))

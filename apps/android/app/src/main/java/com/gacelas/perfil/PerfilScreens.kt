@@ -1,5 +1,6 @@
 package com.gacelas.perfil
 
+import com.gacelas.ui.movimiento.entradaLista
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Checkroom
@@ -223,8 +224,8 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
             style = GType.labelLg, color = GColors.Primary500,
             modifier = Modifier.clickable(onClick = onComparar).testTag("ir-comparar").padding(bottom = 8.dp),
         )
-        carreras.take(20).forEach { c ->
-            Tarjeta(Modifier.clickable { onCarrera(c.id) }.testTag("carrera-${c.id}")) {
+        carreras.take(20).forEachIndexed { indice, c ->
+            Tarjeta(Modifier.entradaLista(indice).clickable { onCarrera(c.id) }.testTag("carrera-${c.id}")) {
                 Row(verticalAlignment = Alignment.Top) {
                     // Mini mapa con el trazo real de la carrera.
                     if (c.puntos.size >= 2) com.gacelas.ui.components.MiniTrazoC2(c.puntos.map { it.lat to it.lng },
