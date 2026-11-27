@@ -6,6 +6,8 @@ export interface PublicacionRemota {
   id: string
   autorId: string
   autor: string
+  /** Nombre de usuario real del autor (profiles.username), sin arroba. */
+  usuario?: string
   titulo: string
   inicioMs: number
   distanciaKm: number

@@ -153,11 +153,7 @@ export function AjustesPreferencias() {
   const t = (es: string) => traducir(ajustes.idioma, es)
 
   return (
-    <PantallaAjustes
-      titulo={t('Ajustes')}
-      subtitulo="Club Gacelas Loja • 2,100 msnm"
-      volverA="/perfil"
-    >
+    <PantallaAjustes titulo={t('Ajustes')} subtitulo="Runcity Loja • 2,100 msnm" volverA="/perfil">
       <div className="flex items-center gap-4 p-4 tarjeta-c2">
         <FotoPerfil foto={sesion?.foto} nombre={nombre} className="w-14 h-14" />
         <div className="flex-1 min-w-0">
@@ -169,7 +165,7 @@ export function AjustesPreferencias() {
             <p className="text-body-sm text-text-secondary truncate">{sesion.email}</p>
           )}
           <p className="text-body-sm text-success" data-testid="ajustes-km">
-            Sede Loja • {Math.round(km)} km totales
+            Sede Loja • {km < 1 ? km.toFixed(2) : km.toFixed(1)} km totales
           </p>
         </div>
         <Link
@@ -389,7 +385,7 @@ export function AjustesPreferencias() {
           <>
             <BotonTexto onClick={cerrar}>Cerrar</BotonTexto>
             <a
-              href="mailto:soporte@gacelas.app?subject=Ayuda%20con%20Gacelas"
+              href="mailto:soporte@gacelas.app?subject=Ayuda%20con%20Runcity"
               className="px-4 h-10 inline-flex items-center rounded-lg text-primary-500 hover:bg-primary-600/10 font-label-lg"
             >
               Escribir a soporte

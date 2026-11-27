@@ -5,6 +5,19 @@ export function traducirError(mensaje: string): string {
   if (m.includes('already registered') || m.includes('already been registered'))
     return 'Ya existe una cuenta con ese correo'
   if (m.includes('not confirmed')) return 'Confirma tu correo antes de iniciar sesión'
+  if (
+    (m.includes('email address') && m.includes('is invalid')) ||
+    m.includes('email_address_invalid')
+  )
+    return 'El correo no es válido o el servidor no lo acepta. Usa un correo real'
+  if (
+    m.includes('weak password') ||
+    m.includes('weak_password') ||
+    m.includes('password should be')
+  )
+    return 'La contraseña es muy débil: usa mínimo 8 caracteres con letras y números'
+  if (m.includes('database error saving new user'))
+    return 'El servidor no pudo crear tu perfil. Intenta de nuevo en unos minutos'
   if (m.includes('rate limit') || m.includes('security purposes'))
     return 'Demasiados intentos. Espera un momento y vuelve a probar'
   if (m.includes('fetch') || m.includes('network')) return 'Sin conexión con el servidor'

@@ -143,6 +143,8 @@ data class Publicacion(
     val autorKm: Double? = null,
     /** Ultimo comentario (autor, texto) para la vista previa. */
     val ultimoComentario: Pair<String, String>? = null,
+    /** Nombre de usuario real del autor (profiles.username), sin arroba; null si no se conoce. */
+    val usuario: String? = null,
 )
 
 /** Nivel del corredor segun km acumulados (misma regla que la web nivelCorredor). */

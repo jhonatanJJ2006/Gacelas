@@ -176,7 +176,7 @@ private fun iconoMedalla(id: String): androidx.compose.ui.graphics.vector.ImageV
 fun Medallero(lista: List<Medalla>, onVerTodo: (() -> Unit)? = null) {
     var abierta by remember { mutableStateOf<Medalla?>(null) }
     Column(Modifier.testTag("medallero"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Titulo(Icons.Filled.MilitaryTech, "Medallero", "${lista.count { it.lograda }} de ${lista.size}")
+        Titulo(Icons.Filled.MilitaryTech, "Medallero", "${lista.count { it.lograda }} de ${lista.size} medallas")
         val visibles = if (onVerTodo == null) lista else lista.sortedByDescending { if (it.lograda) 2f else it.actual.toFloat() / it.meta }.take(6)
         CuadriculaMedallas(visibles) { abierta = it }
         if (onVerTodo != null) com.gacelas.ui.components.BotonSecundario("Ver todo el medallero", onVerTodo, Modifier.testTag("ver-medallero"), color = GColors.Primary400)

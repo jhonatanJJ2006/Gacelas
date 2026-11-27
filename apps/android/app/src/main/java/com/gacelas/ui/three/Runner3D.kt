@@ -122,7 +122,18 @@ fun Runner3D(
     val engine = rememberEngine()
     val modelLoader = rememberModelLoader(engine)
     var texturaAvatar by remember { androidx.compose.runtime.mutableStateOf<com.google.android.filament.Texture?>(null) }
-    val modelo = remember(clip, colores) {
+    // La textura teñida se calcula fuera del hilo principal; mientras tanto se ve el respaldo.
+    val preparado by androidx.compose.runtime.produceState<TexturaPreparada?>(null, colores) {
+        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+            TexturaPreparada(runCatching { RecolorAvatar.textura(context, colores) }.getOrNull())
+        }
+    }
+    val listo = preparado
+    if (listo == null) {
+        Runner3DFallback(modifier)
+        return
+    }
+    val modelo = remember(clip, listo) {
         runCatching {
             ModelNode(
                 modelInstance = modelLoader.createModelInstance(MODELO_CORREDOR),
@@ -134,7 +145,7 @@ fun Runner3D(
                 // se baja medio cuerpo para que la camara, que mira al origen, lo encuadre entero.
                 position = Position(0f, clip.alturaY, 0f)
                 playAnimation(clip.nombre, loop = true)
-                RecolorAvatar.textura(context, colores)?.let { bmp ->
+                listo.bitmap?.let { bmp ->
                     val t = texturaFilament(engine, bmp)
                     aplicarTextura(modelInstance.materialInstances, t)
                     texturaAvatar?.let(engine::destroyTexture)
@@ -319,6 +330,14 @@ fun Runner3DFilamentTransparente(
     var visto by remember { androidx.compose.runtime.mutableStateOf(false) }
     var fallo by remember { androidx.compose.runtime.mutableStateOf(!permitido) }
     val giro = remember { GiroArrastre(gradosAuto = if (autoRotar) 18f else 0f) }
+    // Lo pesado se prepara fuera del hilo principal: leer el GLB (varios MB) y teñir la textura del avatar
+    // (1 M de texeles) bloqueaban Inicio varios segundos al entrar con un avatar personalizado (ANR).
+    val preparado by androidx.compose.runtime.produceState<TexturaPreparada?>(null, colores) {
+        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+            runCatching { glbCorredor(context) }
+            TexturaPreparada(runCatching { RecolorAvatar.textura(context, colores) }.getOrNull())
+        }
+    }
     Box(modifier.fillMaxSize()) {
         if (!visto || fallo) Runner3DFallback(Modifier.testTag("corredor-3d-respaldo"))
         // Mientras Filament prepara el primer cuadro, halo C2 que late sobre la silueta (hasta 8 s).
@@ -326,12 +345,12 @@ fun Runner3DFilamentTransparente(
         androidx.compose.runtime.LaunchedEffect(Unit) { kotlinx.coroutines.delay(8_000); esperando = false }
         if (!visto && !fallo && esperando) com.gacelas.ui.components.EsqueletoEscena3D()
         // Otro color = otra textura: se recrea la vista de Filament con la nueva combinacion.
-        if (!fallo) androidx.compose.runtime.key(colores) {
+        if (!fallo && preparado != null) androidx.compose.runtime.key(colores) {
             androidx.compose.ui.viewinterop.AndroidView(
                 modifier = Modifier.fillMaxSize().testTag("corredor-3d-filament"),
                 factory = { ctx ->
                     val tv = android.view.TextureView(ctx).apply { isOpaque = false }
-                    runCatching { CorredorFilament(ctx, tv, clip.nombre, camara, giro, salvaguarda, colores) { visto = true } }
+                    runCatching { CorredorFilament(ctx, tv, clip.nombre, camara, giro, salvaguarda, preparado?.bitmap) { visto = true } }
                         .onSuccess { tv.tag = it }
                         .onFailure { Log.w(TAG, "Filament no pudo iniciar el corredor", it); fallo = true }
                     tv
@@ -342,6 +361,9 @@ fun Runner3DFilamentTransparente(
         }
     }
 }
+
+/** Textura del avatar ya teñida (null = el modelo original), calculada fuera del hilo principal. */
+internal class TexturaPreparada(val bitmap: android.graphics.Bitmap?)
 
 /** Estado del ciclo de vida del corredor: solo se dibuja con superficie valida y tamano mayor que 0. */
 internal class CicloCorredor {
@@ -379,7 +401,7 @@ internal class CorredorFilament(
     private val camara: Position,
     private val giro: GiroArrastre,
     private val salvaguarda: SalvaguardaCorredor,
-    colores: Map<Int, Int>,
+    texturaAvatar: android.graphics.Bitmap?,
     private val onPrimerCuadro: () -> Unit,
 ) : android.view.Choreographer.FrameCallback {
     private var textura: com.google.android.filament.Texture? = null
@@ -433,7 +455,7 @@ internal class CorredorFilament(
         asset = checkNotNull(cargador.createAsset(glbCorredor(ctx))) { "GLB sin escena" }
         recursos.loadResources(asset)
         asset.releaseSourceData()
-        RecolorAvatar.textura(ctx, colores)?.let { bmp ->
+        texturaAvatar?.let { bmp ->
             textura = texturaFilament(engine, bmp).also { aplicarTextura(asset.instance.materialInstances, it) }
         }
         scene.addEntities(asset.entities)
