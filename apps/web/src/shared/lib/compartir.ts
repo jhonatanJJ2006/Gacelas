@@ -37,6 +37,42 @@ export function normalizarHandle(h?: string | null) {
   return limpio ? `@${limpio}` : HANDLE_RUNCITY
 }
 
+/** 1 de enero de 2000 00:00 UTC. Por debajo no es una fecha de carrera creible. */
+export const MIN_FECHA_MS = Date.UTC(2000, 0, 1)
+
+/**
+ * Devuelve un timestamp en milisegundos si es una fecha real.
+ * Acepta segundos Unix (p. ej. 1_700_000_000) y rechaza 0, NaN o la epoca Unix.
+ */
+export function fechaValidaMs(ms?: number | null): number | null {
+  if (typeof ms !== 'number' || !Number.isFinite(ms)) return null
+  if (ms >= MIN_FECHA_MS / 1000 && ms < MIN_FECHA_MS) return Math.round(ms * 1000)
+  if (ms >= MIN_FECHA_MS) return ms
+  return null
+}
+
+/** Fecha a mostrar en una plantilla: la de la carrera o un respaldo (nunca 1970). */
+export function fechaPlantillaMs(ms?: number | null, respaldoMs = Date.now()): number {
+  return fechaValidaMs(ms) ?? respaldoMs
+}
+
+export function textoFechaPlantilla(
+  ms?: number | null,
+  respaldoMs = Date.now(),
+  zona = 'America/Guayaquil'
+): { dia: string; fecha: string } {
+  const date = new Date(fechaPlantillaMs(ms, respaldoMs))
+  const opts = { timeZone: zona } as const
+  const dia = new Intl.DateTimeFormat('es-EC', { weekday: 'long', ...opts }).format(date)
+  const fecha = new Intl.DateTimeFormat('es-EC', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    ...opts,
+  }).format(date)
+  return { dia: dia.charAt(0).toUpperCase() + dia.slice(1), fecha }
+}
+
 /**
  * Privacidad: quita los puntos dentro de `metros` de la salida y llegada.
  */

@@ -12,9 +12,6 @@ import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Typeface
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 /** Plantillas transparentes para poner sobre una foto propia. */
 enum class Plantilla(val etiqueta: String, val cx: Float = 0.5f, val cy: Float = 0.5f, val escala: Float = 1f) {
@@ -175,9 +172,8 @@ object Plantillas {
                 pie()
             }
             Plantilla.Fecha -> {
-                val fecha = SimpleDateFormat("EEEE|d 'de' MMMM yyyy", Locale("es", "EC"))
-                    .format(Date(d.fechaMs)).split('|')
-                texto(fecha[0].replaceFirstChar { it.uppercase() }, 72f, 720f, 76f, 700)
+                val fecha = Compartir.textoFechaPlantilla(d.fechaMs)
+                texto(fecha[0], 72f, 720f, 76f, 700)
                 texto(fecha.getOrElse(1) { "" }, 72f, 900f, 54f, 400)
                 texto("%.2f km".format(java.util.Locale.US, d.distanciaKm), 72f, 1160f, 64f, 700)
                 pie()
@@ -227,9 +223,8 @@ object Plantillas {
                     x = siguiente
                 }
                 c.drawPath(diente, borde)
-                val fecha = SimpleDateFormat("EEEE|d 'de' MMMM", Locale("es", "EC"))
-                    .format(Date(d.fechaMs)).split('|')
-                texto(fecha[0].replaceFirstChar { it.uppercase() }, 540f, 820f, 64f, 700, Paint.Align.CENTER)
+                val fecha = Compartir.textoFechaPlantilla(d.fechaMs, patron = "EEEE|d 'de' MMMM")
+                texto(fecha[0], 540f, 820f, 64f, 700, Paint.Align.CENTER)
                 texto("%.2f km".format(java.util.Locale.US, d.distanciaKm), 540f, 960f, 72f, 800, Paint.Align.CENTER)
                 texto(fecha.getOrElse(1) { "" }, 540f, 1060f, 36f, 400, Paint.Align.CENTER)
                 pie()

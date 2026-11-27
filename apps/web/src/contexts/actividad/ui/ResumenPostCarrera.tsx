@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { nuevoRecord } from '../../../shared/kernel/estadisticas'
 import { rachaTrasCarrera } from '../../../shared/kernel/rachas'
 import {
+  fechaPlantillaMs,
   HANDLE_RUNCITY,
   recortarExtremos,
   SITIO,
@@ -55,7 +56,7 @@ export function ResumenPostCarrera() {
       desnivelM: e.desnivelM,
       rachaDias: racha.despues.diaria,
       enlace: SITIO,
-      fechaMs: e.inicioMs,
+      fechaMs: fechaPlantillaMs(e.inicioMs, Date.now() - (e.segundos || 0) * 1000),
       recordLabel: record?.etiqueta ?? null,
       handle: sesion?.username?.trim()
         ? `@${sesion.username.trim().replace(/^@+/, '')}`

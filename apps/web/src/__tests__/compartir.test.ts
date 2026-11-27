@@ -3,10 +3,13 @@ import {
   copiarImagen,
   enlaceRuta,
   enlaceWhatsApp,
+  fechaPlantillaMs,
+  fechaValidaMs,
   metricas,
   proyectar,
   recortarExtremos,
   textoCompartir,
+  textoFechaPlantilla,
   type DatosCompartir,
 } from '../shared/lib/compartir'
 
@@ -93,6 +96,30 @@ describe('compartir', () => {
       Object.defineProperty(navigator, 'clipboard', { configurable: true, value: anterior })
     }
   })
+
+  it('nunca usa la epoca Unix si la fecha falta o es invalida', () => {
+    const respaldo = Date.UTC(2026, 10, 26, 17, 0, 0)
+    expect(fechaValidaMs(undefined)).toBeNull()
+    expect(fechaValidaMs(null)).toBeNull()
+    expect(fechaValidaMs(0)).toBeNull()
+    expect(fechaValidaMs(NaN)).toBeNull()
+    expect(fechaValidaMs(-1)).toBeNull()
+    expect(fechaPlantillaMs(0, respaldo)).toBe(respaldo)
+    expect(fechaPlantillaMs(undefined, respaldo)).toBe(respaldo)
+    const { dia, fecha } = textoFechaPlantilla(0, respaldo)
+    expect(dia).toBe('Jueves')
+    expect(fecha).toBe('26 de noviembre de 2026')
+    expect(fecha).not.toMatch(/1970|1969/)
+  })
+  it('acepta una fecha valida en milisegundos o en segundos Unix', () => {
+    const ms = 1_700_000_000_000
+    expect(fechaValidaMs(ms)).toBe(ms)
+    expect(fechaValidaMs(1_700_000_000)).toBe(ms)
+    const { dia, fecha } = textoFechaPlantilla(1_700_000_000)
+    expect(dia).toBe('Martes')
+    expect(fecha).toBe('14 de noviembre de 2023')
+  })
+
   it('usa descarga como fallback si ClipboardItem no está disponible', async () => {
     vi.stubGlobal('ClipboardItem', undefined)
     try {
