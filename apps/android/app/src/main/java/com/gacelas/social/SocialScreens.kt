@@ -243,7 +243,12 @@ fun TarjetaLogros(carreras: List<Carrera>, hechos: Map<String, Long>, onVerTodos
 @Composable
 fun LogrosScreen(onAtras: () -> Unit) {
     val carreras by com.gacelas.ui.carrerasState()
-    val hechos = estadoLogros(carreras)
+    LogrosContenido(carreras, estadoLogros(carreras), onAtras)
+}
+
+/** La lista completa sin estado propio (la pintan tambien las pruebas de capturas). */
+@Composable
+fun LogrosContenido(carreras: List<Carrera>, hechos: Map<String, Long>, onAtras: () -> Unit) {
     var abierto by remember { mutableStateOf<Logro?>(null) }
     Column(Modifier.background(com.gacelas.ui.components.Tablero.Fondo)) {
         com.gacelas.ui.components.EncabezadoAtras("Logros", onAtras)
