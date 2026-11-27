@@ -2,4 +2,4 @@
 export * from './api'
 export { InsigniaNivel } from './ui/PostSocial'
 export { RankingSemanal } from './ui/RankingSemanal'
-export { ListaLogros, ModalReporte } from './ui/Social'
+export { ListaLogros, ModalReporte, useEstadoLogros } from './ui/Social'

@@ -5,7 +5,6 @@ import { usuarioActualMock, type Ruta } from '../../../../mocks/data'
 import {
   inicioSemana,
   kmMensual,
-  medallas,
   records,
   type RecordPersonal,
 } from '../../../../shared/kernel/estadisticas'
@@ -25,11 +24,10 @@ import {
 } from '../../../../shared/ui/Visual'
 import { useRacha } from '../../../actividad'
 import { useActividad } from '../../../actividad/api'
-import { ListaLogros } from '../../../comunidad'
+import { ListaLogros, useEstadoLogros } from '../../../comunidad'
 import { useComunidad } from '../../../comunidad/api'
 import { useRutas } from '../../../rutas/api'
 import { useIdentidad } from '../../application/estado'
-import { Medallero } from './SeccionesPerfil'
 
 export function FotoPerfil({
   foto,
@@ -118,7 +116,7 @@ export function Perfil() {
   const ordenadas = useMemo(() => [...carreras].sort((a, b) => b.inicioMs - a.inicioMs), [carreras])
   const totalKm = carreras.reduce((s, c) => s + c.distanciaKm, 0)
   const nivel = progresoNivel(totalKm)
-  const meds = useMemo(() => medallas(carreras), [carreras])
+  const logrosGanados = useEstadoLogros().filter((x) => x.lograda).length
   const paginas = Math.max(1, Math.ceil(ordenadas.length / POR_PAGINA))
   const pag = Math.min(pagina, paginas - 1)
   const desde = new Date(ordenadas.at(-1)?.inicioMs ?? Date.now())
@@ -230,7 +228,7 @@ export function Perfil() {
               {p}
               {p !== 'Resumen' && (
                 <span className="hidden sm:inline">
-                  {` (${p === 'Actividades' ? carreras.length : meds.filter((x) => x.lograda).length})`}
+                  {` (${p === 'Actividades' ? carreras.length : logrosGanados})`}
                 </span>
               )}
             </button>
@@ -312,14 +310,7 @@ export function Perfil() {
           )}
         </Panel>
       )}
-      {pestana === 'Logros' && (
-        <div className="space-y-5">
-          <Panel titulo="Medallas" testId="panel-medallas">
-            <Medallero lista={meds} />
-          </Panel>
-          <ListaLogros />
-        </div>
-      )}
+      {pestana === 'Logros' && <ListaLogros />}
 
       <Dialogo
         titulo="¿Eliminar carrera?"
@@ -369,7 +360,7 @@ function Resumen({
   const desn = del.reduce((s, c) => s + c.desnivelM, 0)
   const u = Unidades.etiquetaDistancia(m)
   const recs = useMemo(() => records(carreras), [carreras])
-  const meds = useMemo(() => medallas(carreras), [carreras])
+  const logros = useEstadoLogros()
   const nSem = semanas === 4 ? 4 : semanas === 12 ? 12 : 0
   const barras = nSem
     ? kmPorSemanas(carreras, nSem, ahora)
@@ -482,12 +473,12 @@ function Resumen({
         titulo="Logros"
         className="lg:col-span-4"
         accion={{
-          texto: `${meds.filter((x) => x.lograda).length} de ${meds.length}`,
+          texto: `${logros.filter((x) => x.lograda).length} de ${logros.length}`,
           onClick: () =>
             document.querySelector<HTMLButtonElement>('[role="tab"]:nth-child(3)')?.click(),
         }}
       >
-        <Medallero lista={meds} />
+        <ListaLogros modo="resumen" />
       </Panel>
 
       <Panel

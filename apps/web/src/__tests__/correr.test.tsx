@@ -130,14 +130,14 @@ describe('logros', () => {
         id: `${d}`,
         inicioMs: new Date(2026, 0, d, 7).getTime(),
         distanciaKm: km,
-        segundos: 1800,
+        segundos: 7200,
       }) as never
     expect(logrosCumplidos([], Date.now())).toEqual([])
     expect(logrosCumplidos([c(3, 1)], Date.now())).toEqual(['primera_carrera'])
     expect(logrosCumplidos([c(3, 1), c(10.2, 2)], Date.now())).toEqual([
-      'primera_carrera',
       'km_5',
       'km_10',
+      'primera_carrera',
     ])
   })
 })

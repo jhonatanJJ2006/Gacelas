@@ -16,7 +16,7 @@ import com.gacelas.inicio.rangoSemana
 import com.gacelas.perfil.Contadores
 import com.gacelas.perfil.EstadisticasHistoricas
 import com.gacelas.perfil.KilometrajeMensual
-import com.gacelas.perfil.Medallero
+import com.gacelas.social.TarjetaLogros
 import com.gacelas.perfil.Records
 import com.gacelas.rutas.ListaRutasContenido
 import com.gacelas.rutas.domain.modelo.FiltrosRuta
@@ -83,7 +83,7 @@ class ParidadSeccionesTest {
                     EstadisticasHistoricas(EstadisticasPerfil.historico(carreras), true)
                     KilometrajeMensual(EstadisticasPerfil.kmMensual(carreras, ahora), true)
                     Records(EstadisticasPerfil.records(carreras))
-                    Medallero(EstadisticasPerfil.medallas(carreras))
+                    TarjetaLogros(carreras, emptyMap())
                 }
             }
         }
