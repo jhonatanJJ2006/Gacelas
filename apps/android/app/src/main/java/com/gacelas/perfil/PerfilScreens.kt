@@ -120,7 +120,7 @@ fun FotoPerfil(path: String?, tamano: androidx.compose.ui.unit.Dp) {
 }
 
 @Composable
-fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Unit, onCarrera: (String) -> Unit = {}, onReportes: () -> Unit = {}, onLogros: () -> Unit = {}, onMedallero: () -> Unit = {}, onCorrer: () -> Unit = {}, onComparar: () -> Unit = {}) {
+fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Unit, onCarrera: (String) -> Unit = {}, onReportes: () -> Unit = {}, onLogros: () -> Unit = {}, onCorrer: () -> Unit = {}, onComparar: () -> Unit = {}) {
     val perfil by sesionState()
     val carreras by carrerasState()
     val ajustes by ajustesState()
@@ -131,7 +131,6 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
     val hist = remember(carreras) { EstadisticasPerfil.historico(carreras) }
     val meses = remember(carreras) { EstadisticasPerfil.kmMensual(carreras, System.currentTimeMillis()) }
     val recs = remember(carreras) { EstadisticasPerfil.records(carreras) }
-    val meds = remember(carreras) { EstadisticasPerfil.medallas(carreras) }
     val pendientes by com.gacelas.ui.carrerasPendientesState()
     // Primer valor de la sesion y del historial (DataStore o Supabase): esqueleto mientras tanto.
     val cont = com.gacelas.ui.contenedor()
@@ -211,7 +210,6 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
             }
         }
         Records(recs)
-        Medallero(meds, onVerTodo = onMedallero)
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Actividades recientes", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
             Text("${carreras.size} en total", style = GType.labelMd, color = GColors.TextSecondary)

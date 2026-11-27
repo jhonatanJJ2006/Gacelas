@@ -191,7 +191,7 @@ private fun NavGraphBuilder.principalGraph(nav: NavHostController) {
             onAjustes = { nav.ir(Destinos.AJUSTES) },
             onCarrera = { nav.ir(Destinos.detalleCarrera(it)) },
             onReportes = { nav.ir(Destinos.MIS_REPORTES) },
-            onLogros = { nav.ir(Destinos.LOGROS) }, onMedallero = { nav.ir(Destinos.MEDALLERO) }, onCorrer = { nav.ir(Destinos.CORRER) },
+            onLogros = { nav.ir(Destinos.LOGROS) }, onCorrer = { nav.ir(Destinos.CORRER) },
             onComparar = { nav.ir(Destinos.COMPARAR) },
         )
     }
@@ -249,7 +249,6 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
     composable(Destinos.DETALLE_CARRERA) { e -> com.gacelas.perfil.DetalleCarreraScreen(e.arguments?.getString("id").orEmpty(), onAtras = { nav.atras() }) }
     composable(Destinos.COMPARAR) { com.gacelas.perfil.CompararCarrerasScreen(onAtras = { nav.atras() }) }
     composable(Destinos.LOGROS) { com.gacelas.social.LogrosScreen(onAtras = { nav.atras() }) }
-    composable(Destinos.MEDALLERO) { com.gacelas.perfil.MedalleroScreen(onAtras = { nav.atras() }) }
     composable(Destinos.AVATAR) { Avatar3DScreen(onAtras = { nav.atras() }, onGuardar = { nav.atras() }) }
     composable(Destinos.AJUSTES) {
         AjustesPreferenciasScreen(

@@ -1,0 +1,292 @@
+{
+  "version": 1,
+  "descripcion": "Catalogo unico de logros de Runcity. Fuente de verdad para web, Android y la tabla logros.catalogo_logros (migracion 049).",
+  "logros": [
+    {
+      "codigo": "km_5",
+      "titulo": "5 km",
+      "descripcion": "Corriste 5 km en una carrera.",
+      "comoConseguirlo": "Completa 5 km en una sola carrera.",
+      "categoria": "distancia",
+      "meta": 5,
+      "unidad": "km",
+      "medallaOrigen": "5k",
+      "orden": 1
+    },
+    {
+      "codigo": "km_10",
+      "titulo": "10 km",
+      "descripcion": "Corriste 10 km en una carrera.",
+      "comoConseguirlo": "Completa 10 km en una sola carrera.",
+      "categoria": "distancia",
+      "meta": 10,
+      "unidad": "km",
+      "medallaOrigen": "10k",
+      "orden": 2
+    },
+    {
+      "codigo": "km_15",
+      "titulo": "15 km",
+      "descripcion": "Corriste 15 km en una carrera.",
+      "comoConseguirlo": "Completa 15 km en una sola carrera.",
+      "categoria": "distancia",
+      "meta": 15,
+      "unidad": "km",
+      "medallaOrigen": null,
+      "orden": 3
+    },
+    {
+      "codigo": "km_21",
+      "titulo": "Media maratón",
+      "descripcion": "Corriste 21,1 km en una carrera.",
+      "comoConseguirlo": "Completa los 21,1 km de una media maratón en una sola carrera.",
+      "categoria": "distancia",
+      "meta": 21,
+      "unidad": "km",
+      "medallaOrigen": "21k",
+      "orden": 4
+    },
+    {
+      "codigo": "km_42",
+      "titulo": "Maratón",
+      "descripcion": "Corriste 42,2 km en una carrera.",
+      "comoConseguirlo": "Completa los 42,2 km de un maratón en una sola carrera.",
+      "categoria": "distancia",
+      "meta": 42,
+      "unidad": "km",
+      "medallaOrigen": "42k",
+      "orden": 5
+    },
+    {
+      "codigo": "total_50",
+      "titulo": "50 km acumulados",
+      "descripcion": "Sumaste 50 km entre todas tus carreras.",
+      "comoConseguirlo": "Suma 50 km entre todas tus carreras guardadas.",
+      "categoria": "distancia",
+      "meta": 50,
+      "unidad": "km",
+      "medallaOrigen": null,
+      "orden": 6
+    },
+    {
+      "codigo": "total_100",
+      "titulo": "Centenario",
+      "descripcion": "Sumaste 100 km entre todas tus carreras.",
+      "comoConseguirlo": "Suma 100 km entre todas tus carreras guardadas.",
+      "categoria": "distancia",
+      "meta": 100,
+      "unidad": "km",
+      "medallaOrigen": "centenario",
+      "orden": 7
+    },
+    {
+      "codigo": "total_500",
+      "titulo": "Quinientos",
+      "descripcion": "Sumaste 500 km entre todas tus carreras.",
+      "comoConseguirlo": "Suma 500 km entre todas tus carreras guardadas.",
+      "categoria": "distancia",
+      "meta": 500,
+      "unidad": "km",
+      "medallaOrigen": "500k",
+      "orden": 8
+    },
+    {
+      "codigo": "total_1000",
+      "titulo": "Mil kilómetros",
+      "descripcion": "Sumaste 1000 km entre todas tus carreras.",
+      "comoConseguirlo": "Suma 1000 km entre todas tus carreras guardadas.",
+      "categoria": "distancia",
+      "meta": 1000,
+      "unidad": "km",
+      "medallaOrigen": "1000k",
+      "orden": 9
+    },
+    {
+      "codigo": "primera_carrera",
+      "titulo": "Primera carrera",
+      "descripcion": "Grabaste tu primera carrera.",
+      "comoConseguirlo": "Graba y guarda tu primera carrera con el botón Correr.",
+      "categoria": "constancia",
+      "meta": 1,
+      "unidad": "carrera",
+      "medallaOrigen": "primera",
+      "orden": 10
+    },
+    {
+      "codigo": "racha_3",
+      "titulo": "Racha de 3 días",
+      "descripcion": "Corriste 3 días seguidos.",
+      "comoConseguirlo": "Corre tres días seguidos.",
+      "categoria": "constancia",
+      "meta": 3,
+      "unidad": "días",
+      "medallaOrigen": null,
+      "orden": 11
+    },
+    {
+      "codigo": "racha_7",
+      "titulo": "Racha de 7 días",
+      "descripcion": "Corriste 7 días seguidos.",
+      "comoConseguirlo": "Corre al menos una vez cada día durante 7 días seguidos.",
+      "categoria": "constancia",
+      "meta": 7,
+      "unidad": "días",
+      "medallaOrigen": "racha7",
+      "orden": 12
+    },
+    {
+      "codigo": "racha_30",
+      "titulo": "Racha de 30 días",
+      "descripcion": "Corriste 30 días seguidos.",
+      "comoConseguirlo": "Corre al menos una vez cada día durante un mes.",
+      "categoria": "constancia",
+      "meta": 30,
+      "unidad": "días",
+      "medallaOrigen": "racha30",
+      "orden": 13
+    },
+    {
+      "codigo": "carreras_10",
+      "titulo": "10 carreras",
+      "descripcion": "Guardaste 10 carreras.",
+      "comoConseguirlo": "Guarda 10 carreras en tu historial.",
+      "categoria": "constancia",
+      "meta": 10,
+      "unidad": "carreras",
+      "medallaOrigen": null,
+      "orden": 14
+    },
+    {
+      "codigo": "carreras_50",
+      "titulo": "50 carreras",
+      "descripcion": "Guardaste 50 carreras.",
+      "comoConseguirlo": "Guarda 50 carreras en tu historial.",
+      "categoria": "constancia",
+      "meta": 50,
+      "unidad": "carreras",
+      "medallaOrigen": null,
+      "orden": 15
+    },
+    {
+      "codigo": "semanas_meta_4",
+      "titulo": "Mes constante",
+      "descripcion": "Cumpliste tu meta semanal 4 semanas seguidas.",
+      "comoConseguirlo": "Cumple tu meta de carreras por semana durante 4 semanas seguidas.",
+      "categoria": "constancia",
+      "meta": 4,
+      "unidad": "semanas",
+      "medallaOrigen": null,
+      "orden": 16
+    },
+    {
+      "codigo": "ritmo_6",
+      "titulo": "Bajo 6:00",
+      "descripcion": "Corriste 3 km o más a menos de 6:00 por km.",
+      "comoConseguirlo": "Corre al menos 3 km con un ritmo medio menor a 6:00 por km.",
+      "categoria": "velocidad",
+      "meta": 1,
+      "unidad": "",
+      "medallaOrigen": null,
+      "orden": 17
+    },
+    {
+      "codigo": "ritmo_5",
+      "titulo": "Bajo 5:00",
+      "descripcion": "Corriste 3 km o más a menos de 5:00 por km.",
+      "comoConseguirlo": "Corre al menos 3 km con un ritmo medio menor a 5:00 por km.",
+      "categoria": "velocidad",
+      "meta": 1,
+      "unidad": "",
+      "medallaOrigen": null,
+      "orden": 18
+    },
+    {
+      "codigo": "ritmo_430",
+      "titulo": "Bajo 4:30",
+      "descripcion": "Corriste 5 km o más a menos de 4:30 por km.",
+      "comoConseguirlo": "Corre al menos 5 km con un ritmo medio menor a 4:30 por km.",
+      "categoria": "velocidad",
+      "meta": 1,
+      "unidad": "",
+      "medallaOrigen": null,
+      "orden": 19
+    },
+    {
+      "codigo": "escalador",
+      "titulo": "Escalador",
+      "descripcion": "Subiste 100 m en una carrera.",
+      "comoConseguirlo": "Acumula 100 m de desnivel positivo en una sola carrera.",
+      "categoria": "exploracion",
+      "meta": 100,
+      "unidad": "m",
+      "medallaOrigen": null,
+      "orden": 20
+    },
+    {
+      "codigo": "explorador",
+      "titulo": "Explorador",
+      "descripcion": "Empezaste carreras en 5 lugares distintos.",
+      "comoConseguirlo": "Sal a correr desde 5 lugares distintos de la ciudad.",
+      "categoria": "exploracion",
+      "meta": 5,
+      "unidad": "lugares",
+      "medallaOrigen": null,
+      "orden": 21
+    },
+    {
+      "codigo": "desnivel_1000",
+      "titulo": "Andino",
+      "descripcion": "Acumulaste 1000 m de subida entre todas tus carreras.",
+      "comoConseguirlo": "Acumula 1000 m de desnivel positivo entre tus carreras.",
+      "categoria": "exploracion",
+      "meta": 1000,
+      "unidad": "m",
+      "medallaOrigen": "desnivel1000",
+      "orden": 22
+    },
+    {
+      "codigo": "desnivel_5000",
+      "titulo": "Cumbre",
+      "descripcion": "Acumulaste 5000 m de subida entre todas tus carreras.",
+      "comoConseguirlo": "Acumula 5000 m de desnivel positivo entre tus carreras.",
+      "categoria": "exploracion",
+      "meta": 5000,
+      "unidad": "m",
+      "medallaOrigen": "desnivel5000",
+      "orden": 23
+    },
+    {
+      "codigo": "madrugador",
+      "titulo": "Madrugador",
+      "descripcion": "Saliste a correr 3 veces antes de las 7:00.",
+      "comoConseguirlo": "Empieza 3 carreras antes de las 7:00 de la mañana.",
+      "categoria": "horario",
+      "meta": 3,
+      "unidad": "salidas",
+      "medallaOrigen": null,
+      "orden": 24
+    },
+    {
+      "codigo": "nocturno",
+      "titulo": "Corredor nocturno",
+      "descripcion": "Saliste a correr 3 veces después de las 19:00.",
+      "comoConseguirlo": "Empieza 3 carreras después de las 19:00.",
+      "categoria": "horario",
+      "meta": 3,
+      "unidad": "salidas",
+      "medallaOrigen": null,
+      "orden": 25
+    },
+    {
+      "codigo": "fin_de_semana",
+      "titulo": "Guerrero de fin de semana",
+      "descripcion": "Corriste 5 sábados o domingos.",
+      "comoConseguirlo": "Corre 5 veces en sábado o domingo.",
+      "categoria": "horario",
+      "meta": 5,
+      "unidad": "salidas",
+      "medallaOrigen": null,
+      "orden": 26
+    }
+  ]
+}

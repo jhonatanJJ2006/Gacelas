@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Terrain
+import androidx.compose.material.icons.filled.Landscape
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.EventAvailable
 import androidx.compose.material.icons.filled.Repeat
@@ -140,13 +141,14 @@ private fun icono(l: Logro): androidx.compose.ui.graphics.vector.ImageVector = w
     Logro.Km5 -> Icons.Filled.Flag
     Logro.Km10 -> Icons.Filled.MilitaryTech
     Logro.Km15 -> Icons.Filled.EmojiEvents
-    Logro.Km21 -> Icons.Filled.WorkspacePremium
-    Logro.Total50 -> Icons.Filled.Route
+    Logro.Km21, Logro.Km42 -> Icons.Filled.WorkspacePremium
+    Logro.Total50, Logro.Total100, Logro.Total500, Logro.Total1000 -> Icons.Filled.Route
     Logro.Racha3, Logro.Racha7, Logro.Racha30 -> Icons.Filled.LocalFireDepartment
     Logro.Carreras10, Logro.Carreras50 -> Icons.Filled.Repeat
     Logro.SemanasMeta4 -> Icons.Filled.EventAvailable
     Logro.Ritmo6, Logro.Ritmo5, Logro.Ritmo430 -> Icons.Filled.Speed
     Logro.Escalador -> Icons.Filled.Terrain
+    Logro.Desnivel1000, Logro.Desnivel5000 -> Icons.Filled.Landscape
     Logro.Explorador -> Icons.Filled.Explore
     Logro.Madrugador -> Icons.Filled.WbTwilight
     Logro.Nocturno -> Icons.Filled.NightsStay
@@ -160,13 +162,6 @@ private fun colorCategoria(c: com.gacelas.social.CategoriaLogro) = when (c) {
     com.gacelas.social.CategoriaLogro.Exploracion -> GColors.C2Cielo
     com.gacelas.social.CategoriaLogro.Horario -> androidx.compose.ui.graphics.Color(0xFFFBBF24)
 }
-
-private val unidadLogro = mapOf(
-    Logro.Km5 to "km", Logro.Km10 to "km", Logro.Km15 to "km", Logro.Km21 to "km", Logro.Total50 to "km",
-    Logro.Racha3 to "días", Logro.Racha7 to "días", Logro.Racha30 to "días", Logro.SemanasMeta4 to "semanas",
-    Logro.Carreras10 to "carreras", Logro.Carreras50 to "carreras", Logro.PrimeraCarrera to "carrera",
-    Logro.Escalador to "m", Logro.Explorador to "lugares", Logro.Madrugador to "salidas", Logro.Nocturno to "salidas", Logro.FinDeSemana to "salidas",
-)
 
 /** Logros guardados y la cola de recien ganados (modal); comparte estado entre Perfil y la pantalla de logros. */
 @Composable
@@ -198,7 +193,7 @@ private fun DetalleLogro(l: Logro, carreras: List<Carrera>, hecho: Long?, onCerr
     val actual = com.gacelas.social.progresoLogro(l, carreras, System.currentTimeMillis())
     com.gacelas.ui.components.HojaInsigniaC2(
         icono(l), l.titulo, l.descripcion, l.comoConseguirlo,
-        actual = if (hecho != null) l.meta else actual, meta = l.meta, unidad = if (l.meta == 1 && unidadLogro[l] == null) "" else unidadLogro[l].orEmpty(),
+        actual = if (hecho != null) l.meta else actual, meta = l.meta, unidad = l.unidad,
         fecha = hecho?.let { fecha.format(Date(it)) }, lograda = hecho != null || actual >= l.meta, onCerrar = onCerrar, color = colorCategoria(l.categoria),
     )
 }
@@ -217,6 +212,12 @@ private fun CeldaLogro(l: Logro, carreras: List<Carrera>, hecho: Long?, modifier
 @Composable
 fun ListaLogros(carreras: List<Carrera>, onVerTodos: () -> Unit = {}) {
     val hechos = estadoLogros(carreras)
+    TarjetaLogros(carreras, hechos, onVerTodos)
+}
+
+/** La tarjeta de Perfil sin estado propio (la pintan tambien las pruebas de capturas). */
+@Composable
+fun TarjetaLogros(carreras: List<Carrera>, hechos: Map<String, Long>, onVerTodos: () -> Unit = {}) {
     var abierto by remember { mutableStateOf<Logro?>(null) }
     val ahora = remember { System.currentTimeMillis() }
     val orden = remember(carreras, hechos) {
@@ -242,7 +243,12 @@ fun ListaLogros(carreras: List<Carrera>, onVerTodos: () -> Unit = {}) {
 @Composable
 fun LogrosScreen(onAtras: () -> Unit) {
     val carreras by com.gacelas.ui.carrerasState()
-    val hechos = estadoLogros(carreras)
+    LogrosContenido(carreras, estadoLogros(carreras), onAtras)
+}
+
+/** La lista completa sin estado propio (la pintan tambien las pruebas de capturas). */
+@Composable
+fun LogrosContenido(carreras: List<Carrera>, hechos: Map<String, Long>, onAtras: () -> Unit) {
     var abierto by remember { mutableStateOf<Logro?>(null) }
     Column(Modifier.background(com.gacelas.ui.components.Tablero.Fondo)) {
         com.gacelas.ui.components.EncabezadoAtras("Logros", onAtras)

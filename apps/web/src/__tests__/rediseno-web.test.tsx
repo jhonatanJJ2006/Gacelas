@@ -99,7 +99,7 @@ describe('nivel y logros reales', () => {
 
   it('proximos logros salen de las carreras', () => {
     const logros = proximosLogros([carreraPrueba({ distanciaKm: 8 })])
-    expect(logros.map((l) => l.id)).toEqual(['10k', '21k', 'racha7'])
+    expect(logros.map((l) => l.id)).toEqual(['km_10', 'km_15', 'km_21'])
     expect(logros[0]).toMatchObject({ pct: 80, texto: '8,0/10 km' })
   })
 

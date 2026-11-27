@@ -56,7 +56,7 @@ test.describe('Correr con GPS simulado', () => {
     await expect(page.getByTestId('estadisticas-historicas')).toContainText('1 carreras')
     await expect(page.getByTestId('km-mensual')).toBeVisible()
     await expect(page.getByTestId('records')).toContainText('1K')
-    await expect(page.getByTestId('medallero').locator('[data-lograda="true"]')).toHaveCount(1)
+    await expect(page.getByTestId('logros-resumen').locator('[data-lograda="true"]')).toHaveCount(1)
     await expect(page.getByTestId('total-seguidores')).toHaveText('0')
     await page.reload()
     await expect(page.getByText('Prueba e2e')).toBeVisible()

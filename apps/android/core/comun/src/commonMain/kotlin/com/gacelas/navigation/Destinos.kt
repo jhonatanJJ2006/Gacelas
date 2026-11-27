@@ -46,7 +46,6 @@ object Destinos {
     const val MIS_REPORTES = "perfil/reportes"
     const val AVATAR = "perfil/avatar"
     const val LOGROS = "perfil/logros"
-    const val MEDALLERO = "perfil/medallero"
     const val DETALLE_CARRERA = "perfil/carrera/{id}"
     fun detalleCarrera(id: String) = "perfil/carrera/$id"
     const val COMPARAR = "perfil/comparar"
@@ -74,7 +73,7 @@ object Destinos {
     val todas = acceso + conBarraInferior + listOf(
         CORRER, CARRERA_EN_CURSO, CRONOMETRO, RESUMEN,
         BUSCADOR_RUTAS, NAVEGACION, DETALLE_EVENTO, EN_VIVO, DETALLE_EN_VIVO, DETALLE_RUTA, CREAR_RUTA, CLUBES, DETALLE_CLUB, EVENTO_EN_VIVO,
-        EDITAR_PERFIL, AVATAR, LOGROS, MEDALLERO,
+        EDITAR_PERFIL, AVATAR, LOGROS,
         SEMANA, CLIMA, MAPA_SEGURIDAD,
         AJUSTES, PRIVACIDAD, CONFIG_NOTIFICACIONES, NOTIFICACIONES, BRUJULA, MAPAS_OFFLINE,
         MAPA_VIVO, TERMINOS, POLITICA_PRIVACIDAD,

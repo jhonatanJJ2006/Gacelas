@@ -16,14 +16,14 @@ describe('logros', () => {
   it('sin carreras no cumple ninguno', () => expect(logrosCumplidos([], ahora)).toEqual([]))
   it('una carrera de 10 km cumple primera, 5 y 10', () =>
     expect(logrosCumplidos([carrera(10, ahora)], ahora)).toEqual([
-      'primera_carrera',
       'km_5',
       'km_10',
+      'primera_carrera',
     ]))
   it('desbloquea solo una vez y lo guarda en el dispositivo', () => {
     const n = desbloquearNuevos([carrera(5, ahora)], ahora).map((l) => l.codigo)
-    expect(n).toEqual(['primera_carrera', 'km_5'])
-    expect(Object.keys(logrosDesbloqueados())).toEqual(['primera_carrera', 'km_5'])
+    expect(n).toEqual(['km_5', 'primera_carrera'])
+    expect(Object.keys(logrosDesbloqueados()).sort()).toEqual(['km_5', 'primera_carrera'])
     expect(desbloquearNuevos([carrera(5, ahora)], ahora)).toEqual([])
   })
 })

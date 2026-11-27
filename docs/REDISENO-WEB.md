@@ -37,7 +37,7 @@ La mejor ventana para correr es el tramo mas largo de horas de 5:00 a 20:00 con 
 
 - Rutas: cabecera con conteo (oficiales y de la comunidad), pestanas Explorar, Mis rutas y Guardadas, cuatro destacadas con criterio real (segura del dia, mejor valorada, para tu ritmo y la mas llana), filtros en columna desde 1024 px, orden (recomendadas, mas seguras, mas cortas, mas largas, menos desnivel) y tarjetas con mini mapa, nivel de seguridad y perfil de elevacion. Desde 1280 px se suma el panel de la ruta elegida.
 - Perfil: cabecera con nivel por km y progreso, contadores y accesos (avatar 3D, editar perfil, configuracion). Pestanas Resumen, Actividades, Logros y Reportes.
-  - Resumen: cifras del periodo (4 semanas, 12 semanas, ano o todo), volumen por semana o por mes, records, constancia (rachas, mapa de 26 semanas y carreras por dia), medallas, las 5 actividades mas recientes y rutas favoritas con la hora en que sueles correr.
+  - Resumen: cifras del periodo (4 semanas, 12 semanas, ano o todo), volumen por semana o por mes, records, constancia (rachas, mapa de 26 semanas y carreras por dia), logros, las 5 actividades mas recientes y rutas favoritas con la hora en que sueles correr.
   - Actividades: tabla paginada de 10 en 10. Desnivel y visibilidad solo desde 1400 px; en movil cada fila es una tarjeta.
   - La pagina pasa de unos 4000 px a unos 1750 px en escritorio.
 

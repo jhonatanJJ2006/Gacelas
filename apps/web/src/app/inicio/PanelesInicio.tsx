@@ -12,18 +12,12 @@ import {
   type ClimaActual,
 } from '../../contexts/clima/api'
 import { useEventos } from '../../contexts/eventos/api'
+import { LOGROS, progresoLogro } from '../../contexts/logros/api'
 import { useIdentidad } from '../../contexts/identidad/api'
 import { useRutas } from '../../contexts/rutas/api'
 import { haceTexto, nombreTipo, TIPOS_INCIDENTE } from '../../contexts/seguridad'
 import type { Evento } from '../../mocks/data'
-import {
-  diaSemana,
-  inicioSemana,
-  medallas,
-  mejorRacha,
-  retoMes,
-  totalesSemana,
-} from '../../shared/kernel/estadisticas'
+import { diaSemana, inicioSemana, retoMes, totalesSemana } from '../../shared/kernel/estadisticas'
 import type { CarreraGuardada } from '../../shared/kernel/tipos'
 import { formatearRitmo, Unidades, decimal } from '../../shared/lib/geo'
 import { Esqueleto } from '../../shared/ui/Esqueletos'
@@ -419,29 +413,18 @@ export function PanelReto({ className = '' }: { className?: string }) {
   )
 }
 
-/** Logros aun no conseguidos con su avance real (mismas medallas del Perfil). */
+/** Logros aun no conseguidos con su avance real (el mismo catalogo de logros del Perfil). */
 export function proximosLogros(carreras: CarreraGuardada[]) {
-  const max = carreras.reduce((x, c) => Math.max(x, c.distanciaKm), 0)
-  const total = carreras.reduce((s, c) => s + c.distanciaKm, 0)
-  const racha = mejorRacha(carreras)
-  const avance: Record<string, { v: number; meta: number; u: string }> = {
-    primera: { v: carreras.length, meta: 1, u: '' },
-    '5k': { v: max, meta: 5, u: 'km' },
-    '10k': { v: max, meta: 10, u: 'km' },
-    '21k': { v: max, meta: 21.1, u: 'km' },
-    centenario: { v: total, meta: 100, u: 'km' },
-    racha7: { v: racha, meta: 7, u: 'días' },
-  }
-  return medallas(carreras)
-    .filter((md) => !md.lograda && avance[md.id])
-    .map((md) => {
-      const a = avance[md.id]!
-      const fmt = (n: number) => (a.u === 'km' ? decimal(n) : String(Math.floor(n)))
+  const ahora = Date.now()
+  return LOGROS.map((l) => ({ l, v: progresoLogro(l.codigo, carreras, ahora, true) }))
+    .filter(({ l, v }) => v < l.meta)
+    .map(({ l, v }) => {
+      const fmt = (n: number) => (l.unidad === 'km' ? decimal(n) : String(Math.floor(n)))
       return {
-        id: md.id,
-        titulo: md.titulo,
-        pct: Math.min(100, (a.v / a.meta) * 100),
-        texto: `${fmt(a.v)}/${a.meta}${a.u ? ` ${a.u}` : ''}`,
+        id: l.codigo,
+        titulo: l.titulo,
+        pct: Math.min(100, (v / l.meta) * 100),
+        texto: `${fmt(v)}/${l.meta}${l.unidad ? ` ${l.unidad}` : ''}`,
       }
     })
     .sort((a, b) => b.pct - a.pct)

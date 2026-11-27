@@ -33,11 +33,8 @@ class EstadisticasPerfilTest {
         assertTrue(r[3].segundos != null)
     }
 
-    @Test fun medallasYReto() {
+    @Test fun rachaYReto() {
         assertEquals(3, EstadisticasPerfil.mejorRacha(lista))
-        val m = EstadisticasPerfil.medallas(lista).associate { it.id to it.lograda }
-        assertEquals(true, m["21k"])
-        assertEquals(false, m["racha7"])
         val r = EstadisticasPerfil.retoMes(lista, ahora)
         assertEquals("Reto Octubre Andino", r.titulo)
         assertEquals(10, r.diasRestantes)
