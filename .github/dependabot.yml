@@ -29,6 +29,12 @@ updates:
       # AGP 9 exige Gradle 9, compileSdk 37 y migrar los plugins de Kotlin.
       - dependency-name: com.android.tools.build:gradle
         update-types: ['version-update:semver-major']
+      # Gradle 9 no es compatible con AGP 8.7; va ligado a la migración a AGP 9.
+      - dependency-name: gradle-wrapper
+        update-types: ['version-update:semver-major']
+      # El BOM de Compose 2026 trae Compose 1.12, que exige compileSdk 37 (AGP 9).
+      - dependency-name: androidx.compose:compose-bom
+        update-types: ['version-update:semver-major']
       # SceneView 4 exige compileSdk 36 o superior (AGP 9) y cambia la API.
       - dependency-name: io.github.sceneview:sceneview
         update-types: ['version-update:semver-major']
