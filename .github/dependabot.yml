@@ -35,9 +35,10 @@ updates:
       # El BOM de Compose 2026 trae Compose 1.12, que exige compileSdk 37 (AGP 9).
       - dependency-name: androidx.compose:compose-bom
         update-types: ['version-update:semver-major']
-      # SceneView 4 exige compileSdk 36 o superior (AGP 9) y cambia la API.
+      # SceneView 4 exige compileSdk 36 o superior (AGP 9) y cambia la API; la 2.3
+      # ya rompe 18 pruebas de interfaz de Android.
       - dependency-name: io.github.sceneview:sceneview
-        update-types: ['version-update:semver-major']
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
       # Estas versiones traen dependencias androidx que exigen compileSdk 36 o 37
       # (AGP 9). Se retoman junto con la migración a AGP 9. Los parches siguen.
       - dependency-name: androidx.navigation:*
