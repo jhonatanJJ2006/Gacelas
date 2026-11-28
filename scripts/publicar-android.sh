@@ -10,8 +10,11 @@
 # mano no actualiza latest.json y las apps instaladas no ven la version nueva
 # (regresion 0.8.1-0.8.3, ver docs/REGRESIONES.md).
 #
-# Uso: scripts/publicar-android.sh "Novedad 1; Novedad 2; Novedad 3" [--obligatoria]
+# Uso: scripts/publicar-android.sh "Novedad 1; Novedad 2; Novedad 3" [--obligatoria] [--estable]
 # Las novedades separadas por ";" van como lista (items) al modal; notes guarda el texto completo.
+# --estable crea el release de GitHub como estable y "latest" (sin la marca de pre-release).
+# Al terminar registra la version en admin.versiones_app (registrar_version_app, migracion 050)
+# para que el panel de administracion la muestre; si ese registro falla solo se avisa.
 # Requisitos:
 #   - apps/android/local.properties con SUPABASE_URL, SUPABASE_ANON_KEY y GOOGLE_WEB_CLIENT_ID.
 #   - SUPABASE_SERVICE_ROLE_KEY en el entorno o en backend/.env (nunca va dentro del APK).
@@ -23,7 +26,15 @@
 set -euo pipefail
 RAIZ="$(cd "$(dirname "$0")/.." && pwd)"
 NOTAS="${1:?Falta el texto de las notas}"
-OBLIGATORIA="${2:-}"
+OBLIGATORIA=""
+ESTABLE=""
+for arg in "${@:2}"; do
+  case "$arg" in
+    --obligatoria) OBLIGATORIA="--obligatoria" ;;
+    --estable) ESTABLE="--estable" ;;
+    *) echo "Opcion desconocida: $arg"; exit 1 ;;
+  esac
+done
 AND="$RAIZ/apps/android"
 URL="$(grep -E '^SUPABASE_URL=' "$AND/local.properties" | cut -d= -f2-)"
 KEY="${SUPABASE_SERVICE_ROLE_KEY:-$(grep -sE '^SUPABASE_SERVICE_ROLE_KEY=' "$RAIZ/backend/.env" | cut -d= -f2- || true)}"
@@ -81,7 +92,8 @@ borrar_objeto() { # $1 ruta en el bucket
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 cp "$APK" "$TMP/$ASSET"
 git -C "$RAIZ" tag "v$NOMBRE" && git -C "$RAIZ" push origin "v$NOMBRE"
-gh release create "v$NOMBRE" "$TMP/$ASSET" --repo "$REPO" --prerelease --verify-tag --title "Runcity v$NOMBRE" --notes "$(echo "$NOTAS" | tr ';' '\n' | sed 's/^ */- /')
+if [ "$ESTABLE" = "--estable" ]; then CANAL_GH=(--latest); CANAL=estable; else CANAL_GH=(--prerelease); CANAL=prerelease; fi
+gh release create "v$NOMBRE" "$TMP/$ASSET" --repo "$REPO" "${CANAL_GH[@]}" --verify-tag --title "Runcity v$NOMBRE" --notes "$(echo "$NOTAS" | tr ';' '\n' | sed 's/^ */- /')
 
 APK release arm64-v8a ($BYTES bytes, sha256 $SHA)."
 
@@ -136,3 +148,13 @@ echo "$LISTA" | jq -r '.[] | .name // empty' | while IFS= read -r name; do
 done
 
 "$RAIZ/scripts/verificar-manifiesto.sh"
+
+# 6) Registrar la version para el panel de administracion (Reportes > Versiones).
+jq -n --arg n "$NOMBRE" --argjson c "$CODIGO" --arg canal "$CANAL" --argjson bytes "$BYTES" --arg notas "$NOTAS" \
+  '{p_version_name:$n, p_version_code:$c, p_canal:$canal, p_apk_bytes:$bytes, p_notas:$notas, p_plataforma:"android"}' > "$TMP/version.json"
+if curl -fsS -X POST "$URL/rest/v1/rpc/registrar_version_app" -H "Authorization: Bearer $KEY" -H "apikey: $KEY" \
+  -H "Content-Type: application/json" --data-binary "@$TMP/version.json" > /dev/null; then
+  echo "Version $NOMBRE registrada en admin.versiones_app ($CANAL)."
+else
+  echo "Aviso: no se pudo registrar $NOMBRE en admin.versiones_app; el release ya esta publicado."
+fi
