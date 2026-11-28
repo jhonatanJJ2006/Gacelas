@@ -20,6 +20,8 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,16 +55,22 @@ import com.gacelas.administracion.domain.accionesPermitidas
 import com.gacelas.administracion.domain.destructiva
 import com.gacelas.administracion.domain.etiquetaAccion
 import com.gacelas.administracion.domain.etiquetaTipo
+import com.gacelas.administracion.domain.csvEstadisticas
 import com.gacelas.administracion.domain.idCorto
+import com.gacelas.administracion.domain.nombreCsvEstadisticas
 import com.gacelas.administracion.domain.siguienteCaso
 import com.gacelas.ui.components.BotonModalC2
 import com.gacelas.ui.components.CampoTexto
 import com.gacelas.ui.components.DialogoC2
 import com.gacelas.ui.components.FilaInterruptor
 import com.gacelas.ui.theme.GType
+import kotlinx.coroutines.delay
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
+
+/** Cada cuanto se refresca el mapa del Resumen (0 = sin refresco, para pruebas y capturas). */
+val LocalRefrescoAdminMs = staticCompositionLocalOf { 30_000L }
 
 private fun km(v: Double): String = ((v * 10).toLong() / 10.0).toString()
 private fun fecha(iso: String?): String = iso?.take(10).orEmpty()
@@ -99,21 +107,32 @@ private fun Confirmar(titulo: String, texto: String, confirmar: String, onConfir
 // ---------- Resumen ----------
 
 /**
- * Resumen: lienzo del mapa de Loja, accion ambar para atender el siguiente caso y cifras reales de
- * admin_metricas. La posicion de corredores e incidentes en vivo no tiene fuente en la app movil del
- * panel: el mapa lo dice y no dibuja puntos inventados.
+ * Resumen: mapa de Loja con corredores, incidentes y SOS reales (se refresca cada 30 s), accion
+ * ambar para atender el siguiente caso, cifras de admin_metricas y alertas SOS de las ultimas 24 h.
  */
 @Composable
 fun ResumenAdmin(repo: AdminRepositorio, onSalir: () -> Unit, onAtender: (String?) -> Unit) {
     val vm = viewModel { DashboardAdminViewModel(repo) }
     val cola = viewModel { PendientesAdminViewModel(repo) }
+    val esc = viewModel { EscenarioAdminViewModel(repo) }
     val carga by vm.estado.collectAsState()
     val pendientes by cola.estado.collectAsState()
+    val vivo by esc.estado.collectAsState()
+    val refresco = LocalRefrescoAdminMs.current
+    if (refresco > 0) {
+        LaunchedEffect(esc) {
+            while (true) {
+                delay(refresco)
+                esc.refrescar()
+                cola.refrescar()
+            }
+        }
+    }
     Marco("Resumen", vm, onSalir, eyebrow = "Loja, Ecuador") {
-        SegunCarga(carga, { vm.recargar(); cola.recargar() }) { m ->
-            MapaResumen(
-                m.reportesPendientes.toString(), m.eventosProximos.toString(), m.usuarios7d.toString(),
-            )
+        SegunCarga(carga, { vm.recargar(); cola.recargar(); esc.recargar() }) { m ->
+            val escenario = (vivo as? Carga.Listo)?.datos
+            MapaVivo(escenario, m.reportesPendientes.toString())
+            Leyenda()
             val siguiente = (pendientes as? Carga.Listo)?.datos?.siguienteCaso()
             AtenderSiguiente(siguiente) { onAtender(siguiente?.id) }
             Mosaicos(
@@ -128,8 +147,19 @@ fun ResumenAdmin(repo: AdminRepositorio, onSalir: () -> Unit, onAtender: (String
                 listOf(
                     Triple(m.carreras7d.toString(), "Carreras 7 d", Esc.Texto),
                     Triple(km(m.km7d), "Km 7 d", Esc.Texto),
+                    Triple(m.usuarios7d.toString(), "Nuevos 7 d", Esc.Texto),
                 ),
+                porFila = 3,
             )
+            when (val v = vivo) {
+                is Carga.Listo -> AlertasSos(v.datos.sos)
+                is Carga.Error -> TarjetaEsc(Modifier.testTag("sos-error")) {
+                    Text("No se pudieron leer las alertas SOS", style = GType.bodyMd.copy(fontWeight = FontWeight.Bold), color = Esc.Texto)
+                    Text(v.mensaje, style = GType.bodySm, color = Esc.Texto2)
+                    BotonEsc("Reintentar", esc::recargar, tipo = TipoBoton.Secundario)
+                }
+                Carga.Cargando -> {}
+            }
             val lista = (pendientes as? Carga.Listo)?.datos.orEmpty().take(3)
             if (lista.isNotEmpty()) {
                 Text("Cola de moderación", style = GType.bodyMd.copy(fontWeight = FontWeight.ExtraBold), color = Esc.Texto)
@@ -137,46 +167,13 @@ fun ResumenAdmin(repo: AdminRepositorio, onSalir: () -> Unit, onAtender: (String
                     TarjetaEsc(Modifier.testTag("resumen-caso-${r.id}"), onClick = { onAtender(r.id) }) {
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                             ChipEsc(etiquetaTipo(r.tipo), Tono.Violeta)
-                            Text(haceCuanto(r.creadoEn), style = GType.bodySm, color = Esc.Texto3)
+                            ChipsSla(r)
                         }
                         Text(r.resumen.ifBlank { r.objetivoId }, style = GType.bodyMd.copy(fontWeight = FontWeight.Bold), color = Esc.Texto, maxLines = 1)
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun MapaResumen(cola: String, eventos: String, nuevos: String) {
-    val lineas = Esc.Borde
-    val rio = Esc.Cielo
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Esc.Card).testTag("resumen-mapa")) {
-        Box(Modifier.fillMaxWidth().height(150.dp).background(Brush.verticalGradient(listOf(Esc.CardAlta, Esc.Card)))) {
-            Canvas(Modifier.fillMaxWidth().height(150.dp)) {
-                for (i in 1..5) drawLine(lineas, Offset(size.width * i / 6f, 0f), Offset(size.width * i / 6f, size.height), 2f)
-                for (i in 1..3) drawLine(lineas, Offset(0f, size.height * i / 4f), Offset(size.width, size.height * i / 4f), 2f)
-                val p = Path().apply {
-                    moveTo(0f, size.height * 0.75f)
-                    cubicTo(size.width * 0.3f, size.height * 0.35f, size.width * 0.6f, size.height * 1.0f, size.width, size.height * 0.45f)
-                }
-                drawPath(p, rio.copy(alpha = 0.55f), style = Stroke(10f))
-            }
-            ChipEsc("Mapa en vivo: fuente pendiente", Tono.Ambar, Modifier.align(Alignment.TopStart).padding(10.dp).testTag("mapa-fuente-pendiente"))
-        }
-        Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-            CifraMapa(cola, "Casos abiertos", Esc.Violeta)
-            CifraMapa(eventos, "Eventos próximos", Esc.Ambar)
-            CifraMapa(nuevos, "Nuevos 7 d", Esc.Menta)
-        }
-    }
-}
-
-@Composable
-private fun CifraMapa(valor: String, etiqueta: String, color: Color) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(valor, style = GType.bodyMd.copy(fontSize = 22.sp, fontWeight = FontWeight.ExtraBold), color = color)
-        Text(etiqueta, style = GType.bodySm, color = Esc.Texto2)
     }
 }
 
@@ -195,7 +192,7 @@ private fun AtenderSiguiente(siguiente: ReporteAdmin?, onClick: () -> Unit) {
             Text("Acción rápida", style = GType.labelMd.copy(fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp), color = (if (habil) Color.White else Esc.Texto3).copy(alpha = 0.8f))
             Text(if (habil) "Atender siguiente caso" else "Sin casos pendientes", style = GType.bodyMd.copy(fontSize = 20.sp, fontWeight = FontWeight.ExtraBold), color = if (habil) Color.White else Esc.Texto)
             if (siguiente != null) {
-                Text("${idCorto(siguiente.id)} · ${etiquetaTipo(siguiente.tipo)} · ${haceCuanto(siguiente.creadoEn)}", style = GType.bodySm, color = Color.White.copy(alpha = 0.85f))
+                Text("${idCorto(siguiente.id)} · ${etiquetaTipo(siguiente.tipo)} · ${haceCuanto(siguiente.creadoEn, LocalAhoraAdmin.current())}", style = GType.bodySm, color = Color.White.copy(alpha = 0.85f))
             }
         }
         if (habil) {
@@ -217,6 +214,7 @@ fun UsuariosAdmin(repo: AdminRepositorio, onSalir: () -> Unit) {
     val busqueda by vm.busqueda.collectAsState()
     var detalle by remember { mutableStateOf<String?>(null) }
     var filtro by rememberSaveable { mutableStateOf(FiltroUsuarios.Todos) }
+    val ahora = LocalAhoraAdmin.current()
     Marco("Usuarios", vm, onSalir, eyebrow = "Comunidad Runcity") {
         CampoTexto("Buscar", busqueda, vm::buscar, placeholder = "Nombre o usuario")
         PestanasEsc(FiltroUsuarios.entries, filtro, { it.etiqueta }, { filtro = it })
@@ -228,6 +226,7 @@ fun UsuariosAdmin(repo: AdminRepositorio, onSalir: () -> Unit) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Text(u.nombreVisible, style = GType.bodyMd.copy(fontWeight = FontWeight.Bold), color = Esc.Texto, maxLines = 1)
                             Text("@${u.username} · ${u.carreras} carreras · ${km(u.km)} km", style = GType.bodySm, color = Esc.Texto2, maxLines = 1)
+                            Text(textoAcceso(u, ahora), style = GType.bodySm, color = Esc.Texto3, maxLines = 1, modifier = Modifier.testTag("acceso-${u.id}"))
                         }
                         Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             u.rol?.let { ChipEsc(it.etiqueta, Tono.Violeta) }
@@ -240,6 +239,14 @@ fun UsuariosAdmin(repo: AdminRepositorio, onSalir: () -> Unit) {
             if (sel != null) DetalleUsuario(sel, vm, onCerrar = { detalle = null })
         }
     }
+}
+
+/** "Último acceso hace 2 h · Android 1.0.2" o "Sin registro de acceso". */
+internal fun textoAcceso(u: UsuarioAdmin, ahora: kotlinx.datetime.Instant): String {
+    val cuando = haceCuanto(u.ultimoAcceso, ahora)
+    if (cuando.isEmpty()) return "Sin registro de acceso"
+    val app = listOf(com.gacelas.administracion.domain.etiquetaPlataforma(u.plataforma), u.versionApp.orEmpty()).filter { it.isNotBlank() }.joinToString(" ")
+    return "Último acceso $cuando" + if (app.isNotEmpty()) " · $app" else ""
 }
 
 private fun visibles(vm: UsuariosAdminViewModel, todos: List<UsuarioAdmin>, f: FiltroUsuarios) =
@@ -259,6 +266,7 @@ private fun DetalleUsuario(u: UsuarioAdmin, vm: UsuariosAdminViewModel, onCerrar
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("@${u.username} · alta ${fecha(u.creadoEn)}")
                 Text("${u.carreras} carreras · ${km(u.km)} km")
+                Text(textoAcceso(u, LocalAhoraAdmin.current()))
                 if (u.suspendido) Text("Suspendido desde ${fecha(u.suspendidoEn)}", color = Esc.Peligro)
                 Text("Rol")
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -291,6 +299,7 @@ fun ModeracionAdmin(repo: AdminRepositorio, onSalir: () -> Unit, casoFoco: Strin
     val tipo by vm.filtroTipo.collectAsState()
     val notas by vm.notas.collectAsState()
     val ocupado by vm.ocupado.collectAsState()
+    val respuestas by vm.respuestas.collectAsState()
     var pendiente by remember { mutableStateOf<Pair<ReporteAdmin, AccionModeracion>?>(null) }
     var elegido by rememberSaveable { mutableStateOf(casoFoco) }
     Marco("Moderación", vm, onSalir, eyebrow = "Cola de reportes") {
@@ -308,7 +317,10 @@ fun ModeracionAdmin(repo: AdminRepositorio, onSalir: () -> Unit, casoFoco: Strin
             }
             val activo = casos.firstOrNull { it.id == elegido } ?: casos.first()
             casos.forEach { r ->
-                CasoModeracion(r, r.id == activo.id, notas[r.id].orEmpty(), ocupado, { elegido = r.id }, { vm.escribirNota(r.id, it) }) { accion ->
+                CasoModeracion(
+                    r, r.id == activo.id, notas[r.id].orEmpty(), ocupado, { elegido = r.id }, { vm.escribirNota(r.id, it) },
+                    respuestas = respuestas, onRespuesta = { vm.usarRespuesta(r.id, it) }, onPrioridad = { vm.cambiarPrioridad(r, it) },
+                ) { accion ->
                     if (accion.destructiva) pendiente = r to accion else vm.moderar(r, accion)
                 }
             }
@@ -322,7 +334,11 @@ fun ModeracionAdmin(repo: AdminRepositorio, onSalir: () -> Unit, casoFoco: Strin
 @Composable
 private fun CasoModeracion(
     r: ReporteAdmin, activo: Boolean, nota: String, ocupado: Boolean,
-    onElegir: () -> Unit, onNota: (String) -> Unit, onAccion: (AccionModeracion) -> Unit,
+    onElegir: () -> Unit, onNota: (String) -> Unit,
+    respuestas: List<com.gacelas.administracion.domain.RespuestaRapida> = emptyList(),
+    onRespuesta: (com.gacelas.administracion.domain.RespuestaRapida) -> Unit = {},
+    onPrioridad: (com.gacelas.administracion.domain.Prioridad) -> Unit = {},
+    onAccion: (AccionModeracion) -> Unit,
 ) {
     TarjetaEsc(
         Modifier.testTag("admin-caso-${r.id}"),
@@ -335,8 +351,9 @@ private fun CasoModeracion(
             ChipEsc(etiquetaTipo(r.tipo), Tono.Violeta)
             if (r.totalReportes > 1) ChipEsc("${r.totalReportes} reportes", Tono.Peligro)
             Box(Modifier.weight(1f))
-            Text(haceCuanto(r.creadoEn), style = GType.bodySm, color = Esc.Texto3)
+            Text(haceCuanto(r.creadoEn, LocalAhoraAdmin.current()), style = GType.bodySm, color = Esc.Texto3)
         }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) { ChipsSla(r) }
         Text(r.resumen.ifBlank { r.objetivoId }, style = GType.bodyMd.copy(fontWeight = FontWeight.ExtraBold), color = Esc.Texto, maxLines = if (activo) 4 else 1)
         Text("Motivo: ${r.motivo.replace('_', ' ')}", style = GType.bodySm, color = Esc.Texto2)
         if (!activo) return@TarjetaEsc
@@ -348,6 +365,8 @@ private fun CasoModeracion(
                 Text("${a.moderador}: ${a.texto}${if (a.nota.isNotBlank()) " · ${a.nota}" else ""} (${fecha(a.fecha)})", style = GType.bodySm, color = Esc.Texto2)
             }
         }
+        if (r.estado.abierto) SelectorPrioridad(r, ocupado, onPrioridad)
+        RespuestasRapidasCaso(respuestas, onRespuesta)
         CampoTexto("Nota", nota, onNota, placeholder = "Nota para el historial y el reportante")
         accionesPermitidas(r, nota.isNotBlank()).forEach { a ->
             val tipo = when {
@@ -373,6 +392,9 @@ fun EstadisticasAdmin(repo: AdminRepositorio, onSalir: () -> Unit) {
     val vm = viewModel { EstadisticasAdminViewModel(repo) }
     val carga by vm.estado.collectAsState()
     val rango by vm.rango.collectAsState()
+    val op = viewModel { OperacionAdminViewModel(repo) }
+    val cargaOp by op.estado.collectAsState()
+    val exportar = LocalExportarAdmin.current
     Marco("Reportes", vm, onSalir, eyebrow = "Estadísticas") {
         PestanasEsc(RangoEstadisticas.entries, rango, { it.etiqueta }, vm::elegir)
         SegunCarga(carga, vm::recargar, { it.totales.isEmpty() }, "Sin datos en el rango") { e ->
@@ -380,6 +402,18 @@ fun EstadisticasAdmin(repo: AdminRepositorio, onSalir: () -> Unit) {
             Mosaicos(nombresEstadisticas.map { (k, n) ->
                 Triple(e.totales[k]?.let { if (k == "km") km(it) else it.toLong().toString() } ?: "0", n, if (k == "reportes") Esc.Peligro else Esc.Violeta)
             })
+            if (exportar != null) {
+                BotonEsc(
+                    "Exportar CSV",
+                    { exportar(nombreCsvEstadisticas(e), "text/csv", csvEstadisticas(e)) },
+                    Modifier.fillMaxWidth().testTag("exportar-csv"), TipoBoton.Secundario,
+                )
+                Text("Serie por día del rango, el mismo archivo que exporta la web.", style = GType.bodySm, color = Esc.Texto3)
+            }
+        }
+        SegunCarga(cargaOp, op::recargar) { d ->
+            VersionesApp(d)
+            ImportacionesEcu(d.importaciones)
         }
     }
 }
@@ -493,8 +527,14 @@ private fun FormularioEvento(inicial: EventoAdmin, onGuardar: (EventoAdmin) -> U
 @Composable
 fun AjustesAdmin(repo: AdminRepositorio, onSalir: () -> Unit) {
     val vm = viewModel { AjustesAdminViewModel(repo) }
+    val resp = viewModel { RespuestasAdminViewModel(repo) }
     val carga by vm.estado.collectAsState()
-    Marco("Ajustes", vm, onSalir) {
+    val cargaResp by resp.estado.collectAsState()
+    val ocupado by vm.ocupado.collectAsState()
+    val ocupadoResp by resp.ocupado.collectAsState()
+    val msgResp by resp.mensaje.collectAsState()
+    val msgAjustes by vm.mensaje.collectAsState()
+    MarcoAdmin("Ajustes", onSalir, msgAjustes ?: msgResp, { vm.limpiarMensaje(); resp.limpiarMensaje() }) {
         SegunCarga(carga, vm::recargar, { it.isEmpty() }, "No hay ajustes") { lista ->
             val version = lista.firstOrNull { it.clave == CLAVE_VERSION_MINIMA }
             var texto by remember(version) { mutableStateOf((version?.valor as? JsonPrimitive)?.contentOrNull.orEmpty()) }
@@ -507,11 +547,15 @@ fun AjustesAdmin(repo: AdminRepositorio, onSalir: () -> Unit) {
             lista.filter { it.esInterruptor() }.forEach { a ->
                 FilaInterruptor(Icons.Filled.Settings, etiquetaAjuste(a.clave), a.clave, a.activo(), { vm.alternar(a, it) })
             }
-            val otros = lista.filter { !it.esInterruptor() && it.clave != CLAVE_VERSION_MINIMA }
+            AjustesSla(com.gacelas.administracion.domain.SlaHoras.desde(lista), ocupado, vm::guardarSla)
+            val otros = lista.filter { !it.esInterruptor() && it.clave != CLAVE_VERSION_MINIMA && it.clave != com.gacelas.administracion.domain.CLAVE_SLA }
             if (otros.isNotEmpty()) {
                 Etiqueta("Otros (solo lectura)")
                 otros.forEach { Text("${it.clave}: ${it.valor}", style = GType.bodySm, color = Esc.Texto2) }
             }
+        }
+        SegunCarga(cargaResp, resp::recargar) { lista ->
+            AjustesRespuestas(lista, ocupadoResp, resp::guardar, resp::borrar)
         }
     }
 }

@@ -265,7 +265,14 @@ private fun NavGraphBuilder.secundariasGraph(nav: NavHostController) {
     }
     // El panel vuelve a comprobar el rol en el servidor: sin rol muestra "Acceso denegado".
     composable(Destinos.ADMIN) {
-        com.gacelas.administracion.presentation.PanelAdmin(com.gacelas.ui.contenedor().admin, onAtras = { nav.atras() })
+        val contexto = androidx.compose.ui.platform.LocalContext.current
+        androidx.compose.runtime.CompositionLocalProvider(
+            com.gacelas.administracion.presentation.LocalExportarAdmin provides { nombre, tipo, contenido ->
+                com.gacelas.admin.compartirArchivoAdmin(contexto, nombre, tipo, contenido)
+            },
+        ) {
+            com.gacelas.administracion.presentation.PanelAdmin(com.gacelas.ui.contenedor().admin, onAtras = { nav.atras() })
+        }
     }
     composable(Destinos.BRUJULA) { com.gacelas.ajustes.BrujulaScreen(onAtras = { nav.atras() }) }
     composable(Destinos.MAPAS_OFFLINE) { com.gacelas.ajustes.MapasOfflineScreen(onAtras = { nav.atras() }) }

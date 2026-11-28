@@ -67,7 +67,7 @@ class GacelasApp : Application(), coil3.SingletonImageLoader.Factory {
         // La libreria nativa de MapLibre tardaba ~2 s en cargar en el hilo principal (StrictMode), al abrir
         // el primer mapa o al llamar MapaOffline.asegurar. Cargada aqui, esas llamadas ya la encuentran lista.
         alcance.launch { runCatching { org.maplibre.android.LibraryLoader.load() } }
-        alcance.launch { runCatching { contenedor }; contenedorListo.complete(Unit); runCatching { contenedor.sincronizar() }; runCatching { contenedor.explorar?.refrescar() } }
+        alcance.launch { runCatching { contenedor }; contenedorListo.complete(Unit); runCatching { contenedor.sincronizar() }; runCatching { contenedor.explorar?.refrescar() }; runCatching { contenedor.registrarUsoApp("android", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE) } }
         // Si quedo algo pendiente de otra sesion, se sube en cuanto haya red.
         com.gacelas.core.sync.Sincronizacion.programar(this)
         android.os.Trace.endSection()

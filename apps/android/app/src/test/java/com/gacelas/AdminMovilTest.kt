@@ -16,7 +16,14 @@ import com.gacelas.administracion.domain.AccionModeracion
 import com.gacelas.administracion.domain.RolAdmin
 import com.gacelas.administracion.domain.SeccionAdmin
 import com.gacelas.administracion.infrastructure.AdminRepositorioMemoria
+import com.gacelas.administracion.presentation.LocalAhoraAdmin
+import com.gacelas.administracion.presentation.LocalExportarAdmin
+import com.gacelas.administracion.presentation.LocalRefrescoAdminMs
 import com.gacelas.administracion.presentation.PanelAdminContenido
+import com.gacelas.administracion.domain.Prioridad
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.performTextInput
+import org.junit.Assert.assertTrue
 import com.gacelas.ajustes.AjustesContenido
 import com.gacelas.identidad.domain.modelo.Ajustes
 import com.gacelas.ui.theme.GacelasTheme
@@ -63,8 +70,22 @@ class AdminMovilTest {
         captura("ajustes-entrada-admin")
     }
 
+    /** Exportaciones pedidas por el panel (nombre, tipo, contenido). */
+    private val exportados = mutableListOf<Triple<String, String, String>>()
+
+    // Hora fija para que plazos y "hace X" no dependan del dia en que corre la prueba.
+    private val ahora = kotlinx.datetime.Instant.parse("2026-10-31T12:00:00Z")
+
     private fun panel(acceso: AccesoAdmin?, repo: AdminRepositorioMemoria = AdminRepositorioMemoria(acceso?.rol), inicial: SeccionAdmin? = null) =
-        compose.setContent { GacelasTheme { PanelAdminContenido(acceso, repo, onAtras = {}, inicial = inicial) } }
+        compose.setContent {
+            GacelasTheme {
+                androidx.compose.runtime.CompositionLocalProvider(
+                    LocalAhoraAdmin provides { ahora },
+                    LocalRefrescoAdminMs provides 0L,
+                    LocalExportarAdmin provides { n, t, c -> exportados += Triple(n, t, c) },
+                ) { PanelAdminContenido(acceso, repo, onAtras = {}, inicial = inicial) }
+            }
+        }
 
     @Test fun rutaSinRolMuestraAccesoDenegado() {
         panel(AccesoAdmin.Ninguno)
@@ -111,12 +132,81 @@ class AdminMovilTest {
         compose.onNodeWithTag("admin-usuario-u0").assertIsDisplayed()
     }
 
-    @Test fun resumenOfreceAtenderElSiguienteCasoYDiceQueElMapaNoTieneFuente() {
+    @Test fun resumenMuestraElMapaEnVivoConSosYElSiguienteCaso() {
         panel(AccesoAdmin(RolAdmin.Admin), inicial = SeccionAdmin.Dashboard)
         compose.waitUntil(5_000) { compose.onAllNodesWithTag("atender-siguiente").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithTag("atender-siguiente").assertIsDisplayed()
-        compose.onNodeWithTag("mapa-fuente-pendiente").assertIsDisplayed()
+        compose.onNodeWithTag("mapa-en-vivo").assertIsDisplayed()
+        compose.onNodeWithTag("mapa-sos-activos").assertIsDisplayed()
         captura("resumen")
+    }
+
+    @Test fun resumenSinDatosEnVivoLoDice() {
+        val repo = AdminRepositorioMemoria().apply { escenarioFalla = true }
+        panel(AccesoAdmin(RolAdmin.Admin), repo, SeccionAdmin.Dashboard)
+        compose.waitUntil(5_000) { compose.onAllNodesWithTag("mapa-sin-fuente").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("sos-error").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test fun resumenListaLasAlertasSos() {
+        panel(AccesoAdmin(RolAdmin.Admin), inicial = SeccionAdmin.Dashboard)
+        compose.waitUntil(5_000) { compose.onAllNodesWithTag("sos-s1").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("sos-s1").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Activa").assertExists()
+        compose.onNodeWithTag("sos-s2").performScrollTo()
+        captura("resumen-sos")
+    }
+
+    @Test fun moderacionMuestraPrioridadPlazoYRespuestasRapidas() {
+        val repo = AdminRepositorioMemoria()
+        panel(AccesoAdmin(RolAdmin.Admin), repo, SeccionAdmin.Moderacion)
+        compose.waitUntil(5_000) { compose.onAllNodesWithTag("sla-r3", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+        // r3 (media) vencio el 29/10; r1 (baja) vence el 02/11.
+        compose.onNodeWithText("Vencido hace 2 d").assertExists()
+        compose.onNodeWithTag("prioridad-r1", useUnmergedTree = true).assertExists()
+        captura("moderacion-prioridad-sla")
+        compose.onNodeWithText("Sin infracción").performScrollTo().performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag("selector-prioridad").performScrollTo()
+        captura("moderacion-respuesta-rapida")
+        compose.onNodeWithText("Alta").performClick()
+        compose.waitUntil(5_000) { repo.reportes.first { it.id == "r3" }.prioridad == Prioridad.Alta }
+    }
+
+    @Test fun usuariosMuestranUltimoAcceso() {
+        panel(AccesoAdmin(RolAdmin.Admin), inicial = SeccionAdmin.Usuarios)
+        compose.waitUntil(5_000) { compose.onAllNodesWithTag("acceso-u0", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("Último acceso hace 3 h · Android 1.0.1").assertExists()
+        compose.onNodeWithText("Sin registro de acceso").assertExists()
+        captura("usuarios-ultimo-acceso")
+    }
+
+    @Test fun reportesExportaCsvYMuestraVersionesYEcu() {
+        panel(AccesoAdmin(RolAdmin.Admin), inicial = SeccionAdmin.Estadisticas)
+        compose.waitUntil(5_000) { compose.onAllNodesWithTag("exportar-csv").fetchSemanticsNodes().isNotEmpty() }
+        captura("reportes-exportar")
+        compose.onNodeWithTag("exportar-csv").performScrollTo().performClick()
+        assertEquals(1, exportados.size)
+        assertTrue(exportados.single().first.startsWith("gacelas-estadisticas-"))
+        assertEquals("text/csv", exportados.single().second)
+        assertTrue(exportados.single().third.contains("Día;Usuarios nuevos;Corredores activos;Carreras;Km"))
+        compose.onNodeWithTag("versiones-publicadas").performScrollTo().assertIsDisplayed()
+        captura("reportes-versiones")
+        compose.onNodeWithText("Con error").performScrollTo().assertIsDisplayed()
+        captura("reportes-ecu911")
+    }
+
+    @Test fun ajustesEditaPlazosYRespuestas() {
+        val repo = AdminRepositorioMemoria()
+        panel(AccesoAdmin(RolAdmin.Admin), repo, SeccionAdmin.Ajustes)
+        compose.waitUntil(5_000) { compose.onAllNodesWithTag("ajustes-sla").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("ajustes-sla").performScrollTo()
+        captura("ajustes-plazos")
+        compose.onNodeWithTag("ajustes-respuestas").performScrollTo()
+        captura("ajustes-respuestas")
+        compose.onNodeWithText("Nueva respuesta").performScrollTo().performClick()
+        compose.waitForIdle()
+        captura("ajustes-respuesta-nueva")
     }
 
     @Test fun atenderSiguienteAbreModeracionConElCasoMasAntiguo() {

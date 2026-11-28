@@ -24,4 +24,16 @@ interface AdminRepositorio {
     suspend fun borrarClub(id: String)
     suspend fun ajustes(): List<AjusteApp>
     suspend fun guardarAjuste(clave: String, valor: JsonElement)
+
+    // Migracion 050 (docs/ADMIN.md, "Partes que faltaban").
+    suspend fun cambiarPrioridad(reporteId: String, prioridad: Prioridad)
+    suspend fun respuestasRapidas(): List<RespuestaRapida>
+    suspend fun guardarRespuestaRapida(r: RespuestaRapida)
+    suspend fun borrarRespuestaRapida(id: String)
+
+    /** Corredores visibles, incidentes sin verificar y alertas SOS de las ultimas 24 h. */
+    suspend fun escenarioVivo(): EscenarioVivo
+    suspend fun versionesPublicadas(): List<VersionPublicada>
+    suspend fun versionesEnUso(): List<VersionEnUso>
+    suspend fun importacionesEcu(): List<ImportacionEcu>
 }

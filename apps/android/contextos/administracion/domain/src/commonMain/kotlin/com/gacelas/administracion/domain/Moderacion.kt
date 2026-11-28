@@ -50,6 +50,9 @@ data class ReporteAdmin(
     val resumen: String,
     val totalReportes: Long,
     val acciones: List<AccionReporte>,
+    /** Prioridad y vencimiento del plazo (admin_cola_reportes_sla, migracion 050). */
+    val prioridad: Prioridad = Prioridad.Media,
+    val venceEn: String? = null,
 )
 
 /** Etiqueta del tipo de objetivo, igual que la web (definicionTipo). */

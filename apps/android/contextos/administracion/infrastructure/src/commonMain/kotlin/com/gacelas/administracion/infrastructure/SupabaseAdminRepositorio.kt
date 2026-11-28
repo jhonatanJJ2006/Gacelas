@@ -1,6 +1,16 @@
 package com.gacelas.administracion.infrastructure
 
+import com.gacelas.administracion.domain.AccesoUsuario
 import com.gacelas.administracion.domain.AccionModeracion
+import com.gacelas.administracion.domain.AlertaSos
+import com.gacelas.administracion.domain.EscenarioVivo
+import com.gacelas.administracion.domain.DiaEstadistica
+import com.gacelas.administracion.domain.ImportacionEcu
+import com.gacelas.administracion.domain.Prioridad
+import com.gacelas.administracion.domain.PuntoGeo
+import com.gacelas.administracion.domain.RespuestaRapida
+import com.gacelas.administracion.domain.VersionEnUso
+import com.gacelas.administracion.domain.VersionPublicada
 import com.gacelas.administracion.domain.AccionReporte
 import com.gacelas.administracion.domain.AdminRepositorio
 import com.gacelas.administracion.domain.AjusteApp
@@ -22,11 +32,16 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
+import kotlinx.coroutines.CancellationException
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 
 /**
  * Panel de administracion sobre Supabase. Usa exactamente las funciones y tablas de la web
  * (is_admin, es_moderador, admin_metricas, admin_usuarios, admin_suspender, admin_cola_reportes,
- * moderar_reporte, admin_estadisticas; tablas user_roles, events, routes, clubs y app_settings).
+ * moderar_reporte, admin_estadisticas; tablas user_roles, events, routes, clubs y app_settings) y
+ * las de la migracion 050 (admin_cola_reportes_sla, admin_prioridad_reporte, respuestas rapidas,
+ * admin_sos_alertas, admin_ultimo_acceso, versiones e importaciones_ecu911).
  * Todas comprueban el rol en el servidor (SECURITY DEFINER o RLS con public.is_admin()).
  */
 class SupabaseAdminRepositorio(private val backend: Backend) : AdminRepositorio {
@@ -48,7 +63,15 @@ class SupabaseAdminRepositorio(private val backend: Backend) : AdminRepositorio 
         )
     }
 
-    override suspend fun usuarios(): List<UsuarioAdmin> = backend.rpc("admin_usuarios", vacio).filas().map(::usuario)
+    override suspend fun usuarios(): List<UsuarioAdmin> {
+        val lista = backend.rpc("admin_usuarios", vacio).filas().map(::usuario)
+        // Ultimo acceso (050). Si falla, la lista sale igual y el dato queda sin mostrar.
+        val accesos = opcional { backend.rpc("admin_ultimo_acceso", vacio).filas().map(::acceso) }.orEmpty().associateBy { it.id }
+        return lista.map { u ->
+            val a = accesos[u.id] ?: return@map u
+            u.copy(ultimoAcceso = a.ultimoAcceso, plataforma = a.plataforma, versionApp = a.version)
+        }
+    }
 
     override suspend fun suspender(id: String, suspender: Boolean) {
         backend.rpc("admin_suspender", JsonObject(mapOf("uid" to JsonPrimitive(id), "suspender" to JsonPrimitive(suspender))))
@@ -61,7 +84,7 @@ class SupabaseAdminRepositorio(private val backend: Backend) : AdminRepositorio 
 
     override suspend fun reportes(estado: EstadoReporte?, tipo: String?): List<ReporteAdmin> {
         val args = JsonObject(mapOf("estado" to (estado?.clave?.let(::JsonPrimitive) ?: JsonNull), "tipo" to (tipo?.let(::JsonPrimitive) ?: JsonNull)))
-        return backend.rpc("admin_cola_reportes", args).filas().map(::reporte)
+        return backend.rpc("admin_cola_reportes_sla", args).filas().map(::reporte)
     }
 
     override suspend fun moderar(reporteId: String, accion: AccionModeracion, nota: String) {
@@ -71,7 +94,10 @@ class SupabaseAdminRepositorio(private val backend: Backend) : AdminRepositorio 
     override suspend fun estadisticas(desde: String, hasta: String): EstadisticasAdmin {
         val o = backend.rpc("admin_estadisticas", JsonObject(mapOf("desde" to JsonPrimitive(desde), "hasta" to JsonPrimitive(hasta)))) as? JsonObject
         val totales = (o?.get("totales") as? JsonObject).orEmpty().mapValues { (_, v) -> (v as? JsonPrimitive)?.numero() ?: 0.0 }
-        return EstadisticasAdmin(desde, hasta, totales)
+        val serie = (o?.get("serie") as? JsonArray).orEmpty().mapNotNull { it as? JsonObject }.map {
+            DiaEstadistica(it.texto("dia").orEmpty(), it.decimal("nuevos"), it.decimal("activos"), it.decimal("carreras"), it.decimal("km"))
+        }
+        return EstadisticasAdmin(desde, hasta, totales, serie)
     }
 
     override suspend fun eventos(): List<EventoAdmin> =
@@ -115,6 +141,67 @@ class SupabaseAdminRepositorio(private val backend: Backend) : AdminRepositorio 
         backend.upsert("app_settings", listOf(JsonObject(mapOf("key" to JsonPrimitive(clave), "value" to valor))), "key")
     }
 
+    override suspend fun cambiarPrioridad(reporteId: String, prioridad: Prioridad) {
+        backend.rpc("admin_prioridad_reporte", JsonObject(mapOf("reporte" to JsonPrimitive(reporteId), "prioridad" to JsonPrimitive(prioridad.clave))))
+    }
+
+    override suspend fun respuestasRapidas(): List<RespuestaRapida> = backend.rpc("admin_respuestas_rapidas", vacio).filas().map {
+        RespuestaRapida(it.texto("id"), it.texto("titulo").orEmpty(), it.texto("texto").orEmpty())
+    }
+
+    override suspend fun guardarRespuestaRapida(r: RespuestaRapida) {
+        backend.rpc(
+            "admin_guardar_respuesta_rapida",
+            JsonObject(mapOf("p_id" to (r.id?.let(::JsonPrimitive) ?: JsonNull), "p_titulo" to JsonPrimitive(r.titulo.trim()), "p_texto" to JsonPrimitive(r.texto.trim()))),
+        )
+    }
+
+    override suspend fun borrarRespuestaRapida(id: String) {
+        backend.rpc("admin_borrar_respuesta_rapida", JsonObject(mapOf("p_id" to JsonPrimitive(id))))
+    }
+
+    /**
+     * Mismo escenario que la web (fuente.ts, vivoSupabase): corredores con posicion de los ultimos
+     * 2 minutos que estan corriendo, incidentes de corredores sin verificar y alertas SOS. Cada parte
+     * falla por separado y queda vacia, como en la web.
+     */
+    override suspend fun escenarioVivo(): EscenarioVivo {
+        val ahora = Clock.System.now()
+        val corredores = opcional { backend.select("runner_positions", emptyMap(), ordenarPor = "updated_at", descendente = true) }.orEmpty()
+            .filter { (it["running"] as? JsonPrimitive)?.booleanOrNull == true && reciente(it.texto("updated_at"), ahora) }
+            .mapNotNull { punto(it) }
+        val incidentes = opcional { backend.select("incidentes_publicos", mapOf("estado" to "pendiente")) }.orEmpty().mapNotNull { punto(it) }
+        val sos = backend.rpc("admin_sos_alertas", JsonObject(mapOf("horas" to JsonPrimitive(24)))).filas().map {
+            AlertaSos(
+                id = it.texto("id").orEmpty(), nombre = it.texto("nombre").orEmpty(), activa = (it["activa"] as? JsonPrimitive)?.booleanOrNull == true,
+                iniciadaEn = it.texto("started_at").orEmpty(), terminadaEn = it.texto("ended_at"), ultimaEn = it.texto("last_at"),
+                posicion = punto(it), puntos = it.entero("puntos").toInt(),
+            )
+        }
+        return EscenarioVivo(corredores, incidentes, sos)
+    }
+
+    override suspend fun versionesPublicadas(): List<VersionPublicada> = backend.rpc("admin_versiones_publicadas", vacio).filas().map {
+        VersionPublicada(
+            it.texto("version_name").orEmpty(), it.entero("version_code").toInt(), it.texto("canal").orEmpty(),
+            it.texto("publicada_en").orEmpty(), it.texto("apk_bytes")?.toLongOrNull(),
+        )
+    }
+
+    override suspend fun versionesEnUso(): List<VersionEnUso> = backend.rpc("admin_versiones_en_uso", JsonObject(mapOf("dias" to JsonPrimitive(30)))).filas().map {
+        VersionEnUso(it.texto("plataforma").orEmpty(), it.texto("version_name").orEmpty(), it.texto("version_code")?.toIntOrNull(), it.entero("usuarios"))
+    }
+
+    override suspend fun importacionesEcu(): List<ImportacionEcu> =
+        backend.select("importaciones_ecu911", emptyMap(), ordenarPor = "fecha", descendente = true).take(12).map {
+            ImportacionEcu(
+                it.texto("periodo").orEmpty(), it.texto("archivo").orEmpty(), it.entero("filas"), it.entero("filas_loja"),
+                it.texto("estado") == "ok", it.texto("mensaje").orEmpty(), it.texto("fecha").orEmpty(),
+            )
+        }
+
+    private fun acceso(o: JsonObject) = AccesoUsuario(o.texto("id").orEmpty(), o.texto("ultimo_acceso"), o.texto("plataforma"), o.texto("version_name"))
+
     private fun usuario(o: JsonObject) = UsuarioAdmin(
         id = o.texto("id").orEmpty(), username = o.texto("username").orEmpty(), nombre = o.texto("full_name"),
         creadoEn = o.texto("created_at").orEmpty(), suspendidoEn = o.texto("suspended_at"), rol = RolAdmin.desde(o.texto("role")),
@@ -129,7 +216,30 @@ class SupabaseAdminRepositorio(private val backend: Backend) : AdminRepositorio 
         acciones = (o["acciones"] as? JsonArray).orEmpty().mapNotNull { it as? JsonObject }.map {
             AccionReporte(it.texto("accion").orEmpty(), it.texto("nota").orEmpty(), it.texto("fecha").orEmpty(), it.texto("moderador").orEmpty())
         },
+        prioridad = Prioridad.desde(o.texto("prioridad")), venceEn = o.texto("vence_en"),
     )
+}
+
+/** Ejecuta un bloque cuyo fallo no debe tumbar la seccion; null si falla. */
+private suspend fun <T> opcional(bloque: suspend () -> T): T? = try {
+    bloque()
+} catch (e: CancellationException) {
+    throw e
+} catch (_: Exception) {
+    null
+}
+
+/** Posicion de una fila con lat y lng; null si falta alguna. */
+private fun punto(o: JsonObject): PuntoGeo? {
+    val lat = (o["lat"] as? JsonPrimitive)?.takeIf { it !is JsonNull }?.numero() ?: return null
+    val lng = (o["lng"] as? JsonPrimitive)?.takeIf { it !is JsonNull }?.numero() ?: return null
+    return PuntoGeo(lat, lng)
+}
+
+/** Posicion de menos de 2 minutos (mismo criterio que el mapa en vivo, CADUCIDAD_MS). */
+internal fun reciente(iso: String?, ahora: Instant, maxMs: Long = 2 * 60_000): Boolean {
+    val t = try { Instant.parse(iso ?: return false) } catch (_: IllegalArgumentException) { return false }
+    return (ahora - t).inWholeMilliseconds in 0..maxMs
 }
 
 private fun JsonElement.esVerdadero() = (this as? JsonPrimitive)?.booleanOrNull == true

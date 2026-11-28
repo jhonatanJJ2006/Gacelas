@@ -7,6 +7,10 @@ import com.gacelas.administracion.domain.CLAVE_VERSION_MINIMA
 import com.gacelas.administracion.domain.EventoAdmin
 import com.gacelas.administracion.domain.ReporteAdmin
 import com.gacelas.administracion.domain.versionValida
+import com.gacelas.administracion.domain.CLAVE_SLA
+import com.gacelas.administracion.domain.RespuestaRapida
+import com.gacelas.administracion.domain.SlaHoras
+import com.gacelas.administracion.domain.respuestaValida
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.JsonPrimitive
 
@@ -47,5 +51,22 @@ class GuardarEvento(private val repo: AdminRepositorio) {
         require(e.titulo.isNotBlank()) { "El evento necesita un título" }
         require(e.distanciaKm >= 0) { "La distancia no puede ser negativa" }
         repo.guardarEvento(e.copy(titulo = e.titulo.trim()))
+    }
+}
+
+/** Guarda las horas objetivo por prioridad (entre 1 y 720 h; la alta no puede superar a la media ni esta a la baja). */
+class GuardarSla(private val repo: AdminRepositorio) {
+    suspend operator fun invoke(sla: SlaHoras) {
+        require(sla.valido) { "Usa entre 1 y 720 horas" }
+        require(sla.alta <= sla.media && sla.media <= sla.baja) { "La prioridad alta debe tener el plazo más corto" }
+        repo.guardarAjuste(CLAVE_SLA, sla.json())
+    }
+}
+
+/** Crea o edita una respuesta rapida con titulo de hasta 60 y texto de hasta 500 caracteres. */
+class GuardarRespuestaRapida(private val repo: AdminRepositorio) {
+    suspend operator fun invoke(r: RespuestaRapida) {
+        respuestaValida(r.titulo, r.texto)?.let { throw IllegalArgumentException(it) }
+        repo.guardarRespuestaRapida(r.copy(titulo = r.titulo.trim(), texto = r.texto.trim()))
     }
 }

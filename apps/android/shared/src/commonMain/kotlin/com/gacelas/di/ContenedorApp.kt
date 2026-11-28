@@ -62,7 +62,7 @@ import com.gacelas.rutas.presentation.ListaRutasViewModel
  */
 class ContenedorApp(
     val store: DataStore<Preferences>,
-    backend: Backend? = null,
+    private val backend: Backend? = null,
     val actualizacion: ActualizacionRepository? = null,
     descargarAlEntrar: Boolean = true,
     /** Ultima ubicacion conocida si ya hay permiso (Android); null usa Loja (iOS por ahora). */
@@ -250,4 +250,27 @@ class ContenedorApp(
     fun listaEnVivoViewModel() = com.gacelas.comunidad.presentation.ListaEnVivoViewModel(enVivo)
     fun detalleEnVivoViewModel(id: String) = com.gacelas.comunidad.presentation.DetalleEnVivoViewModel(id, enVivo)
     fun notificacionesViewModel(ejemplo: List<Notificacion>, ajustesRepo: AjustesRepository = ajustes) = NotificacionesViewModel(notificaciones, ajustesRepo, ejemplo)
+
+    /**
+     * Registra en el servidor la plataforma y la version con la que se abre la app (migracion 050,
+     * registrar_uso_app). Alimenta "ultimo acceso" y "versiones en uso" del panel. Sin sesion o sin
+     * red no hace nada: es un dato de operacion, nunca bloquea ni muestra errores.
+     */
+    suspend fun registrarUsoApp(plataforma: String, versionName: String, versionCode: Int?) {
+        val b = backend ?: return
+        try {
+            if (b.usuarioActual() == null) return
+            b.rpc(
+                "registrar_uso_app",
+                kotlinx.serialization.json.buildJsonObject {
+                    put("p_plataforma", kotlinx.serialization.json.JsonPrimitive(plataforma))
+                    put("p_version_name", kotlinx.serialization.json.JsonPrimitive(versionName))
+                    put("p_version_code", versionCode?.let { kotlinx.serialization.json.JsonPrimitive(it) } ?: kotlinx.serialization.json.JsonNull)
+                },
+            )
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (_: Exception) {
+        }
+    }
 }
