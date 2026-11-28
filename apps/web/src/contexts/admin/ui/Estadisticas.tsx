@@ -167,6 +167,8 @@ const NOMBRE_MES = [
   'dic',
 ]
 
+const PLATAFORMA: Record<string, string> = { android: 'Android', ios: 'iOS', web: 'Web' }
+
 /** Reportes del panel: rango de fechas, cifras, graficos y exportacion CSV y PDF. */
 export function Estadisticas({ f }: { f: FuenteAdmin }) {
   const [desde, setDesde] = useState(haceDias(13))
@@ -174,6 +176,9 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
   const [datos, setDatos] = useState<Datos | null>(null)
   const [error, setError] = useState<string | null>(null)
   const ecu = useCarga(() => f.importacionesEcu(), [f])
+  const registro = useCarga(() => f.registroEcu(), [f])
+  const publicadas = useCarga(() => f.versionesPublicadas(), [f])
+  const enUso = useCarga(() => f.versionesEnUso(), [f])
   const ajustes = useCarga(() => f.ajustes(), [f])
   useEffect(() => {
     let vivo = true
@@ -394,9 +399,32 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
               texto={ecu.error ?? 'Todavía no hay datos en incidentes_agregados.'}
             />
           )}
-          <p className="adm-t3" style={{ fontSize: 12, marginTop: 10 }}>
-            Estado de la importación (errores, filas leídas) no se guarda hoy: fuente pendiente.
+          <p className="adm-lbl" style={{ marginTop: 14, marginBottom: 8 }}>
+            Registro de cargas
           </p>
+          {registro.datos && registro.datos.length > 0 ? (
+            <ul style={{ display: 'grid', gap: 8, listStyle: 'none' }} data-testid="registro-ecu">
+              {registro.datos.map((r) => (
+                <li key={`${r.periodo}-${r.fecha}`} style={{ fontSize: 13 }}>
+                  <div className="adm-fila" style={{ justifyContent: 'space-between' }}>
+                    <b>{r.periodo}</b>
+                    <Chip tono={r.estado === 'ok' ? 'ok' : 'bad'}>
+                      {r.estado === 'ok' ? 'Correcta' : 'Con error'}
+                    </Chip>
+                  </div>
+                  <p className="adm-t2">
+                    {entero(r.filas)} filas leídas, {entero(r.filas_loja)} de Loja ·{' '}
+                    {new Date(r.fecha).toLocaleDateString('es-EC')}
+                  </p>
+                  {r.mensaje && <p className="adm-t3">{r.mensaje}</p>}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="adm-t3" style={{ fontSize: 12 }}>
+              {registro.error ?? 'Sin cargas registradas.'}
+            </p>
+          )}
         </Panel>
         <Panel titulo="Versión de Android">
           <p className="adm-num" style={{ fontSize: 26 }}>
@@ -405,9 +433,63 @@ export function Estadisticas({ f }: { f: FuenteAdmin }) {
           <p className="adm-t2" style={{ fontSize: 13 }}>
             Versión mínima exigida. Cámbiala en Ajustes.
           </p>
-          <p className="adm-t3" style={{ fontSize: 12, marginTop: 10 }}>
-            El historial de versiones publicadas no está en la base de datos: fuente pendiente.
+          <p className="adm-lbl" style={{ marginTop: 14, marginBottom: 8 }}>
+            En uso (últimos 30 días)
           </p>
+          {enUso.datos && enUso.datos.length > 0 ? (
+            <ul style={{ display: 'grid', gap: 6, listStyle: 'none' }} data-testid="versiones-uso">
+              {enUso.datos.map((v) => (
+                <li
+                  key={`${v.plataforma}-${v.version_name}`}
+                  className="adm-fila"
+                  style={{ justifyContent: 'space-between', fontSize: 13 }}
+                >
+                  <span>
+                    {PLATAFORMA[v.plataforma] ?? v.plataforma} {v.version_name}
+                  </span>
+                  <b className="adm-num">
+                    {entero(v.usuarios)} {v.usuarios === 1 ? 'persona' : 'personas'}
+                  </b>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="adm-t3" style={{ fontSize: 12 }}>
+              {enUso.error ?? 'Sin registros de uso todavía (se guardan desde Android 1.0.2).'}
+            </p>
+          )}
+          <p className="adm-lbl" style={{ marginTop: 14, marginBottom: 8 }}>
+            Publicadas
+          </p>
+          {publicadas.datos && publicadas.datos.length > 0 ? (
+            <ul
+              style={{ display: 'grid', gap: 6, listStyle: 'none' }}
+              data-testid="versiones-publicadas"
+            >
+              {publicadas.datos.slice(0, 6).map((v) => (
+                <li
+                  key={`${v.plataforma}-${v.version_name}`}
+                  className="adm-fila"
+                  style={{ justifyContent: 'space-between', fontSize: 13 }}
+                >
+                  <span>
+                    <b>{v.version_name}</b>{' '}
+                    <span className="adm-t3">
+                      {new Date(v.publicada_en).toLocaleDateString('es-EC')}
+                      {v.apk_bytes ? ` · ${(v.apk_bytes / 1_048_576).toFixed(1)} MB` : ''}
+                    </span>
+                  </span>
+                  <Chip tono={v.canal === 'estable' ? 'ok' : undefined}>
+                    {v.canal === 'estable' ? 'Estable' : 'Prueba'}
+                  </Chip>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="adm-t3" style={{ fontSize: 12 }}>
+              {publicadas.error ?? 'Sin versiones registradas.'}
+            </p>
+          )}
         </Panel>
       </div>
     </>

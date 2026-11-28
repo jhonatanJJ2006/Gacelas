@@ -43,6 +43,8 @@ export function Resumen({ f, nombre, sufijo }: { f: FuenteAdmin; nombre: string;
   const cola = useCarga(() => f.reportes(), [f])
   const vivo = useCarga(() => f.enVivo(), [f])
   const ecu = useCarga(() => f.importacionesEcu(), [f])
+  const sos = useCarga(() => f.sos(), [f])
+  const sosActivas = (sos.datos ?? []).filter((a) => a.activa)
   const siguiente = useMemo(() => siguienteCaso(cola.datos ?? []), [cola.datos])
   const abiertos = useMemo(
     () => (cola.datos ?? []).filter((r) => r.status === 'pendiente').slice(0, 3),
@@ -71,6 +73,9 @@ export function Resumen({ f, nombre, sufijo }: { f: FuenteAdmin; nombre: string;
             <MapaEscenario
               corredores={vivo.datos?.corredores ?? []}
               incidentes={vivo.datos?.incidentes ?? []}
+              sos={sosActivas.flatMap((a) =>
+                a.lat != null && a.lng != null ? [{ lat: a.lat, lng: a.lng }] : []
+              )}
               etiqueta="Esquema de Loja con corredores visibles e incidentes por revisar"
             />
             <span className="adm-mapa-chip" style={{ left: 14 }}>
@@ -78,14 +83,40 @@ export function Resumen({ f, nombre, sufijo }: { f: FuenteAdmin; nombre: string;
               {vivo.datos ? 'EN VIVO' : 'SIN FUENTE'}
             </span>
             <span
-              className="adm-mapa-chip adm-t2"
+              className="adm-mapa-chip"
               style={{ right: 14 }}
-              title="Las alertas SOS no tienen lectura para el panel: la tabla seguridad.sos_alertas no concede acceso a usuarios autenticados."
-              data-testid="sos-pendiente"
+              title="Alertas SOS de las últimas 24 horas. La posición solo se muestra mientras la alerta está activa."
+              data-testid="sos-chip"
             >
-              <Icono nombre="warning" tam={16} /> SOS: fuente pendiente
+              <Icono nombre="warning" tam={16} />{' '}
+              {sos.datos ? `SOS activos: ${sosActivas.length}` : 'SOS: sin lectura'}
             </span>
           </div>
+          {sos.datos && sos.datos.length > 0 && (
+            <ul
+              className="adm-sep"
+              style={{ listStyle: 'none', padding: '10px 14px' }}
+              data-testid="lista-sos"
+            >
+              {sos.datos.map((a) => (
+                <li
+                  key={a.id}
+                  className="adm-fila"
+                  style={{ justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}
+                >
+                  <span>
+                    <b>{a.nombre}</b>{' '}
+                    <span className="adm-t3">
+                      {a.activa
+                        ? `activa desde ${haceCuanto(a.started_at)}`
+                        : `cerrada ${haceCuanto(a.ended_at ?? a.started_at)}`}
+                    </span>
+                  </span>
+                  <Chip tono={a.activa ? 'bad' : undefined}>{a.activa ? 'Activa' : 'Cerrada'}</Chip>
+                </li>
+              ))}
+            </ul>
+          )}
           <div
             className="adm-sep"
             style={{

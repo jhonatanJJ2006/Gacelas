@@ -18,15 +18,29 @@ import {
 
 export type * from '../../moderacion/api'
 export {
+  PRIORIDADES,
+  CLAVE_SLA,
+  SLA_POR_DEFECTO,
   definicionTipo,
+  errorSla,
+  estadoSla,
+  ordenarPorSla,
+  slaDesde,
+  textoSla,
   tiposRegistrados,
   type TipoObjetivo as TipoReporte,
 } from '../../moderacion/api'
 export type { Estadisticas } from '../../analitica/api'
 export { estadisticasDemo } from '../../analitica/api'
 export type {
+  AccesoUsuario,
+  AlertaSos,
   AjusteApp,
   ClubAdmin,
+  RegistroEcu,
+  RespuestaRapida,
+  VersionEnUso,
+  VersionPublicada,
   EscenarioVivo,
   EventoAdmin,
   ImportacionEcu,

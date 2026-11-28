@@ -9,6 +9,7 @@ import { obtenerSupabase } from '../../../shared/supabase/client'
 export interface CasosAdmin<R, A> {
   pendientes(): Promise<R[]>
   moderar(r: R, accion: A, nota: string): Promise<void>
+  cambiarPrioridad(r: R, prioridad: 'alta' | 'media' | 'baja'): Promise<void>
 }
 
 /** Estadisticas de uso entre dos fechas. */
@@ -74,6 +75,54 @@ export interface ImportacionEcu {
   mes: number
   agrupaciones: number
 }
+/** Registro de una carga del ECU 911 (importaciones_ecu911): filas leidas y errores. */
+export interface RegistroEcu {
+  periodo: string
+  archivo: string
+  filas: number
+  filas_loja: number
+  estado: 'ok' | 'error'
+  mensaje: string | null
+  fecha: string
+}
+/** Alerta SOS vista por el panel (admin_sos_alertas, 050). Posicion solo si esta activa. */
+export interface AlertaSos {
+  id: string
+  nombre: string
+  activa: boolean
+  started_at: string
+  ended_at: string | null
+  last_at: string | null
+  lat: number | null
+  lng: number | null
+  puntos: number
+}
+/** Ultimo acceso de una cuenta (admin_ultimo_acceso, 050). */
+export interface AccesoUsuario {
+  id: string
+  ultimo_acceso: string | null
+  plataforma: string | null
+  version_name: string | null
+}
+export interface VersionPublicada {
+  plataforma: string
+  version_name: string
+  version_code: number
+  canal: 'estable' | 'prerelease'
+  publicada_en: string
+  apk_bytes: number | null
+}
+export interface VersionEnUso {
+  plataforma: string
+  version_name: string
+  version_code: number | null
+  usuarios: number
+}
+export interface RespuestaRapida {
+  id: string | null
+  titulo: string
+  texto: string
+}
 export interface ClubAdmin {
   id: string
   name: string
@@ -107,6 +156,16 @@ export interface FuenteAdmin<R, A, E> {
   guardarAjuste(key: string, value: unknown): Promise<void>
   versionTerminos(): Promise<string | null>
   publicarTerminos(version: string): Promise<void>
+  // Migracion 050 (docs/ADMIN.md).
+  cambiarPrioridad(r: R, prioridad: 'alta' | 'media' | 'baja'): Promise<void>
+  sos(): Promise<AlertaSos[]>
+  accesos(): Promise<AccesoUsuario[]>
+  registroEcu(): Promise<RegistroEcu[]>
+  versionesPublicadas(): Promise<VersionPublicada[]>
+  versionesEnUso(): Promise<VersionEnUso[]>
+  respuestasRapidas(): Promise<RespuestaRapida[]>
+  guardarRespuestaRapida(r: RespuestaRapida): Promise<void>
+  borrarRespuestaRapida(id: string): Promise<void>
 }
 
 function ok<T>(r: { data: T | null; error: { message: string } | null }): T {
@@ -250,6 +309,43 @@ export function fuenteSupabase<R, A, E>(
     async publicarTerminos(version) {
       ok(await sb.from('legal_versions').insert({ kind: 'terminos', version }))
     },
+    cambiarPrioridad: (r, p) => casos.cambiarPrioridad(r, p),
+    async sos() {
+      return ok(await sb.rpc('admin_sos_alertas', { horas: 24 })) as AlertaSos[]
+    },
+    async accesos() {
+      return ok(await sb.rpc('admin_ultimo_acceso')) as AccesoUsuario[]
+    },
+    async registroEcu() {
+      return ok(
+        await sb
+          .from('importaciones_ecu911')
+          .select('periodo,archivo,filas,filas_loja,estado,mensaje,fecha')
+          .order('fecha', { ascending: false })
+          .limit(12)
+      ) as RegistroEcu[]
+    },
+    async versionesPublicadas() {
+      return ok(await sb.rpc('admin_versiones_publicadas')) as VersionPublicada[]
+    },
+    async versionesEnUso() {
+      return ok(await sb.rpc('admin_versiones_en_uso', { dias: 30 })) as VersionEnUso[]
+    },
+    async respuestasRapidas() {
+      return ok(await sb.rpc('admin_respuestas_rapidas')) as RespuestaRapida[]
+    },
+    async guardarRespuestaRapida(r) {
+      ok(
+        await sb.rpc('admin_guardar_respuesta_rapida', {
+          p_id: r.id,
+          p_titulo: r.titulo.trim(),
+          p_texto: r.texto.trim(),
+        })
+      )
+    },
+    async borrarRespuestaRapida(id) {
+      ok(await sb.rpc('admin_borrar_respuesta_rapida', { p_id: id }))
+    },
   }
 }
 
@@ -307,8 +403,23 @@ export function fuenteDemo<R extends { status: string }, A, E>(
     { key: 'mantenimiento', value: false },
     { key: 'registro_abierto', value: true },
     { key: 'version_minima_android', value: '1.0.0' },
+    { key: 'sla_horas_moderacion', value: { alta: 4, media: 24, baja: 72 } },
   ]
   let terminos = '2026-10-25'
+  const respuestas: RespuestaRapida[] = [
+    {
+      id: 'q1',
+      titulo: 'Contenido retirado',
+      texto:
+        'Revisamos tu reporte y retiramos el contenido porque incumple las normas de la comunidad. Gracias por avisarnos.',
+    },
+    {
+      id: 'q2',
+      titulo: 'Sin infracción',
+      texto:
+        'Revisamos tu reporte y no encontramos una infracción de las normas de la comunidad. Gracias por ayudarnos a cuidar Runcity.',
+    },
+  ]
   const nada = () => Promise.resolve()
   return {
     demo: true,
@@ -391,10 +502,93 @@ export function fuenteDemo<R extends { status: string }, A, E>(
     async guardarAjuste(key, value) {
       const a = ajustes.find((x) => x.key === key)
       if (a) a.value = value
+      else ajustes.push({ key, value })
     },
     versionTerminos: () => Promise.resolve(terminos),
     async publicarTerminos(v) {
       terminos = v
+    },
+    cambiarPrioridad: (r, p) => casos.cambiarPrioridad(r, p),
+    sos: () =>
+      Promise.resolve([
+        {
+          id: 's1',
+          nombre: 'Andrea Montaño',
+          activa: true,
+          started_at: new Date(Date.now() - 12 * 60_000).toISOString(),
+          ended_at: null,
+          last_at: new Date(Date.now() - 3 * 60_000).toISOString(),
+          lat: -3.9931,
+          lng: -79.2042,
+          puntos: 14,
+        },
+        {
+          id: 's2',
+          nombre: 'Kevin Jaramillo',
+          activa: false,
+          started_at: new Date(Date.now() - 5 * 3_600_000).toISOString(),
+          ended_at: new Date(Date.now() - 4.6 * 3_600_000).toISOString(),
+          last_at: null,
+          lat: null,
+          lng: null,
+          puntos: 21,
+        },
+      ]),
+    accesos: () =>
+      Promise.resolve(
+        usuarios.slice(0, 4).map((u, i) => ({
+          id: u.id,
+          ultimo_acceso: new Date(Date.now() - (i + 1) * 3 * 3_600_000).toISOString(),
+          plataforma: i % 2 ? 'web' : 'android',
+          version_name: i % 2 ? '' : '1.0.2',
+        }))
+      ),
+    registroEcu: () =>
+      Promise.resolve([
+        {
+          periodo: '2026-10',
+          archivo: 'incidentes_octubre_2026.csv',
+          filas: 454099,
+          filas_loja: 9997,
+          estado: 'ok' as const,
+          mensaje: 'Periodos: 2026-10; agregados: 843',
+          fecha: '2026-11-20T14:22:39Z',
+        },
+      ]),
+    versionesPublicadas: () =>
+      Promise.resolve([
+        {
+          plataforma: 'android',
+          version_name: '1.0.1',
+          version_code: 10001,
+          canal: 'prerelease' as const,
+          publicada_en: '2026-11-22T00:17:09Z',
+          apk_bytes: 39876927,
+        },
+        {
+          plataforma: 'android',
+          version_name: '0.9.11',
+          version_code: 911,
+          canal: 'estable' as const,
+          publicada_en: '2026-11-05T03:38:40Z',
+          apk_bytes: 51820448,
+        },
+      ]),
+    versionesEnUso: () =>
+      Promise.resolve([
+        { plataforma: 'android', version_name: '1.0.2', version_code: 10002, usuarios: 2 },
+        { plataforma: 'web', version_name: '', version_code: null, usuarios: 1 },
+      ]),
+    respuestasRapidas: () =>
+      Promise.resolve([...respuestas].sort((a, b) => a.titulo.localeCompare(b.titulo))),
+    async guardarRespuestaRapida(r) {
+      const i = respuestas.findIndex((x) => x.id === r.id && r.id)
+      if (i >= 0) respuestas[i] = r
+      else respuestas.push({ ...r, id: `q${respuestas.length + 1}` })
+    },
+    async borrarRespuestaRapida(id) {
+      const i = respuestas.findIndex((x) => x.id === id)
+      if (i >= 0) respuestas.splice(i, 1)
     },
   }
 }

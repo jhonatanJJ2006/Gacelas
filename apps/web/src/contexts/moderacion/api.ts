@@ -6,6 +6,7 @@ import { registroLocal } from './infrastructure/registroLocal'
 
 export * from './domain/denuncia'
 export type * from './domain/caso'
+export * from './domain/sla'
 export type { CasoRepositorio } from './application/puertos'
 export { casosSupabase } from './infrastructure/supabaseCasos'
 export { casosDemo } from './infrastructure/casosDemo'
