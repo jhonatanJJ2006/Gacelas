@@ -1,0 +1,53 @@
+name: Dependabot automerge
+
+# Activa el auto-merge (squash) de los PR de Dependabot que solo traen
+# actualizaciones minor o patch. El merge ocurre cuando los checks obligatorios
+# del ruleset terminan en verde. Las actualizaciones major se quedan abiertas
+# para revisión manual. Ver docs/AUTOMERGE-DEPENDABOT.md.
+#
+# Usa pull_request_target para tener permisos de escritura en PR de Dependabot.
+# Es seguro porque el workflow no hace checkout ni ejecuta código del PR: solo
+# lee sus metadatos y llama a la API de GitHub.
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    name: Automerge de Dependabot
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    steps:
+      - name: Leer metadatos de Dependabot
+        id: meta
+        uses: dependabot/fetch-metadata@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Decidir si es apto para automerge
+        id: decidir
+        env:
+          ACTUALIZACIONES: ${{ steps.meta.outputs.updated-dependencies-json }}
+        run: |
+          set -euo pipefail
+          # Apto solo si todas las dependencias del PR son minor o patch. Una major
+          # o un tipo desconocido deja el PR para revisión manual.
+          otras=$(printf '%s' "$ACTUALIZACIONES" | jq '[.[] | select(.updateType != "version-update:semver-minor" and .updateType != "version-update:semver-patch")] | length')
+          if [ "$otras" -eq 0 ]; then
+            echo "apto=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "apto=false" >> "$GITHUB_OUTPUT"
+            echo "El PR incluye $otras actualizaciones que no son minor ni patch: queda para revisión manual."
+          fi
+
+      - name: Activar auto-merge (squash)
+        if: steps.decidir.outputs.apto == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash "$PR_URL"

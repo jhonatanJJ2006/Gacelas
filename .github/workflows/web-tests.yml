@@ -1,13 +1,12 @@
 name: Web Tests
 
 on:
+  # Sin filtro de rutas en pull_request: los checks son obligatorios en main y
+  # staging y un check que no corre dejaría el PR bloqueado.
   pull_request:
-    branches: [main, develop]
-    paths:
-      - 'apps/web/**'
-      - '.github/workflows/web-tests.yml'
+    branches: [main, develop, staging]
   push:
-    branches: [main]
+    branches: [main, staging]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

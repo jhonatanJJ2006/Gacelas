@@ -1,6 +1,11 @@
 # Actualizaciones de dependencias. Los pull requests empiezan cuando este
 # archivo está en main. Dependabot alerts y las security updates se activan
 # en Settings, Code security: no las enciende este archivo.
+#
+# Cada ecosistema agrupa las actualizaciones minor y patch en un solo PR semanal
+# (grupo menores-y-parches). Las major llegan como un PR por dependencia y se
+# revisan a mano. El workflow dependabot-automerge.yml fusiona solo los PR que
+# traen únicamente minor o patch; ver docs/AUTOMERGE-DEPENDABOT.md.
 version: 2
 updates:
   # Android y Kotlin Multiplatform. El catálogo gradle/libs.versions.toml
@@ -20,6 +25,32 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      # AGP 9 exige Gradle 9, compileSdk 37 y migrar los plugins de Kotlin.
+      - dependency-name: com.android.tools.build:gradle
+        update-types: ['version-update:semver-major']
+      # SceneView 4 exige compileSdk 36 o superior (AGP 9) y cambia la API.
+      - dependency-name: io.github.sceneview:sceneview
+        update-types: ['version-update:semver-major']
+      # Estas versiones traen dependencias androidx que exigen compileSdk 36 o 37
+      # (AGP 9). Se retoman junto con la migración a AGP 9. Los parches siguen.
+      - dependency-name: androidx.navigation:*
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: io.coil-kt.coil3:*
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: io.github.jan-tennert.supabase:*
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: io.ktor:*
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # DataStore 1.2 y lifecycle 2.9 multiplataforma dejaron de publicar iosX64,
+      # que el módulo shared todavía declara.
+      - dependency-name: androidx.datastore:*
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: org.jetbrains.androidx.lifecycle:*
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # kotlinx-datetime 0.7 y 0.8 mueven Clock e Instant a kotlin.time.
+      - dependency-name: org.jetbrains.kotlinx:kotlinx-datetime
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
 
   # Workspace de pnpm (pnpm-lock.yaml en la raíz): apps/*, packages/* y backend.
   - package-ecosystem: npm
@@ -37,6 +68,11 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      # jest-dom 8 pide vitest 5 o superior como peer y el proyecto usa vitest 1.
+      # Se retoma al migrar vitest.
+      - dependency-name: '@testing-library/jest-dom'
+        update-types: ['version-update:semver-major']
 
   # Actions usadas en .github/workflows.
   - package-ecosystem: github-actions
