@@ -55,8 +55,10 @@ describe('panel de administración', () => {
     expect(kpis).toHaveTextContent('52')
     expect(await screen.findAllByTestId('marca-corredor')).toHaveLength(17)
     expect(screen.getAllByTestId('marca-incidente')).toHaveLength(9)
-    // El SOS no tiene lectura para el panel: se dice, no se inventa una cifra.
-    expect(screen.getByTestId('sos-pendiente')).toHaveTextContent('fuente pendiente')
+    // SOS de las ultimas 24 h: la activa sale en el mapa con su posicion y en la lista.
+    await waitFor(() => expect(screen.getByTestId('sos-chip')).toHaveTextContent('SOS activos: 1'))
+    expect(screen.getAllByTestId('marca-sos')).toHaveLength(1)
+    expect(screen.getByTestId('lista-sos')).toHaveTextContent('Andrea Montaño')
     const atender = await screen.findByTestId('atender-siguiente')
     await waitFor(() => expect(atender).toBeEnabled())
     fireEvent.click(atender)
@@ -101,5 +103,57 @@ describe('panel de administración', () => {
     expect(screen.getByTestId('grafico-carreras')).toBeInTheDocument()
     expect(screen.getByTestId('rutas-top')).toHaveTextContent('Parque Recreacional Jipiro')
     expect(screen.getByTestId('estadisticas-pdf')).toBeEnabled()
+  })
+
+  it('usuarios muestra el ultimo acceso registrado', async () => {
+    renderRuta('/admin/usuarios?demo')
+    await waitFor(() =>
+      expect(screen.getByTestId('ficha-ultimo-acceso')).toHaveTextContent(/Último acceso hace/)
+    )
+    expect(screen.queryByText(/no registra ese dato/)).not.toBeInTheDocument()
+  })
+
+  it('moderacion muestra prioridad y plazo, cambia la prioridad y usa respuestas rapidas', async () => {
+    renderRuta('/admin/moderacion?demo')
+    const detalle = await screen.findByTestId('detalle-caso')
+    expect(detalle).toHaveTextContent(/Prioridad (alta|media|baja)/)
+    fireEvent.click(await screen.findByTestId('prioridad-alta'))
+    await waitFor(() => expect(detalle).toHaveTextContent('Prioridad alta'))
+    const [respuesta] = await screen.findAllByTestId('respuesta-rapida')
+    fireEvent.click(respuesta)
+    expect((screen.getByLabelText('Nota de moderación') as HTMLInputElement).value).toMatch(
+      /Revisamos tu reporte/
+    )
+  })
+
+  it('estadisticas muestra el registro del ECU 911 y las versiones', async () => {
+    renderRuta('/admin/estadisticas?demo')
+    expect(await screen.findByTestId('registro-ecu')).toHaveTextContent('454.099 filas leídas')
+    expect(await screen.findByTestId('versiones-publicadas')).toHaveTextContent('1.0.1')
+    expect(await screen.findByTestId('versiones-uso')).toHaveTextContent('Android 1.0.2')
+    expect(screen.queryByText(/fuente pendiente/)).not.toBeInTheDocument()
+  })
+
+  it('ajustes valida y guarda los plazos y crea respuestas rapidas', async () => {
+    renderRuta('/admin/ajustes?demo')
+    const alta = await screen.findByLabelText('Horas prioridad alta')
+    await waitFor(() => expect((alta as HTMLInputElement).value).toBe('4'))
+    fireEvent.change(alta, { target: { value: '100' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar plazos' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('plazo más corto')
+    fireEvent.change(alta, { target: { value: '2' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar plazos' }))
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: 'Nueva respuesta' }))
+    fireEvent.change(screen.getByLabelText('Título de la respuesta'), {
+      target: { value: 'Duplicado' },
+    })
+    fireEvent.change(screen.getByLabelText('Texto de la respuesta'), {
+      target: { value: 'Ya teníamos este caso abierto.' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar respuesta' }))
+    await waitFor(() =>
+      expect(screen.getByTestId('respuestas-rapidas')).toHaveTextContent('Duplicado')
+    )
   })
 })

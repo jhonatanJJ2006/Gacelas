@@ -38,7 +38,23 @@ export class SupabaseAuthRepository implements AuthRepository {
     this.sb = sb
   }
 
+  private usoRegistrado: string | null = null
+
+  /** Ultimo acceso para el panel (registrar_uso_app, 050). Una vez por cuenta; sin errores visibles. */
+  private registrarUso(user: User) {
+    if (this.usoRegistrado === user.id || typeof this.sb.rpc !== 'function') return
+    this.usoRegistrado = user.id
+    void Promise.resolve(
+      this.sb.rpc('registrar_uso_app', {
+        p_plataforma: 'web',
+        p_version_name: '',
+        p_version_code: null,
+      })
+    ).catch(() => undefined)
+  }
+
   private async perfil(user: User): Promise<Perfil> {
+    this.registrarUso(user)
     const { data } = await this.sb.from('profiles').select('*').eq('id', user.id).maybeSingle()
     return perfilDesdeFila(data as Fila | null, user)
   }

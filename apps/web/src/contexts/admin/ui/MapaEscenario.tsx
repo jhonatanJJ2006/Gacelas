@@ -27,10 +27,13 @@ export function MapaEscenario({
   corredores,
   incidentes,
   ruta,
+  sos = [],
   etiqueta,
 }: {
   corredores: PuntoGeo[]
   incidentes: PuntoGeo[]
+  /** Ultima posicion de las alertas SOS activas. */
+  sos?: PuntoGeo[]
   /** Trazado a resaltar (por ejemplo, una ruta). */
   ruta?: PuntoGeo[]
   etiqueta: string
@@ -38,6 +41,7 @@ export function MapaEscenario({
   const vivos = corredores.map(proyectar).filter((p) => p !== null)
   const alertas = incidentes.map(proyectar).filter((p) => p !== null)
   const trazo = (ruta ?? []).map(proyectar).filter((p) => p !== null)
+  const auxilios = sos.map(proyectar).filter((p) => p !== null)
   return (
     <svg
       viewBox={`0 0 ${ANCHO} ${ALTO}`}
@@ -100,6 +104,12 @@ export function MapaEscenario({
         <g key={`c${i}`} data-testid="marca-corredor">
           <circle cx={p.x} cy={p.y} r="10" fill="hsl(var(--mapa-vivo) / 0.22)" />
           <circle cx={p.x} cy={p.y} r="5" fill="hsl(var(--mapa-vivo))" />
+        </g>
+      ))}
+      {auxilios.map((p, i) => (
+        <g key={`s${i}`} data-testid="marca-sos">
+          <circle cx={p.x} cy={p.y} r="16" fill="hsl(var(--peligro) / 0.25)" />
+          <circle cx={p.x} cy={p.y} r="8" fill="hsl(var(--peligro))" />
         </g>
       ))}
     </svg>

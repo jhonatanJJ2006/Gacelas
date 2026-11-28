@@ -10,10 +10,11 @@ import {
   MiniBarras,
   Vacio,
   entero,
+  haceCuanto,
   useCarga,
 } from './kit'
 import { MOTIVOS, estaAbierto } from './casos'
-import type { FuenteAdmin, UsuarioAdmin } from './fuente'
+import type { AccesoUsuario, FuenteAdmin, UsuarioAdmin } from './fuente'
 
 type Filtro = 'todos' | 'reportes' | 'suspendidos'
 
@@ -26,6 +27,12 @@ const hace = (n: number) => {
 /** Usuarios: cifras, tabla con busqueda y ficha del usuario elegido. */
 export function Usuarios({ f }: { f: FuenteAdmin }) {
   const us = useCarga(() => f.usuarios(), [f])
+  // Ultimo acceso (migracion 050). Si falla, la tabla sale igual y la columna muestra "-".
+  const acc = useCarga(() => f.accesos(), [f])
+  const accesoDe = useMemo(
+    () => new Map((acc.datos ?? []).map((a) => [a.id, a] as const)),
+    [acc.datos]
+  )
   const cola = useCarga(() => f.reportes(), [f])
   const met = useCarga(() => f.metricas(), [f])
   const serie = useCarga(() => f.estadisticas(hace(13), hace(0)), [f])
@@ -160,6 +167,7 @@ export function Usuarios({ f }: { f: FuenteAdmin }) {
                   <th>Rol</th>
                   <th>Km</th>
                   <th>Estado</th>
+                  <th>Último acceso</th>
                   <th>Rep.</th>
                 </tr>
               </thead>
@@ -205,6 +213,11 @@ export function Usuarios({ f }: { f: FuenteAdmin }) {
                           <Chip tono="ok">Activa</Chip>
                         )}
                       </td>
+                      <td className="adm-t2" style={{ fontSize: 13 }} data-testid="ultimo-acceso">
+                        {accesoDe.get(u.id)?.ultimo_acceso
+                          ? haceCuanto(accesoDe.get(u.id)!.ultimo_acceso!)
+                          : '-'}
+                      </td>
                       <td
                         className="adm-num"
                         style={{ color: rep > 0 ? 'hsl(var(--peligro-texto))' : undefined }}
@@ -218,13 +231,15 @@ export function Usuarios({ f }: { f: FuenteAdmin }) {
             </table>
           )}
           <p className="adm-t3" style={{ fontSize: 12, marginTop: 10 }}>
-            Último acceso no se muestra: el servidor no registra ese dato todavía.
+            Último acceso: el inicio de sesión o la última vez que la persona abrió la app (desde
+            Android 1.0.2 y la web actual). Un guion indica que no hay registro.
           </p>
         </section>
 
         {actual && (
           <Ficha
             u={actual}
+            acceso={accesoDe.get(actual.id) ?? null}
             rep={reportesDe.get(actual.id) ?? null}
             f={f}
             recargar={us.recargar}
@@ -255,12 +270,14 @@ export function Usuarios({ f }: { f: FuenteAdmin }) {
 
 function Ficha({
   u,
+  acceso,
   rep,
   f,
   recargar,
   onSuspender,
 }: {
   u: UsuarioAdmin
+  acceso: AccesoUsuario | null
   rep: { n: number; ultimo: string; motivo: string } | null
   f: FuenteAdmin
   recargar: () => void
@@ -326,6 +343,9 @@ function Ficha({
         <p className="adm-t3" style={{ fontSize: 12 }}>
           Alta: {new Date(u.created_at).toLocaleDateString('es-EC')}
         </p>
+        <p className="adm-t3" style={{ fontSize: 12 }} data-testid="ficha-ultimo-acceso">
+          {textoAcceso(acceso)}
+        </p>
         <Boton tipo={u.suspended_at ? 'pri' : 'bad'} completo onClick={onSuspender}>
           {u.suspended_at ? 'Reactivar cuenta' : 'Suspender cuenta'}
         </Boton>
@@ -378,4 +398,18 @@ function Dato({
       </p>
     </div>
   )
+}
+
+const PLATAFORMAS: Record<string, string> = { android: 'Android', ios: 'iOS', web: 'Web' }
+
+/** "Último acceso hace 2 h · Android 1.0.2" o "Sin registro de acceso". */
+export function textoAcceso(a: AccesoUsuario | null, ahora = Date.now()): string {
+  if (!a?.ultimo_acceso) return 'Sin registro de acceso'
+  const app = [
+    a.plataforma ? (PLATAFORMAS[a.plataforma] ?? a.plataforma) : '',
+    a.version_name ?? '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+  return `Último acceso ${haceCuanto(a.ultimo_acceso, ahora)}${app ? ` · ${app}` : ''}`
 }

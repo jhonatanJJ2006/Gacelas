@@ -22,8 +22,14 @@ import {
   useCarga,
 } from './kit'
 import {
+  PRIORIDADES,
   definicionTipo,
+  estadoSla,
+  ordenarPorSla,
+  textoSla,
   tiposRegistrados,
+  type Prioridad,
+  type RespuestaRapida,
   type AccionModeracion,
   type EstadoReporte,
   type FuenteAdmin,
@@ -47,7 +53,12 @@ type Pendiente = { accion: AccionModeracion; titulo: string; texto: string; boto
 
 /** Moderacion: cola, caso seleccionado y acciones (tres columnas en escritorio). */
 export function Moderacion({ f }: { f: FuenteAdmin }) {
-  const { datos, error, recargar } = useCarga<ReporteAdmin[]>(() => f.reportes(), [f])
+  const { datos, error, recargar } = useCarga<ReporteAdmin[]>(
+    () => f.reportes().then(ordenarPorSla),
+    [f]
+  )
+  // Respuestas rapidas (050); si no cargan, la nota sigue siendo libre.
+  const respuestas = useCarga<RespuestaRapida[]>(() => f.respuestasRapidas(), [f])
   const { state } = useLocation() as { state: { caso?: string } | null }
   const [filtro, setFiltro] = useState<EstadoReporte>('pendiente')
   const [tipo, setTipo] = useState<TipoReporte | null>(null)
@@ -189,6 +200,7 @@ export function Moderacion({ f }: { f: FuenteAdmin }) {
                           {idCorto(r)}
                         </span>
                         <Chip>{etiquetaTipo(r.target_type)}</Chip>
+                        <ChipSla r={r} />
                       </span>
                       <span className="adm-t3">{haceCuanto(r.created_at)}</span>
                     </span>
@@ -216,6 +228,10 @@ export function Moderacion({ f }: { f: FuenteAdmin }) {
               r={actual}
               nota={nota}
               setNota={setNota}
+              respuestas={respuestas.datos ?? []}
+              prioridad={(p) =>
+                f.cambiarPrioridad(actual, p).then(recargar, (e: Error) => setFallo(e.message))
+              }
               fallo={fallo}
               hacer={hacer}
               pedir={pedir}
@@ -269,6 +285,8 @@ function Detalle({ r }: { r: ReporteAdmin }) {
         <Chip tono="bad">{MOTIVOS[r.reason] ?? r.reason}</Chip>
         <Chip tono={tonoEstado(r.status)}>{nombreEstado(r.status)}</Chip>
         {r.total_reportes > 1 && <Chip tono="ok">{r.total_reportes} reportes</Chip>}
+        {r.prioridad && <Chip tono={TONO_PRIORIDAD[r.prioridad]}>Prioridad {r.prioridad}</Chip>}
+        <ChipSla r={r} />
       </div>
       <h2 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.15 }}>
         {r.resumen}
@@ -344,6 +362,8 @@ function Acciones({
   r,
   nota,
   setNota,
+  respuestas,
+  prioridad,
   fallo,
   hacer,
   pedir,
@@ -353,6 +373,8 @@ function Acciones({
   r: ReporteAdmin
   nota: string
   setNota: (n: string) => void
+  respuestas: RespuestaRapida[]
+  prioridad: (p: Prioridad) => Promise<void>
   fallo: string | null
   hacer: (r: ReporteAdmin, a: AccionModeracion) => Promise<void>
   pedir: (r: ReporteAdmin, a: AccionModeracion) => void
@@ -369,6 +391,39 @@ function Acciones({
       style={{ alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: 10 }}
     >
       <h2 className="adm-h2">Acciones</h2>
+      {abierto && r.prioridad && (
+        <div className="adm-fila adm-envuelve" role="group" aria-label="Prioridad del caso">
+          <span className="adm-lbl">Prioridad</span>
+          {PRIORIDADES.map(([p, etiqueta]) => (
+            <button
+              key={p}
+              type="button"
+              className="adm-chip c-neu"
+              aria-pressed={r.prioridad === p}
+              onClick={() => r.prioridad !== p && void prioridad(p)}
+              data-testid={`prioridad-${p}`}
+            >
+              {etiqueta}
+            </button>
+          ))}
+        </div>
+      )}
+      {respuestas.length > 0 && (
+        <div className="adm-fila adm-envuelve" role="group" aria-label="Respuestas rápidas">
+          {respuestas.map((q) => (
+            <button
+              key={q.id ?? q.titulo}
+              type="button"
+              className="adm-chip c-neu"
+              title={q.texto}
+              onClick={() => setNota(q.texto)}
+              data-testid="respuesta-rapida"
+            >
+              {q.titulo}
+            </button>
+          ))}
+        </div>
+      )}
       <input
         value={nota}
         onChange={(e) => setNota(e.target.value)}
@@ -447,5 +502,23 @@ function Acciones({
         </Boton>
       </div>
     </aside>
+  )
+}
+
+const TONO_PRIORIDAD: Record<Prioridad, 'bad' | 'warn' | 'info'> = {
+  alta: 'bad',
+  media: 'warn',
+  baja: 'info',
+}
+
+/** Plazo del caso: vencido, por vencer o en plazo (sin chip si esta cerrado o sin plazo). */
+function ChipSla({ r }: { r: ReporteAdmin }) {
+  const e = estadoSla(r)
+  if (!e) return null
+  const tono = e.tipo === 'vencido' ? 'bad' : e.tipo === 'por_vencer' ? 'warn' : 'ok'
+  return (
+    <span data-testid={`sla-${r.id}`}>
+      <Chip tono={tono}>{textoSla(e)}</Chip>
+    </span>
   )
 }

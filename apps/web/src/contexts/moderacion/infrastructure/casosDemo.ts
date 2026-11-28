@@ -1,5 +1,6 @@
 import type { CasoRepositorio } from '../application/puertos'
 import type { AccionModeracion, EstadoReporte, ReporteAdmin } from '../domain/caso'
+import { SLA_POR_DEFECTO, prioridadPorMotivo } from '../domain/sla'
 
 /** Casos de ejemplo para /admin?demo. */
 export function casosDemo(): CasoRepositorio {
@@ -77,6 +78,10 @@ export function casosDemo(): CasoRepositorio {
     reason,
     detail,
     status,
+    prioridad: prioridadPorMotivo(reason),
+    vence_en: new Date(
+      Date.now() - (i + 1) * 3_600_000 + SLA_POR_DEFECTO[prioridadPorMotivo(reason)] * 3_600_000
+    ).toISOString(),
     created_at: new Date(Date.now() - (i + 1) * 3_600_000).toISOString(),
     reportante: ['Andrea Montaño', 'Kevin Jaramillo', 'Luis Ordóñez'][i % 3],
     resumen,
@@ -95,6 +100,9 @@ export function casosDemo(): CasoRepositorio {
   }))
   return {
     pendientes: () => Promise.resolve(reportes),
+    async cambiarPrioridad(r, prioridad) {
+      r.prioridad = prioridad
+    },
     async moderar(r, accion, nota) {
       const estado: Partial<Record<AccionModeracion, EstadoReporte>> = {
         en_revision: 'en_revision',

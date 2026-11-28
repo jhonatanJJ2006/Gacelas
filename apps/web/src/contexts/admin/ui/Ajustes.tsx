@@ -1,7 +1,16 @@
 import { useState, type ReactNode } from 'react'
 import { VERSIONES_LEGALES } from '../../legal/api'
 import { Avatar, Boton, Cabecera, Chip, Confirmar, Interruptor, useCarga } from './kit'
-import type { AjusteApp, FuenteAdmin } from './fuente'
+import {
+  CLAVE_SLA,
+  PRIORIDADES,
+  errorSla,
+  slaDesde,
+  type AjusteApp,
+  type FuenteAdmin,
+  type RespuestaRapida,
+  type SlaHoras,
+} from './fuente'
 
 const etiquetaAjuste = (k: string) => {
   const t = k.replace(/_/g, ' ')
@@ -90,6 +99,13 @@ export function Ajustes({ f }: { f: FuenteAdmin }) {
           </div>
         </Seccion>
 
+        <PlazosSla
+          f={f}
+          actual={slaDesde((aj.datos ?? []).find((a) => a.key === CLAVE_SLA)?.value)}
+          recargar={aj.recargar}
+        />
+        <Respuestas f={f} />
+
         <Seccion titulo="Términos y consentimientos">
           <p data-testid="version-terminos">
             Versión vigente de los Términos:{' '}
@@ -165,5 +181,163 @@ export function Ajustes({ f }: { f: FuenteAdmin }) {
         }}
       />
     </>
+  )
+}
+
+/** Horas para atender un caso segun su prioridad (app_settings.sla_horas_moderacion, 050). */
+function PlazosSla({
+  f,
+  actual,
+  recargar,
+}: {
+  f: FuenteAdmin
+  actual: SlaHoras
+  recargar: () => void
+}) {
+  const [borrador, setBorrador] = useState<Record<string, string> | null>(null)
+  const [fallo, setFallo] = useState<string | null>(null)
+  const valores = borrador ?? Object.fromEntries(PRIORIDADES.map(([p]) => [p, String(actual[p])]))
+  const guardar = () => {
+    const sla = Object.fromEntries(PRIORIDADES.map(([p]) => [p, Number(valores[p])])) as SlaHoras
+    const error = errorSla(sla)
+    setFallo(error)
+    if (error) return
+    void f.guardarAjuste(CLAVE_SLA, sla).then(
+      () => {
+        setBorrador(null)
+        recargar()
+      },
+      (e: Error) => setFallo(e.message)
+    )
+  }
+  return (
+    <Seccion titulo="Plazos de moderación">
+      <p className="adm-t2" style={{ fontSize: 13, marginBottom: 12 }}>
+        Horas para atender un caso según su prioridad. La prioridad la decide el motivo al reportar
+        y se puede cambiar en cada caso.
+      </p>
+      <div className="adm-fila" style={{ gap: 10 }} data-testid="plazos-sla">
+        {PRIORIDADES.map(([p, etiqueta]) => (
+          <label key={p} style={{ display: 'grid', gap: 4, fontSize: 13 }}>
+            {etiqueta} (h)
+            <input
+              aria-label={`Horas prioridad ${p}`}
+              inputMode="numeric"
+              value={valores[p]}
+              onChange={(e) => setBorrador({ ...valores, [p]: e.target.value })}
+              className="adm-input"
+              style={{ width: 80 }}
+            />
+          </label>
+        ))}
+      </div>
+      {fallo && (
+        <p role="alert" style={{ color: 'hsl(var(--peligro-texto))', fontSize: 13, marginTop: 8 }}>
+          {fallo}
+        </p>
+      )}
+      <div style={{ marginTop: 12 }}>
+        <Boton tipo="pri" onClick={guardar} deshabilitado={borrador === null}>
+          Guardar plazos
+        </Boton>
+      </div>
+    </Seccion>
+  )
+}
+
+/** Plantillas de respuesta para la nota de moderacion (respuestas_rapidas, 050). */
+function Respuestas({ f }: { f: FuenteAdmin }) {
+  const lista = useCarga<RespuestaRapida[]>(() => f.respuestasRapidas(), [f])
+  const [edicion, setEdicion] = useState<RespuestaRapida | null>(null)
+  const [fallo, setFallo] = useState<string | null>(null)
+  const hecho = () => {
+    setEdicion(null)
+    setFallo(null)
+    lista.recargar()
+  }
+  const guardar = () => {
+    if (!edicion) return
+    if (!edicion.titulo.trim() || !edicion.texto.trim()) {
+      setFallo('Escribe un título y un texto')
+      return
+    }
+    void f.guardarRespuestaRapida(edicion).then(hecho, (e: Error) => setFallo(e.message))
+  }
+  return (
+    <Seccion titulo="Respuestas rápidas">
+      <ul style={{ display: 'grid', gap: 10, listStyle: 'none' }} data-testid="respuestas-rapidas">
+        {(lista.datos ?? []).map((q) => (
+          <li
+            key={q.id ?? q.titulo}
+            className="adm-fila"
+            style={{ justifyContent: 'space-between' }}
+          >
+            <span style={{ minWidth: 0 }}>
+              <b>{q.titulo}</b>
+              <span className="adm-t3 adm-ell" style={{ display: 'block', fontSize: 12 }}>
+                {q.texto}
+              </span>
+            </span>
+            <span className="adm-fila" style={{ gap: 6 }}>
+              <Boton chico tipo="gho" onClick={() => setEdicion(q)}>
+                Editar
+              </Boton>
+              <Boton
+                chico
+                tipo="gho"
+                onClick={() =>
+                  q.id &&
+                  void f.borrarRespuestaRapida(q.id).then(hecho, (e: Error) => setFallo(e.message))
+                }
+              >
+                Borrar
+              </Boton>
+            </span>
+          </li>
+        ))}
+      </ul>
+      {lista.error && (
+        <p className="adm-t3" style={{ fontSize: 12 }}>
+          {lista.error}
+        </p>
+      )}
+      {edicion ? (
+        <div style={{ display: 'grid', gap: 8, marginTop: 12 }} data-testid="editor-respuesta">
+          <input
+            aria-label="Título de la respuesta"
+            value={edicion.titulo}
+            onChange={(e) => setEdicion({ ...edicion, titulo: e.target.value })}
+            placeholder="Título"
+            className="adm-input"
+          />
+          <textarea
+            aria-label="Texto de la respuesta"
+            value={edicion.texto}
+            onChange={(e) => setEdicion({ ...edicion, texto: e.target.value })}
+            rows={3}
+            className="adm-input"
+          />
+          {fallo && (
+            <p role="alert" style={{ color: 'hsl(var(--peligro-texto))', fontSize: 13 }}>
+              {fallo}
+            </p>
+          )}
+          <div className="adm-fila" style={{ gap: 8 }}>
+            <Boton tipo="pri" onClick={guardar}>
+              Guardar respuesta
+            </Boton>
+            <Boton tipo="gho" onClick={() => setEdicion(null)}>
+              Cancelar
+            </Boton>
+          </div>
+        </div>
+      ) : (
+        <div style={{ marginTop: 12 }}>
+          <Boton onClick={() => setEdicion({ id: null, titulo: '', texto: '' })}>
+            Nueva respuesta
+          </Boton>
+        </div>
+      )}
+    </Seccion>
   )
 }

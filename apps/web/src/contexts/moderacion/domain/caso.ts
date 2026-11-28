@@ -1,5 +1,8 @@
 import type { TipoObjetivo } from './denuncia'
 
+/** Prioridad de un caso (050): la decide el motivo y el moderador puede cambiarla. */
+export type Prioridad = 'alta' | 'media' | 'baja'
+
 export type EstadoReporte = 'pendiente' | 'en_revision' | 'resuelto' | 'descartado'
 export type AccionModeracion =
   | 'en_revision'
@@ -30,4 +33,7 @@ export interface ReporteAdmin {
   resumen: string
   total_reportes: number
   acciones: AccionReporte[]
+  /** Prioridad y vencimiento del plazo (admin_cola_reportes_sla, migracion 050). */
+  prioridad?: Prioridad
+  vence_en?: string | null
 }

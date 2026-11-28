@@ -7,12 +7,17 @@ function ok<T>(r: { data: T | null; error: { message: string } | null }): T {
   return r.data as T
 }
 
-/** Cola generica (admin_cola_reportes y moderar_reporte, migracion 023). */
+/**
+ * Cola generica (admin_cola_reportes y moderar_reporte, migracion 023). Con la migracion 050 la
+ * cola trae prioridad y vencimiento (admin_cola_reportes_sla).
+ */
 export function casosSupabase(): CasoRepositorio | null {
   const sb = obtenerSupabase()
   if (!sb) return null
   return {
     async pendientes() {
+      const sla = await sb.rpc('admin_cola_reportes_sla')
+      if (!sla.error) return sla.data as ReporteAdmin[]
       const r = await sb.rpc('admin_cola_reportes')
       if (!r.error) return r.data as ReporteAdmin[]
       // Sin la migracion 023 se usa la cola anterior de publicaciones.
@@ -43,6 +48,9 @@ export function casosSupabase(): CasoRepositorio | null {
     },
     async moderar(r, accion, nota) {
       ok(await sb.rpc('moderar_reporte', { reporte: r.id, accion, nota }))
+    },
+    async cambiarPrioridad(r, prioridad) {
+      ok(await sb.rpc('admin_prioridad_reporte', { reporte: r.id, prioridad }))
     },
   }
 }

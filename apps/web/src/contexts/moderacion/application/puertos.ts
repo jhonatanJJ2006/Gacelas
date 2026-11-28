@@ -1,4 +1,4 @@
-import type { AccionModeracion, ReporteAdmin } from '../domain/caso'
+import type { AccionModeracion, Prioridad, ReporteAdmin } from '../domain/caso'
 import type { MotivoReporte, ObjetivoDenuncia } from '../domain/denuncia'
 
 export type ResultadoEnvio = 'enviado' | 'duplicado' | 'sin_sesion' | 'error'
@@ -16,4 +16,5 @@ export interface RegistroDenuncias {
 export interface CasoRepositorio {
   pendientes(): Promise<ReporteAdmin[]>
   moderar(r: ReporteAdmin, accion: AccionModeracion, nota: string): Promise<void>
+  cambiarPrioridad(r: ReporteAdmin, prioridad: Prioridad): Promise<void>
 }
