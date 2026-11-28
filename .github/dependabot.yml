@@ -85,6 +85,19 @@ updates:
         update-types: ['version-update:semver-major']
       - dependency-name: eslint
         update-types: ['version-update:semver-major']
+      - dependency-name: '@eslint/js'
+        update-types: ['version-update:semver-major']
+      # vitest 1 se mantiene hasta planificar su migración; coverage-v8 va en la
+      # misma versión que vitest.
+      - dependency-name: vitest
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@vitest/coverage-v8'
+        update-types: ['version-update:semver-major']
+      # @react-three/fiber 9 y drei 10 exigen React 19; el proyecto usa React 18.
+      - dependency-name: '@react-three/fiber'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@react-three/drei'
+        update-types: ['version-update:semver-major']
 
   # Actions usadas en .github/workflows.
   - package-ecosystem: github-actions
