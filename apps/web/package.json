@@ -22,7 +22,7 @@
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",
     "@react-three/drei": "^9.122.0",
-    "@react-three/fiber": "^8.18.0",
+    "@react-three/fiber": "^9.8.2",
     "@supabase/supabase-js": "^2.119.2",
     "@vis.gl/react-google-maps": "^0.7.0",
     "react": "^18.2.0",
