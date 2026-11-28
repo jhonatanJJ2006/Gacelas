@@ -38,7 +38,7 @@ jobs:
     outputs:
       ios: ${{ steps.f.outputs.ios == 'true' || github.event_name != 'pull_request' && github.event_name != 'push' || startsWith(github.ref, 'refs/tags/') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v4
         id: f
         with:
@@ -62,7 +62,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
         with: { distribution: temurin, java-version: '17' }
       - uses: gradle/actions/setup-gradle@v6
@@ -84,7 +84,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
         with: { distribution: temurin, java-version: '17' }
       - uses: gradle/actions/setup-gradle@v6
@@ -146,7 +146,7 @@ jobs:
       - name: Framework KMP (Gradle)
         working-directory: ${{ env.ANDROID_DIR }}
         run: ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64 --build-cache --profile
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: ios-gradle-perfil
@@ -161,7 +161,7 @@ jobs:
       - name: Empaquetar .app simulador
         working-directory: ${{ env.IOS_DIR }}
         run: cd build/Build/Products/Debug-iphonesimulator && zip -qry $GITHUB_WORKSPACE/Gacelas-simulator.app.zip iosApp.app
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ios-builds
           path: Gacelas-simulator.app.zip
@@ -184,16 +184,16 @@ jobs:
       matrix:
         grupos: ['pantallas', 'carrera mapa', 'sensores', 'comunidad']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with: { sparse-checkout: apps/ios/ci }
       - name: Arrancar simulador (en segundo plano)
         run: apps/ios/ci/capturas.sh boot
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with: { name: ios-builds }
       - run: unzip -q Gacelas-simulator.app.zip
       - name: Capturas en simulador
         run: apps/ios/ci/capturas.sh iosApp.app shots ${{ matrix.grupos }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with: { name: "ios-shots-${{ strategy.job-index }}", path: shots }
 
   capturas-unir:
@@ -202,7 +202,7 @@ jobs:
     if: always() && needs.capturas.result != 'skipped'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/upload-artifact/merge@v4
+      - uses: actions/upload-artifact/merge@v7
         with:
           name: ios-simulator-screenshots
           pattern: ios-shots-*
@@ -217,7 +217,7 @@ jobs:
     env:
       ORG_GRADLE_PROJECT_gacelas.ios.soloSimulador: 'false'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
         with: { distribution: temurin, java-version: '17' }
       - uses: gradle/actions/setup-gradle@v6
@@ -259,9 +259,9 @@ jobs:
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
           mkdir -p Payload && cp -R build/Build/Products/Release-iphoneos/iosApp.app Payload/
           zip -qry $GITHUB_WORKSPACE/Gacelas-unsigned.ipa Payload
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with: { name: ios-builds }
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with: { name: ios-ipa, path: Gacelas-unsigned.ipa }
       - name: Adjuntar a GitHub Release
         env: { GH_TOKEN: '${{ github.token }}' }

@@ -36,7 +36,7 @@ jobs:
       run:
         working-directory: apps/android
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           lfs: ${{ matrix.tarea.lfs }}
 
@@ -63,7 +63,7 @@ jobs:
 
       - name: Subir APK
         if: matrix.tarea.nombre == 'build'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gacelas-debug-apk
           path: apps/android/app/build/outputs/apk/debug/app-debug.apk
@@ -71,7 +71,7 @@ jobs:
 
       - name: Subir reportes
         if: always() && matrix.tarea.nombre != 'build'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-reportes-${{ matrix.tarea.nombre }}
           path: |
