@@ -30,7 +30,7 @@ fun BotonVolverMapa(onClick: () -> Unit, modifier: Modifier = Modifier) {
         modifier.size(48.dp).vidrioC2(RoundedCornerShape(16.dp))
             .clickable(onClickLabel = "Volver", role = Role.Button, onClick = onClick).testTag("boton-volver-mapa"),
         contentAlignment = Alignment.Center,
-    ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = Color.White, modifier = Modifier.size(22.dp)) }
+    ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = GColors.TextPrimary, modifier = Modifier.size(22.dp)) }
 }
 
 /** Boton lateral de reportar incidente (tablero): cuadro ambar con icono y la etiqueta Reportar debajo. */
@@ -44,7 +44,7 @@ fun BotonReportarMapa(onClick: () -> Unit, modifier: Modifier = Modifier) {
         Box(
             Modifier.size(58.dp).clip(forma).background(Tablero.AmbarFondo).border(2.dp, Color(0xFFFBBF24).copy(alpha = 0.7f), forma),
             contentAlignment = Alignment.Center,
-        ) { Icon(Icons.Filled.Warning, "Reportar incidente", tint = Color.White, modifier = Modifier.size(26.dp)) }
+        ) { Icon(Icons.Filled.Warning, "Reportar incidente", tint = GColors.TextPrimary, modifier = Modifier.size(26.dp)) }
         androidx.compose.material3.Text("Reportar", style = com.gacelas.ui.theme.GType.labelMd.copy(fontSize = spAcotado(11f, 1.05f), fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold, letterSpacing = 0.sp),
             color = Color(0xFFFBBF24), maxLines = 1, softWrap = false, modifier = Modifier.padding(top = 3.dp))
     }

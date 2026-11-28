@@ -6,6 +6,8 @@ import { tiempoRelativo } from '../../../shared/lib/tiempo'
 export interface Publicacion {
   id: string
   autor: string
+  /** Nombre de usuario real del autor (profiles.username), sin arroba. */
+  usuario?: string
   /** Id del autor en Supabase (solo publicaciones reales de otros). */
   autorId?: string
   propia: boolean
@@ -69,6 +71,7 @@ export function construirFeed(
   const reales: Publicacion[] = remotas.map((r) => ({
     id: r.id,
     autor: r.propia ? nombre : r.autor,
+    usuario: r.usuario,
     autorId: r.propia ? undefined : r.autorId,
     propia: Boolean(r.propia),
     titulo: r.titulo,

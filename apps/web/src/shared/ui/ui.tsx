@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom'
 import { useEffect, type ReactNode } from 'react'
+import { useSalidaAnimada } from '../lib/movimiento'
 
 export function MensajeError({ mensaje }: { mensaje: string | null }) {
   if (!mensaje) return null
@@ -41,17 +42,18 @@ export function Dialogo({
     window.addEventListener('keydown', alTeclear)
     return () => window.removeEventListener('keydown', alTeclear)
   }, [abierto, onCerrar])
-  if (!abierto) return null
+  const [visible, cerrando] = useSalidaAnimada(abierto)
+  if (!visible) return null
   return createPortal(
     <div
-      className="mov-velo fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 sm:p-4 pt-[max(env(safe-area-inset-top),16px)]"
+      className={`${cerrando ? 'mov-velo-salida' : 'mov-velo'} fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 sm:p-4 pt-[max(env(safe-area-inset-top),16px)]`}
       onClick={onCerrar}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-label={titulo}
-        className="mov-hoja w-full max-w-md bg-c2-card border border-c2-linea border-t-2 border-t-c2-violeta rounded-t-[14px] sm:rounded-[14px] px-6 pt-3 pb-[max(env(safe-area-inset-bottom),24px)] shadow-2xl flex flex-col max-h-[calc(100dvh-16px)] sm:max-h-[calc(100dvh-32px)]"
+        className={`${cerrando ? 'mov-hoja-salida' : 'mov-hoja'} w-full max-w-md bg-c2-card border border-c2-linea border-t-2 border-t-c2-violeta rounded-t-[14px] sm:rounded-[14px] px-6 pt-3 pb-[max(env(safe-area-inset-bottom),24px)] shadow-2xl flex flex-col max-h-[calc(100dvh-16px)] sm:max-h-[calc(100dvh-32px)]`}
         onClick={(e) => e.stopPropagation()}
       >
         <div
@@ -73,7 +75,7 @@ export function Dialogo({
         </div>
         <div
           data-testid="dialogo-contenido"
-          className="text-c2-muted text-sm space-y-3 min-h-0 flex-1 overflow-y-auto overscroll-contain"
+          className="fade-bordes-y text-c2-muted text-sm space-y-3 min-h-0 flex-1 overflow-y-auto overscroll-contain"
         >
           {children}
         </div>
@@ -104,7 +106,7 @@ export function BotonTexto({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`px-5 h-11 -skew-x-12 font-black italic uppercase text-[14px] transition-colors disabled:opacity-50 ${peligro ? 'bg-c2-peligro text-white hover:brightness-110' : 'bg-c2-s2 text-c2-violeta hover:bg-c2-linea'}`}
+      className={`px-5 h-11 -skew-x-12 font-black italic uppercase text-[14px] transition-colors disabled:opacity-50 ${peligro ? 'bg-c2-peligro text-on-primary hover:brightness-110' : 'bg-c2-s2 text-c2-violeta hover:bg-c2-linea'}`}
     >
       {children}
     </button>
@@ -162,7 +164,7 @@ export function Aviso({ mensaje }: { mensaje: string | null }) {
         >
           {error ? 'error' : 'check_circle'}
         </span>
-        <span className="text-sm font-semibold text-white">{mensaje}</span>
+        <span className="text-sm font-semibold text-text-primary">{mensaje}</span>
       </div>
     </div>
   )

@@ -4,13 +4,15 @@ import { createPortal } from 'react-dom'
 import {
   deltaAngulo,
   desplazar,
-  ESTILO_GACELAS,
+  estiloMapa,
+  fondoMapa,
   mapId,
   NARANJA,
   tieneMapIdPropio,
   VERDE,
 } from '../../lib/mapaEstilo'
 import { CENTRO_LOJA, claveMapas, type Coordenada } from '../../lib/mapas'
+import { useTemaResuelto } from '../useTema'
 import { usePosicionSuave } from './usePosicionSuave'
 
 /**
@@ -43,6 +45,7 @@ export function MapaBase({
   testId?: string
 }) {
   const clave = claveMapas()
+  const tema = useTemaResuelto()
   // El vectorial inclinado solo con un Map ID propio (estilo oscuro de Runcity en la nube). Con el
   // DEMO_MAP_ID salia el estilo por defecto de Google con comercios: se usa el raster oscuro propio.
   const vector = modo3d && tieneMapIdPropio()
@@ -53,17 +56,21 @@ export function MapaBase({
   if (!clave) return <>{alternativa}</>
   const mapa = (
     <Map
-      key={vector ? 'vector' : 'raster'}
+      key={vector ? `vector-${tema}` : 'raster'}
       defaultCenter={centro}
       defaultZoom={modo3d ? 18 : zoom}
       defaultTilt={vector ? 65 : 0}
       disableDefaultUI
       clickableIcons={false}
       gestureHandling="greedy"
-      backgroundColor="#0d1422"
+      backgroundColor={fondoMapa(tema)}
       {...(vector
-        ? { mapId: mapId(), colorScheme: 'DARK' as const, renderingType: 'VECTOR' as const }
-        : { styles: ESTILO_GACELAS })}
+        ? {
+            mapId: mapId(),
+            colorScheme: tema === 'claro' ? ('LIGHT' as const) : ('DARK' as const),
+            renderingType: 'VECTOR' as const,
+          }
+        : { styles: estiloMapa(tema) })}
       style={{ width: '100%', height: '100%' }}
     >
       {children}
@@ -98,7 +105,7 @@ export function MapaBase({
 }
 
 const botonCtl =
-  'w-11 h-11 flex items-center justify-center text-white/90 hover:text-white bg-[#121a2a]/90 backdrop-blur-md'
+  'w-11 h-11 flex items-center justify-center text-sobre-vidrio/90 hover:text-sobre-vidrio bg-vidrio/90 backdrop-blur-md'
 
 /** Zoom, brujula (toca para volver al norte) en estilo Gacelas. */
 export function Controles() {
@@ -115,7 +122,7 @@ export function Controles() {
       className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-2"
       data-testid="controles-mapa"
     >
-      <div className="rounded-2xl overflow-hidden border border-white/10 shadow-xl divide-y divide-white/10">
+      <div className="rounded-2xl overflow-hidden border border-text-primary/10 shadow-xl divide-y divide-text-primary/10">
         <button
           aria-label="Acercar"
           className={botonCtl}
@@ -133,7 +140,7 @@ export function Controles() {
       </div>
       <button
         aria-label="Orientar al norte"
-        className={`${botonCtl} rounded-full border border-white/10 shadow-xl`}
+        className={`${botonCtl} rounded-full border border-text-primary/10 shadow-xl`}
         onClick={() => mapa.moveCamera({ heading: 0 })}
       >
         <span
@@ -154,7 +161,7 @@ export function BotonSeguir({ siguiendo, onSeguir }: { siguiendo: boolean; onSeg
     <button
       onClick={onSeguir}
       data-testid="recentrar"
-      className="absolute left-1/2 -translate-x-1/2 bottom-4 z-10 h-11 px-4 rounded-full bg-[#121a2a]/95 text-white border border-white/10 shadow-xl flex items-center gap-2"
+      className="absolute left-1/2 -translate-x-1/2 bottom-4 z-10 h-11 px-4 rounded-full bg-vidrio/95 text-sobre-vidrio border border-text-primary/10 shadow-xl flex items-center gap-2"
     >
       <span className="material-symbols-outlined text-primary-400">my_location</span>Recentrar
     </button>
@@ -270,7 +277,9 @@ export function Pin({ pos, tipo }: { pos: Coordenada; tipo: 'inicio' | 'meta' })
         data-testid={`pin-${tipo}`}
       >
         {tipo === 'meta' ? (
-          <span className="material-symbols-outlined text-white text-[16px]">sports_score</span>
+          <span className="material-symbols-outlined text-text-primary text-[16px]">
+            sports_score
+          </span>
         ) : (
           <span className="w-2 h-2 rounded-full bg-white" />
         )}
@@ -280,21 +289,16 @@ export function Pin({ pos, tipo }: { pos: Coordenada; tipo: 'inicio' | 'meta' })
 }
 
 /** Recorrido: contorno oscuro + brillo + linea por tramos de color y flechas de direccion. */
-export function RutaEstilizada({
-  tramos,
-  ajustar = false,
-}: {
-  tramos: { camino: Coordenada[]; color: string }[]
-  ajustar?: boolean
-}) {
+export function RutaEstilizada({ tramos }: { tramos: { camino: Coordenada[]; color: string }[] }) {
   const mapa = useMap()
+  const tema = useTemaResuelto()
   useEffect(() => {
     if (!mapa || !tramos.length) return
     const todo = tramos.flatMap((t, i) => (i ? t.camino.slice(1) : t.camino))
     const capas: google.maps.Polyline[] = [
       new google.maps.Polyline({
         path: todo,
-        strokeColor: '#05080f',
+        strokeColor: tema === 'claro' ? '#ffffff' : '#05080f',
         strokeOpacity: 0.9,
         strokeWeight: 11,
         map: mapa,
@@ -339,13 +343,8 @@ export function RutaEstilizada({
         ],
       }),
     ]
-    if (ajustar && todo.length > 1) {
-      const b = new google.maps.LatLngBounds()
-      todo.forEach((p) => b.extend(p))
-      mapa.fitBounds(b, 48)
-    }
     return () => capas.forEach((c) => c.setMap(null))
-  }, [mapa, tramos, ajustar])
+  }, [mapa, tramos, tema])
   return null
 }
 

@@ -32,7 +32,7 @@ export function AppLayout() {
   return (
     <div className="min-h-screen flex flex-col bg-bg-primary text-text-primary">
       <header
-        className={`${sinBarra ? 'hidden' : 'lg:hidden'} fixed top-0 inset-x-0 z-50 bg-bg-secondary/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.25)] pt-safe`}
+        className={`${sinBarra ? 'hidden' : 'lg:hidden'} fixed top-0 inset-x-0 z-50 bg-bg-secondary/95 backdrop-blur-xl shadow-[0_1px_8px_rgb(var(--c-sombra)/0.25)] pt-safe`}
       >
         <div className="h-16 px-margin flex items-center justify-between gap-space-sm">
           <div className="flex items-center gap-space-sm min-w-0">
@@ -40,15 +40,15 @@ export function AppLayout() {
               {sesion?.foto ? (
                 <FotoPerfil foto={sesion.foto} nombre={sesion.nombre} className="h-8 w-8" />
               ) : (
-                <div className="h-8 w-8 bg-[#E9D5FF] rounded-full flex items-center justify-center">
-                  <span className="text-on-primary font-bold text-sm">
+                <div className="h-8 w-8 bg-primary-200 rounded-full flex items-center justify-center">
+                  <span className="text-c2-sobre-violeta font-bold text-sm">
                     {iniciales(sesion?.nombre ?? 'Runcity')}
                   </span>
                 </div>
               )}
             </Link>
             <div className="flex flex-col min-w-0">
-              <span className="font-display italic text-[18px] leading-none text-white truncate">
+              <span className="font-display italic text-[18px] leading-none text-text-primary truncate">
                 Runcity
               </span>
               <span className="rotulo-c2 !text-c2-violeta mt-0.5">Loja, Ecuador</span>
@@ -69,7 +69,7 @@ export function AppLayout() {
               {sinLeer > 0 && (
                 <span
                   data-testid="punto-notificaciones"
-                  className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary-container ring-2 ring-bg-secondary"
+                  className="mov-latido absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-primary-container ring-2 ring-bg-secondary"
                 ></span>
               )}
             </Link>
@@ -97,7 +97,7 @@ export function AppLayout() {
                 aria-label="Correr"
                 className="flex flex-col items-center justify-center -mt-8"
               >
-                <div className="w-14 h-14 rounded-full bg-[#E9D5FF] shadow-lg flex items-center justify-center text-on-primary active:scale-95 transition-transform">
+                <div className="w-14 h-14 rounded-full bg-primary-200 shadow-lg flex items-center justify-center text-on-primary active:scale-95 transition-transform">
                   <span
                     className="material-symbols-outlined text-[32px]"
                     style={{ fontVariationSettings: "'FILL' 1" }}
@@ -112,12 +112,12 @@ export function AppLayout() {
                 to={item.path}
                 className={`flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors ${
                   isActive(item.path)
-                    ? 'text-[#E9D5FF]'
+                    ? 'text-primary-200'
                     : 'text-text-secondary hover:text-text-primary'
                 }`}
               >
                 <span
-                  className="material-symbols-outlined text-[24px]"
+                  className={`material-symbols-outlined text-[24px] ${isActive(item.path) ? 'mov-icono-activo' : ''}`}
                   style={{ fontVariationSettings: "'FILL' 1" }}
                 >
                   {item.icon}

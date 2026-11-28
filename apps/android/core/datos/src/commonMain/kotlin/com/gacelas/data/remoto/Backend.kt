@@ -43,6 +43,10 @@ interface Backend {
 
     suspend fun select(tabla: String, filtros: Map<String, String>, ordenarPor: String? = null, descendente: Boolean = false): List<JsonObject>
 
+    /** Filas cuya [columna] esta en [valores] (una sola consulta en Supabase). */
+    suspend fun selectEn(tabla: String, columna: String, valores: Collection<String>): List<JsonObject> =
+        valores.distinct().flatMap { select(tabla, mapOf(columna to it)) }
+
     /**
      * Una pagina ordenada por (marca, clave). Sin marca trae desde el principio;
      * con marca y clave, las filas estrictamente posteriores (no se salta empates).
@@ -59,6 +63,12 @@ interface Backend {
     fun urlPublica(bucket: String, ruta: String): String
 }
 
+/** True si PostgREST rechazo la consulta porque [columna] no existe (SQLSTATE 42703). */
+fun esColumnaInexistente(mensaje: String?, columna: String): Boolean {
+    val m = mensaje.orEmpty().lowercase()
+    return columna.lowercase() in m && ("42703" in m || "does not exist" in m || "could not find" in m)
+}
+
 /** Traduce mensajes de Supabase a textos para la app (igual que la web). */
 fun traducirError(mensaje: String?): String {
     val m = mensaje.orEmpty().lowercase()
@@ -70,6 +80,12 @@ fun traducirError(mensaje: String?): String {
         "audience" in m -> "El servidor no acepta el ID de cliente de Google de esta app (falta en Supabase › Google › Client IDs)"
         "nonce" in m -> "El servidor rechazó la verificación de Google (nonce). Intenta de nuevo; si sigue, revisa \"Skip nonce check\" en Supabase"
         "bad id token" in m || "id_token" in m || "id token" in m -> "El servidor rechazó el token de Google (Bad ID token). Revisa el Client ID de Google en Supabase"
+        "email_address_invalid" in m || "email address is invalid" in m || ("email" in m && "invalid" in m) -> "El correo no es válido o el servidor no lo acepta. Usa un correo real"
+        "email_address_not_authorized" in m || "not authorized" in m && "email" in m -> "Ese correo no está autorizado para registrarse"
+        "weak_password" in m || "weak password" in m || "password should be" in m || "password is too" in m -> "La contraseña es muy débil: usa mínimo 8 caracteres con letras y números"
+        "same_password" in m || "different from the old password" in m -> "La nueva contraseña debe ser distinta de la anterior"
+        "database error saving new user" in m || "unexpected_failure" in m -> "El servidor no pudo crear tu perfil. Intenta de nuevo en unos minutos"
+        "over_email_send_rate_limit" in m || "email rate limit" in m -> "Se enviaron demasiados correos. Espera unos minutos y vuelve a probar"
         "signups not allowed" in m || "signup is disabled" in m -> "El registro de cuentas nuevas está desactivado en el servidor"
         "rate limit" in m || "security purposes" in m -> "Demasiados intentos. Espera un momento y vuelve a probar"
         "cuenta suspendida" in m -> "Tu cuenta está suspendida. No puedes publicar ni modificar datos."
@@ -151,29 +167,55 @@ class SupabaseBackend(url: String, clave: String) : Backend {
         }.decodeList<JsonObject>()
     }
 
+    override suspend fun selectEn(tabla: String, columna: String, valores: Collection<String>) = remoto {
+        val lista = valores.distinct()
+        if (lista.isEmpty()) emptyList()
+        else cliente.from(tabla).select { filter { isIn(columna, lista) } }.decodeList<JsonObject>()
+    }
+
     override suspend fun selectPagina(consulta: ConsultaPagina) = remoto {
-        cliente.from(consulta.tabla).select {
-            filter {
-                consulta.igual.forEach { (k, v) -> eq(k, v) }
-                consulta.nulos.forEach { exact(it, null) }
-                val marca = consulta.marcaExclusiva
-                val clave = consulta.claveExclusiva
-                if (marca != null && clave != null) {
-                    or {
-                        gt(consulta.columnaMarca, marca)
-                        and {
-                            eq(consulta.columnaMarca, marca)
-                            gt(consulta.columnaClave, clave)
+        try {
+            cliente.from(consulta.tabla).select {
+                filter {
+                    consulta.igual.forEach { (k, v) -> eq(k, v) }
+                    consulta.nulos.forEach { exact(it, null) }
+                    val marca = consulta.marcaExclusiva
+                    val clave = consulta.claveExclusiva
+                    if (marca != null && clave != null) {
+                        or {
+                            gt(consulta.columnaMarca, marca)
+                            and {
+                                eq(consulta.columnaMarca, marca)
+                                gt(consulta.columnaClave, clave)
+                            }
                         }
+                    } else if (marca != null) {
+                        gt(consulta.columnaMarca, marca)
+                    } else if (clave != null) {
+                        gt(consulta.columnaClave, clave)
                     }
-                } else if (marca != null) {
-                    gt(consulta.columnaMarca, marca)
                 }
-            }
-            order(consulta.columnaMarca, Order.ASCENDING)
-            order(consulta.columnaClave, Order.ASCENDING)
-            limit(consulta.limite.toLong())
-        }.decodeList<JsonObject>()
+                order(consulta.columnaMarca, Order.ASCENDING)
+                order(consulta.columnaClave, Order.ASCENDING)
+                limit(consulta.limite.toLong())
+            }.decodeList<JsonObject>()
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            if (!esColumnaInexistente(e.message, consulta.columnaMarca)) throw e
+            // La base aun no tiene la marca de sync (migracion 044): se baja la tabla completa,
+            // paginada por clave, para que la descarga no falle y deje la app sin eventos ni recorridos.
+            com.gacelas.shared.logAviso("Backend", "Sin columna ${consulta.columnaMarca} en ${consulta.tabla}: descarga completa por clave")
+            cliente.from(consulta.tabla).select {
+                filter {
+                    consulta.igual.forEach { (k, v) -> eq(k, v) }
+                    consulta.nulos.forEach { exact(it, null) }
+                    consulta.claveExclusiva?.let { gt(consulta.columnaClave, it) }
+                }
+                order(consulta.columnaClave, Order.ASCENDING)
+                limit(consulta.limite.toLong())
+            }.decodeList<JsonObject>()
+        }
     }
 
     override suspend fun insert(tabla: String, filas: List<JsonObject>) = remoto {

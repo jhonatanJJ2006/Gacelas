@@ -170,7 +170,7 @@ internal fun ManijaHojaC2(a: ArrastreHojaC2, onCerrar: () -> Unit, alto: Dp, mod
             .testTag("hoja-c2-manija"),
         contentAlignment = Alignment.Center,
     ) {
-        Box(Modifier.width(40.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(alpha = 0.25f)))
+        Box(Modifier.width(40.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(GColors.TextPrimary.copy(alpha = 0.25f)))
     }
 }
 
@@ -227,7 +227,7 @@ fun HojaC2(
             Column(
                 modifier.desplazadaPor(arrastre).fillMaxWidth().heightIn(max = altoMax)
                     .clip(Tablero.FormaHoja).then(if (fondo == GColors.C2Bg) Modifier.background(Tablero.FondoHoja) else Modifier.background(fondo))
-                    .border(if (borde != null) 2.dp else 1.dp, borde ?: Color(0x40C084FC), Tablero.FormaHoja)
+                    .border(if (borde != null) 2.dp else 1.dp, borde ?: GColors.BordeHoja, Tablero.FormaHoja)
                     .clickable(remember { MutableInteractionSource() }, null) {}.testTag("hoja-c2"),
             ) {
                 ManijaHojaC2(arrastre, onCerrar, alto = 32.dp)

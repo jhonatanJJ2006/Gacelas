@@ -132,7 +132,7 @@ fun BotonSOS(posicion: Pair<Double, Double>?) {
         // Rediseno: boton grande separado de los controles, con halo y la indicacion "MANTEN 3 S".
         Modifier.size(80.dp).clip(CircleShape).background(Color(0xFFBE185D).copy(alpha = 0.28f)).padding(6.dp)
             .clip(CircleShape).background(if (activo) Color(0xFFDC2626) else Color(0xFFBE185D))
-            .border(3.dp, Color.White.copy(alpha = 0.85f), CircleShape)
+            .border(3.dp, GColors.OnPrimary.copy(alpha = 0.85f), CircleShape)
             .pointerInput(activo) {
                 awaitEachGesture {
                     awaitFirstDown()
@@ -155,11 +155,11 @@ fun BotonSOS(posicion: Pair<Double, Double>?) {
     ) {
         LaunchedEffect(progreso.value >= 0.999f) { if (progreso.value >= 0.999f) { progreso.snapTo(0f); activar() } }
         Canvas(Modifier.size(62.dp)) {
-            if (progreso.value > 0f) drawArc(Color.White, -90f, 360f * progreso.value, false, style = Stroke(4.dp.toPx(), cap = StrokeCap.Round))
+            if (progreso.value > 0f) drawArc(GColors.OnPrimary, -90f, 360f * progreso.value, false, style = Stroke(4.dp.toPx(), cap = StrokeCap.Round))
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("SOS", color = Color.White, fontSize = com.gacelas.ui.components.spAcotado(20f, 1f), fontWeight = FontWeight.Black, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
-            Text(if (activo) "ACTIVO" else "MANTÉN 3 S", color = Color.White.copy(alpha = 0.95f), fontSize = com.gacelas.ui.components.spAcotado(7.5f, 1f), fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
+            Text("SOS", color = GColors.OnPrimary, fontSize = com.gacelas.ui.components.spAcotado(20f, 1f), fontWeight = FontWeight.Black, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
+            Text(if (activo) "ACTIVO" else "MANTÉN 3 S", color = GColors.OnPrimary.copy(alpha = 0.95f), fontSize = com.gacelas.ui.components.spAcotado(7.5f, 1f), fontWeight = FontWeight.Bold, maxLines = 1, softWrap = false)
         }
     }
     if (hoja) HojaSOS(onCerrar = { hoja = false }, context = context)
@@ -183,7 +183,7 @@ fun HojaSOS(onCerrar: () -> Unit, context: Context = LocalContext.current) {
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(bottom = 16.dp).navigationBarsPadding().testTag("hoja-sos"),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text(if (id != null) "SOS activo" else if (activando) "Activando SOS" else "SOS", color = Color.White, fontSize = 26.sp, fontFamily = com.gacelas.ui.theme.SpaceGrotesk)
+            Text(if (id != null) "SOS activo" else if (activando) "Activando SOS" else "SOS", color = GColors.TextPrimary, fontSize = 26.sp, fontFamily = com.gacelas.ui.theme.SpaceGrotesk)
             Text(
                 when {
                     id != null -> "Tu ubicación se comparte con un enlace privado mientras el SOS esté activo. Avisa a tus contactos o llama al 911."
@@ -192,7 +192,7 @@ fun HojaSOS(onCerrar: () -> Unit, context: Context = LocalContext.current) {
                 },
                 color = GColors.C2Muted, fontSize = 14.sp,
             )
-            error?.let { Text(it, color = Color(0xFFF472B6), fontSize = 13.sp) }
+            error?.let { Text(it, color = GColors.Rosa, fontSize = 13.sp) }
             BotonSosAccion("Llamar al 911 (ECU 911)", Icons.Filled.Call, Color(0xFFDC2626), "llamar-911") {
                 context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:${Sos.NUMERO_EMERGENCIA}")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             }
@@ -218,7 +218,7 @@ fun HojaSOS(onCerrar: () -> Unit, context: Context = LocalContext.current) {
                         Box(Modifier.size(10.dp).clip(CircleShape).background(if (aviso != null) GColors.C2Menta else GColors.C2Muted.copy(alpha = 0.5f)))
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.weight(1f)) {
-                            Text(ct.nombre, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                            Text(ct.nombre, color = GColors.TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                             Text(
                                 aviso?.let { (canal, t) -> "Avisado por $canal ${haceSos(ahoraSos - t)}" } ?: "Sin avisar · ${ct.telefono}",
                                 color = if (aviso != null) GColors.C2Menta else GColors.C2Muted, fontSize = 12.sp, maxLines = 1,
@@ -229,7 +229,7 @@ fun HojaSOS(onCerrar: () -> Unit, context: Context = LocalContext.current) {
                             runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
                                 .onSuccess { EstadoSos.avisados[tel] = "WhatsApp" to com.gacelas.shared.ahoraMs() }
                         }.padding(horizontal = 8.dp, vertical = 10.dp).testTag("sos-whatsapp"))
-                        Icon(Icons.Filled.Call, "Llamar a ${ct.nombre}", tint = Color.White, modifier = Modifier.size(40.dp).clip(CircleShape).clickable {
+                        Icon(Icons.Filled.Call, "Llamar a ${ct.nombre}", tint = GColors.TextPrimary, modifier = Modifier.size(40.dp).clip(CircleShape).clickable {
                             runCatching { context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$tel")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
                         }.padding(10.dp).testTag("sos-llamar"))
                     }
@@ -263,9 +263,9 @@ private fun BotonSosAccion(texto: String, icono: androidx.compose.ui.graphics.ve
         Modifier.fillMaxWidth().height(50.dp).background(fondo).clickable(onClick = onClick).padding(horizontal = 14.dp).testTag(tag),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
     ) {
-        Icon(icono, null, tint = Color.White, modifier = Modifier.size(20.dp))
+        Icon(icono, null, tint = GColors.OnPrimary, modifier = Modifier.size(20.dp))
         Spacer(Modifier.width(8.dp))
-        Text(texto.uppercase(), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Black)
+        Text(texto.uppercase(), color = GColors.OnPrimary, fontSize = 14.sp, fontWeight = FontWeight.Black)
     }
 }
 
@@ -279,11 +279,11 @@ fun ContactosEmergenciaC2(contactos: List<ContactoEmergencia>, onCambiar: (List<
         Text("CONTACTOS DE EMERGENCIA (SOS)", color = GColors.C2Violeta, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
         Column(Modifier.fillMaxWidth().background(GColors.C2Card).padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("Si mantienes pulsado el botón SOS durante una carrera, podrás enviarles por SMS o WhatsApp un enlace con tu ubicación en vivo. Máximo ${Sos.MAX_CONTACTOS}.", color = GColors.C2Muted, fontSize = 13.sp)
-            if (contactos.isEmpty()) Text("Aún no tienes contactos de emergencia.", color = Color.White, fontSize = 14.sp)
+            if (contactos.isEmpty()) Text("Aún no tienes contactos de emergencia.", color = GColors.TextPrimary, fontSize = 14.sp)
             contactos.forEach { ct ->
                 Row(Modifier.fillMaxWidth().background(GColors.C2S2).padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text(ct.nombre, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(ct.nombre, color = GColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Text(ct.telefono, color = GColors.C2Muted, fontSize = 13.sp)
                     }
                     Icon(
@@ -295,7 +295,7 @@ fun ContactosEmergenciaC2(contactos: List<ContactoEmergencia>, onCambiar: (List<
             if (contactos.size < Sos.MAX_CONTACTOS) {
                 CampoTexto("Nombre del contacto", nombre, { nombre = it }, placeholder = "Por ejemplo, Mamá")
                 CampoTexto("Teléfono del contacto", telefono, { telefono = it }, placeholder = "0991234567", tipo = KeyboardType.Phone)
-                error?.let { Text(it, color = Color(0xFFF472B6), fontSize = 13.sp) }
+                error?.let { Text(it, color = GColors.Rosa, fontSize = 13.sp) }
                 BotonModalC2("Agregar contacto", {
                     val tel = Sos.normalizarTelefono(telefono)
                     val e = Sos.validar(nombre, telefono) ?: if (contactos.any { it.telefono == tel }) "Ese teléfono ya está en tus contactos" else null

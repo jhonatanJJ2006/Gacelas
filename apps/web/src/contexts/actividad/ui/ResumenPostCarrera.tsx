@@ -1,8 +1,10 @@
+import { CifraTexto, Confeti } from '../../../shared/ui/Animaciones'
 import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { nuevoRecord } from '../../../shared/kernel/estadisticas'
 import { rachaTrasCarrera } from '../../../shared/kernel/rachas'
 import {
+  fechaPlantillaMs,
   HANDLE_RUNCITY,
   recortarExtremos,
   SITIO,
@@ -54,7 +56,7 @@ export function ResumenPostCarrera() {
       desnivelM: e.desnivelM,
       rachaDias: racha.despues.diaria,
       enlace: SITIO,
-      fechaMs: e.inicioMs,
+      fechaMs: fechaPlantillaMs(e.inicioMs, Date.now() - (e.segundos || 0) * 1000),
       recordLabel: record?.etiqueta ?? null,
       handle: sesion?.username?.trim()
         ? `@${sesion.username.trim().replace(/^@+/, '')}`
@@ -156,8 +158,9 @@ export function ResumenPostCarrera() {
       </header>
 
       <main className="lg:w-full lg:max-w-5xl lg:mx-auto flex-1 px-6 pb-8 overflow-auto">
-        <section className="rounded-3xl bg-gradient-to-b from-primary-600/20 to-surface-container border border-border-subtle p-6 mb-4 text-center">
-          <div className="w-20 h-20 rounded-full border-4 border-primary bg-surface-container flex items-center justify-center mx-auto mb-3">
+        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-primary-600/20 to-surface-container border border-border-subtle p-6 mb-4 text-center">
+          <Confeti activo={Boolean(record)} />
+          <div className="mov-pop w-20 h-20 rounded-full border-4 border-primary bg-surface-container flex items-center justify-center mx-auto mb-3">
             <span className="material-symbols-outlined text-[40px] text-primary">
               {record ? 'military_tech' : 'check_circle'}
             </span>
@@ -192,7 +195,7 @@ export function ResumenPostCarrera() {
               alternativa={<TrazadoRuta puntos={e.puntos} className="w-full h-full" />}
             />
             {alturas.length > 1 && (
-              <span className="absolute bottom-2 left-2 px-2 py-1 rounded-lg bg-black/60 text-white text-label-sm">
+              <span className="absolute bottom-2 left-2 px-2 py-1 rounded-lg bg-black/60 text-on-primary text-label-sm">
                 {Math.round(Math.min(...alturas))} m - {Math.round(Math.max(...alturas))} m
               </span>
             )}
@@ -208,7 +211,7 @@ export function ResumenPostCarrera() {
               className="font-metric-huge text-[48px] text-text-primary leading-none"
               data-testid="resumen-distancia"
             >
-              {Unidades.texto(e.distanciaKm, m)}
+              <CifraTexto texto={Unidades.texto(e.distanciaKm, m)} />
             </span>
             <span className="text-primary font-semibold">{m ? 'Kilómetros' : 'Millas'}</span>
           </div>
@@ -253,7 +256,7 @@ export function ResumenPostCarrera() {
             >
               <div className="text-label-md text-text-secondary uppercase">{t}</div>
               <div className={`font-headline-lg text-headline-lg ${c}`} data-testid={id}>
-                {v}
+                {t === 'Calorías' || t === 'Desnivel (+)' ? <CifraTexto texto={v} /> : v}
               </div>
               <div className="text-body-sm text-text-secondary">{d}</div>
             </div>
@@ -381,7 +384,7 @@ export function ResumenPostCarrera() {
             </div>
           )}
           {errorRuta && (
-            <p role="alert" className="text-sm text-red-300">
+            <p role="alert" className="text-sm text-peligro-texto">
               {errorRuta}
             </p>
           )}

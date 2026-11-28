@@ -59,9 +59,9 @@ export function NavegacionRuta() {
   }
 
   return (
-    <main className="w-full min-h-screen bg-[#0c1322] relative overflow-hidden">
+    <main className="w-full min-h-screen bg-c2-bg relative overflow-hidden">
       <h1 className="sr-only">Navegación de ruta</h1>
-      <div className="absolute top-[max(env(safe-area-inset-top),12px)] inset-x-0 z-50 px-4 flex justify-between items-center gap-2 text-xs text-slate-300">
+      <div className="absolute top-[max(env(safe-area-inset-top),12px)] inset-x-0 z-50 px-4 flex justify-between items-center gap-2 text-xs text-c2-muted">
         <BotonVolverMapa />
         <span className="flex-1 min-w-0 truncate">{nombreRuta}</span>
         <div className="flex gap-1">
@@ -110,18 +110,20 @@ export function NavegacionRuta() {
         <div className="bg-black/80 backdrop-blur-md rounded-2xl p-4 shadow-2xl">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-12 h-12 rounded-full bg-primary-600 flex items-center justify-center">
-              <span className="material-symbols-outlined text-white text-[28px]">navigation</span>
+              <span className="material-symbols-outlined text-text-primary text-[28px]">
+                navigation
+              </span>
             </div>
             <div className="flex-1">
               <div className="text-primary-400 text-xs font-semibold uppercase tracking-wide">
                 Siguiente giro en
               </div>
-              <div className="text-white text-2xl font-bold" data-testid="giro-metros">
+              <div className="text-text-primary text-2xl font-bold" data-testid="giro-metros">
                 {paso.metros} metros
               </div>
             </div>
           </div>
-          <div className="text-slate-300 text-sm">{paso.texto}</div>
+          <div className="text-c2-muted text-sm">{paso.texto}</div>
           {errorGps && e.puntos.length === 0 && (
             <div role="alert" className="text-danger text-xs mt-2">
               {errorGps}
@@ -131,7 +133,7 @@ export function NavegacionRuta() {
       </div>
 
       {claveMapas() && !mapa3d && (
-        <div className="absolute top-56 right-4 z-20 w-36 h-36 lg:top-20 lg:right-8 lg:w-80 lg:h-80 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+        <div className="absolute top-56 right-4 z-20 w-36 h-36 lg:top-20 lg:right-8 lg:w-80 lg:h-80 rounded-2xl overflow-hidden border border-text-primary/10 shadow-2xl">
           <MapaGoogle
             puntos={e.puntos}
             seguir
@@ -143,23 +145,23 @@ export function NavegacionRuta() {
       )}
 
       <div className="absolute bottom-0 left-0 right-0 z-20">
-        <div className="bg-gradient-to-t from-[#0c1322] via-[#0c1322]/95 to-transparent p-6 pb-8 lg:px-8 [&>*]:lg:max-w-4xl [&>*]:lg:mx-auto">
+        <div className="bg-gradient-to-t from-c2-bg via-c2-bg/95 to-transparent p-6 pb-8 lg:px-8 [&>*]:lg:max-w-4xl [&>*]:lg:mx-auto">
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-black/60 backdrop-blur-md rounded-xl p-3 text-center">
               <div className="text-primary-400 text-2xl font-bold">
                 {Unidades.texto(e.distanciaKm, m)}
               </div>
-              <div className="text-slate-400 text-xs">{Unidades.etiquetaDistancia(m)}</div>
+              <div className="text-c2-muted text-xs">{Unidades.etiquetaDistancia(m)}</div>
             </div>
             <div className="bg-black/60 backdrop-blur-md rounded-xl p-3 text-center">
               <div className="text-secondary-500 text-2xl font-bold">{formatearMs(e.segundos)}</div>
-              <div className="text-slate-400 text-xs">tiempo</div>
+              <div className="text-c2-muted text-xs">tiempo</div>
             </div>
             <div className="bg-black/60 backdrop-blur-md rounded-xl p-3 text-center">
-              <div className="text-white text-2xl font-bold">
+              <div className="text-text-primary text-2xl font-bold">
                 {formatearRitmo(Unidades.ritmo(e.ritmoActualSegKm, m))}
               </div>
-              <div className="text-slate-400 text-xs">{Unidades.etiquetaRitmo(m)}</div>
+              <div className="text-c2-muted text-xs">{Unidades.etiquetaRitmo(m)}</div>
             </div>
           </div>
 
@@ -174,7 +176,7 @@ export function NavegacionRuta() {
             <button
               onClick={cerrar}
               aria-label="Terminar navegación"
-              className="w-12 h-12 bg-black/60 backdrop-blur-md hover:bg-black/80 text-white rounded-xl flex items-center justify-center shadow-lg transition-colors active:scale-95"
+              className="w-12 h-12 bg-black/60 backdrop-blur-md hover:bg-black/80 text-on-primary rounded-xl flex items-center justify-center shadow-lg transition-colors active:scale-95"
             >
               <span className="material-symbols-outlined">close</span>
             </button>

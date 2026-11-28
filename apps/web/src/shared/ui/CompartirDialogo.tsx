@@ -96,7 +96,7 @@ export function CompartirDialogo({
         role="dialog"
         aria-modal="true"
         aria-labelledby="titulo-compartir"
-        className="w-full sm:max-w-md bg-c2-card border-t-2 border-c2-violeta rounded-t-[14px] sm:rounded-[14px] p-5 pb-[max(env(safe-area-inset-bottom),20px)] space-y-4 max-h-[calc(100dvh-16px)] overflow-y-auto"
+        className="mov-hoja w-full sm:max-w-md bg-c2-card border-t-2 border-c2-violeta rounded-t-[14px] sm:rounded-[14px] p-5 pb-[max(env(safe-area-inset-bottom),20px)] space-y-4 max-h-[calc(100dvh-16px)] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -199,7 +199,7 @@ export function CompartirDialogo({
                 href={enlaceWhatsApp(datos)}
                 target="_blank"
                 rel="noreferrer"
-                className="col-span-2 h-12 rounded-xl bg-[#128C4B] text-white font-semibold flex items-center justify-center gap-2"
+                className="col-span-2 h-12 rounded-xl bg-[#128C4B] text-on-primary font-semibold flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined">chat</span>Enviar por WhatsApp
               </a>

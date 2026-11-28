@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.graphics.graphicsLayer
 import com.gacelas.ui.movimiento.Mov
 import com.gacelas.ui.movimiento.pulsacionC2
+import com.gacelas.ui.movimiento.reboteActivo
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -74,7 +75,7 @@ fun BarraSuperior(sinLeer: Int, onNotificaciones: () -> Unit, onPerfil: () -> Un
         Modifier.fillMaxWidth().statusBarsPadding().height(62.dp).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("RUNCITY", style = GType.headlineSm.copy(fontWeight = FontWeight.Normal), color = Color.White, modifier = Modifier.weight(1f))
+        Text("RUNCITY", style = GType.headlineSm.copy(fontWeight = FontWeight.Normal), color = GColors.TextPrimary, modifier = Modifier.weight(1f))
         BotonVidrio(Icons.Filled.Notifications, "Notificaciones", onNotificaciones, tag = "boton-notificaciones", tamano = 42.dp, punto = sinLeer > 0)
         Spacer(Modifier.width(8.dp))
         BotonVidrio(Icons.Filled.Person, "Perfil", onPerfil, tag = "boton-perfil-barra", tamano = 42.dp)
@@ -105,7 +106,7 @@ fun BarraInferior(rutaActual: String, onNavegar: (String) -> Unit) {
                                 Modifier.size(56.dp).shadow(10.dp, CircleShape, ambientColor = GColors.C2Morado, spotColor = GColors.C2Morado).clip(CircleShape)
                                     .background(GradienteC2),
                                 contentAlignment = Alignment.Center,
-                            ) { Icon(item.icono, contentDescription = item.etiqueta, tint = Color.White, modifier = Modifier.size(32.dp)) }
+                            ) { Icon(item.icono, contentDescription = item.etiqueta, tint = GColors.OnPrimary, modifier = Modifier.size(32.dp)) }
                         }
                         Text(tr(LocalIdioma.current, item.etiqueta), style = GType.labelMd.copy(fontWeight = FontWeight.ExtraBold), color = GColors.C2Violeta, maxLines = 1)
                     }
@@ -119,7 +120,7 @@ fun BarraInferior(rutaActual: String, onNavegar: (String) -> Unit) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Box(Modifier.width(54.dp).height(30.dp).clip(CircleShape).background(capsula), contentAlignment = Alignment.Center) {
-                            Icon(item.icono, contentDescription = null, tint = color, modifier = Modifier.size(24.dp))
+                            Icon(item.icono, contentDescription = null, tint = color, modifier = Modifier.size(24.dp).reboteActivo(activo))
                         }
                         TextoAjustableC2(tr(LocalIdioma.current, item.etiqueta), GType.labelMd.copy(fontWeight = if (activo) FontWeight.ExtraBold else FontWeight.SemiBold), color,
                             Modifier.padding(top = 2.dp), minimo = 0.7f)

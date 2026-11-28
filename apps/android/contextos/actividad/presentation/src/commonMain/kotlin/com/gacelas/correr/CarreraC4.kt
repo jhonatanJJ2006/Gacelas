@@ -1,5 +1,6 @@
 package com.gacelas.correr
 
+import com.gacelas.ui.theme.GColors
 import com.gacelas.actividad.presentation.tiempoTexto
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -92,15 +93,15 @@ import com.gacelas.ui.theme.Inter
 
 /** Valores del export de Stitch "Carrera V1 Barra superior" (tools/carrera/V1-*.html). */
 object K1 {
-    val Fondo = Color(0xFF0C1322)
-    val Tarjeta = Color(0xFF191F2F)
-    val Secondary = Color(0xFFA8B0C2)
+    val Fondo get() = GColors.BgPrimary
+    val Tarjeta get() = GColors.C2Card
+    val Secondary get() = GColors.C2Muted
     val Naranja = Color(0xFF7B1FA2)
-    val Magenta = Color(0xFFC084FC)
+    val Magenta get() = GColors.C2Violeta
     val Rojo = Color(0xFFE5484D)
-    val Verde = Color(0xFF10B981)
-    val Ambar = Color(0xFFA855F7)
-    fun b(a: Float) = Color.White.copy(alpha = a)
+    val Verde get() = GColors.Secondary500
+    val Ambar get() = GColors.C2Morado
+    fun b(a: Float) = GColors.TextPrimary.copy(alpha = a)
 }
 
 private val num = SpaceGrotesk
@@ -178,11 +179,11 @@ fun ContenidoCarreraC4(
             ) {
                 GrupoControlesC4("Mapa") {
                     ControlEtiquetadoC4("Centrar", "Centrar el mapa en tu posición", recentrar, if (siguiendo) "boton-recentrar" else "boton-recentrar-activo", activo = !siguiendo) {
-                        Icon(Icons.Filled.MyLocation, null, tint = Color.White, modifier = Modifier.size(20.dp))
+                        Icon(Icons.Filled.MyLocation, null, tint = GColors.TextPrimary, modifier = Modifier.size(20.dp))
                     }
                     // En pantallas bajas se omite Norte para que los controles no tapen el panel.
                     if (!bajo) ControlEtiquetadoC4("Norte", "Orientar el mapa al norte", norte, "boton-brujula") {
-                        Text("N", style = TextStyle(fontFamily = num, fontSize = 15.sp, fontWeight = FontWeight.Bold), color = Color.White, modifier = Modifier.rotate(-rumbo))
+                        Text("N", style = TextStyle(fontFamily = num, fontSize = 15.sp, fontWeight = FontWeight.Bold), color = GColors.TextPrimary, modifier = Modifier.rotate(-rumbo))
                     }
                     SelectorVistaC4(vista3d) { vista3d = it; onVista3d(it) }
                 }
@@ -220,7 +221,7 @@ fun ContenidoCarreraC4(
 
         if (bloqueo) Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.45f))
             .clickable(remember { MutableInteractionSource() }, indication = null) {}.testTag("bloqueo-toque")) {
-            Text("Desbloquear", style = TextStyle(fontFamily = num, fontSize = 16.sp, fontWeight = FontWeight.Bold), color = Color.White,
+            Text("Desbloquear", style = TextStyle(fontFamily = num, fontSize = 16.sp, fontWeight = FontWeight.Bold), color = GColors.TextPrimary,
                 modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 48.dp).clip(CircleShape).background(K1.Fondo).clickable { bloqueo = false }.padding(horizontal = 24.dp, vertical = 12.dp))
         }
         // Panel del cronometro.
@@ -295,14 +296,14 @@ private fun HojaMetricasC4(
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
-                com.gacelas.ui.components.RotuloWidget(if (e.pausada) "En pausa" else "Distancia", color = Color.White.copy(alpha = 0.85f))
+                com.gacelas.ui.components.RotuloWidget(if (e.pausada) "En pausa" else "Distancia", color = GColors.OnPrimary.copy(alpha = 0.85f))
                 Row(verticalAlignment = Alignment.Bottom) {
-                    com.gacelas.ui.components.TextoAjustableC2(Unidades.texto(e.distanciaKm, m).replace('.', ','), TextStyle(fontFamily = num, fontSize = if (bajo) 34.sp else 40.sp, lineHeight = if (bajo) 36.sp else 42.sp), Color.White,
+                    com.gacelas.ui.components.TextoAjustableC2(Unidades.texto(e.distanciaKm, m).replace('.', ','), TextStyle(fontFamily = num, fontSize = if (bajo) 34.sp else 40.sp, lineHeight = if (bajo) 36.sp else 42.sp), GColors.OnPrimary,
                         Modifier.weight(1f, fill = false).testTag("distancia"), minimo = 0.6f)
-                    Text(if (m) " km" else " mi", style = TextStyle(fontFamily = Inter, fontSize = 13.sp, fontWeight = FontWeight.Bold), color = Color.White.copy(alpha = 0.85f), modifier = Modifier.padding(bottom = 5.dp))
+                    Text(if (m) " km" else " mi", style = TextStyle(fontFamily = Inter, fontSize = 13.sp, fontWeight = FontWeight.Bold), color = GColors.OnPrimary.copy(alpha = 0.85f), modifier = Modifier.padding(bottom = 5.dp))
                 }
                 if (objetivo != null && objetivo.activo) objetivo.progreso(e)?.let {
-                    com.gacelas.ui.components.BarraProgresoTablero(it, Modifier.padding(top = 4.dp).testTag("objetivo-carrera"))
+                    com.gacelas.ui.components.BarraProgresoTablero(it, Modifier.padding(top = 4.dp).testTag("objetivo-carrera"), color = GColors.OnPrimary, fondo = GColors.OnPrimary.copy(alpha = 0.25f))
                 }
             }
             com.gacelas.ui.components.CeldaTablero("Ritmo", formatearRitmo(Unidades.ritmo(e.ritmoActualSegKm ?: e.ritmoPromedioSegKm, m)), Modifier.weight(1f).fillMaxHeight(), unidad = Unidades.etiquetaRitmo(m),
@@ -312,8 +313,8 @@ private fun HojaMetricasC4(
         AnimatedVisibility(expandida, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 if (objetivo != null && objetivo.activo) Row(Modifier.padding(horizontal = 4.dp)) {
-                    Text("Objetivo ${objetivo.valorTexto(m)}", style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.Bold), color = Color.White, maxLines = 1, modifier = Modifier.weight(1f))
-                    Text(objetivo.estado(e, m).replace('.', ','), style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.Bold), color = if (objetivo.cumplido(e)) GColorsC2.Menta else Color.White, maxLines = 1)
+                    Text("Objetivo ${objetivo.valorTexto(m)}", style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.Bold), color = GColors.TextPrimary, maxLines = 1, modifier = Modifier.weight(1f))
+                    Text(objetivo.estado(e, m).replace('.', ','), style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.Bold), color = if (objetivo.cumplido(e)) GColorsC2.Menta else GColors.TextPrimary, maxLines = 1)
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(espacio)) {
                     com.gacelas.ui.components.CeldaTablero("Promedio", formatearRitmo(Unidades.ritmo(e.ritmoPromedioSegKm, m)), Modifier.weight(1f), tamano = cifra - 2, tag = "chip-Prom")
@@ -323,11 +324,11 @@ private fun HojaMetricasC4(
                     com.gacelas.ui.components.CeldaTablero("Km $enCurso", formatearMs(segKm.coerceAtLeast(0)), Modifier.weight(1f), unidad = "parcial", tamano = cifra - 2, tag = "chip-km-actual")
                 }
                 Row(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.06f)).border(1.dp, Color.White.copy(alpha = 0.09f), RoundedCornerShape(16.dp))
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(GColors.TextPrimary.copy(alpha = 0.06f)).border(1.dp, GColors.TextPrimary.copy(alpha = 0.09f), RoundedCornerShape(16.dp))
                         .clickable(onClickLabel = "Ver parciales", onClick = onCrono).padding(horizontal = 12.dp, vertical = 9.dp),
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    com.gacelas.ui.components.RotuloWidget("Parciales", color = Color.White.copy(alpha = 0.55f))
+                    com.gacelas.ui.components.RotuloWidget("Parciales", color = GColors.TextPrimary.copy(alpha = 0.55f))
                     Box(Modifier.weight(1f)) { BarrasParciales(e) }
                     val mejor = km.minByOrNull { it.segundos / it.distanciaKm.coerceAtLeast(0.001) }
                     Text(if (mejor != null) "Mejor ${formatearMs(mejor.segundos)}" else "Km 1", style = TextStyle(fontFamily = Inter, fontSize = 11.sp, fontWeight = FontWeight.Bold), color = GColorsC2.Menta, maxLines = 1)
@@ -347,12 +348,12 @@ private fun HojaMetricasC4(
 @Composable
 private fun ChipHoja(texto: String, icono: androidx.compose.ui.graphics.vector.ImageVector, descripcion: String, onClick: () -> Unit, tag: String) {
     Row(
-        Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.08f)).clickable(onClickLabel = descripcion, role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
+        Modifier.clip(CircleShape).background(GColors.TextPrimary.copy(alpha = 0.08f)).clickable(onClickLabel = descripcion, role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
             .semantics(mergeDescendants = true) { contentDescription = descripcion }.testTag(tag).padding(horizontal = 10.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icono, null, tint = Color.White, modifier = Modifier.size(14.dp))
-        Text(" $texto", style = TextStyle(fontFamily = Inter, fontSize = 12.sp, fontWeight = FontWeight.Bold), color = Color.White, maxLines = 1)
+        Icon(icono, null, tint = GColors.TextPrimary, modifier = Modifier.size(14.dp))
+        Text(" $texto", style = TextStyle(fontFamily = Inter, fontSize = 12.sp, fontWeight = FontWeight.Bold), color = GColors.TextPrimary, maxLines = 1)
     }
 }
 
@@ -377,26 +378,26 @@ private fun BotonLateralC4(etiquetaBoton: String, descripcion: String, icono: an
             .semantics(mergeDescendants = true) { contentDescription = descripcion }.testTag(tag),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
-        Icon(icono, null, tint = Color.White, modifier = Modifier.size(20.dp))
-        Text(etiquetaBoton, style = TextStyle(fontFamily = Inter, fontSize = 10.sp, fontWeight = FontWeight.Bold), color = Color.White, maxLines = 1, modifier = Modifier.padding(top = 3.dp))
+        Icon(icono, null, tint = GColors.TextPrimary, modifier = Modifier.size(20.dp))
+        Text(etiquetaBoton, style = TextStyle(fontFamily = Inter, fontSize = 10.sp, fontWeight = FontWeight.Bold), color = GColors.TextPrimary, maxLines = 1, modifier = Modifier.padding(top = 3.dp))
     }
 }
 
 /** Tokens C2 usados por la carrera. */
 private object GColorsC2 {
-    val Panel = Color(0xF20C1322)
-    val Linea = Color(0xFF2C3446)
-    val S2 = Color(0xFF232A3A)
-    val Muted = Color(0xFFA8B0C2)
-    val Violeta = Color(0xFFC084FC)
-    val Menta = Color(0xFF68DBA9)
-    val Cielo = Color(0xFF96CCFF)
+    val Panel get() = if (GColors.claro) Color(0xF2F3F3F7) else Color(0xF20C1322)
+    val Linea get() = GColors.C2Linea
+    val S2 get() = GColors.C2S2
+    val Muted get() = GColors.C2Muted
+    val Violeta get() = GColors.C2Violeta
+    val Menta get() = GColors.C2Menta
+    val Cielo get() = GColors.C2Cielo
 }
 
 private val etiqueta = TextStyle(fontFamily = Inter, fontSize = 10.sp, lineHeight = 14.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.05.em)
 
 @Composable
-private fun MetricaLado(titulo: String, valor: String, unidad: String, modifier: Modifier, color: Color = Color.White) {
+private fun MetricaLado(titulo: String, valor: String, unidad: String, modifier: Modifier, color: Color = GColors.TextPrimary) {
     Column(modifier) {
         Text(titulo, style = etiqueta.copy(fontWeight = FontWeight.ExtraBold), color = K1.Secondary)
         Text(valor, style = TextStyle(fontFamily = num, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 18.sp, lineHeight = 24.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.015.em), color = color, maxLines = 1)
@@ -415,7 +416,7 @@ private fun ChipC2(texto: String, modifier: Modifier = Modifier, punto: Color? =
             Box(Modifier.size(8.dp).clip(CircleShape).background(punto))
             Spacer(Modifier.width(7.dp))
         }
-        Text(texto, style = TextStyle(fontFamily = Inter, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.02.em), color = Color.White, maxLines = 1)
+        Text(texto, style = TextStyle(fontFamily = Inter, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.02.em), color = GColors.TextPrimary, maxLines = 1)
     }
 }
 
@@ -448,7 +449,7 @@ private fun Chip(titulo: String, valor: String, punto: Color? = null, tag: Strin
         }
         Text(buildAnnotatedString {
             append("$titulo ")
-            withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.SemiBold)) { append(valor) }
+            withStyle(SpanStyle(color = GColors.TextPrimary, fontWeight = FontWeight.SemiBold)) { append(valor) }
         }, style = TextStyle(fontFamily = Inter, fontSize = 11.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium), color = K1.Secondary, maxLines = 1)
     }
 }
@@ -473,7 +474,7 @@ fun ControlEtiquetadoC4(etiqueta: String, descripcion: String, onClick: () -> Un
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
         icono()
-        Text(etiqueta, style = TextStyle(fontFamily = Inter, fontSize = com.gacelas.ui.components.spAcotado(11f, 1.05f), fontWeight = FontWeight.SemiBold), color = Color.White, maxLines = 1, softWrap = false, modifier = Modifier.padding(top = 3.dp))
+        Text(etiqueta, style = TextStyle(fontFamily = Inter, fontSize = com.gacelas.ui.components.spAcotado(11f, 1.05f), fontWeight = FontWeight.SemiBold), color = GColors.TextPrimary, maxLines = 1, softWrap = false, modifier = Modifier.padding(top = 3.dp))
     }
 }
 
@@ -482,7 +483,7 @@ fun ControlEtiquetadoC4(etiqueta: String, descripcion: String, onClick: () -> Un
 fun SelectorVistaC4(vista3d: Boolean, onCambiar: (Boolean) -> Unit) {
     // Selector segmentado 3D | 2D con la vista actual escrita debajo.
     Column(Modifier.width(66.dp).padding(vertical = 4.dp).testTag("boton-3d").semantics { stateDescription = if (vista3d) "Vista 3D" else "Vista 2D" }, horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(Modifier.padding(horizontal = 6.dp).clip(RoundedCornerShape(10.dp)).background(Color.White.copy(alpha = 0.08f))) {
+        Row(Modifier.padding(horizontal = 6.dp).clip(RoundedCornerShape(10.dp)).background(GColors.TextPrimary.copy(alpha = 0.08f))) {
             listOf(true to "3D", false to "2D").forEach { (tresD, texto) ->
                 val activa = vista3d == tresD
                 Box(
@@ -491,7 +492,7 @@ fun SelectorVistaC4(vista3d: Boolean, onCambiar: (Boolean) -> Unit) {
                         .semantics { selected = activa }.testTag(if (tresD) "vista-3d-on" else "vista-2d-on"),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(texto, style = TextStyle(fontFamily = num, fontSize = 13.sp), color = if (activa) Color.White else K1.Secondary)
+                    Text(texto, style = TextStyle(fontFamily = num, fontSize = 13.sp), color = if (activa) GColors.TextPrimary else K1.Secondary)
                 }
             }
         }
@@ -526,7 +527,7 @@ private fun PanelCronometro(e: EstadoCarrera, m: Boolean, bajo: Boolean, onVuelt
             Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.Timer, null, tint = GColorsC2.Violeta, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("CRONÓMETRO Y PARCIALES", style = TextStyle(fontFamily = num, fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.025.em), color = Color.White, modifier = Modifier.weight(1f), maxLines = 1)
+                Text("CRONÓMETRO Y PARCIALES", style = TextStyle(fontFamily = num, fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.025.em), color = GColors.TextPrimary, modifier = Modifier.weight(1f), maxLines = 1)
                 Box(Modifier.size(32.dp).clip(CircleShape).background(K1.b(0.05f)).border(1.dp, K1.b(0.10f), CircleShape).clickable(onClick = onCerrar).testTag("cerrar-cronometro"), contentAlignment = Alignment.Center) {
                     Icon(Icons.Filled.ChevronRight, "Cerrar panel", tint = K1.Secondary, modifier = Modifier.size(20.dp))
                 }
@@ -534,7 +535,7 @@ private fun PanelCronometro(e: EstadoCarrera, m: Boolean, bajo: Boolean, onVuelt
             Box(Modifier.fillMaxWidth().height(1.dp).background(K1.b(0.10f)))
             // Cronometro grande.
             Column(
-                Modifier.padding(vertical = if (bajo) 12.dp else 20.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.Black.copy(alpha = 0.25f))
+                Modifier.padding(vertical = if (bajo) 12.dp else 20.dp).fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(if (GColors.claro) GColors.TextPrimary.copy(alpha = 0.05f) else Color.Black.copy(alpha = 0.25f))
                     .border(1.dp, K1.b(0.05f), RoundedCornerShape(16.dp)).padding(vertical = 16.dp, horizontal = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -544,13 +545,13 @@ private fun PanelCronometro(e: EstadoCarrera, m: Boolean, bajo: Boolean, onVuelt
                 Text(buildAnnotatedString {
                     append(t.dropLast(2))
                     withStyle(SpanStyle(color = K1.Naranja)) { append(t.takeLast(2)) }
-                }, style = TextStyle(fontFamily = num, fontSize = 36.sp, lineHeight = 38.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.015.em), color = Color.White, modifier = Modifier.testTag("cronometro-grande"))
+                }, style = TextStyle(fontFamily = num, fontSize = 36.sp, lineHeight = 38.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.015.em), color = GColors.TextPrimary, modifier = Modifier.testTag("cronometro-grande"))
                 Spacer(Modifier.height(12.dp))
                 Text(buildAnnotatedString {
                     append("Ritmo prom: ")
-                    withStyle(SpanStyle(color = Color.White, fontFamily = num, fontWeight = FontWeight.SemiBold)) { append(formatearRitmo(Unidades.ritmo(e.ritmoPromedioSegKm, m))) }
+                    withStyle(SpanStyle(color = GColors.TextPrimary, fontFamily = num, fontWeight = FontWeight.SemiBold)) { append(formatearRitmo(Unidades.ritmo(e.ritmoPromedioSegKm, m))) }
                     append("   ·   Dist: ")
-                    withStyle(SpanStyle(color = Color.White, fontFamily = num, fontWeight = FontWeight.SemiBold)) { append("${Unidades.texto(e.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}") }
+                    withStyle(SpanStyle(color = GColors.TextPrimary, fontFamily = num, fontWeight = FontWeight.SemiBold)) { append("${Unidades.texto(e.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}") }
                 }, style = TextStyle(fontFamily = Inter, fontSize = 12.sp), color = K1.Secondary)
             }
             Row(
@@ -558,9 +559,9 @@ private fun PanelCronometro(e: EstadoCarrera, m: Boolean, bajo: Boolean, onVuelt
                     .clickable(onClick = onVuelta).testTag("boton-vuelta"),
                 horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(Icons.Filled.Flag, null, tint = Color.White, modifier = Modifier.size(19.dp))
+                Icon(Icons.Filled.Flag, null, tint = GColors.OnPrimary, modifier = Modifier.size(19.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("Vuelta", style = TextStyle(fontFamily = Inter, fontSize = 14.sp, fontWeight = FontWeight.SemiBold), color = Color.White)
+                Text("Vuelta", style = TextStyle(fontFamily = Inter, fontSize = 14.sp, fontWeight = FontWeight.SemiBold), color = GColors.OnPrimary)
             }
             Spacer(Modifier.height(if (bajo) 14.dp else 24.dp))
             Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp).padding(bottom = 8.dp)) {
@@ -596,16 +597,16 @@ private fun PanelCronometro(e: EstadoCarrera, m: Boolean, bajo: Boolean, onVuelt
 private fun FilaParcial(p: Parcial, m: Boolean, actual: Boolean) {
     val forma = RoundedCornerShape(12.dp)
     Row(
-        Modifier.fillMaxWidth().height(42.dp).clip(forma).background(if (actual) K1.b(0.04f) else Color.Black.copy(alpha = 0.20f))
+        Modifier.fillMaxWidth().height(42.dp).clip(forma).background(if (actual) K1.b(0.04f) else if (GColors.claro) GColors.TextPrimary.copy(alpha = 0.04f) else Color.Black.copy(alpha = 0.20f))
             .border(1.dp, if (actual) K1.Naranja.copy(alpha = 0.30f) else K1.b(0.05f), forma).padding(horizontal = 12.dp).testTag("parcial"),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(Modifier.weight(1.2f), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(8.dp).clip(CircleShape).background(if (p.manual) K1.Naranja else K1.Magenta))
             Spacer(Modifier.width(8.dp))
-            Text(if (p.manual) "Vuelta ${p.numero}" else "Km ${p.numero}", style = TextStyle(fontFamily = Inter, fontSize = 12.sp, fontWeight = if (actual) FontWeight.SemiBold else FontWeight.Medium), color = if (actual) K1.Naranja else Color.White)
+            Text(if (p.manual) "Vuelta ${p.numero}" else "Km ${p.numero}", style = TextStyle(fontFamily = Inter, fontSize = 12.sp, fontWeight = if (actual) FontWeight.SemiBold else FontWeight.Medium), color = if (actual) K1.Naranja else GColors.TextPrimary)
         }
         Text("${Unidades.texto(p.distanciaKm, m)} ${Unidades.etiquetaDistancia(m)}", style = TextStyle(fontFamily = num, fontSize = 12.sp, fontWeight = FontWeight.Medium), color = K1.b(0.9f), modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-        Text(formatearMs(p.segundos), style = TextStyle(fontFamily = num, fontSize = 14.sp, fontWeight = FontWeight.Bold), color = Color.White, modifier = Modifier.weight(0.8f), textAlign = TextAlign.End)
+        Text(formatearMs(p.segundos), style = TextStyle(fontFamily = num, fontSize = 14.sp, fontWeight = FontWeight.Bold), color = GColors.TextPrimary, modifier = Modifier.weight(0.8f), textAlign = TextAlign.End)
     }
 }

@@ -63,33 +63,49 @@ export function PrivacidadUbicacion() {
         <div className="relative mt-3 h-[150px] overflow-hidden bg-c2-s2" aria-hidden="true">
           <svg viewBox="0 0 310 150" className="absolute inset-0 w-full h-full">
             {[20, 60, 100, 140].map((y) => (
-              <line key={y} x1="0" y1={y} x2="310" y2={y - 30} stroke="#2C3446" strokeWidth="6" />
+              <line
+                key={y}
+                x1="0"
+                y1={y}
+                x2="310"
+                y2={y - 30}
+                stroke="rgb(var(--c-c2-linea))"
+                strokeWidth="6"
+              />
             ))}
             {[40, 120, 200, 270].map((x) => (
-              <line key={x} x1={x} y1="0" x2={x + 30} y2="150" stroke="#2C3446" strokeWidth="5" />
+              <line
+                key={x}
+                x1={x}
+                y1="0"
+                x2={x + 30}
+                y2="150"
+                stroke="rgb(var(--c-c2-linea))"
+                strokeWidth="5"
+              />
             ))}
             {ajustes.ocultarHogar && (
               <circle
                 cx="60"
                 cy="55"
                 r="34"
-                fill="#A855F7"
+                fill="rgb(var(--c-c2-morado))"
                 opacity="0.18"
-                stroke="#C084FC"
+                stroke="rgb(var(--c-c2-violeta))"
                 strokeDasharray="4 4"
               />
             )}
             <path
               d="M60 55 C 50 75, 60 95, 80 90 S 110 110, 150 115 S 210 120, 230 100 S 250 80, 262 60 L 240 40 C 220 30, 200 25, 180 22"
               fill="none"
-              stroke="#C084FC"
+              stroke="rgb(var(--c-c2-violeta))"
               strokeWidth="4"
             />
-            <circle cx="60" cy="55" r="7" fill="#A855F7" />
-            <circle cx="180" cy="22" r="7" fill="#68DBA9" />
+            <circle cx="60" cy="55" r="7" fill="rgb(var(--c-c2-morado))" />
+            <circle cx="180" cy="22" r="7" fill="rgb(var(--c-c2-menta))" />
           </svg>
           {ajustes.ocultarHogar && (
-            <span className="absolute left-3 top-3 bg-c2-violeta px-2.5 py-1 text-[12px] font-bold uppercase text-[#0C1322]">
+            <span className="absolute left-3 top-3 bg-c2-violeta px-2.5 py-1 text-[12px] font-bold uppercase text-c2-sobre-violeta">
               Casa · {radio >= 1000 ? `${radio / 1000} km` : `${radio} m`}
             </span>
           )}
@@ -107,7 +123,7 @@ export function PrivacidadUbicacion() {
                   key={r}
                   aria-pressed={ajustes.radioHogarM === r}
                   onClick={() => void actualizar({ radioHogarM: r })}
-                  className={`pastilla-c2 ${ajustes.radioHogarM === r ? '!bg-c2-violeta !text-[#0C1322]' : ''}`}
+                  className={`pastilla-c2 ${ajustes.radioHogarM === r ? '!bg-c2-violeta !text-c2-sobre-violeta' : ''}`}
                 >
                   {r >= 1000 ? `${r / 1000} km` : `${r} m`}
                 </button>
@@ -135,7 +151,7 @@ export function PrivacidadUbicacion() {
               onPointerUp={guardarRadio}
               onKeyUp={guardarRadio}
               onBlur={guardarRadio}
-              className="h-8 w-full accent-[#A855F7]"
+              className="h-8 w-full accent-c2-morado"
             />
           </div>
         )}
@@ -155,7 +171,7 @@ export function PrivacidadUbicacion() {
                 aria-checked={activo}
                 title={o.descripcion}
                 onClick={() => void actualizar({ visibilidad: o.id })}
-                className={`pastilla-c2 ${activo ? '!bg-c2-violeta !text-[#0C1322]' : ''}`}
+                className={`pastilla-c2 ${activo ? '!bg-c2-violeta !text-c2-sobre-violeta' : ''}`}
               >
                 {o.titulo}
               </button>
@@ -212,7 +228,7 @@ export function PrivacidadUbicacion() {
         >
           <span className="material-symbols-outlined text-c2-violeta">download</span>
           <span className="flex-1">
-            <span className="block text-[15px] font-bold text-white">
+            <span className="block text-[15px] font-bold text-text-primary">
               Descargar mis datos y rutas
             </span>
             <span className="block text-[13px] text-c2-muted">

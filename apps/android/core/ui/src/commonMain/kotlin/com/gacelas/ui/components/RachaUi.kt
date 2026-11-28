@@ -1,5 +1,6 @@
 package com.gacelas.ui.components
 
+import com.gacelas.ui.movimiento.DestelloEncima
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import com.gacelas.ui.movimiento.entradaEscalonada
+import com.gacelas.ui.movimiento.llamaC2
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,7 +42,7 @@ import com.gacelas.actividad.domain.reglas.Rachas
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
-private val Aviso = GColors.C2Morado
+private val Aviso get() = GColors.C2Morado
 private val Fuego = Color(0xFFF97316)
 
 private fun plural(n: Int, uno: String, varios: String) = "$n ${if (n == 1) uno else varios}"
@@ -53,7 +56,7 @@ fun InsigniaRacha(r: Racha, modifier: Modifier = Modifier) {
             .padding(horizontal = 10.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(Icons.Filled.LocalFireDepartment, null, tint = if (r.diaria > 0) GColors.Primary500 else GColors.TextSecondary, modifier = Modifier.size(16.dp))
+        Icon(Icons.Filled.LocalFireDepartment, null, tint = if (r.diaria > 0) GColors.Primary500 else GColors.TextSecondary, modifier = Modifier.size(16.dp).then(if (r.diaria > 0) Modifier.llamaC2() else Modifier))
         Text(" Racha ${r.diaria}d", style = GType.labelMd, color = GColors.TextPrimary)
         if (riesgo) Text(" · en riesgo", style = GType.labelMd, color = Aviso)
     }
@@ -115,9 +118,10 @@ fun CelebracionRacha(antes: Racha, despues: Racha) {
     val diaria = despues.diaria > antes.diaria
     val semanal = despues.semanal > antes.semanal
     if (!diaria && !semanal) return
+    Box(Modifier.entradaEscalonada(0).testTag("celebracion-racha")) {
     Tarjeta(fondo = GColors.Primary500.copy(alpha = 0.15f), borde = GColors.Primary500) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Filled.LocalFireDepartment, null, tint = GColors.Primary500, modifier = Modifier.size(44.dp))
+            Icon(Icons.Filled.LocalFireDepartment, null, tint = GColors.Primary500, modifier = Modifier.size(44.dp).llamaC2())
             Spacer(Modifier.width(12.dp))
             Column {
                 if (diaria) Text("¡Racha de ${plural(despues.diaria, "día", "días")}!", style = GType.titleMd, color = GColors.TextPrimary)
@@ -125,6 +129,8 @@ fun CelebracionRacha(antes: Racha, despues: Racha) {
                 Text("Guarda la carrera para sumarla.", style = GType.bodySm, color = GColors.TextSecondary)
             }
         }
+    }
+    DestelloEncima(true)
     }
 }
 
@@ -159,7 +165,7 @@ fun HojaRachaC2(r: Racha, carreras: List<Carrera>, onCerrar: () -> Unit, onCorre
                 Box(Modifier.size(150.dp).clip(CircleShape).background(androidx.compose.ui.graphics.Brush.radialGradient(listOf(tono.copy(alpha = 0.35f), Color.Transparent))))
                 Icon(Icons.Filled.LocalFireDepartment, null, tint = if (r.diaria > 0) Fuego else GColors.C2Muted.copy(alpha = 0.5f), modifier = Modifier.size(120.dp))
                 Text(
-                    "${r.diaria}", style = GType.headlineLg.copy(fontSize = androidx.compose.ui.unit.TextUnit(40f, androidx.compose.ui.unit.TextUnitType.Sp)), color = Color.White,
+                    "${r.diaria}", style = GType.headlineLg.copy(fontSize = androidx.compose.ui.unit.TextUnit(40f, androidx.compose.ui.unit.TextUnitType.Sp)), color = GColors.TextPrimary,
                     modifier = Modifier.padding(top = 30.dp).testTag("racha-numero"),
                 )
             }
@@ -204,7 +210,7 @@ fun HojaRachaC2(r: Racha, carreras: List<Carrera>, onCerrar: () -> Unit, onCorre
                     HITOS_RACHA.take(5).forEach { h ->
                         val logrado = r.mejorDiaria >= h
                         Text(
-                            "$h", style = GType.labelMd, color = if (logrado) Color.White else GColors.C2Muted,
+                            "$h", style = GType.labelMd, color = if (logrado) GColors.TextPrimary else GColors.C2Muted,
                             modifier = Modifier.clip(CircleShape).background(if (logrado) Fuego else GColors.C2S2).padding(horizontal = 10.dp, vertical = 3.dp),
                         )
                     }

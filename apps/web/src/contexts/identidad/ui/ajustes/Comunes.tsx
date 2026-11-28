@@ -17,7 +17,7 @@ export function PantallaAjustes({
   return (
     <div className="w-full min-h-screen bg-surface flex flex-col">
       {/* Android EncabezadoAtras: barra 64dp, flecha simple y titulo titleMd. */}
-      <header className="h-16 px-1 bg-[#151B2B] flex items-center">
+      <header className="h-16 px-1 bg-c2-card flex items-center">
         <div className="flex items-center gap-1 lg:max-w-3xl lg:mx-auto lg:w-full">
           <button
             onClick={() => (typeof volverA === 'number' ? navigate(volverA) : navigate(volverA))}
@@ -120,7 +120,7 @@ export function FilaC2({
   return (
     <div className="flex items-center justify-between gap-3 px-4 py-3.5">
       <div>
-        <div className="text-[15px] font-bold text-white">{titulo}</div>
+        <div className="text-[15px] font-bold text-text-primary">{titulo}</div>
         {descripcion && <p className="text-[13px] text-c2-muted">{descripcion}</p>}
       </div>
       <Interruptor etiqueta={titulo} activo={activo} onCambiar={onCambiar} />

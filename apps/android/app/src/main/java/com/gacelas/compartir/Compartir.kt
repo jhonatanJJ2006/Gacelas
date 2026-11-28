@@ -1,6 +1,10 @@
 package com.gacelas.compartir
 
 import java.net.URLEncoder
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.sin
@@ -83,4 +87,33 @@ object Compartir {
 
     fun enlaceWhatsApp(d: DatosCompartir) = "https://wa.me/?text=" + URLEncoder.encode("${texto(d)}\n${d.enlace}", "UTF-8").replace("+", "%20")
 
+    /** 1 de enero de 2000 00:00 UTC. Por debajo no es una fecha de carrera creible. */
+    const val MIN_FECHA_MS = 946_684_800_000L
+
+    /**
+     * Timestamp en milisegundos si es una fecha real.
+     * Acepta segundos Unix y rechaza 0 o la epoca Unix.
+     */
+    fun fechaValidaMs(ms: Long): Long? = when {
+        ms in (MIN_FECHA_MS / 1000) until MIN_FECHA_MS -> ms * 1000L
+        ms >= MIN_FECHA_MS -> ms
+        else -> null
+    }
+
+    /** Fecha a mostrar en una plantilla: la de la carrera o un respaldo (nunca 1970). */
+    fun fechaPlantillaMs(ms: Long, respaldoMs: Long = System.currentTimeMillis()): Long =
+        fechaValidaMs(ms) ?: respaldoMs
+
+    fun textoFechaPlantilla(
+        ms: Long,
+        respaldoMs: Long = System.currentTimeMillis(),
+        patron: String = "EEEE|d 'de' MMMM yyyy",
+    ): List<String> {
+        val fmt = SimpleDateFormat(patron, Locale("es", "EC")).apply {
+            timeZone = TimeZone.getTimeZone("America/Guayaquil")
+        }
+        return fmt.format(Date(fechaPlantillaMs(ms, respaldoMs))).split('|').mapIndexed { i, parte ->
+            if (i == 0) parte.replaceFirstChar { it.uppercase() } else parte
+        }
+    }
 }

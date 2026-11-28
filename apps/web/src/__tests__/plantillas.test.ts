@@ -82,4 +82,33 @@ describe('plantillas', () => {
     expect(COLOCACION_INICIAL.traza.escala).toBeGreaterThan(0)
     expect(Object.values(TAMANO_PLANTILLA)).toEqual(Array(4).fill({ ancho: 1080, alto: 1920 }))
   })
+
+  it('no escribe 1970 ni 1969 cuando falta la fecha de la carrera', () => {
+    const fillText = vi.fn()
+    const g = {
+      clearRect: vi.fn(),
+      fillText,
+      fillRect: vi.fn(),
+      measureText: vi.fn(() => ({ width: 100 })),
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      arcTo: vi.fn(),
+      closePath: vi.fn(),
+      fill: vi.fn(),
+      stroke: vi.fn(),
+    } as unknown as CanvasRenderingContext2D
+    const respaldo = Date.UTC(2026, 10, 26, 17, 0, 0)
+    vi.spyOn(Date, 'now').mockReturnValue(respaldo)
+    try {
+      dibujarPlantilla(g, { ...d, fechaMs: 0 }, 'fecha', '@corredora')
+      dibujarPlantilla(g, d, 'fecha', '@corredora')
+      const textos = fillText.mock.calls.map((c) => String(c[0])).join(' | ')
+      expect(textos).not.toMatch(/1970|1969/)
+      expect(textos).toContain('Jueves')
+      expect(textos).toContain('26 de noviembre de 2026')
+    } finally {
+      vi.restoreAllMocks()
+    }
+  })
 })

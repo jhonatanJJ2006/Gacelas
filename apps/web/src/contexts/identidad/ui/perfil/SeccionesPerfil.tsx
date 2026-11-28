@@ -1,9 +1,4 @@
-import type {
-  Historico,
-  KmMes,
-  Medalla,
-  RecordPersonal,
-} from '../../../../shared/kernel/estadisticas'
+import type { Historico, KmMes, RecordPersonal } from '../../../../shared/kernel/estadisticas'
 import { formatearHms, formatearMs, formatearRitmo, Unidades } from '../../../../shared/lib/geo'
 
 const tarjeta = 'tarjeta-c2'
@@ -146,34 +141,5 @@ export function Records({ lista }: { lista: RecordPersonal[] }) {
         ))}
       </div>
     </section>
-  )
-}
-
-export function Medallero({ lista }: { lista: Medalla[] }) {
-  return (
-    <div className="grid grid-cols-3 gap-2" data-testid="medallero">
-      {lista.map((x) => (
-        <div
-          key={x.id}
-          data-lograda={x.lograda}
-          title={x.descripcion}
-          className={`rounded-md bg-c2-s2/60 p-2.5 flex flex-col items-center text-center min-w-0 ${x.lograda ? '' : 'opacity-45'}`}
-        >
-          <span
-            className={`w-10 h-10 rounded-full grid place-items-center border-2 ${x.lograda ? 'border-c2-violeta bg-c2-morado/25 text-c2-violeta' : 'border-c2-linea text-c2-muted'}`}
-          >
-            <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
-              {x.lograda ? 'workspace_premium' : 'lock'}
-            </span>
-          </span>
-          <span className="text-[11.5px] font-semibold text-white mt-1.5 leading-tight">
-            {x.titulo}
-          </span>
-          <span className="text-[10px] text-c2-muted leading-tight line-clamp-2">
-            {x.descripcion}
-          </span>
-        </div>
-      ))}
-    </div>
   )
 }

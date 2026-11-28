@@ -142,7 +142,7 @@ export function Correr({ incrustado = false }: { incrustado?: boolean } = {}) {
           <div className="tarjeta-c2 p-6">
             <div className="flex items-center gap-4 mb-4">
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center ${listo ? 'bg-secondary-600/20 text-secondary-500' : gps.tipo === 'error' ? 'bg-danger/20 text-red-300' : 'bg-primary-600/20 text-primary-500'}`}
+                className={`w-12 h-12 rounded-full flex items-center justify-center ${listo ? 'bg-secondary-600/20 text-secondary-500' : gps.tipo === 'error' ? 'bg-danger/20 text-peligro-texto' : 'bg-primary-600/20 text-primary-500'}`}
               >
                 <span className="material-symbols-outlined text-[24px]">
                   {gps.tipo === 'error' ? 'location_off' : 'location_on'}

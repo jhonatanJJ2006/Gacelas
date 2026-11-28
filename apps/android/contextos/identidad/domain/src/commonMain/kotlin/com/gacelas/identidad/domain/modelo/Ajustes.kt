@@ -1,5 +1,6 @@
 package com.gacelas.identidad.domain.modelo
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -18,10 +19,29 @@ data class ConfigAvatar(val equipacion: Int = 0, val estilo: String = "Dinámico
     val colorZapatillas: Int? = null,
 )
 
+/**
+ * Tema elegido en Ajustes. Los nombres serializados coinciden con la web (prefs.tema), asi la
+ * preferencia viaja igual por user_settings.prefs entre Android, iOS y web.
+ */
+@Serializable
+enum class ModoTema {
+    @SerialName("claro") Claro,
+    @SerialName("oscuro") Oscuro,
+    @SerialName("sistema") Sistema;
+
+    /** Falso si hay que pintar el tema claro; [sistemaOscuro] es la preferencia del sistema operativo. */
+    fun esClaro(sistemaOscuro: Boolean): Boolean = when (this) {
+        Claro -> true
+        Oscuro -> false
+        Sistema -> !sistemaOscuro
+    }
+}
+
 /** Preferencias del usuario guardadas en el dispositivo. */
 @Serializable
 data class Ajustes(
-    val modoOscuro: Boolean = true,
+    /** Claro, oscuro o el del sistema. Se guarda en local y, con sesion, en user_settings.prefs. */
+    val tema: ModoTema = ModoTema.Oscuro,
     val unidadesMetricas: Boolean = true,
     val visibilidad: Visibilidad = Visibilidad.Seguidores,
     val ubicacionPrecisa: Boolean = true,

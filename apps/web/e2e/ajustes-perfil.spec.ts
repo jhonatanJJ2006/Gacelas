@@ -5,7 +5,7 @@ test.describe('Ajustes, perfil y notificaciones', () => {
 
   test('modo claro y unidades persisten', async ({ page }) => {
     await page.goto('/ajustes')
-    await page.getByRole('button', { name: 'Cambiar tema' }).click()
+    await page.getByRole('radio', { name: 'Claro' }).click()
     await expect(page.locator('html')).toHaveClass(/tema-claro/)
     await page.getByRole('button', { name: 'mi', exact: true }).click()
     await page.getByRole('switch', { name: 'Anuncios de voz' }).click()

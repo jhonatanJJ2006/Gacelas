@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import {
   historico,
   kmMensual,
-  medallas,
   mejorRacha,
   records,
   retoMes,
@@ -55,10 +54,8 @@ describe('estadisticas de Perfil e Inicio', () => {
     expect(r[2].segundos).toBe(3000)
     expect(r[3].segundos).not.toBeNull()
   })
-  it('medallas y racha', () => {
+  it('mejor racha', () => {
     expect(mejorRacha(lista)).toBe(3)
-    const m = Object.fromEntries(medallas(lista).map((x) => [x.id, x.lograda]))
-    expect(m).toMatchObject({ primera: true, '5k': true, '10k': true, '21k': true, racha7: false })
   })
   it('reto del mes', () => {
     const r = retoMes(lista, ahora)

@@ -1,5 +1,6 @@
 package com.gacelas.shared
 
+import com.gacelas.ui.theme.GColors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
@@ -32,9 +33,9 @@ import com.gacelas.core.sensores.Rumbo
 
 /** Colores de la identidad C4 (mismos hex que acceso/AccesoVisual.kt de Android). */
 object ColoresC4 {
-    val Fondo = Color(0xFF0A0E16)
-    val Tarjeta = Color(0xFF131926)
-    val Secondary = Color(0xFFBCC7DE)
+    val Fondo get() = GColors.BgPrimary
+    val Tarjeta get() = GColors.C2Card
+    val Secondary get() = GColors.C2Muted
     val Naranja = Color(0xFF7B1FA2)
     val Magenta = Color(0xFFD6338A)
     val MagentaOscuro = Color(0xFFAB0660)
@@ -47,21 +48,21 @@ object ColoresC4 {
 @Composable
 fun InicioComun(version: String = VersionGacelas.NOMBRE, onEmpezar: () -> Unit = {}) {
     Box(
-        Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(ColoresC4.Fondo, Color(0xFF111827), ColoresC4.Fondo))).testTag("inicio-comun"),
+        Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(ColoresC4.Fondo, GColors.BgPrimary, ColoresC4.Fondo))).testTag("inicio-comun"),
     ) {
         Column(Modifier.fillMaxSize().safeDrawingPadding().padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 com.gacelas.ui.components.IconoGacelas(32.dp)
                 Spacer(Modifier.width(8.dp))
                 Column {
-                    Text("RUNCITY", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text("RUNCITY", color = GColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Text("LOJA RUNNING CO.", color = ColoresC4.Secondary, fontSize = 9.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
             Spacer(Modifier.weight(1f))
             Column(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(28.dp)).background(ColoresC4.Tarjeta.copy(alpha = 0.95f))
-                    .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(28.dp)).padding(24.dp),
+                    .border(1.dp, GColors.TextPrimary.copy(alpha = 0.10f), RoundedCornerShape(28.dp)).padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -69,11 +70,11 @@ fun InicioComun(version: String = VersionGacelas.NOMBRE, onEmpezar: () -> Unit =
                     Spacer(Modifier.width(6.dp))
                     Text("RUNNING EN LOJA, ECUADOR", color = ColoresC4.Magenta, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                 }
-                Text("Corre. Comparte.\nSupera.", color = Color.White, fontSize = 26.sp, lineHeight = 30.sp, fontWeight = FontWeight.Bold)
+                Text("Corre. Comparte.\nSupera.", color = GColors.TextPrimary, fontSize = 26.sp, lineHeight = 30.sp, fontWeight = FontWeight.Bold)
                 Text("Runcity para ${Plataforma.nombre}: versión en preparación.", color = ColoresC4.Secondary, fontSize = 15.sp)
                 Spacer(Modifier.height(6.dp))
                 Box(Modifier.fillMaxWidth().height(52.dp).clip(CircleShape).background(ColoresC4.Naranja).clickable(onClick = onEmpezar).testTag("empezar"), contentAlignment = Alignment.Center) {
-                    Text("Empezar", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text("Empezar", color = GColors.TextPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 }
                 Text(
                     "Versión $version (${VersionGacelas.codigo(version)}) · lógica compartida OK (rumbo ${Rumbo.normalizar(-90f).toInt()}°, ${com.gacelas.tracking.formatearHms(3723)}, ${com.gacelas.data.mock.MockData.rutas.size} rutas)",

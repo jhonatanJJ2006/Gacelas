@@ -58,6 +58,15 @@ class GacelasApp : Application(), coil3.SingletonImageLoader.Factory {
     override fun onCreate() {
         android.os.Trace.beginSection("GacelasApp.onCreate")
         super.onCreate()
+        // En debug, StrictMode escribe en logcat (etiqueta StrictMode) todo disco o red en el hilo principal.
+        if (BuildConfig.DEBUG && android.os.Build.FINGERPRINT != "robolectric") {
+            android.os.StrictMode.setThreadPolicy(android.os.StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build())
+        }
+        // GL_RENDERER se lee con un contexto EGL temporal: se calienta aqui, fuera del hilo principal.
+        alcance.launch { runCatching { com.gacelas.ui.three.soporta3D(this@GacelasApp) } }
+        // La libreria nativa de MapLibre tardaba ~2 s en cargar en el hilo principal (StrictMode), al abrir
+        // el primer mapa o al llamar MapaOffline.asegurar. Cargada aqui, esas llamadas ya la encuentran lista.
+        alcance.launch { runCatching { org.maplibre.android.LibraryLoader.load() } }
         alcance.launch { runCatching { contenedor }; contenedorListo.complete(Unit); runCatching { contenedor.sincronizar() }; runCatching { contenedor.explorar?.refrescar() } }
         // Si quedo algo pendiente de otra sesion, se sube en cuanto haya red.
         com.gacelas.core.sync.Sincronizacion.programar(this)

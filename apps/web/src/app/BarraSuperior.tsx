@@ -72,7 +72,7 @@ export function ChipClima({
       <button
         type="button"
         onClick={e.reintentar}
-        className={`${base} text-c2-muted hover:text-white`}
+        className={`${base} text-c2-muted hover:text-text-primary`}
         data-testid={testId}
         title="No pudimos leer el clima. Toca para reintentar."
       >
@@ -94,7 +94,7 @@ export function ChipClima({
       <span aria-hidden="true" className="material-symbols-outlined text-[18px] text-c2-cielo">
         {iconoClima(c.descripcion)}
       </span>
-      <span className="font-semibold text-white">{c.temperatura}°</span>
+      <span className="font-semibold text-text-primary">{c.temperatura}°</span>
       {!compacto && <span className="text-c2-muted first-letter:uppercase">{c.descripcion}</span>}
     </button>
   )
@@ -109,7 +109,7 @@ export function BotonNotificaciones() {
     <Link
       to="/notificaciones"
       aria-label={sinLeer ? `Notificaciones (${sinLeer} sin leer)` : 'Notificaciones'}
-      className="relative w-10 h-10 shrink-0 rounded-md bg-c2-card border border-c2-linea grid place-items-center text-white hover:border-c2-morado/60"
+      className="relative w-10 h-10 shrink-0 rounded-md bg-c2-card border border-c2-linea grid place-items-center text-text-primary hover:border-c2-morado/60"
     >
       <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
         notifications
@@ -117,7 +117,7 @@ export function BotonNotificaciones() {
       {sinLeer > 0 && (
         <span
           data-testid="punto-notificaciones"
-          className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-c2-morado text-[9px] font-bold grid place-items-center text-white"
+          className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-c2-morado text-[9px] font-bold grid place-items-center text-on-primary"
         >
           {sinLeer > 9 ? '9+' : sinLeer}
         </span>
@@ -169,9 +169,11 @@ function BarraSuperiorEscritorio() {
       <div className="min-w-0 whitespace-nowrap">
         <span className="rotulo-c2 !text-[10px]">{fechaLarga()}</span>
         {esInicio ? (
-          <h1 className="titular-c2 text-[26px] leading-none mt-1 text-white">Hola, {nombre}</h1>
+          <h1 className="titular-c2 text-[26px] leading-none mt-1 text-text-primary">
+            Hola, {nombre}
+          </h1>
         ) : (
-          <p className="titular-c2 text-[22px] leading-none mt-1 text-white">
+          <p className="titular-c2 text-[22px] leading-none mt-1 text-text-primary">
             {seccion ?? 'Runcity'}
           </p>
         )}

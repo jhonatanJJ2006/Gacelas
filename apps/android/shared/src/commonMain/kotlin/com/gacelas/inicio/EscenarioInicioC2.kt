@@ -56,21 +56,22 @@ import kotlin.math.sin
  */
 internal object EscenarioC2 {
     val Alto = 430.dp
-    /** linear-gradient(160deg, #191F2F, #0C1322) */
-    val FondoDesde = Color(0xFF191F2F)
-    val FondoHasta = Color(0xFF0C1322)
+    private fun m(oscuro: Long, claro: Long) = Color(if (GColors.claro) claro else oscuro)
+    /** linear-gradient(160deg, #191F2F, #0C1322); en claro lavanda a gris perla. */
+    val FondoDesde get() = m(0xFF191F2F, 0xFFEADCF8)
+    val FondoHasta get() = m(0xFF0C1322, 0xFFF3F3F7)
     /** radial-gradient(60% 55% at 55% 55%, #7B1FA2AA 0, #4A154B66 45%, #0C132200 75%) */
-    val Morado = Color(0xAA7B1FA2)
-    val Ciruela = Color(0x664A154B)
-    val Transparente = Color(0x000C1322)
+    val Morado get() = m(0xAA7B1FA2, 0x80C084FC)
+    val Ciruela get() = m(0x664A154B, 0x33C084FC)
+    val Transparente get() = m(0x000C1322, 0x00F3F3F7)
     /** repeating-linear-gradient(115deg, #C084FC14 0 2px, transparent 2px 38px) */
-    val Raya = Color(0x14C084FC)
+    val Raya get() = m(0x14C084FC, 0x1F7A20B6)
     /** radial-gradient(50% 50%, #C084FC55, transparent 70%) */
-    val Piso = Color(0x55C084FC)
+    val Piso get() = m(0x55C084FC, 0x33A855F7)
     /** -webkit-text-stroke 1.5px #C084FC40 */
-    val Palabra = Color(0x40C084FC)
-    val EtiquetaFondo = Color(0xCC0C1322)
-    val EtiquetaBorde = Color(0xFF2C3446)
+    val Palabra get() = m(0x40C084FC, 0x597A20B6)
+    val EtiquetaFondo get() = m(0xCC0C1322, 0xE6FFFFFF)
+    val EtiquetaBorde get() = m(0xFF2C3446, 0xFFD0CFDE)
 }
 
 /** clip-path: polygon(0 0, 100% 6%, 100% 100%, 0 92%) */
@@ -167,7 +168,7 @@ internal fun EtiquetaEscenarioC2(rotulo: String, valor: String, modifier: Modifi
             .background(EscenarioC2.EtiquetaFondo).border(1.dp, EscenarioC2.EtiquetaBorde)
             .padding(horizontal = 10.dp, vertical = 6.dp),
     ) {
-        Text(rotulo.uppercase(), style = TextStyle(fontFamily = Inter, fontStyle = FontStyle.Italic, fontWeight = FontWeight.ExtraBold, fontSize = 11.sp), color = Color.White)
+        Text(rotulo.uppercase(), style = TextStyle(fontFamily = Inter, fontStyle = FontStyle.Italic, fontWeight = FontWeight.ExtraBold, fontSize = 11.sp), color = GColors.TextPrimary)
         Text(valor, style = TextStyle(fontFamily = SpaceGrotesk, fontStyle = FontStyle.Italic, fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 22.sp), color = GColors.C2Violeta, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }

@@ -1,5 +1,7 @@
 package com.gacelas.rutas
 
+import androidx.compose.foundation.lazy.itemsIndexed
+import com.gacelas.ui.movimiento.entradaLista
 import androidx.compose.ui.platform.testTag
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.automirrored.filled.List
@@ -165,8 +167,10 @@ fun ListaRutasContenido(
                 )
             }
         }
-        items(visibles, key = { it.id }) { ruta ->
-            TarjetaRutaLista(ruta, ruta.id in guardadas, m, cerca?.get(ruta.id), imagen, { onRuta(ruta.id) }) { onAlternarGuardada(ruta.id, ruta.id in guardadas) }
+        itemsIndexed(visibles, key = { _, r -> r.id }) { indice, ruta ->
+            Box(Modifier.entradaLista(indice)) {
+                TarjetaRutaLista(ruta, ruta.id in guardadas, m, cerca?.get(ruta.id), imagen, { onRuta(ruta.id) }) { onAlternarGuardada(ruta.id, ruta.id in guardadas) }
+            }
         }
         if (visibles.size < lista.size && !cargando) item(key = "mas") {
             com.gacelas.ui.components.EsqueletoTarjetas(1, etiqueta = "Cargando más rutas")
@@ -252,7 +256,7 @@ private fun TarjetaRutaLista(
 /** Color unico por dificultad para etiquetas, tarjetas y trazos del mapa: facil verde, media ambar, dificil rojo. */
 fun colorDificultad(d: Dificultad): Color = when (d) {
     Dificultad.Facil -> GColors.Secondary500
-    Dificultad.Moderado -> Color(0xFFFBBF24)
+    Dificultad.Moderado -> GColors.Alerta
     Dificultad.Dificil -> GColors.Danger
 }
 

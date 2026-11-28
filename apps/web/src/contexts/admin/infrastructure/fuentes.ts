@@ -45,11 +45,34 @@ export interface EventoAdmin {
   distance_km: number
   published: boolean
 }
+export interface PuntoGeo {
+  lat: number
+  lng: number
+}
 export interface RutaAdmin {
   id: string
   name: string
   distance_km: number
   difficulty: string
+  elevation_m: number
+  is_official: boolean
+  /** Trazado de la ruta (puede venir vacio). */
+  path: PuntoGeo[]
+}
+/** Lo que el escenario del Resumen dibuja: corredores visibles y incidentes sin verificar. */
+export interface EscenarioVivo {
+  corredores: PuntoGeo[]
+  incidentes: PuntoGeo[]
+}
+/** Origen del escenario en vivo; lo aportan los contextos En vivo y Seguridad de rutas. */
+export interface VivoAdmin {
+  escenario(): Promise<EscenarioVivo>
+}
+/** Carga del ECU 911 de un mes: filas agregadas en incidentes_agregados. */
+export interface ImportacionEcu {
+  anio: number
+  mes: number
+  agrupaciones: number
 }
 export interface ClubAdmin {
   id: string
@@ -75,6 +98,8 @@ export interface FuenteAdmin<R, A, E> {
   eventos(): Promise<EventoAdmin[]>
   guardarEvento(e: Partial<EventoAdmin> & { title: string }): Promise<void>
   rutas(): Promise<RutaAdmin[]>
+  enVivo(): Promise<EscenarioVivo | null>
+  importacionesEcu(): Promise<ImportacionEcu[]>
   borrarRuta(id: string): Promise<void>
   clubes(): Promise<ClubAdmin[]>
   borrarClub(id: string): Promise<void>
@@ -89,9 +114,46 @@ function ok<T>(r: { data: T | null; error: { message: string } | null }): T {
   return r.data as T
 }
 
+/** Meses con datos del ECU 911, del mas reciente hacia atras (maximo cuatro). */
+async function importacionesEcuSupabase(
+  sb: NonNullable<ReturnType<typeof obtenerSupabase>>
+): Promise<ImportacionEcu[]> {
+  const ult = ok(
+    await sb
+      .from('incidentes_agregados')
+      .select('anio,mes')
+      .order('anio', { ascending: false })
+      .order('mes', { ascending: false })
+      .limit(1)
+  ) as { anio: number; mes: number }[]
+  if (!ult[0]) return []
+  const meses: { anio: number; mes: number }[] = []
+  let { anio, mes } = ult[0]
+  for (let i = 0; i < 4; i++) {
+    meses.push({ anio, mes })
+    mes -= 1
+    if (mes === 0) {
+      mes = 12
+      anio -= 1
+    }
+  }
+  return Promise.all(
+    meses.map(async (m) => {
+      const r = await sb
+        .from('incidentes_agregados')
+        .select('id', { count: 'exact', head: true })
+        .eq('anio', m.anio)
+        .eq('mes', m.mes)
+      if (r.error) throw new Error(r.error.message)
+      return { ...m, agrupaciones: r.count ?? 0 }
+    })
+  )
+}
+
 export function fuenteSupabase<R, A, E>(
   casos: CasosAdmin<R, A> | null,
-  analitica: AnaliticaAdmin<E> | null
+  analitica: AnaliticaAdmin<E> | null,
+  vivo: VivoAdmin | null = null
 ): FuenteAdmin<R, A, E> | null {
   const sb = obtenerSupabase()
   if (!sb || !casos || !analitica) return null
@@ -145,10 +207,22 @@ export function fuenteSupabase<R, A, E>(
       else ok(await sb.from('events').insert(fila))
     },
     async rutas() {
-      return ok(
-        await sb.from('routes').select('id,name,distance_km,difficulty').order('name')
-      ) as RutaAdmin[]
+      const filas = ok(
+        await sb
+          .from('routes')
+          .select('id,name,distance_km,difficulty,elevation_m,is_official,path')
+          .order('name')
+      ) as (Omit<RutaAdmin, 'path'> & { path: unknown })[]
+      return filas.map((f) => ({
+        ...f,
+        distance_km: Number(f.distance_km ?? 0),
+        elevation_m: Number(f.elevation_m ?? 0),
+        is_official: Boolean(f.is_official),
+        path: Array.isArray(f.path) ? (f.path as PuntoGeo[]) : [],
+      }))
     },
+    enVivo: () => (vivo ? vivo.escenario() : Promise.resolve(null)),
+    importacionesEcu: () => importacionesEcuSupabase(sb),
     async borrarRuta(id) {
       ok(await sb.from('routes').delete().eq('id', id))
     },
@@ -179,10 +253,19 @@ export function fuenteSupabase<R, A, E>(
   }
 }
 
+/** Trazo de ejemplo (solo para ?demo) alrededor de un punto. */
+function trazoEjemplo(lat: number, lng: number, variante: number): PuntoGeo[] {
+  return Array.from({ length: 12 }, (_, i) => ({
+    lat: lat + Math.sin(i * (0.7 + variante * 0.2)) * 0.004,
+    lng: lng + i * 0.0016,
+  }))
+}
+
 /** Datos de ejemplo para revisar el panel en desarrollo sin servidor ni rol. */
 export function fuenteDemo<R extends { status: string }, A, E>(
   casos: CasosAdmin<R, A>,
-  estadisticas: (desde: string, hasta: string) => E
+  estadisticas: (desde: string, hasta: string) => E,
+  vivo: VivoAdmin | null = null
 ): FuenteAdmin<R, A, E> {
   const usuarios: UsuarioAdmin[] = [
     ['Andrea Montaño', 'andre.mont', 214, null],
@@ -270,8 +353,32 @@ export function fuenteDemo<R extends { status: string }, A, E>(
     },
     rutas: () =>
       Promise.resolve([
-        { id: 'r1', name: 'Parque Jipiro', distance_km: 3.2, difficulty: 'Fácil' },
-        { id: 'r2', name: 'Mirador Las Pavas', distance_km: 7.8, difficulty: 'Difícil' },
+        {
+          id: 'r1',
+          name: 'Parque Jipiro',
+          distance_km: 3.2,
+          difficulty: 'Fácil',
+          elevation_m: 12,
+          is_official: true,
+          path: trazoEjemplo(-3.9855, -79.2045, 0),
+        },
+        {
+          id: 'r2',
+          name: 'Mirador Las Pavas',
+          distance_km: 7.8,
+          difficulty: 'Difícil',
+          elevation_m: 186,
+          is_official: false,
+          path: trazoEjemplo(-4.0, -79.19, 1),
+        },
+      ]),
+    enVivo: () => (vivo ? vivo.escenario() : Promise.resolve(null)),
+    importacionesEcu: () =>
+      Promise.resolve([
+        { anio: 2026, mes: 10, agrupaciones: 843 },
+        { anio: 2026, mes: 9, agrupaciones: 816 },
+        { anio: 2026, mes: 8, agrupaciones: 0 },
+        { anio: 2026, mes: 7, agrupaciones: 861 },
       ]),
     borrarRuta: nada,
     clubes: () =>

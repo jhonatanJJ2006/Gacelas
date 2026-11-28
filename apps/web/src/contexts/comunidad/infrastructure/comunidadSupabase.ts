@@ -65,9 +65,21 @@ export class SupabaseComunidadRepository implements ComunidadRepository {
       const [bucket, ...resto] = ruta.split('/')
       return this.sb.storage.from(bucket).getPublicUrl(resto.join('/')).data.publicUrl
     }
+    // El handle del feed es el username real del perfil (el mismo de Perfil y Editar perfil).
+    const ids = [...new Set((data as Fila[]).map((f) => String(f.user_id)))]
+    const { data: perfiles } = await this.sb.from('profiles').select('id, username').in('id', ids)
+    const usuarios = new Map(
+      ((perfiles ?? []) as Fila[])
+        .filter((p) => typeof p.username === 'string' && p.username)
+        .map((p) => [String(p.id), p.username as string])
+    )
     return (data as Fila[]).map((f) => {
       const p = publicacionDesdeFilaFeed(f)
-      return { ...p, imagenes: (Array.isArray(f.images) ? (f.images as string[]) : []).map(url) }
+      return {
+        ...p,
+        usuario: usuarios.get(p.autorId),
+        imagenes: (Array.isArray(f.images) ? (f.images as string[]) : []).map(url),
+      }
     })
   }
   async alternarMeGusta(postId: string, activo: boolean) {

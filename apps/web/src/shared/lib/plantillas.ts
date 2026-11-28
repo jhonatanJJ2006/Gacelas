@@ -6,6 +6,7 @@ import {
   normalizarHandle,
   proyectar,
   redondeado,
+  textoFechaPlantilla,
   type DatosCompartir,
 } from './compartir'
 export { HANDLE_RUNCITY, normalizarHandle }
@@ -216,14 +217,8 @@ export function dibujarPlantilla(
     metrica('Desnivel', `${Math.round(d.desnivelM ?? 0)} m`, 570, 1435)
     pie()
   } else if (p === 'fecha') {
-    const date = new Date(d.fechaMs ?? 0)
-    const dia = new Intl.DateTimeFormat('es-EC', { weekday: 'long' }).format(date)
-    const fecha = new Intl.DateTimeFormat('es-EC', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }).format(date)
-    t(dia.charAt(0).toUpperCase() + dia.slice(1), 72, 720, 76, 700)
+    const { dia, fecha } = textoFechaPlantilla(d.fechaMs)
+    t(dia, 72, 720, 76, 700)
     t(fecha, 72, 900, 54, 400)
     t(`${decimal(d.distanciaKm, 2)} km`, 72, 1160, 64, 700)
     pie()

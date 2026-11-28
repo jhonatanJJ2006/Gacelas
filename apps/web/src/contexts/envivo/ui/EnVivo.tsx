@@ -57,9 +57,9 @@ export function ListaEnVivo() {
         <Link
           to="/comunidad/mapa"
           data-testid="ir-mapa-vivo"
-          className="tarjeta-c2 flex items-center gap-3 p-4 border border-[#C084FC]/50"
+          className="tarjeta-c2 flex items-center gap-3 p-4 border border-c2-violeta/50"
         >
-          <span className="w-2.5 h-2.5 rounded-full bg-[#68DBA9]" />
+          <span className="w-2.5 h-2.5 rounded-full bg-c2-menta" />
           <span className="flex-1">
             <span className="block text-text-primary font-title-md text-title-md">
               Mapa de corredores
@@ -68,7 +68,7 @@ export function ListaEnVivo() {
               Quién está visible cerca de ti ahora
             </span>
           </span>
-          <span className="material-symbols-outlined text-[#C084FC]">chevron_right</span>
+          <span className="material-symbols-outlined text-c2-violeta">chevron_right</span>
         </Link>
         {sesiones === null && <p className="text-text-secondary">Buscando corredores…</p>}
         {sesiones?.length === 0 && (
@@ -153,7 +153,7 @@ export function DetalleEnVivo() {
           role="status"
           data-testid="estado-en-vivo"
           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ${
-            activa ? 'bg-danger/20 text-red-300' : 'bg-surface-container text-text-secondary'
+            activa ? 'bg-danger/20 text-peligro-texto' : 'bg-surface-container text-text-secondary'
           }`}
         >
           <span

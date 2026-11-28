@@ -21,18 +21,18 @@ fun MapaPlaceholder(modifier: Modifier = Modifier, rutaPrincipal: Boolean? = tru
         val sx = size.width / 600f
         val sy = size.height / 900f
         fun p(x: Float, y: Float) = Offset(x * sx, y * sy)
-        drawRect(Color(0xFF090F1A))
+        drawRect(GColors.MapaFondo)
         val paso = 40f * sx
         var x = 0f
-        while (x < size.width) { drawLine(Color(0xFF162238), Offset(x, 0f), Offset(x, size.height), 1f); x += paso }
+        while (x < size.width) { drawLine(GColors.MapaLinea, Offset(x, 0f), Offset(x, size.height), 1f); x += paso }
         var y = 0f
-        while (y < size.height) { drawLine(Color(0xFF162238), Offset(0f, y), Offset(size.width, y), 1f); y += paso }
+        while (y < size.height) { drawLine(GColors.MapaLinea, Offset(0f, y), Offset(size.width, y), 1f); y += paso }
         val rio = Path().apply {
             moveTo(330 * sx, 0f)
             cubicTo(310 * sx, 220 * sy, 340 * sx, 380 * sy, 290 * sx, 560 * sy)
             cubicTo(260 * sx, 680 * sy, 280 * sx, 800 * sy, 270 * sx, 900 * sy)
         }
-        drawPath(rio, Color(0xFF1E3A5F), alpha = 0.7f, style = Stroke(12f * sx, cap = StrokeCap.Round))
+        drawPath(rio, GColors.MapaRio, alpha = 0.7f, style = Stroke(12f * sx, cap = StrokeCap.Round))
         val parque = Path().apply {
             moveTo(280 * sx, 110 * sy)
             cubicTo(380 * sx, 100 * sy, 450 * sx, 150 * sy, 430 * sx, 230 * sy)

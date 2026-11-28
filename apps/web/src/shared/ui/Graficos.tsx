@@ -44,7 +44,7 @@ export function GraficoBarras({
             x2="100"
             y1={alto - 18 - f * (alto - 30)}
             y2={alto - 18 - f * (alto - 30)}
-            stroke="#2C3446"
+            stroke="rgb(var(--c-c2-linea))"
             strokeWidth="0.3"
           />
         ))}
@@ -57,7 +57,7 @@ export function GraficoBarras({
               y={alto - 18 - h}
               width={ancho * 0.7}
               height={Math.max(h, d.valor > 0 ? 1 : 0)}
-              fill={i === marca ? '#C084FC' : '#4B3A6B'}
+              fill={i === marca ? 'rgb(var(--c-c2-violeta))' : 'rgb(var(--c-c2-morado) / 0.4)'}
             />
           )
         })}
@@ -77,7 +77,7 @@ export function GraficoBarras({
 export function GraficoLinea({
   datos,
   alto = 140,
-  color = '#68DBA9',
+  color = 'rgb(var(--c-c2-menta))',
   testId,
 }: {
   datos: PuntoGrafico[]
@@ -126,7 +126,7 @@ export function GraficoLinea({
 /** Barras horizontales con etiqueta y valor (rankings, motivos). */
 export function BarrasHorizontales({
   datos,
-  color = '#C084FC',
+  color = 'rgb(var(--c-c2-violeta))',
   testId,
 }: {
   datos: PuntoGrafico[]
@@ -141,7 +141,7 @@ export function BarrasHorizontales({
           key={d.etiqueta}
           className="grid grid-cols-[minmax(0,9rem)_1fr_auto] items-center gap-2"
         >
-          <span className="truncate text-[12px] text-white">{d.etiqueta}</span>
+          <span className="truncate text-[12px] text-text-primary">{d.etiqueta}</span>
           <span className="h-2 bg-c2-s2">
             <span
               className="block h-2"

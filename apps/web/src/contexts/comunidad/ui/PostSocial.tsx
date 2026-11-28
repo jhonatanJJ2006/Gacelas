@@ -16,7 +16,7 @@ export function nivelCorto(nivel: string): string {
 export function InsigniaNivel({ nivel }: { nivel: string }) {
   return (
     <span
-      className="shrink-0 inline-flex items-center px-1.5 h-4 bg-[#7b1fa2] text-white text-[9px] font-black italic whitespace-nowrap [clip-path:polygon(3px_0,100%_0,calc(100%-3px)_100%,0_100%)]"
+      className="shrink-0 inline-flex items-center px-1.5 h-4 bg-primary-600 text-on-primary text-[9px] font-black italic whitespace-nowrap [clip-path:polygon(3px_0,100%_0,calc(100%-3px)_100%,0_100%)]"
       data-testid="insignia-nivel"
       title={nivel}
     >
@@ -39,7 +39,7 @@ export function handle(nombre: string): string {
 export function AvatarLetra({ nombre, chico = false }: { nombre: string; chico?: boolean }) {
   return (
     <span
-      className={`${chico ? 'w-6 h-6 text-[11px]' : 'w-9 h-9 text-[14px]'} shrink-0 rounded-full bg-[#7b1fa2] text-white font-bold flex items-center justify-center`}
+      className={`${chico ? 'w-6 h-6 text-[11px]' : 'w-9 h-9 text-[14px]'} shrink-0 rounded-full bg-primary-600 text-on-primary font-bold flex items-center justify-center`}
       aria-hidden="true"
     >
       {(nombre.trim().charAt(0) || 'G').toUpperCase()}
@@ -64,7 +64,7 @@ export function MediaPost({ imagenes, puntos }: { imagenes: string[]; puntos: Pu
           ) : (
             <span className="material-symbols-outlined text-[48px] text-c2-violeta/70">route</span>
           )}
-          <span className="absolute left-2 bottom-2 text-[9px] font-black italic text-white">
+          <span className="absolute left-2 bottom-2 text-[9px] font-black italic text-text-primary">
             RUTA
           </span>
         </div>
@@ -128,7 +128,7 @@ export function TarjetaClub({
         aria-pressed={inscrito}
         className={`mt-3 w-full h-11 rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-2 ${
           inscrito
-            ? 'bg-secondary-600 text-white'
+            ? 'bg-secondary-600 text-on-primary'
             : 'bg-primary-600 text-on-primary hover:bg-primary-700'
         }`}
       >

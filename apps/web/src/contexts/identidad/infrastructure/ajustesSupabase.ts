@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { AJUSTES_POR_DEFECTO, type Ajustes, type Visibilidad } from '../../../shared/kernel/tipos'
 import { escribir } from '../../../shared/lib/almacenLocal'
+import { esModoTema } from '../../../shared/lib/tema'
 import { type AjustesRepository } from '../domain/puertos'
 import { usuario } from './authSupabase'
 import { LocalAjustesRepository } from './local'
@@ -48,9 +49,12 @@ export class SupabaseAjustesRepository implements AjustesRepository {
     const porPost: Record<string, string[]> = {}
     for (const c of (comentarios.data ?? []) as Fila[])
       (porPost[c.post_id as string] ??= []).push(c.body as string)
+    const prefs = (fila.prefs as Partial<Ajustes>) ?? {}
     const ajustes: Ajustes = {
       ...AJUSTES_POR_DEFECTO,
-      ...((fila.prefs as Partial<Ajustes>) ?? {}),
+      ...prefs,
+      // Sin tema en el perfil (cuenta anterior al modo claro) se conserva el elegido en este dispositivo.
+      tema: esModoTema(prefs.tema) ? prefs.tema : (await this.local.leer()).tema,
       ...(fila.visibility ? { visibilidad: DB_A_VIS[fila.visibility as string] } : {}),
       ...(fila.hide_home != null ? { ocultarHogar: Boolean(fila.hide_home) } : {}),
       ...(fila.home_radius_m != null ? { radioHogarM: Number(fila.home_radius_m) } : {}),

@@ -2,7 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/*
+ * Tokens de tema (modo oscuro por defecto, claro con la clase `tema-claro` en <html>).
+ * Los valores van como "R G B" para usar rgb(var(--token) / <alpha>) desde tailwind.config.js.
+ * Contraste WCAG AA: texto >= 4,5:1 y componentes >= 3:1 en los dos modos (docs/TEMA.md).
+ * Para zonas que siempre son oscuras (hero con foto, escenario de Inicio) se usa `.zona-oscura`.
+ */
+:root,
+.zona-oscura {
   --c-surface: 12 19 34;
   --c-surface-dim: 12 19 34;
   --c-surface-bright: 50 57 73;
@@ -20,35 +27,104 @@
   --c-border-subtle: 44 52 70;
   --c-on-surface: 220 226 247;
   --c-on-background: 220 226 247;
+  --c-on-surface-variant: 201 207 219;
+  /* Tokens C2 */
+  --c-c2-bg: 12 19 34;
+  --c-c2-card: 25 31 47;
+  --c-c2-s2: 35 42 58;
+  --c-c2-linea: 44 52 70;
+  --c-c2-muted: 168 176 194;
+  --c-c2-violeta: 192 132 252;
+  --c-c2-morado: 168 85 247;
+  --c-c2-menta: 104 219 169;
+  --c-c2-cielo: 150 204 255;
+  --c-c2-peligro: 190 24 93;
+  /* Textos y colores de marca que cambian de modo */
+  --c-primary: 192 132 252;
+  --c-primary-200: 233 213 255;
+  --c-primary-500: 168 85 247;
+  --c-secondary: 104 219 169;
+  --c-secondary-500: 16 185 129;
+  --c-tertiary: 150 204 255;
+  --c-success: 5 150 105;
+  --c-warning: 245 158 11;
+  --c-alerta: 251 191 36;
+  --c-rosa: 244 114 182;
+  --c-peligro-texto: 252 165 165;
+  /* Texto sobre relleno violeta o menta (pastilla activa) */
+  --c-on-violeta: 12 19 34;
+  --c-on-menta: 12 19 34;
+  /* Cristal sobre el mapa o fotos (controles, chips flotantes) y su texto */
+  --c-vidrio: 18 26 42;
+  --c-sobre-vidrio: 255 255 255;
+  /* Sombra y velo */
+  --c-sombra: 0 0 0;
+  /* Barras de desplazamiento: los lee el bloque de scrollbars de mas abajo */
+  --c-scroll-pista: 12 19 34;
+  --c-scroll-pulgar: 74 64 110;
+  --c-scroll-pulgar-hover: 168 85 247;
+  /* Mapa (CSS de respaldo cuando no hay Google Maps) */
+  --c-mapa-fondo: 13 20 34;
+  color-scheme: dark;
 }
 
-/* Rediseño C2: solo fondos oscuros. La clase se conserva para Ajustes, pero usa la misma paleta oscura. */
+/* Modo claro: mismo violeta de marca, fondos neutros con un matiz frio y textos oscuros. */
 .tema-claro {
-  --c-surface: 12 19 34;
-  --c-surface-dim: 12 19 34;
-  --c-surface-bright: 50 57 73;
-  --c-surface-variant: 46 53 69;
-  --c-surface-container: 25 31 47;
-  --c-surface-container-low: 20 27 43;
-  --c-surface-container-high: 35 42 58;
-  --c-surface-container-highest: 46 53 69;
-  --c-surface-container-lowest: 7 14 29;
-  --c-background: 12 19 34;
-  --c-bg-primary: 12 19 34;
-  --c-bg-secondary: 25 31 47;
-  --c-text-primary: 255 255 255;
-  --c-text-secondary: 168 176 194;
-  --c-border-subtle: 44 52 70;
-  --c-on-surface: 220 226 247;
-  --c-on-background: 220 226 247;
+  --c-surface: 243 243 247;
+  --c-surface-dim: 243 243 247;
+  --c-surface-bright: 255 255 255;
+  --c-surface-variant: 226 225 234;
+  --c-surface-container: 255 255 255;
+  --c-surface-container-low: 247 247 250;
+  --c-surface-container-high: 234 234 241;
+  --c-surface-container-highest: 223 222 232;
+  --c-surface-container-lowest: 255 255 255;
+  --c-background: 243 243 247;
+  --c-bg-primary: 243 243 247;
+  --c-bg-secondary: 255 255 255;
+  --c-text-primary: 22 18 38;
+  --c-text-secondary: 79 76 97;
+  --c-border-subtle: 208 207 222;
+  --c-on-surface: 22 18 38;
+  --c-on-background: 22 18 38;
+  --c-on-surface-variant: 79 76 97;
+  --c-c2-bg: 243 243 247;
+  --c-c2-card: 255 255 255;
+  --c-c2-s2: 234 234 241;
+  --c-c2-linea: 208 207 222;
+  --c-c2-muted: 79 76 97;
+  --c-c2-violeta: 122 32 182;
+  --c-c2-morado: 123 33 202;
+  --c-c2-menta: 9 113 79;
+  --c-c2-cielo: 18 87 165;
+  --c-c2-peligro: 167 27 57;
+  --c-primary: 110 29 165;
+  --c-primary-200: 91 37 126;
+  --c-primary-500: 122 32 182;
+  --c-secondary: 9 113 79;
+  --c-secondary-500: 10 123 85;
+  --c-tertiary: 18 87 165;
+  --c-success: 9 113 79;
+  --c-warning: 149 81 4;
+  --c-alerta: 149 81 4;
+  --c-rosa: 156 17 87;
+  --c-peligro-texto: 167 27 27;
+  --c-on-violeta: 255 255 255;
+  --c-on-menta: 255 255 255;
+  --c-vidrio: 255 255 255;
+  --c-sobre-vidrio: 22 18 38;
+  --c-sombra: 40 30 80;
+  --c-scroll-pista: 243 243 247;
+  --c-scroll-pulgar: 140 134 176;
+  --c-scroll-pulgar-hover: 122 32 182;
+  --c-mapa-fondo: 238 238 244;
+  color-scheme: light;
 }
 
 :root {
   font-family: Archivo, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -68,6 +144,10 @@ body {
 /* Escritorio: los elementos fijos de cada pantalla respetan la barra lateral. */
 @media (min-width: 1024px) {
   .shell-escritorio .fixed.inset-x-0 {
+    left: 96px;
+  }
+  /* El riel colapsable (96 px) se expande a 248 px: los fijos siguen su ancho real. */
+  .shell-escritorio:has(.navc-riel[data-expandido='true']) .fixed.inset-x-0 {
     left: 248px;
   }
   .shell-escritorio .contenedor-escritorio {
@@ -91,14 +171,172 @@ body {
   }
 }
 
-.no-scrollbar {
-  scrollbar-width: none;
-}
 .material-symbols-outlined.fill {
   font-variation-settings: 'FILL' 1;
 }
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+
+/* ------------------------------------------------------------------------------------------
+   Barras de desplazamiento de Runcity.
+   Los colores salen de los tokens --c-scroll-* de cada tema (ver docs/TEMA.md); aqui solo se
+   derivan los estados. No hay selectores por tema: cambian solos con .dark y .tema-claro.
+   ------------------------------------------------------------------------------------------ */
+:root {
+  --scroll-riel: transparent;
+  --scroll-riel-zona: rgb(var(--c-scroll-pista) / 0.7);
+  --scroll-pulgar: rgb(var(--c-scroll-pulgar) / 0.6);
+  --scroll-pulgar-zona: rgb(var(--c-scroll-pulgar));
+  --scroll-pulgar-hover: rgb(var(--c-scroll-pulgar-hover));
+  --scroll-pulgar-activo: rgb(var(--c-scroll-pulgar-hover));
+  --scroll-fade: 22px;
+}
+
+/* Solo con raton o trackpad: en pantallas tactiles se conservan las barras nativas superpuestas. */
+@media (hover: hover) and (pointer: fine) {
+  /* Chrome, Edge, Safari y WebView. */
+  *::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  *::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-corner {
+    background: var(--scroll-riel);
+  }
+  /* El borde transparente adelgaza el pulgar visible sin achicar la zona de agarre. */
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--scroll-pulgar);
+    background-clip: padding-box;
+    border: 3px solid transparent;
+    border-radius: 999px;
+    min-height: 40px;
+    min-width: 40px;
+  }
+  *:hover::-webkit-scrollbar-track {
+    background: var(--scroll-riel-zona);
+  }
+  *:hover::-webkit-scrollbar-thumb {
+    background-color: var(--scroll-pulgar-zona);
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scroll-pulgar-hover);
+    border-width: 2px;
+  }
+  *::-webkit-scrollbar-thumb:active {
+    background-color: var(--scroll-pulgar-activo);
+    border-width: 2px;
+  }
+  /* Carruseles con .no-scrollbar: en escritorio llevan un riel fino que solo aparece al pasar el raton. */
+  .no-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .no-scrollbar::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-width: 2px;
+  }
+  .no-scrollbar:hover::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .no-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: var(--scroll-pulgar);
+  }
+  .no-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scroll-pulgar-hover);
+  }
+
+  /* Firefox (no admite pseudoelementos; Chrome ignora ::-webkit-scrollbar si se define scrollbar-color,
+     por eso va dentro de @supports exclusivo de Gecko). */
+  @supports (-moz-appearance: none) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--scroll-pulgar) var(--scroll-riel);
+    }
+    *:hover {
+      scrollbar-color: var(--scroll-pulgar-zona) var(--scroll-riel-zona);
+    }
+    .no-scrollbar {
+      scrollbar-color: transparent transparent;
+    }
+    .no-scrollbar:hover {
+      scrollbar-color: var(--scroll-pulgar) transparent;
+    }
+  }
+}
+
+/* En tactiles los carruseles .no-scrollbar siguen sin barra visible. */
+@media (hover: none), (pointer: coarse) {
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Desplazamiento suave para anclas y scrollIntoView; "reducir movimiento" lo apaga arriba. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Fades en los bordes de listas con scroll. El difuminado crece al alejarse del borde y desaparece
+   al llegar al tope, y si la lista no desborda no se nota. Requiere animation-timeline (Chrome/Edge 115+,
+   Safari 26); donde no existe, la lista queda sin fade. */
+@property --fade-ini {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --fade-fin {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@keyframes fade-scroll {
+  0% {
+    --fade-ini: 0px;
+    --fade-fin: var(--scroll-fade);
+  }
+  8%,
+  92% {
+    --fade-ini: var(--scroll-fade);
+    --fade-fin: var(--scroll-fade);
+  }
+  100% {
+    --fade-ini: var(--scroll-fade);
+    --fade-fin: 0px;
+  }
+}
+@supports (animation-timeline: scroll()) {
+  .fade-bordes-y {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--fade-ini),
+      #000 calc(100% - var(--fade-fin)),
+      transparent 100%
+    );
+    animation: fade-scroll linear both;
+    animation-timeline: scroll(self block);
+  }
+  .fade-bordes-x {
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 var(--fade-ini),
+      #000 calc(100% - var(--fade-fin)),
+      transparent 100%
+    );
+    animation: fade-scroll linear both;
+    animation-timeline: scroll(self inline);
+  }
+  /* "Reducir movimiento" fuerza duraciones minimas: aqui la duracion la marca el scroll, no el tiempo. */
+  @media (prefers-reduced-motion: reduce) {
+    .fade-bordes-y,
+    .fade-bordes-x {
+      animation-duration: auto !important;
+    }
+  }
 }
 
 /* Rediseño C2 Deporte cinetico: titulares display en Anton, cursiva y mayusculas. */
@@ -118,7 +356,8 @@ body {
   letter-spacing: 0.03em;
 }
 body {
-  background: #0c1322;
+  background: rgb(var(--c-bg-primary));
+  color: rgb(var(--c-text-primary));
   font-variant-numeric: tabular-nums;
 }
 
@@ -130,6 +369,18 @@ body {
     background:
       radial-gradient(60% 55% at 55% 55%, #7b1fa2aa 0, #4a154b66 45%, #0c132200 75%),
       linear-gradient(160deg, #191f2f, #0c1322);
+  }
+  /* Modo claro del escenario: lavanda suave con el mismo halo y rayas violeta. */
+  .tema-claro .escenario-c2 {
+    background:
+      radial-gradient(60% 55% at 55% 55%, #a855f72e 0, #c084fc26 45%, #f3f3f700 75%),
+      linear-gradient(160deg, #ffffff, #ebe7f7);
+  }
+  .tema-claro .escenario-c2::before {
+    background: repeating-linear-gradient(115deg, #7a20b61a 0 2px, transparent 2px 38px);
+  }
+  .tema-claro .escenario-c2::after {
+    background: radial-gradient(50% 50% at 50% 50%, #a855f740, transparent 70%);
   }
   .escenario-c2::before {
     content: '';
@@ -148,6 +399,23 @@ body {
     pointer-events: none;
     background: radial-gradient(50% 50% at 50% 50%, #c084fc55, transparent 70%);
     transform: skewX(-20deg);
+  }
+  /* Fondos de panel con degradado de marca: violeta profundo en oscuro, lavanda suave en claro. */
+  .fondo-hero {
+    background: linear-gradient(160deg, #2a0a3d 0%, #1a0b2e 55%, #191f2f 100%);
+    border-color: #3b1a55;
+  }
+  .fondo-acento {
+    background: linear-gradient(170deg, #2a0a3d 0%, #191f2f 70%);
+    border-color: #3b1a55;
+  }
+  .tema-claro .fondo-hero {
+    background: linear-gradient(160deg, #ede2fa 0%, #f5eefc 55%, #ffffff 100%);
+    border-color: #d8c6ee;
+  }
+  .tema-claro .fondo-acento {
+    background: linear-gradient(170deg, #efe5fb 0%, #ffffff 70%);
+    border-color: #d8c6ee;
   }
   /* Android FormaBotonC2: esquinas superior izquierda e inferior derecha cortadas 10dp. */
   .forma-boton-c2 {
@@ -173,7 +441,7 @@ body {
   }
   .pastilla-c2[aria-pressed='true'],
   .pastilla-c2[aria-selected='true'] {
-    @apply bg-c2-violeta text-[#0c1322];
+    @apply bg-c2-violeta text-c2-sobre-violeta;
   }
   .pildora-c2 {
     @apply inline-flex items-center gap-1 px-2.5 py-1 bg-c2-s2 text-[12px] font-semibold text-text-primary;
@@ -185,10 +453,10 @@ body {
       @apply flex w-full justify-between rounded-md h-8 px-2.5 py-0 text-[13px] font-medium normal-case not-italic tracking-normal bg-transparent text-c2-muted;
     }
     .opcion-filtro:hover {
-      @apply text-white bg-c2-s2;
+      @apply text-text-primary bg-c2-s2;
     }
     .opcion-filtro[aria-pressed='true'] {
-      @apply bg-c2-morado/20 text-white;
+      @apply bg-c2-morado/20 text-text-primary;
     }
   }
   /* Rediseno web: paneles, rotulos y cifras (docs/REDISENO-WEB.md). */
@@ -201,7 +469,7 @@ body {
     font-style: italic;
     font-synthesis: style;
     letter-spacing: 0.035em;
-    @apply text-[19px] leading-tight text-white;
+    @apply text-[19px] leading-tight text-text-primary;
   }
   /* Rotulos en mayuscula inicial a 12px: las mayusculas espaciadas de 10px no se leian (igual que en Android). */
   .rotulo-c2 {
@@ -217,10 +485,10 @@ body {
     @apply uppercase;
   }
   .mapa-c2 {
-    background-color: #101827;
+    background-color: rgb(var(--c-mapa-fondo));
     background-image:
-      linear-gradient(#1b2436 1px, transparent 1px),
-      linear-gradient(90deg, #1b2436 1px, transparent 1px);
+      linear-gradient(rgb(var(--c-c2-linea) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--c-c2-linea) / 0.5) 1px, transparent 1px);
     background-size: 22px 22px;
   }
   .etiqueta-c2 {
@@ -281,7 +549,10 @@ body {
     cursor: not-allowed;
   }
   .boton-c2:disabled::before {
-    background: rgb(220 226 248 / 0.12);
+    background: rgb(var(--c-on-surface) / 0.12);
+  }
+  .tema-claro .boton-c2:disabled {
+    color: rgb(var(--c-text-primary) / 0.38);
   }
   /* Boton de la landing (solo web, sin equivalente en la app): corte en paralelogramo y degradado. */
   .boton-landing {
@@ -296,7 +567,7 @@ body {
     --boton-c2-sombra: #f472b6;
   }
   .boton-c2-secundario {
-    @apply relative flex w-full items-center justify-center gap-2 h-12 bg-c2-s2 text-white font-black italic uppercase text-[15px];
+    @apply relative flex w-full items-center justify-center gap-2 h-12 bg-c2-s2 text-text-primary font-black italic uppercase text-[15px];
     clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
   }
 }
@@ -457,6 +728,256 @@ a.c2-boton:active {
 }
 @media (prefers-reduced-motion: reduce) {
   .esqueleto-c2 {
+    animation: none;
+  }
+}
+
+/*
+ * Navbar colapsable de la app de usuario: los --nc-* salen de los tokens del tema (con respaldo
+ * oscuro si la variable no existe). Rellenos de marca fijos, como en el resto de la app.
+ */
+.navc.navc-usuario {
+  --nc-fondo: rgb(var(--c-c2-bg, 12 19 34));
+  --nc-riel: rgb(var(--c-c2-bg, 12 19 34));
+  --nc-superficie: rgb(var(--c-c2-card, 25 31 47));
+  --nc-elevada: rgb(var(--c-c2-s2, 35 42 58));
+  --nc-borde: rgb(var(--c-c2-linea, 44 52 70));
+  --nc-texto: rgb(var(--c-text-primary, 255 255 255));
+  --nc-texto-2: rgb(var(--c-text-secondary, 168 176 194));
+  --nc-texto-3: rgb(var(--c-c2-muted, 168 176 194));
+  --nc-primario: #a855f7;
+  --nc-primario-profundo: #7b1fa2;
+  --nc-primario-texto: rgb(var(--c-c2-violeta, 192 132 252));
+  --nc-sobre-primario: #ffffff;
+  --nc-peligro: #be185d;
+  --nc-globo: rgb(var(--c-text-primary, 255 255 255));
+  --nc-sobre-globo: rgb(var(--c-c2-bg, 12 19 34));
+}
+/* Pantallas bajas: la lista de 11 secciones cabe sin desplazarse. */
+@media (min-width: 1024px) and (max-height: 860px) {
+  .navc-usuario .navc-riel {
+    gap: 4px;
+  }
+  .navc-usuario .navc-item {
+    height: 44px;
+  }
+  .navc-usuario .navc-riel[data-expandido='true'] .navc-item {
+    height: 40px;
+  }
+}
+@media (min-width: 1024px) and (max-height: 700px) {
+  .navc-usuario .navc-item {
+    height: 38px;
+  }
+  .navc-usuario .navc-riel[data-expandido='true'] .navc-item {
+    height: 36px;
+  }
+  .navc-usuario .navc-lista {
+    gap: 2px;
+  }
+}
+.navc-usuario .navc-riel[data-expandido='false'] .navc-busca {
+  justify-content: center;
+}
+
+/*
+ * Animaciones ampliadas: salidas de hojas, iconos de navegacion, celebraciones, realce de tarjetas
+ * y campos. Mismas duraciones y curvas que arriba; el bloque prefers-reduced-motion las anula.
+ */
+@keyframes mov-desvanecer {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes mov-bajar {
+  to {
+    opacity: 0;
+    translate: 0 48px;
+  }
+}
+.mov-velo-salida {
+  animation: mov-desvanecer var(--mov-corto) var(--mov-salir) both;
+  pointer-events: none;
+}
+.mov-hoja-salida {
+  animation: mov-bajar var(--mov-corto) var(--mov-salir) both;
+}
+
+/* Icono de la pestana activa: rebote corto al activarse. */
+@keyframes mov-icono-activo {
+  0% {
+    scale: 0.8;
+  }
+  55% {
+    scale: 1.18;
+  }
+  100% {
+    scale: 1;
+  }
+}
+.mov-icono-activo {
+  animation: mov-icono-activo 320ms var(--mov-entrar) both;
+}
+
+/* Entrada con rebote para sellos y medallas (logro, racha). */
+@keyframes mov-pop {
+  0% {
+    opacity: 0;
+    scale: 0.5;
+  }
+  60% {
+    opacity: 1;
+    scale: 1.12;
+  }
+  100% {
+    scale: 1;
+  }
+}
+.mov-pop {
+  animation: mov-pop 450ms var(--mov-entrar) both;
+}
+
+/* Llama de racha: parpadeo suave y continuo. */
+@keyframes mov-llama {
+  0%,
+  100% {
+    scale: 1;
+    rotate: 0deg;
+  }
+  30% {
+    scale: 1.08 1.14;
+    rotate: -3deg;
+  }
+  60% {
+    scale: 0.97 1.05;
+    rotate: 2deg;
+  }
+}
+.mov-llama {
+  display: inline-block;
+  transform-origin: 50% 90%;
+  animation: mov-llama 1.6s ease-in-out infinite;
+}
+
+/* Punto de notificaciones sin leer: halo que late. */
+@keyframes mov-latido {
+  0% {
+    box-shadow: 0 0 0 0 rgb(var(--c-c2-violeta) / 0.55);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 7px rgb(var(--c-c2-violeta) / 0);
+  }
+}
+.mov-latido {
+  animation: mov-latido 1.8s ease-out infinite;
+}
+
+/* Confeti de celebraciones (ver shared/ui/Animaciones.tsx): paralelogramos que salen del centro. */
+@keyframes mov-confeti {
+  0% {
+    opacity: 1;
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: var(--dx) calc(var(--dy) + 70px);
+    rotate: calc(var(--giro) + 220deg);
+  }
+}
+.mov-confeti {
+  position: absolute;
+  left: 50%;
+  top: 35%;
+  width: 14px;
+  height: 6px;
+  transform: skewX(-20deg);
+  animation: mov-confeti 1200ms cubic-bezier(0.1, 0.6, 0.2, 1) both;
+}
+
+/* Tarjetas pulsables: se elevan un poco con el puntero y se hunden al presionar. */
+@layer components {
+  a.tarjeta-c2,
+  button.tarjeta-c2,
+  .tarjeta-c2[role='button'],
+  .mov-tarjeta {
+    transition:
+      translate var(--mov-corto) var(--mov-entrar),
+      scale var(--mov-corto) var(--mov-entrar),
+      border-color var(--mov-corto) var(--mov-entrar),
+      box-shadow var(--mov-corto) var(--mov-entrar);
+  }
+}
+@media (hover: hover) {
+  a.tarjeta-c2:hover,
+  button.tarjeta-c2:hover,
+  .tarjeta-c2[role='button']:hover,
+  .mov-tarjeta:hover {
+    translate: 0 -2px;
+    border-color: rgb(var(--c-c2-violeta) / 0.45);
+    box-shadow: 0 8px 20px -10px rgb(var(--c-c2-morado) / 0.45);
+  }
+}
+a.tarjeta-c2:active,
+button.tarjeta-c2:active,
+.tarjeta-c2[role='button']:active,
+.mov-tarjeta:active {
+  translate: 0 0;
+  scale: 0.985;
+}
+
+/* Campos de formulario: el borde y el halo de foco entran suavemente. */
+@layer base {
+  input,
+  select,
+  textarea {
+    transition:
+      border-color var(--mov-corto) var(--mov-entrar),
+      box-shadow var(--mov-corto) var(--mov-entrar),
+      background-color var(--mov-corto) var(--mov-entrar);
+  }
+}
+
+/* Enlaces de la pestana: el icono vuelve a su sitio al soltar. */
+a:active > .material-symbols-outlined {
+  scale: 0.9;
+}
+.material-symbols-outlined {
+  transition: scale var(--mov-corto) var(--mov-entrar);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mov-llama,
+  .mov-latido,
+  .mov-icono-activo,
+  .mov-pop,
+  .mov-confeti {
+    animation: none;
+  }
+  .mov-tarjeta:hover,
+  a.tarjeta-c2:hover,
+  button.tarjeta-c2:hover {
+    translate: none;
+  }
+}
+
+/* Barras verticales de graficos: crecen desde la base, escalonadas con style="--i: n". */
+@keyframes mov-crecer {
+  from {
+    scale: 1 0;
+  }
+}
+.mov-barra-v {
+  transform-origin: center bottom;
+  animation: mov-crecer 600ms var(--mov-entrar) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mov-barra-v {
     animation: none;
   }
 }

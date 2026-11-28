@@ -135,7 +135,11 @@ export function ComponerFoto({ datos }: { datos: DatosCompartir }) {
           />
         </label>
       </div>
-      <div role="radiogroup" aria-label="Plantilla" className="flex gap-2 overflow-x-auto pb-1">
+      <div
+        role="radiogroup"
+        aria-label="Plantilla"
+        className="fade-bordes-x flex gap-2 overflow-x-auto pb-1"
+      >
         {PLANTILLAS.map((p) => (
           <button
             key={p.id}

@@ -1,3 +1,4 @@
+import { estiloEscalon } from '../../../shared/lib/movimiento'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAviso } from '../../../hooks'
@@ -23,11 +24,11 @@ import {
 } from '../api'
 
 const campo =
-  'w-full h-10 pl-10 pr-10 bg-c2-card border border-c2-linea rounded-md text-[13px] text-white placeholder-c2-muted focus:border-c2-morado outline-none'
+  'w-full h-10 pl-10 pr-10 bg-c2-card border border-c2-linea rounded-md text-[13px] text-text-primary placeholder-c2-muted focus:border-c2-morado outline-none'
 
 /** Chip C2 (Android Chip de ClubesRegistro): esquinas cortadas arriba-izq y abajo-der. */
 const chip = (activo: boolean) =>
-  `h-8 px-3 rounded-md border text-[12.5px] font-semibold whitespace-nowrap shrink-0 ${activo ? 'border-c2-morado bg-c2-morado/20 text-white' : 'border-c2-linea text-c2-muted hover:text-white'}`
+  `h-8 px-3 rounded-md border text-[12.5px] font-semibold whitespace-nowrap shrink-0 ${activo ? 'border-c2-morado bg-c2-morado/20 text-text-primary' : 'border-c2-linea text-c2-muted hover:text-text-primary'}`
 
 /** Estado vacio ilustrado (Android VacioClubes). */
 function Vacio({
@@ -201,7 +202,7 @@ export function Clubes() {
     const filas = km.get(id) ?? []
     return semanas.map((w) => filas.find((f) => f.semana === w)?.km ?? 0)
   }
-  const tarjeta = (c: Club) => {
+  const tarjeta = (c: Club, indice: number) => {
     const comunidad = c.comunidadId ? comunidades.get(c.comunidadId) : undefined
     const horario = textoHorario(c.dias, c.hora)
     const ritmo = c.tipo === 'grupo' ? textoRitmo(c.ritmoSegKm) : ''
@@ -215,7 +216,8 @@ export function Clubes() {
     return (
       <li
         key={c.id}
-        className="panel-c2 bg-c2-card border border-c2-linea p-4 flex flex-col gap-3 min-w-0"
+        style={estiloEscalon(indice)}
+        className="mov-escalon panel-c2 bg-c2-card border border-c2-linea p-4 flex flex-col gap-3 min-w-0"
       >
         <Link
           to={`/comunidad/clubes/${c.id}`}
@@ -234,7 +236,7 @@ export function Clubes() {
                 </span>
               )}
             </div>
-            <p className="font-display italic text-[20px] leading-tight text-white truncate group-hover:text-c2-violeta">
+            <p className="font-display italic text-[20px] leading-tight text-text-primary truncate group-hover:text-c2-violeta">
               {c.nombre}
             </p>
           </div>
@@ -310,7 +312,7 @@ export function Clubes() {
               <button
                 data-testid="unirme-club"
                 onClick={() => void unirme(c)}
-                className="panel-c2 h-9 px-5 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-white text-[13px] font-bold"
+                className="panel-c2 h-9 px-5 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-on-primary text-[13px] font-bold"
               >
                 {c.conAprobacion ? 'Solicitar' : 'Unirme'}
               </button>
@@ -344,12 +346,12 @@ export function Clubes() {
         <button
           onClick={() => navigate('/comunidad')}
           aria-label="Volver"
-          className="lg:hidden w-10 h-10 -ml-2 shrink-0 flex items-center justify-center text-white"
+          className="lg:hidden w-10 h-10 -ml-2 shrink-0 flex items-center justify-center text-text-primary"
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="titular-c2 text-[26px] lg:text-[34px] leading-none text-white truncate">
+          <h1 className="titular-c2 text-[26px] lg:text-[34px] leading-none text-text-primary truncate">
             Grupos y comunidades
           </h1>
           {lista && lista.length > 0 && (
@@ -364,7 +366,7 @@ export function Clubes() {
             onClick={crear}
             aria-label={tipo === 'comunidad' ? 'Registrar comunidad' : 'Registrar grupo'}
             data-testid="crear-club"
-            className="panel-c2 h-10 px-3 sm:px-4 shrink-0 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-white text-[13px] font-bold inline-flex items-center gap-1.5"
+            className="panel-c2 h-10 px-3 sm:px-4 shrink-0 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-on-primary text-[13px] font-bold inline-flex items-center gap-1.5"
           >
             <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
               add
@@ -389,7 +391,7 @@ export function Clubes() {
                   aria-selected={tipo === t}
                   data-testid={t === 'grupo' ? 'pestana-grupos' : 'pestana-comunidades'}
                   onClick={() => setParams(t === 'grupo' ? {} : { tipo: t }, { replace: true })}
-                  className={`h-8 px-3 rounded text-[13px] font-semibold whitespace-nowrap ${tipo === t ? 'bg-c2-s2 text-white' : 'text-c2-muted hover:text-white'}`}
+                  className={`h-8 px-3 rounded text-[13px] font-semibold whitespace-nowrap ${tipo === t ? 'bg-c2-s2 text-text-primary' : 'text-c2-muted hover:text-text-primary'}`}
                 >
                   {t === 'grupo' ? 'Grupos' : 'Comunidades'}
                   {lista && lista.length > 0 ? ` · ${total(t)}` : ''}
@@ -426,7 +428,7 @@ export function Clubes() {
           </div>
           {tipo === 'grupo' && (
             <div
-              className="flex gap-2 overflow-x-auto pb-1 -mx-margin px-margin lg:mx-0 lg:px-0"
+              className="fade-bordes-x flex gap-2 overflow-x-auto pb-1 -mx-margin px-margin lg:mx-0 lg:px-0"
               aria-label="Filtrar por nivel"
               data-testid="filtros-nivel"
             >
@@ -547,12 +549,12 @@ export function Clubes() {
                               .toLocaleDateString('es-EC', { weekday: 'short' })
                               .replace('.', '')}
                           </span>
-                          <span className="block cifra-c2 text-[20px] leading-none text-white">
+                          <span className="block cifra-c2 text-[20px] leading-none text-text-primary">
                             {new Date(ms).getDate()}
                           </span>
                         </span>
                         <span className="min-w-0">
-                          <span className="block text-[13px] font-semibold text-white truncate group-hover:text-c2-violeta">
+                          <span className="block text-[13px] font-semibold text-text-primary truncate group-hover:text-c2-violeta">
                             {c.nombre}
                           </span>
                           <span className="block text-[11.5px] text-c2-muted truncate">
@@ -581,8 +583,8 @@ export function Clubes() {
                     <li key={c.id}>
                       <div className="flex items-center gap-2 text-[13px]">
                         <span className="cifra-c2 w-4 text-c2-muted">{i + 1}</span>
-                        <span className="flex-1 truncate text-white">{c.nombre}</span>
-                        <span className="cifra-c2 text-white">{decimal(k)} km</span>
+                        <span className="flex-1 truncate text-text-primary">{c.nombre}</span>
+                        <span className="cifra-c2 text-text-primary">{decimal(k)} km</span>
                       </div>
                       <div className="ml-6 mt-1 h-1 rounded-full bg-c2-s2 overflow-hidden">
                         <div
@@ -607,7 +609,7 @@ function DatoC2({ t, v }: { t: string; v: string }) {
   return (
     <div className="min-w-0">
       <dt className="rotulo-c2">{t}</dt>
-      <dd className="text-white font-semibold truncate">{v}</dd>
+      <dd className="text-text-primary font-semibold truncate">{v}</dd>
     </div>
   )
 }

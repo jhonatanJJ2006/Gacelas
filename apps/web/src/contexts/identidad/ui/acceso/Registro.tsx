@@ -175,7 +175,7 @@ export function Registro() {
                 checked={acepta}
                 onChange={(e) => setAcepta(e.target.checked)}
                 aria-label="Acepto los Términos y la Política de privacidad"
-                className="m-3 w-[18px] h-[18px] shrink-0 accent-[#7B1FA2]"
+                className="m-3 w-[18px] h-[18px] shrink-0 accent-primary-600"
               />
               <div className="flex-1">
                 <label

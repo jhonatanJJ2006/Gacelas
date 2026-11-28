@@ -1,7 +1,9 @@
-import type { CSSProperties, ReactNode } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Esqueleto } from './Esqueletos'
 import { decimal } from '../lib/geo'
+import { MOVIMIENTO, movimientoReducido, estiloEscalon } from '../lib/movimiento'
+import { CifraTexto, Contador } from './Animaciones'
 
 /*
  * Piezas del rediseno de la web (docs/REDISENO-WEB.md): paneles C2, rotulos, metricas grandes y
@@ -34,9 +36,9 @@ export function Panel({
 }) {
   const fondo =
     variante === 'hero'
-      ? 'bg-[linear-gradient(160deg,#2A0A3D_0%,#1A0B2E_55%,#191F2F_100%)] border-[#3B1A55]'
+      ? 'fondo-hero'
       : variante === 'acento'
-        ? 'bg-[linear-gradient(170deg,#2A0A3D_0%,#191F2F_70%)] border-[#3B1A55]'
+        ? 'fondo-acento'
         : 'bg-c2-card border-c2-linea'
   const idTitulo = id ? `${id}-titulo` : undefined
   return (
@@ -68,7 +70,7 @@ export function Panel({
 
 function BotonAccion({ accion }: { accion: AccionPanel }) {
   const clase =
-    'shrink-0 inline-flex items-center gap-1 text-[12px] font-semibold text-c2-violeta hover:text-white py-1'
+    'shrink-0 inline-flex items-center gap-1 text-[12px] font-semibold text-c2-violeta hover:text-text-primary py-1'
   const contenido = (
     <>
       {accion.texto}
@@ -99,7 +101,7 @@ export function Cifra({
   valor,
   unidad,
   nota,
-  color = 'text-white',
+  color = 'text-text-primary',
   tamano = 'text-[28px]',
   testId,
   className = '',
@@ -118,7 +120,7 @@ export function Cifra({
       <Rotulo>{rotulo}</Rotulo>
       <p className="mt-1 flex items-baseline gap-1 whitespace-nowrap">
         <span className={`cifra-c2 ${tamano} leading-none ${color}`} data-testid={testId}>
-          {valor}
+          {typeof valor === 'string' ? <CifraTexto texto={valor} /> : valor}
         </span>
         {unidad && <span className="text-[12px] text-c2-muted">{unidad}</span>}
       </p>
@@ -200,7 +202,7 @@ export function MiniMapa({
       <defs>
         <linearGradient id={idGrad} x1="0" x2="1">
           <stop offset="0" stopColor="#7B1FA2" />
-          <stop offset="1" stopColor="#C084FC" />
+          <stop offset="1" stopColor="rgb(var(--c-c2-violeta))" />
         </linearGradient>
       </defs>
       {traza.length > 1 && (
@@ -208,7 +210,7 @@ export function MiniMapa({
           <path
             d={d}
             fill="none"
-            stroke="#A855F7"
+            stroke="rgb(var(--c-c2-morado))"
             strokeOpacity="0.25"
             strokeWidth={grosor * 3}
             strokeLinecap="round"
@@ -222,8 +224,18 @@ export function MiniMapa({
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          <circle cx={linea[0]!.x} cy={linea[0]!.y} r={grosor * 1.2} fill="#68DBA9" />
-          <circle cx={linea.at(-1)!.x} cy={linea.at(-1)!.y} r={grosor * 1.2} fill="#FFFFFF" />
+          <circle
+            cx={linea[0]!.x}
+            cy={linea[0]!.y}
+            r={grosor * 1.2}
+            fill="rgb(var(--c-c2-menta))"
+          />
+          <circle
+            cx={linea.at(-1)!.x}
+            cy={linea.at(-1)!.y}
+            r={grosor * 1.2}
+            fill="rgb(var(--c-text-primary))"
+          />
         </>
       )}
       {marcas.map((p, i) => (
@@ -233,7 +245,7 @@ export function MiniMapa({
           cy={p.y}
           r={grosor * 1.6}
           fill={marcadores[i]!.color}
-          stroke="#0C1322"
+          stroke="rgb(var(--c-c2-bg))"
           strokeWidth="1"
         >
           {marcadores[i]!.titulo && <title>{marcadores[i]!.titulo}</title>}
@@ -255,7 +267,7 @@ export function Anillo({
   tamano = 88,
   grosor = 8,
   texto,
-  color = '#A855F7',
+  color = 'rgb(var(--c-c2-morado))',
   testId,
 }: {
   pct: number
@@ -268,6 +280,12 @@ export function Anillo({
   const r = (tamano - grosor) / 2
   const c = 2 * Math.PI * r
   const v = Math.max(0, Math.min(100, pct))
+  // El arco se dibuja desde 0 al aparecer y anima los cambios (transicion de stroke-dasharray).
+  const [lleno, setLleno] = useState(() => (movimientoReducido() ? v : 0))
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setLleno(v))
+    return () => cancelAnimationFrame(id)
+  }, [v])
   return (
     <div
       className="relative shrink-0"
@@ -286,7 +304,7 @@ export function Anillo({
           cy={tamano / 2}
           r={r}
           fill="none"
-          stroke="#232A3A"
+          stroke="rgb(var(--c-c2-s2))"
           strokeWidth={grosor}
         />
         <circle
@@ -297,12 +315,15 @@ export function Anillo({
           stroke={color}
           strokeWidth={grosor}
           strokeLinecap="round"
-          strokeDasharray={`${(v / 100) * c} ${c}`}
+          strokeDasharray={`${(lleno / 100) * c} ${c}`}
+          style={{
+            transition: `stroke-dasharray ${MOVIMIENTO.conteo}ms ${MOVIMIENTO.entrar}`,
+          }}
           transform={`rotate(-90 ${tamano / 2} ${tamano / 2})`}
         />
       </svg>
       <span className="absolute inset-0 flex items-center justify-center cifra-c2 text-[20px]">
-        {texto ?? `${Math.round(v)}%`}
+        {texto ?? <Contador valor={v} formato={(n) => `${Math.round(n)}%`} />}
       </span>
     </div>
   )
@@ -338,13 +359,16 @@ export function Barras({
         <div key={i} className="flex-1 min-w-0 flex flex-col items-center gap-1.5">
           <div className="w-full flex items-end" style={{ height: alto }}>
             <div
-              className={`w-full rounded-t-[3px] ${i === resaltar ? 'bg-[linear-gradient(180deg,#C084FC,#7B1FA2)]' : v > 0 ? 'bg-[#4B3A6B]' : 'bg-c2-s2'}`}
-              style={{ height: v > 0 ? `${Math.max(6, (v / max) * 100)}%` : 3 }}
+              className={`mov-barra-v w-full rounded-t-[3px] ${i === resaltar ? 'bg-[linear-gradient(180deg,rgb(var(--c-c2-violeta)),#7B1FA2)]' : v > 0 ? 'bg-c2-morado/35' : 'bg-c2-s2'}`}
+              style={{
+                height: v > 0 ? `${Math.max(6, (v / max) * 100)}%` : 3,
+                ...estiloEscalon(i),
+              }}
               title={formato(v)}
             />
           </div>
           <span
-            className={`text-[10px] font-semibold ${i === resaltar ? 'text-white' : 'text-c2-muted'}`}
+            className={`text-[10px] font-semibold ${i === resaltar ? 'text-text-primary' : 'text-c2-muted'}`}
           >
             {etiquetas[i]}
           </span>
@@ -383,7 +407,10 @@ export function Progreso({
       aria-valuemax={100}
       aria-label={etiqueta}
     >
-      <div className={`h-full rounded-full ${fondo}`} style={{ width: `${v}%` }} />
+      <div
+        className={`mov-barra h-full rounded-full ${fondo}`}
+        style={{ width: `${v}%`, transition: `width ${MOVIMIENTO.medio}ms ${MOVIMIENTO.entrar}` }}
+      />
     </div>
   )
 }
@@ -416,9 +443,15 @@ export function MapaCalor({
     celdas.push(col)
   }
   const tono = (km: number) => {
-    if (km <= 0) return '#232A3A'
+    if (km <= 0) return 'rgb(var(--c-c2-s2))'
     const f = km / max
-    return f > 0.75 ? '#C084FC' : f > 0.5 ? '#A855F7' : f > 0.25 ? '#7B1FA2' : '#4B2466'
+    return f > 0.75
+      ? 'rgb(var(--c-c2-violeta))'
+      : f > 0.5
+        ? 'rgb(var(--c-c2-morado))'
+        : f > 0.25
+          ? 'rgb(var(--c-c2-morado) / 0.6)'
+          : 'rgb(var(--c-c2-morado) / 0.35)'
   }
   return (
     <div
@@ -495,7 +528,7 @@ export function AvatarIniciales({
   return (
     <span
       aria-hidden="true"
-      className={`inline-flex shrink-0 items-center justify-center rounded-full font-bold text-white ring-2 ring-c2-card ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center rounded-full font-bold text-text-primary ring-2 ring-c2-card ${className}`}
       style={{
         width: tamano,
         height: tamano,
@@ -542,11 +575,15 @@ export function PerfilElevacion({
       aria-label={`Perfil de elevación: de ${Math.round(min)} a ${Math.round(max)} m`}
       data-testid={testId}
     >
-      <path d={`${linea} L100,${alto} L0,${alto} Z`} fill="#96CCFF" fillOpacity="0.14" />
+      <path
+        d={`${linea} L100,${alto} L0,${alto} Z`}
+        fill="rgb(var(--c-c2-cielo))"
+        fillOpacity="0.14"
+      />
       <path
         d={linea}
         fill="none"
-        stroke="#96CCFF"
+        stroke="rgb(var(--c-c2-cielo))"
         strokeWidth="1.2"
         vectorEffect="non-scaling-stroke"
       />

@@ -1,5 +1,6 @@
 package com.gacelas.ui.components
 
+import com.gacelas.ui.theme.GColors
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.background
@@ -54,13 +55,13 @@ import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 
-private val NARANJA = Color(0xFFC084FC)
+private val NARANJA get() = GColors.C2Violeta
 private val MAGENTA = Color(0xFFD6338A)
 
 /** Trazo de una ruta elegida: brillo ancho, contorno oscuro y linea de color (buscador de Inicio y modo mapa de Rutas). */
 fun trazoSeleccionado(puntos: List<LatLng>, color: Color = NARANJA): List<TrazoMapa> = listOf(
     TrazoMapa(puntos, color, 14f, 0.18f),
-    TrazoMapa(puntos, Color(0xFF05080F), 9f),
+    TrazoMapa(puntos, GColors.ContornoRuta, 9f),
     TrazoMapa(puntos, color, 5f),
 )
 
@@ -82,7 +83,7 @@ fun MapaGacelas(
     puntos: List<LatLng>,
     modifier: Modifier = Modifier,
     seguir: Boolean = false,
-    oscuro: Boolean = true,
+    oscuro: Boolean = !com.gacelas.ui.theme.GColors.claro,
     zoom: Float = 15f,
     modo3d: Boolean = false,
     ritmoSegKm: Int? = null,
@@ -97,6 +98,8 @@ fun MapaGacelas(
     controlesPropios: (@Composable androidx.compose.foundation.layout.BoxScope.(recentrar: () -> Unit, norte: () -> Unit, rumbo: Float, siguiendo: Boolean) -> Unit)? = null,
     /** Falso oculta el corredor 3D (p. ej. con un panel abierto encima). */
     corredorVisible: Boolean = true,
+    /** Espacio (px) que tapan botones o paneles sobre el mapa; la ruta se encuadra entera en la franja libre. Por defecto, 80 px de aire. */
+    paddingEncuadre: com.gacelas.mapa.PaddingPx = com.gacelas.mapa.PaddingPx.todos(80f),
     alternativa: @Composable () -> Unit,
 ) {
     if (!Mapas.configurado() || LocalInspectionMode.current) {
@@ -147,7 +150,7 @@ fun MapaGacelas(
         val m = mapa ?: return@LaunchedEffect
         runCatching {
             when {
-                ultimo == null -> if (plan.size >= 2) m.animateCamera(CameraUpdateFactory.newLatLngBounds(MapaMat.limites(plan), 80))
+                ultimo == null -> if (plan.isNotEmpty()) m.encuadrarRuta(context, plan, paddingEncuadre, zoomUnPunto = zoom.toDouble())
                 seguir && !siguiendo -> Unit
                 seguir && modo3d -> {
                     val r = (rumbo ?: m.cameraPosition.bearing.toFloat()).toDouble()
@@ -160,8 +163,9 @@ fun MapaGacelas(
                     ultimoAnimado = ultimo
                     m.easeCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(centro).zoom(z).tilt(60.0).bearing(r).padding(0.0, arriba, 0.0, 0.0).build()), if (nuevoPunto) MapaCompacto.ANIMACION_PUNTO_MS else 500, !nuevoPunto)
                 }
-                seguir || puntos.size < 2 -> m.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(ultimo).zoom(zoom.toDouble()).tilt(0.0).bearing(0.0).build()), 900)
-                else -> m.animateCamera(CameraUpdateFactory.newLatLngBounds(MapaMat.limites(puntos), 80))
+                seguir -> m.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder().target(ultimo).zoom(zoom.toDouble()).tilt(0.0).bearing(0.0).build()), 900)
+                // Ruta entera (un punto: centrada con el zoom pedido), animada y dentro de la franja libre.
+                else -> m.encuadrarRuta(context, puntos, paddingEncuadre, zoomUnPunto = zoom.toDouble())
             }
         }
     }
@@ -229,19 +233,19 @@ fun MapaGacelas(
         if (!conRed && descarga !is EstadoDescarga.Lista) {
             Text(
                 "Sin conexión · descarga el mapa de Loja en Ajustes",
-                color = Color.White, fontSize = 11.sp,
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = avisoArriba).clip(CircleShape).background(Color(0xE6121A2A))
+                color = GColors.TextPrimary, fontSize = 11.sp,
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = avisoArriba).clip(CircleShape).background(GColors.Vidrio)
                     .padding(horizontal = 10.dp, vertical = 4.dp).testTag("aviso-sin-mapa"),
             )
         }
         if (seguir && !siguiendo && controlesPropios == null) {
             Row(
-                Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp).clip(CircleShape).background(Color(0xF2121A2A))
+                Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp).clip(CircleShape).background(GColors.VidrioFuerte)
                     .clickable { siguiendo = true }.padding(horizontal = 16.dp, vertical = 10.dp).testTag("recentrar"),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Filled.MyLocation, null, tint = NARANJA)
-                Text("  Recentrar", color = Color.White, style = GType.labelLg)
+                Text("  Recentrar", color = GColors.TextPrimary, style = GType.labelLg)
             }
         }
     }
@@ -251,13 +255,13 @@ fun MapaGacelas(
 @Composable
 private fun ControlesMapa(mapa: MapLibreMap?, rumbo: Float, modifier: Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Column(Modifier.clip(RoundedCornerShape(16.dp)).background(Color(0xE6121A2A))) {
-            IconButton(onClick = { mapa?.animateCamera(CameraUpdateFactory.zoomIn()) }) { Icon(Icons.Filled.Add, "Acercar", tint = Color.White) }
-            IconButton(onClick = { mapa?.animateCamera(CameraUpdateFactory.zoomOut()) }) { Icon(Icons.Filled.Remove, "Alejar", tint = Color.White) }
+        Column(Modifier.clip(RoundedCornerShape(16.dp)).background(GColors.Vidrio)) {
+            IconButton(onClick = { mapa?.animateCamera(CameraUpdateFactory.zoomIn()) }) { Icon(Icons.Filled.Add, "Acercar", tint = GColors.TextPrimary) }
+            IconButton(onClick = { mapa?.animateCamera(CameraUpdateFactory.zoomOut()) }) { Icon(Icons.Filled.Remove, "Alejar", tint = GColors.TextPrimary) }
         }
         IconButton(
             onClick = { mapa?.let { m -> m.animateCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.Builder(m.cameraPosition).bearing(0.0).tilt(0.0).build())) } },
-            modifier = Modifier.clip(CircleShape).background(Color(0xE6121A2A)),
+            modifier = Modifier.clip(CircleShape).background(GColors.Vidrio),
         ) { Icon(Icons.Filled.Navigation, "Orientar al norte", tint = NARANJA, modifier = Modifier.rotate(-rumbo)) }
     }
 }

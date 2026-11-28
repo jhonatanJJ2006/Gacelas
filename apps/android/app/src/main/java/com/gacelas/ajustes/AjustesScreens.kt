@@ -136,7 +136,7 @@ private fun CabeceraAjustes(onEditarPerfil: () -> Unit) {
             Text(perfil?.nombre ?: "Corredor", style = GType.titleMd, color = GColors.TextPrimary)
             com.gacelas.comunidad.presentation.ui.InsigniaNivel(com.gacelas.comunidad.domain.modelo.nivelCorredor(km))
             perfil?.email?.let { Text(it, style = GType.bodySm, color = GColors.TextSecondary) }
-            Text("Sede Loja • ${km.roundToInt()} km totales", style = GType.bodySm, color = GColors.Secondary500, modifier = Modifier.testTag("ajustes-km"))
+            Text("Sede Loja • ${com.gacelas.tracking.Unidades.texto(km, true, 1)} km totales", style = GType.bodySm, color = GColors.Secondary500, modifier = Modifier.testTag("ajustes-km"))
         }
         TextButton(onClick = onEditarPerfil) { Text("Editar perfil", color = GColors.Primary) }
     }
@@ -177,7 +177,7 @@ private fun Divisor() = androidx.compose.material3.HorizontalDivider(color = GCo
 private fun MapaZonaOculta(activa: Boolean, radio: Int) {
     androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth().height(150.dp).background(GColors.C2S2).testTag("zona-oculta-mapa")) {
         androidx.compose.foundation.Canvas(Modifier.fillMaxSize()) {
-            val calle = androidx.compose.ui.graphics.Color(0xFF2C3446)
+            val calle = GColors.C2Linea
             listOf(0.15f, 0.45f, 0.75f, 1f).forEach { y -> drawLine(calle, androidx.compose.ui.geometry.Offset(0f, size.height * y), androidx.compose.ui.geometry.Offset(size.width, size.height * y - 40f), 12f) }
             listOf(0.12f, 0.4f, 0.65f, 0.88f).forEach { x -> drawLine(calle, androidx.compose.ui.geometry.Offset(size.width * x, 0f), androidx.compose.ui.geometry.Offset(size.width * x + 40f, size.height), 10f) }
             val casa = androidx.compose.ui.geometry.Offset(size.width * 0.2f, size.height * 0.4f)

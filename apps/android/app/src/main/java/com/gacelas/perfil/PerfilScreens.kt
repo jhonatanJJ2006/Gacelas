@@ -1,5 +1,6 @@
 package com.gacelas.perfil
 
+import com.gacelas.ui.movimiento.entradaLista
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Checkroom
@@ -119,7 +120,7 @@ fun FotoPerfil(path: String?, tamano: androidx.compose.ui.unit.Dp) {
 }
 
 @Composable
-fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Unit, onCarrera: (String) -> Unit = {}, onReportes: () -> Unit = {}, onLogros: () -> Unit = {}, onMedallero: () -> Unit = {}, onCorrer: () -> Unit = {}, onComparar: () -> Unit = {}) {
+fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Unit, onCarrera: (String) -> Unit = {}, onReportes: () -> Unit = {}, onLogros: () -> Unit = {}, onCorrer: () -> Unit = {}, onComparar: () -> Unit = {}) {
     val perfil by sesionState()
     val carreras by carrerasState()
     val ajustes by ajustesState()
@@ -130,7 +131,6 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
     val hist = remember(carreras) { EstadisticasPerfil.historico(carreras) }
     val meses = remember(carreras) { EstadisticasPerfil.kmMensual(carreras, System.currentTimeMillis()) }
     val recs = remember(carreras) { EstadisticasPerfil.records(carreras) }
-    val meds = remember(carreras) { EstadisticasPerfil.medallas(carreras) }
     val pendientes by com.gacelas.ui.carrerasPendientesState()
     // Primer valor de la sesion y del historial (DataStore o Supabase): esqueleto mientras tanto.
     val cont = com.gacelas.ui.contenedor()
@@ -210,7 +210,6 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
             }
         }
         Records(recs)
-        Medallero(meds, onVerTodo = onMedallero)
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Actividades recientes", style = GType.titleMd, color = GColors.TextPrimary, modifier = Modifier.weight(1f))
             Text("${carreras.size} en total", style = GType.labelMd, color = GColors.TextSecondary)
@@ -223,8 +222,8 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
             style = GType.labelLg, color = GColors.Primary500,
             modifier = Modifier.clickable(onClick = onComparar).testTag("ir-comparar").padding(bottom = 8.dp),
         )
-        carreras.take(20).forEach { c ->
-            Tarjeta(Modifier.clickable { onCarrera(c.id) }.testTag("carrera-${c.id}")) {
+        carreras.take(20).forEachIndexed { indice, c ->
+            Tarjeta(Modifier.entradaLista(indice).clickable { onCarrera(c.id) }.testTag("carrera-${c.id}")) {
                 Row(verticalAlignment = Alignment.Top) {
                     // Mini mapa con el trazo real de la carrera.
                     if (c.puntos.size >= 2) com.gacelas.ui.components.MiniTrazoC2(c.puntos.map { it.lat to it.lng },
@@ -234,7 +233,7 @@ fun PerfilScreen(onEditar: () -> Unit, onAvatar: () -> Unit, onAjustes: () -> Un
                         Text(c.titulo, style = GType.labelLg, color = GColors.TextPrimary)
                         Text(fecha.format(Date(c.inicioMs)), style = GType.bodySm, color = GColors.TextSecondary)
                     }
-                    if (c.id in pendientes) Text("Sin subir", style = GType.bodySm, color = androidx.compose.ui.graphics.Color(0xFFF6AD55), modifier = Modifier.padding(end = 8.dp).testTag("sin-subir-${c.id}"))
+                    if (c.id in pendientes) Text("Sin subir", style = GType.bodySm, color = GColors.AvisoTexto, modifier = Modifier.padding(end = 8.dp).testTag("sin-subir-${c.id}"))
                     if (!c.publica) Text("Privada", style = GType.bodySm, color = GColors.TextSecondary)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {

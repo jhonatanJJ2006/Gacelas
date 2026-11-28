@@ -7,6 +7,13 @@ import { guardarDestino, tomarDestino } from '../shared/lib/destino'
 import { cargar } from './estado'
 import { ShellEscritorio } from './ShellEscritorio'
 import { EsqueletoPantalla } from '../shared/ui/Esqueletos'
+import {
+  aplicarTema,
+  normalizarTema,
+  resolverTema,
+  seguirSistema,
+  sistemaPrefiereOscuro,
+} from '../shared/lib/tema'
 
 const Bienvenida = lazy(() =>
   import('../contexts/identidad/ui/acceso/Bienvenida').then((m) => ({ default: m.Bienvenida }))
@@ -209,13 +216,17 @@ export function SoloInvitados() {
   return <Outlet />
 }
 
-/** Aplica el tema claro u oscuro de los ajustes al documento. */
+/** Aplica al documento el tema de los ajustes (claro, oscuro o el del sistema, que se sigue en vivo). */
 function TemaDocumento() {
-  const modoOscuro = useIdentidad((s) => s.ajustes.modoOscuro)
+  const modo = normalizarTema(useIdentidad((s) => s.ajustes.tema))
+  // Hasta cargar los ajustes manda el tema que dejo puesto el script de index.html (sin parpadeo).
+  const listo = useIdentidad((s) => s.listo)
+  const [sistemaOscuro, setSistemaOscuro] = useState(sistemaPrefiereOscuro)
+  useEffect(() => (modo === 'sistema' ? seguirSistema(setSistemaOscuro) : undefined), [modo])
+  const resuelto = resolverTema(modo, sistemaOscuro)
   useEffect(() => {
-    document.documentElement.classList.toggle('tema-claro', !modoOscuro)
-    document.documentElement.classList.toggle('dark', modoOscuro)
-  }, [modoOscuro])
+    if (listo) aplicarTema(resuelto)
+  }, [listo, resuelto])
   return null
 }
 

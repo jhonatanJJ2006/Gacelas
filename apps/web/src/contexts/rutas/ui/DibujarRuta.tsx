@@ -139,7 +139,7 @@ export function DibujarRuta() {
               ))}
             </div>
             {error && (
-              <p role="alert" className="text-sm text-red-300">
+              <p role="alert" className="text-sm text-peligro-texto">
                 {error}
               </p>
             )}

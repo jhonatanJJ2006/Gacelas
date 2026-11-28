@@ -49,13 +49,13 @@ export function TrazadoRuta({
       <path
         d={d}
         fill="none"
-        stroke="#7B1FA2"
+        stroke="rgb(var(--c-c2-violeta))"
         strokeWidth="2.2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <circle cx={x(ini.lng)} cy={y(ini.lat)} r="2.5" fill="#10B981" />
-      <circle cx={x(fin.lng)} cy={y(fin.lat)} r="2.5" fill="#A855F7" />
+      <circle cx={x(fin.lng)} cy={y(fin.lat)} r="2.5" fill="rgb(var(--c-c2-morado))" />
     </svg>
   )
 }

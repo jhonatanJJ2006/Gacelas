@@ -223,46 +223,6 @@ export function mejorRacha(carreras: CarreraGuardada[]): number {
   return mejor
 }
 
-export interface Medalla {
-  id: string
-  titulo: string
-  descripcion: string
-  lograda: boolean
-}
-
-export function medallas(carreras: CarreraGuardada[]): Medalla[] {
-  const max = carreras.reduce((m, c) => Math.max(m, c.distanciaKm), 0)
-  const total = carreras.reduce((s, c) => s + c.distanciaKm, 0)
-  return [
-    {
-      id: 'primera',
-      titulo: 'Primera zancada',
-      descripcion: 'Primera carrera guardada',
-      lograda: carreras.length > 0,
-    },
-    { id: '5k', titulo: 'Gacela 5K', descripcion: 'Una carrera de 5 km', lograda: max >= 5 },
-    { id: '10k', titulo: 'Diez mil', descripcion: 'Una carrera de 10 km', lograda: max >= 10 },
-    {
-      id: '21k',
-      titulo: 'Media maratón',
-      descripcion: 'Una carrera de 21 km',
-      lograda: max >= 21.0975,
-    },
-    {
-      id: 'centenario',
-      titulo: 'Centenario',
-      descripcion: '100 km acumulados',
-      lograda: total >= 100,
-    },
-    {
-      id: 'racha7',
-      titulo: 'Semana perfecta',
-      descripcion: '7 días seguidos corriendo',
-      lograda: mejorRacha(carreras) >= 7,
-    },
-  ]
-}
-
 export interface RetoMes {
   titulo: string
   metaKm: number

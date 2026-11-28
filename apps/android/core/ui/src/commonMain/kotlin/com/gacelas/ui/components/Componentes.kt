@@ -300,21 +300,21 @@ fun FilaInterruptor(icono: ImageVector, titulo: String, descripcion: String? = n
 }
 
 @Composable
-fun Pastilla(texto: String, activo: Boolean, onClick: () -> Unit = {}, icono: ImageVector? = null) {
+fun Pastilla(texto: String, activo: Boolean, onClick: () -> Unit = {}, icono: ImageVector? = null, relleno: androidx.compose.ui.unit.Dp = 16.dp, modifier: Modifier = Modifier) {
     val interaccion = remember { MutableInteractionSource() }
     val fondo by animateColorAsState(if (activo) GColors.C2Violeta else GColors.C2S2, Mov.corto(), label = "pastilla")
     Row(
-        Modifier.pulsacionC2(interaccion).clip(RoundedCornerShape(2.dp))
+        modifier.pulsacionC2(interaccion).clip(RoundedCornerShape(2.dp))
             .background(fondo)
             .clickable(interaccion, androidx.compose.material3.ripple(), onClick = onClick)
             // Lectores de pantalla (y la auditoria de botones) saben cual esta elegida.
             .semantics { selected = activo }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = relleno, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
     ) {
-        if (icono != null) Icon(icono, null, Modifier.size(16.dp), tint = if (activo) GColors.BgPrimary else GColors.TextSecondary)
-        Text(texto.uppercase(), style = GType.labelMd.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontWeight = androidx.compose.ui.text.font.FontWeight.Black), color = if (activo) GColors.BgPrimary else GColors.TextSecondary)
+        if (icono != null) Icon(icono, null, Modifier.size(16.dp), tint = if (activo) GColors.SobreVioleta else GColors.TextSecondary)
+        Text(texto.uppercase(), style = GType.labelMd.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontWeight = androidx.compose.ui.text.font.FontWeight.Black), maxLines = 1, color = if (activo) GColors.SobreVioleta else GColors.TextSecondary)
     }
 }
 

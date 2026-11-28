@@ -1,3 +1,4 @@
+import { Confeti } from '../../../shared/ui/Animaciones'
 import { mapaCalor, rachaEnRiesgo, type Racha } from '../../../shared/kernel/rachas'
 import { useActividad } from '../application/estado'
 import { useRacha } from './useRacha'
@@ -19,11 +20,11 @@ export function InsigniaRacha({
     <div
       className={`inline-flex shrink-0 items-center gap-1 rounded-full border shadow-sm ${
         compacta ? 'px-2.5 py-1' : 'px-3 py-1.5'
-      } ${r.diaria > 0 ? 'bg-primary/15 border-primary/40' : 'bg-surface-container-highest/90 border-white/5'}`}
+      } ${r.diaria > 0 ? 'bg-primary/15 border-primary/40' : 'bg-surface-container-highest/90 border-text-primary/5'}`}
       title={riesgo ? 'Corre hoy para mantener tu racha' : undefined}
     >
       <span
-        className={`material-symbols-outlined text-[16px] ${r.diaria > 0 ? 'text-primary' : 'text-text-secondary'}`}
+        className={`material-symbols-outlined text-[16px] ${r.diaria > 0 ? 'mov-llama text-primary' : 'text-text-secondary'}`}
         style={{ fontVariationSettings: r.diaria > 0 ? "'FILL' 1" : undefined }}
       >
         local_fire_department
@@ -69,7 +70,7 @@ export function TarjetaRacha() {
           className="font-title-md text-title-md text-text-primary flex items-center gap-2"
         >
           <span
-            className="material-symbols-outlined text-primary"
+            className={`material-symbols-outlined text-primary ${r.diaria > 0 ? 'mov-llama' : ''}`}
             style={{ fontVariationSettings: "'FILL' 1" }}
           >
             local_fire_department
@@ -141,10 +142,11 @@ export function CelebracionRacha({ antes, despues }: { antes: Racha; despues: Ra
     <div
       role="status"
       data-testid="celebracion-racha"
-      className="mb-6 rounded-3xl border border-primary/40 bg-gradient-to-br from-primary/25 to-secondary/15 p-5 flex items-center gap-4 animate-[pulse_1.2s_ease-in-out_2]"
+      className="mov-pop relative overflow-hidden mb-6 rounded-3xl border border-primary/40 bg-gradient-to-br from-primary/25 to-secondary/15 p-5 flex items-center gap-4"
     >
+      <Confeti />
       <span
-        className="material-symbols-outlined text-[48px] text-primary"
+        className="mov-llama material-symbols-outlined text-[48px] text-primary"
         style={{ fontVariationSettings: "'FILL' 1" }}
       >
         local_fire_department

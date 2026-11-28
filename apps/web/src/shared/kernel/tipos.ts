@@ -52,8 +52,12 @@ export interface ConfigAvatar {
   colorShorts?: number
 }
 
+/** Tema elegido en Ajustes: claro, oscuro o el del sistema operativo. */
+export type ModoTema = 'claro' | 'oscuro' | 'sistema'
+
 export interface Ajustes {
-  modoOscuro: boolean
+  /** Tema de la app; se guarda en local y, con sesion, en user_settings.prefs. */
+  tema: ModoTema
   unidadesMetricas: boolean
   visibilidad: Visibilidad
   ubicacionPrecisa: boolean
@@ -106,7 +110,7 @@ export interface ContactoEmergencia {
 }
 
 export const AJUSTES_POR_DEFECTO: Ajustes = {
-  modoOscuro: true,
+  tema: 'oscuro',
   unidadesMetricas: true,
   visibilidad: 'seguidores',
   ubicacionPrecisa: true,

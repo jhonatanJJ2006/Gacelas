@@ -29,7 +29,7 @@ export function ContactosEmergencia() {
   const quitar = (tel: string) =>
     void actualizar({ contactosEmergencia: contactos.filter((x) => x.telefono !== tel) })
   const campo =
-    'w-full h-11 px-3 bg-c2-s2 border border-c2-linea text-white placeholder:text-c2-muted focus:border-c2-violeta outline-none'
+    'w-full h-11 px-3 bg-c2-s2 border border-c2-linea text-text-primary placeholder:text-c2-muted focus:border-c2-violeta outline-none'
   return (
     <div id="contactos">
       <GrupoC2 titulo="Contactos de emergencia (SOS)">
@@ -39,7 +39,7 @@ export function ContactosEmergencia() {
             WhatsApp un enlace con tu ubicación en vivo. Máximo {MAX_CONTACTOS}.
           </p>
           {contactos.length === 0 && (
-            <p className="text-[14px] text-white">Aún no tienes contactos de emergencia.</p>
+            <p className="text-[14px] text-text-primary">Aún no tienes contactos de emergencia.</p>
           )}
           {contactos.map((c) => (
             <div
@@ -48,7 +48,7 @@ export function ContactosEmergencia() {
             >
               <span className="material-symbols-outlined text-c2-violeta">contact_emergency</span>
               <span className="flex-1 min-w-0">
-                <span className="block font-bold text-white truncate">{c.nombre}</span>
+                <span className="block font-bold text-text-primary truncate">{c.nombre}</span>
                 <span className="block text-[13px] text-c2-muted">{c.telefono}</span>
               </span>
               <button
@@ -88,7 +88,7 @@ export function ContactosEmergencia() {
               {error && <p className="text-c2-peligro text-[13px]">{error}</p>}
               <button
                 type="submit"
-                className="h-11 -skew-x-12 font-black italic uppercase text-[14px] text-white bg-gradient-to-r from-[#7B1FA2] to-c2-morado"
+                className="h-11 -skew-x-12 font-black italic uppercase text-[14px] text-on-primary bg-gradient-to-r from-[#7B1FA2] to-c2-morado"
               >
                 Agregar contacto
               </button>

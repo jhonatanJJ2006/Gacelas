@@ -35,7 +35,7 @@ export function LogoGacelas({
         </span>
         {subtitulo && (
           <span
-            className={`font-semibold text-[#C084FC] tracking-widest ${grande ? 'text-xs' : 'text-[10px] mt-0.5'}`}
+            className={`font-semibold text-c2-violeta tracking-widest ${grande ? 'text-xs' : 'text-[10px] mt-0.5'}`}
           >
             {subtitulo}
           </span>

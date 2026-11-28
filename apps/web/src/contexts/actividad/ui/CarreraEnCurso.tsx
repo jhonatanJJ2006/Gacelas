@@ -229,7 +229,7 @@ export function CarreraEnCurso() {
           onClick={() => navigate('/correr/cronometro')}
           aria-label="Abrir cronómetro"
           title="Abrir cronómetro"
-          className="h-10 px-3 rounded-full bg-c2-card/95 border border-c2-linea backdrop-blur-md flex items-center gap-1 text-white text-[12px] font-bold uppercase shadow-lg"
+          className="h-10 px-3 rounded-full bg-c2-card/95 border border-c2-linea backdrop-blur-md flex items-center gap-1 text-text-primary text-[12px] font-bold uppercase shadow-lg"
         >
           <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
             timer
@@ -240,7 +240,7 @@ export function CarreraEnCurso() {
           onClick={() => setDescartar(true)}
           aria-label="Salir de la carrera"
           title="Salir y descartar la carrera"
-          className="h-10 px-3 rounded-full bg-c2-card/95 border border-c2-linea backdrop-blur-md flex items-center gap-1 text-white text-[12px] font-bold uppercase shadow-lg"
+          className="h-10 px-3 rounded-full bg-c2-card/95 border border-c2-linea backdrop-blur-md flex items-center gap-1 text-text-primary text-[12px] font-bold uppercase shadow-lg"
         >
           <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
             close
@@ -285,7 +285,7 @@ export function CarreraEnCurso() {
     const maxSeg = Math.max(1, ...ultimos.map((x) => x.segundos))
     const minSeg = Math.min(...ultimos.map((x) => x.segundos), maxSeg)
     const chip =
-      'h-8 px-4 flex items-center gap-2 bg-c2-card/95 border border-c2-linea text-white text-[12px] font-black italic uppercase tracking-wide backdrop-blur-md [clip-path:polygon(8px_0,100%_0,calc(100%-8px)_100%,0_100%)]'
+      'h-8 px-4 flex items-center gap-2 bg-c2-card/95 border border-c2-linea text-text-primary text-[12px] font-black italic uppercase tracking-wide backdrop-blur-md [clip-path:polygon(8px_0,100%_0,calc(100%-8px)_100%,0_100%)]'
     return (
       <div className="fixed inset-0 bg-c2-bg z-40 overflow-hidden" data-testid="carrera-mapa">
         <MapaGoogle
@@ -316,7 +316,7 @@ export function CarreraEnCurso() {
             onClick={() => setDescartar(true)}
             aria-label="Salir de la carrera"
             title="Salir y descartar la carrera"
-            className="ml-auto h-[42px] px-3 flex items-center gap-1 rounded-[6px] bg-c2-card/95 border border-c2-linea text-white text-[12px] font-bold uppercase shadow-lg backdrop-blur-md"
+            className="ml-auto h-[42px] px-3 flex items-center gap-1 rounded-[6px] bg-c2-card/95 border border-c2-linea text-text-primary text-[12px] font-bold uppercase shadow-lg backdrop-blur-md"
           >
             <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
               close
@@ -362,10 +362,10 @@ export function CarreraEnCurso() {
           data-testid="tarjeta-metricas"
           className="absolute inset-x-3 bottom-[max(env(safe-area-inset-bottom),12px)] z-20 rounded-[14px] bg-c2-card/95 backdrop-blur-xl border border-c2-linea shadow-[0_-12px_40px_rgba(0,0,0,0.5)] px-4 pt-2 pb-3 lg:left-1/2 lg:-translate-x-1/2 lg:w-[420px]"
         >
-          <div className="mx-auto mb-2 h-1 w-9 rounded-full bg-white/20" />
+          <div className="mx-auto mb-2 h-1 w-9 rounded-full bg-text-primary/20" />
           <div className="flex items-end gap-4">
             <div className="shrink-0">
-              <div className="rotulo-c2 !text-white/80">Distancia</div>
+              <div className="rotulo-c2 !text-text-primary/80">Distancia</div>
               <div className="flex items-baseline gap-1">
                 <span
                   className="font-display italic font-black text-[40px] leading-none text-c2-violeta tabular-nums"
@@ -378,16 +378,16 @@ export function CarreraEnCurso() {
             </div>
             <div className="flex-1 grid grid-cols-3 gap-2 pb-1">
               <div>
-                <div className="text-[10px] font-bold uppercase text-white/80">Tiempo</div>
+                <div className="text-[10px] font-bold uppercase text-text-primary/80">Tiempo</div>
                 <div
-                  className="text-[18px] font-black italic text-white tabular-nums leading-tight"
+                  className="text-[18px] font-black italic text-text-primary tabular-nums leading-tight"
                   data-testid="tiempo"
                 >
                   {e.segundos < 3600 ? formatearHms(e.segundos).slice(3) : formatearHms(e.segundos)}
                 </div>
               </div>
               <div>
-                <div className="text-[10px] font-bold uppercase text-white/80">Ritmo</div>
+                <div className="text-[10px] font-bold uppercase text-text-primary/80">Ritmo</div>
                 <div
                   className="text-[18px] font-black italic text-c2-menta tabular-nums leading-tight"
                   data-testid="ritmo"
@@ -396,8 +396,8 @@ export function CarreraEnCurso() {
                 </div>
               </div>
               <div>
-                <div className="text-[10px] font-bold uppercase text-white/80">Desnivel</div>
-                <div className="text-[18px] font-black italic text-sky-300 tabular-nums leading-tight">
+                <div className="text-[10px] font-bold uppercase text-text-primary/80">Desnivel</div>
+                <div className="text-[18px] font-black italic text-c2-cielo tabular-nums leading-tight">
                   +{Math.round(e.desnivelM)}
                 </div>
               </div>
@@ -415,7 +415,7 @@ export function CarreraEnCurso() {
               return (
                 <span
                   key={i}
-                  className={`flex-1 ${actual ? 'bg-c2-menta' : p ? 'bg-gradient-to-b from-c2-violeta to-c2-morado' : 'bg-white/10'} [clip-path:polygon(4px_0,100%_0,calc(100%-4px)_100%,0_100%)]`}
+                  className={`flex-1 ${actual ? 'bg-c2-menta' : p ? 'bg-gradient-to-b from-c2-violeta to-c2-morado' : 'bg-text-primary/10'} [clip-path:polygon(4px_0,100%_0,calc(100%-4px)_100%,0_100%)]`}
                   style={{ height: `${Math.min(100, alto)}%` }}
                 />
               )
@@ -423,7 +423,7 @@ export function CarreraEnCurso() {
           </div>
           <div className="mt-1 flex justify-between text-[10px] font-bold uppercase text-c2-muted">
             <span>Parciales</span>
-            <span className="text-white/90 normal-case">
+            <span className="text-text-primary/90 normal-case">
               {ultimo
                 ? `KM ${ultimo.numero} ${formatearRitmo(ultimo.segundos)} · MEJOR KM ${mejor?.numero} ${formatearRitmo(mejor?.segundos ?? null)}`
                 : 'Sin parciales aún'}
@@ -434,7 +434,7 @@ export function CarreraEnCurso() {
               onClick={() => setBloqueo(true)}
               aria-label="Bloquear pantalla"
               data-testid="boton-bloqueo"
-              className="w-[52px] h-[52px] shrink-0 rounded-[10px] bg-c2-s2 border border-c2-linea text-white flex items-center justify-center"
+              className="w-[52px] h-[52px] shrink-0 rounded-[10px] bg-c2-s2 border border-c2-linea text-text-primary flex items-center justify-center"
             >
               <span className="material-symbols-outlined">lock</span>
             </button>
@@ -454,7 +454,7 @@ export function CarreraEnCurso() {
               onClick={() => setModalFin(true)}
               aria-label="Terminar carrera"
               data-testid="boton-stop"
-              className="w-[52px] h-[52px] shrink-0 rounded-[10px] bg-c2-s2 border border-c2-linea text-white flex items-center justify-center"
+              className="w-[52px] h-[52px] shrink-0 rounded-[10px] bg-c2-s2 border border-c2-linea text-text-primary flex items-center justify-center"
             >
               <span className="material-symbols-outlined">flag</span>
             </button>
@@ -467,7 +467,7 @@ export function CarreraEnCurso() {
           >
             <button
               onClick={() => setBloqueo(false)}
-              className="h-12 px-6 rounded-full bg-c2-card text-white flex items-center gap-2"
+              className="h-12 px-6 rounded-full bg-c2-card text-text-primary flex items-center gap-2"
             >
               <span className="material-symbols-outlined">lock_open</span>Desbloquear
             </button>

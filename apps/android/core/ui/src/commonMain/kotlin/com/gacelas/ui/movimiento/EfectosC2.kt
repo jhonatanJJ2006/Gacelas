@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.draw.clip
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.interaction.InteractionSource
@@ -98,11 +99,136 @@ fun CifraAnimada(objetivo: Double, formato: (Double) -> String, estilo: TextStyl
     Text(texto, style = estilo, color = color, modifier = modifier)
 }
 
+
+/**
+ * Entrada escalonada para listas perezosas: solo los primeros elementos animan (un elemento que
+ * vuelve a entrar en pantalla al hacer scroll no debe reaparecer con fundido). El resto se muestra
+ * directamente.
+ */
+fun Modifier.entradaLista(indice: Int): Modifier =
+    if (indice in 0..MovimientoC2.ESCALONES_MAX + 1) entradaEscalonada(indice) else this
+
+/**
+ * Rebote del icono de la pestana activa: al pasar [activo] a true se encoge a 0,8 y rebota a 1,18
+ * antes de asentarse en 1. Con animaciones quitadas no se mueve.
+ */
+fun Modifier.reboteActivo(activo: Boolean): Modifier = composed {
+    val escala = Mov.escala
+    val factor = remember { Animatable(1f) }
+    LaunchedEffect(activo) {
+        if (!activo || escala <= 0f) {
+            factor.snapTo(1f)
+            return@LaunchedEffect
+        }
+        factor.snapTo(0.8f)
+        factor.animateTo(1.18f, MovimientoC2.spec(MovimientoC2.CORTO, escala, MovimientoC2.Entrar))
+        factor.animateTo(1f, MovimientoC2.spec(MovimientoC2.CORTO, escala, MovimientoC2.Estandar))
+    }
+    graphicsLayer { scaleX = factor.value; scaleY = factor.value }
+}
+
+/**
+ * Llama de racha: parpadeo suave y continuo (escala y giro leves, 1,6 s). Solo graphicsLayer, sin
+ * relayout. Con animaciones quitadas la llama queda quieta.
+ */
+fun Modifier.llamaC2(activo: Boolean = true): Modifier = composed {
+    if (!activo || Mov.escala <= 0f) return@composed this
+    val transicion = androidx.compose.animation.core.rememberInfiniteTransition(label = "llama")
+    val t by transicion.animateFloat(
+        0f, 1f,
+        androidx.compose.animation.core.infiniteRepeatable(
+            androidx.compose.animation.core.tween((1600 * Mov.escala.coerceAtMost(10f)).toInt().coerceAtLeast(1), easing = LinearEasing),
+        ),
+        label = "llama-t",
+    )
+    graphicsLayer {
+        val onda = sin(t * 2f * PI.toFloat())
+        scaleX = 1f + 0.04f * onda
+        scaleY = 1f + 0.10f * onda
+        rotationZ = 3f * sin(t * 4f * PI.toFloat())
+        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 0.9f)
+    }
+}
+
+/**
+ * Halo que late detras de un punto de aviso (notificaciones sin leer): un circulo del [color] que
+ * crece y se desvanece cada 1,8 s. Va dentro de un Box del tamano del punto.
+ */
+@Composable
+fun HaloLatido(color: Color, modifier: Modifier = Modifier, activo: Boolean = true) {
+    if (!activo || Mov.escala <= 0f) return
+    val transicion = androidx.compose.animation.core.rememberInfiniteTransition(label = "halo")
+    val t by transicion.animateFloat(
+        0f, 1f,
+        androidx.compose.animation.core.infiniteRepeatable(
+            androidx.compose.animation.core.tween((1800 * Mov.escala.coerceAtMost(10f)).toInt().coerceAtLeast(1), easing = LinearEasing),
+        ),
+        label = "halo-t",
+    )
+    Canvas(modifier.testTag("halo-latido")) {
+        val r = size.minDimension / 2f
+        drawCircle(color.copy(alpha = 0.55f * (1f - t)), radius = r * (1f + 1.6f * t))
+    }
+}
+
+/** Numero partido de un texto ya formateado ("12,4 km"): prefijo, valor, decimales, separador y sufijo. */
+internal data class CifraPartida(val prefijo: String, val valor: Double, val decimales: Int, val separador: Char?, val sufijo: String)
+
+private val NUMERO_EN_TEXTO = Regex("-?\\d+(?:[.,]\\d+)?")
+private val MILLAR = Regex("^\\d{1,3}[.,]\\d{3}$")
+
+/** Parte el primer numero de [texto]; null si no hay o si parece un millar ("1.234"), que no se anima. */
+internal fun partirCifra(texto: String): CifraPartida? {
+    // Tiempos y ritmos ("5:30") no son una cantidad que cuente: se muestran enteros.
+    if (':' in texto) return null
+    val m = NUMERO_EN_TEXTO.find(texto) ?: return null
+    val crudo = m.value
+    if (MILLAR.matches(crudo)) return null
+    val sep = crudo.firstOrNull { it == '.' || it == ',' }
+    val decimales = if (sep == null) 0 else crudo.length - crudo.indexOf(sep) - 1
+    val valor = crudo.replace(',', '.').toDoubleOrNull() ?: return null
+    return CifraPartida(texto.substring(0, m.range.first), valor, decimales, sep, texto.substring(m.range.last + 1))
+}
+
+/** Escribe [v] con los mismos decimales y separador que [c], sin depender de String.format (multiplataforma). */
+internal fun escribirCifra(c: CifraPartida, v: Double): String {
+    var factor = 1L
+    repeat(c.decimales) { factor *= 10 }
+    val negativo = v < 0
+    val total = kotlin.math.round(kotlin.math.abs(v) * factor).toLong()
+    val enteros = total / factor
+    val cuerpo = if (c.decimales == 0) "$enteros" else "$enteros${c.separador ?: '.'}${(total % factor).toString().padStart(c.decimales, '0')}"
+    return c.prefijo + (if (negativo) "-" else "") + cuerpo + c.sufijo
+}
+
+/**
+ * Texto con un numero que cuenta hacia arriba hasta su valor al aparecer y anima los cambios. Conserva
+ * el formato ya calculado por la pantalla (unidades, decimales, coma o punto). Si el texto no trae un
+ * numero animable, o las animaciones estan quitadas, devuelve [texto] tal cual.
+ */
+@Composable
+fun textoContado(texto: String): String {
+    val partes = remember(texto) { partirCifra(texto) } ?: return texto
+    val escala = Mov.escala
+    val valor = remember { Animatable(if (escala <= 0f) partes.valor.toFloat() else 0f) }
+    LaunchedEffect(partes.valor) {
+        valor.animateTo(partes.valor.toFloat(), MovimientoC2.spec(MovimientoC2.CONTEO, escala, MovimientoC2.Entrar))
+    }
+    // Al terminar se muestra el texto original (sin perdida de precision del Float).
+    return if (valor.isRunning || valor.value != partes.valor.toFloat()) escribirCifra(partes, valor.value.toDouble()) else texto
+}
+
+/** [Text] cuyo numero cuenta hacia arriba; ver [textoContado]. */
+@Composable
+fun CifraTextoAnimada(texto: String, estilo: TextStyle, color: Color, modifier: Modifier = Modifier, maxLines: Int = Int.MAX_VALUE) {
+    Text(textoContado(texto), style = estilo, color = color, modifier = modifier, maxLines = maxLines)
+}
+
 /** Particulas del destello: posicion angular y color fijos, calculados una vez. */
 internal data class ParticulaC2(val angulo: Float, val alcance: Float, val color: Color, val giro: Float)
 
 internal fun particulasC2(n: Int = 28): List<ParticulaC2> {
-    val colores = listOf(GColors.C2Violeta, GColors.C2Morado, GColors.C2Menta, Color.White)
+    val colores = listOf(GColors.C2Violeta, GColors.C2Morado, GColors.C2Menta, GColors.OnPrimary)
     return List(n) { i ->
         val a = (i.toFloat() / n) * 2f * PI.toFloat() + (i % 3) * 0.13f
         ParticulaC2(a, 0.55f + (i * 37 % 45) / 100f, colores[i % colores.size], (i * 53 % 360).toFloat())

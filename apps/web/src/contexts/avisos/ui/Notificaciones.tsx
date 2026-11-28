@@ -1,3 +1,4 @@
+import { estiloEscalon } from '../../../shared/lib/movimiento'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Notificacion } from '../../../mocks/data'
@@ -114,14 +115,15 @@ export function Notificaciones() {
           {notificaciones.length === 0 && (
             <p className="px-margin py-8 text-center text-text-secondary">No hay notificaciones.</p>
           )}
-          {notificaciones.map((notif) => {
+          {notificaciones.map((notif, indice) => {
             const { icon, color } = getIcono(notif.tipo)
             return (
               <button
                 key={notif.id}
+                style={estiloEscalon(indice)}
                 onClick={() => abrir(notif)}
                 data-testid="notificacion"
-                className="w-full px-margin py-4 border-b border-border-subtle flex items-start gap-3 hover:bg-surface-container-high transition-colors text-left bg-bg-secondary"
+                className="mov-escalon w-full px-margin py-4 border-b border-border-subtle flex items-start gap-3 hover:bg-surface-container-high transition-colors text-left bg-bg-secondary"
               >
                 <div
                   className={`w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0 ${color}`}

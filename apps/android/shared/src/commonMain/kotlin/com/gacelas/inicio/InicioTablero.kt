@@ -1,5 +1,6 @@
 package com.gacelas.inicio
 
+import com.gacelas.ui.movimiento.pulsacionC2
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -162,11 +163,11 @@ fun InicioTablero(
                 Modifier.align(Alignment.TopStart).statusBarsPadding().padding(start = 16.dp, top = 128.dp).width(150.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                if (nombre != null) Text("Hola, $nombre", style = GType.headlineSm, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.testTag("inicio-saludo"))
+                if (nombre != null) Text("Hola, $nombre", style = GType.headlineSm, color = GColors.TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.testTag("inicio-saludo"))
                 Text(
                     if (semana.carreras == 0) "Hoy es un buen día para empezar la semana."
                     else "${semana.carreras} ${if (semana.carreras == 1) "carrera" else "carreras"} esta semana",
-                    style = GType.bodySm, color = Color.White.copy(alpha = 0.72f),
+                    style = GType.bodySm, color = GColors.TextPrimary.copy(alpha = 0.72f),
                 )
             }
             Column(
@@ -184,7 +185,7 @@ fun InicioTablero(
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         Icon(Icons.Filled.Search, null, tint = GColors.C2Violeta, modifier = Modifier.size(20.dp))
-                        com.gacelas.ui.components.TextoAjustableC2("¿Por dónde corres hoy?", GType.bodyMd, Color.White.copy(alpha = 0.72f), minimo = 0.6f)
+                        com.gacelas.ui.components.TextoAjustableC2("¿Por dónde corres hoy?", GType.bodyMd, GColors.TextPrimary.copy(alpha = 0.72f), minimo = 0.6f)
                     }
                     if (clima != null) Row(
                         Modifier.height(48.dp).vidrioC2(RoundedCornerShape(16.dp))
@@ -193,7 +194,7 @@ fun InicioTablero(
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
                         Icon(iconoClima(clima.horas.firstOrNull()?.codigoWmo ?: codigoDe(clima.descripcion)), null, tint = GColors.C2Cielo, modifier = Modifier.size(20.dp))
-                        Text("${clima.temperatura}°", style = GType.labelLg.copy(fontWeight = FontWeight.Bold), color = Color.White, maxLines = 1)
+                        Text("${clima.temperatura}°", style = GType.labelLg.copy(fontWeight = FontWeight.Bold), color = GColors.TextPrimary, maxLines = 1)
                     }
                     BotonVidrio(Icons.Filled.Notifications, "Notificaciones", onNotificaciones, tag = "inicio-notificaciones", punto = sinLeer > 0)
                 }
@@ -224,7 +225,7 @@ fun InicioTablero(
                             racha.diaria == 0 -> "Corre hoy para empezar una racha"
                             hoy in semana.diasCorridos -> "Hoy ya sumaste. Mejor: ${racha.mejorDiaria}"
                             else -> "Corre hoy para llegar a ${racha.diaria + 1}"
-                        }, style = GType.bodySm.copy(fontSize = 11.5.sp), color = Color.White.copy(alpha = 0.7f),
+                        }, style = GType.bodySm.copy(fontSize = 11.5.sp), color = GColors.TextPrimary.copy(alpha = 0.7f),
                     )
                 }
                 val horas = clima?.horas.orEmpty()
@@ -249,7 +250,7 @@ fun InicioTablero(
                     accion = "Buscar clubes", onAccion = onClubes, iconoAccion = Icons.Filled.Search, tag = "inicio-sin-club",
                 )
             } else if (evento == null) WidgetC2("Comunidad", Modifier.fillMaxWidth(), onClick = onComunidad, tag = "widget-comunidad", descripcion = "Abrir comunidad") {
-                Text("Aún no hay salidas próximas. Mira lo que publica tu club.", style = GType.bodySm, color = Color.White.copy(alpha = 0.75f))
+                Text("Aún no hay salidas próximas. Mira lo que publica tu club.", style = GType.bodySm, color = GColors.TextPrimary.copy(alpha = 0.75f))
             }
         }
     }
@@ -259,15 +260,16 @@ fun InicioTablero(
 /** Acceso flotante del hero (racha, km de la semana): icono, cifra y unidad sobre vidrio. */
 @Composable
 private fun ChipFlotante(icono: ImageVector, color: Color, valor: String, unidad: String, descripcion: String, onClick: () -> Unit, tag: String) {
+    val interaccion = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Row(
-        Modifier.vidrioC2(RoundedCornerShape(18.dp)).clickable(role = Role.Button, onClickLabel = descripcion, onClick = onClick).testTag(tag)
+        Modifier.pulsacionC2(interaccion).vidrioC2(RoundedCornerShape(18.dp)).clickable(interaccion, androidx.compose.foundation.LocalIndication.current, role = Role.Button, onClickLabel = descripcion, onClick = onClick).testTag(tag)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Icon(icono, null, tint = color, modifier = Modifier.size(22.dp))
         Column {
-            Text(valor, style = GType.titleMd.copy(fontWeight = FontWeight.Bold), color = Color.White, maxLines = 1)
-            Text(unidad, style = GType.labelMd.copy(fontSize = 10.sp), color = Color.White.copy(alpha = 0.65f), maxLines = 1)
+            Text(com.gacelas.ui.movimiento.textoContado(valor), style = GType.titleMd.copy(fontWeight = FontWeight.Bold), color = GColors.TextPrimary, maxLines = 1)
+            Text(unidad, style = GType.labelMd.copy(fontSize = 10.sp), color = GColors.TextPrimary.copy(alpha = 0.65f), maxLines = 1)
         }
     }
 }
@@ -291,28 +293,28 @@ internal fun iconoClima(codigo: Int): ImageVector = when (ReglasClima.tipo(codig
 private fun TarjetaRutaDelDia(ruta: Ruta?, nota: String?, seguridad: String?, m: Boolean, onRuta: (String) -> Unit, onRutas: () -> Unit, modifier: Modifier) {
     val forma = RoundedCornerShape(20.dp)
     Row(
-        modifier.fillMaxWidth().clip(forma).background(Color(0xD11A0B2E)).border(1.dp, Color(0x4DC084FC), forma)
+        modifier.fillMaxWidth().clip(forma).background(GColors.Velo).border(1.dp, Color(0x4DC084FC), forma)
             .clickable(role = Role.Button, onClickLabel = if (ruta != null) "Abrir ruta del día" else "Ver rutas") { if (ruta != null) onRuta(ruta.id) else onRutas() }
             .testTag("inicio-ruta-dia").padding(12.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Box(Modifier.size(52.dp).clip(RoundedCornerShape(16.dp)).background(GradienteC2), contentAlignment = Alignment.Center) {
-            Icon(Icons.Filled.Map, null, tint = Color.White, modifier = Modifier.size(24.dp))
+            Icon(Icons.Filled.Map, null, tint = GColors.OnPrimary, modifier = Modifier.size(24.dp))
         }
         Column(Modifier.weight(1f)) {
             RotuloWidget("Ruta segura del día", color = GColors.C2Violeta)
             if (ruta != null) {
-                TextoAjustableC2(ruta.nombre, GType.headlineSm.copy(fontSize = 21.sp, lineHeight = 24.sp), Color.White, minimo = 0.7f)
+                TextoAjustableC2(ruta.nombre, GType.headlineSm.copy(fontSize = 21.sp, lineHeight = 24.sp), GColors.TextPrimary, minimo = 0.7f)
                 val partes = listOfNotNull(
                     "${dec1(Unidades.distancia(ruta.distanciaKm, m))} ${Unidades.etiquetaDistancia(m)}",
                     if (ruta.elevacionM > 0) "+${ruta.elevacionM} m" else null,
                     seguridad,
                 )
-                Text(partes.joinToString(" · "), style = GType.bodySm.copy(fontSize = 11.5.sp), color = Color.White.copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            } else Text(nota ?: "Buscando una ruta segura para hoy...", style = GType.bodySm, color = Color.White.copy(alpha = 0.75f), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(partes.joinToString(" · "), style = GType.bodySm.copy(fontSize = 11.5.sp), color = GColors.TextPrimary.copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            } else Text(nota ?: "Buscando una ruta segura para hoy...", style = GType.bodySm, color = GColors.TextPrimary.copy(alpha = 0.75f), maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         Row(
-            Modifier.heightIn(min = 44.dp).clip(RoundedCornerShape(14.dp)).background(Color.White)
+            Modifier.heightIn(min = 44.dp).clip(RoundedCornerShape(14.dp)).background(GColors.TextPrimary)
                 .clickable(role = Role.Button) { if (ruta != null) onRuta(ruta.id) else onRutas() }.testTag("inicio-ruta-ir").padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -332,8 +334,8 @@ private fun WidgetSemana(semana: ResumenSemana, hoy: Int, m: Boolean, metaKm: In
                 val p = (semana.km / metaKm).toFloat().coerceIn(0f, 1f)
                 AnilloC2(p, tamano = 96.dp, grosor = 11.dp) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("${(p * 100).toInt()}%", style = androidx.compose.ui.text.TextStyle(fontFamily = SpaceGrotesk, fontSize = 22.sp), color = Color.White)
-                        Text("de $metaKm ${Unidades.etiquetaDistancia(m)}", style = GType.bodySm.copy(fontSize = 9.5.sp), color = Color.White.copy(alpha = 0.6f), maxLines = 1)
+                        Text(com.gacelas.ui.movimiento.textoContado("${(p * 100).toInt()}%"), style = androidx.compose.ui.text.TextStyle(fontFamily = SpaceGrotesk, fontSize = 22.sp), color = GColors.TextPrimary)
+                        Text("de $metaKm ${Unidades.etiquetaDistancia(m)}", style = GType.bodySm.copy(fontSize = 9.5.sp), color = GColors.TextPrimary.copy(alpha = 0.6f), maxLines = 1)
                     }
                 }
             }
@@ -345,9 +347,9 @@ private fun WidgetSemana(semana: ResumenSemana, hoy: Int, m: Boolean, metaKm: In
                         when {
                             falta == null -> append("${semana.carreras} carrera${if (semana.carreras == 1) "" else "s"} esta semana")
                             falta <= 0 -> withStyle(SpanStyle(color = GColors.C2Menta, fontWeight = FontWeight.Bold)) { append("Meta semanal cumplida") }
-                            else -> { append("Te faltan "); withStyle(SpanStyle(color = Color.White, fontWeight = FontWeight.Bold)) { append("${dec1(Unidades.distancia(falta, m))} ${Unidades.etiquetaDistancia(m)}") }; append(" para tu meta.") }
+                            else -> { append("Te faltan "); withStyle(SpanStyle(color = GColors.TextPrimary, fontWeight = FontWeight.Bold)) { append("${dec1(Unidades.distancia(falta, m))} ${Unidades.etiquetaDistancia(m)}") }; append(" para tu meta.") }
                         }
-                    }, style = GType.bodySm.copy(fontSize = 11.5.sp), color = Color.White.copy(alpha = 0.7f),
+                    }, style = GType.bodySm.copy(fontSize = 11.5.sp), color = GColors.TextPrimary.copy(alpha = 0.7f),
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     listOf("L", "M", "X", "J", "V", "S", "D").forEachIndexed { i, d ->
@@ -356,11 +358,11 @@ private fun WidgetSemana(semana: ResumenSemana, hoy: Int, m: Boolean, metaKm: In
                             val forma = RoundedCornerShape(6.dp)
                             Box(
                                 Modifier.fillMaxWidth().aspectRatio(1.15f).clip(forma)
-                                    .background(if (corrido) GradienteC2 else Brush.linearGradient(listOf(Color.White.copy(alpha = 0.08f), Color.White.copy(alpha = 0.08f))))
+                                    .background(if (corrido) GradienteC2 else Brush.linearGradient(listOf(GColors.TextPrimary.copy(alpha = 0.08f), GColors.TextPrimary.copy(alpha = 0.08f))))
                                     .then(if (i == hoy && !corrido) Modifier.border(1.5.dp, GColors.C2Violeta, forma) else Modifier)
                                     .semantics { contentDescription = "$d ${if (corrido) "corrido" else "sin carrera"}" },
                             )
-                            Text(d, style = GType.labelMd.copy(fontSize = 9.sp), color = Color.White.copy(alpha = 0.55f))
+                            Text(d, style = GType.labelMd.copy(fontSize = 9.sp), color = GColors.TextPrimary.copy(alpha = 0.55f))
                         }
                     }
                 }
@@ -376,14 +378,14 @@ private fun WidgetClima(horas: List<HoraClima>, onCorrer: () -> Unit, modifier: 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             horas.take(5).forEach { h ->
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("${h.hora}h", style = GType.labelMd.copy(fontSize = spAcotado(10f)), color = Color.White.copy(alpha = 0.6f), maxLines = 1)
-                    Icon(iconoClima(h.codigoWmo), null, tint = if (h == mejor) Color(0xFFFBBF24) else GColors.C2Cielo, modifier = Modifier.size(16.dp))
-                    Text("${h.temperatura}°", style = GType.labelMd.copy(fontSize = spAcotado(11f), fontWeight = FontWeight.Bold), color = if (h == mejor) Color(0xFFFBBF24) else Color.White, maxLines = 1)
+                    Text("${h.hora}h", style = GType.labelMd.copy(fontSize = spAcotado(10f)), color = GColors.TextPrimary.copy(alpha = 0.6f), maxLines = 1)
+                    Icon(iconoClima(h.codigoWmo), null, tint = if (h == mejor) GColors.Alerta else GColors.C2Cielo, modifier = Modifier.size(16.dp))
+                    Text("${h.temperatura}°", style = GType.labelMd.copy(fontSize = spAcotado(11f), fontWeight = FontWeight.Bold), color = if (h == mejor) GColors.Alerta else GColors.TextPrimary, maxLines = 1)
                 }
             }
         }
         if (mejor != null) Text("Mejor hora: ${mejor.hora} a ${(mejor.hora + 1) % 24} h", style = GType.labelMd.copy(fontSize = spAcotado(11f), fontWeight = FontWeight.Bold), color = GColors.C2Menta, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        else Text("Lluvia en las próximas horas", style = GType.labelMd.copy(fontSize = spAcotado(11f)), color = Color.White.copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        else Text("Lluvia en las próximas horas", style = GType.labelMd.copy(fontSize = spAcotado(11f)), color = GColors.TextPrimary.copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -409,13 +411,13 @@ private fun WidgetRitmo(ritmos: List<Int?>, m: Boolean, onProgreso: () -> Unit, 
 @Composable
 private fun WidgetEvento(evento: Evento, inscrito: Boolean, onEvento: (String) -> Unit, modifier: Modifier) {
     WidgetC2("Club · ${evento.fecha.substringBefore(' ').lowercase()} ${evento.hora}".trim(), modifier, onClick = { onEvento(evento.id) }, tag = "widget-evento", descripcion = "Abrir evento") {
-        Text(evento.titulo, style = GType.titleMd.copy(fontSize = 17.sp), color = Color.White, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Text(evento.titulo, style = GType.titleMd.copy(fontSize = 17.sp), color = GColors.TextPrimary, maxLines = 2, overflow = TextOverflow.Ellipsis)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             val n = evento.participantes.coerceAtLeast(0)
             (0 until minOf(3, n)).forEach { i ->
                 Box(Modifier.offset(x = (-8 * i).dp).size(26.dp).clip(CircleShape).background(listOf(GColors.C2Morado, Color(0xFF2563EB), Color(0xFF0D9488))[i]).border(2.dp, Tablero.Noche, CircleShape))
             }
-            Text(if (n == 0) "Sé el primero" else "$n van", style = GType.bodySm.copy(fontSize = 11.5.sp), color = Color.White.copy(alpha = 0.7f), maxLines = 1,
+            Text(if (n == 0) "Sé el primero" else "$n van", style = GType.bodySm.copy(fontSize = 11.5.sp), color = GColors.TextPrimary.copy(alpha = 0.7f), maxLines = 1,
                 modifier = Modifier.offset(x = (-8 * minOf(2, n)).dp))
         }
         Box(
@@ -433,7 +435,7 @@ private fun WidgetSeguridad(zona: ResumenZona, onMapaVivo: () -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 CifraTablero("${zona.reportes7d}", tamano = 36, color = if (zona.reportes7d == 0) GColors.C2Menta else Tablero.Ambar, tag = "seguridad-reportes")
-                Text("7 días", style = GType.labelMd.copy(fontSize = 9.5.sp), color = Color.White.copy(alpha = 0.55f))
+                Text("7 días", style = GType.labelMd.copy(fontSize = 9.5.sp), color = GColors.TextPrimary.copy(alpha = 0.55f))
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
@@ -441,11 +443,11 @@ private fun WidgetSeguridad(zona: ResumenZona, onMapaVivo: () -> Unit) {
                         0 -> "Sin reportes de corredores en los últimos 7 días."
                         1 -> "1 reporte de corredores en los últimos 7 días."
                         else -> "${zona.reportes7d} reportes de corredores en los últimos 7 días."
-                    }, style = GType.bodySm.copy(fontSize = 11.5.sp), color = Color.White.copy(alpha = 0.78f),
+                    }, style = GType.bodySm.copy(fontSize = 11.5.sp), color = GColors.TextPrimary.copy(alpha = 0.78f),
                 )
                 val top = zona.ecu.firstOrNull()
                 if (top != null) Text("ECU 911${zona.mesEcu?.let { " (${mesTexto(it)})" } ?: ""}: ${zona.totalEcu} incidentes, sobre todo ${top.first.lowercase()}.",
-                    style = GType.bodySm.copy(fontSize = 11.sp), color = Color.White.copy(alpha = 0.6f))
+                    style = GType.bodySm.copy(fontSize = 11.sp), color = GColors.TextPrimary.copy(alpha = 0.6f))
             }
         }
     }

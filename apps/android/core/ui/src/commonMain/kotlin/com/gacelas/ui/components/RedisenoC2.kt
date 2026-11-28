@@ -107,7 +107,7 @@ fun SelectorSegmentadoC2(opciones: List<String>, seleccion: Int, onSeleccion: (I
                     .clickable(role = Role.Tab) { onSeleccion(i) }.semantics { selected = activa }.testTag("$tag-$i"),
                 contentAlignment = Alignment.Center,
             ) {
-                TextoAjustableC2(o, GType.labelLg.copy(fontWeight = FontWeight.Bold), if (activa) Color.White else GColors.C2Muted,
+                TextoAjustableC2(o, GType.labelLg.copy(fontWeight = FontWeight.Bold), if (activa) GColors.OnPrimary else GColors.C2Muted,
                     Modifier.padding(horizontal = 6.dp, vertical = 6.dp))
             }
         }
@@ -130,13 +130,13 @@ fun TextoAjustableC2(texto: String, style: androidx.compose.ui.text.TextStyle, c
 fun OpcionTarjetaC2(titulo: String, detalle: String, elegida: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, tag: String? = null) {
     val forma = RoundedCornerShape(16.dp)
     Column(
-        modifier.clip(forma).then(if (elegida) Modifier.background(GradienteC2) else Modifier.background(Color.White.copy(alpha = 0.06f)))
-            .border(1.dp, if (elegida) Color.White.copy(alpha = 0.5f) else Color.White.copy(alpha = 0.1f), forma)
+        modifier.clip(forma).then(if (elegida) Modifier.background(GradienteC2) else Modifier.background(GColors.TextPrimary.copy(alpha = 0.06f)))
+            .border(1.dp, if (elegida) GColors.OnPrimary.copy(alpha = 0.5f) else GColors.TextPrimary.copy(alpha = 0.1f), forma)
             .clickable(role = Role.RadioButton, onClick = onClick).semantics { selected = elegida }
             .padding(horizontal = 8.dp, vertical = 8.dp).then(if (tag != null) Modifier.testTag(tag) else Modifier),
     ) {
-        TextoAjustableC2(titulo, GType.labelLg.copy(fontWeight = FontWeight.Bold), Color.White)
-        Text(detalle, style = GType.bodySm, color = if (elegida) Color.White.copy(alpha = 0.85f) else GColors.C2Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        TextoAjustableC2(titulo, GType.labelLg.copy(fontWeight = FontWeight.Bold), if (elegida) GColors.OnPrimary else GColors.TextPrimary)
+        Text(detalle, style = GType.bodySm, color = if (elegida) GColors.OnPrimary.copy(alpha = 0.85f) else GColors.C2Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -174,7 +174,7 @@ fun spAcotado(valor: Float, maximo: Float = 1.15f): androidx.compose.ui.unit.Tex
 @Composable
 fun CeldaCifraC2(d: DatoCifra, modifier: Modifier = Modifier, tamano: Int = 20) {
     val forma = RoundedCornerShape(16.dp)
-    Column(modifier.clip(forma).background(Color.White.copy(alpha = 0.06f)).border(1.dp, Color.White.copy(alpha = 0.09f), forma).padding(horizontal = 10.dp, vertical = 8.dp)
+    Column(modifier.clip(forma).background(GColors.TextPrimary.copy(alpha = 0.06f)).border(1.dp, GColors.TextPrimary.copy(alpha = 0.09f), forma).padding(horizontal = 10.dp, vertical = 8.dp)
         .semantics(mergeDescendants = true) {}) {
         TextoAjustableC2(d.etiqueta.uppercase(), GType.labelMd.copy(fontSize = spAcotado(9.5f), fontWeight = FontWeight.ExtraBold, letterSpacing = 0.02.em), GColors.C2Muted, minimo = 0.6f)
         CifraC2(d.valor, d.unidad, color = d.color, tamano = tamano)
@@ -217,11 +217,11 @@ fun BarraProgresoC2(progreso: Float, modifier: Modifier = Modifier, alto: Dp = 6
 fun HojaInferiorC2(modifier: Modifier = Modifier, borde: Color = GColors.C2Linea, tag: String = "hoja-inferior", content: @Composable ColumnScope.() -> Unit) {
     val forma = Tablero.FormaHoja
     Column(
-        modifier.fillMaxWidth().clip(forma).background(Tablero.FondoHoja).border(1.dp, if (borde == GColors.C2Linea) Color(0x40C084FC) else borde, forma)
+        modifier.fillMaxWidth().clip(forma).background(Tablero.FondoHoja).border(1.dp, if (borde == GColors.C2Linea) GColors.BordeHoja else borde, forma)
             .navigationBarsPadding().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp).testTag(tag),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Box(Modifier.align(Alignment.CenterHorizontally).width(38.dp).height(4.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.22f)))
+        Box(Modifier.align(Alignment.CenterHorizontally).width(38.dp).height(4.dp).clip(CircleShape).background(GColors.TextPrimary.copy(alpha = 0.22f)))
         content()
     }
 }
@@ -236,7 +236,7 @@ fun BotonGrandeC2(texto: String, onClick: () -> Unit, modifier: Modifier = Modif
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
     ) {
         if (icono != null) { icono(); Spacer(Modifier.width(8.dp)) }
-        TextoAjustableC2(texto.uppercase(), GType.headlineSm.copy(fontWeight = FontWeight.Black), Color.White, minimo = 0.7f)
+        TextoAjustableC2(texto.uppercase(), GType.headlineSm.copy(fontWeight = FontWeight.Black), GColors.TextPrimary, minimo = 0.7f)
     }
 }
 
@@ -257,9 +257,9 @@ fun MiniTrazoC2(puntos: List<Pair<Double, Double>>, modifier: Modifier = Modifie
     Canvas(modifier.background(Color(0xFF111827)).semantics { contentDescription = "Trazo del recorrido" }) {
         if (cuadricula) {
             val paso = 22.dp.toPx(); var x = 0f
-            while (x < size.width) { drawLine(Color.White.copy(alpha = 0.05f), Offset(x, 0f), Offset(x, size.height), 1f); x += paso }
+            while (x < size.width) { drawLine(GColors.TextPrimary.copy(alpha = 0.05f), Offset(x, 0f), Offset(x, size.height), 1f); x += paso }
             var y = 0f
-            while (y < size.height) { drawLine(Color.White.copy(alpha = 0.05f), Offset(0f, y), Offset(size.width, y), 1f); y += paso }
+            while (y < size.height) { drawLine(GColors.TextPrimary.copy(alpha = 0.05f), Offset(0f, y), Offset(size.width, y), 1f); y += paso }
         }
         val pts = trazoEnCaja(puntos, size.width, size.height, 10.dp.toPx())
         if (pts.size < 2) return@Canvas
@@ -267,7 +267,7 @@ fun MiniTrazoC2(puntos: List<Pair<Double, Double>>, modifier: Modifier = Modifie
         drawPath(path, color.copy(alpha = 0.25f), style = Stroke(grosor.toPx() * 2.6f, cap = StrokeCap.Round, join = StrokeJoin.Round))
         drawPath(path, color, style = Stroke(grosor.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
         drawCircle(GColors.C2Menta, 4.dp.toPx(), pts.first())
-        drawCircle(Color.White, 4.dp.toPx(), pts.last())
+        drawCircle(GColors.TextPrimary, 4.dp.toPx(), pts.last())
     }
 }
 
@@ -313,11 +313,17 @@ fun LineaC2(valores: List<Float>, modifier: Modifier = Modifier, color: Color = 
 /** Anillo de progreso con contenido al centro. */
 @Composable
 fun AnilloC2(progreso: Float, modifier: Modifier = Modifier, tamano: Dp = 64.dp, grosor: Dp = 7.dp, color: Color = GColors.C2Violeta, content: @Composable BoxScope.() -> Unit = {}) {
+    // El arco se dibuja desde 0 al aparecer y anima los cambios (con animaciones quitadas, directo).
+    val escala = com.gacelas.ui.movimiento.Mov.escala
+    val arco = androidx.compose.runtime.remember { androidx.compose.animation.core.Animatable(if (escala <= 0f) progreso.coerceIn(0f, 1f) else 0f) }
+    androidx.compose.runtime.LaunchedEffect(progreso) {
+        arco.animateTo(progreso.coerceIn(0f, 1f), com.gacelas.ui.movimiento.MovimientoC2.spec(com.gacelas.ui.movimiento.MovimientoC2.CONTEO, escala, com.gacelas.ui.movimiento.MovimientoC2.Estandar))
+    }
     Box(modifier.size(tamano), contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(tamano)) {
             val s = grosor.toPx(); val d = size.minDimension - s
             drawArc(GColors.C2S2, 0f, 360f, false, Offset(s / 2, s / 2), Size(d, d), style = Stroke(s))
-            drawArc(color, -90f, 360f * progreso.coerceIn(0f, 1f), false, Offset(s / 2, s / 2), Size(d, d), style = Stroke(s, cap = StrokeCap.Round))
+            drawArc(color, -90f, 360f * arco.value, false, Offset(s / 2, s / 2), Size(d, d), style = Stroke(s, cap = StrokeCap.Round))
         }
         content()
     }

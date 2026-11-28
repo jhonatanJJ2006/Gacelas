@@ -7,11 +7,11 @@ import androidx.compose.runtime.Composable
 
 private fun gacelasScheme(claro: Boolean) = (if (claro) lightColorScheme() else darkColorScheme()).copy(
     primary = GColors.Primary,
-    onPrimary = GColors.TextPrimary,
+    onPrimary = GColors.OnPrimary,
     primaryContainer = GColors.PrimaryContainer,
     onPrimaryContainer = GColors.OnPrimaryContainer,
     secondary = GColors.Secondary,
-    onSecondary = GColors.TextPrimary,
+    onSecondary = GColors.OnPrimary,
     tertiary = GColors.Tertiary,
     background = GColors.BgPrimary,
     onBackground = GColors.TextPrimary,
@@ -28,7 +28,7 @@ private fun gacelasScheme(claro: Boolean) = (if (claro) lightColorScheme() else 
     error = GColors.Danger,
 )
 
-/** Tema de Runcity: oscuro por defecto (igual que la web) y claro si se desactiva el modo oscuro. */
+/** Tema de Runcity: claro u oscuro segun [GColors.claro] (Ajustes: Claro, Oscuro o Sistema). */
 @Composable
 fun GacelasTheme(content: @Composable () -> Unit) {
     MaterialTheme(colorScheme = gacelasScheme(GColors.claro), typography = Typography, content = content)

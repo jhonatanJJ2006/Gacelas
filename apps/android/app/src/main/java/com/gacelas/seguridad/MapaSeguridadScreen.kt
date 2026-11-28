@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -69,13 +70,23 @@ fun MapaSeguridadScreen(onAtras: () -> Unit) {
     }
     // Al entrar se ubica al corredor (pide permiso o el GPS con el dialogo nativo si hace falta).
     LaunchedEffect(Unit) { centrar() }
+    // Con incidentes a menos de 3 km, la primera vista los muestra TODOS junto a ti, en la franja libre entre
+    // los botones y el resumen (vista cenital: el encuadre se calcula sin inclinacion). "Centrar" vuelve a ti.
+    val dens = androidx.compose.ui.platform.LocalDensity.current.density
+    var resumenPx by remember { mutableStateOf(0) }
+    val cercanos = remember(incidentes, yo) { yo?.let { y -> incidentes.map { LatLng(it.lat, it.lng) }.filter { com.gacelas.ui.components.MapaMat.distanciaM(y, it) <= 3000.0 } }.orEmpty() }
+    com.gacelas.ui.components.EncuadrarRutaEfecto(
+        mapa, listOfNotNull(yo) + cercanos,
+        com.gacelas.mapa.EncuadreMapa.paddingDp(dens, arriba = 110f, abajo = if (resumenPx > 0) resumenPx / dens + 16f else 260f, izquierda = 40f, derecha = 40f),
+        clave = cercanos.size, activo = yo != null && cercanos.isNotEmpty(), zoomUnPunto = 15.0,
+    )
     Box(Modifier.fillMaxSize().background(com.gacelas.ui.components.Tablero.Fondo).testTag("mapa-seguridad")) {
         if (Mapas.configurado()) MapaLibre(
             Modifier.fillMaxSize(),
             circulos = incidentes.flatMap { i ->
                 val color = colorIncidente(i)
                 listOf(CirculoMapa(LatLng(i.lat, i.lng), 22f, color.copy(alpha = 0.18f), Color.Transparent, 0f), CirculoMapa(LatLng(i.lat, i.lng), 8f, color, GColors.C2Bg, 2f, id = i.id))
-            } + yo?.let { listOf(CirculoMapa(it, 18f, GColors.Info.copy(alpha = 0.25f), Color.Transparent, 0f), CirculoMapa(it, 8f, GColors.Info, Color.White, 3f)) }.orEmpty(),
+            } + yo?.let { listOf(CirculoMapa(it, 18f, GColors.Info.copy(alpha = 0.25f), Color.Transparent, 0f), CirculoMapa(it, 8f, GColors.Info, GColors.OnPrimary, 3f)) }.orEmpty(),
             centro = yo ?: Mapas.CENTRO_LOJA, zoom = 14.5,
             alListo = { m -> mapa = m; m.animateCamera(CameraUpdateFactory.tiltTo(45.0)) },
         )
@@ -86,7 +97,7 @@ fun MapaSeguridadScreen(onAtras: () -> Unit) {
         }
         // Resumen fijo abajo, sobre el mapa.
         Column(
-            Modifier.align(Alignment.BottomCenter).fillMaxWidth().navigationBarsPadding().padding(12.dp)
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().onSizeChanged { resumenPx = it.height }.navigationBarsPadding().padding(12.dp)
                 .clip(RoundedCornerShape(24.dp)).background(GColors.C2Bg.copy(alpha = 0.94f)).padding(16.dp).testTag("seguridad-resumen"),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {

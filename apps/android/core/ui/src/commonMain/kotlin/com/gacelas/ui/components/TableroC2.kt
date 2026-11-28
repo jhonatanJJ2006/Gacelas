@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.remember
+import com.gacelas.ui.movimiento.pulsacionC2
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
@@ -77,19 +78,22 @@ import com.gacelas.ui.theme.SpaceGrotesk
 
 /** Paleta del tablero: fondo morado nocturno con degradado (nunca negro plano). */
 object Tablero {
-    val Noche = Color(0xFF1A0B2E)
-    val Noche2 = Color(0xFF140F2B)
-    val Noche3 = Color(0xFF0F1325)
-    val Hoja = Color(0xFF261042)
-    val Vidrio = Color(0xB8120E26)
-    val VidrioBorde = Color(0x38C084FC)
-    val WidgetBorde = Color(0x2EC084FC)
-    val Ambar = Color(0xFFF59E0B)
+    // Oscuro: morado nocturno. Claro: lavanda muy clara con el mismo degradado vertical.
+    val Noche: Color get() = if (GColors.claro) Color(0xFFF6F2FC) else Color(0xFF1A0B2E)
+    val Noche2: Color get() = if (GColors.claro) Color(0xFFF3F1F9) else Color(0xFF140F2B)
+    val Noche3: Color get() = if (GColors.claro) Color(0xFFF3F3F7) else Color(0xFF0F1325)
+    val Hoja: Color get() = if (GColors.claro) Color(0xFFFFFFFF) else Color(0xFF261042)
+    val Vidrio: Color get() = if (GColors.claro) Color(0xE6FFFFFF) else Color(0xB8120E26)
+    val VidrioBorde: Color get() = if (GColors.claro) Color(0x4D7A20B6) else Color(0x38C084FC)
+    val WidgetBorde: Color get() = if (GColors.claro) Color(0x337A20B6) else Color(0x2EC084FC)
+    val Ambar: Color get() = if (GColors.claro) Color(0xFF955104) else Color(0xFFF59E0B)
     val AmbarFondo = Color(0xFFB45309)
-    val Texto2 = Color.White.copy(alpha = 0.62f)
+    val Texto2: Color get() = GColors.TextPrimary.copy(alpha = if (GColors.claro) 0.72f else 0.62f)
     val Fondo: Brush get() = Brush.verticalGradient(0f to Noche, 0.45f to Noche, 0.75f to Noche2, 1f to Noche3)
-    val FondoWidget: Brush get() = Brush.linearGradient(listOf(Color(0x614C1D95), Color(0xE6191F2F)), start = Offset(0f, 0f), end = Offset(400f, 700f))
-    val FondoHoja: Brush get() = Brush.verticalGradient(listOf(Color(0xF5261042), Color(0xFC140F28)))
+    val FondoWidget: Brush get() = if (GColors.claro) Brush.linearGradient(listOf(Color(0xFFF1E8FB), Color(0xFFFFFFFF)), start = Offset(0f, 0f), end = Offset(400f, 700f))
+        else Brush.linearGradient(listOf(Color(0x614C1D95), Color(0xE6191F2F)), start = Offset(0f, 0f), end = Offset(400f, 700f))
+    val FondoHoja: Brush get() = if (GColors.claro) Brush.verticalGradient(listOf(Color(0xFAFFFFFF), Color(0xFFF6F2FC)))
+        else Brush.verticalGradient(listOf(Color(0xF5261042), Color(0xFC140F28)))
     val FormaWidget = RoundedCornerShape(20.dp)
     val FormaHoja = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
 }
@@ -100,15 +104,15 @@ fun Modifier.vidrioC2(forma: Shape = RoundedCornerShape(16.dp)): Modifier =
 
 /** Rotulo de los widgets: mayuscula inicial y 12 sp (las mayusculas espaciadas de 9,5 sp no se leian). */
 @Composable
-fun RotuloWidget(texto: String, modifier: Modifier = Modifier, color: Color = Color.White.copy(alpha = 0.6f)) {
+fun RotuloWidget(texto: String, modifier: Modifier = Modifier, color: Color = GColors.TextPrimary.copy(alpha = 0.7f)) {
     TextoAjustableC2(texto,GType.labelMd.copy(fontSize = spAcotado(12f), fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp), color, modifier, minimo = 0.75f)
 }
 
 /** Cifra del tablero en Anton (sin cursiva) con unidad pequena. */
 @Composable
-fun CifraTablero(valor: String, unidad: String = "", modifier: Modifier = Modifier, tamano: Int = 34, color: Color = Color.White, tag: String? = null) {
+fun CifraTablero(valor: String, unidad: String = "", modifier: Modifier = Modifier, tamano: Int = 34, color: Color = GColors.TextPrimary, tag: String? = null) {
     Row(modifier.then(if (tag != null) Modifier.testTag(tag) else Modifier), verticalAlignment = Alignment.Bottom) {
-        TextoAjustableC2(valor, androidx.compose.ui.text.TextStyle(fontFamily = SpaceGrotesk, fontSize = tamano.sp, lineHeight = (tamano * 1.02).sp), color, minimo = 0.7f)
+        TextoAjustableC2(com.gacelas.ui.movimiento.textoContado(valor), androidx.compose.ui.text.TextStyle(fontFamily = SpaceGrotesk, fontSize = tamano.sp, lineHeight = (tamano * 1.02).sp), color, minimo = 0.7f)
         if (unidad.isNotEmpty()) Text(" $unidad", style = GType.bodySm.copy(fontSize = 12.sp), color = Tablero.Texto2, modifier = Modifier.padding(bottom = (tamano * 0.08).dp), maxLines = 1)
     }
 }
@@ -128,8 +132,9 @@ fun WidgetC2(
     padding: Dp = 14.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    var m = modifier.clip(Tablero.FormaWidget).background(Tablero.FondoWidget).border(1.dp, Tablero.WidgetBorde, Tablero.FormaWidget)
-    if (onClick != null) m = m.clickable(onClickLabel = descripcion, role = Role.Button, onClick = onClick)
+    val interaccion = remember { MutableInteractionSource() }
+    var m = (if (onClick != null) modifier.pulsacionC2(interaccion) else modifier).clip(Tablero.FormaWidget).background(Tablero.FondoWidget).border(1.dp, Tablero.WidgetBorde, Tablero.FormaWidget)
+    if (onClick != null) m = m.clickable(interaccion, androidx.compose.foundation.LocalIndication.current, onClickLabel = descripcion, role = Role.Button, onClick = onClick)
     if (tag != null) m = m.testTag(tag)
     Column(m.padding(padding), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (titulo != null || accion != null) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -143,13 +148,17 @@ fun WidgetC2(
 /** Boton redondo de vidrio (volver, notificaciones, filtros). */
 @Composable
 fun BotonVidrio(icono: ImageVector, descripcion: String, onClick: () -> Unit, modifier: Modifier = Modifier, tag: String? = null, tamano: Dp = 48.dp, punto: Boolean = false) {
+    val interaccion = remember { MutableInteractionSource() }
     Box(
-        modifier.size(tamano).vidrioC2(RoundedCornerShape(16.dp)).clickable(onClickLabel = descripcion, role = Role.Button, onClick = onClick)
+        modifier.size(tamano).pulsacionC2(interaccion).vidrioC2(RoundedCornerShape(16.dp)).clickable(interaccion, androidx.compose.foundation.LocalIndication.current, onClickLabel = descripcion, role = Role.Button, onClick = onClick)
             .semantics { contentDescription = descripcion }.then(if (tag != null) Modifier.testTag(tag) else Modifier),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icono, null, tint = Color.White, modifier = Modifier.size(22.dp))
-        if (punto) Box(Modifier.align(Alignment.TopEnd).padding(top = 11.dp, end = 12.dp).size(8.dp).clip(CircleShape).background(GColors.C2Morado))
+        Icon(icono, null, tint = GColors.TextPrimary, modifier = Modifier.size(22.dp))
+        if (punto) Box(Modifier.align(Alignment.TopEnd).padding(top = 11.dp, end = 12.dp).size(8.dp), contentAlignment = Alignment.Center) {
+            com.gacelas.ui.movimiento.HaloLatido(GColors.C2Violeta, Modifier.matchParentSize())
+            Box(Modifier.matchParentSize().clip(CircleShape).background(GColors.C2Morado))
+        }
     }
 }
 
@@ -157,16 +166,17 @@ fun BotonVidrio(icono: ImageVector, descripcion: String, onClick: () -> Unit, mo
 @Composable
 fun ChipVidrio(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier, punto: Color? = null, icono: ImageVector? = null, activo: Boolean = false, tag: String? = null) {
     val forma = CircleShape
-    var m = modifier.clip(forma)
+    val interaccion = remember { MutableInteractionSource() }
+    var m = modifier.pulsacionC2(interaccion).clip(forma)
     m = if (activo) m.background(GradienteC2) else m.background(Tablero.Vidrio).border(1.dp, Tablero.VidrioBorde, forma)
     Row(
-        m.clickable(role = Role.Button, onClick = onClick).semantics { selected = activo }.then(if (tag != null) Modifier.testTag(tag) else Modifier)
+        m.clickable(interaccion, androidx.compose.foundation.LocalIndication.current, role = Role.Button, onClick = onClick).semantics { selected = activo }.then(if (tag != null) Modifier.testTag(tag) else Modifier)
             .heightIn(min = 32.dp).padding(horizontal = 11.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         if (punto != null) Box(Modifier.size(8.dp).clip(CircleShape).background(punto))
         if (icono != null) Icon(icono, null, tint = GColors.C2Menta, modifier = Modifier.size(14.dp))
-        Text(texto, style = GType.labelMd.copy(fontWeight = FontWeight.Bold, fontSize = 11.5.sp), color = Color.White, maxLines = 1)
+        Text(texto, style = GType.labelMd.copy(fontWeight = FontWeight.Bold, fontSize = 11.5.sp), color = if (activo) GColors.OnPrimary else GColors.TextPrimary, maxLines = 1)
     }
 }
 
@@ -181,12 +191,12 @@ fun HojaTablero(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
-        modifier.fillMaxWidth().clip(Tablero.FormaHoja).background(Tablero.FondoHoja).border(1.dp, Color(0x40C084FC), Tablero.FormaHoja)
+        modifier.fillMaxWidth().clip(Tablero.FormaHoja).background(Tablero.FondoHoja).border(1.dp, GColors.BordeHoja, Tablero.FormaHoja)
             .navigationBarsPadding().then(if (tag != null) Modifier.testTag(tag) else Modifier)
             .padding(start = 16.dp, end = 16.dp, top = if (expandida != null) 0.dp else 8.dp, bottom = 10.dp),
         verticalArrangement = Arrangement.spacedBy(espacio),
     ) {
-        if (expandida == null) Box(Modifier.align(Alignment.CenterHorizontally).width(40.dp).height(4.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.25f)))
+        if (expandida == null) Box(Modifier.align(Alignment.CenterHorizontally).width(40.dp).height(4.dp).clip(CircleShape).background(GColors.TextPrimary.copy(alpha = 0.25f)))
         else TiradorTablero(expandida, onExpandida)
         content()
     }
@@ -209,7 +219,7 @@ private fun TiradorTablero(expandida: Boolean, onExpandida: (Boolean) -> Unit) {
             .testTag("tirador-tablero"),
         contentAlignment = Alignment.Center,
     ) {
-        Box(Modifier.width(40.dp).height(4.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.25f)))
+        Box(Modifier.width(40.dp).height(4.dp).clip(CircleShape).background(GColors.TextPrimary.copy(alpha = 0.25f)))
     }
 }
 
@@ -219,12 +229,12 @@ fun BotonTablero(texto: String, onClick: () -> Unit, modifier: Modifier = Modifi
     val forma = RoundedCornerShape(18.dp)
     var m = modifier.heightIn(min = alto)
     if (!blanco && enabled) m = m.shadow(14.dp, forma, ambientColor = GColors.C2Morado, spotColor = GColors.C2Morado)
-    m = m.clip(forma).background(if (!enabled) Brush.linearGradient(listOf(GColors.C2S2, GColors.C2S2)) else if (blanco) Brush.linearGradient(listOf(Color.White, Color.White)) else GradienteC2)
+    m = m.clip(forma).background(if (!enabled) Brush.linearGradient(listOf(GColors.C2S2, GColors.C2S2)) else if (blanco) Brush.linearGradient(listOf(GColors.OnPrimary, GColors.OnPrimary)) else GradienteC2)
     Row(
         m.clickable(enabled = enabled, role = Role.Button, onClick = onClick).then(if (tag != null) Modifier.testTag(tag) else Modifier).padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
     ) {
-        val color = if (blanco) Color(0xFF3B0764) else Color.White
+        val color = if (blanco) Color(0xFF3B0764) else GColors.TextPrimary
         if (icono != null) { Icon(icono, null, tint = color, modifier = Modifier.size(24.dp)); Spacer(Modifier.width(10.dp)) }
         TextoAjustableC2(texto.uppercase(), androidx.compose.ui.text.TextStyle(fontFamily = SpaceGrotesk, fontSize = 22.sp, letterSpacing = 0.03.em), color, minimo = 0.5f)
     }
@@ -232,9 +242,9 @@ fun BotonTablero(texto: String, onClick: () -> Unit, modifier: Modifier = Modifi
 
 /** Boton cuadrado con icono y etiqueta debajo (Bloquear, Terminar, Voz). */
 @Composable
-fun BotonCuadroTablero(etiqueta: String, icono: ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier, tag: String? = null, descripcion: String = etiqueta, ancho: Dp = 72.dp, alto: Dp = 60.dp, color: Color = Color.White) {
+fun BotonCuadroTablero(etiqueta: String, icono: ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier, tag: String? = null, descripcion: String = etiqueta, ancho: Dp = 72.dp, alto: Dp = 60.dp, color: Color = GColors.TextPrimary) {
     Column(
-        modifier.width(ancho).height(alto).clip(RoundedCornerShape(18.dp)).background(Color.White.copy(alpha = 0.07f))
+        modifier.width(ancho).height(alto).clip(RoundedCornerShape(18.dp)).background(GColors.TextPrimary.copy(alpha = 0.07f))
             .clickable(onClickLabel = descripcion, role = Role.Button, onClick = onClick).then(if (tag != null) Modifier.testTag(tag) else Modifier),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
@@ -265,19 +275,19 @@ fun DockTablero(rutaActual: String, onNavegar: (String) -> Unit, modifier: Modif
     Box(modifier.fillMaxWidth().navigationBarsPadding().padding(start = 12.dp, end = 12.dp, bottom = 6.dp, top = 6.dp)) {
         Row(
             Modifier.fillMaxWidth().height(64.dp).shadow(18.dp, RoundedCornerShape(22.dp), ambientColor = Color.Black, spotColor = Color.Black)
-                .clip(RoundedCornerShape(22.dp)).background(Color(0xF2140D2A)).border(1.dp, Tablero.VidrioBorde, RoundedCornerShape(22.dp))
+                .clip(RoundedCornerShape(22.dp)).background(if (GColors.claro) Color(0xF2FFFFFF) else Color(0xF2140D2A)).border(1.dp, Tablero.VidrioBorde, RoundedCornerShape(22.dp))
                 .padding(horizontal = 7.dp).testTag("dock"),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp),
         ) {
             itemsDock.forEach { item ->
                 val activo = rutaActual == item.ruta || rutaActual in item.tambien
                 Column(
-                    Modifier.weight(1f).height(50.dp).clip(RoundedCornerShape(16.dp)).background(if (activo) Color.White.copy(alpha = 0.10f) else Color.Transparent)
+                    Modifier.weight(1f).height(50.dp).clip(RoundedCornerShape(16.dp)).background(if (activo) GColors.TextPrimary.copy(alpha = 0.10f) else Color.Transparent)
                         .clickable(role = Role.Tab, onClickLabel = item.etiqueta) { onNavegar(item.ruta) }.semantics { selected = activo }.testTag("nav-${item.ruta}"),
                     horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
                 ) {
-                    Icon(item.icono, contentDescription = item.etiqueta, tint = if (activo) Color.White else Color.White.copy(alpha = 0.55f), modifier = Modifier.size(21.dp))
-                    TextoAjustableC2(tr(LocalIdioma.current, item.etiqueta), GType.labelMd.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold), if (activo) Color.White else Color.White.copy(alpha = 0.55f), minimo = 0.7f)
+                    Icon(item.icono, contentDescription = item.etiqueta, tint = if (activo) GColors.TextPrimary else GColors.TextPrimary.copy(alpha = 0.55f), modifier = Modifier.size(21.dp))
+                    TextoAjustableC2(tr(LocalIdioma.current, item.etiqueta), GType.labelMd.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold), if (activo) GColors.TextPrimary else GColors.TextPrimary.copy(alpha = 0.55f), minimo = 0.7f)
                 }
             }
             Row(
@@ -286,9 +296,9 @@ fun DockTablero(rutaActual: String, onNavegar: (String) -> Unit, modifier: Modif
                     .clickable(role = Role.Button, onClickLabel = "Correr") { onNavegar(Destinos.CORRER) }.testTag("nav-correr").padding(horizontal = 14.dp),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
             ) {
-                Icon(Icons.Filled.PlayArrow, contentDescription = "Correr", tint = Color.White, modifier = Modifier.size(18.dp))
+                Icon(Icons.Filled.PlayArrow, contentDescription = "Correr", tint = GColors.OnPrimary, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
-                TextoAjustableC2(tr(LocalIdioma.current, "CORRER"), GType.labelLg.copy(fontWeight = FontWeight.Black, letterSpacing = 0.06.em), Color.White, minimo = 0.7f)
+                TextoAjustableC2(tr(LocalIdioma.current, "CORRER"), GType.labelLg.copy(fontWeight = FontWeight.Black, letterSpacing = 0.06.em), GColors.OnPrimary, minimo = 0.7f)
             }
         }
     }
@@ -353,21 +363,21 @@ fun MapaEsquemaC2(
             drawPath(camino(hecho), violeta.copy(alpha = 0.32f), style = Stroke(grosor.toPx() * 3.2f, cap = StrokeCap.Round, join = StrokeJoin.Round))
             drawPath(camino(hecho), violeta, style = Stroke(grosor.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
             drawCircle(Color(0xFF0C1322), 7.dp.toPx(), p(puntos.first())); drawCircle(GColors.C2Menta, 5.dp.toPx(), p(puntos.first()))
-            if (avance < 1f) { val u = p(hecho.last()); drawCircle(GColors.C2Morado.copy(alpha = 0.25f), 22.dp.toPx(), u); drawCircle(GColors.C2Morado, 9.dp.toPx(), u); drawCircle(Color.White, 5.5.dp.toPx(), u) }
+            if (avance < 1f) { val u = p(hecho.last()); drawCircle(GColors.C2Morado.copy(alpha = 0.25f), 22.dp.toPx(), u); drawCircle(GColors.C2Morado, 9.dp.toPx(), u); drawCircle(GColors.OnPrimary, 5.5.dp.toPx(), u) }
         }
-        marcadores.forEach { c -> val o = p(c); drawCircle(Color.White, 8.dp.toPx(), o); drawCircle(GColors.C2Morado, 6.dp.toPx(), o) }
-        yo?.let { val o = p(it); drawCircle(GColors.C2Morado.copy(alpha = 0.22f), 24.dp.toPx(), o); drawCircle(GColors.C2Morado, 9.dp.toPx(), o); drawCircle(Color.White, 5.5.dp.toPx(), o) }
+        marcadores.forEach { c -> val o = p(c); drawCircle(GColors.OnPrimary, 8.dp.toPx(), o); drawCircle(GColors.C2Morado, 6.dp.toPx(), o) }
+        yo?.let { val o = p(it); drawCircle(GColors.C2Morado.copy(alpha = 0.22f), 24.dp.toPx(), o); drawCircle(GColors.C2Morado, 9.dp.toPx(), o); drawCircle(GColors.OnPrimary, 5.5.dp.toPx(), o) }
     }
 }
 
 /** Celda de cifra del panel de carrera y del resumen (vidrio tenue). */
 @Composable
-fun CeldaTablero(etiqueta: String, valor: String, modifier: Modifier = Modifier, unidad: String = "", color: Color = Color.White, tamano: Int = 28, extra: String? = null, colorExtra: Color = GColors.C2Menta, tag: String? = null) {
+fun CeldaTablero(etiqueta: String, valor: String, modifier: Modifier = Modifier, unidad: String = "", color: Color = GColors.TextPrimary, tamano: Int = 28, extra: String? = null, colorExtra: Color = GColors.C2Menta, tag: String? = null) {
     Column(
-        modifier.clip(RoundedCornerShape(18.dp)).background(Color.White.copy(alpha = 0.06f)).border(1.dp, Color.White.copy(alpha = 0.09f), RoundedCornerShape(18.dp))
+        modifier.clip(RoundedCornerShape(18.dp)).background(GColors.TextPrimary.copy(alpha = 0.06f)).border(1.dp, GColors.TextPrimary.copy(alpha = 0.09f), RoundedCornerShape(18.dp))
             .then(if (tag != null) Modifier.testTag(tag) else Modifier).padding(horizontal = 11.dp, vertical = 9.dp),
     ) {
-        RotuloWidget(etiqueta, color = Color.White.copy(alpha = 0.55f))
+        RotuloWidget(etiqueta, color = GColors.TextPrimary.copy(alpha = 0.55f))
         CifraTablero(valor, unidad, Modifier.padding(top = 3.dp), tamano = tamano, color = color)
         if (extra != null) Text(extra, style = GType.labelMd.copy(fontSize = 10.5.sp, fontWeight = FontWeight.Bold), color = colorExtra, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
@@ -375,7 +385,7 @@ fun CeldaTablero(etiqueta: String, valor: String, modifier: Modifier = Modifier,
 
 /** Barra de progreso blanca sobre fondo translucido (tarjeta de distancia del panel). */
 @Composable
-fun BarraProgresoTablero(p: Float, modifier: Modifier = Modifier, color: Color = Color.White, fondo: Color = Color.White.copy(alpha = 0.2f)) {
+fun BarraProgresoTablero(p: Float, modifier: Modifier = Modifier, color: Color = GColors.TextPrimary, fondo: Color = GColors.TextPrimary.copy(alpha = 0.2f)) {
     Box(modifier.fillMaxWidth().height(8.dp).clip(CircleShape).background(fondo)) {
         Box(Modifier.fillMaxWidth(p.coerceIn(0f, 1f)).fillMaxHeight().clip(CircleShape).background(color))
     }

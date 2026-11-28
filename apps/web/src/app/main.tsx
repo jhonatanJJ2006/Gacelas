@@ -31,8 +31,10 @@ async function guardarRecursosCargados() {
     .filter(
       (u) =>
         (u.origin === location.origin && /^\/(assets|models|marca|images)\//.test(u.pathname)) ||
-        u.origin === 'https://fonts.googleapis.com' ||
-        u.origin === 'https://fonts.gstatic.com'
+        // Se excluye la raiz del origen: el preconnect aparece como recurso y pedirla con CORS falla.
+        ((u.origin === 'https://fonts.googleapis.com' ||
+          u.origin === 'https://fonts.gstatic.com') &&
+          u.pathname !== '/')
     )
     .map((u) => u.href)
   // Las fuentes de Google se piden solo cuando se usan: se leen del CSS para guardarlas todas.

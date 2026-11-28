@@ -58,7 +58,7 @@ export function ReaceptarTerminos() {
 /** Enlaces pequenos a los documentos legales (pie del login). */
 export function EnlacesLegales() {
   return (
-    <div className="flex justify-center gap-4 text-xs text-[#A8B0C2]">
+    <div className="flex justify-center gap-4 text-xs text-c2-muted">
       <Link to="/legal/terminos" className="py-2 hover:text-text-primary">
         Términos
       </Link>
@@ -97,7 +97,7 @@ export function SeccionConsentimientos() {
       <Seccion titulo="Consentimientos">
         <FilaInterruptor
           icono="my_location"
-          color="text-[#C084FC]"
+          color="text-c2-violeta"
           titulo="Seguimiento GPS en carrera"
           descripcion="Usar tu GPS mientras grabas una carrera"
           activo={gps}
@@ -108,7 +108,7 @@ export function SeccionConsentimientos() {
         />
         <FilaInterruptor
           icono="sensors"
-          color="text-[#68DBA9]"
+          color="text-c2-menta"
           titulo="Ubicación visible"
           descripcion="Aparecer en el mapa en vivo para otros corredores"
           activo={visible}
@@ -132,7 +132,7 @@ export function SeccionConsentimientos() {
         </div>
         <button
           onClick={() => setEliminar(true)}
-          className="w-full flex items-center gap-3 px-4 py-3 bg-surface-container rounded-xl text-left text-[#F472B6] font-semibold"
+          className="w-full flex items-center gap-3 px-4 py-3 bg-surface-container rounded-xl text-left text-rosa font-semibold"
         >
           <span className="material-symbols-outlined">delete_forever</span>
           Eliminar cuenta y datos

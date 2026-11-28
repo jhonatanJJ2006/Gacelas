@@ -1,5 +1,6 @@
 package com.gacelas.ui.components
 
+import com.gacelas.ui.movimiento.DestelloEncima
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.gacelas.ui.movimiento.reboteActivo
 import com.gacelas.ui.theme.GColors
 import com.gacelas.ui.theme.GType
 
@@ -43,7 +45,7 @@ fun InsigniaC2(
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Box(contentAlignment = Alignment.BottomEnd) {
                 Box(
-                    Modifier.size(56.dp).clip(CircleShape)
+                    Modifier.size(56.dp).then(if (lograda) Modifier.reboteActivo(true) else Modifier).clip(CircleShape)
                         .background(if (lograda) color.copy(alpha = 0.25f) else GColors.SurfaceHigh)
                         .border(2.dp, if (lograda) color else GColors.BorderSubtle, CircleShape),
                     contentAlignment = Alignment.Center,
@@ -71,8 +73,12 @@ fun HojaInsigniaC2(
             Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 24.dp).navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Box(Modifier.alpha(if (lograda) 1f else 0.7f)) {
-                IlustracionVacio(icono, 150.dp, if (lograda) color else GColors.C2Muted)
+            // Logro conseguido: la medalla rebota y suelta el destello de confeti.
+            Box(Modifier.fillMaxWidth().height(170.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.alpha(if (lograda) 1f else 0.7f).reboteActivo(lograda)) {
+                    IlustracionVacio(icono, 150.dp, if (lograda) color else GColors.C2Muted)
+                }
+                if (lograda) DestelloEncima(true)
             }
             Text(titulo, style = GType.headlineSm, color = GColors.TextPrimary, textAlign = TextAlign.Center)
             Text(descripcion, style = GType.bodyMd, color = GColors.C2Muted, textAlign = TextAlign.Center)

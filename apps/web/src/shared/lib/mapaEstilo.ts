@@ -1,5 +1,6 @@
 /** Estilo y matematicas del mapa Runcity (estilo Uber: oscuro, limpio, acentos naranja). */
 import type { Coordenada } from './mapas'
+import type { TemaResuelto } from './tema'
 
 export const NARANJA = '#C084FC'
 export const VERDE = '#10B981'
@@ -37,6 +38,47 @@ export const ESTILO_GACELAS: google.maps.MapTypeStyle[] = [
   { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0a2340' }] },
   { featureType: 'water', elementType: 'labels', stylers: [{ visibility: 'off' }] },
 ]
+
+/** Misma estructura que el oscuro, en claro: tierra lavanda muy suave, vias blancas, agua y parques apagados. */
+export const ESTILO_GACELAS_CLARO: google.maps.MapTypeStyle[] = [
+  { elementType: 'geometry', stylers: [{ color: '#eceef5' }] },
+  { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#586178' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#f6f7fb' }, { weight: 3 }] },
+  { featureType: 'administrative', elementType: 'geometry', stylers: [{ visibility: 'off' }] },
+  {
+    featureType: 'administrative.locality',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#3f4760' }],
+  },
+  {
+    featureType: 'administrative.neighborhood',
+    elementType: 'labels',
+    stylers: [{ visibility: 'off' }],
+  },
+  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+  { featureType: 'poi.park', stylers: [{ visibility: 'on' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#d3eadd' }] },
+  { featureType: 'poi.park', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'landscape.man_made', elementType: 'geometry', stylers: [{ color: '#e4e7f1' }] },
+  { featureType: 'landscape.natural', elementType: 'geometry', stylers: [{ color: '#eef0f6' }] },
+  { featureType: 'road', elementType: 'geometry.fill', stylers: [{ color: '#ffffff' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#d6d9e6' }] },
+  { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#6a7389' }] },
+  { featureType: 'road.highway', elementType: 'geometry.fill', stylers: [{ color: '#ece4f8' }] },
+  { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#cdbfe3' }] },
+  { featureType: 'road.local', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#bcd5f2' }] },
+  { featureType: 'water', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+]
+
+/** Estilo del mapa segun el tema de la app. */
+export const estiloMapa = (tema: TemaResuelto): google.maps.MapTypeStyle[] =>
+  tema === 'claro' ? ESTILO_GACELAS_CLARO : ESTILO_GACELAS
+
+/** Color de fondo del lienzo del mapa mientras cargan las teselas. */
+export const fondoMapa = (tema: TemaResuelto) => (tema === 'claro' ? '#eceef5' : '#0d1422')
 
 /** Map ID para el modo vectorial (inclinacion, giro, 3D). Si no hay uno propio se usa el de demostracion. */
 export const mapId = () =>

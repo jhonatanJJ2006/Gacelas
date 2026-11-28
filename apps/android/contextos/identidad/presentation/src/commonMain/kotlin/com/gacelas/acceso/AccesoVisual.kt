@@ -1,5 +1,6 @@
 package com.gacelas.acceso
 
+import com.gacelas.ui.theme.GColors
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -80,18 +81,18 @@ import com.gacelas.ui.theme.Inter
  */
 /** Tokens de acceso alineados al rediseño C2 Deporte cinetico. */
 object C4 {
-    val Fondo = Color(0xFF0C1322)            // surface-container-lowest
-    val Tarjeta = Color(0xFF191F2F)          // bg-[#131926]/85 (bienvenida) /90 (login)
-    val SurfaceContainer = Color(0xFF232A3A)
-    val OnSurface = Color(0xFFDFE2EE)
-    val Secondary = Color(0xFFA8B0C2)
+    val Fondo get() = GColors.BgPrimary            // surface-container-lowest
+    val Tarjeta get() = GColors.C2Card          // bg-[#131926]/85 (bienvenida) /90 (login)
+    val SurfaceContainer get() = GColors.C2S2
+    val OnSurface get() = GColors.OnSurface
+    val Secondary get() = GColors.C2Muted
     val Naranja = Color(0xFF7B1FA2)
-    val Enlace = Color(0xFFC084FC)
-    val Magenta = Color(0xFFC084FC)
+    val Enlace get() = GColors.C2Violeta
+    val Magenta get() = GColors.C2Violeta
     val MagentaOscuro = Color(0xFF7B1FA2)
-    val Subtitulo = Color(0xFFD5DAE4)
-    val Blanco10 = Color.White.copy(alpha = 0.10f)
-    val Blanco5 = Color.White.copy(alpha = 0.05f)
+    val Subtitulo get() = GColors.TextSecondary
+    val Blanco10 get() = GColors.TextPrimary.copy(alpha = 0.10f)
+    val Blanco5 get() = GColors.TextPrimary.copy(alpha = 0.05f)
 }
 
 object C4Texto {
@@ -136,7 +137,7 @@ fun MarcaC4() {
         com.gacelas.ui.components.IconoGacelas(36.dp)
         Spacer(Modifier.width(8.dp))
         Column {
-            Text("RUNCITY", style = C4Texto.headlineSm.copy(letterSpacing = 0.015.em), color = Color.White)
+            Text("RUNCITY", style = C4Texto.headlineSm.copy(letterSpacing = 0.015.em), color = GColors.TextPrimary)
             Text("LOJA RUNNING CO.", style = TextStyle(fontFamily = Inter, fontSize = 9.sp, lineHeight = 12.sp, letterSpacing = 0.14.em, fontWeight = FontWeight.SemiBold),
                 color = C4.Secondary, modifier = Modifier.offset(y = (-4).dp))
         }
@@ -182,7 +183,7 @@ fun TarjetaC4(modifier: Modifier = Modifier, alpha: Float = 0.95f, padding: Dp =
     ) {
         Column(Modifier.fillMaxWidth().padding(padding), content = content)
         Box(Modifier.fillMaxWidth().height(1.dp).align(Alignment.TopCenter)
-            .background(Brush.horizontalGradient(listOf(Color.Transparent, Color.White.copy(alpha = 0.20f), Color.Transparent))))
+            .background(Brush.horizontalGradient(listOf(Color.Transparent, GColors.OnPrimary.copy(alpha = 0.20f), Color.Transparent))))
     }
 }
 
@@ -196,9 +197,9 @@ fun BotonC4(texto: String, onClick: () -> Unit, modifier: Modifier = Modifier, a
             .clickable(enabled = enabled, onClick = onClick).testTag("boton-principal"),
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(texto, style = C4Texto.headlineSm.copy(fontSize = tamTexto.sp), color = Color.White)
+        Text(texto, style = C4Texto.headlineSm.copy(fontSize = tamTexto.sp), color = GColors.TextPrimary)
         Spacer(Modifier.width(8.dp))
-        Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = Color.White, modifier = Modifier.size(20.dp))
+        Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = GColors.TextPrimary, modifier = Modifier.size(20.dp))
     }
 }
 
@@ -225,9 +226,9 @@ fun TitularC4(compacto: Boolean) {
         buildAnnotatedString {
             append("Corre. Comparte.")
             if (compacto) append(" ") else append("\n")
-            withStyle(SpanStyle(brush = Brush.horizontalGradient(listOf(Color.White, Color.White, C4.Secondary)))) { append("Supera.") }
+            withStyle(SpanStyle(brush = Brush.horizontalGradient(listOf(GColors.TextPrimary, GColors.TextPrimary, C4.Secondary)))) { append("Supera.") }
         },
-        style = estilo, color = Color.White,
+        style = estilo, color = GColors.TextPrimary,
     )
 }
 
@@ -247,7 +248,7 @@ fun AtrasC4(onClick: () -> Unit) {
         Modifier.size(32.dp).clip(CircleShape).background(C4.SurfaceContainer.copy(alpha = 0.8f)).border(1.dp, C4.Blanco10, CircleShape)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
-    ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Atrás", tint = Color.White, modifier = Modifier.size(19.dp)) }
+    ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Atrás", tint = GColors.TextPrimary, modifier = Modifier.size(19.dp)) }
 }
 
 /** Campo del login C4: etiqueta label-caps, caja h48 r12 #1C2028/90, icono 18 a la izquierda, borde naranja con foco. */
@@ -281,7 +282,7 @@ fun CampoC4(
         val forma = RoundedCornerShape(12.dp)
         BasicTextField(
             value = valor, onValueChange = onCambio, singleLine = true, interactionSource = interaccion,
-            textStyle = C4Texto.bodySm.copy(color = Color.White),
+            textStyle = C4Texto.bodySm.copy(color = GColors.TextPrimary),
             cursorBrush = SolidColor(C4.Naranja),
             visualTransformation = if (password && !visible) PasswordVisualTransformation() else VisualTransformation.None,
             keyboardOptions = KeyboardOptions(keyboardType = if (password) KeyboardType.Password else tipo, imeAction = if (onListo != null) ImeAction.Done else ImeAction.Next),

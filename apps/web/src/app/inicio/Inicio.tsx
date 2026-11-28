@@ -82,13 +82,16 @@ function CabeceraMovil() {
         aria-label="Ir a mi perfil"
         className="w-10 h-10 shrink-0 rounded-md bg-[linear-gradient(135deg,#7B1FA2,#A855F7)] grid place-items-center"
       >
-        <span aria-hidden="true" className="material-symbols-outlined text-white text-[20px]">
+        <span
+          aria-hidden="true"
+          className="material-symbols-outlined text-text-primary text-[20px]"
+        >
           directions_run
         </span>
       </Link>
       <div className="min-w-0 flex-1">
         <span className="rotulo-c2 !text-[9.5px] truncate">{fechaCorta()} · Loja</span>
-        <h1 className="titular-c2 text-[22px] leading-none mt-0.5 text-white truncate">
+        <h1 className="titular-c2 text-[22px] leading-none mt-0.5 text-text-primary truncate">
           Hola, {nombre}
         </h1>
       </div>
@@ -96,7 +99,7 @@ function CabeceraMovil() {
         type="button"
         onClick={abrir}
         aria-label="Buscar"
-        className="w-10 h-10 shrink-0 rounded-md bg-c2-card border border-c2-linea grid place-items-center text-white"
+        className="w-10 h-10 shrink-0 rounded-md bg-c2-card border border-c2-linea grid place-items-center text-text-primary"
       >
         <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
           search
@@ -147,7 +150,7 @@ function Hero({ className = '' }: { className?: string }) {
     <>
       <span
         data-testid={movil ? 'insignia-racha' : undefined}
-        className={`text-[11px] font-semibold px-2 py-1 rounded-full ${riesgo ? 'bg-amber-400/15 text-amber-400' : 'bg-c2-menta/15 text-c2-menta'}`}
+        className={`text-[11px] font-semibold px-2 py-1 rounded-full ${riesgo ? 'bg-alerta/15 text-alerta' : 'bg-c2-menta/15 text-c2-menta'}`}
       >
         Racha {racha.diaria} {racha.diaria === 1 ? 'día' : 'días'}
         {riesgo ? ', en riesgo' : ''}
@@ -170,7 +173,7 @@ function Hero({ className = '' }: { className?: string }) {
       <section
         data-testid="inicio-escenario"
         aria-labelledby="titulo-hero"
-        className={`panel-c2 relative overflow-hidden border border-[#3B1A55] bg-[linear-gradient(160deg,#2A0A3D_0%,#1A0B2E_55%,#191F2F_100%)] ${className}`}
+        className={`fondo-hero panel-c2 relative overflow-hidden border ${className}`}
       >
         <span
           aria-hidden="true"
@@ -192,7 +195,7 @@ function Hero({ className = '' }: { className?: string }) {
           <span className="rotulo-c2 !text-c2-violeta lg:hidden">Meta semanal</span>
           <h2
             id="titulo-hero"
-            className="titular-c2 text-[30px] leading-[1.02] lg:text-[42px] text-white mt-1 max-w-[60%] lg:max-w-none"
+            className="titular-c2 text-[30px] leading-[1.02] lg:text-[42px] text-text-primary mt-1 max-w-[60%] lg:max-w-none"
           >
             {meta.faltan > 0 ? (
               <>
@@ -224,7 +227,7 @@ function Hero({ className = '' }: { className?: string }) {
           <div className="mt-5 flex flex-wrap gap-3">
             <Link
               to="/correr"
-              className="panel-c2 h-12 px-6 flex-1 lg:flex-none inline-flex items-center justify-center gap-2 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-white text-[14px] font-bold hover:brightness-110"
+              className="panel-c2 h-12 px-6 flex-1 lg:flex-none inline-flex items-center justify-center gap-2 bg-[linear-gradient(90deg,#7B1FA2,#A855F7)] text-on-primary text-[14px] font-bold hover:brightness-110"
             >
               <span aria-hidden="true" className="material-symbols-outlined text-[20px]">
                 play_circle
@@ -238,7 +241,7 @@ function Hero({ className = '' }: { className?: string }) {
                   .querySelector('[data-testid="ruta-sugerida"]')
                   ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
               }
-              className="hidden lg:inline-flex h-12 px-5 items-center gap-2 rounded-md border border-c2-linea bg-c2-bg/40 text-white text-[13.5px] font-semibold hover:border-c2-morado"
+              className="hidden lg:inline-flex h-12 px-5 items-center gap-2 rounded-md border border-c2-linea bg-c2-bg/40 text-text-primary text-[13.5px] font-semibold hover:border-c2-morado"
             >
               <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
                 map
@@ -303,7 +306,7 @@ function CajaCifra({
   unidad,
   nota,
   notaColor,
-  color = 'text-white',
+  color = 'text-text-primary',
 }: {
   rotulo: string
   valor: string

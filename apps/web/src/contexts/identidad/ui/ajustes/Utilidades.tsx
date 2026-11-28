@@ -24,7 +24,14 @@ export function Brujula() {
           style={{ transform: `rotate(${-(rumbo ?? 0)}deg)` }}
           aria-hidden="true"
         >
-          <circle cx="100" cy="100" r="98" fill="#191F2F" stroke="#2C3446" strokeWidth="2" />
+          <circle
+            cx="100"
+            cy="100"
+            r="98"
+            fill="rgb(var(--c-c2-card))"
+            stroke="rgb(var(--c-c2-linea))"
+            strokeWidth="2"
+          />
           {Array.from({ length: 72 }, (_, k) => {
             const largo = k % 18 === 0 ? 12 : k % 2 === 0 ? 7 : 4
             return (
@@ -34,20 +41,27 @@ export function Brujula() {
                 y1="6"
                 x2="100"
                 y2={6 + largo}
-                stroke={k % 18 === 0 ? '#C084FC' : 'rgba(168,176,194,0.6)'}
+                stroke={k % 18 === 0 ? 'rgb(var(--c-c2-violeta))' : 'rgb(var(--c-c2-muted) / 0.6)'}
                 strokeWidth="1.5"
                 transform={`rotate(${k * 5} 100 100)`}
               />
             )
           })}
-          <text x="100" y="34" textAnchor="middle" fill="#C084FC" fontWeight="900" fontSize="16">
+          <text
+            x="100"
+            y="34"
+            textAnchor="middle"
+            fill="rgb(var(--c-c2-violeta))"
+            fontWeight="900"
+            fontSize="16"
+          >
             N
           </text>
         </svg>
         <svg viewBox="0 0 200 200" className="absolute inset-0 w-full h-full" aria-hidden="true">
-          <polygon points="100,50 110,100 90,100" fill="#C084FC" />
-          <polygon points="100,150 110,100 90,100" fill="#232A3A" />
-          <circle cx="100" cy="100" r="4" fill="#fff" />
+          <polygon points="100,50 110,100 90,100" fill="rgb(var(--c-c2-violeta))" />
+          <polygon points="100,150 110,100 90,100" fill="rgb(var(--c-c2-s2))" />
+          <circle cx="100" cy="100" r="4" fill="rgb(var(--c-text-primary))" />
         </svg>
       </div>
       <div className="text-center">
@@ -65,7 +79,7 @@ export function Brujula() {
         {[
           [r == null ? '--' : `${r}°`, 'Rumbo', 'text-c2-violeta'],
           [r == null ? '--' : puntoCardinal(r), 'Dirección', 'text-c2-menta'],
-          [r == null ? '--' : 'Buena', 'Calibración', 'text-white'],
+          [r == null ? '--' : 'Buena', 'Calibración', 'text-text-primary'],
         ].map(([v, e, c]) => (
           <div key={e}>
             <span className="rotulo-c2">{e}</span>
@@ -104,7 +118,7 @@ export function MapasOffline() {
       <section className="tarjeta-c2 p-4 flex items-center gap-3">
         <span className="material-symbols-outlined text-c2-violeta">map</span>
         <div className="flex-1">
-          <p className="font-semibold text-white">Loja y alrededores</p>
+          <p className="font-semibold text-text-primary">Loja y alrededores</p>
           <p className="text-sm text-c2-muted">
             Descárgalo desde la app Android en Ajustes, Mapas offline. En la web el mapa necesita
             conexión.

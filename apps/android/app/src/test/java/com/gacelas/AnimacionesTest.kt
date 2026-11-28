@@ -1,5 +1,11 @@
 package com.gacelas
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.platform.testTag
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -211,4 +217,65 @@ class AnimacionesTest {
     @Test fun inicioConAnimaciones() = inicioEntrada(1f)
 
     @Test fun inicioSinAnimaciones() = inicioEntrada(0f)
+
+    private fun textoDe(tag: String): String =
+        compose.onNodeWithTag(tag).fetchSemanticsNode().config[androidx.compose.ui.semantics.SemanticsProperties.Text].joinToString("") { it.text }
+
+    private fun cifrasYEfectos(escala: Float) {
+        montar(escala) {
+            Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                com.gacelas.ui.movimiento.CifraTextoAnimada("12,4 km", GType.headlineLg, GColors.TextPrimary, Modifier.testTag("cifra-texto"))
+                com.gacelas.ui.movimiento.CifraTextoAnimada("5:30", GType.headlineLg, GColors.TextPrimary, Modifier.testTag("cifra-ritmo"))
+                com.gacelas.ui.components.AnilloC2(0.5f, tamano = 80.dp) { Text("50%", color = GColors.TextPrimary) }
+                Box(Modifier.size(8.dp)) { com.gacelas.ui.movimiento.HaloLatido(GColors.C2Violeta, Modifier.matchParentSize()) }
+            }
+        }
+        // El ritmo no es una cantidad que cuente: siempre se ve entero.
+        assertEquals("5:30", textoDe("cifra-ritmo"))
+        if (escala <= 0f) {
+            assertEquals("12,4 km", textoDe("cifra-texto"))
+            compose.onNodeWithTag("halo-latido").assertDoesNotExist()
+            return
+        }
+        assertEquals("0,0 km", textoDe("cifra-texto"))
+        compose.onNodeWithTag("halo-latido").assertExists()
+        compose.mainClock.advanceTimeBy(MovimientoC2.CONTEO / 2L)
+        val medio = textoDe("cifra-texto")
+        org.junit.Assert.assertTrue("cifra a medio contar: $medio", medio != "0,0 km" && medio != "12,4 km" && medio.endsWith(" km") && medio.contains(','))
+        compose.mainClock.advanceTimeBy(MovimientoC2.CONTEO.toLong())
+        assertEquals("12,4 km", textoDe("cifra-texto"))
+    }
+
+    @Test fun cifrasYEfectosConAnimaciones() = cifrasYEfectos(1f)
+
+    @Test fun cifrasYEfectosSinAnimaciones() = cifrasYEfectos(0f)
+
+    private fun celebraciones(escala: Float) {
+        montar(escala) {
+            Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                com.gacelas.ui.components.CelebracionRacha(
+                    com.gacelas.actividad.domain.reglas.Racha(diaria = 3),
+                    com.gacelas.actividad.domain.reglas.Racha(diaria = 4),
+                )
+                com.gacelas.ui.components.HojaInsigniaC2(
+                    Icons.Filled.Star, "Primer 5K", "Corre 5 km", "Corre 5 km", 5, 5, "km", "hoy", true, {},
+                )
+            }
+        }
+        compose.onNodeWithTag("celebracion-racha").assertExists()
+        if (escala <= 0f) {
+            compose.onNodeWithTag("destello-c2").assertDoesNotExist()
+            return
+        }
+        // Uno por la racha y otro por la medalla, mientras dura el confeti (1,2 s).
+        compose.onAllNodesWithTag("destello-c2", useUnmergedTree = true).assertCountEquals(2)
+        avanzar(MovimientoC2.MEDIO + 400L, "celebracion")
+        compose.onAllNodesWithTag("destello-c2", useUnmergedTree = true).assertCountEquals(2)
+        avanzar(2000, "celebracion")
+        compose.onAllNodesWithTag("destello-c2", useUnmergedTree = true).assertCountEquals(0)
+    }
+
+    @Test fun celebracionesConAnimaciones() = celebraciones(1f)
+
+    @Test fun celebracionesSinAnimaciones() = celebraciones(0f)
 }
