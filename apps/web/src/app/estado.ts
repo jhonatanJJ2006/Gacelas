@@ -93,7 +93,21 @@ export async function cargar(): Promise<void> {
     }) ?? null
 }
 
-const stores = [useIdentidad, useActividad, useRutas, useEventos, useComunidad, useAvisos] as const
+/** Lo que se usa de cada store; zustand 5 ya no permite llamar a una unión de stores distintos. */
+interface StoreBasico {
+  getState(): unknown
+  setState(parte: never): void
+  subscribe(escucha: () => void): () => void
+}
+
+const stores: readonly StoreBasico[] = [
+  useIdentidad,
+  useActividad,
+  useRutas,
+  useEventos,
+  useComunidad,
+  useAvisos,
+]
 
 /** Estado combinado de todos los contextos (pruebas y vista previa). */
 export function leerEstado() {
