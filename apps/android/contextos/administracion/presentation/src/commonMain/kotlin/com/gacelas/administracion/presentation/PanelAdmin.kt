@@ -180,6 +180,7 @@ internal fun MarcoAdmin(
 private val exitos = setOf(
     "Cuenta reactivada", "Cuenta suspendida", "Rol actualizado", "Caso actualizado", "Evento oculto", "Evento publicado",
     "Evento guardado", "Ruta eliminada", "Club eliminado", "Ajuste guardado", "Versión mínima guardada",
+    "Prioridad actualizada", "Plazos guardados", "Respuesta guardada", "Respuesta eliminada", "CSV listo para compartir",
 )
 
 internal fun mensajeExito(m: String) = m in exitos

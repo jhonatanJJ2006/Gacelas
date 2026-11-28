@@ -65,6 +65,10 @@ data class UsuarioAdmin(
     val rol: RolAdmin?,
     val carreras: Long,
     val km: Double,
+    /** Ultimo acceso (inicio de sesion o apertura de la app, migracion 050); null si no consta. */
+    val ultimoAcceso: String? = null,
+    val plataforma: String? = null,
+    val versionApp: String? = null,
 ) {
     val suspendido: Boolean get() = suspendidoEn != null
     val nombreVisible: String get() = nombre?.takeIf { it.isNotBlank() } ?: username
@@ -98,8 +102,16 @@ data class ClubAdmin(val id: String, val nombre: String, val descripcion: String
 /** Ajuste de app_settings. [valor] es el JSON tal cual (booleano, texto o numero). */
 data class AjusteApp(val clave: String, val valor: kotlinx.serialization.json.JsonElement)
 
-/** Resultado de admin_estadisticas(desde, hasta): totales del rango. */
-data class EstadisticasAdmin(val desde: String, val hasta: String, val totales: Map<String, Double>)
+/** Resultado de admin_estadisticas(desde, hasta): totales del rango y serie por dia. */
+data class EstadisticasAdmin(
+    val desde: String,
+    val hasta: String,
+    val totales: Map<String, Double>,
+    val serie: List<DiaEstadistica> = emptyList(),
+)
+
+/** Un dia de la serie de admin_estadisticas. */
+data class DiaEstadistica(val dia: String, val nuevos: Double, val activos: Double, val carreras: Double, val km: Double)
 
 const val CLAVE_VERSION_MINIMA = "version_minima_android"
 

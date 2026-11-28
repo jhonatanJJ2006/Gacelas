@@ -3,6 +3,16 @@ package com.gacelas.administracion.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gacelas.administracion.application.GuardarEvento
+import com.gacelas.administracion.application.GuardarRespuestaRapida
+import com.gacelas.administracion.application.GuardarSla
+import com.gacelas.administracion.domain.EscenarioVivo
+import com.gacelas.administracion.domain.ImportacionEcu
+import com.gacelas.administracion.domain.Prioridad
+import com.gacelas.administracion.domain.RespuestaRapida
+import com.gacelas.administracion.domain.SlaHoras
+import com.gacelas.administracion.domain.VersionEnUso
+import com.gacelas.administracion.domain.VersionPublicada
+import com.gacelas.administracion.domain.ordenarPorSla
 import com.gacelas.administracion.application.GuardarVersionMinima
 import com.gacelas.administracion.application.ModerarReporte
 import com.gacelas.administracion.domain.AccionModeracion
@@ -63,6 +73,19 @@ abstract class SeccionViewModel<T> : ViewModel() {
 
     fun limpiarMensaje() { _mensaje.value = null }
 
+    /** Recarga sin pasar por "cargando" (refresco periodico); si falla se queda lo anterior. */
+    fun refrescar() {
+        if (_estado.value !is Carga.Listo) return
+        viewModelScope.launch {
+            try {
+                _estado.value = Carga.Listo(cargar())
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+            }
+        }
+    }
+
     protected fun ejecutar(exito: String, accion: suspend () -> Unit) {
         if (_ocupado.value) return
         _ocupado.value = true
@@ -122,6 +145,11 @@ class ModeracionAdminViewModel(
     private val repo: AdminRepositorio,
     private val moderarReporte: ModerarReporte = ModerarReporte(repo),
 ) : SeccionViewModel<List<ReporteAdmin>>() {
+    private val _respuestas = MutableStateFlow<List<RespuestaRapida>>(emptyList())
+
+    /** Respuestas rapidas para rellenar la nota; si no cargan, no se muestran (la nota sigue libre). */
+    val respuestas: StateFlow<List<RespuestaRapida>> = _respuestas.asStateFlow()
+
     private val _filtroEstado = MutableStateFlow(EstadoReporte.Pendiente)
     val filtroEstado: StateFlow<EstadoReporte> = _filtroEstado.asStateFlow()
     private val _filtroTipo = MutableStateFlow<String?>(null)
@@ -129,8 +157,20 @@ class ModeracionAdminViewModel(
     private val _notas = MutableStateFlow<Map<String, String>>(emptyMap())
     val notas: StateFlow<Map<String, String>> = _notas.asStateFlow()
 
-    init { recargar() }
-    override suspend fun cargar() = repo.reportes(_filtroEstado.value, _filtroTipo.value)
+    init {
+        recargar()
+        viewModelScope.launch {
+            _respuestas.value = try { repo.respuestasRapidas() } catch (e: CancellationException) { throw e } catch (_: Exception) { emptyList() }
+        }
+    }
+
+    /** Abiertos primero, ordenados por vencimiento del plazo y prioridad. */
+    override suspend fun cargar() = repo.reportes(_filtroEstado.value, _filtroTipo.value).ordenarPorSla()
+
+    /** Pone el texto de una respuesta rapida en la nota del caso (se puede editar antes de enviar). */
+    fun usarRespuesta(id: String, r: RespuestaRapida) = escribirNota(id, r.texto)
+
+    fun cambiarPrioridad(r: ReporteAdmin, p: Prioridad) = ejecutar("Prioridad actualizada") { repo.cambiarPrioridad(r.id, p) }
 
     fun elegirEstado(e: EstadoReporte) { _filtroEstado.value = e; recargar() }
     fun elegirTipo(t: String?) { _filtroTipo.value = t; recargar() }
@@ -183,6 +223,41 @@ class AjustesAdminViewModel(
     override suspend fun cargar() = repo.ajustes()
     fun alternar(a: AjusteApp, valor: Boolean) = ejecutar("Ajuste guardado") { repo.guardarAjuste(a.clave, JsonPrimitive(valor)) }
     fun guardarVersionMinima(v: String) = ejecutar("Versión mínima guardada") { guardarVersion(v) }
+    fun guardarSla(sla: SlaHoras) = ejecutar("Plazos guardados") { GuardarSla(repo)(sla) }
+}
+
+/** Respuestas rapidas (Ajustes): las edita el administrador. */
+class RespuestasAdminViewModel(
+    private val repo: AdminRepositorio,
+    private val guardarRespuesta: GuardarRespuestaRapida = GuardarRespuestaRapida(repo),
+) : SeccionViewModel<List<RespuestaRapida>>() {
+    init { recargar() }
+    override suspend fun cargar() = repo.respuestasRapidas()
+    fun guardar(r: RespuestaRapida) = ejecutar("Respuesta guardada") { guardarRespuesta(r) }
+    fun borrar(r: RespuestaRapida) = ejecutar("Respuesta eliminada") { repo.borrarRespuestaRapida(r.id ?: return@ejecutar) }
+}
+
+/** Mapa del Resumen: corredores, incidentes y SOS. Se refresca cada 30 s mientras esta a la vista. */
+class EscenarioAdminViewModel(private val repo: AdminRepositorio) : SeccionViewModel<EscenarioVivo>() {
+    init { recargar() }
+    override suspend fun cargar() = repo.escenarioVivo()
+}
+
+/** Datos de operacion de la app en Reportes: versiones e importaciones del ECU 911. */
+data class OperacionApp(
+    val publicadas: List<VersionPublicada>,
+    val enUso: List<VersionEnUso>,
+    val importaciones: List<ImportacionEcu>,
+    val versionMinima: String?,
+)
+
+class OperacionAdminViewModel(private val repo: AdminRepositorio) : SeccionViewModel<OperacionApp>() {
+    init { recargar() }
+    override suspend fun cargar(): OperacionApp {
+        val minima = repo.ajustes().firstOrNull { it.clave == com.gacelas.administracion.domain.CLAVE_VERSION_MINIMA }
+            ?.let { (it.valor as? JsonPrimitive)?.content }
+        return OperacionApp(repo.versionesPublicadas(), repo.versionesEnUso(), repo.importacionesEcu(), minima)
+    }
 }
 
 /** Rangos de estadisticas que ofrece el panel (en dias hacia atras desde hoy). */

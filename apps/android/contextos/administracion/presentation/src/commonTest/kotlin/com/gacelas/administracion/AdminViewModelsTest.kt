@@ -32,6 +32,13 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import com.gacelas.administracion.domain.CLAVE_SLA
+import com.gacelas.administracion.domain.Prioridad
+import com.gacelas.administracion.domain.RespuestaRapida
+import com.gacelas.administracion.domain.SlaHoras
+import com.gacelas.administracion.presentation.EscenarioAdminViewModel
+import com.gacelas.administracion.presentation.OperacionAdminViewModel
+import com.gacelas.administracion.presentation.RespuestasAdminViewModel
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AdminViewModelsTest {
@@ -84,7 +91,8 @@ class AdminViewModelsTest {
     fun moderacionFiltraYAplicaAccionConNota() = runTest {
         val repo = AdminRepositorioMemoria()
         val vm = ModeracionAdminViewModel(repo)
-        assertEquals(listOf("r1", "r3"), vm.estado.value.datos().map { it.id })
+        // Pendientes ordenados por vencimiento del plazo: r3 vence antes que r1.
+        assertEquals(listOf("r3", "r1"), vm.estado.value.datos().map { it.id })
         vm.elegirTipo("comentario")
         assertEquals(listOf("r3"), vm.estado.value.datos().map { it.id })
         val r3 = vm.estado.value.datos().single()
@@ -142,5 +150,70 @@ class AdminViewModelsTest {
         assertEquals("2026-10-01", vm.estado.value.datos().desde)
         vm.elegir(RangoEstadisticas.Semana)
         assertEquals("2026-10-24", vm.estado.value.datos().desde)
+    }
+
+    @Test
+    fun colaDeModeracionOrdenadaPorPlazoYConRespuestas() = runTest {
+        val repo = AdminRepositorioMemoria()
+        val vm = ModeracionAdminViewModel(repo)
+        vm.elegirEstado(EstadoReporte.Pendiente)
+        // r3 vence antes (29/10) que r1 (02/11).
+        assertEquals(listOf("r3", "r1"), vm.estado.value.datos().map { it.id })
+        assertEquals(3, vm.respuestas.value.size)
+        val r = vm.estado.value.datos().first()
+        vm.usarRespuesta(r.id, vm.respuestas.value.first())
+        assertEquals(vm.respuestas.value.first().texto, vm.notas.value[r.id])
+        vm.cambiarPrioridad(r, Prioridad.Alta)
+        assertEquals(Prioridad.Alta, repo.reportes.first { it.id == r.id }.prioridad)
+        assertEquals("Prioridad actualizada", vm.mensaje.value)
+    }
+
+    @Test
+    fun moderadorVeLasRespuestasPeroNoLasEdita() = runTest {
+        val repo = AdminRepositorioMemoria(RolAdmin.Moderador)
+        assertEquals(3, ModeracionAdminViewModel(repo).respuestas.value.size)
+        val vm = RespuestasAdminViewModel(repo)
+        vm.guardar(RespuestaRapida(null, "Nueva", "Texto"))
+        assertEquals("solo administradores", vm.mensaje.value)
+        assertEquals(3, repo.respuestas.size)
+    }
+
+    @Test
+    fun respuestasSeValidanAntesDeGuardar() = runTest {
+        val repo = AdminRepositorioMemoria()
+        val vm = RespuestasAdminViewModel(repo)
+        vm.guardar(RespuestaRapida(null, "", "Texto"))
+        assertEquals("Escribe un título", vm.mensaje.value)
+        vm.guardar(RespuestaRapida(null, "  Duplicado  ", "  Ya hay un caso abierto por esto.  "))
+        assertEquals("Respuesta guardada", vm.mensaje.value)
+        assertTrue(vm.estado.value.datos().any { it.titulo == "Duplicado" && it.texto == "Ya hay un caso abierto por esto." })
+        val q1 = vm.estado.value.datos().first { it.id == "q1" }
+        vm.borrar(q1)
+        assertTrue(vm.estado.value.datos().none { it.id == "q1" })
+    }
+
+    @Test
+    fun plazosSeGuardanSoloConOrdenValido() = runTest {
+        val repo = AdminRepositorioMemoria()
+        val vm = AjustesAdminViewModel(repo)
+        vm.guardarSla(SlaHoras(48, 24, 72))
+        assertEquals("La prioridad alta debe tener el plazo más corto", vm.mensaje.value)
+        vm.guardarSla(SlaHoras(2, 12, 48))
+        assertEquals("Plazos guardados", vm.mensaje.value)
+        assertEquals(SlaHoras(2, 12, 48), SlaHoras.desde(repo.ajustes))
+        assertTrue(repo.ajustes.count { it.clave == CLAVE_SLA } == 1)
+    }
+
+    @Test
+    fun escenarioYOperacionSoloParaAdmin() = runTest {
+        val repo = AdminRepositorioMemoria()
+        val esc = EscenarioAdminViewModel(repo).estado.value.datos()
+        assertEquals(1, esc.sosActivas.size)
+        assertEquals(2, esc.sos.size)
+        val op = OperacionAdminViewModel(repo).estado.value.datos()
+        assertEquals("1.0.0", op.versionMinima)
+        assertEquals(3, op.publicadas.size)
+        assertEquals(2, op.importaciones.size)
+        assertIs<Carga.Error>(EscenarioAdminViewModel(AdminRepositorioMemoria(RolAdmin.Moderador)).estado.value)
     }
 }
