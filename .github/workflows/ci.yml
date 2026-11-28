@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, staging]
     paths:
       # Web/backend/docs. Kotlin y Swift no afectan a este CI; sus .md/.json si (prettier).
       - '**'
@@ -10,14 +10,10 @@ on:
       - '!apps/ios/**'
       - 'apps/**/*.md'
       - 'apps/**/*.json'
+  # Sin filtro de rutas en pull_request: los checks son obligatorios en main y
+  # staging y un check que no corre dejaría el PR bloqueado.
   pull_request:
-    branches: [main, develop]
-    paths:
-      - '**'
-      - '!apps/android/**'
-      - '!apps/ios/**'
-      - 'apps/**/*.md'
-      - 'apps/**/*.json'
+    branches: [main, develop, staging]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
